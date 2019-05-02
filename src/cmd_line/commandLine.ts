@@ -19,7 +19,6 @@ class CommandLine {
 
   /**
    * for checking the last pressed key in command mode
-   *
    */
   public lastKeyPressed = '';
 

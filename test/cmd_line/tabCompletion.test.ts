@@ -20,18 +20,17 @@ suite('cmd_line tabComplete', () => {
   test('command line command tab completion', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
-    const statusBarAfterTab = StatusBar.GetTrimmed();
+    const statusBarAfterTab = StatusBar.Get();
 
-    assert.equal(statusBarAfterTab, 'edit', 'Command Tab Completion Failed');
+    assert.equal(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
   });
 
   test('command line file tab completion', async () => {
     await modeHandler.handleKeyEvent(':');
-    const beforeStatusBar = StatusBar.GetTrimmed();
+    const statusBarBeforeTab = StatusBar.Get();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '<tab>']);
-    const afterStatusBar = StatusBar.GetTrimmed();
-
-    assert.notEqual(beforeStatusBar, afterStatusBar, 'Status Bar did not change');
+    const statusBarAfterTab = StatusBar.Get();
+    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 });

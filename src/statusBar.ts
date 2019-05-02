@@ -60,14 +60,6 @@ class StatusBarImpl implements vscode.Disposable {
     return text;
   }
 
-  public GetTrimmed() {
-    let text = this.Get();
-    // This regex will remove the : / and | from the string
-    text = text.replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2');
-
-    return text.trim();
-  }
-
   private UpdateText(text: string) {
     this._statusBarItem.text = text || '';
   }

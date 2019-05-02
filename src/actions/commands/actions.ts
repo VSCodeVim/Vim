@@ -1875,14 +1875,21 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
     return this.keysPressed[0] === '\n';
   }
 
+  private getTrimmedStatusBarText() {
+    let trimmedStatusBarText = StatusBar.Get()
+      .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
+      .trim();
+    return trimmedStatusBarText;
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
-    const statusbartext = StatusBar.Get();
+    let statusBarText = this.getTrimmedStatusBarText();
     if (key === '<right>') {
       vimState.statusBarCursorCharacterPos = Math.min(
         vimState.statusBarCursorCharacterPos + 1,
-        statusbartext.length
+        statusBarText.length
       );
     } else if (key === '<left>') {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
@@ -1930,10 +1937,6 @@ class CommandTabInCommandline extends BaseCommand {
     let result = completionItems[commandLine.autoCompleteIndex];
     if (result === vimState.currentCommandlineText) {
       result = completionItems[++commandLine.autoCompleteIndex % completionItems.length];
-    }
-
-    if (result === vimState.currentCommandlineText) {
-      result = completionItems[++commandLine.autoCompleteIndex];
     }
 
     if (result !== undefined && !/ /g.test(vimState.currentCommandlineText)) {
