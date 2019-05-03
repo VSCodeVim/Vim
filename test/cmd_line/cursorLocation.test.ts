@@ -34,7 +34,6 @@ suite('cursor location', () => {
     await modeHandler.handleKeyEvent('<Esc>');
 
     const statusBarAfterEsc = StatusBar.Get();
-    console.log(statusBarAfterCursorMovement, statusBarAfterEsc);
     assert.equal(statusBarAfterCursorMovement.trim(), ':tes|t', 'Command Tab Completion Failed');
   });
 
@@ -55,7 +54,6 @@ suite('cursor location', () => {
 
     await modeHandler.handleKeyEvent('<Esc>');
     const statusBarAfterEsc = StatusBar.Get();
-    console.log(statusBarAfterCursorMovement, statusBarAfterEsc);
     assert.equal(statusBarAfterCursorMovement.trim(), '/tes|t', 'Command Tab Completion Failed');
   });
 });
