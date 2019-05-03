@@ -30,6 +30,7 @@ import { Jump } from '../../jumps/jump';
 import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
+import { AbsolutePathFromRelativePath } from '../../util/path';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -1876,9 +1877,11 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   }
 
   private getTrimmedStatusBarText() {
+    // first regex removes the : / and | from the string
+    // second regex removes a single space from the end of the string
     let trimmedStatusBarText = StatusBar.Get()
       .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
-      .trim();
+      .replace(/(.*) $/, '$1');
     return trimmedStatusBarText;
   }
 
@@ -1963,26 +1966,9 @@ class CommandTabInCommandline extends BaseCommand {
       const search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
       let searchString = search !== null ? search[1] : '';
 
-      const editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+      let fullPath = AbsolutePathFromRelativePath(searchString);
 
-      let basePath = path.dirname(editorFilePath);
-      if (searchString.startsWith('/')) {
-        basePath = '/';
-      } else if (searchString.startsWith('~/')) {
-        basePath = os.homedir();
-        searchString = searchString.replace('~/', '');
-      } else if (searchString.startsWith('./')) {
-        basePath = path.dirname(editorFilePath);
-        searchString = searchString.replace('./', '');
-      } else if (searchString.startsWith('../')) {
-        basePath = path.dirname(editorFilePath) + '/';
-      } else {
-        basePath = path.dirname(editorFilePath);
-      }
-
-      const pathrel = search ? basePath + searchString : basePath;
-
-      completeFiles = fs.readdirSync(pathrel, { withFileTypes: true });
+      completeFiles = fs.readdirSync(fullPath, { withFileTypes: true });
 
       vimState = this.autoComplete(completeFiles, vimState);
     }

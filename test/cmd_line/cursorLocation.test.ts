@@ -7,7 +7,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { StatusBar } from '../../src/statusBar';
 
-suite('cmd_line tabComplete', () => {
+suite('cursor location', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
@@ -18,22 +18,42 @@ suite('cmd_line tabComplete', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('cursor location in command line', async () => {
-    await modeHandler.handleMultipleKeyEvents([':', 't', 'e', 's', 't', '<right>', '<right>', '<right>', '<left>']);
+    await modeHandler.handleMultipleKeyEvents([
+      ':',
+      't',
+      'e',
+      's',
+      't',
+      '<right>',
+      '<right>',
+      '<right>',
+      '<left>',
+    ]);
 
     const statusBarAfterCursorMovement = StatusBar.Get();
     await modeHandler.handleKeyEvent('<Esc>');
 
     const statusBarAfterEsc = StatusBar.Get();
     console.log(statusBarAfterCursorMovement, statusBarAfterEsc);
-    assert.equal(statusBarAfterCursorMovement.trim(), ':tes|t', 'Command Tab Completion Failed' );
+    assert.equal(statusBarAfterCursorMovement.trim(), ':tes|t', 'Command Tab Completion Failed');
   });
 
   test('cursor location in search', async () => {
-    await modeHandler.handleMultipleKeyEvents(['/', 't', 'e', 's', 't', '<right>', '<right>', '<right>', '<left>']);
+    await modeHandler.handleMultipleKeyEvents([
+      '/',
+      't',
+      'e',
+      's',
+      't',
+      '<right>',
+      '<right>',
+      '<right>',
+      '<left>',
+    ]);
 
     const statusBarAfterCursorMovement = StatusBar.Get();
 
-    await modeHandler.handleKeyEvent('<ESC>');
+    await modeHandler.handleKeyEvent('<Esc>');
     const statusBarAfterEsc = StatusBar.Get();
     console.log(statusBarAfterCursorMovement, statusBarAfterEsc);
     assert.equal(statusBarAfterCursorMovement.trim(), '/tes|t', 'Command Tab Completion Failed');

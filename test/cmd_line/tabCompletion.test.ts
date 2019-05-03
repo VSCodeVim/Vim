@@ -22,15 +22,62 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleKeyEvent('<tab>');
     const statusBarAfterTab = StatusBar.Get();
 
+    await modeHandler.handleKeyEvent('<Esc>');
     assert.equal(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
   });
 
-  test('command line file tab completion', async () => {
+  test('command line file tab completion with no base path', async () => {
     await modeHandler.handleKeyEvent(':');
     const statusBarBeforeTab = StatusBar.Get();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '<tab>']);
     const statusBarAfterTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
+    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+  });
+
+  test('command line file tab completion with / as base path', async () => {
+    await modeHandler.handleKeyEvent(':');
+    const statusBarBeforeTab = StatusBar.Get();
+
+    await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '.', '/', '<tab>']);
+    const statusBarAfterTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
+    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+  });
+
+  test('command line file tab completion with ~/ as base path', async () => {
+    await modeHandler.handleKeyEvent(':');
+    const statusBarBeforeTab = StatusBar.Get();
+
+    await modeHandler.handleMultipleKeyEvents(['e', ' ', '~', '/', '<tab>']);
+    const statusBarAfterTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
+    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+  });
+
+  test('command line file tab completion with ./ as base path', async () => {
+    await modeHandler.handleKeyEvent(':');
+    const statusBarBeforeTab = StatusBar.Get();
+
+    await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '/', '<tab>']);
+    const statusBarAfterTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
+    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+  });
+
+  test('command line file tab completion with ../ as base path', async () => {
+    await modeHandler.handleKeyEvent(':');
+    const statusBarBeforeTab = StatusBar.Get();
+
+    await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '.', '/', '<tab>']);
+    const statusBarAfterTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 });
