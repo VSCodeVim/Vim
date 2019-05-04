@@ -544,6 +544,20 @@ suite('Motions in Normal Mode', () => {
     end: ['|blah duh blah duh blah'],
   });
 
+  // These tests take advantage of the fact that an empty search repeats the last search
+  newTest({
+    title: '* adds to search history',
+    start: ['|ONE two three ONE two three four ONE'],
+    keysPressed: '*/\n',
+    end: ['ONE two three ONE two three four |ONE'],
+  });
+  newTest({
+    title: '# adds to search history',
+    start: ['ONE two three ONE two three four |ONE'],
+    keysPressed: '#?\n',
+    end: ['|ONE two three ONE two three four ONE'],
+  });
+
   newTest({
     title: 'Can handle |',
     start: ['blah duh blah duh |blah'],
