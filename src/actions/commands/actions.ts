@@ -24,7 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
+import { ReportLinesChanged, ReportClear, ReportFileInfo } from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -690,7 +690,10 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
       if (newPositionLine > maxLineValue) {
         newPosition = new Position(0, 0).getDocumentEnd();
       } else {
-        const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
+        const newPositionColumn = Math.min(
+          startColumn,
+          TextEditor.getLineMaxColumn(newPositionLine)
+        );
         newPosition = new Position(newPositionLine, newPositionColumn);
       }
     }
@@ -4262,6 +4265,22 @@ class ActionOverrideCmdAltUp extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
     vimState.cursors = await getCursorsAfterSync();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionShowFileInfo extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = [['<C-g>']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    ReportFileInfo(position, vimState);
 
     return vimState;
   }
