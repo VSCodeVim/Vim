@@ -895,28 +895,7 @@ class CommandInsertInSearchMode extends BaseCommand {
         }
       }
 
-      // Store this search if different than previous
-      if (vimState.globalState.searchStatePrevious.length !== 0) {
-        let previousSearchState = vimState.globalState.searchStatePrevious;
-        if (
-          searchState.searchString !==
-          previousSearchState[previousSearchState.length - 1]!.searchString
-        ) {
-          previousSearchState.push(searchState);
-          await vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
-        }
-      } else {
-        vimState.globalState.searchStatePrevious.push(searchState);
-        await vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
-      }
-
-      // Make sure search history does not exceed configuration option
-      if (vimState.globalState.searchStatePrevious.length > configuration.history) {
-        vimState.globalState.searchStatePrevious.splice(0, 1);
-      }
-
-      // Update the index to the end of the search history
-      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+      vimState.globalState.addSearchStateToHistory(searchState);
 
       // Move cursor to next match
       vimState.cursorStopPosition = searchState.getNextSearchMatchPosition(
@@ -1150,7 +1129,7 @@ async function searchCurrentSelection(vimState: VimState, direction: SearchDirec
   });
 }
 
-function createSearchStateAndMoveToMatch(args: {
+async function createSearchStateAndMoveToMatch(args: {
   needle?: string | undefined;
   vimState: VimState;
   direction: SearchDirection;
@@ -1180,6 +1159,8 @@ function createSearchStateAndMoveToMatch(args: {
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   vimState.globalState.hl = true;
+
+  vimState.globalState.addSearchStateToHistory(vimState.globalState.searchState);
 
   return vimState;
 }
