@@ -8,6 +8,7 @@ import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { RecordedState } from '../../src/state/recordedState';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -365,7 +366,8 @@ suite('register', () => {
     // :reg should not update the command register
     await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
 
-    assert.equal((await Register.getByKey(':')).text, command);
+    const regStr = ((await Register.getByKey(':')).text as RecordedState).commandString;
+    assert.equal(regStr, command);
   });
 
   test('Read-only registers cannot be written to', async () => {

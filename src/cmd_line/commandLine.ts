@@ -8,6 +8,7 @@ import { VimError, ErrorCode } from '../error';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
+import { RecordedState } from '../state/recordedState';
 
 class CommandLine {
   private _history: CommandLineHistory;
@@ -58,7 +59,10 @@ class CommandLine {
     this._commandLineHistoryIndex = this._history.get().length;
 
     if (!command.startsWith('reg')) {
-      Register.putByKey(command, ':', undefined, true);
+      let recState = new RecordedState();
+      recState.registerName = ':';
+      recState.commandList = command.split('');
+      Register.putByKey(recState, ':', undefined, true);
     }
 
     try {

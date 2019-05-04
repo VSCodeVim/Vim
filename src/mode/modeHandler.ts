@@ -925,7 +925,9 @@ export class ModeHandler implements vscode.Disposable {
 
           vimState.isReplayingMacro = true;
 
-          if (command.replay === 'contentChange') {
+          if (command.register === ':') {
+            await commandLine.Run(recordedMacro.commandString, vimState);
+          } else if (command.replay === 'contentChange') {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
             let keyStrokes: string[] = [];
