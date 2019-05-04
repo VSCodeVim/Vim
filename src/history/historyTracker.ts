@@ -465,8 +465,19 @@ export class HistoryTracker {
     return <IMark>marks.find(mark => mark.name === markName);
   }
 
-  public getMarks(): IMark[] {
-    return this.currentHistoryStep.marks;
+  /**
+   * Gets all local marks.  I.e., marks that are specific for the current
+   * editor.
+   */
+  public getLocalMarks(): IMark[] {
+    return [...this.currentHistoryStep.marks];
+  }
+
+  /**
+   * Gets all file marks.  I.e., marks that are shared among all editors.
+   */
+  public getFileMarks(): IMark[] {
+    return [...HistoryStep.fileMarks];
   }
 
   /**

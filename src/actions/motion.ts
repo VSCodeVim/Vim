@@ -458,7 +458,7 @@ export class MarkMovementBOL extends BaseMovement {
     }
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
-      ensureEditorIsActive(mark.editor);
+      await ensureEditorIsActive(mark.editor);
     }
 
     return mark.position;

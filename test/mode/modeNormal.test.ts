@@ -1,11 +1,15 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import {
+  cleanUpWorkspace,
+  setupWorkspace,
+} from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
@@ -2524,5 +2528,35 @@ suite('Mode Normal', () => {
     start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
     keysPressed: '<C-u>',
     end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+  });
+
+  suite('marks', async () => {
+    const jumpToNewFile = async () => {
+      let configuration = new Configuration();
+      configuration.tabstop = 4;
+      configuration.expandtab = false;
+      await setupWorkspace(configuration);
+      return getAndUpdateModeHandler();
+    };
+
+    test('capital marks can change the editors active document', async () => {
+      const firstDocumentName = TextEditor.getDocumentName();
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+
+      const otherModeHandler = await jumpToNewFile();
+      const otherDocumentName = TextEditor.getDocumentName();
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+
+      await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
+      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+    });
+
+    newTest({
+      title: `can jump to lowercase mark`,
+      start: ['|hello world and mars'],
+      keysPressed: `wma2w'a`,
+      end: ['hello |world and mars'],
+      endMode: Mode.Normal,
+    });
   });
 });
