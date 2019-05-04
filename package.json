@@ -30,6 +30,7 @@
     "Other",
     "Keymaps"
   ],
+  "extensionKind": "ui",
   "activationEvents": [
     "*",
     "onCommand:type"
@@ -176,6 +177,11 @@
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
         "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+g",
+        "command": "extension.vim_ctrl+g",
+        "when": "editorTextFocus && vim.active && vim.use<C-g> && !inDebugRepl"
       },
       {
         "key": "ctrl+h",

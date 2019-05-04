@@ -2,6 +2,7 @@ import { ModeName } from '../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
+import { Position } from '../common/motion/position';
 
 export function ReportClear(vimState: VimState) {
   StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
@@ -47,4 +48,20 @@ export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
   } else {
     ReportClear(vimState);
   }
+}
+
+/**
+ * Shows the active file's path and line count as well as position in the file as a percentage.
+ * Triggered via `ctrl-g` or `:file`.
+ */
+export function ReportFileInfo(position: Position, vimState: VimState) {
+  const doc = vimState.editor.document;
+  const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
+
+  StatusBar.Set(
+    `"${doc.fileName}" ${doc.lineCount} lines --${progress}%--`,
+    vimState.currentMode,
+    vimState.isRecordingMacro,
+    true
+  );
 }
