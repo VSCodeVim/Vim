@@ -1,5 +1,32 @@
 # Change Log
 
+## [v1.7.1](https://github.com/vscodevim/vim/tree/v1.7.1) (2019-05-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.7.0...v1.7.1)
+
+**Enhancements:**
+
+- Set extensionKind in package.json to support Remote Development [\#3720](https://github.com/VSCodeVim/Vim/issues/3720)
+- gf doesn't work with filepath:linenumber format [\#3710](https://github.com/VSCodeVim/Vim/issues/3710)
+- Hive ctrl+G show which file is editing been supported? [\#3700](https://github.com/VSCodeVim/Vim/issues/3700)
+
+**Fixed Bugs:**
+
+- Replace \(:%s\) confirm text is wrong [\#3715](https://github.com/VSCodeVim/Vim/issues/3715)
+- Reverse search using '?' after '\*' fails to search [\#3031](https://github.com/VSCodeVim/Vim/issues/3031)
+
+**Closed issues:**
+
+- Implement save-on-esc feature [\#3717](https://github.com/VSCodeVim/Vim/issues/3717)
+
+**Merged pull requests:**
+
+- Update dependency untildify to v4 [\#3725](https://github.com/VSCodeVim/Vim/pull/3725) ([renovate[bot]](https://github.com/apps/renovate))
+- Add searches from \* and \# to the search history [\#3724](https://github.com/VSCodeVim/Vim/pull/3724) ([J-Fields](https://github.com/J-Fields))
+- Implement Ctrl+G and :file [\#3723](https://github.com/VSCodeVim/Vim/pull/3723) ([J-Fields](https://github.com/J-Fields))
+- Correct replacement confirmation text [\#3722](https://github.com/VSCodeVim/Vim/pull/3722) ([J-Fields](https://github.com/J-Fields))
+- Set "extensionKind": "ui" to support remote development [\#3721](https://github.com/VSCodeVim/Vim/pull/3721) ([mjbvz](https://github.com/mjbvz))
+
 ## [v1.7.0](https://github.com/vscodevim/vim/tree/v1.7.0) (2019-04-30)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.4.0...v1.7.0)
@@ -112,7 +139,6 @@
 **Enhancements:**
 
 - The small delete register "- doesn't work [\#3492](https://github.com/VSCodeVim/Vim/issues/3492)
-- word/line highlight when yy or shift + \* is pressed [\#2991](https://github.com/VSCodeVim/Vim/issues/2991)
 
 **Closed issues:**
 
