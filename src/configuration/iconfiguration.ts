@@ -244,6 +244,12 @@ export interface IConfiguration {
   visualstar: boolean;
 
   /**
+   * After mode change to visual by mouse dragging or shift selection
+   * Does back to normal mode as mswin behave if mouse/shift is no longer hold
+   */
+  mswinbehave: boolean;
+
+  /**
    * Does dragging with the mouse or shift with motion (arrow, Home, End)
    * put you into visual mode
    */

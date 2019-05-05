@@ -142,6 +142,22 @@ export class ModeHandler implements vscode.Disposable {
            * `start`, `end` and `anchor` information in a selection.
            * See `Fake block cursor with text decoration` section of `updateView` method.
            */
+
+          /**
+           * When mouse dragging or shift+arrow selection, mode change to visual,
+           * back to noraml mode as mswin behave if mouse/shift is no longer hold
+           */
+          if (
+            configuration.mswinbehave &&
+            e.kind === vscode.TextEditorSelectionChangeKind.Command &&
+            this.vimState.startVisualByMouseOrShift
+          ) {
+            this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
+            this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.active);
+
+            this.vimState.setCurrentMode(ModeName.Normal);
+            await this.updateView(this.vimState);
+          }
           return;
         }
 
@@ -149,6 +165,8 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.start);
       }
       return;
+    } else {
+      this.vimState.startVisualByMouseOrShift = true;
     }
 
     if (this.vimState.isMultiCursor && e.selections.length === 1) {

@@ -287,6 +287,8 @@ class Configuration implements IConfiguration {
 
   visualstar = false;
 
+  mswinbehave = true;
+
   mouseSelectionGoesIntoVisualMode = true;
 
   changeWordIncludesWhitespace = false;

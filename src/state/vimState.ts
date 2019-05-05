@@ -25,6 +25,9 @@ import { globalState } from './../state/globalState';
 export class VimState implements vscode.Disposable {
   private readonly logger = Logger.get('VimState');
 
+  // ture when selection cause by Mouse dragging or shift + arrow
+  public startVisualByMouseOrShift = false;
+
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -209,6 +212,10 @@ export class VimState implements vscode.Disposable {
 
   private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(value: number): Promise<void> {
+    if (value === ModeName.Normal) {
+      this.startVisualByMouseOrShift = false;
+    }
+
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
   }
