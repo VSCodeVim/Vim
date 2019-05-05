@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -30,6 +30,7 @@
     "Other",
     "Keymaps"
   ],
+  "extensionKind": "ui",
   "activationEvents": [
     "*",
     "onCommand:type"
@@ -176,6 +177,11 @@
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
         "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+g",
+        "command": "extension.vim_ctrl+g",
+        "when": "editorTextFocus && vim.active && vim.use<C-g> && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
@@ -721,7 +727,7 @@
     "lodash": "4.17.11",
     "mkdirp": "0.5.1",
     "neovim": "4.5.0",
-    "untildify": "3.0.3",
+    "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6"
   },
