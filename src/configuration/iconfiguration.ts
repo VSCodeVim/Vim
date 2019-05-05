@@ -244,7 +244,8 @@ export interface IConfiguration {
   visualstar: boolean;
 
   /**
-   * Does dragging with the mouse put you into visual mode
+   * Does dragging with the mouse or shift with motion (arrow, Home, End)
+   * put you into visual mode
    */
   mouseSelectionGoesIntoVisualMode: boolean;
 

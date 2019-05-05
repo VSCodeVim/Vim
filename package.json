@@ -629,7 +629,7 @@
         },
         "vim.mouseSelectionGoesIntoVisualMode": {
           "type": "boolean",
-          "description": "Does dragging with the mouse put you into visual mode",
+          "description": "Does dragging with the mouse or shft with motion (arrow, Home, End) put you into visual mode",
           "default": true
         },
         "vim.disableExtension": {

@@ -131,7 +131,10 @@ export class ModeHandler implements vscode.Disposable {
      * We only trigger our view updating process if it's a mouse selection.
      * Otherwise we only update our internal cursor positions accordingly.
      */
-    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
+    if (
+      e.kind !== vscode.TextEditorSelectionChangeKind.Mouse &&
+      e.kind !== vscode.TextEditorSelectionChangeKind.Keyboard
+    ) {
       if (selection) {
         if (this.currentMode.isVisualMode) {
           /**
