@@ -25,7 +25,7 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<insert>'];
+    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
     for (let key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');

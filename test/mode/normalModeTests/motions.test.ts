@@ -187,9 +187,9 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
-    title: 'Can handle <end> with a count',
+    title: 'Can handle <End> with a count',
     start: ['te|xt text', 'text', 'text text text'],
-    keysPressed: '3<end>',
+    keysPressed: '3<End>',
     end: ['text text', 'text', 'text text tex|t'],
   });
 

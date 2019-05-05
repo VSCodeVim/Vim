@@ -589,7 +589,7 @@ class CommandEscReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
-  keys = ['<insert>'];
+  keys = ['<Insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Insert);
@@ -690,7 +690,10 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
       if (newPositionLine > maxLineValue) {
         newPosition = new Position(0, 0).getDocumentEnd();
       } else {
-        const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
+        const newPositionColumn = Math.min(
+          startColumn,
+          TextEditor.getLineMaxColumn(newPositionLine)
+        );
         newPosition = new Position(newPositionLine, newPositionColumn);
       }
     }
@@ -746,7 +749,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 @RegisterAction
 export class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = [['i'], ['<insert>']];
+  keys = [['i'], ['<Insert>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Insert);
@@ -789,7 +792,7 @@ class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
 @RegisterAction
 class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<insert>'];
+  keys = ['<Insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;

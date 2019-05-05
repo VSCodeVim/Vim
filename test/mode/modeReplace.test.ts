@@ -12,9 +12,9 @@ suite('Mode Replace', () => {
   teardown(cleanUpWorkspace);
 
   newTest({
-    title: 'Can activate with <insert> from Insert mode',
+    title: 'Can activate with <Insert> from Insert mode',
     start: ['|'],
-    keysPressed: 'ia<insert>',
+    keysPressed: 'ia<Insert>',
     end: ['a|'],
     endMode: ModeName.Replace,
   });
