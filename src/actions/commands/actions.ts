@@ -27,14 +27,10 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-<<<<<<< HEAD
-import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
 import { AbsolutePathFromRelativePath } from '../../util/path';
-=======
 import { ReportLinesChanged, ReportClear, ReportFileInfo } from '../../util/statusBarTextUtils';
->>>>>>> 1ef304e5dd857c93894c117990e2b58cb0a6abbc
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -926,12 +922,9 @@ class CommandInsertInSearchMode extends BaseCommand {
         vimState.cursorStopPosition
       ).pos;
 
-<<<<<<< HEAD
       vimState.statusBarCursorCharacterPos = 0;
-=======
       Register.putByKey(searchState.searchString, '/', undefined, true);
 
->>>>>>> 1ef304e5dd857c93894c117990e2b58cb0a6abbc
       return vimState;
     } else if (key === '<up>') {
       vimState.globalState.searchStateIndex -= 1;
