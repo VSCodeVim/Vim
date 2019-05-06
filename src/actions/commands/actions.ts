@@ -589,7 +589,7 @@ class CommandEscReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
-  keys = ['<insert>'];
+  keys = ['<Insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Insert);
@@ -749,7 +749,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 @RegisterAction
 export class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = [['i'], ['<insert>']];
+  keys = [['i'], ['<Insert>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Insert);
@@ -792,7 +792,7 @@ class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
 @RegisterAction
 class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<insert>'];
+  keys = ['<Insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
@@ -1857,6 +1857,7 @@ class CommandInsertInCommandline extends BaseCommand {
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
       if (vimState.statusBarCursorCharacterPos === 0) {
+        await vimState.setCurrentMode(ModeName.Normal);
         return vimState;
       }
 
