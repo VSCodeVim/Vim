@@ -1,19 +1,20 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as os from 'os';
+import untildify = require('untildify');
+import { parseTabOnlyCommandArgs } from '../cmd_line/subparsers/tab';
 
 /**
- * Get the base path based on a path
+ * Given relative path, calculate absolute path.
  */
-export function AbsolutePathFromRelativePath(partialPath: string): string {
+export function GetAbsolutePath(partialPath: string): string {
   const editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
   let basePath: string;
 
   if (partialPath.startsWith('/')) {
     basePath = '/';
   } else if (partialPath.startsWith('~/')) {
-    basePath = os.homedir();
-    partialPath = partialPath.replace('~/', '');
+    basePath = <string>untildify(partialPath);
+    partialPath = '';
   } else if (partialPath.startsWith('./')) {
     basePath = path.dirname(editorFilePath);
     partialPath = partialPath.replace('./', '');

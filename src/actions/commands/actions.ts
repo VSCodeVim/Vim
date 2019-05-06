@@ -29,7 +29,7 @@ import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
-import { AbsolutePathFromRelativePath } from '../../util/path';
+import { GetAbsolutePath } from '../../util/path';
 import { ReportLinesChanged, ReportClear, ReportFileInfo } from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -1968,7 +1968,7 @@ class CommandTabInCommandline extends BaseCommand {
       const search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
       let searchString = search !== null ? search[1] : '';
 
-      let fullPath = AbsolutePathFromRelativePath(searchString);
+      let fullPath = GetAbsolutePath(searchString);
 
       completeFiles = fs.readdirSync(fullPath, { withFileTypes: true });
 
