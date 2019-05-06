@@ -8,6 +8,7 @@ import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { RecordedState } from '../../src/state/recordedState';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -302,5 +303,89 @@ suite('register', () => {
     ]);
 
     assertEqualLines(['st1', 'tteest2', 'test3']);
+  });
+
+  test('Search register (/) is set by forward search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+    );
+
+    // Register changed by forward search
+    await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'katu');
+
+    // Register changed even if search doesn't exist
+    await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+
+    // Not changed if search is canceled
+    await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+  });
+
+  test('Search register (/) is set by backward search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$'])
+    );
+
+    // Register changed by forward search
+    await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'katu');
+
+    // Register changed even if search doesn't exist
+    await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+
+    // Not changed if search is canceled
+    await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+  });
+
+  test('Search register (/) is set by star search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+    );
+
+    await modeHandler.handleKeyEvent('*');
+    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+
+    await modeHandler.handleMultipleKeyEvents(['g', '*']);
+    assert.equal((await Register.getByKey('/')).text, 'Wake');
+
+    await modeHandler.handleKeyEvent('#');
+    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+
+    await modeHandler.handleMultipleKeyEvents(['g', '#']);
+    assert.equal((await Register.getByKey('/')).text, 'Wake');
+  });
+
+  test('Command register (:) is set by command line', async () => {
+    const command = '%s/old/new/g';
+    await modeHandler.handleMultipleKeyEvents((':' + command + '\n').split(''));
+
+    // :reg should not update the command register
+    await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
+
+    const regStr = ((await Register.getByKey(':')).text as RecordedState).commandString;
+    assert.equal(regStr, command);
+  });
+
+  test('Read-only registers cannot be written to', async () => {
+    await modeHandler.handleMultipleKeyEvents('iShould not be copied'.split('').concat(['<Esc>']));
+
+    Register.putByKey('Expected for /', '/', undefined, true);
+    Register.putByKey('Expected for .', '.', undefined, true);
+    Register.putByKey('Expected for %', '%', undefined, true);
+    Register.putByKey('Expected for :', ':', undefined, true);
+
+    await modeHandler.handleMultipleKeyEvents('"/yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('".yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('":yy'.split(''));
+
+    assert.equal((await Register.getByKey('/')).text, 'Expected for /');
+    assert.equal((await Register.getByKey('.')).text, 'Expected for .');
+    assert.equal((await Register.getByKey('%')).text, 'Expected for %');
+    assert.equal((await Register.getByKey(':')).text, 'Expected for :');
   });
 });

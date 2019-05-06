@@ -902,6 +902,8 @@ class CommandInsertInSearchMode extends BaseCommand {
         vimState.cursorStopPosition
       ).pos;
 
+      Register.putByKey(searchState.searchString, '/', undefined, true);
+
       return vimState;
     } else if (key === '<up>') {
       vimState.globalState.searchStateIndex -= 1;
@@ -1161,6 +1163,8 @@ async function createSearchStateAndMoveToMatch(args: {
   vimState.globalState.hl = true;
 
   vimState.globalState.addSearchStateToHistory(vimState.globalState.searchState);
+
+  Register.putByKey(vimState.globalState.searchState.searchString, '/', undefined, true);
 
   return vimState;
 }
