@@ -815,7 +815,7 @@ class MoveRepeatReversed extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  keys = [['$'], ['<end>'], ['<D-right>']];
+  keys = [['$'], ['<End>'], ['<D-right>']];
   setsDesiredColumnToEOL = true;
 
   public async execActionWithCount(
@@ -829,7 +829,7 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  keys = [['0'], ['<home>'], ['<D-left>']];
+  keys = [['0'], ['<Home>'], ['<D-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();

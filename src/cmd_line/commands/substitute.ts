@@ -174,7 +174,7 @@ export class SubstituteCommand extends node.CommandBase {
 
         if (
           !(this._arguments.flags & SubstituteFlags.ConfirmEach) ||
-          (await this.confirmReplacement(regex.source, line, vimState, match, matchPos))
+          (await this.confirmReplacement(this._arguments.replace, line, vimState, match, matchPos))
         ) {
           const rangeEnd = newContent.length;
           newContent =

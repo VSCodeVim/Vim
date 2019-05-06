@@ -5,6 +5,7 @@ import { RecordedState } from './../state/recordedState';
 import { SearchHistory } from '../history/historyFile';
 import { SearchState, SearchDirection } from './searchState';
 import { SubstituteState } from './substituteState';
+import { configuration } from '../configuration/configuration';
 
 /**
  * State which stores global state (across editors)
@@ -79,10 +80,26 @@ class GlobalState {
     this._searchStatePrevious = this._searchStatePrevious.concat(states);
   }
 
-  public async addNewSearchHistoryItem(searchString: string) {
-    if (this._searchHistory !== undefined) {
-      await this._searchHistory.add(searchString);
+  public async addSearchStateToHistory(searchState: SearchState) {
+    const prevSearchString =
+      this.searchStatePrevious.length === 0
+        ? undefined
+        : this.searchStatePrevious[this.searchStatePrevious.length - 1]!.searchString;
+    // Store this search if different than previous
+    if (searchState.searchString !== prevSearchString) {
+      this.searchStatePrevious.push(searchState);
+      if (this._searchHistory !== undefined) {
+        await this._searchHistory.add(searchState.searchString);
+      }
     }
+
+    // Make sure search history does not exceed configuration option
+    if (this.searchStatePrevious.length > configuration.history) {
+      this.searchStatePrevious.splice(0, 1);
+    }
+
+    // Update the index to the end of the search history
+    this.searchStateIndex = this.searchStatePrevious.length - 1;
   }
 
   public get jumpTracker(): JumpTracker {

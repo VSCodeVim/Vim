@@ -65,4 +65,11 @@ suite('Record and execute a macro', () => {
     keysPressed: 'qadd.q@a@a',
     end: ['|test'],
   });
+
+  newTest({
+    title: ': (command) register can be used as a macro',
+    start: ['|old', 'old', 'old'],
+    keysPressed: ':s/old/new\nj@:j@@',
+    end: ['new', 'new', '|new'],
+  });
 });

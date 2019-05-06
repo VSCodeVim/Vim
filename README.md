@@ -639,7 +639,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - How can I move the cursor by each display line with word wrapping?
 
-  If you have word wrap on and would like the cursor to enter each wrapped line when using <kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd>, set the following in VS Code's keybindings.json settings file ([other options exist](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848) but they are slow):
+  If you have word wrap on and would like the cursor to enter each wrapped line when using <kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd>, set the following in VS Code's keybindings.json settings file.
 
   <!-- prettier-ignore -->
   ```json
@@ -664,6 +664,8 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
     "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
   }
   ```
+
+  **Caveats:** This solution restores the default VS Code behavior for the <kbd>j</kbd> and <kbd>k</kbd> keys, so motions like `10j` [will not work](https://github.com/VSCodeVim/Vim/pull/3623#issuecomment-481473981). If you need these motions to work, [other, less performant options exist](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848).
 
 ## ❤️ Contributing
 

@@ -187,9 +187,9 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
-    title: 'Can handle <end> with a count',
+    title: 'Can handle <End> with a count',
     start: ['te|xt text', 'text', 'text text text'],
-    keysPressed: '3<end>',
+    keysPressed: '3<End>',
     end: ['text text', 'text', 'text text tex|t'],
   });
 
@@ -542,6 +542,20 @@ suite('Motions in Normal Mode', () => {
     start: ['blah duh blah duh |blah'],
     keysPressed: '##',
     end: ['|blah duh blah duh blah'],
+  });
+
+  // These tests take advantage of the fact that an empty search repeats the last search
+  newTest({
+    title: '* adds to search history',
+    start: ['|ONE two three ONE two three four ONE'],
+    keysPressed: '*/\n',
+    end: ['ONE two three ONE two three four |ONE'],
+  });
+  newTest({
+    title: '# adds to search history',
+    start: ['ONE two three ONE two three four |ONE'],
+    keysPressed: '#?\n',
+    end: ['|ONE two three ONE two three four ONE'],
   });
 
   newTest({
