@@ -3505,6 +3505,16 @@ class ActionReplaceCharacter extends BaseCommand {
         cursorIndex: this.multicursorIndex,
         diff: new PositionDiff(0, -1),
       });
+    } else if (toReplace === '\n') {
+      // A newline replacement always inserts exactly one newline (regardless
+      // of count prefix) and puts the cursor on the next line.
+      vimState.recordedState.transformations.push({
+        type: 'replaceText',
+        text: '\n',
+        start: position,
+        end: endPos,
+        diff: PositionDiff.NewBOLDiff(1),
+      });
     } else {
       vimState.recordedState.transformations.push({
         type: 'replaceText',

@@ -163,6 +163,21 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'r\n'",
+    start: ['abc|defg', '12345'],
+    keysPressed: 'r\n',
+    end: ['abc', '|efg', '12345'],
+  });
+
+  // `r` only ever inserts one newline, regardless of count prefix
+  newTest({
+    title: "Can handle '<Count>r\n'",
+    start: ['abc|defg', '12345'],
+    keysPressed: '3r\n',
+    end: ['abc', '|g', '12345'],
+  });
+
+  newTest({
     title: "Can handle 'J' once",
     start: ['one', 'tw|o'],
     keysPressed: 'kJ',
