@@ -623,7 +623,20 @@ abstract class CommandEditorScroll extends BaseCommand {
   by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const visibleRange = vimState.editor.visibleRanges[0];
+
+    if (
+      this.to === 'up' &&
+      visibleRange.end.line - vimState.cursors[0].stop.line < configuration.scrolloff + 1
+    ) {
+      vimState.cursors[0] = vimState.cursors[0].getDown(-1);
+    } else if (
+      this.to === 'down' &&
+      vimState.cursors[0].stop.line - visibleRange.start.line < configuration.scrolloff + 1
+    ) {
+      vimState.cursors[0] = vimState.cursors[0].getDown(1);
+    }
 
     vimState.postponedCodeViewChanges.push({
       command: 'editorScroll',
@@ -2308,7 +2321,7 @@ class CommandTopScroll extends BaseCommand {
     vimState.postponedCodeViewChanges.push({
       command: 'revealLine',
       args: {
-        lineNumber: position.line,
+        lineNumber: position.line - configuration.scrolloff,
         at: 'top',
       },
     });
@@ -2362,7 +2375,7 @@ class CommandBottomScroll extends BaseCommand {
     vimState.postponedCodeViewChanges.push({
       command: 'revealLine',
       args: {
-        lineNumber: position.line,
+        lineNumber: position.line + configuration.scrolloff,
         at: 'bottom',
       },
     });

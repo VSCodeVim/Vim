@@ -52,7 +52,11 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
     curHandler.syncCursors();
-    await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
+    await curHandler.updateView(curHandler.vimState, {
+      drawSelection: false,
+      revealRange: false,
+      mouse: false,
+    });
   }
 
   previousActiveEditorId = activeEditorId;
@@ -237,7 +241,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
           await VsCodeContext.Set('vim.mode', ModeName[mh.vimState.currentMode]);
 
-          await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+          await mh.updateView(mh.vimState, {
+            drawSelection: false,
+            revealRange: false,
+            mouse: false,
+          });
 
           globalState.jumpTracker.handleFileJump(
             lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
@@ -392,7 +400,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
     // This is called last because getAndUpdateModeHandler() will change cursor
-    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false, mouse: false });
   }
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere

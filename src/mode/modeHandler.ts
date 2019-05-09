@@ -226,7 +226,11 @@ export class ModeHandler implements vscode.Disposable {
         await this.setCurrentMode(ModeName.Normal);
       }
 
-      return this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
+      return this.updateView(this.vimState, {
+        drawSelection: toDraw,
+        revealRange: true,
+        mouse: true,
+      });
     }
   }
 
@@ -1159,9 +1163,10 @@ export class ModeHandler implements vscode.Disposable {
 
   public async updateView(
     vimState: VimState,
-    args: { drawSelection: boolean; revealRange: boolean } = {
+    args: { drawSelection: boolean; revealRange: boolean; mouse: boolean } = {
       drawSelection: true,
       revealRange: true,
+      mouse: false,
     }
   ): Promise<void> {
     // Draw selection (or cursor)
@@ -1269,18 +1274,46 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    let rangeToReveal: vscode.Range | undefined;
     // Scroll to position of cursor
     if (this.vimState.currentMode === ModeName.SearchInProgressMode) {
       const nextMatch = vimState.globalState.searchState!.getNextSearchMatchPosition(
         vimState.cursorStopPosition
       ).pos;
 
-      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
-    } else {
-      if (args.revealRange) {
-        this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition)
-        );
+      rangeToReveal = new vscode.Range(nextMatch, nextMatch);
+    } else if (args.revealRange) {
+      rangeToReveal = new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition);
+    }
+
+    if (rangeToReveal) {
+      if (args.mouse) {
+        this.vimState.editor.revealRange(rangeToReveal);
+      } else {
+        const cursorLine = rangeToReveal.end.line;
+        const visibleRange = this.vimState.editor.visibleRanges[0];
+
+        let newTop: vscode.Position | undefined;
+        if (cursorLine - visibleRange.start.line < configuration.scrolloff) {
+          newTop = new vscode.Position(
+            Math.max(cursorLine - configuration.scrolloff, 0),
+            rangeToReveal.end.character
+          );
+        } else if (visibleRange.end.line - cursorLine < configuration.scrolloff) {
+          newTop = new vscode.Position(
+            Math.min(cursorLine + configuration.scrolloff, vimState.editor.document.lineCount - 1) +
+              visibleRange.start.line -
+              visibleRange.end.line,
+            rangeToReveal.end.character
+          );
+        }
+
+        if (newTop !== undefined) {
+          this.vimState.editor.revealRange(
+            new vscode.Range(newTop, newTop),
+            vscode.TextEditorRevealType.AtTop
+          );
+        }
       }
     }
 

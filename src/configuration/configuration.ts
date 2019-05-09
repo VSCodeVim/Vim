@@ -175,6 +175,8 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
+  scrolloff = 0;
+
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
   };
