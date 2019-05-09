@@ -30,7 +30,12 @@ import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
 import { GetAbsolutePath } from '../../util/path';
-import { ReportLinesChanged, ReportClear, ReportFileInfo } from '../../util/statusBarTextUtils';
+import {
+  ReportLinesChanged,
+  ReportClear,
+  ReportFileInfo,
+  ReportSearch,
+} from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -918,12 +923,13 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.globalState.addSearchStateToHistory(searchState);
 
       // Move cursor to next match
-      vimState.cursorStopPosition = searchState.getNextSearchMatchPosition(
-        vimState.cursorStopPosition
-      ).pos;
+      const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
+      vimState.cursorStopPosition = nextMatch.pos;
 
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
+
+      ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
       return vimState;
     } else if (key === '<up>') {
@@ -969,7 +975,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandEscInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ['<Esc>'];
+  keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -1182,9 +1188,10 @@ async function createSearchStateAndMoveToMatch(args: {
     vimState.currentMode
   );
 
-  vimState.cursorStopPosition = vimState.globalState.searchState.getNextSearchMatchPosition(
+  const nextMatch = vimState.globalState.searchState.getNextSearchMatchPosition(
     args.searchStartCursorPosition
-  ).pos;
+  );
+  vimState.cursorStopPosition = nextMatch.pos;
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   vimState.globalState.hl = true;
@@ -1192,6 +1199,8 @@ async function createSearchStateAndMoveToMatch(args: {
   vimState.globalState.addSearchStateToHistory(vimState.globalState.searchState);
 
   Register.putByKey(vimState.globalState.searchState.searchString, '/', undefined, true);
+
+  ReportSearch(nextMatch.index, vimState.globalState.searchState.matchRanges.length, vimState);
 
   return vimState;
 }
@@ -2609,6 +2618,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     start: vimState.cursorStopPosition,
     end: vimState.cursorStopPosition,
     match: false,
+    index: -1,
   };
 
   // At first, try to search for current word, and stop searching if matched.
@@ -2639,6 +2649,8 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.cursorStartPosition,
     vimState.cursorStopPosition
   );
+
+  ReportSearch(result.index, searchState.matchRanges.length, vimState);
 
   await vimState.setCurrentMode(ModeName.Visual);
 
@@ -3635,6 +3647,16 @@ class ActionReplaceCharacter extends BaseCommand {
         type: 'tab',
         cursorIndex: this.multicursorIndex,
         diff: new PositionDiff(0, -1),
+      });
+    } else if (toReplace === '\n') {
+      // A newline replacement always inserts exactly one newline (regardless
+      // of count prefix) and puts the cursor on the next line.
+      vimState.recordedState.transformations.push({
+        type: 'replaceText',
+        text: '\n',
+        start: position,
+        end: endPos,
+        diff: PositionDiff.NewBOLDiff(1),
       });
     } else {
       vimState.recordedState.transformations.push({
