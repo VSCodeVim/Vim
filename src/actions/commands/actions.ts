@@ -24,7 +24,12 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { ReportLinesChanged, ReportClear, ReportFileInfo } from '../../util/statusBarTextUtils';
+import {
+  ReportLinesChanged,
+  ReportClear,
+  ReportFileInfo,
+  ReportSearch,
+} from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -898,11 +903,12 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.globalState.addSearchStateToHistory(searchState);
 
       // Move cursor to next match
-      vimState.cursorStopPosition = searchState.getNextSearchMatchPosition(
-        vimState.cursorStopPosition
-      ).pos;
+      const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
+      vimState.cursorStopPosition = nextMatch.pos;
 
       Register.putByKey(searchState.searchString, '/', undefined, true);
+
+      ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
       return vimState;
     } else if (key === '<up>') {
@@ -1155,9 +1161,10 @@ async function createSearchStateAndMoveToMatch(args: {
     vimState.currentMode
   );
 
-  vimState.cursorStopPosition = vimState.globalState.searchState.getNextSearchMatchPosition(
+  const nextMatch = vimState.globalState.searchState.getNextSearchMatchPosition(
     args.searchStartCursorPosition
-  ).pos;
+  );
+  vimState.cursorStopPosition = nextMatch.pos;
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   vimState.globalState.hl = true;
@@ -1165,6 +1172,8 @@ async function createSearchStateAndMoveToMatch(args: {
   vimState.globalState.addSearchStateToHistory(vimState.globalState.searchState);
 
   Register.putByKey(vimState.globalState.searchState.searchString, '/', undefined, true);
+
+  ReportSearch(nextMatch.index, vimState.globalState.searchState.matchRanges.length, vimState);
 
   return vimState;
 }
@@ -2478,6 +2487,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     start: vimState.cursorStopPosition,
     end: vimState.cursorStopPosition,
     match: false,
+    index: -1,
   };
 
   // At first, try to search for current word, and stop searching if matched.
@@ -2508,6 +2518,8 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.cursorStartPosition,
     vimState.cursorStopPosition
   );
+
+  ReportSearch(result.index, searchState.matchRanges.length, vimState);
 
   await vimState.setCurrentMode(ModeName.Visual);
 
