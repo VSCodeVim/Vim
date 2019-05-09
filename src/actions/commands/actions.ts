@@ -949,7 +949,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandEscInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ['<Esc>'];
+  keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
