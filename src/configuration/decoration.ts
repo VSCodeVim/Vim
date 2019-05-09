@@ -56,6 +56,7 @@ class DecorationImpl {
 
     this.SearchHighlight = vscode.window.createTextEditorDecorationType({
       backgroundColor: configuration.searchHighlightColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
     this.EasyMotion = vscode.window.createTextEditorDecorationType({
