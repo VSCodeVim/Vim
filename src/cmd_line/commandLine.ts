@@ -19,6 +19,23 @@ class CommandLine {
    */
   private _commandLineHistoryIndex: number = 0;
 
+  /**
+   * for checking the last pressed key in command mode
+   */
+  public lastKeyPressed = '';
+
+  /**
+   * for checking the last pressed key in command mode
+   *
+   */
+  public autoCompleteIndex = 0;
+
+  /**
+   * for checking the last pressed key in command mode
+   *
+   */
+  public autoCompleteText = '';
+
   public get commandlineHistoryIndex(): number {
     return this._commandLineHistoryIndex;
   }
