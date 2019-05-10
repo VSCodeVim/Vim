@@ -1,5 +1,42 @@
 # Change Log
 
+## [v1.8.0](https://github.com/vscodevim/vim/tree/v1.8.0) (2019-05-10)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.7.1...v1.8.0)
+
+**Enhancements:**
+
+- :reg should show multiple registers if given multiple arguments [\#3610](https://github.com/VSCodeVim/Vim/issues/3610)
+- :reg should not show the \_ \(black hole\) register [\#3606](https://github.com/VSCodeVim/Vim/issues/3606)
+- Implement the % \(file name\) and : \(last executed command\) registers [\#3605](https://github.com/VSCodeVim/Vim/issues/3605)
+- The . \(last inserted text\) register should be read-only [\#3604](https://github.com/VSCodeVim/Vim/issues/3604)
+
+**Fixed Bugs:**
+
+- Backspace in command line mode should return to normal mode if the command is empty [\#3729](https://github.com/VSCodeVim/Vim/issues/3729)
+
+**Closed issues:**
+
+- Tab to spaces setting in vscode not applying when extension is enabled [\#3732](https://github.com/VSCodeVim/Vim/issues/3732)
+- %d/string/d" does not work [\#3709](https://github.com/VSCodeVim/Vim/issues/3709)
+- Extension issue [\#3615](https://github.com/VSCodeVim/Vim/issues/3615)
+- Support the / register [\#3542](https://github.com/VSCodeVim/Vim/issues/3542)
+
+**Merged pull requests:**
+
+- Show search results in the overview ruler [\#3750](https://github.com/VSCodeVim/Vim/pull/3750) ([J-Fields](https://github.com/J-Fields))
+- Update dependency @types/lodash to v4.14.125 [\#3747](https://github.com/VSCodeVim/Vim/pull/3747) ([renovate[bot]](https://github.com/apps/renovate))
+- \<C-\[\> and \<C-c\> should terminate search mode [\#3746](https://github.com/VSCodeVim/Vim/pull/3746) ([hkleynhans](https://github.com/hkleynhans))
+- Update dependency vscode to v1.1.34 [\#3739](https://github.com/VSCodeVim/Vim/pull/3739) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency gulp to v4.0.2 [\#3738](https://github.com/VSCodeVim/Vim/pull/3738) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.124 [\#3737](https://github.com/VSCodeVim/Vim/pull/3737) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix replace character \(`r`\) behavior with newline [\#3735](https://github.com/VSCodeVim/Vim/pull/3735) ([J-Fields](https://github.com/J-Fields))
+- Show `match {x} of {y}` in the status bar when searching [\#3734](https://github.com/VSCodeVim/Vim/pull/3734) ([J-Fields](https://github.com/J-Fields))
+- Keymapping bindings inconsistently cased \#3012 [\#3731](https://github.com/VSCodeVim/Vim/pull/3731) ([ObliviousJamie](https://github.com/ObliviousJamie))
+- Return to normal mode after hitting \<BS\> on empty command line [\#3730](https://github.com/VSCodeVim/Vim/pull/3730) ([J-Fields](https://github.com/J-Fields))
+- Various improvements to registers [\#3728](https://github.com/VSCodeVim/Vim/pull/3728) ([J-Fields](https://github.com/J-Fields))
+- Add tab completion on vim command line [\#3639](https://github.com/VSCodeVim/Vim/pull/3639) ([keith-ferney](https://github.com/keith-ferney))
+
 ## [v1.7.1](https://github.com/vscodevim/vim/tree/v1.7.1) (2019-05-05)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.7.0...v1.7.1)
@@ -13,11 +50,6 @@
 **Fixed Bugs:**
 
 - Replace \(:%s\) confirm text is wrong [\#3715](https://github.com/VSCodeVim/Vim/issues/3715)
-- Reverse search using '?' after '\*' fails to search [\#3031](https://github.com/VSCodeVim/Vim/issues/3031)
-
-**Closed issues:**
-
-- Implement save-on-esc feature [\#3717](https://github.com/VSCodeVim/Vim/issues/3717)
 
 **Merged pull requests:**
 
@@ -33,14 +65,13 @@
 
 **Fixed Bugs:**
 
+- vim.debug.suppress invalid [\#3703](https://github.com/VSCodeVim/Vim/issues/3703)
 - cw, dw, vw doesn't work with non-ascii char earlier in line [\#3680](https://github.com/VSCodeVim/Vim/issues/3680)
 - Word seperate doesn't works well [\#3665](https://github.com/VSCodeVim/Vim/issues/3665)
 - catastrophic performance [\#3654](https://github.com/VSCodeVim/Vim/issues/3654)
 
 **Closed issues:**
 
-- 中文输入模式下，在 integrated terminal 里面，用 Caps Lock 键切换到英文，无法输入小写字母 [\#3705](https://github.com/VSCodeVim/Vim/issues/3705)
-- vim.debug.suppress invalid [\#3703](https://github.com/VSCodeVim/Vim/issues/3703)
 - Ctrl keys can not be remapped in insert mode [\#3697](https://github.com/VSCodeVim/Vim/issues/3697)
 - Surround: Implement whitespace configuration [\#3681](https://github.com/VSCodeVim/Vim/issues/3681)
 - :\[line number\]d causes type error [\#3678](https://github.com/VSCodeVim/Vim/issues/3678)
