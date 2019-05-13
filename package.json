@@ -583,32 +583,32 @@
           "default": false
         },
         "vim.statusBarColors.normal": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in Normal mode",
           "default": "#005f5f"
         },
         "vim.statusBarColors.insert": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in Insert mode",
           "default": "#5f0000"
         },
         "vim.statusBarColors.visual": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in Visual mode",
           "default": "#5f00af"
         },
         "vim.statusBarColors.visualline": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in VisualLine mode",
           "default": "#005f5f"
         },
         "vim.statusBarColors.visualblock": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in VisualBlock mode",
           "default": "#86592d"
         },
         "vim.statusBarColors.replace": {
-          "type": "string",
+          "type": ["string", "array"],
           "description": "Status bar color when in Replace mode",
           "default": "#00000"
         },
