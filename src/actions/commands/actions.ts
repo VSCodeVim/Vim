@@ -926,6 +926,8 @@ class CommandInsertInSearchMode extends BaseCommand {
       const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
       vimState.cursorStopPosition = nextMatch.pos;
 
+      vimState.globalState.hl = true;
+
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
 
@@ -1311,8 +1313,6 @@ export class CommandSearchForwards extends BaseCommand {
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
-    vimState.globalState.hl = true;
-
     return vimState;
   }
 }
@@ -1336,8 +1336,6 @@ export class CommandSearchBackwards extends BaseCommand {
 
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
-
-    vimState.globalState.hl = true;
 
     return vimState;
   }

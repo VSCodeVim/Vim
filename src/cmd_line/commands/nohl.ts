@@ -1,5 +1,6 @@
 import { VimState } from '../../state/vimState';
 import * as node from '../node';
+import { StatusBar } from '../../statusBar';
 
 export class NohlCommand extends node.CommandBase {
   protected _arguments: {};
@@ -17,5 +18,8 @@ export class NohlCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     vimState.globalState.hl = false;
+
+    // Clear the `match x of y` message from status bar
+    StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
   }
 }
