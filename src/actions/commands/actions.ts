@@ -1,4 +1,7 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
@@ -24,6 +27,9 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
+import { commandParsers } from '../../cmd_line/subparser';
+import { StatusBar } from '../../statusBar';
+import { GetAbsolutePath } from '../../util/path';
 import {
   ReportLinesChanged,
   ReportClear,
@@ -540,6 +546,13 @@ class CommandEsc extends BaseCommand {
       vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
     }
 
+    if (vimState.currentMode === ModeName.SearchInProgressMode) {
+      vimState.statusBarCursorCharacterPos = 0;
+      if (vimState.globalState.searchState) {
+        vimState.cursorStopPosition = vimState.globalState.searchState.searchCursorStartPosition;
+      }
+    }
+
     if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
       vimState.isMultiCursor = false;
     }
@@ -889,7 +902,14 @@ class CommandInsertInSearchMode extends BaseCommand {
       if (searchState.searchString.length === 0) {
         return new CommandEscInSearchMode().exec(position, vimState);
       }
-      searchState.searchString = searchState.searchString.slice(0, -1);
+      if (vimState.statusBarCursorCharacterPos === 0) {
+        return vimState;
+      }
+
+      searchState.searchString =
+        searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos - 1) +
+        searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
+      vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '\n') {
       await vimState.setCurrentMode(vimState.globalState.searchState!.previousMode);
 
@@ -908,6 +928,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       vimState.globalState.hl = true;
 
+      vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
 
       ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
@@ -922,6 +943,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString =
           prevSearchList[vimState.globalState.searchStateIndex].searchString;
+        vimState.statusBarCursorCharacterPos = searchState.searchString.length;
       }
     } else if (key === '<down>') {
       vimState.globalState.searchStateIndex += 1;
@@ -940,8 +962,12 @@ class CommandInsertInSearchMode extends BaseCommand {
         searchState.searchString =
           prevSearchList[vimState.globalState.searchStateIndex].searchString;
       }
+      vimState.statusBarCursorCharacterPos = searchState.searchString.length;
     } else {
-      searchState.searchString += this.keysPressed[0];
+      let modifiedString = searchState.searchString.split('');
+      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
+      searchState.searchString = modifiedString.join('');
+      vimState.statusBarCursorCharacterPos += key.length;
     }
 
     return vimState;
@@ -967,6 +993,7 @@ class CommandEscInSearchMode extends BaseCommand {
       : undefined;
 
     await vimState.setCurrentMode(searchState.previousMode);
+    vimState.statusBarCursorCharacterPos = 0;
 
     return vimState;
   }
@@ -1851,9 +1878,119 @@ class CommandShowCommandLine extends BaseCommand {
 }
 
 @RegisterAction
+class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress, ModeName.SearchInProgressMode];
+  keys = [['<left>'], ['<right>']];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  private getTrimmedStatusBarText() {
+    // first regex removes the : / and | from the string
+    // second regex removes a single space from the end of the string
+    let trimmedStatusBarText = StatusBar.Get()
+      .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
+      .replace(/(.*) $/, '$1');
+    return trimmedStatusBarText;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const searchState = vimState.globalState.searchState!;
+    let statusBarText = this.getTrimmedStatusBarText();
+    if (key === '<right>') {
+      vimState.statusBarCursorCharacterPos = Math.min(
+        vimState.statusBarCursorCharacterPos + 1,
+        statusBarText.length
+      );
+    } else if (key === '<left>') {
+      vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
+    }
+    return vimState;
+  }
+}
+@RegisterAction
+class CommandTabInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<tab>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  private autoComplete(completionItems: any, vimState: VimState) {
+    if (commandLine.lastKeyPressed !== '<tab>') {
+      if (/ /g.test(vimState.currentCommandlineText)) {
+        // The regex here will match any text after the space or any text after the last / if it is present
+        const search = <RegExpExecArray>(
+          /(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText)
+        );
+        commandLine.autoCompleteText = search[1];
+        commandLine.autoCompleteIndex = 0;
+      } else {
+        commandLine.autoCompleteText = vimState.currentCommandlineText;
+        commandLine.autoCompleteIndex = 0;
+      }
+    }
+
+    completionItems = completionItems.filter(completionItem =>
+      completionItem.startsWith(commandLine.autoCompleteText)
+    );
+
+    if (
+      commandLine.lastKeyPressed === '<tab>' &&
+      commandLine.autoCompleteIndex < completionItems.length
+    ) {
+      commandLine.autoCompleteIndex += 1;
+    }
+    if (commandLine.autoCompleteIndex >= completionItems.length) {
+      commandLine.autoCompleteIndex = 0;
+    }
+
+    let result = completionItems[commandLine.autoCompleteIndex];
+    if (result === vimState.currentCommandlineText) {
+      result = completionItems[++commandLine.autoCompleteIndex % completionItems.length];
+    }
+
+    if (result !== undefined && !/ /g.test(vimState.currentCommandlineText)) {
+      vimState.currentCommandlineText = result;
+      vimState.statusBarCursorCharacterPos = result.length;
+    } else if (result !== undefined) {
+      const searchArray = <RegExpExecArray>/(.* .*\/|.* )/g.exec(vimState.currentCommandlineText);
+      vimState.currentCommandlineText = searchArray[0] + result;
+      vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+    }
+    return vimState;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+
+    if (!/ /g.test(vimState.currentCommandlineText)) {
+      // Command completion
+      const commands = Object.keys(commandParsers).sort();
+      vimState = this.autoComplete(commands, vimState);
+    } else {
+      // File Completion
+      let completeFiles: fs.Dirent[];
+      const search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
+      let searchString = search !== null ? search[1] : '';
+
+      let fullPath = GetAbsolutePath(searchString);
+
+      completeFiles = fs.readdirSync(fullPath, { withFileTypes: true });
+
+      vimState = this.autoComplete(completeFiles, vimState);
+    }
+
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<left>'], ['<right>'], ['<C-h>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -1909,20 +2046,14 @@ class CommandInsertInCommandline extends BaseCommand {
       }
 
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key === '<right>') {
-      vimState.statusBarCursorCharacterPos = Math.min(
-        vimState.statusBarCursorCharacterPos + 1,
-        vimState.currentCommandlineText.length
-      );
-    } else if (key === '<left>') {
-      vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
-    } else {
+    } else if (key !== '<tab>') {
       let modifiedString = vimState.currentCommandlineText.split('');
-      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, this.keysPressed[0]);
+      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
       vimState.currentCommandlineText = modifiedString.join('');
-      vimState.statusBarCursorCharacterPos += 1;
+      vimState.statusBarCursorCharacterPos += key.length;
     }
 
+    commandLine.lastKeyPressed = key;
     return vimState;
   }
 }

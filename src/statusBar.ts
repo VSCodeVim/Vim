@@ -55,6 +55,11 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.dispose();
   }
 
+  public Get() {
+    let text = this._statusBarItem.text;
+    return text;
+  }
+
   private UpdateText(text: string) {
     this._statusBarItem.text = text || '';
   }
