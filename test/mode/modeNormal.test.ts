@@ -2310,4 +2310,25 @@ suite('Mode Normal', () => {
       endMode: ModeName.Insert,
     });
   });
+
+  newTest({
+    title: 'can handle <C-u> when first line is visible and starting column is at the beginning',
+    start: ['hello world', 'hello', 'hi hello', '|foo'],
+    keysPressed: '<C-u>',
+    end: ['|hello world', 'hello', 'hi hello', 'foo'],
+  });
+
+  newTest({
+    title: 'can handle <C-u> when first line is visible and starting column is at the end',
+    start: ['hello world', 'hello', 'hi hello', 'very long line at the bottom|'],
+    keysPressed: '<C-u>',
+    end: ['|hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+  });
+
+  newTest({
+    title: 'can handle <C-u> when first line is visible and starting column is in the middle',
+    start: ['hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
+    keysPressed: '<C-u>',
+    end: ['|hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+  });
 });
