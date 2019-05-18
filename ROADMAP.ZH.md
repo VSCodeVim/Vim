@@ -54,24 +54,24 @@
 
 ## 左右移动
 
-| 状态               | 命令           | 描述                                                                      |     |
-| ------------------ | -------------- | ------------------------------------------------------------------------- | --- |
-| :white_check_mark: | :1234: h       | 左移 (同功能: CTRL-H, BS, or Left key)                                    |     |
-| :white_check_mark: | :1234: l       | 右移 (同功能: Space or Right key)                                         |     |
-| :white_check_mark: | 0              | 移动到当前行的第一个字符处 (同功能: Home key)                             |     |
-| :white_check_mark: | ^              | 移动到当前行的第一个非空字符处                                            |     |
-| :white_check_mark: | :1234: \$      | 移动到当前行的最后一个字符处 (N-1 lines lower) (同功能: End key)          |     |
-| :white_check_mark: | g0             | 移动到屏幕上显示行的第一个字符处(当有多行被折叠时，行为与 '0' 不同)       |     |
-| :white_check_mark: | g^             | 移动到屏幕上显示行的第一个非空白字符处(当有多行被折叠时，行为与 '^' 不同) |     |
-| :white_check_mark: | :1234: g\$     | 移动到屏幕上显示行的最后一个字符处(当有多行被折叠时，行为与 '\$' 不同)    |     |
-| :white_check_mark: | gm             | 移动到屏幕上显示行的中央                                                  |     |
+| 状态               | 命令           | 描述                                                                      |
+| ------------------ | -------------- | ------------------------------------------------------------------------- |
+| :white_check_mark: | :1234: h       | 左移 (同功能: CTRL-H, BS, or Left key)                                    |
+| :white_check_mark: | :1234: l       | 右移 (同功能: Space or Right key)                                         |
+| :white_check_mark: | 0              | 移动到当前行的第一个字符处 (同功能: Home key)                             |
+| :white_check_mark: | ^              | 移动到当前行的第一个非空字符处                                            |
+| :white_check_mark: | :1234: \$      | 移动到当前行的最后一个字符处 (N-1 lines lower) (同功能: End key)          |
+| :white_check_mark: | g0             | 移动到屏幕上显示行的第一个字符处(当有多行被折叠时，行为与 '0' 不同)       |
+| :white_check_mark: | g^             | 移动到屏幕上显示行的第一个非空白字符处(当有多行被折叠时，行为与 '^' 不同) |
+| :white_check_mark: | :1234: g\$     | 移动到屏幕上显示行的最后一个字符处(当有多行被折叠时，行为与 '\$' 不同)    |
+| :white_check_mark: | gm             | 移动到屏幕上显示行的中央                                                  |
 | :white_check_mark: | :1234: \       | 移动到指定列 (默认: 1)                                                    |
-| :white_check_mark: | :1234: f{char} | 向右移动到第 N 个指定字符处                                               |     |
-| :white_check_mark: | :1234: F{char} | 向左移动到第 N 个指定字符处                                               |     |
-| :white_check_mark: | :1234: t{char} | 向右移动到第 N 个指定字符的前一个字符处                                   |     |
-| :white_check_mark: | :1234: T{char} | 向左移动到第 N 个指定字符的前一个字符处                                   |     |
-| :white_check_mark: | :1234: ;       | 重复执行 N 次上一次的 "f", "F", "t", 或 "T" 命令                          |     |
-| :white_check_mark: | :1234: ,       | 反向重复执行 N 次上一次的 “f“，“F“，“t“，或“T“命令                        |     |
+| :white_check_mark: | :1234: f{char} | 向右移动到第 N 个指定字符处                                               |
+| :white_check_mark: | :1234: F{char} | 向左移动到第 N 个指定字符处                                               |
+| :white_check_mark: | :1234: t{char} | 向右移动到第 N 个指定字符的前一个字符处                                   |
+| :white_check_mark: | :1234: T{char} | 向左移动到第 N 个指定字符的前一个字符处                                   |
+| :white_check_mark: | :1234: ;       | 重复执行 N 次上一次的 "f", "F", "t", 或 "T" 命令                          |
+| :white_check_mark: | :1234: ,       | 反向重复执行 N 次上一次的 “f“，“F“，“t“，或“T“命令                        |
 
 ## 上下移动
 
