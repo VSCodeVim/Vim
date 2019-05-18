@@ -548,7 +548,7 @@ export class ModeHandler implements vscode.Disposable {
       vimState.globalState.previousFullAction = vimState.recordedState;
 
       if (recordedState.isInsertion) {
-        Register.putByKey(recordedState, '.');
+        Register.putByKey(recordedState, '.', undefined, true);
       }
     }
 
@@ -925,7 +925,9 @@ export class ModeHandler implements vscode.Disposable {
 
           vimState.isReplayingMacro = true;
 
-          if (command.replay === 'contentChange') {
+          if (command.register === ':') {
+            await commandLine.Run(recordedMacro.commandString, vimState);
+          } else if (command.replay === 'contentChange') {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
             let keyStrokes: string[] = [];

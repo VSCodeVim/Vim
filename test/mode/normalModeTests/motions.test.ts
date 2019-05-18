@@ -1,5 +1,6 @@
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
@@ -186,9 +187,9 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
-    title: 'Can handle <end> with a count',
+    title: 'Can handle <End> with a count',
     start: ['te|xt text', 'text', 'text text text'],
-    keysPressed: '3<end>',
+    keysPressed: '3<End>',
     end: ['text text', 'text', 'text text tex|t'],
   });
 
@@ -381,6 +382,21 @@ suite('Motions in Normal Mode', () => {
   // });
 
   newTest({
+    title: 'cancelled search reverts to previous search state',
+    start: ['|one', 'two two', 'three three three'],
+    keysPressed: '/two\n/three<Esc>n',
+    end: ['one', 'two |two', 'three three three'],
+  });
+
+  newTest({
+    title: 'Backspace on empty search cancels',
+    start: ['|one two three'],
+    keysPressed: '/tw<BS><BS><BS>',
+    end: ['|one two three'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'maintains column position correctly',
     start: ['|one one one', 'two', 'three'],
     keysPressed: 'lllljj',
@@ -526,6 +542,20 @@ suite('Motions in Normal Mode', () => {
     start: ['blah duh blah duh |blah'],
     keysPressed: '##',
     end: ['|blah duh blah duh blah'],
+  });
+
+  // These tests take advantage of the fact that an empty search repeats the last search
+  newTest({
+    title: '* adds to search history',
+    start: ['|ONE two three ONE two three four ONE'],
+    keysPressed: '*/\n',
+    end: ['ONE two three ONE two three four |ONE'],
+  });
+  newTest({
+    title: '# adds to search history',
+    start: ['ONE two three ONE two three four |ONE'],
+    keysPressed: '#?\n',
+    end: ['|ONE two three ONE two three four ONE'],
   });
 
   newTest({

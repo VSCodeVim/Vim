@@ -73,7 +73,11 @@ export class SearchInProgressMode extends Mode {
     }
     const leadingChar =
       vimState.globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
-    return `${leadingChar}${vimState.globalState.searchState!.searchString}`;
+
+    let stringWithCursor = vimState.globalState.searchState!.searchString.split('');
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+
+    return `${leadingChar}${stringWithCursor.join('')}`;
   }
 
   getStatusBarCommandText(vimState: VimState): string {

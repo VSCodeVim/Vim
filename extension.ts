@@ -24,6 +24,7 @@ import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
+import { Register } from './src/register/register';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -96,6 +97,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
+
+  if (vscode.window.activeTextEditor) {
+    const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
+    Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
+  }
 
   // load state
   await Promise.all([commandLine.load(), globalState.load()]);
@@ -170,18 +176,28 @@ export async function activate(context: vscode.ExtensionContext) {
   registerEventListener(
     context,
     vscode.workspace.onDidCloseTextDocument,
-    async () => {
+    async closedDocument => {
       const documents = vscode.workspace.textDocuments;
 
       // Delete modehandler once all tabs of this document have been closed
       for (let editorIdentity of ModeHandlerMap.getKeys()) {
         const modeHandler = ModeHandlerMap.get(editorIdentity);
 
-        if (
-          modeHandler == null ||
-          modeHandler.vimState.editor === undefined ||
-          documents.indexOf(modeHandler.vimState.editor.document) === -1
-        ) {
+        let shouldDelete = false;
+
+        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+          shouldDelete = true;
+        } else {
+          const document = modeHandler.vimState.editor.document;
+          if (documents.indexOf(document) === -1) {
+            shouldDelete = true;
+            if (closedDocument === document) {
+              lastClosedModeHandler = modeHandler;
+            }
+          }
+        }
+
+        if (shouldDelete) {
           ModeHandlerMap.delete(editorIdentity);
         }
       }
@@ -207,8 +223,12 @@ export async function activate(context: vscode.ExtensionContext) {
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
       if (vscode.window.activeTextEditor === undefined) {
+        Register.putByKey('', '%', undefined, true);
         return;
       }
+
+      const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
+      Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
 
       taskQueue.enqueueTask(async () => {
         if (vscode.window.activeTextEditor !== undefined) {

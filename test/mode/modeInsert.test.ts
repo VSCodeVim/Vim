@@ -25,7 +25,7 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<insert>'];
+    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
     for (let key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
@@ -347,8 +347,11 @@ suite('Mode Insert', () => {
       'e',
       'x',
       't',
+      '<C-k>',
+      '>',
+      '-',
     ]);
-    assertEqualLines(['text→text']);
+    assertEqualLines(['text→text→']);
   });
 
   test('Can handle custom digraph insert', async () => {
@@ -356,7 +359,7 @@ suite('Mode Insert', () => {
       'R!': ['🚀', [55357, 56960]],
     };
     await reloadConfiguration();
-    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!']);
-    assertEqualLines(['🚀']);
+    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
+    assertEqualLines(['🚀🚀']);
   });
 });

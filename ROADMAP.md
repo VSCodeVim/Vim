@@ -121,12 +121,12 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: :star: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern}    | Currently we only support JavaScript Regex but not Vim's in-house Regex engine. |
 | :warning:                 | :1234: `/<CR>`                     | repeat last search, in the forward direction           | {count} is not supported.                                                       |
 | :warning:                 | :1234: `?<CR>`                     | repeat last search, in the backward direction          | {count} is not supported.                                                       |
-| :warning:                 | :1234: n                           | repeat last search                                     | {count} is not supported.                                                       |
-| :warning:                 | :1234: N                           | repeat last search, in opposite direction              | {count} is not supported.                                                       |
+| :white_check_mark:        | :1234: n                           | repeat last search                                     |
+| :white_check_mark:        | :1234: N                           | repeat last search, in opposite direction              |
 | :white_check_mark:        | :1234: \*                          | search forward for the identifier under the cursor     |
 | :white_check_mark:        | :1234: #                           | search backward for the identifier under the cursor    |
-| :arrow_down:              | :1234: g\*                         | like "\*", but also find partial matches               |
-| :arrow_down:              | :1234: g#                          | like "#", but also find partial matches                |
+| :white_check_mark:        | :1234: g\*                         | like "\*", but also find partial matches               |
+| :white_check_mark:        | :1234: g#                          | like "#", but also find partial matches                |
 | :white_check_mark:        | gd                                 | goto local declaration of identifier under the cursor  |
 | :arrow_down:              | gD                                 | goto global declaration of identifier under the cursor |
 
@@ -148,8 +148,8 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | '.                                                          | go to the position of the last change in this file |
 | :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                                         | same as `, but on the first non-blank in the line  |
 | :arrow_down:       | :marks                                                      | print the active marks                             |
-| :arrow_down:       | :1234: CTRL-O                                               | go to Nth older position in jump list              |
-| :arrow_down:       | :1234: CTRL-I                                               | go to Nth newer position in jump list              |
+| :white_check_mark: | :1234: CTRL-O                                               | go to Nth older position in jump list              |
+| :white_check_mark: | :1234: CTRL-I                                               | go to Nth newer position in jump list              |
 | :arrow_down:       | :ju[mps]                                                    | print the jump list                                |
 
 ## Various motions
@@ -277,10 +277,10 @@ moving around:
 
 ## Digraphs
 
-| Status       | Command                                 | Description                   |
-| ------------ | --------------------------------------- | ----------------------------- |
-| :arrow_down: | :dig[raphs]                             | show current list of digraphs |
-| :arrow_down: | :dig[raphs] {char1}{char2} {number} ... | add digraph(s) to the list    |
+| Status             | Command                                 | Description                   |
+| ------------------ | --------------------------------------- | ----------------------------- |
+| :white_check_mark: | :dig[raphs]                             | show current list of digraphs |
+| :arrow_down:       | :dig[raphs] {char1}{char2} {number} ... | add digraph(s) to the list    |
 
 ## Special inserts
 
@@ -308,13 +308,9 @@ moving around:
 
 ## Copying and moving text
 
-Miscellanea:
-
-- We don't support read only registers.
-
-| Status             | Command          | Description                                            | Note                                  |
-| ------------------ | ---------------- | ------------------------------------------------------ | ------------------------------------- |
-| :warning:          | "{char}          | use register {char} for the next delete, yank, or put  | read only registers are not supported |
+| Status             | Command          | Description                                            |
+| ------------------ | ---------------- | ------------------------------------------------------ |
+| :white_check_mark: | "{char}          | use register {char} for the next delete, yank, or put  |
 | :white_check_mark: | "\*              | use register `*` to access system clipboard            |
 | :white_check_mark: | :reg             | show the contents of all registers                     |
 | :white_check_mark: | :reg {arg}       | show the contents of registers mentioned in {arg}      |
@@ -379,7 +375,7 @@ Miscellanea:
 | :arrow_down:                        | `{visual}!{command}<CR>`                       | filter the highlighted lines through {command}                                                                                        |
 | :arrow_down:                        | `:[range]! {command}<CR>`                      | filter [range] lines through {command}                                                                                                |
 | :white_check_mark:                  | :1234: ={motion}                               | filter the lines that are moved over through 'equalprg'                                                                               |
-| :arrow_down:                        | :1234: ==                                      | filter N lines through 'equalprg'                                                                                                     |
+| :white_check_mark:                  | :1234: ==                                      | filter N lines through 'equalprg'                                                                                                     |
 | :white_check_mark:                  | {visual}=                                      | filter the highlighted lines through 'equalprg'                                                                                       |
 | :white_check_mark: :star: :warning: | :[range]s[ubstitute]/{pattern}/{string}/[g][c] | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented |
 | :arrow_down:                        | :[range]s[ubstitute][g][c]                     | repeat previous ":s" with new range and options                                                                                       |
@@ -526,6 +522,8 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark: :star: | &lt;ctrl-w&gt; hl | Switching between windows.                                              | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors. |
 | :white_check_mark:        | :sp {file}        | Split current window in two.                                            |                                                                                                                        |
 | :white_check_mark: :star: | :vsp {file}       | Split vertically current window in two.                                 |                                                                                                                        |
+| :white_check_mark:        | &lt;ctrl-w&gt; s  | Split current window in two.                                            |                                                                                                                        |
+| :white_check_mark: :star: | &lt;ctrl-w&gt; v  | Split vertically current window in two.                                 |                                                                                                                        |
 | :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. |                                                                                                                        |
 | :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   |                                                                                                                        |
 

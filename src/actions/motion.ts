@@ -16,6 +16,7 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
+import { ReportSearch } from '../util/statusBarTextUtils';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -473,13 +474,19 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
+    let nextMatch: {
+      pos: Position;
+      index: number;
+    };
     if (position.getRight().isEqual(position.getLineEnd())) {
-      return searchState.getNextSearchMatchPosition(position.getRight()).pos;
+      nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
+    } else {
+      nextMatch = searchState.getNextSearchMatchPosition(position);
     }
 
-    // Turn one of the highlighting flags back on (turned off with :nohl)
+    ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
-    return searchState.getNextSearchMatchPosition(position).pos;
+    return nextMatch.pos;
   }
 }
 
@@ -498,7 +505,11 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
-    return searchState.getNextSearchMatchPosition(position, -1).pos;
+    const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+
+    ReportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+
+    return prevMatch.pos;
   }
 }
 
@@ -815,7 +826,7 @@ class MoveRepeatReversed extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  keys = [['$'], ['<end>'], ['<D-right>']];
+  keys = [['$'], ['<End>'], ['<D-right>']];
   setsDesiredColumnToEOL = true;
 
   public async execActionWithCount(
@@ -829,7 +840,7 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  keys = [['0'], ['<home>'], ['<D-left>']];
+  keys = [['0'], ['<Home>'], ['<D-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();
