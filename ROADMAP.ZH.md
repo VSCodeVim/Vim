@@ -129,36 +129,36 @@
 | :white_check_mark: :star: | :1234: `?{pattern}[?[offset]]<CR>` | 向后搜索{pattern}的第 N 次出现 | 当前仅支持 JavaScript 的正则引擎，不支持 Vim 的内置正则引擎 |
 | :warning:                 | :1234: `/<CR>`                     | 向前重复最后一次搜索           | 不支持数量参数                                              |
 | :warning:                 | :1234: `?<CR>`                     | 向后重复最后一次搜索           | 不支持数量参数                                              |
-| :warning:                 | :1234: n                           | 重复上一次搜索                 | 不支持数量参数                                              |
-| :warning:                 | :1234: N                           | 反方向重复上一次搜索           | 不支持数量参数                                              |
+| :white_check_mark:        | :1234: n                           | 重复上一次搜索                 |                                                             |
+| :white_check_mark:        | :1234: N                           | 反方向重复上一次搜索           |                                                             |
 | :white_check_mark:        | :1234: \*                          | 向前搜索当前光标所处的单词     |                                                             |
 | :white_check_mark:        | :1234: #                           | 向后搜索当前光标所处的单词     |                                                             |
-| :arrow_down:              | :1234: g\*                         | 类似于 "\*", 执行部分匹配      |                                                             |
-| :arrow_down:              | :1234: g#                          | 类似于 "#", 执行部分匹配       |                                                             |
+| :white_check_mark:        | :1234: g\*                         | 类似于 "\*", 执行部分匹配      |                                                             |
+| :white_check_mark:        | :1234: g#                          | 类似于 "#", 执行部分匹配       |                                                             |
 | :white_check_mark:        | gd                                 | 跳转到当前光标所处标识的声明处 |                                                             |
 | :arrow_down:              | gD                                 | 跳转到当前光标所处标识的声明处 |                                                             |
 
 ## 标记定位
 
-| 状态               | 命令                                      | 描述                                                   |
-| ------------------ | ----------------------------------------- | ------------------------------------------------------ |
-| :white_check_mark: | m{a-zA-Z}                                 | 使用{a-zA-Z}标记当前位置                               |
-| :white_check_mark: | `{a-z} | 跳转到当文件中的{a-z}标记处      |
-| :white_check_mark: | `{A-Z} | 跳转到任意文件中的{A-Z}          |
-| :white_check_mark: | `{0-9} | 跳转到 Vim 上次退出时的位置      |
-| :white_check_mark: | `` | 跳转到 Vim 最后一次跳转之前的位置    |
-| :arrow_down:       | `" | 跳转到当前文件中最后一次编辑的位置   |
-| :arrow_down:       | `[ | 跳转到上一次操作或输入文本的开始位置 |
-| :arrow_down:       | `] | 跳转到上一次操作或输入文本的结束位置 |
-| :arrow_down:       | `< | 跳转到(上一个)可视区开始             |
-| :arrow_down:       | `> | 跳转到(上一个)可视区末尾             |
-| :white_check_mark: | `. | 跳转到此文件的最后一次修改处         |
-| :white_check_mark: | '.                                        | 跳转到此文件的最后一次修改处                           |
-| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                       | 与`命令的意义相同,除了会定位到所在行的第一个非空白字符 |
-| :arrow_down:       | :marks                                    | 打印当前活动的标记                                     |
-| :arrow_down:       | :1234: CTRL-O                             | 跳转到跳转列表的第 N 个旧位置                          |
-| :arrow_down:       | :1234: CTRL-I                             | 跳转到跳转列表的第 N 个新位置                          |
-| :arrow_down:       | :ju[mps]                                  | 打印跳转列表                                           |
+| 状态               | 命令                | 描述                                                   |
+| ------------------ | ------------------- | ------------------------------------------------------ |
+| :white_check_mark: | m{a-zA-Z}           | 使用{a-zA-Z}标记当前位置                               |
+| :white_check_mark: | `{a-z}              | 跳转到当文件中的{a-z}标记处                            |
+| :white_check_mark: | `{A-Z}              | 跳转到任意文件中的{A-Z}                                |
+| :white_check_mark: | `{0-9}              | 跳转到 Vim 上次退出时的位置                            |
+| :white_check_mark: | ``                  | 跳转到 Vim 最后一次跳转之前的位置                      |
+| :arrow_down:       | `"                  | 跳转到当前文件中最后一次编辑的位置                     |
+| :arrow_down:       | `[                  | 跳转到上一次操作或输入文本的开始位置                   |
+| :arrow_down:       | `]                  | 跳转到上一次操作或输入文本的结束位置                   |
+| :arrow_down:       | `<                  | 跳转到(上一个)可视区开始                               |
+| :arrow_down:       | `>                  | 跳转到(上一个)可视区末尾                               |
+| :white_check_mark: | `.                  | 跳转到此文件的最后一次修改处                           |
+| :white_check_mark: | '.                  | 跳转到此文件的最后一次修改处                           |
+| :arrow_down:       | '{a-zA-Z0-9[]'"<>.} | 与`命令的意义相同,除了会定位到所在行的第一个非空白字符 |
+| :arrow_down:       | :marks              | 打印当前活动的标记                                     |
+| :white_check_mark: | :1234: CTRL-O       | 跳转到跳转列表的第 N 个旧位置                          |
+| :white_check_mark: | :1234: CTRL-I       | 跳转到跳转列表的第 N 个新位置                          |
+| :arrow_down:       | :ju[mps]            | 打印跳转列表                                           |
 
 ## 其它移动方式
 
@@ -285,10 +285,10 @@
 
 ## 导向图
 
-| 状态         | 命令                                    | 描述               |
-| ------------ | --------------------------------------- | ------------------ |
-| :arrow_down: | :dig[raphs]                             | 显示当前导向图列表 |
-| :arrow_down: | :dig[raphs] {char1}{char2} {number} ... | 添加新的导向图     |
+| 状态               | 命令                                    | 描述                   |
+| ------------------ | --------------------------------------- | ---------------------- |
+| :white_check_mark: | :dig[raphs]                             | 显示当前导向图列表     |
+| :arrow_down:       | :dig[raphs] {char1}{char2} {number} ... | 向列表中添加新的导向图 |
 
 ## 插入特殊内容
 
@@ -316,26 +316,22 @@
 
 ## 文本复制和移动
 
-注意:
-
-- 不支持只读寄存器
-
-| 状态               | 命令             | 描述                                             | 备注             |
-| ------------------ | ---------------- | ------------------------------------------------ | ---------------- |
-| :warning:          | "{char}          | 使用寄存器中的{char}进行下一次的删除、复制或粘贴 | 不支持只读寄存器 |
-| :white_check_mark: | "\*              | 使用寄存器`*`访问系统剪贴板                      |                  |
-| :white_check_mark: | :reg             | 显示寄存器中的所有内容                           |                  |
-| :white_check_mark: | :reg {arg}       | 显示寄存器中{arg}的内容                          |                  |
-| :white_check_mark: | :1234: y{motion} | 把 {motion} 过程覆盖的文本放入寄存器             |                  |
-| :white_check_mark: | {visual}y        | 把高亮文本放入寄存器                             |                  |
-| :white_check_mark: | :1234: yy        | 把当前行开始的 N 行放入寄存器(包含当前行)        |                  |
-| :white_check_mark: | :1234: Y         | 把当前行开始的 N 行放入寄存器(包含当前行)        |                  |
-| :white_check_mark: | :1234: p         | 把寄存器中的内容放置到光标后方(执行 N 次)        |                  |
-| :white_check_mark: | :1234: P         | 把寄存器中的内容放置到光标前方(执行 N 次)        |                  |
-| :white_check_mark: | :1234: ]p        | 类似于 p,但是会调整当前行的缩进                  |                  |
-| :white_check_mark: | :1234: [p        | 类似于 p,但是会调整当前行的缩进                  |                  |
-| :white_check_mark: | :1234: gp        | 类似于 p,但是会在新的文本后留下光标              |                  |
-| :white_check_mark: | :1234: gP        | 类似于 p,但是会在新的文本后留下光标              |                  |
+| 状态               | 命令             | 描述                                             |
+| ------------------ | ---------------- | ------------------------------------------------ |
+| :white_check_mark: | "{char}          | 使用寄存器中的{char}进行下一次的删除、复制或粘贴 |
+| :white_check_mark: | "\*              | 使用寄存器`*`访问系统剪贴板                      |
+| :white_check_mark: | :reg             | 显示寄存器中的所有内容                           |
+| :white_check_mark: | :reg {arg}       | 显示寄存器中{arg}的内容                          |
+| :white_check_mark: | :1234: y{motion} | 把 {motion} 过程覆盖的文本放入寄存器             |
+| :white_check_mark: | {visual}y        | 把高亮文本放入寄存器                             |
+| :white_check_mark: | :1234: yy        | 把当前行开始的 N 行放入寄存器(包含当前行)        |
+| :white_check_mark: | :1234: Y         | 把当前行开始的 N 行放入寄存器(包含当前行)        |
+| :white_check_mark: | :1234: p         | 把寄存器中的内容放置到光标后方(执行 N 次)        |
+| :white_check_mark: | :1234: P         | 把寄存器中的内容放置到光标前方(执行 N 次)        |
+| :white_check_mark: | :1234: ]p        | 类似于 p,但是会调整当前行的缩进                  |
+| :white_check_mark: | :1234: [p        | 类似于 p,但是会调整当前行的缩进                  |
+| :white_check_mark: | :1234: gp        | 类似于 p,但是会在新的文本后留下光标              |
+| :white_check_mark: | :1234: gP        | 类似于 p,但是会在新的文本后留下光标              |
 
 ## 修改文本
 
@@ -347,7 +343,7 @@
 | :arrow_down:              | :1234: gR       | 进入可视替换模式: 和替换模式类似，但不会影响布局 |               |
 | :white_check_mark:        | {visual}r{char} | 在可视模式中把所有选中的文本替换成{char}         |               |
 
-(以下命令为删除文本同时进行插入模式)
+(以下命令为删除文本同时进入插入模式)
 
 | 状态               | 命令                    | 描述                                                |
 | ------------------ | ----------------------- | --------------------------------------------------- |
@@ -362,6 +358,8 @@
 | :white_check_mark: | {visual}~               | 在可视模式下:切换选中内容的大小写状态               |
 | :white_check_mark: | {visual}u               | 在可视模式下:将选中的内容切换为小写                 |
 | :white_check_mark: | {visual}U               | 在可视模式下:将选中的内容切换为大写                 |
+| :white_check_mark: | {visual}gu              | 在可视模式下:将选中的内容切换为小写                 |
+| :white_check_mark: | {visual}gU              | 在可视模式下:将选中的内容切换为大写                 |
 | :white_check_mark: | g~{motion}              | 切换移动命令{motion}经过文本的大小写状态            |
 | :white_check_mark: | gu{motion}              | 将移动命令{motion}经过的文本切换为小写              |
 | :white_check_mark: | gU{motion}              | 将移动命令{motion}经过的文本切换为大写              |
@@ -387,7 +385,7 @@
 | :arrow_down:                        | `{visual}!{command}<CR>`                       | 通过{command}过滤高亮行                                                             |                                               |
 | :arrow_down:                        | `:[range]! {command}<CR>`                      | 通过{command}过滤[range]行                                                          |                                               |
 | :white_check_mark:                  | :1234: ={motion}                               | 过滤通过'equalprg'移动的行                                                          |                                               |
-| :arrow_down:                        | :1234: ==                                      | 通过'equalprg'过滤 N 行                                                             |                                               |
+| :white_check_mark:                  | :1234: ==                                      | 通过 ' 过滤 N 行                                                                    |                                               |
 | :white_check_mark:                  | {visual}=                                      | 通过'equalprg'过滤高亮行                                                            |                                               |
 | :white_check_mark: :star: :warning: | :[range]s[ubstitute]/{pattern}/{string}/[g][c] | 在[range]行中用{string}替换{pattern};用[g]替换所有出现的{pattern};[c]，确认每次更换 | 当前只支持 JavaScript 的正则;仅实现了'gi'选项 |
 | :arrow_down:                        | :[range]s[ubstitute][g][c]                     | 使用新的范围和选项重复上一个":s"                                                    |                                               |
@@ -399,7 +397,7 @@
 | 状态               | 命令   | 描述                                    |
 | ------------------ | ------ | --------------------------------------- |
 | :white_check_mark: | v      | 从当前字符开始进入可视模式              |
-| :white_check_mark: | v      | 从当前行开始进入可视模式                |
+| :white_check_mark: | V      | 从当前行开始进入可视模式                |
 | :white_check_mark: | o      | 高亮文本开始与当前光标位置间切换        |
 | :white_check_mark: | gv     | 重新打开前一次的高亮区域                |
 | :white_check_mark: | v      | 从当前字符开始进入可视模式;退出高亮模式 |
@@ -408,32 +406,32 @@
 
 ## 文本对象 (仅在可视模式下有效)
 
-| 状态               | 命令                           | 描述                                           |
-| ------------------ | ------------------------------ | ---------------------------------------------- |
-| :white_check_mark: | :1234: aw                      | 选择一个单词                                   |
-| :white_check_mark: | :1234: iw                      | 选择一个内置单词                               |
-| :white_check_mark: | :1234: aW                      | 选择一个单词                                   |
-| :white_check_mark: | :1234: iW                      | 选择一个内置单词                               |
-| :white_check_mark: | :1234: as                      | 选择一个缓冲区                                 |
-| :white_check_mark: | :1234: is                      | 选择一个内置缓冲区                             |
-| :white_check_mark: | :1234: ap                      | 选择一个段落                                   |
-| :white_check_mark: | :1234: ip                      | 选择一个内置缓冲区                             |
-| :white_check_mark: | :1234: a], a[                  | 选择一个中括号区域                             |
-| :white_check_mark: | :1234: i], i[                  | 选择一个内置中括号区域                         |
-| :white_check_mark: | :1234: ab, a(, a)              | 选择从"[(" 到 "])"的区域                       |
-| :white_check_mark: | :1234: ib, i), i(              | 选择从"[(" 到 "])"的内置区域                   |
-| :white_check_mark: | :1234: a>, a<                  | 选择"<>"区域                                   |
-| :white_check_mark: | :1234: i>, i<                  | 选择"<>"的内部区域                             |
-| :white_check_mark: | :1234: aB, a{, a}              | 选择从"[{" 到 "})"的区域                       |
-| :white_check_mark: | :1234: iB, i{, i}              | 选择从"[{" 到 "})"的内置区域                   |
-| :white_check_mark: | :1234: at                      | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的区域     |
-| :white_check_mark: | :1234: it                      | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的内部区域 |
-| :white_check_mark: | :1234: a'                      | 选择单引号区域                                 |
-| :white_check_mark: | :1234: i'                      | 选择单引号内置区域                             |
-| :white_check_mark: | :1234: a"                      | 选择双引号区域                                 |
-| :white_check_mark: | :1234: i"                      | 选择双引号内置区域                             |
-| :white_check_mark: | :1234: a` | 选择反引号区域     |
-| :white_check_mark: | :1234: i` | 选择反引号内置区域 |
+| 状态               | 命令              | 描述                                           |
+| ------------------ | ----------------- | ---------------------------------------------- |
+| :white_check_mark: | :1234: aw         | 选择一个单词                                   |
+| :white_check_mark: | :1234: iw         | 选择一个内置单词                               |
+| :white_check_mark: | :1234: aW         | 选择一个单词                                   |
+| :white_check_mark: | :1234: iW         | 选择一个内置单词                               |
+| :white_check_mark: | :1234: as         | 选择一个缓冲区                                 |
+| :white_check_mark: | :1234: is         | 选择一个内置缓冲区                             |
+| :white_check_mark: | :1234: ap         | 选择一个段落                                   |
+| :white_check_mark: | :1234: ip         | 选择一个内置缓冲区                             |
+| :white_check_mark: | :1234: a], a[     | 选择一个中括号区域                             |
+| :white_check_mark: | :1234: i], i[     | 选择一个内置中括号区域                         |
+| :white_check_mark: | :1234: ab, a(, a) | 选择从"[(" 到 "])"的区域                       |
+| :white_check_mark: | :1234: ib, i), i( | 选择从"[(" 到 "])"的内置区域                   |
+| :white_check_mark: | :1234: a>, a<     | 选择"<>"区域                                   |
+| :white_check_mark: | :1234: i>, i<     | 选择"<>"的内部区域                             |
+| :white_check_mark: | :1234: aB, a{, a} | 选择从"[{" 到 "})"的区域                       |
+| :white_check_mark: | :1234: iB, i{, i} | 选择从"[{" 到 "})"的内置区域                   |
+| :white_check_mark: | :1234: at         | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的区域     |
+| :white_check_mark: | :1234: it         | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的内部区域 |
+| :white_check_mark: | :1234: a'         | 选择单引号区域                                 |
+| :white_check_mark: | :1234: i'         | 选择单引号内置区域                             |
+| :white_check_mark: | :1234: a"         | 选择双引号区域                                 |
+| :white_check_mark: | :1234: i"         | 选择双引号内置区域                             |
+| :white_check_mark: | :1234: a`         | 选择反引号区域                                 |
+| :white_check_mark: | :1234: i`         | 选择反引号内置区域                             |
 
 ## 重复性命令
 
@@ -534,6 +532,8 @@
 | :white_check_mark: :star: | &lt;ctrl-w&gt; hl | 在窗口间进行切换                                  | 由于在 VSCode 中没有 Window 的概念，这些命令被映射成在分组编辑器之间切换 |
 | :white_check_mark:        | :sp {file}        | 切分当前窗口                                      |                                                                          |
 | :white_check_mark: :star: | :vsp {file}       | 将当前窗口在垂直切分                              |                                                                          |
+| :white_check_mark:        | &lt;ctrl-w&gt; s  | 将当前窗口一分为二                                |                                                                          |
+| :white_check_mark: :star: | &lt;ctrl-w&gt; v  | 垂直方向上将当前窗口一分为二                      |
 | :white_check_mark:        | :new              | 水平方向上创建一个新的窗口,同时开始编辑一个空文件 |                                                                          |
 | :white_check_mark: :star: | :vne[w]           | 垂直方向上创建一个新的窗口,同时开始编辑一个空文件 |                                                                          |
 
