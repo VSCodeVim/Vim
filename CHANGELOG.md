@@ -1,5 +1,38 @@
 # Change Log
 
+## [v1.8.1](https://github.com/vscodevim/vim/tree/v1.8.1) (2019-05-22)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.8.0...v1.8.1)
+
+**Enhancements:**
+
+- Make \<c-u\> go to the top of the page [\#3083](https://github.com/VSCodeVim/Vim/issues/3083)
+
+**Fixed Bugs:**
+
+- Vim extension UI "blocks" on remote development save [\#3777](https://github.com/VSCodeVim/Vim/issues/3777)
+- Cancelling a search should not undo :noh [\#3748](https://github.com/VSCodeVim/Vim/issues/3748)
+- \<C-c\> and \<C-\[\> don't cancel search [\#3668](https://github.com/VSCodeVim/Vim/issues/3668)
+- \<C-u\>/\<C-b\> don't move cursor if the first line is visible [\#3648](https://github.com/VSCodeVim/Vim/issues/3648)
+- vim.statusBarColors.normal reports type error [\#3607](https://github.com/VSCodeVim/Vim/issues/3607)
+
+**Closed issues:**
+
+- Copy inside of words after typing ci" [\#3758](https://github.com/VSCodeVim/Vim/issues/3758)
+
+**Merged pull requests:**
+
+- Update dependency @types/lodash to v4.14.130 [\#3784](https://github.com/VSCodeVim/Vim/pull/3784) ([renovate[bot]](https://github.com/apps/renovate))
+- Update ROADMAP.ZH.md [\#3782](https://github.com/VSCodeVim/Vim/pull/3782) ([sxlwar](https://github.com/sxlwar))
+- Make the write command non-blocking on remote files [\#3778](https://github.com/VSCodeVim/Vim/pull/3778) ([suo](https://github.com/suo))
+- Fix MoveHalfPageUp \(\<C-u\>\) when first line is visible. [\#3776](https://github.com/VSCodeVim/Vim/pull/3776) ([faldah](https://github.com/faldah))
+- Update dependency @types/lodash to v4.14.129 [\#3771](https://github.com/VSCodeVim/Vim/pull/3771) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.127 [\#3770](https://github.com/VSCodeVim/Vim/pull/3770) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix statusBarColors linting in vscode user settings. [\#3767](https://github.com/VSCodeVim/Vim/pull/3767) ([faldah](https://github.com/faldah))
+- Update dependency prettier to v1.17.1 [\#3765](https://github.com/VSCodeVim/Vim/pull/3765) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.126 [\#3755](https://github.com/VSCodeVim/Vim/pull/3755) ([renovate[bot]](https://github.com/apps/renovate))
+- Make sure :noh disables hlsearch until the next search is done [\#3749](https://github.com/VSCodeVim/Vim/pull/3749) ([J-Fields](https://github.com/J-Fields))
+
 ## [v1.8.0](https://github.com/vscodevim/vim/tree/v1.8.0) (2019-05-10)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.7.1...v1.8.0)
