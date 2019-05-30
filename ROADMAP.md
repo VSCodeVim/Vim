@@ -392,7 +392,6 @@ moving around:
 | :white_check_mark: | o       | exchange cursor position with start of highlighting |
 | :white_check_mark: | gv      | start highlighting on previous visual area          |
 
-
 ## Text objects (only in Visual mode or after an operator)
 
 | Status             | Command                                           | Description                                                 |
