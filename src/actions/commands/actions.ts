@@ -1713,35 +1713,43 @@ export class PutCommandVisual extends BaseCommand {
     }
 
     // If the to be inserted text is linewise we have a seperate logic delete the
-    // selection first than insert
+    // selection first then insert
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
+      const replaceRegisterName = vimState.recordedState.registerName;
+      const replaceRegister = await Register.getByKey(replaceRegisterName);
+      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         true
       );
-      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
-      Register.putByKey(
-        replaceRegister.text,
-        vimState.recordedState.registerName,
-        replaceRegister.registerMode
-      );
-      // to ensure, that the put command nows this is
+      const deletedRegisterName = vimState.recordedState.registerName;
+      const deletedRegister = await Register.getByKey(deletedRegisterName);
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          replaceRegister.text,
+          replaceRegisterName,
+          replaceRegister.registerMode
+        );
+      }
+      // to ensure, that the put command knows this is
       // an linewise register insertion in visual mode of
       // characterwise, linewise
       let resultMode = deleteResult.currentMode;
       await deleteResult.setCurrentMode(oldMode);
+      vimState.recordedState.registerName = replaceRegisterName;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       await deleteResult.setCurrentMode(resultMode);
-      Register.putByKey(
-        deletedRegister.text,
-        vimState.recordedState.registerName,
-        deletedRegister.registerMode
-      );
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          deletedRegister.text,
+          deletedRegisterName,
+          deletedRegister.registerMode
+        );
+      }
       return deleteResult;
     }
 
