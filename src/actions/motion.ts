@@ -905,7 +905,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByScreenLine extends MoveByScreenLine {
+export class MoveUpByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -914,7 +914,7 @@ export class MoveUpByScreenLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLine {
+class MoveDownByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
@@ -928,7 +928,7 @@ class MoveDownByScreenLine extends MoveByScreenLine {
 // and moving by screen line just snaps us back to the original position.
 // Check PR #1600 for discussion.
 @RegisterAction
-class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
+class MoveUpByScreenLineVisualLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.VisualLine];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -937,7 +937,7 @@ class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
+class MoveDownByScreenLineVisualLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.VisualLine];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
