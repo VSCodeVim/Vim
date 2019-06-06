@@ -748,7 +748,7 @@
     "minimist": "1.2.0",
     "mocha": "6.1.4",
     "plugin-error": "1.0.1",
-    "prettier": "1.17.1",
+    "prettier": "1.18.0",
     "sinon": "7.3.2",
     "tslint": "5.17.0",
     "typescript": "3.5.1",
