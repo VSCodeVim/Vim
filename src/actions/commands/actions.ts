@@ -1422,7 +1422,7 @@ export class PutCommand extends BaseCommand {
     const noPrevLine = vimState.cursorStartPosition.isAtDocumentBegin();
     const noNextLine = vimState.cursorStopPosition.isAtDocumentEnd();
 
-    if (register.registerMode === RegisterMode.CharacterWise) {
+    if (register.registerMode === RegisterMode.CharacterWise && text[text.length - 1] !== '\n') {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
@@ -1468,6 +1468,15 @@ export class PutCommand extends BaseCommand {
           whereToAddText = dest.getLineBegin();
         } else {
           textToAdd = '\n' + text;
+          whereToAddText = dest.getLineEnd();
+        }
+      } else if (text[text.length - 1] === '\n') {
+        // Text yanked with a trailing newline behaves just like linewise.
+        if (after) {
+          textToAdd = text;
+          whereToAddText = dest.getLineBegin();
+        } else {
+          textToAdd = '\n' + text.substring(0, text.length - 1);
           whereToAddText = dest.getLineEnd();
         }
       } else {
