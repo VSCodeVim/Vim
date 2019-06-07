@@ -523,6 +523,8 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
     // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
       firstValidLineNumber,
@@ -560,19 +562,9 @@ abstract class IndentObjectMatch extends TextObjectMovement {
       startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0))
         .firstNonWhitespaceCharacterIndex;
     }
-    // TextEditor.getLineMaxColumn throws when given line 0, which we don't
-    // care about here since it just means this text object wouldn't work on a
-    // single-line document.
-    let endCharacter;
-    if (
-      endLineNumber === TextEditor.getLineCount() - 1 ||
-      vimState.currentMode === ModeName.Visual
-    ) {
-      endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
-    } else {
-      endCharacter = 0;
-      endLineNumber++;
-    }
+
+    let endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
+
     return {
       start: new Position(startLineNumber, startCharacter),
       stop: new Position(endLineNumber, endCharacter),
