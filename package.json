@@ -737,7 +737,7 @@
     "@types/lodash": "4.14.134",
     "@types/mocha": "5.2.7",
     "@types/node": "10.12.27",
-    "@types/sinon": "7.0.12",
+    "@types/sinon": "7.0.13",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
