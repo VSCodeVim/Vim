@@ -17,6 +17,10 @@ export class Configuration implements IConfiguration {
   autoindent = true;
   camelCaseMotion = {
     enable: false,
+    endKeys: ['<leader>', 'e'],
+    wordKeys: ['<leader>', 'w'],
+    backKeys: ['<leader>', 'b'],
+    selectInnerWordKeys: ['i', '<leader>', 'w'],
   };
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;

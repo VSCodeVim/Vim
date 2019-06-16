@@ -64,6 +64,10 @@ export interface ICamelCaseMotionConfiguration {
    * Enable CamelCaseMotion plugin or not
    */
   enable: boolean;
+  endKeys: string[];
+  wordKeys: string[];
+  backKeys: string[];
+  selectInnerWordKeys: string[];
 }
 
 export interface IConfiguration {

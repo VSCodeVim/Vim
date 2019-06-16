@@ -177,6 +177,10 @@ class Configuration implements IConfiguration {
 
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
+    endKeys: ['<leader>', 'e'],
+    wordKeys: ['<leader>', 'w'],
+    backKeys: ['<leader>', 'b'],
+    selectInnerWordKeys: ['i', '<leader>', 'w'],
   };
 
   sneak = false;

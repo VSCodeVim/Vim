@@ -31,7 +31,7 @@ class CamelCaseTextObjectMovement extends TextObjectMovement {
 // based off of `MoveWordBegin`
 @RegisterAction
 class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'w'];
+  keys = configuration.camelCaseMotion.wordKeys || ['<leader>', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
@@ -51,7 +51,7 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
 // based off of `MoveWordEnd`
 @RegisterAction
 class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'e'];
+  keys = configuration.camelCaseMotion.endKeys || ['<leader>', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentCamelCaseWordEnd();
@@ -67,7 +67,7 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
 // based off of `MoveBeginningWord`
 @RegisterAction
 class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'b'];
+  keys = configuration.camelCaseMotion.backKeys || ['<leader>', 'b'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCamelCaseWordLeft();
@@ -78,7 +78,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 @RegisterAction
 export class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ['i', '<leader>', 'w'];
+  keys = configuration.camelCaseMotion.selectInnerWordKeys || ['i', '<leader>', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
