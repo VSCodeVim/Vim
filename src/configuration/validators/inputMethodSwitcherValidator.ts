@@ -30,9 +30,7 @@ export class InputMethodSwitcherConfigurationValidator implements IConfiguration
     } else if (!(await promisify(exists)(this.getRawCmd(inputMethodConfig.obtainIMCmd)))) {
       result.append({
         level: 'error',
-        message: `Unable to find ${
-          inputMethodConfig.obtainIMCmd
-        }. Check your 'vim.autoSwitchInputMethod.obtainIMCmd' in VSCode setting.`,
+        message: `Unable to find ${inputMethodConfig.obtainIMCmd}. Check your 'vim.autoSwitchInputMethod.obtainIMCmd' in VSCode setting.`,
       });
     }
 
@@ -44,9 +42,7 @@ export class InputMethodSwitcherConfigurationValidator implements IConfiguration
     } else if (!(await promisify(exists)(this.getRawCmd(inputMethodConfig.switchIMCmd)))) {
       result.append({
         level: 'error',
-        message: `Unable to find ${
-          inputMethodConfig.switchIMCmd
-        }. Check your 'vim.autoSwitchInputMethod.switchIMCmd' in VSCode setting.`,
+        message: `Unable to find ${inputMethodConfig.switchIMCmd}. Check your 'vim.autoSwitchInputMethod.switchIMCmd' in VSCode setting.`,
       });
     }
 
