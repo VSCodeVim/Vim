@@ -7,33 +7,27 @@ import { VimState } from '../src/state/vimState';
 import { Position } from '../src/common/motion/position';
 import { TextEditor } from '../src/textEditor';
 
-
 suite('historyTracker unit tests', () => {
   let sandbox: sinon.SinonSandbox;
   let historyTracker: HistoryTracker;
   let activeTextEditor: TextEditor;
 
-  const retrieveLocalMark = (markName: string): IMark | undefined => (
-    historyTracker.getLocalMarks()
-      .find(mark => mark.name === markName));
+  const retrieveLocalMark = (markName: string): IMark | undefined =>
+    historyTracker.getLocalMarks().find(mark => mark.name === markName);
 
-  const retrieveFileMark = (markName: string): IMark | undefined => (
-    historyTracker.getFileMarks()
-      .find(mark => mark.name === markName));
+  const retrieveFileMark = (markName: string): IMark | undefined =>
+    historyTracker.getFileMarks().find(mark => mark.name === markName);
 
-  const setupVimState = () => (
-    <VimState><any>sandbox.createStubInstance(VimState));
+  const setupVimState = () => <VimState>(<any>sandbox.createStubInstance(VimState));
 
-  const setupHistoryTracker = (vimState = setupVimState()) => (
-    new HistoryTracker(vimState));
+  const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
   const setupVsCode = () => {
     activeTextEditor = sandbox.createStubInstance<TextEditor>(TextEditor);
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
-  const buildMockPosition = (): Position => (
-    <any>sandbox.createStubInstance(Position));
+  const buildMockPosition = (): Position => <any>sandbox.createStubInstance(Position);
 
   setup(() => {
     sandbox = sinon.createSandbox();
