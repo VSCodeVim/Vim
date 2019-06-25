@@ -3,7 +3,14 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import {
+  assertEqual,
+  assertEqualLines,
+  cleanUpWorkspace,
+  setupWorkspace,
+  reloadConfiguration,
+} from './../testUtils';
+import { Globals } from '../../src/globals';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
@@ -18,7 +25,7 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<insert>'];
+    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
     for (let key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
@@ -324,5 +331,35 @@ suite('Mode Insert', () => {
     start: ['|foobar'],
     keysPressed: '5Ofun<Esc>',
     end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar'],
+  });
+
+  test('Can handle digraph insert', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      't',
+      'e',
+      'x',
+      't',
+      '<C-k>',
+      '-',
+      '>',
+      't',
+      'e',
+      'x',
+      't',
+      '<C-k>',
+      '>',
+      '-',
+    ]);
+    assertEqualLines(['text→text→']);
+  });
+
+  test('Can handle custom digraph insert', async () => {
+    Globals.mockConfiguration.digraphs = {
+      'R!': ['🚀', [55357, 56960]],
+    };
+    await reloadConfiguration();
+    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
+    assertEqualLines(['🚀🚀']);
   });
 });

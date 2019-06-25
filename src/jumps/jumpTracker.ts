@@ -7,6 +7,7 @@ import { Position } from './../common/motion/position';
 import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
+import { getCursorsAfterSync } from '../util/util';
 
 /**
  * JumpTracker is a handrolled version of vscode's TextEditorState
@@ -183,8 +184,9 @@ export class JumpTracker {
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);
+      vimState.cursors = await getCursorsAfterSync();
     } else {
-      vimState.cursorPosition = jump.position;
+      vimState.cursorStopPosition = jump.position;
     }
 
     return vimState;

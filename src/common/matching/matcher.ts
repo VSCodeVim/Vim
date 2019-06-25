@@ -50,7 +50,7 @@ export class PairMatcher {
     let cursorChar = TextEditor.getCharAt(position);
     if (vimState) {
       let startPos = vimState.cursorStartPosition;
-      let endPos = vimState.cursorPosition;
+      let endPos = vimState.cursorStopPosition;
       if (startPos.isEqual(endPos) && cursorChar === charToFind) {
         return position;
       }

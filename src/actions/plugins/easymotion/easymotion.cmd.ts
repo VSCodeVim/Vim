@@ -88,7 +88,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
           // Only one found, navigate to it
           const marker = vimState.easyMotion.markers[0];
           // Set cursor position based on marker entered
-          vimState.cursorPosition = marker.position;
+          vimState.cursorStopPosition = marker.position;
           vimState.easyMotion.clearDecorations();
           return vimState;
         } else {
@@ -351,7 +351,7 @@ class EasyMotionCharInputMode extends BaseCommand {
     if (action.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it
       await vimState.setCurrentMode(vimState.easyMotion.previousMode);
-      const state = await action.fire(vimState.cursorPosition, vimState);
+      const state = await action.fire(vimState.cursorStopPosition, vimState);
       return state;
     }
     return vimState;
@@ -393,7 +393,7 @@ class MoveEasyMotion extends BaseCommand {
         vimState.easyMotion.previousMode === ModeName.VisualBlock
       ) {
         vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
-        vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+        vimState.cursorStopPosition = vimState.lastVisualSelectionEnd;
       }
 
       if (markers.length === 1) {
@@ -405,7 +405,7 @@ class MoveEasyMotion extends BaseCommand {
         await vimState.setCurrentMode(vimState.easyMotion.previousMode);
 
         // Set cursor position based on marker entered
-        vimState.cursorPosition = marker.position;
+        vimState.cursorStopPosition = marker.position;
 
         return vimState;
       } else {

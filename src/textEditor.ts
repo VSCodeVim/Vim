@@ -230,8 +230,7 @@ export class TextEditor {
 
   static getPositionAt(offset: number): Position {
     const pos = vscode.window.activeTextEditor!.document.positionAt(offset);
-
-    return new Position(pos.line, pos.character);
+    return Position.FromVSCodePosition(pos);
   }
 
   static getOffsetAt(position: Position): number {

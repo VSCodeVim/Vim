@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { Logger } from './util/logger';
 
 interface IEnqueuedTask {
   promise: () => Promise<void>;
@@ -8,7 +9,8 @@ interface IEnqueuedTask {
 }
 
 class TaskQueue {
-  private _taskQueue: {
+  private readonly _logger = Logger.get('TaskQueue');
+  private readonly _taskQueue: {
     [key: string]: {
       tasks: IEnqueuedTask[];
     };
@@ -37,7 +39,7 @@ class TaskQueue {
         await task.promise();
         task.isRunning = false;
       } catch (e) {
-        console.error(`TaskQueue: error running task. err=${e}.`);
+        this._logger.error(`Error running task. ${e.message}.`);
       } finally {
         this.dequeueTask(task);
       }

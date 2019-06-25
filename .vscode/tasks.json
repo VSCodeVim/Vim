@@ -12,6 +12,11 @@
       "type": "gulp",
       "task": "default",
       "problemMatcher": "$tsc-watch"
+    },
+    {
+      "type": "gulp",
+      "task": "build",
+      "problemMatcher": []
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { parseCloseCommandArgs } from './subparsers/close';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
+import { parseDigraphCommandArgs } from './subparsers/digraph';
 import * as fileCmd from './subparsers/file';
 import { parseNohlCommandArgs } from './subparsers/nohl';
 import { parseOnlyCommandArgs } from './subparsers/only';
@@ -14,6 +15,7 @@ import { parseWallCommandArgs } from './subparsers/wall';
 import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
+import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -99,7 +101,17 @@ export const commandParsers = {
 
   reg: parseRegisterCommandArgs,
 
+  dig: parseDigraphCommandArgs,
+  digr: parseDigraphCommandArgs,
+  digraph: parseDigraphCommandArgs,
+  digraphs: parseDigraphCommandArgs,
+
   d: parseDeleteRangeLinesCommandArgs,
 
   sort: parseSortCommandArgs,
+
+  f: parseFileInfoCommandArgs,
+  fi: parseFileInfoCommandArgs,
+  fil: parseFileInfoCommandArgs,
+  file: parseFileInfoCommandArgs,
 };

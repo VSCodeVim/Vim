@@ -8,16 +8,7 @@ class ModeHandlerMapImpl {
     let modeHandler = this.modeHandlerMap[key];
     if (!modeHandler) {
       isNew = true;
-      await new Promise((res, rej) => {
-        modeHandler = new ModeHandler(err => {
-          if (err) {
-            rej(err);
-            return;
-          }
-
-          res();
-        });
-      });
+      modeHandler = await ModeHandler.Create();
       this.modeHandlerMap[key] = modeHandler;
     }
     return [modeHandler, isNew];

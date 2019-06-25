@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+export type Digraph = [string, number | number[]];
+
 export interface IModeSpecificStrings<T> {
   normal: T | undefined;
   insert: T | undefined;
@@ -21,6 +23,7 @@ export interface IAutoSwitchInputMethod {
   switchIMCmd: string;
   obtainIMCmd: string;
 }
+
 export interface IDebugConfiguration {
   /**
    * Boolean indicating whether all logs should be suppressed
@@ -30,15 +33,37 @@ export interface IDebugConfiguration {
 
   /**
    * Maximum level of messages to show as VS Code information message
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevelForAlert: string;
+  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 
   /**
    * Maximum level of messages to log to console.
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevelForConsole: string;
+  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
+}
+
+export interface IHighlightedYankConfiguration {
+  /**
+   * Boolean indicating whether yank highlighting should be enabled.
+   */
+  enable: boolean;
+
+  /**
+   * Color of the yank highlight.
+   */
+  color: string;
+
+  /**
+   * Duration in milliseconds of the yank highlight.
+   */
+  duration: number;
+}
+
+export interface ICamelCaseMotionConfiguration {
+  /**
+   * Enable CamelCaseMotion plugin or not
+   */
+  enable: boolean;
 }
 
 export interface IConfiguration {
@@ -82,6 +107,11 @@ export interface IConfiguration {
    * Indent automatically?
    */
   autoindent: boolean;
+
+  /**
+   * CamelCaseMotion plugin options
+   */
+  camelCaseMotion: ICamelCaseMotionConfiguration;
 
   /**
    * Use EasyMotion plugin?
@@ -173,6 +203,11 @@ export interface IConfiguration {
   searchHighlightColor: string;
 
   /**
+   * Yank highlight settings.
+   */
+  highlightedyank: IHighlightedYankConfiguration;
+
+  /**
    * Size of a tab character.
    */
   tabstop: number;
@@ -197,6 +232,10 @@ export interface IConfiguration {
    */
   relativenumber: boolean;
 
+  /**
+   * keywords contain alphanumeric characters and '_'.
+   * If not configured `editor.wordSeparators` is used
+   */
   iskeyword: string;
 
   /**
@@ -252,8 +291,15 @@ export interface IConfiguration {
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
 
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+
   /**
-   *  emulate whichwrap
+   * Comma-separated list of motion keys that should wrap to next/previous line.
    */
   whichwrap: string;
 
@@ -263,4 +309,9 @@ export interface IConfiguration {
    * Threshold to report changed lines to status bar
    */
   report: number;
+
+  /**
+   * User-defined digraphs
+   */
+  digraphs: { [shortcut: string]: Digraph };
 }
