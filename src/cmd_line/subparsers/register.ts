@@ -1,15 +1,22 @@
-import * as node from '../commands/register';
+import { RegisterCommand } from '../commands/register';
 import { Scanner } from '../scanner';
 
-export function parseRegisterCommandArgs(args: string): node.RegisterCommand {
-  if (!args) {
-    return new node.RegisterCommand({});
+export function parseRegisterCommandArgs(args: string): RegisterCommand {
+  if (!args || !args.trim()) {
+    return new RegisterCommand({
+      registers: [],
+    });
   }
 
   let scanner = new Scanner(args);
-  let name = scanner.nextWord();
+  let regs: string[] = [];
+  let reg = scanner.nextWord();
+  while (reg !== Scanner.EOF) {
+    regs.push(reg);
+    reg = scanner.nextWord();
+  }
 
-  return new node.RegisterCommand({
-    arg: name,
+  return new RegisterCommand({
+    registers: regs,
   });
 }

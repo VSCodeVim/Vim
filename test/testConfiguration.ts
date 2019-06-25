@@ -15,6 +15,9 @@ export class Configuration implements IConfiguration {
   ignorecase = true;
   smartcase = true;
   autoindent = true;
+  camelCaseMotion = {
+    enable: false,
+  };
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   surround = true;
@@ -57,6 +60,11 @@ export class Configuration implements IConfiguration {
     loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  highlightedyank: {
+    enable: false;
+    color: 'rgba(250, 240, 170, 0.5)';
+    duration: 200;
+  };
   tabstop = 2;
   editorCursorStyle = vscode.TextEditorCursorStyle.Line;
   expandtab = true;
@@ -85,7 +93,14 @@ export class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   whichwrap = '';
   wrapKeys = {};
   report = 2;
+  digraphs: {};
 }

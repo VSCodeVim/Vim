@@ -11,6 +11,7 @@ import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
+import { IHighlightedYankConfiguration } from '../configuration/iconfiguration';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -100,6 +101,19 @@ export class BaseOperator extends BaseAction {
       position.getLineBegin(),
       position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
     );
+  }
+
+  public highlightYankedRanges(vimState: VimState, ranges: vscode.Range[]) {
+    if (!configuration.highlightedyank.enable) {
+      return;
+    }
+
+    const yankDecoration = vscode.window.createTextEditorDecorationType({
+      backgroundColor: configuration.highlightedyank.color,
+    });
+
+    vimState.editor.setDecorations(yankDecoration, ranges);
+    setTimeout(() => yankDecoration.dispose(), configuration.highlightedyank.duration);
   }
 }
 
@@ -234,7 +248,7 @@ export class DeleteOperatorVisual extends BaseOperator {
     // see special case in DeleteOperator.delete()
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -250,7 +264,7 @@ export class YankOperator extends BaseOperator {
     if (vimState.surround) {
       vimState.surround.range = new Range(start, end);
       await vimState.setCurrentMode(ModeName.SurroundInputMode);
-      vimState.cursorPosition = start;
+      vimState.cursorStopPosition = start;
       vimState.cursorStartPosition = start;
 
       return vimState;
@@ -261,24 +275,32 @@ export class YankOperator extends BaseOperator {
     if (end.isEarlierThan(start)) {
       [start, end] = [end, start];
     }
-    end = new Position(end.line, end.character + 1);
+    let extendedEnd = new Position(end.line, end.character + 1);
 
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
-      end = end.getLineEnd();
+      extendedEnd = extendedEnd.getLineEnd();
     }
 
-    let text = TextEditor.getText(new vscode.Range(start, end));
+    const range = new vscode.Range(start, extendedEnd);
+    let text = TextEditor.getText(range);
 
     // If we selected the newline character, add it as well.
     if (
       vimState.currentMode === ModeName.Visual &&
-      end.character === TextEditor.getLineAt(end).text.length + 1
+      extendedEnd.character === TextEditor.getLineAt(extendedEnd).text.length + 1
     ) {
       text = text + '\n';
     }
 
+    this.highlightYankedRanges(vimState, [range]);
+
     Register.put(text, vimState, this.multicursorIndex);
+
+    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) {
+      vimState.historyTracker.addMark(start, '<');
+      vimState.historyTracker.addMark(end, '>');
+    }
 
     await vimState.setCurrentMode(ModeName.Normal);
     vimState.cursorStartPosition = start;
@@ -292,11 +314,9 @@ export class YankOperator extends BaseOperator {
     }
 
     if (originalMode === ModeName.Normal && !moveCursor) {
-      vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(
-        x => new Range(x, x)
-      );
+      vimState.cursors = vimState.cursorsInitialState;
     } else {
-      vimState.cursorPosition = start;
+      vimState.cursorStopPosition = start;
     }
 
     const numLinesYanked = text.split('\n').length;
@@ -314,7 +334,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new YankOperator().run(vimState, start, end);
+    return new YankOperator().run(vimState, start, end);
   }
 }
 
@@ -324,7 +344,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -339,7 +359,7 @@ export class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new ChangeOperator().run(vimState, start, end);
+    return new ChangeOperator().run(vimState, start, end);
   }
 }
 
@@ -356,12 +376,12 @@ export class FormatOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.formatSelection');
     let line = vimState.cursorStartPosition.line;
 
-    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
-      line = vimState.cursorPosition.line;
+    if (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) {
+      line = vimState.cursorStopPosition.line;
     }
 
     let newCursorPosition = new Position(line, 0).getFirstLineNonBlankChar();
-    vimState.cursorPosition = newCursorPosition;
+    vimState.cursorStopPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
     return vimState;
@@ -370,7 +390,7 @@ export class FormatOperator extends BaseOperator {
 
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
-  public keys = ['U'];
+  public keys = [['g', 'U'], ['U']];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -380,7 +400,7 @@ export class UpperCaseOperator extends BaseOperator {
     await TextEditor.replace(range, text.toUpperCase());
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start;
+    vimState.cursorStopPosition = start;
 
     return vimState;
   }
@@ -388,13 +408,13 @@ export class UpperCaseOperator extends BaseOperator {
 
 @RegisterAction
 export class UpperCaseWithMotion extends UpperCaseOperator {
-  public keys = ['g', 'U'];
+  public keys = [['g', 'U']];
   public modes = [ModeName.Normal];
 }
 
 @RegisterAction
 class UpperCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['U'];
+  public keys = [['g', 'U'], ['U']];
   public modes = [ModeName.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
@@ -405,7 +425,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
 
@@ -415,7 +435,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 export class LowerCaseOperator extends BaseOperator {
-  public keys = ['u'];
+  public keys = [['g', 'u'], ['u']];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -425,7 +445,7 @@ export class LowerCaseOperator extends BaseOperator {
     await TextEditor.replace(range, text.toLowerCase());
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start;
+    vimState.cursorStopPosition = start;
 
     return vimState;
   }
@@ -433,13 +453,13 @@ export class LowerCaseOperator extends BaseOperator {
 
 @RegisterAction
 export class LowerCaseWithMotion extends LowerCaseOperator {
-  public keys = ['g', 'u'];
+  public keys = [['g', 'u']];
   public modes = [ModeName.Normal];
 }
 
 @RegisterAction
 class LowerCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['u'];
+  public keys = [['g', 'u'], ['u']];
   public modes = [ModeName.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
@@ -450,7 +470,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
 
@@ -469,7 +489,7 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
@@ -492,7 +512,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Repeating this command with dot should apply the indent to the previous selection
     if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
-      if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+      if (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -
           vimState.dotCommandPreviousVisualSelection.start.line;
@@ -509,7 +529,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
@@ -525,7 +545,7 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
@@ -542,7 +562,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Repeating this command with dot should apply the indent to the previous selection
     if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
-      if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+      if (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -
           vimState.dotCommandPreviousVisualSelection.start.line;
@@ -559,7 +579,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
@@ -596,7 +616,7 @@ export class ChangeOperator extends BaseOperator {
     await vimState.setCurrentMode(ModeName.Insert);
 
     if (isEndOfLine) {
-      vimState.cursorPosition = end.getRight();
+      vimState.cursorStopPosition = end.getRight();
     }
 
     return vimState;
@@ -645,20 +665,35 @@ export class YankVisualBlockMode extends BaseOperator {
     return false;
   }
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     let toCopy: string = '';
+    const ranges: vscode.Range[] = [];
 
-    for (const { line } of Position.IterateLine(vimState)) {
-      toCopy += line + '\n';
+    const isMultiline = startPos.line !== endPos.line;
+
+    for (const { line, start, end } of Position.IterateLine(vimState)) {
+      ranges.push(new vscode.Range(start, end));
+      if (isMultiline) {
+        toCopy += line + '\n';
+      } else {
+        toCopy = line;
+      }
     }
 
+    vimState.currentRegisterMode = RegisterMode.BlockWise;
+
+    this.highlightYankedRanges(vimState, ranges);
+
     Register.put(toCopy, vimState, this.multicursorIndex);
+
+    vimState.historyTracker.addMark(startPos, '<');
+    vimState.historyTracker.addMark(endPos, '>');
 
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start;
+    vimState.cursorStopPosition = startPos;
     return vimState;
   }
 }
@@ -674,7 +709,7 @@ export class ToggleCaseOperator extends BaseOperator {
     await ToggleCaseOperator.toggleCase(range);
 
     const cursorPosition = start.isBefore(end) ? start : end;
-    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
 
@@ -711,7 +746,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
 
@@ -734,7 +769,7 @@ export class CommentOperator extends BaseOperator {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand('editor.action.commentLine');
 
-    vimState.cursorPosition = new Position(start.line, 0);
+    vimState.cursorStopPosition = new Position(start.line, 0);
     await vimState.setCurrentMode(ModeName.Normal);
 
     return vimState;
@@ -751,7 +786,7 @@ export class CommentBlockOperator extends BaseOperator {
     vimState.editor.selection = new vscode.Selection(start, endPosition);
     await vscode.commands.executeCommand('editor.action.blockComment');
 
-    vimState.cursorPosition = start;
+    vimState.cursorStopPosition = start;
     await vimState.setCurrentMode(ModeName.Normal);
 
     return vimState;

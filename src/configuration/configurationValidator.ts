@@ -1,21 +1,35 @@
-import * as vscode from 'vscode';
+import { IConfiguration } from './iconfiguration';
+import { IConfigurationValidator, ValidatorResults } from './iconfigurationValidator';
+import { InputMethodSwitcherConfigurationValidator } from './validators/inputMethodSwitcherValidator';
+import { NeovimValidator } from './validators/neovimValidator';
+import { RemappingValidator } from './validators/remappingValidator';
 
 class ConfigurationValidator {
-  private map: Map<string, boolean>;
+  private _validators: IConfigurationValidator[];
 
-  public async initialize(): Promise<void> {
-    this.map = new Map(
-      (await vscode.commands.getCommands(true)).map(x => [x, true] as [string, boolean])
-    );
+  constructor() {
+    this._validators = [
+      new InputMethodSwitcherConfigurationValidator(),
+      new NeovimValidator(),
+      new RemappingValidator(),
+    ];
   }
 
-  public isCommandValid(command: string): boolean {
-    if (command.startsWith(':')) {
-      return true;
+  public async validate(config: IConfiguration): Promise<ValidatorResults> {
+    const results = new ValidatorResults();
+
+    for (const validator of this._validators) {
+      let validatorResults = await validator.validate(config);
+      if (validatorResults.hasError) {
+        // errors found in configuration, disable feature
+        validator.disable(config);
+      }
+
+      results.concat(validatorResults);
     }
 
-    return this.map.get(command) || false;
+    return results;
   }
 }
 
-export let configurationValidator = new ConfigurationValidator();
+export const configurationValidator = new ConfigurationValidator();

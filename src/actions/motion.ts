@@ -1,20 +1,22 @@
 import * as vscode from 'vscode';
 
-import { PairMatcher } from './../common/matching/matcher';
-import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { TagMatcher } from './../common/matching/tagMatcher';
-import { Position, PositionDiff } from './../common/motion/position';
-import { configuration } from './../configuration/configuration';
+import { BaseAction } from './base';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { ModeName } from './../mode/mode';
+import { PairMatcher } from './../common/matching/matcher';
+import { Position, PositionDiff } from './../common/motion/position';
+import { QuoteMatcher } from './../common/matching/quoteMatcher';
+import { RecordedState } from '../state/recordedState';
+import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
-import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
-import { BaseAction } from './base';
-import { RegisterAction } from './base';
-import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
-import { RecordedState } from '../state/recordedState';
+import { VimError, ErrorCode } from '../error';
+import { ReportSearch } from '../util/statusBarTextUtils';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -113,7 +115,7 @@ export abstract class BaseMovement extends BaseAction {
     position: Position,
     vimState: VimState
   ): Promise<Position | IMovement> {
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 
   /**
@@ -265,7 +267,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     if (vimState.currentMode === ModeName.Normal) {
       let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
       if (prevLine !== returnedPos.line) {
-        returnedPos = returnedPos.setLocation(returnedPos.line, prevDesiredColumn);
+        returnedPos = returnedPos.withColumn(prevDesiredColumn);
       }
       return returnedPos;
     } else {
@@ -472,13 +474,19 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
+    let nextMatch: {
+      pos: Position;
+      index: number;
+    };
     if (position.getRight().isEqual(position.getLineEnd())) {
-      return searchState.getNextSearchMatchPosition(position.getRight()).pos;
+      nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
+    } else {
+      nextMatch = searchState.getNextSearchMatchPosition(position);
     }
 
-    // Turn one of the highlighting flags back on (turned off with :nohl)
+    ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
-    return searchState.getNextSearchMatchPosition(position).pos;
+    return nextMatch.pos;
   }
 }
 
@@ -497,7 +505,11 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
-    return searchState.getNextSearchMatchPosition(position, -1).pos;
+    const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+
+    ReportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+
+    return prevMatch.pos;
   }
 }
 
@@ -512,6 +524,9 @@ export class MarkMovementBOL extends BaseMovement {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
+    if (mark == null) {
+      throw VimError.fromCode(ErrorCode.E20);
+    }
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -525,6 +540,9 @@ export class MarkMovement extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    if (mark == null) {
+      throw VimError.fromCode(ErrorCode.E20);
+    }
     return mark.position;
   }
 }
@@ -663,8 +681,8 @@ class MoveFindForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
     }
 
     return result;
@@ -692,8 +710,8 @@ class MoveFindBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
     }
 
     return result;
@@ -730,8 +748,8 @@ class MoveTilForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
     }
 
     return result;
@@ -764,8 +782,8 @@ class MoveTilBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
     }
 
     return result;
@@ -781,9 +799,9 @@ class MoveRepeat extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = VimState.lastSemicolonRepeatableMovement;
+    const movement = vimState.lastSemicolonRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -798,9 +816,9 @@ class MoveRepeatReversed extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = VimState.lastCommaRepeatableMovement;
+    const movement = vimState.lastCommaRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -808,7 +826,7 @@ class MoveRepeatReversed extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  keys = [['$'], ['<end>'], ['<D-right>']];
+  keys = [['$'], ['<End>'], ['<D-right>']];
   setsDesiredColumnToEOL = true;
 
   public async execActionWithCount(
@@ -822,7 +840,7 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  keys = [['0'], ['<home>'], ['<D-left>']];
+  keys = [['0'], ['<Home>'], ['<D-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();
@@ -1038,7 +1056,7 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 
@@ -1056,7 +1074,7 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 
@@ -1493,7 +1511,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
         cursorStartPos = adjacentPosLeft;
         vimState.cursorStartPosition = adjacentPosLeft;
         position = adjacentPosRight;
-        vimState.cursorPosition = adjacentPosRight;
+        vimState.cursorStopPosition = adjacentPosRight;
       }
     }
     // First, search backwards for the opening character of the sequence
@@ -1685,8 +1703,15 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = TextEditor.getLineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
-    const start = quoteMatcher.findOpening(position.character);
-    const end = quoteMatcher.findClosing(start + 1);
+    let start = quoteMatcher.findOpening(position.character);
+    let end = quoteMatcher.findClosing(start + 1);
+
+    if (end < start && start === position.character) {
+      // start character is a match and no forward match found
+      // search backwards instead
+      end = start;
+      start = quoteMatcher.findOpening(end - 1);
+    }
 
     if (start === -1 || end === -1 || end === start || end < position.character) {
       return {

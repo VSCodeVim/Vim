@@ -8,6 +8,9 @@ export class Notation {
     Esc: ['escape', 'esc'],
     BS: ['backspace', 'bs'],
     Del: ['delete', 'del'],
+    Home: ['home'],
+    End: ['end'],
+    Insert: ['insert'],
     ' ': ['<space>'],
     '\n': ['<cr>', '<enter>'],
   };

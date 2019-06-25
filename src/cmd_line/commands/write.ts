@@ -3,9 +3,9 @@ import * as node from '../node';
 import * as path from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
+import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
-import { logger } from '../../util/logger';
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
   opt?: string;
@@ -23,6 +23,7 @@ export interface IWriteCommandArguments extends node.ICommandArgs {
 //
 export class WriteCommand extends node.CommandBase {
   protected _arguments: IWriteCommandArguments;
+  private readonly _logger = Logger.get('Write');
 
   constructor(args: IWriteCommandArguments) {
     super();
@@ -36,22 +37,22 @@ export class WriteCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
-      logger.warn('write: not implemented');
+      this._logger.warn('not implemented');
       return;
     } else if (this.arguments.file) {
-      logger.warn('write: not implemented');
+      this._logger.warn('not implemented');
       return;
     } else if (this.arguments.append) {
-      logger.warn('write: not implemented');
+      this._logger.warn('not implemented');
       return;
     } else if (this.arguments.cmd) {
-      logger.warn('write: not implemented');
+      this._logger.warn('not implemented');
       return;
     }
 
     // defer saving the file to vscode if file is new (to present file explorer) or if file is a remote file
     if (vimState.editor.document.isUntitled || vimState.editor.document.uri.scheme !== 'file') {
-      await vscode.commands.executeCommand('workbench.action.files.save');
+      vscode.commands.executeCommand('workbench.action.files.save');
       return;
     }
 

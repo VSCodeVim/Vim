@@ -21,7 +21,7 @@ suite('Provide line completions', () => {
   teardown(cleanUpWorkspace);
 
   const setupTestWithLines = async lines => {
-    vimState.cursorPosition = new Position(0, 0);
+    vimState.cursorStopPosition = new Position(0, 0);
 
     await modeHandler.handleKeyEvent('<Esc>');
     await vimState.editor.edit(builder => {
@@ -38,7 +38,7 @@ suite('Provide line completions', () => {
       await setupTestWithLines(lines);
       const expectedCompletions = ['a2', 'a1', 'a3', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
         vimState.editor.document
       )!.slice(0, expectedCompletions.length);
 
@@ -50,7 +50,7 @@ suite('Provide line completions', () => {
       await setupTestWithLines(lines);
       const expectedCompletions = ['a 2', 'a1', 'a3  ', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
         vimState.editor.document
       )!.slice(0, expectedCompletions.length);
 
@@ -62,7 +62,7 @@ suite('Provide line completions', () => {
       await setupTestWithLines(lines);
       const expectedCompletions = [];
       const completions = getCompletionsForCurrentLine(
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
         vimState.editor.document
       )!.slice(0, expectedCompletions.length);
 

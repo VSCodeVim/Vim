@@ -23,7 +23,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+down>']);
     }
 
-    assertEqual(modeHandler.vimState.allCursors.length, 2, 'Cursor succesfully created.');
+    assertEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '3', '3', '<Esc>']);
     assertEqualLines(['33', '33']);
   });
@@ -39,7 +39,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+up>', '<C-alt+up>']);
     }
 
-    assertEqual(modeHandler.vimState.allCursors.length, 3, 'Cursor succesfully created.');
+    assertEqual(modeHandler.vimState.cursors.length, 3, 'Cursor succesfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
     assertEqualLines(['44', '44', '44']);
   });

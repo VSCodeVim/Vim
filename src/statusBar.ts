@@ -55,15 +55,21 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.dispose();
   }
 
+  public Get() {
+    let text = this._statusBarItem.text;
+    return text;
+  }
+
   private UpdateText(text: string) {
     this._statusBarItem.text = text || '';
   }
 
   private UpdateColor(mode: ModeName) {
-    let foreground;
-    let background;
+    let foreground: string | undefined = undefined;
+    let background: string | undefined = undefined;
 
-    const colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    let colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
         background = colorToSet;
@@ -81,6 +87,13 @@ class StatusBarImpl implements vscode.Disposable {
       'statusBar.debuggingBackground': `${background}`,
       'statusBar.foreground': `${foreground}`,
     });
+
+    // if colors are undefined, return to vscode defaults
+    if (background === undefined) {
+      delete colorCustomizations['statusBar.background'];
+      delete colorCustomizations['statusBar.noFolderBackground'];
+      delete colorCustomizations['statusBar.debuggingBackground'];
+    }
 
     if (foreground === undefined) {
       delete colorCustomizations['statusBar.foreground'];

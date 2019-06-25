@@ -3,15 +3,15 @@
 import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';
-import { VimState } from '../../state/vimState';
-import { VimError, ErrorCode } from '../../error';
-import { TextEditor } from '../../textEditor';
-import { configuration } from '../../configuration/configuration';
-import { Decoration } from '../../configuration/decoration';
 import { Jump } from '../../jumps/jump';
 import { Position } from '../../common/motion/position';
-import { SubstituteState } from '../../state/substituteState';
 import { SearchState, SearchDirection } from '../../state/searchState';
+import { SubstituteState } from '../../state/substituteState';
+import { TextEditor } from '../../textEditor';
+import { VimError, ErrorCode } from '../../error';
+import { VimState } from '../../state/vimState';
+import { configuration } from '../../configuration/configuration';
+import { decoration } from '../../configuration/decoration';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -141,7 +141,7 @@ export class SubstituteCommand extends node.CommandBase {
       vimState.globalState.substituteState = new SubstituteState(args.pattern, args.replace);
       vimState.globalState.searchState = new SearchState(
         SearchDirection.Forward,
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
         args.pattern,
         { isRegex: true },
         vimState.currentMode
@@ -174,7 +174,7 @@ export class SubstituteCommand extends node.CommandBase {
 
         if (
           !(this._arguments.flags & SubstituteFlags.ConfirmEach) ||
-          (await this.confirmReplacement(regex.source, line, vimState, match, matchPos))
+          (await this.confirmReplacement(this._arguments.replace, line, vimState, match, matchPos))
         ) {
           const rangeEnd = newContent.length;
           newContent =
@@ -226,7 +226,7 @@ export class SubstituteCommand extends node.CommandBase {
     ];
 
     vimState.editor.revealRange(new vscode.Range(line, 0, line, 0));
-    vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
+    vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
 
     const prompt = `Replace with ${replacement} (${validSelections.join('/')})?`;
     await vscode.window.showInputBox(
@@ -266,7 +266,7 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange) {
+  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let startLine: vscode.Position;
     let endLine: vscode.Position;
 

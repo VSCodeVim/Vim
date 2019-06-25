@@ -1,5 +1,6 @@
 import * as util from 'util';
 import * as vscode from 'vscode';
+import { Logger } from '../util/logger';
 import { Position } from './../common/motion/position';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
@@ -7,29 +8,41 @@ import { VimState } from './../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
 import { exists } from 'fs';
-import { logger } from '../util/logger';
 import { spawn, ChildProcess } from 'child_process';
 import { attach, Neovim } from 'neovim';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
   private nvim: Neovim;
+  private readonly logger = Logger.get('Neovim');
+  private readonly processTimeoutInSeconds = 3;
 
   async run(vimState: VimState, command: string) {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
 
-      await this.nvim.uiAttach(80, 20, {
-        ext_cmdline: false,
-        ext_popupmenu: false,
-        ext_tabline: false,
-        ext_wildmenu: false,
-        rgb: false,
-      });
+      try {
+        const nvimAttach = this.nvim.uiAttach(80, 20, {
+          ext_cmdline: false,
+          ext_popupmenu: false,
+          ext_tabline: false,
+          ext_wildmenu: false,
+          rgb: false,
+        });
+
+        const timeout = new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error('Timeout')), this.processTimeoutInSeconds * 1000);
+        });
+
+        await Promise.race([nvimAttach, timeout]);
+      } catch (e) {
+        configuration.enableNeovim = false;
+        throw new Error(`Failed to attach to neovim process. ${e.message}`);
+      }
 
       const apiInfo = await this.nvim.apiInfo;
       const version = apiInfo[1].version;
-      logger.debug(`Neovim Version: ${version.major}.${version.minor}.${version.patch}`);
+      this.logger.debug(`version: ${version.major}.${version.minor}.${version.patch}`);
     }
 
     await this.syncVSToVim(vimState);
@@ -40,7 +53,7 @@ export class NeovimWrapper implements vscode.Disposable {
     await this.nvim.command('let v:errmsg="" | let v:statusmsg=""');
 
     // Execute the command
-    logger.debug(`Neovim: Running ${command}.`);
+    this.logger.debug(`Running ${command}.`);
     await this.nvim.input(command);
     const mode = await this.nvim.mode;
     if (mode.blocking) {
@@ -67,7 +80,7 @@ export class NeovimWrapper implements vscode.Disposable {
   }
 
   private async startNeovim() {
-    logger.debug('Neovim: Spawning Neovim process...');
+    this.logger.debug('Spawning Neovim process...');
     let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
@@ -77,9 +90,10 @@ export class NeovimWrapper implements vscode.Disposable {
     });
 
     this.process.on('error', err => {
-      logger.error(`Neovim: Error spawning neovim. Error=${err.message}.`);
+      this.logger.error(`Error spawning neovim. ${err.message}.`);
       configuration.enableNeovim = false;
     });
+
     return attach({ proc: this.process });
   }
 
@@ -98,12 +112,12 @@ export class NeovimWrapper implements vscode.Disposable {
     });
 
     const [rangeStart, rangeEnd] = [
-      Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
-      Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition),
+      Position.EarlierOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
+      Position.LaterOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
     ];
     await this.nvim.callFunction('setpos', [
       '.',
-      [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false],
+      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'<",
@@ -150,7 +164,7 @@ export class NeovimWrapper implements vscode.Disposable {
       fixedLines.join('\n')
     );
 
-    logger.debug(`Neovim: ${lines.length} lines in nvim. ${TextEditor.getLineCount()} in editor.`);
+    this.logger.debug(`${lines.length} lines in nvim. ${TextEditor.getLineCount()} in editor.`);
 
     let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,
