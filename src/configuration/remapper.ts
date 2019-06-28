@@ -94,9 +94,7 @@ export class Remapper implements IRemapper {
 
     if (remapping) {
       this._logger.debug(
-        `${this._configKey}. match found. before=${remapping.before}. after=${
-          remapping.after
-        }. command=${remapping.commands}.`
+        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}.`
       );
 
       if (!this._recursive) {

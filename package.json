@@ -583,32 +583,50 @@
           "default": false
         },
         "vim.statusBarColors.normal": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in Normal mode",
           "default": "#005f5f"
         },
         "vim.statusBarColors.insert": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in Insert mode",
           "default": "#5f0000"
         },
         "vim.statusBarColors.visual": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in Visual mode",
           "default": "#5f00af"
         },
         "vim.statusBarColors.visualline": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in VisualLine mode",
           "default": "#005f5f"
         },
         "vim.statusBarColors.visualblock": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in VisualBlock mode",
           "default": "#86592d"
         },
         "vim.statusBarColors.replace": {
-          "type": ["string", "array"],
+          "type": [
+            "string",
+            "array"
+          ],
           "description": "Status bar color when in Replace mode",
           "default": "#00000"
         },
@@ -736,8 +754,8 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.135",
     "@types/mocha": "5.2.7",
-    "@types/node": "10.12.27",
-    "@types/sinon": "7.0.12",
+    "@types/node": "12.0.8",
+    "@types/sinon": "7.0.13",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
