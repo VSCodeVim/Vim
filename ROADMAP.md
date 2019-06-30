@@ -82,36 +82,36 @@ Now follows an exhaustive list of every known Vim command that we could find.
 
 ## Text object motions
 
-| Status             | Command    | Description                                            |
-| ------------------ | ---------- | ------------------------------------------------------ |
-| :white_check_mark: | :1234: w   | N words forward                                        |
-| :white_check_mark: | :1234: W   | N blank-separated                                      | WORD | s forward |
-| :white_check_mark: | :1234: e   | N words forward to the end of the Nth word             |
-| :white_check_mark: | :1234: E   | N words forward to the end of the Nth blank-separated  | WORD |
-| :white_check_mark: | :1234: b   | N words backward                                       |
-| :white_check_mark: | :1234: B   | N blank-separated                                      | WORD | s backward |
-| :white_check_mark: | :1234: ge  | N words backward to the end of the Nth word            |
-| :white_check_mark: | :1234: gE  | N words backward to the end of the Nth blank-separated | WORD |
-| :white_check_mark: | :1234: )   | N sentences forward                                    |
-| :white_check_mark: | :1234: (   | N sentences backward                                   |
-| :white_check_mark: | :1234: }   | N paragraphs forward                                   |
-| :white_check_mark: | :1234: {   | N paragraphs backward                                  |
-| :white_check_mark: | :1234: ]]  | N sections forward, at start of section                |
-| :white_check_mark: | :1234: [[  | N sections backward, at start of section               |
-| :white_check_mark: | :1234: ][  | N sections forward, at end of section                  |
-| :white_check_mark: | :1234: []  | N sections backward, at end of section                 |
-| :white_check_mark: | :1234: [(  | N times back to unclosed '('                           |
-| :white_check_mark: | :1234: [{  | N times back to unclosed '{'                           |
-| :arrow_down:       | :1234: [m  | N times back to start of method (for Java)             |
-| :arrow_down:       | :1234: [M  | N times back to end of method (for Java)               |
-| :white_check_mark: | :1234: ])  | N times forward to unclosed ')'                        |
-| :white_check_mark: | :1234: ]}  | N times forward to unclosed '}'                        |
-| :arrow_down:       | :1234: ]m  | N times forward to start of method (for Java)          |
-| :arrow_down:       | :1234: ]M  | N times forward to end of method (for Java)            |
-| :arrow_down:       | :1234: [#  | N times back to unclosed "#if" or "#else"              |
-| :arrow_down:       | :1234: ]#  | N times forward to unclosed "#else" or "#endif"        |
-| :arrow_down:       | :1234: [\* | N times back to start of a C comment "/\*"             |
-| :arrow_down:       | :1234: ]\* | N times forward to end of a C comment "\*/"            |
+| Status             | Command    | Description                                                 |
+| ------------------ | ---------- | ----------------------------------------------------------- |
+| :white_check_mark: | :1234: w   | N words forward                                             |
+| :white_check_mark: | :1234: W   | N blank-separated WORDs forward                             |
+| :white_check_mark: | :1234: e   | N words forward to the end of the Nth word                  |
+| :white_check_mark: | :1234: E   | N words forward to the end of the Nth blank-separated WORD  |
+| :white_check_mark: | :1234: b   | N words backward                                            |
+| :white_check_mark: | :1234: B   | N blank-separated WORDs backward                            |
+| :white_check_mark: | :1234: ge  | N words backward to the end of the Nth word                 |
+| :white_check_mark: | :1234: gE  | N words backward to the end of the Nth blank-separated WORD |
+| :white_check_mark: | :1234: )   | N sentences forward                                         |
+| :white_check_mark: | :1234: (   | N sentences backward                                        |
+| :white_check_mark: | :1234: }   | N paragraphs forward                                        |
+| :white_check_mark: | :1234: {   | N paragraphs backward                                       |
+| :white_check_mark: | :1234: ]]  | N sections forward, at start of section                     |
+| :white_check_mark: | :1234: [[  | N sections backward, at start of section                    |
+| :white_check_mark: | :1234: ][  | N sections forward, at end of section                       |
+| :white_check_mark: | :1234: []  | N sections backward, at end of section                      |
+| :white_check_mark: | :1234: [(  | N times back to unclosed '('                                |
+| :white_check_mark: | :1234: [{  | N times back to unclosed '{'                                |
+| :arrow_down:       | :1234: [m  | N times back to start of method (for Java)                  |
+| :arrow_down:       | :1234: [M  | N times back to end of method (for Java)                    |
+| :white_check_mark: | :1234: ])  | N times forward to unclosed ')'                             |
+| :white_check_mark: | :1234: ]}  | N times forward to unclosed '}'                             |
+| :arrow_down:       | :1234: ]m  | N times forward to start of method (for Java)               |
+| :arrow_down:       | :1234: ]M  | N times forward to end of method (for Java)                 |
+| :arrow_down:       | :1234: [#  | N times back to unclosed "#if" or "#else"                   |
+| :arrow_down:       | :1234: ]#  | N times forward to unclosed "#else" or "#endif"             |
+| :arrow_down:       | :1234: [\* | N times back to start of a C comment "/\*"                  |
+| :arrow_down:       | :1234: ]\* | N times forward to end of a C comment "\*/"                 |
 
 ## Pattern searches
 
@@ -398,8 +398,8 @@ moving around:
 | ------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
 | :white_check_mark: | :1234: aw                                         | Select "a word"                                             |
 | :white_check_mark: | :1234: iw                                         | Select "inner word"                                         |
-| :white_check_mark: | :1234: aW                                         | Select "a                                                   | WORD | " |
-| :white_check_mark: | :1234: iW                                         | Select "inner                                               | WORD | " |
+| :white_check_mark: | :1234: aW                                         | Select "a WORD"                                             |
+| :white_check_mark: | :1234: iW                                         | Select "inner WORD"                                         |
 | :white_check_mark: | :1234: as                                         | Select "a sentence"                                         |
 | :white_check_mark: | :1234: is                                         | Select "inner sentence"                                     |
 | :white_check_mark: | :1234: ap                                         | Select "a paragraph"                                        |
