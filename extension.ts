@@ -36,14 +36,15 @@ interface ICodeKeybinding {
 }
 
 export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promise<ModeHandler> {
-  const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
+  const activeTextEditor = vscode.window.activeTextEditor;
+  const activeEditorId = new EditorIdentity(activeTextEditor);
 
   let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
 
-  curHandler.vimState.editor = vscode.window.activeTextEditor!;
+  curHandler.vimState.editor = activeTextEditor!;
 
   if (
     forceSyncAndUpdate ||
