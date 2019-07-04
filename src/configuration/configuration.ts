@@ -5,6 +5,7 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VsCodeContext } from '../util/vscode-context';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
+import { vimrc } from './vimrc';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -84,6 +85,10 @@ class Configuration implements IConfiguration {
         }
         this[option] = val;
       }
+    }
+
+    if (this.enableVimrc) {
+      vimrc.load(this);
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
@@ -302,6 +307,9 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+
+  enableVimrc = true;
+  vimrcPath = '';
 
   digraphs = {};
 

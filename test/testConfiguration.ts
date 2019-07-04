@@ -81,9 +81,11 @@ export class Configuration implements IConfiguration {
   foldfix = false;
   disableExtension = false;
   enableNeovim = false;
-  neovimPath = '';
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
+  neovimPath = 'nvim';
+  enableVimrc = false;
+  vimrcPath = '';
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: 'line',
     insert: 'block',
