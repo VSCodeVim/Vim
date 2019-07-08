@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import untildify = require('untildify');
-import { parseTabOnlyCommandArgs } from '../cmd_line/subparsers/tab';
 
 /**
  * Given relative path, calculate absolute path.
