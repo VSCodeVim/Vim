@@ -768,7 +768,7 @@
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
     "sinon": "7.3.2",
-    "tslint": "5.17.0",
+    "tslint": "5.18.0",
     "typescript": "3.5.2",
     "vscode": "1.1.35"
   }
