@@ -769,7 +769,7 @@
     "prettier": "1.18.2",
     "sinon": "7.3.2",
     "tslint": "5.18.0",
-    "typescript": "3.5.2",
+    "typescript": "3.5.3",
     "vscode": "1.1.35"
   }
 }
