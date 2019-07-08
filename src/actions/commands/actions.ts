@@ -1916,7 +1916,7 @@ class CommandTabInCommandline extends BaseCommand {
     return this.keysPressed[0] === '\n';
   }
 
-  private autoComplete(completionItems: any, vimState: VimState) {
+  private autoComplete(completionItems: string[], vimState: VimState) {
     if (commandLine.lastKeyPressed !== '<tab>') {
       if (/ /g.test(vimState.currentCommandlineText)) {
         // The regex here will match any text after the space or any text after the last / if it is present
@@ -1970,15 +1970,15 @@ class CommandTabInCommandline extends BaseCommand {
       vimState = this.autoComplete(commands, vimState);
     } else {
       // File Completion
-      let completeFiles: fs.Dirent[];
       const search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
-      let searchString = search !== null ? search[1] : '';
+      const searchString = search !== null ? search[1] : '';
+      const fullPath = GetAbsolutePath(searchString);
+      const fileNames = fs
+        .readdirSync(fullPath, { withFileTypes: true })
+        .filter(fileEnt => fileEnt.isFile())
+        .map(fileEnt => fileEnt.name);
 
-      let fullPath = GetAbsolutePath(searchString);
-
-      completeFiles = fs.readdirSync(fullPath, { withFileTypes: true });
-
-      vimState = this.autoComplete(completeFiles, vimState);
+      vimState = this.autoComplete(fileNames, vimState);
     }
 
     commandLine.lastKeyPressed = key;
