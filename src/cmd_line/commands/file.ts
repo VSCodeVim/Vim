@@ -1,12 +1,36 @@
 import * as fs from 'fs';
-import * as node from '../node';
-import * as path from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-import untildify = require('untildify');
 import { Logger } from '../../util/logger';
+import { getFullPath, getUriPath } from '../../util/path';
+import * as node from '../node';
+import untildify = require('untildify');
 
-const doesFileExist = util.promisify(fs.exists);
+async function doesFileExist(fileUri: vscode.Uri) {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    try {
+      await vscode.workspace.fs.stat(fileUri);
+      return true;
+    } catch {
+      return false;
+    }
+  } else {
+    // fallback to local fs
+    const fsExists = util.promisify(fs.exists);
+    return fsExists(fileUri.fsPath);
+  }
+}
+
+async function createNewFile(fileUri: vscode.Uri) {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    await vscode.workspace.fs.writeFile(fileUri, new Uint8Array());
+  } else {
+    // fallback to local fs
+    await util.promisify(fs.close)(await util.promisify(fs.open)(fileUri.fsPath, 'w'));
+  }
+}
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -36,7 +60,7 @@ export class FileCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-    if (this._arguments.bang) {
+    if (this.arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
     }
@@ -47,11 +71,11 @@ export class FileCommand extends node.CommandBase {
 
     // Do the split if requested
     let split = false;
-    if (this._arguments.position === FilePosition.NewWindowVerticalSplit) {
+    if (this.arguments.position === FilePosition.NewWindowVerticalSplit) {
       await vscode.commands.executeCommand('workbench.action.splitEditorRight');
       split = true;
     }
-    if (this._arguments.position === FilePosition.NewWindowHorizontalSplit) {
+    if (this.arguments.position === FilePosition.NewWindowHorizontalSplit) {
       await vscode.commands.executeCommand('workbench.action.splitEditorDown');
       split = true;
     }
@@ -64,64 +88,75 @@ export class FileCommand extends node.CommandBase {
     };
 
     // No name was specified
-    if (this._arguments.name === undefined) {
-      if (this._arguments.createFileIfNotExists === true) {
+    if (this.arguments.name === undefined) {
+      if (this.arguments.createFileIfNotExists === true) {
         await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
         await hidePreviousEditor();
       }
       return;
     }
 
-    let filePath = '';
-
     // Only untidify when the currently open page and file completion is local
     if (this.arguments.name && editorFileUri.scheme === 'file') {
       this._arguments.name = <string>untildify(this.arguments.name);
     }
 
+    let fileUri = editorFileUri;
     // Using the empty string will request to open a file
-    if (this._arguments.name === '') {
+    if (this.arguments.name === '') {
       // No name on split is fine and just return
       if (split === true) {
         return;
       }
 
       const fileList = await vscode.window.showOpenDialog({});
-      if (fileList) {
-        filePath = fileList[0].fsPath;
+      if (fileList && fileList.length > 0) {
+        fileUri = fileList[0];
       }
     } else {
+      // remove file://
+      this._arguments.name = this.arguments.name.replace(/^file:\/\//, '');
+
       // Using a filename, open or create the file
-      this._arguments.name = this._arguments.name.replace(/^file:\/\//, '');
+      const { fullPath, path: p } = getFullPath(this.arguments.name);
+      // Only if the expanded path of the full path is different than
+      // the currently opened window path
+      if (fullPath !== editorFilePath) {
+        const uriPath = getUriPath(editorFileUri, fullPath, p.sep);
+        if (uriPath === null) {
+          // return the if path is invalid
+          return;
+        }
 
-      filePath = path.isAbsolute(this._arguments.name)
-        ? path.normalize(this._arguments.name)
-        : path.join(path.dirname(editorFilePath), this._arguments.name);
-
-      if (filePath !== editorFilePath) {
-        let fileExists = await doesFileExist(filePath);
+        let fileExists = await doesFileExist(uriPath);
         if (!fileExists) {
           // if file does not exist
           // try to find it with the same extension as the current file
-          const pathWithExt = filePath + path.extname(editorFilePath);
-          fileExists = await doesFileExist(pathWithExt);
-          if (fileExists) {
-            filePath = pathWithExt;
+          const pathWithExt = fullPath + p.extname(editorFilePath);
+          const uriPathWithExt = getUriPath(editorFileUri, pathWithExt, p.sep);
+          if (uriPathWithExt !== null) {
+            fileExists = await doesFileExist(uriPathWithExt);
+            if (fileExists) {
+              // if the file with the added ext exists
+              fileUri = uriPathWithExt;
+            }
           }
+        } else {
+          // If the file without the added ext exists
+          fileUri = uriPath;
         }
 
+        // If both with and without ext path do not exist
         if (!fileExists) {
-          if (this._arguments.createFileIfNotExists) {
-            await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
-          } else {
-            this._logger.error(`${filePath} does not exist.`);
-            return;
+          if (this.arguments.createFileIfNotExists) {
+            await createNewFile(uriPath);
+            fileUri = uriPath;
           }
         }
       }
     }
 
-    const doc = await vscode.workspace.openTextDocument(filePath);
+    const doc = await vscode.workspace.openTextDocument(fileUri);
     vscode.window.showTextDocument(doc);
 
     if (this.arguments.lineNumber) {
