@@ -7,7 +7,9 @@ var gulp = require('gulp'),
   ts = require('gulp-typescript'),
   PluginError = require('plugin-error'),
   minimist = require('minimist'),
-  path = require('path');
+  path = require('path'),
+  webpack_stream = require('webpack-stream'),
+  webpack_config = require('./webpack.config.js');
 
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
@@ -149,6 +151,13 @@ gulp.task('tsc', function() {
     .pipe(gulp.dest('out'));
 });
 
+gulp.task('webpack', function() {
+  return gulp
+    .src('./extension.ts')
+    .pipe(webpack_stream(webpack_config))
+    .pipe(gulp.dest('out'));
+});
+
 gulp.task('tslint', function() {
   const program = require('tslint').Linter.createProgram('./tsconfig.json');
   return gulp
@@ -231,7 +240,7 @@ gulp.task('test', function(done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint'), 'commit-hash'));
+gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',

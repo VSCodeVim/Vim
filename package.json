@@ -768,8 +768,10 @@
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
     "sinon": "7.3.2",
+    "ts-loader": "^6.0.4",
     "tslint": "5.18.0",
     "typescript": "3.5.3",
-    "vscode": "1.1.35"
+    "vscode": "1.1.35",
+    "webpack-stream": "^5.2.1"
   }
 }
