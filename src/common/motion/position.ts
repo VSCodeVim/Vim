@@ -524,6 +524,22 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Get the position of the word counting from the position specified.
+   * @param text The string to search from.
+   * @param pos The position of text to search from.
+   * @param inclusive true if we consider the pos a valid result, false otherwise.
+   * @returns The character position of the word to the left relative to the text and the pos.
+   *          undefined if there is no word to the left of the postion.
+   */
+  public static getWordLeft(
+    text: string,
+    pos: number,
+    inclusive: boolean = false
+  ): number | undefined {
+    return Position.getWordLeftWtihRegex(text, pos, Position._nonWordCharRegex, inclusive);
+  }
+
+  /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getWordLeft(inclusive: boolean = false): Position {
@@ -1030,7 +1046,7 @@ export class Position extends vscode.Position {
     return regexp;
   }
 
-  private getAllPositions(line: string, regex: RegExp): number[] {
+  private static getAllPositions(line: string, regex: RegExp): number[] {
     let positions: number[] = [];
     let result = regex.exec(line);
 
@@ -1068,21 +1084,29 @@ export class Position extends vscode.Position {
     return positions;
   }
 
+  private static getWordLeftWtihRegex(
+    text: string,
+    pos: number,
+    regex: RegExp,
+    forceFirst: boolean = false,
+    inclusive: boolean = false
+  ): number | undefined {
+    const positions = Position.getAllPositions(text, regex);
+    return positions
+      .reverse()
+      .find(index => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
+  }
+
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine >= 0; currentLine--) {
-      let positions = this.getAllPositions(
+      const newCharacter = Position.getWordLeftWtihRegex(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
-      let newCharacter = _.find(
-        positions.reverse(),
-        index =>
-          (index < this.character && !inclusive) ||
-          (index <= this.character && inclusive) ||
-          currentLine !== this.line
+        this.character,
+        regex,
+        currentLine !== this.line
       );
 
       if (newCharacter !== undefined) {
@@ -1098,7 +1122,7 @@ export class Position extends vscode.Position {
    */
   private getWordRightWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-      let positions = this.getAllPositions(
+      let positions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
@@ -1228,7 +1252,7 @@ export class Position extends vscode.Position {
   private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
     let paragraphEnd = this.getCurrentParagraphEnd();
     for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-      let allPositions = this.getAllPositions(
+      let allPositions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
@@ -1255,7 +1279,7 @@ export class Position extends vscode.Position {
       return paragraphEnd;
     } else {
       for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-        let nonWhitePositions = this.getAllPositions(
+        let nonWhitePositions = Position.getAllPositions(
           TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
           /\S/g
         );

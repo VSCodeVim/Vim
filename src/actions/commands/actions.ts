@@ -2166,6 +2166,31 @@ class CommandEscInCommandline extends BaseCommand {
 }
 
 @RegisterAction
+class CommandRemoveWordCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<C-w>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const characterAt = Position.getWordLeft(
+      vimState.currentCommandlineText,
+      vimState.statusBarCursorCharacterPos
+    );
+
+    vimState.currentCommandlineText = characterAt
+      ? vimState.currentCommandlineText.substring(0, characterAt)
+      : '';
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlVInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
   keys = ['<C-v>'];
