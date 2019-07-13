@@ -2102,7 +2102,7 @@ class CommandInsertInCommandline extends BaseCommand {
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '\n') {
-      await commandLine.Run(vimState.currentCommandlineText, vimState);
+      await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
       await vimState.setCurrentMode(ModeName.Normal);
       return vimState;
     } else if (key === '<up>' || key === '<C-p>') {
