@@ -14,4 +14,4 @@ typings/**
 node_modules/
 src/
 tsconfig.json
-webpack.config.json
+webpack.config.js
