@@ -131,6 +131,12 @@ function updateVersion(done) {
     });
 }
 
+function copyPackageJson() {
+  return gulp
+    .src('./package.json')
+    .pipe(gulp.dest('out'))
+}
+
 gulp.task('tsc', function() {
   var isError = false;
 
@@ -189,7 +195,7 @@ gulp.task('commit-hash', function(done) {
 });
 
 // test
-gulp.task('test', function(done) {
+gulp.task('run-test', function(done) {
   // the flag --grep takes js regex as a string and filters by test and test suite names
   var knownOptions = {
     string: 'grep',
@@ -241,6 +247,7 @@ gulp.task('test', function(done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
+gulp.task('test', gulp.series('tsc', copyPackageJson, 'run-test'))
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',
