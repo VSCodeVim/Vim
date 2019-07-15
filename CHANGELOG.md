@@ -1,12 +1,67 @@
 # Change Log
 
+## [v1.8.2](https://github.com/vscodevim/vim/tree/v1.8.2) (2019-07-15)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.8.1...v1.8.2)
+
+**Fixed Bugs:**
+
+- GoToDefinition make invalid history when use C\# extension [\#3865](https://github.com/VSCodeVim/Vim/issues/3865)
+- Invisible "WORD" in roadmap [\#3823](https://github.com/VSCodeVim/Vim/issues/3823)
+
+**Closed issues:**
+
+- Identifier highlights do not appear with keyboard movement [\#3885](https://github.com/VSCodeVim/Vim/issues/3885)
+- Cursor width when indent using tabs [\#3856](https://github.com/VSCodeVim/Vim/issues/3856)
+- cw without yank [\#3836](https://github.com/VSCodeVim/Vim/issues/3836)
+- Frozen in 'Activating Extensions' [\#3826](https://github.com/VSCodeVim/Vim/issues/3826)
+- How can we make a normal-mode shift-enter mapping? [\#3814](https://github.com/VSCodeVim/Vim/issues/3814)
+- Input response is too slow after updating vsc to the latest version\(1.34.0\) [\#3810](https://github.com/VSCodeVim/Vim/issues/3810)
+- Yank + motion only working partially [\#3794](https://github.com/VSCodeVim/Vim/issues/3794)
+- vim mode does not work after upgrading to 1.8.1 [\#3791](https://github.com/VSCodeVim/Vim/issues/3791)
+- Save File Using leader leader [\#3790](https://github.com/VSCodeVim/Vim/issues/3790)
+- space + tab transforme to solo tab [\#3789](https://github.com/VSCodeVim/Vim/issues/3789)
+- Unable to replace single quotes surrounding string with double quotes like I can in Vim [\#3657](https://github.com/VSCodeVim/Vim/issues/3657)
+- cannot bind "," [\#3565](https://github.com/VSCodeVim/Vim/issues/3565)
+
+**Merged pull requests:**
+
+- fix\(deps\): update dependency lodash to v4.17.14 [\#3884](https://github.com/VSCodeVim/Vim/pull/3884) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v12.6.2 [\#3882](https://github.com/VSCodeVim/Vim/pull/3882) ([renovate[bot]](https://github.com/apps/renovate))
+- fix\(deps\): update dependency lodash to v4.17.13 [\#3881](https://github.com/VSCodeVim/Vim/pull/3881) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency typescript to v3.5.3 [\#3878](https://github.com/VSCodeVim/Vim/pull/3878) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/lodash to v4.14.136 [\#3877](https://github.com/VSCodeVim/Vim/pull/3877) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v12.6.1 [\#3876](https://github.com/VSCodeVim/Vim/pull/3876) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency tslint to v5.18.0 [\#3874](https://github.com/VSCodeVim/Vim/pull/3874) ([renovate[bot]](https://github.com/apps/renovate))
+- fix: fix build break [\#3873](https://github.com/VSCodeVim/Vim/pull/3873) ([jpoon](https://github.com/jpoon))
+- chore: fix URL for input method setting [\#3870](https://github.com/VSCodeVim/Vim/pull/3870) ([AndersDJohnson](https://github.com/AndersDJohnson))
+- Assign activeTextEditor to local variable first. [\#3866](https://github.com/VSCodeVim/Vim/pull/3866) ([yaegaki](https://github.com/yaegaki))
+- Update dependency @types/node to v12.0.12 [\#3862](https://github.com/VSCodeVim/Vim/pull/3862) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.0.11 [\#3861](https://github.com/VSCodeVim/Vim/pull/3861) ([renovate[bot]](https://github.com/apps/renovate))
+- fix log message for 'vim.debug.silent' [\#3859](https://github.com/VSCodeVim/Vim/pull/3859) ([stfnwp](https://github.com/stfnwp))
+- Update dependency @types/node to v12.0.10 [\#3858](https://github.com/VSCodeVim/Vim/pull/3858) ([renovate-bot](https://github.com/renovate-bot))
+- Fix build per microsoft/vscode\#75873 [\#3857](https://github.com/VSCodeVim/Vim/pull/3857) ([octref](https://github.com/octref))
+- Update dependency vscode to v1.1.35 [\#3855](https://github.com/VSCodeVim/Vim/pull/3855) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.135 [\#3854](https://github.com/VSCodeVim/Vim/pull/3854) ([renovate[bot]](https://github.com/apps/renovate))
+- pull request to fix the issue \#3845 [\#3853](https://github.com/VSCodeVim/Vim/pull/3853) ([zhuzisheng](https://github.com/zhuzisheng))
+- upgrade pkgs [\#3843](https://github.com/VSCodeVim/Vim/pull/3843) ([jpoon](https://github.com/jpoon))
+- Fix broken links in README.md [\#3842](https://github.com/VSCodeVim/Vim/pull/3842) ([aquova](https://github.com/aquova))
+- Update dependency typescript to v3.5.2 [\#3834](https://github.com/VSCodeVim/Vim/pull/3834) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix WORD wrapped in pipes [\#3829](https://github.com/VSCodeVim/Vim/pull/3829) ([scebotari66](https://github.com/scebotari66))
+- Update dependency prettier to v1.18.2 [\#3819](https://github.com/VSCodeVim/Vim/pull/3819) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency prettier to v1.18.0 [\#3818](https://github.com/VSCodeVim/Vim/pull/3818) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.134 [\#3817](https://github.com/VSCodeVim/Vim/pull/3817) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.133 [\#3802](https://github.com/VSCodeVim/Vim/pull/3802) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency tslint to v5.17.0 [\#3801](https://github.com/VSCodeVim/Vim/pull/3801) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/mocha to v5.2.7 [\#3800](https://github.com/VSCodeVim/Vim/pull/3800) ([renovate[bot]](https://github.com/apps/renovate))
+- Consolidate documentation for visual modes [\#3799](https://github.com/VSCodeVim/Vim/pull/3799) ([max-sixty](https://github.com/max-sixty))
+- Update dependency typescript to v3.5.1 [\#3798](https://github.com/VSCodeVim/Vim/pull/3798) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/sinon to v7.0.12 [\#3795](https://github.com/VSCodeVim/Vim/pull/3795) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.132 [\#3792](https://github.com/VSCodeVim/Vim/pull/3792) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v1.8.1](https://github.com/vscodevim/vim/tree/v1.8.1) (2019-05-22)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.8.0...v1.8.1)
-
-**Enhancements:**
-
-- Make \<c-u\> go to the top of the page [\#3083](https://github.com/VSCodeVim/Vim/issues/3083)
 
 **Fixed Bugs:**
 
@@ -356,7 +411,6 @@
 - Close error window \<F8\> [\#3367](https://github.com/VSCodeVim/Vim/issues/3367)
 - Pressing `i` followed by another command yields the incorrect `this.vimState.recordedState.commandList` [\#3252](https://github.com/VSCodeVim/Vim/issues/3252)
 - Cursor in different spot than where cursor appears and text gets deleted in different location [\#3157](https://github.com/VSCodeVim/Vim/issues/3157)
-- InsertMode binds with\<C-Key\> in settings.json doesn't work. [\#3126](https://github.com/VSCodeVim/Vim/issues/3126)
 
 **Closed issues:**
 
