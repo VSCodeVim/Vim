@@ -132,9 +132,7 @@ function updateVersion(done) {
 }
 
 function copyPackageJson() {
-  return gulp
-    .src('./package.json')
-    .pipe(gulp.dest('out'))
+  return gulp.src('./package.json').pipe(gulp.dest('out'));
 }
 
 gulp.task('tsc', function() {
@@ -247,7 +245,8 @@ gulp.task('run-test', function(done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
-gulp.task('test', gulp.series('tsc', copyPackageJson, 'run-test'))
+gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
+gulp.task('test', gulp.series('prepare-test', 'run-test'));
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',

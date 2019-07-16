@@ -38,7 +38,8 @@ script:
     echo "Prettier Failed. Run `gulp forceprettier` and commit changes to resolve.";
     exit 1;
   fi
-- npm run build
+- gulp build
+- gulp prepare-test
 - npm test
 
 before_deploy:
