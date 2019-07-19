@@ -742,7 +742,7 @@
   "dependencies": {
     "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
-    "lodash": "4.17.14",
+    "lodash": "4.17.15",
     "mkdirp": "0.5.1",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
