@@ -666,7 +666,7 @@ class MoveFindForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = this.keysPressed[1] === '<tab>' ? '\t' : this.keysPressed[1];
     let result = position.findForwards(toFind, count);
 
     if (!result) {
@@ -699,7 +699,7 @@ class MoveFindBackward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = this.keysPressed[1] === '<tab>' ? '\t' : this.keysPressed[1];
     let result = position.findBackwards(toFind, count);
 
     if (!result) {
@@ -728,7 +728,7 @@ class MoveTilForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = this.keysPressed[1] === '<tab>' ? '\t' : this.keysPressed[1];
     let result = position.tilForwards(toFind, count);
 
     // For t<character> vim executes ; as 2; and , as 2,
@@ -766,7 +766,7 @@ class MoveTilBackward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = this.keysPressed[1] === '<tab>' ? '\t' : this.keysPressed[1];
     let result = position.tilBackwards(toFind, count);
 
     // For T<character> vim executes ; as 2; and , as 2,
