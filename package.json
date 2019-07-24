@@ -531,6 +531,11 @@
           "description": "Regex matches for JumpToAnywhere motion",
           "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
         },
+        "vim.replaceWithRegister": {
+          "type": "boolean",
+          "description": "Enable the ReplaceWithRegister plugin for Vim.",
+          "default": false
+        },
         "vim.sneak": {
           "type": "boolean",
           "description": "Enable the Sneak plugin for Vim.",
