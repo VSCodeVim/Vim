@@ -249,9 +249,15 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
-        if (line.length > 0 && line.match(/^ +$/) && configuration.expandtab) {
-          // If the line is empty except whitespace, backspace should return to
-          // the next lowest level of indentation.
+        if (
+          position.character > 0 &&
+          line.length > 0 &&
+          line.match(/^ +$/) &&
+          configuration.expandtab
+        ) {
+          // If the line is empty except whitespace and we're not on the first
+          // character of the line, backspace should return to the next lowest
+          // level of indentation.
 
           const tabSize = vimState.editor.options.tabSize as number;
           const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
