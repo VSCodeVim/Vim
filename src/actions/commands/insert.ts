@@ -252,7 +252,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
         if (
           position.character > 0 &&
           line.length > 0 &&
-          line.match(/^ +$/) &&
+          line.match(/^\s+$/) &&
           configuration.expandtab
         ) {
           // If the line is empty except whitespace and we're not on the first
