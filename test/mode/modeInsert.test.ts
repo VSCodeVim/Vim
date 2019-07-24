@@ -333,6 +333,14 @@ suite('Mode Insert', () => {
     end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar'],
   });
 
+  // This corner case caused an issue, see #3915
+  newTest({
+    title: 'Can handle backspace at beginning of line with all spaces',
+    start: ['abc', '|     '],
+    keysPressed: 'i<BS><Esc>',
+    end: ['ab|c     '],
+  });
+
   test('Can handle digraph insert', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
