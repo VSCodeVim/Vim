@@ -58,4 +58,18 @@ suite('Matching Bracket (%)', () => {
     keysPressed: '%',
     end: ['|[(( }}} ))]'],
   });
+
+  newTest({
+    title: 'parentheses after >',
+    start: ['|foo->bar(baz);'],
+    keysPressed: '%',
+    end: ['foo->bar(baz|);'],
+  });
+
+  newTest({
+    title: 'parentheses after "',
+    start: ['|test "in quotes" [(in brackets)]'],
+    keysPressed: '%',
+    end: ['test "in quotes" [(in brackets)|]'],
+  });
 });

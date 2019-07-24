@@ -179,6 +179,8 @@ class Configuration implements IConfiguration {
     enable: true,
   };
 
+  replaceWithRegister = false;
+
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
 

@@ -18,6 +18,7 @@ export class Configuration implements IConfiguration {
   camelCaseMotion = {
     enable: false,
   };
+  replaceWithRegister = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   surround = true;

@@ -35,6 +35,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [vim-sneak](#vim-sneak)
   - [CamelCaseMotion](#camelcasemotion)
   - [Input Method](#input-method)
+  - [ReplaceWithRegister](#replacewithregister)
 - [VSCodeVim tricks](#-vscodevim-tricks)
 - [F.A.Q / Troubleshooting](#-faq)
 - [Contributing](#️-contributing)
@@ -586,6 +587,23 @@ Any third-party program can be used to switch input methods. The following will 
       ```
 
 The `{im}` argument above is a command-line option that will be passed to `im-select` denoting the input method to switch to. If using an alternative program to switch input methods, you should add a similar option to the configuration. For example, if the program's usage is `my-program -s imKey` to switch input method, the `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
+
+### ReplaceWithRegister
+
+Based on [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister), an easy way to replace existing text with the contents of a register.
+
+| Setting                 | Description                        | Type    | Default Value |
+| ----------------------- | ---------------------------------- | ------- | ------------- |
+| vim.replaceWithRegister | Enable/disable ReplaceWithRegister | Boolean | false         |
+
+Once active, type `gr` (say "go replace") followed by a motion to describe the text you want replaced by the contents of the register.
+
+| Motion Command | Description                                                                        |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `gr<motion>`   | Replace the text described by the motion with the contents of the default register |
+| `"agr<motion>` | Replace the text described by the motion with the contents of the `a` register     |
+| `grr`          | Replace the currentline with the contents of the default register                  |
+| `<count>grr`   | Replace the specified number of lines with the contents of the default register    |
 
 ## 🎩 VSCodeVim tricks!
 
