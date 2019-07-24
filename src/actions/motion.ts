@@ -1407,27 +1407,21 @@ class MoveToMatchingBracket extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     position = position.getLeftIfEOL();
 
-    const text = TextEditor.getLineAt(position).text;
-    const charToMatch = text[position.character];
-    const toFind = PairMatcher.pairings[charToMatch];
+    const lineText = TextEditor.getLineAt(position).text;
     const failure = { start: position, stop: position, failed: true };
 
-    if (!toFind || !toFind.matchesWithPercentageMotion) {
-      // If we're not on a match, go right until we find a
-      // pairable character or hit the end of line.
-
-      for (let i = position.character; i < text.length; i++) {
-        if (PairMatcher.pairings[text[i]]) {
-          // We found an opening char, now move to the matching closing char
-          const openPosition = new Position(position.line, i);
-          return PairMatcher.nextPairedChar(openPosition, text[i]) || failure;
-        }
+    for (let col = position.character; col < lineText.length; col++) {
+      const pairing = PairMatcher.pairings[lineText[col]];
+      if (pairing && pairing.matchesWithPercentageMotion) {
+        // We found an opening char, now move to the matching closing char
+        return (
+          PairMatcher.nextPairedChar(new Position(position.line, col), lineText[col]) || failure
+        );
       }
-
-      return failure;
     }
 
-    return PairMatcher.nextPairedChar(position, charToMatch) || failure;
+    // No matchable character on the line; admit defeat
+    return failure;
   }
 
   public async execActionForOperator(

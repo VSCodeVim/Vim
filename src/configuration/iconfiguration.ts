@@ -119,6 +119,11 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use ReplaceWithRegister plugin?
+   */
+  replaceWithRegister: boolean;
+
+  /**
    * Use sneak plugin?
    */
   sneak: boolean;
