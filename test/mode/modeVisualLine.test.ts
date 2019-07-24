@@ -184,6 +184,22 @@ suite('Mode Visual Line', () => {
     });
   });
 
+  suite('Screen line motions in Visual Line Mode', () => {
+    newTest({
+      title: "Can handle 'gk'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgkx',
+      end: ['blah', '|hur'],
+    });
+
+    newTest({
+      title: "Can handle 'gj'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgjx',
+      end: ['blah', '|duh'],
+    });
+  });
+
   suite('Can handle d/c correctly in Visual Line Mode', () => {
     newTest({
       title: 'Can handle d key',

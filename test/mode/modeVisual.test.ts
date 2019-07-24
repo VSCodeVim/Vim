@@ -226,6 +226,22 @@ suite('Mode Visual', () => {
     });
   });
 
+  suite('Screen line motions in Visual Mode', () => {
+    newTest({
+      title: "Can handle 'gk'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'vgkx',
+      end: ['blah', '|ur', 'hur'],
+    });
+
+    newTest({
+      title: "Can handle 'gj'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'vgjx',
+      end: ['blah', 'duh', '|ur'],
+    });
+  });
+
   suite('handles aw in visual mode', () => {
     newTest({
       title: "Can handle 'vawd' on word with cursor inside spaces",

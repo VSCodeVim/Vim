@@ -669,4 +669,18 @@ suite('Motions in Normal Mode', () => {
     keysPressed: '<right>',
     end: ['blah', 'duh', 'd|ur', 'hur'],
   });
+
+  newTest({
+    title: "Can handle 'gk'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gk',
+    end: ['blah', '|duh', 'dur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gj'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gj',
+    end: ['blah', 'duh', 'dur', '|hur'],
+  });
 });
