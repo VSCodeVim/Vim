@@ -2153,6 +2153,20 @@ class CommandDot extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandRepeatSubstitution extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['&'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Parsing the command from a string, while not ideal, is currently
+    // necessary to make this work with and without neovim integration
+    await commandLine.Run('s', vimState);
+
+    return vimState;
+  }
+}
+
 abstract class CommandFold extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   commandName: string;
