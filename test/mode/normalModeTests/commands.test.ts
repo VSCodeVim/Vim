@@ -135,6 +135,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'NC' and put",
+    start: ['tex|t', 'one', 'two'],
+    keysPressed: '"a2C<C-r>a',
+    end: ['text', 'one|', 'two'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
     title: "Can handle 'r'",
     start: ['tex|t'],
     keysPressed: 'hrs',
