@@ -1,5 +1,43 @@
 # Change Log
 
+## [v1.9.0](https://github.com/vscodevim/vim/tree/v1.9.0) (2019-07-29)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.8.2...v1.9.0)
+
+**Enhancements:**
+
+- Support ampersand \("&"\) action in normal mode [\#3808](https://github.com/VSCodeVim/Vim/issues/3808)
+
+**Fixed Bugs:**
+
+- At beginning of line with all spaces, backspace causes error [\#3915](https://github.com/VSCodeVim/Vim/issues/3915)
+- Go to Line Using \[line\]+gg Throws Exception [\#3845](https://github.com/VSCodeVim/Vim/issues/3845)
+- Easymotion uses RegExp [\#3844](https://github.com/VSCodeVim/Vim/issues/3844)
+- `%` doesn't ignore unmatched `\>` [\#3807](https://github.com/VSCodeVim/Vim/issues/3807)
+- Regression: full path to nvim is now required [\#3754](https://github.com/VSCodeVim/Vim/issues/3754)
+
+**Closed issues:**
+
+- Mapping s in Visual Mode causes strange mistake [\#3788](https://github.com/VSCodeVim/Vim/issues/3788)
+
+**Merged pull requests:**
+
+- Make `C` work with registers [\#3927](https://github.com/VSCodeVim/Vim/pull/3927) ([J-Fields](https://github.com/J-Fields))
+- Implement ampersand \(&\) action [\#3925](https://github.com/VSCodeVim/Vim/pull/3925) ([J-Fields](https://github.com/J-Fields))
+- Move prettier configuration to .prettierrc [\#3921](https://github.com/VSCodeVim/Vim/pull/3921) ([kizza](https://github.com/kizza))
+- Handle backspace on first character of all-space line correctly [\#3916](https://github.com/VSCodeVim/Vim/pull/3916) ([J-Fields](https://github.com/J-Fields))
+- Fix f/F/t/T with \<tab\> [\#3914](https://github.com/VSCodeVim/Vim/pull/3914) ([J-Fields](https://github.com/J-Fields))
+- Make `%` skip over characters such as '\>' [\#3913](https://github.com/VSCodeVim/Vim/pull/3913) ([J-Fields](https://github.com/J-Fields))
+- Do not treat easymotion input as regex unless it's a letter [\#3911](https://github.com/VSCodeVim/Vim/pull/3911) ([J-Fields](https://github.com/J-Fields))
+- fix\(deps\): update dependency lodash to v4.17.15 [\#3906](https://github.com/VSCodeVim/Vim/pull/3906) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency mocha to v6.2.0 [\#3905](https://github.com/VSCodeVim/Vim/pull/3905) ([renovate[bot]](https://github.com/apps/renovate))
+- Fixes \#3754. Don't require full path to neovim [\#3903](https://github.com/VSCodeVim/Vim/pull/3903) ([notskm](https://github.com/notskm))
+- chore\(deps\): update dependency @types/node to v12.6.8 [\#3902](https://github.com/VSCodeVim/Vim/pull/3902) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v12.6.6 [\#3897](https://github.com/VSCodeVim/Vim/pull/3897) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v12.6.4 [\#3896](https://github.com/VSCodeVim/Vim/pull/3896) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v12.6.3 [\#3893](https://github.com/VSCodeVim/Vim/pull/3893) ([renovate[bot]](https://github.com/apps/renovate))
+- Add ReplaceWithRegister plugin [\#3887](https://github.com/VSCodeVim/Vim/pull/3887) ([kizza](https://github.com/kizza))
+
 ## [v1.8.2](https://github.com/vscodevim/vim/tree/v1.8.2) (2019-07-15)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.8.1...v1.8.2)
@@ -410,7 +448,6 @@
 - 'gd' is working correctly, but an error occurs. [\#3387](https://github.com/VSCodeVim/Vim/issues/3387)
 - Close error window \<F8\> [\#3367](https://github.com/VSCodeVim/Vim/issues/3367)
 - Pressing `i` followed by another command yields the incorrect `this.vimState.recordedState.commandList` [\#3252](https://github.com/VSCodeVim/Vim/issues/3252)
-- Cursor in different spot than where cursor appears and text gets deleted in different location [\#3157](https://github.com/VSCodeVim/Vim/issues/3157)
 
 **Closed issues:**
 
