@@ -2153,6 +2153,20 @@ class CommandDot extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandRepeatSubstitution extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['&'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Parsing the command from a string, while not ideal, is currently
+    // necessary to make this work with and without neovim integration
+    await commandLine.Run('s', vimState);
+
+    return vimState;
+  }
+}
+
 abstract class CommandFold extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   commandName: string;
@@ -2510,10 +2524,9 @@ class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['C'];
   runsOnceForEachCountPrefix = false;
-  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = vimState.recordedState.count || 1;
+    const count = vimState.recordedState.count || 1;
 
     return new operator.ChangeOperator().run(
       vimState,

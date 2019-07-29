@@ -215,6 +215,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 'f' with <tab>",
+    start: ['|text\tttext'],
+    keysPressed: 'f<tab>',
+    end: ['text|\tttext'],
+  });
+
+  newTest({
     title: "Can handle 'F'",
     start: ['text tex|t'],
     keysPressed: '$Ft',

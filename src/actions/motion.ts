@@ -17,6 +17,7 @@ import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
 import { ReportSearch } from '../util/statusBarTextUtils';
+import { Notation } from '../configuration/notation';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -666,7 +667,7 @@ class MoveFindForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findForwards(toFind, count);
 
     if (!result) {
@@ -699,7 +700,7 @@ class MoveFindBackward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findBackwards(toFind, count);
 
     if (!result) {
@@ -728,7 +729,7 @@ class MoveTilForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.tilForwards(toFind, count);
 
     // For t<character> vim executes ; as 2; and , as 2,
@@ -766,7 +767,7 @@ class MoveTilBackward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const toFind = this.keysPressed[1];
+    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.tilBackwards(toFind, count);
 
     // For T<character> vim executes ; as 2; and , as 2,
@@ -1407,27 +1408,21 @@ class MoveToMatchingBracket extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     position = position.getLeftIfEOL();
 
-    const text = TextEditor.getLineAt(position).text;
-    const charToMatch = text[position.character];
-    const toFind = PairMatcher.pairings[charToMatch];
+    const lineText = TextEditor.getLineAt(position).text;
     const failure = { start: position, stop: position, failed: true };
 
-    if (!toFind || !toFind.matchesWithPercentageMotion) {
-      // If we're not on a match, go right until we find a
-      // pairable character or hit the end of line.
-
-      for (let i = position.character; i < text.length; i++) {
-        if (PairMatcher.pairings[text[i]]) {
-          // We found an opening char, now move to the matching closing char
-          const openPosition = new Position(position.line, i);
-          return PairMatcher.nextPairedChar(openPosition, text[i]) || failure;
-        }
+    for (let col = position.character; col < lineText.length; col++) {
+      const pairing = PairMatcher.pairings[lineText[col]];
+      if (pairing && pairing.matchesWithPercentageMotion) {
+        // We found an opening char, now move to the matching closing char
+        return (
+          PairMatcher.nextPairedChar(new Position(position.line, col), lineText[col]) || failure
+        );
       }
-
-      return failure;
     }
 
-    return PairMatcher.nextPairedChar(position, charToMatch) || failure;
+    // No matchable character on the line; admit defeat
+    return failure;
   }
 
   public async execActionForOperator(
