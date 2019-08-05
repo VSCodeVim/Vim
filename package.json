@@ -831,6 +831,11 @@
           "type": "boolean",
           "description": "Searches wrap around the end of the file.",
           "default": true
+        },
+        "vim.stickyCursor": {
+          "type": "boolean",
+          "description": "If true, the cursor will always be kept within the viewport.",
+          "default": false
         }
       }
     }
