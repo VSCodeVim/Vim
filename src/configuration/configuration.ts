@@ -184,6 +184,8 @@ class Configuration implements IConfiguration {
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
 
+  stickyCursor = false;
+
   surround = true;
 
   easymotion = false;

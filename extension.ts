@@ -288,6 +288,26 @@ export async function activate(context: vscode.ExtensionContext) {
     true
   );
 
+  registerEventListener(context, vscode.window.onDidChangeTextEditorVisibleRanges, async event => {
+    if (configuration.stickyCursor) {
+      taskQueue.enqueueTask(async () => {
+        const viewPort = event.visibleRanges[0];
+        const mh = await getAndUpdateModeHandler();
+        if (viewPort.start.line > mh.vimState.cursorStopPosition.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'viewPortTop',
+          });
+          mh.syncCursors();
+        } else if (mh.vimState.cursorStopPosition.line > viewPort.end.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'viewPortBottom',
+          });
+          mh.syncCursors();
+        }
+      });
+    }
+  });
+
   const compositionState = new CompositionState();
 
   // override vscode commands

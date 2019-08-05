@@ -733,6 +733,11 @@
           "type": "object",
           "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
           "default": {}
+        },
+        "vim.stickyCursor": {
+          "type": "boolean",
+          "description": "If true, the cursor will always be kept within the viewport.",
+          "default": false
         }
       }
     }
