@@ -35,7 +35,7 @@ suite('comment operator', () => {
   newTest({
     title: 'block comment in Visual Mode',
     start: ['blah |blah blah'],
-    keysPressed: 'vllllgC',
+    keysPressed: 'vlllgC',
     end: ['blah |/* blah */ blah'],
     endMode: ModeName.Normal,
   });
