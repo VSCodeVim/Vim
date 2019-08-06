@@ -84,7 +84,7 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
+      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
       if (useNeovim) {
         const statusBarText = await vimState.nvim.run(vimState, command);
