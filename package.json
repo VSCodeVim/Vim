@@ -584,7 +584,7 @@
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode",
+          "description": "Allow VSCodeVim to change status bar color based on mode. Using this feature will have a negative impact on performance.",
           "default": false
         },
         "vim.statusBarColors.normal": {
