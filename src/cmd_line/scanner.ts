@@ -20,6 +20,25 @@ export class Scanner {
     return c;
   }
 
+  nextWhile(fn: (c: string) => boolean): string {
+    if (this.isAtEof) {
+      return '';
+    }
+
+    while (true) {
+      const c = this.next();
+
+      if (c === Scanner.EOF) {
+        break;
+      } else if (!fn(c)) {
+        this.backup();
+        break;
+      }
+    }
+
+    return this.emit();
+  }
+
   // Returns the next word in the input, or EOF.
   nextWord(wordSeparators: string[] = [' ', '\t']): string {
     this.skipRun(wordSeparators);
