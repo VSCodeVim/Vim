@@ -67,7 +67,7 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if (command === 'help') {
+    if ('help'.startsWith(command.split(/\s/)[0])) {
       StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
       return;
     }
