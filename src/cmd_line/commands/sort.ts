@@ -12,7 +12,6 @@ export interface ISortCommandArguments extends node.ICommandArgs {
 }
 
 export class SortCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
@@ -22,6 +21,10 @@ export class SortCommand extends node.CommandBase {
 
   get arguments(): ISortCommandArguments {
     return this._arguments;
+  }
+
+  public neovimCapable(): boolean {
+    return true;
   }
 
   async execute(vimState: VimState): Promise<void> {

@@ -36,6 +36,7 @@ import {
   ReportFileInfo,
   ReportSearch,
 } from '../../util/statusBarTextUtils';
+import { globalState } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -884,7 +885,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-f>']];
   isJump = true;
 
   runsOnceForEveryCursor() {
@@ -909,6 +910,11 @@ class CommandInsertInSearchMode extends BaseCommand {
         searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos - 1) +
         searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
+    } else if (key === '<C-f>') {
+      return new CommandShowSearchHistory(vimState.globalState.searchState!.searchDirection).exec(
+        position,
+        vimState
+      );
     } else if (key === '\n') {
       await vimState.setCurrentMode(vimState.globalState.searchState!.previousMode);
 
@@ -2133,6 +2139,37 @@ class CommandShowCommandHistory extends BaseCommand {
     } else {
       vimState.currentCommandlineText = "'<,'>";
     }
+    await vimState.setCurrentMode(ModeName.Normal);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandShowSearchHistory extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = [['q', '/'], ['q', '?']];
+
+  private direction = SearchDirection.Forward;
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public constructor(direction = SearchDirection.Forward) {
+    super();
+    this.direction = direction;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.recordedState.commandList.includes('?')) {
+      this.direction = SearchDirection.Backward;
+    }
+    vimState.recordedState.transformations.push({
+      type: 'showSearchHistory',
+      direction: this.direction,
+    });
+
     await vimState.setCurrentMode(ModeName.Normal);
 
     return vimState;
