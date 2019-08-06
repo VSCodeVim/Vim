@@ -32,6 +32,8 @@ import {
   isTextTransformation,
   TextTransformations,
 } from './../transformations/transformations';
+import { globalState } from '../state/globalState';
+import { ReportSearch } from '../util/statusBarTextUtils';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -906,6 +908,21 @@ export class ModeHandler implements vscode.Disposable {
           if (cmd && cmd.length !== 0) {
             await commandLine.Run(cmd, this.vimState);
             this.updateView(this.vimState);
+          }
+          break;
+
+        case 'showSearchHistory':
+          const searchState = await globalState.showSearchHistory();
+          if (searchState) {
+            globalState.searchState = searchState;
+            const nextMatch = searchState.getNextSearchMatchPosition(
+              vimState.cursorStartPosition,
+              command.direction
+            );
+
+            vimState.cursorStopPosition = nextMatch.pos;
+            this.updateView(this.vimState);
+            ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
           }
           break;
 

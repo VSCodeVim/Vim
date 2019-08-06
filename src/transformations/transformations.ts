@@ -188,6 +188,11 @@ export interface ShowCommandHistory {
   type: 'showCommandHistory';
 }
 
+export interface ShowSearchHistory {
+  type: 'showSearchHistory';
+  direction: number;
+}
+
 /**
  * Represents pressing '.'
  */
@@ -247,6 +252,7 @@ export type Transformation =
   | DeleteTextTransformation
   | MoveCursorTransformation
   | ShowCommandHistory
+  | ShowSearchHistory
   | Dot
   | Macro
   | ContentChangeTransformation

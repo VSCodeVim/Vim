@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { JumpTracker } from '../jumps/jumpTracker';
 import { ModeName } from '../mode/mode';
 import { Position } from '../common/motion/position';
@@ -6,6 +7,7 @@ import { SearchHistory } from '../history/historyFile';
 import { SearchState, SearchDirection } from './searchState';
 import { SubstituteState } from './substituteState';
 import { configuration } from '../configuration/configuration';
+import { VimState } from './vimState';
 
 /**
  * State which stores global state (across editors)
@@ -100,6 +102,29 @@ class GlobalState {
 
     // Update the index to the end of the search history
     this.searchStateIndex = this.searchStatePrevious.length - 1;
+  }
+
+  public async showSearchHistory(): Promise<SearchState | undefined> {
+    if (!vscode.window.activeTextEditor) {
+      return undefined;
+    }
+
+    const items = this._searchStatePrevious
+      .slice()
+      .reverse()
+      .map(searchState => {
+        return {
+          label: searchState.searchString,
+          searchState: searchState,
+        };
+      });
+
+    const item = await vscode.window.showQuickPick(items, {
+      placeHolder: 'Vim search history',
+      ignoreFocusOut: false,
+    });
+
+    return item ? item.searchState : undefined;
   }
 
   public get jumpTracker(): JumpTracker {
