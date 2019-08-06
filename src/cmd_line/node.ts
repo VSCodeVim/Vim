@@ -227,7 +227,6 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  public neovimCapable = false;
   protected get activeTextEditor() {
     return vscode.window.activeTextEditor;
   }
@@ -241,6 +240,10 @@ export abstract class CommandBase {
     return this._arguments;
   }
   protected _arguments: ICommandArgs;
+
+  public neovimCapable(): boolean {
+    return false;
+  }
 
   abstract execute(vimState: VimState): Promise<void>;
 

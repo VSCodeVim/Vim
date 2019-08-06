@@ -84,7 +84,6 @@ export enum SubstituteFlags {
  *   - update search state too!
  */
 export class SubstituteCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: ISubstituteCommandArguments;
   protected _abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
@@ -96,6 +95,11 @@ export class SubstituteCommand extends node.CommandBase {
 
   get arguments(): ISubstituteCommandArguments {
     return this._arguments;
+  }
+
+  public neovimCapable(): boolean {
+    // We need to use VSCode's quickpick capabilities to do confirmation
+    return (this._arguments.flags & SubstituteFlags.ConfirmEach) === 0;
   }
 
   getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
