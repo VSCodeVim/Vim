@@ -214,6 +214,16 @@
         "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
       },
       {
+        "key": "ctrl+n",
+        "command": "extension.vim_ctrl+n",
+        "when": "vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+n",
+        "command": "extension.vim_ctrl+n",
+        "when": "vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+o",
         "command": "extension.vim_ctrl+o",
         "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
@@ -221,7 +231,17 @@
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
+        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+p",
+        "command": "extension.vim_ctrl+p",
+        "when": "vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+p",
+        "command": "extension.vim_ctrl+p",
+        "when": "vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+q",
