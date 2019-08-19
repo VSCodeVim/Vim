@@ -885,7 +885,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-f>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-f>'], ['<C-p>'], ['<C-n>']];
   isJump = true;
 
   runsOnceForEveryCursor() {
@@ -939,7 +939,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
       return vimState;
-    } else if (key === '<up>') {
+    } else if (key === '<up>' || key === '<C-p>') {
       vimState.globalState.searchStateIndex -= 1;
 
       // Clamp the history index to stay within bounds of search history length
@@ -950,7 +950,7 @@ class CommandInsertInSearchMode extends BaseCommand {
           prevSearchList[vimState.globalState.searchStateIndex].searchString;
         vimState.statusBarCursorCharacterPos = searchState.searchString.length;
       }
-    } else if (key === '<down>') {
+    } else if (key === '<down>' || key === '<C-n>') {
       vimState.globalState.searchStateIndex += 1;
 
       // If past the first history item, allow user to enter their own search string (not using history)
@@ -1995,7 +1995,7 @@ class CommandTabInCommandline extends BaseCommand {
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-p>'], ['<C-n>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -2018,7 +2018,7 @@ class CommandInsertInCommandline extends BaseCommand {
       await commandLine.Run(vimState.currentCommandlineText, vimState);
       await vimState.setCurrentMode(ModeName.Normal);
       return vimState;
-    } else if (key === '<up>') {
+    } else if (key === '<up>' || key === '<C-p>') {
       commandLine.commandlineHistoryIndex -= 1;
 
       // Clamp the history index to stay within bounds of command history length
@@ -2029,7 +2029,7 @@ class CommandInsertInCommandline extends BaseCommand {
           commandLine.historyEntries[commandLine.commandlineHistoryIndex];
       }
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key === '<down>') {
+    } else if (key === '<down>' || key === '<C-n>') {
       commandLine.commandlineHistoryIndex += 1;
 
       // If past the first history item, allow user to enter their own new command string (not using history)

@@ -782,8 +782,12 @@ export class CommentBlockOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    const endPosition = vimState.currentMode === ModeName.Normal ? end.getRight() : end;
-    vimState.editor.selection = new vscode.Selection(start, endPosition);
+    if (vimState.currentMode === ModeName.Normal) {
+      // If we're in normal mode, we need to construct a selection for the
+      // command to operate on. If we're not, we've already got it.
+      const endPosition = end.getRight();
+      vimState.editor.selection = new vscode.Selection(start, endPosition);
+    }
     await vscode.commands.executeCommand('editor.action.blockComment');
 
     vimState.cursorStopPosition = start;
