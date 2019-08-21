@@ -1995,7 +1995,7 @@ class CommandTabInCommandline extends BaseCommand {
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-p>'], ['<C-n>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-p>'], ['<C-n>'], ['<C-f>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -2014,6 +2014,8 @@ class CommandInsertInCommandline extends BaseCommand {
         vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos - 1) +
         vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos);
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
+    } else if (key === '<C-f>') {
+      new CommandShowCommandHistory().exec(position, vimState);
     } else if (key === '\n') {
       await commandLine.Run(vimState.currentCommandlineText, vimState);
       await vimState.setCurrentMode(ModeName.Normal);
