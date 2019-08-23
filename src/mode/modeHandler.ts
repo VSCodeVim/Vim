@@ -1395,6 +1395,14 @@ export class ModeHandler implements vscode.Disposable {
     this._renderStatusBar();
 
     await VsCodeContext.Set('vim.mode', ModeName[this.vimState.currentMode]);
+
+    // Tell VSCode that the cursor position changed, so it updates its highlights for
+    // `editor.occurrencesHighlight`.
+    const cursor = vimState.cursors[0];
+    const range = new vscode.Range(cursor.start, cursor.stop);
+    if (!/\s+/.test(vimState.editor.document.getText(range))) {
+      await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+    }
   }
 
   private async setCurrentMode(modeName: ModeName): Promise<void> {
