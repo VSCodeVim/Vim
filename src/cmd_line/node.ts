@@ -60,8 +60,8 @@ export class LineRange {
     if (this.isEmpty) {
       return;
     }
-    var lineRef = this.right.length === 0 ? this.left : this.right;
-    var pos = this.lineRefToPosition(document, lineRef, vimState);
+    const lineRef = this.right.length === 0 ? this.left : this.right;
+    const pos = this.lineRefToPosition(document, lineRef, vimState);
     vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos);
   }
 

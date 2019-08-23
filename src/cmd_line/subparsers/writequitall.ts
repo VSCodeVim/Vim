@@ -6,8 +6,8 @@ export function parseWriteQuitAllCommandArgs(args: string): node.WriteQuitAllCom
   if (!args) {
     return new node.WriteQuitAllCommand({});
   }
-  var scannedArgs: node.IWriteQuitAllCommandArguments = {};
-  var scanner = new Scanner(args);
+  const scannedArgs: node.IWriteQuitAllCommandArguments = {};
+  const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
     scannedArgs.bang = true;

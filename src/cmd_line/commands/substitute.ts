@@ -166,7 +166,7 @@ export class SubstituteCommand extends node.CommandBase {
       let newContent = originalContent;
       const matches = newContent.match(regex)!;
 
-      var nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
+      const nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
       let matchPos = 0;
 
       for (const match of matches) {

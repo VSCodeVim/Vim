@@ -3748,7 +3748,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     end = new Position(end.line, Math.min(end.character, textLength > 0 ? textLength - 1 : 0));
 
     // Iterate over every line in the current selection
-    for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
+    for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
       // Get line of text
       const lineText = TextEditor.getLineAt(new Position(lineNum, 0)).text;
 
