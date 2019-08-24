@@ -36,7 +36,6 @@ import {
   ReportFileInfo,
   ReportSearch,
 } from '../../util/statusBarTextUtils';
-import { globalState } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -885,7 +884,17 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-f>'], ['<C-p>'], ['<C-n>']];
+  keys = [
+    ['<character>'],
+    ['<up>'],
+    ['<down>'],
+    ['<C-h>'],
+    ['<C-f>'],
+    ['<C-p>'],
+    ['<C-n>'],
+    ['<Home>'],
+    ['<End>'],
+  ];
   isJump = true;
 
   runsOnceForEveryCursor() {
@@ -915,6 +924,10 @@ class CommandInsertInSearchMode extends BaseCommand {
         position,
         vimState
       );
+    } else if (key === '<Home>') {
+      vimState.statusBarCursorCharacterPos = 0;
+    } else if (key === '<End>') {
+      vimState.statusBarCursorCharacterPos = vimState.globalState.searchState!.searchString.length;
     } else if (key === '\n') {
       await vimState.setCurrentMode(vimState.globalState.searchState!.previousMode);
 
@@ -1914,6 +1927,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
     return vimState;
   }
 }
+
 @RegisterAction
 class CommandTabInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
@@ -1995,7 +2009,17 @@ class CommandTabInCommandline extends BaseCommand {
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>'], ['<C-p>'], ['<C-n>'], ['<C-f>']];
+  keys = [
+    ['<character>'],
+    ['<up>'],
+    ['<down>'],
+    ['<C-h>'],
+    ['<C-p>'],
+    ['<C-n>'],
+    ['<C-f>'],
+    ['<Home>'],
+    ['<End>'],
+  ];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -2016,6 +2040,10 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '<C-f>') {
       new CommandShowCommandHistory().exec(position, vimState);
+    } else if (key === '<Home>') {
+      vimState.statusBarCursorCharacterPos = 0;
+    } else if (key === '<End>') {
+      vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '\n') {
       await commandLine.Run(vimState.currentCommandlineText, vimState);
       await vimState.setCurrentMode(ModeName.Normal);
