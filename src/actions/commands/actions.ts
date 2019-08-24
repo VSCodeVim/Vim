@@ -894,6 +894,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-n>'],
     ['<Home>'],
     ['<End>'],
+    ['<Del>'],
   ];
   isJump = true;
 
@@ -924,6 +925,10 @@ class CommandInsertInSearchMode extends BaseCommand {
         position,
         vimState
       );
+    } else if (key === '<Del>') {
+      searchState.searchString =
+        searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos) +
+        searchState.searchString.slice(vimState.statusBarCursorCharacterPos + 1);
     } else if (key === '<Home>') {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>') {
