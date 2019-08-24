@@ -2024,6 +2024,7 @@ class CommandInsertInCommandline extends BaseCommand {
     ['<C-f>'],
     ['<Home>'],
     ['<End>'],
+    ['<Del>'],
   ];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
@@ -2045,6 +2046,10 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '<C-f>') {
       new CommandShowCommandHistory().exec(position, vimState);
+    } else if (key === '<Del>') {
+      vimState.currentCommandlineText =
+        vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos) +
+        vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos + 1);
     } else if (key === '<Home>') {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>') {
