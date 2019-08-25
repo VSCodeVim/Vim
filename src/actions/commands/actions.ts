@@ -888,10 +888,12 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<character>'],
     ['<up>'],
     ['<down>'],
-    ['<C-h>'],
-    ['<C-f>'],
-    ['<C-p>'],
-    ['<C-n>'],
+    ['<C-b>'], // Beginning
+    ['<C-e>'], // End
+    ['<C-h>'], // Backspace
+    ['<C-p>'], // Previous
+    ['<C-n>'], // Next
+    ['<C-f>'], // Find
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -929,9 +931,9 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString =
         searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos) +
         searchState.searchString.slice(vimState.statusBarCursorCharacterPos + 1);
-    } else if (key === '<Home>') {
+    } else if (key === '<Home>' || key === '<C-b>') {
       vimState.statusBarCursorCharacterPos = 0;
-    } else if (key === '<End>') {
+    } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.globalState.searchState!.searchString.length;
     } else if (key === '\n') {
       await vimState.setCurrentMode(vimState.globalState.searchState!.previousMode);
@@ -2018,10 +2020,12 @@ class CommandInsertInCommandline extends BaseCommand {
     ['<character>'],
     ['<up>'],
     ['<down>'],
-    ['<C-h>'],
-    ['<C-p>'],
-    ['<C-n>'],
-    ['<C-f>'],
+    ['<C-b>'], // Beginning
+    ['<C-e>'], // End
+    ['<C-h>'], // Backspace
+    ['<C-p>'], // Previous
+    ['<C-n>'], // Next
+    ['<C-f>'], // Find
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -2050,9 +2054,9 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.currentCommandlineText =
         vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos) +
         vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos + 1);
-    } else if (key === '<Home>') {
+    } else if (key === '<Home>' || key === '<C-b>') {
       vimState.statusBarCursorCharacterPos = 0;
-    } else if (key === '<End>') {
+    } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '\n') {
       await commandLine.Run(vimState.currentCommandlineText, vimState);
