@@ -32,6 +32,8 @@ import {
   isTextTransformation,
   TextTransformations,
 } from './../transformations/transformations';
+import { globalState } from '../state/globalState';
+import { ReportSearch } from '../util/statusBarTextUtils';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -193,7 +195,7 @@ export class ModeHandler implements vscode.Disposable {
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
-        var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+        let selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
@@ -909,6 +911,21 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
 
+        case 'showSearchHistory':
+          const searchState = await globalState.showSearchHistory();
+          if (searchState) {
+            globalState.searchState = searchState;
+            const nextMatch = searchState.getNextSearchMatchPosition(
+              vimState.cursorStartPosition,
+              command.direction
+            );
+
+            vimState.cursorStopPosition = nextMatch.pos;
+            this.updateView(this.vimState);
+            ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+          }
+          break;
+
         case 'dot':
           if (!vimState.globalState.previousFullAction) {
             return vimState; // TODO(bell)
@@ -1378,6 +1395,14 @@ export class ModeHandler implements vscode.Disposable {
     this._renderStatusBar();
 
     await VsCodeContext.Set('vim.mode', ModeName[this.vimState.currentMode]);
+
+    // Tell VSCode that the cursor position changed, so it updates its highlights for
+    // `editor.occurrencesHighlight`.
+    const cursor = vimState.cursors[0];
+    const range = new vscode.Range(cursor.start, cursor.stop);
+    if (!/\s+/.test(vimState.editor.document.getText(range))) {
+      await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+    }
   }
 
   private async setCurrentMode(modeName: ModeName): Promise<void> {

@@ -149,7 +149,7 @@ class Configuration implements IConfiguration {
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
+    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -178,6 +178,8 @@ class Configuration implements IConfiguration {
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
   };
+
+  replaceWithRegister = false;
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;

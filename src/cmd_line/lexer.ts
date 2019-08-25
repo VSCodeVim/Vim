@@ -8,9 +8,9 @@ interface ILexFunction {
 
 export function lex(input: string): Token[] {
   // We use a character scanner as state for the lexer.
-  var state = new Scanner(input);
-  var tokens: Token[] = [];
-  var f: ILexFunction | null = LexerFunctions.lexRange;
+  const state = new Scanner(input);
+  let tokens: Token[] = [];
+  let f: ILexFunction | null = LexerFunctions.lexRange;
   while (f) {
     // Each lexing function returns the next lexing function or null.
     f = f(state, tokens);
@@ -19,7 +19,7 @@ export function lex(input: string): Token[] {
 }
 
 function emitToken(type: TokenType, state: Scanner): Token | null {
-  var content = state.emit();
+  const content = state.emit();
 
   return content.length > 0 ? new Token(type, content) : null;
 }
@@ -31,7 +31,7 @@ namespace LexerFunctions {
       if (state.isAtEof) {
         break;
       }
-      var c = state.next();
+      const c = state.next();
       switch (c) {
         case ',':
         case ';':
@@ -100,7 +100,7 @@ namespace LexerFunctions {
       return null;
     }
 
-    var c = state.next();
+    const c = state.next();
     switch (c) {
       case '<':
         tokens.push(emitToken(TokenType.SelectionFirstLine, state)!);
@@ -136,7 +136,7 @@ namespace LexerFunctions {
           return null;
         }
 
-        var c = state.next();
+        const c = state.next();
         switch (c) {
           case '0':
           case '1':
@@ -165,8 +165,8 @@ namespace LexerFunctions {
         tokens.push(emitToken(TokenType.CommandName, state)!);
         break;
       }
-      var c = state.next();
-      var lc = c.toLowerCase();
+      const c = state.next();
+      const lc = c.toLowerCase();
       if (lc >= 'a' && lc <= 'z') {
         continue;
       } else {
@@ -176,7 +176,7 @@ namespace LexerFunctions {
           state.next();
         }
         // TODO(guillermooo): We need to parse multiple commands.
-        var args = emitToken(TokenType.CommandArgs, state);
+        const args = emitToken(TokenType.CommandArgs, state);
         if (args) {
           tokens.push(args);
         }
@@ -189,10 +189,10 @@ namespace LexerFunctions {
   function lexForwardSearch(state: Scanner, tokens: Token[]): ILexFunction {
     // The first slash has already been lexed.
     state.skip('/'); // XXX: really?
-    var escaping = false;
-    var searchTerm = '';
+    let escaping = false;
+    let searchTerm = '';
     while (!state.isAtEof) {
-      var c = state.next();
+      const c = state.next();
       if (c === '/' && !escaping) {
         break;
       }
@@ -215,10 +215,10 @@ namespace LexerFunctions {
   function lexReverseSearch(state: Scanner, tokens: Token[]): ILexFunction {
     // The first question mark has already been lexed.
     state.skip('?'); // XXX: really?
-    var escaping = false;
-    var searchTerm = '';
+    let escaping = false;
+    let searchTerm = '';
     while (!state.isAtEof) {
-      var c = state.next();
+      const c = state.next();
       if (c === '?' && !escaping) {
         break;
       }

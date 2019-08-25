@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -211,7 +211,7 @@
       {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
+        "when": "(editorTextFocus || vim.mode == 'SearchInProgressMode' || vim.mode == 'CommandlineInProgress') && vim.active && vim.use<C-n> && !inDebugRepl"
       },
       {
         "key": "ctrl+o",
@@ -221,7 +221,7 @@
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
+        "when": "(suggestWidgetVisible || vim.mode == 'SearchInProgressMode' || vim.mode == 'CommandlineInProgress') && vim.active && vim.use<C-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+q",
@@ -531,6 +531,11 @@
           "description": "Regex matches for JumpToAnywhere motion",
           "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
         },
+        "vim.replaceWithRegister": {
+          "type": "boolean",
+          "description": "Enable the ReplaceWithRegister plugin for Vim.",
+          "default": false
+        },
         "vim.sneak": {
           "type": "boolean",
           "description": "Enable the Sneak plugin for Vim.",
@@ -579,7 +584,7 @@
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode",
+          "description": "Allow VSCodeVim to change status bar color based on mode. Using this feature will have a negative impact on performance.",
           "default": false
         },
         "vim.statusBarColors.normal": {
@@ -742,7 +747,7 @@
   "dependencies": {
     "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
-    "lodash": "4.17.11",
+    "lodash": "4.17.15",
     "mkdirp": "0.5.1",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
@@ -752,9 +757,9 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.135",
+    "@types/lodash": "4.14.137",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.0.12",
+    "@types/node": "12.7.2",
     "@types/sinon": "7.0.13",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
@@ -764,12 +769,12 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.1.4",
+    "mocha": "6.2.0",
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
-    "sinon": "7.3.2",
-    "tslint": "5.18.0",
-    "typescript": "3.5.2",
-    "vscode": "1.1.35"
+    "sinon": "7.4.1",
+    "tslint": "5.19.0",
+    "typescript": "3.5.3",
+    "vscode": "1.1.36"
   }
 }

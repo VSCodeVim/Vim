@@ -84,7 +84,7 @@ export class Scanner {
     if (this.isAtEof) {
       return;
     }
-    var s = this.next();
+    let s = this.next();
     while (!this.isAtEof) {
       if (s !== c) {
         break;
@@ -101,7 +101,7 @@ export class Scanner {
       return;
     }
     while (!this.isAtEof) {
-      var c = this.next();
+      let c = this.next();
       if (chars.indexOf(c) === -1) {
         break;
       }

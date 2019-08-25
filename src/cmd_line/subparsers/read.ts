@@ -6,8 +6,8 @@ export function parseReadCommandArgs(args: string): ReadCommand {
     throw Error('Expected arguments.');
   }
 
-  var scannedArgs: IReadCommandArguments = {};
-  var scanner = new Scanner(args);
+  const scannedArgs: IReadCommandArguments = {};
+  const scanner = new Scanner(args);
 
   scanner.skipWhiteSpace();
   let c = scanner.next();
