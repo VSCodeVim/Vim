@@ -18,6 +18,7 @@ import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
 import { ReportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
+import { globalState } from '../state/globalState';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -467,13 +468,13 @@ class CommandNextSearchMatch extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.globalState.searchState;
+    const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
       return position;
     }
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    vimState.globalState.hl = true;
+    globalState.hl = true;
 
     let nextMatch: {
       pos: Position;
@@ -497,14 +498,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.globalState.searchState;
+    const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
       return position;
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    vimState.globalState.hl = true;
+    globalState.hl = true;
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
