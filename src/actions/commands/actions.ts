@@ -895,6 +895,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-p>'], // Previous
     ['<C-n>'], // Next
     ['<C-f>'], // Find
+    ['<C-u>'], // Delete to beginning
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -928,6 +929,11 @@ class CommandInsertInSearchMode extends BaseCommand {
         position,
         vimState
       );
+    } else if (key === '<C-u>') {
+      searchState.searchString = searchState.searchString.slice(
+        vimState.statusBarCursorCharacterPos
+      );
+      vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<Del>') {
       searchState.searchString =
         searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos) +
@@ -2022,6 +2028,7 @@ class CommandInsertInCommandline extends BaseCommand {
     ['<C-p>'], // Previous
     ['<C-n>'], // Next
     ['<C-f>'], // Find
+    ['<C-u>'], // Delete to beginning
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -2046,6 +2053,11 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '<C-f>') {
       new CommandShowCommandHistory().exec(position, vimState);
+    } else if (key === '<C-u>') {
+      vimState.currentCommandlineText = vimState.currentCommandlineText.slice(
+        vimState.statusBarCursorCharacterPos
+      );
+      vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<Del>') {
       vimState.currentCommandlineText =
         vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos) +
