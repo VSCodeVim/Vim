@@ -62,7 +62,7 @@ suite('Mode Insert', () => {
 
   test('Stay in insert when entering characters', async () => {
     await modeHandler.handleKeyEvent('i');
-    for (var i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
       assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
     }

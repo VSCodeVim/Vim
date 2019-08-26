@@ -59,7 +59,7 @@ class DocumentChange {
   }
 }
 
-interface IMark {
+export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
@@ -117,10 +117,10 @@ class HistoryStep {
     }
 
     // merged will replace this.changes
-    var merged: DocumentChange[] = [];
+    const merged: DocumentChange[] = [];
     // manually reduce() this.changes with variables `current` and `next`
     // we can't use reduce() directly because the loop can emit multiple elements
-    var current = this.changes[0];
+    let current = this.changes[0];
     for (const next of this.changes.slice(1)) {
       if (current.text.length === 0) {
         // current is eliminated, replace it with top of merged, or adopt next as current

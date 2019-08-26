@@ -6,8 +6,8 @@ export function parseCloseCommandArgs(args: string): node.CloseCommand {
   if (!args) {
     return new node.CloseCommand({});
   }
-  var scannedArgs: node.ICloseCommandArguments = {};
-  var scanner = new Scanner(args);
+  const scannedArgs: node.ICloseCommandArguments = {};
+  const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
     scannedArgs.bang = true;
