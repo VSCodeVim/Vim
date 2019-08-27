@@ -124,4 +124,11 @@ suite('sneak plugin', () => {
     keysPressed: 'Sa\n,',
     end: ['abc abc |abc'],
   });
+
+  newTest({
+    title: 'Can handle multiline single char <number>s motion',
+    start: ['|abc', 'aac', 'abc'],
+    keysPressed: '3sa\n',
+    end: ['abc', 'aac', '|abc'],
+  });
 });
