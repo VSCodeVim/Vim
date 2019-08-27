@@ -10,6 +10,7 @@ import {
   EasyMotionMoveOptionsBase,
   EasyMotionWordMoveOpions,
 } from './types';
+import { globalState } from '../../../state/globalState';
 
 export interface EasymotionTrigger {
   key: string;
@@ -270,7 +271,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion = new EasyMotion();
       vimState.easyMotion.previousMode = vimState.currentMode;
       vimState.easyMotion.searchAction = this._action;
-      vimState.globalState.hl = true;
+      globalState.hl = true;
 
       await vimState.setCurrentMode(ModeName.EasyMotionInputMode);
       return vimState;

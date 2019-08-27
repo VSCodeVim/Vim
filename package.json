@@ -211,17 +211,7 @@
       {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+n",
-        "command": "extension.vim_ctrl+n",
-        "when": "vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+n",
-        "command": "extension.vim_ctrl+n",
-        "when": "vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl"
+        "when": "(editorTextFocus || vim.mode == 'SearchInProgressMode' || vim.mode == 'CommandlineInProgress') && vim.active && vim.use<C-n> && !inDebugRepl"
       },
       {
         "key": "ctrl+o",
@@ -231,17 +221,7 @@
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+p",
-        "command": "extension.vim_ctrl+p",
-        "when": "vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+p",
-        "command": "extension.vim_ctrl+p",
-        "when": "vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl"
+        "when": "(suggestWidgetVisible || vim.mode == 'SearchInProgressMode' || vim.mode == 'CommandlineInProgress') && vim.active && vim.use<C-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+q",
@@ -793,7 +773,7 @@
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
     "sinon": "7.4.1",
-    "tslint": "5.18.0",
+    "tslint": "5.19.0",
     "typescript": "3.5.3",
     "vscode": "1.1.36"
   }

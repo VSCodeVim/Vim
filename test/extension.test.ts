@@ -21,7 +21,7 @@ suite('package.json', () => {
     for (let i = 0; i < keybindings.length; i++) {
       let keybinding = keybindings[i];
 
-      var found = registeredCommands.indexOf(keybinding.command) >= -1;
+      const found = registeredCommands.indexOf(keybinding.command) >= -1;
       assert.ok(
         found,
         'Missing handler for key=' + keybinding.key + '. Expected handler=' + keybinding.command
