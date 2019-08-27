@@ -355,6 +355,41 @@ export class CommandRegister extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertRegisterContentInCommandLine extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<C-r>', '<character>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+      text = (register.text as string[]).join('\n');
+    } else if (register.text instanceof RecordedState) {
+      let keyStrokes: string[] = [];
+
+      for (let action of register.text.actionsRun) {
+        keyStrokes = keyStrokes.concat(action.keysPressed);
+      }
+
+      text = keyStrokes.join('\n');
+    } else {
+      text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += '\n';
+    }
+
+    vimState.currentCommandlineText += text;
+    vimState.statusBarCursorCharacterPos += text.length;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ['<C-r>', '<character>'];
