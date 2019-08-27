@@ -8,12 +8,8 @@ export function parseSortCommandArgs(args: string): node.SortCommand {
 
   let scannedArgs: node.ISortCommandArguments = { reverse: false, ignoreCase: false };
   let scanner = new Scanner(args);
-  const c = scanner.next()
+  const c = scanner.next();
   scannedArgs.reverse = c === '!';
-
-  if (scanner.isAtEof) {
-    return new node.SortCommand(scannedArgs)
-  }
 
   scannedArgs.ignoreCase = scanner.nextWord() === 'i';
 

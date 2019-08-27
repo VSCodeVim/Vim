@@ -58,7 +58,7 @@ export class SortCommand extends node.CommandBase {
 
     let lastLineLength = originalLines[originalLines.length - 1].length;
 
-    let compareFn = this._arguments.ignoreCase ?
+    const compareFn = this._arguments.ignoreCase ?
       (a: string, b: string) => a.toLowerCase().localeCompare(b.toLowerCase()) :
       (a: string, b: string) => a.localeCompare(b);
 
