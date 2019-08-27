@@ -29,7 +29,7 @@ class SneakForward extends BaseMovement {
     const document = editor.document;
     const lineCount = document.lineCount;
 
-    this.keysPressed[2] === '\n') {
+    if (this.keysPressed[2] === '\n') {
       // Single key sneak
       this.keysPressed[2] = '';
     }
