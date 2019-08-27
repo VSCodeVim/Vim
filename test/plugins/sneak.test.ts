@@ -68,4 +68,60 @@ suite('sneak plugin', () => {
     keysPressed: 'Sab,',
     end: ['abc abc |abc'],
   });
+
+  newTest({
+    title: 'Can handle single letter s motion',
+    start: ['|abc abc'],
+    keysPressed: 'sa\n',
+    end: ['abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S motion',
+    start: ['abc |abc'],
+    keysPressed: 'Sa\n',
+    end: ['|abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter <operator>z motion',
+    start: ['|abc abc'],
+    keysPressed: 'dza\n',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter <operator>Z motion',
+    start: ['abc |abc'],
+    keysPressed: 'dZa\n',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter s; motion',
+    start: ['|abc abc abc'],
+    keysPressed: 'sa\n;',
+    end: ['abc abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter s, motion',
+    start: ['abc abc| abc'],
+    keysPressed: 'sa\n,',
+    end: ['abc |abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S; motion',
+    start: ['abc abc |abc'],
+    keysPressed: 'Sa\n;',
+    end: ['|abc abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S, motion',
+    start: ['abc abc| abc'],
+    keysPressed: 'Sa\n,',
+    end: ['abc abc |abc'],
+  });
 });
