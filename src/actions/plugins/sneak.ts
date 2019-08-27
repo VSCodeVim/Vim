@@ -29,8 +29,10 @@ class SneakForward extends BaseMovement {
     const document = editor.document;
     const lineCount = document.lineCount;
 
-    // Single key sneak
-    this.keysPressed[2] = this.keysPressed[2] === '\n' ? '' : this.keysPressed[2];
+    this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
 
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
@@ -87,8 +89,10 @@ class SneakBackward extends BaseMovement {
     const editor = vscode.window.activeTextEditor!;
     const document = editor.document;
 
-    // Single key sneak
-    this.keysPressed[2] = this.keysPressed[2] === '\n' ? '' : this.keysPressed[2];
+    if (this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
 
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
