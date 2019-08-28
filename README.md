@@ -607,7 +607,7 @@ Once active, type `gr` (say "go replace") followed by a motion to describe the t
 
 ## 🎩 VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to preserve some of them:
+VSCode has a lot of nifty tricks and we try to preserve some of them:
 
 - `gd` - jump to definition.
 - `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
