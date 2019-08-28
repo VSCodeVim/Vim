@@ -12,6 +12,7 @@ import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
+import { globalState } from '../../state/globalState';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -84,7 +85,6 @@ export enum SubstituteFlags {
  *   - update search state too!
  */
 export class SubstituteCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: ISubstituteCommandArguments;
   protected _abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
@@ -96,6 +96,11 @@ export class SubstituteCommand extends node.CommandBase {
 
   get arguments(): ISubstituteCommandArguments {
     return this._arguments;
+  }
+
+  public neovimCapable(): boolean {
+    // We need to use VSCode's quickpick capabilities to do confirmation
+    return (this._arguments.flags & SubstituteFlags.ConfirmEach) === 0;
   }
 
   getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
@@ -120,7 +125,7 @@ export class SubstituteCommand extends node.CommandBase {
     if (args.pattern === undefined) {
       // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
       // i.e. :s
-      const prevSubstiteState = vimState.globalState.substituteState;
+      const prevSubstiteState = globalState.substituteState;
       if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
         throw VimError.fromCode(ErrorCode.E35);
       } else {
@@ -131,15 +136,15 @@ export class SubstituteCommand extends node.CommandBase {
       if (args.pattern === '') {
         // If an explicitly empty pattern is entered, use previous search state (including search with * and #) and update both states
         // e.g :s/ or :s///
-        const prevSearchState = vimState.globalState.searchState;
+        const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
           throw VimError.fromCode(ErrorCode.E35);
         } else {
           args.pattern = prevSearchState.searchString;
         }
       }
-      vimState.globalState.substituteState = new SubstituteState(args.pattern, args.replace);
-      vimState.globalState.searchState = new SearchState(
+      globalState.substituteState = new SubstituteState(args.pattern, args.replace);
+      globalState.searchState = new SearchState(
         SearchDirection.Forward,
         vimState.cursorStopPosition,
         args.pattern,
@@ -162,7 +167,7 @@ export class SubstituteCommand extends node.CommandBase {
       let newContent = originalContent;
       const matches = newContent.match(regex)!;
 
-      var nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
+      const nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
       let matchPos = 0;
 
       for (const match of matches) {
@@ -182,7 +187,7 @@ export class SubstituteCommand extends node.CommandBase {
             newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
           await TextEditor.replace(new vscode.Range(line, 0, line, rangeEnd), newContent);
 
-          vimState.globalState.jumpTracker.recordJump(
+          globalState.jumpTracker.recordJump(
             new Jump({
               editor: vimState.editor,
               fileName: vimState.editor.document.fileName,
@@ -199,7 +204,7 @@ export class SubstituteCommand extends node.CommandBase {
         originalContent.replace(regex, this._arguments.replace)
       );
 
-      vimState.globalState.jumpTracker.recordJump(
+      globalState.jumpTracker.recordJump(
         new Jump({
           editor: vimState.editor,
           fileName: vimState.editor.document.fileName,

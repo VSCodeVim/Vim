@@ -8,10 +8,10 @@ import * as token from '../token';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
+  ignoreCase: boolean;
 }
 
 export class SortCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
@@ -21,6 +21,10 @@ export class SortCommand extends node.CommandBase {
 
   get arguments(): ISortCommandArguments {
     return this._arguments;
+  }
+
+  public neovimCapable(): boolean {
+    return true;
   }
 
   async execute(vimState: VimState): Promise<void> {
@@ -53,7 +57,12 @@ export class SortCommand extends node.CommandBase {
     }
 
     let lastLineLength = originalLines[originalLines.length - 1].length;
-    let sortedLines = originalLines.sort();
+
+    const compareFn = this._arguments.ignoreCase ?
+      (a: string, b: string) => a.toLowerCase().localeCompare(b.toLowerCase()) :
+      (a: string, b: string) => a.localeCompare(b);
+
+    let sortedLines = originalLines.sort(compareFn);
 
     if (this._arguments.reverse) {
       sortedLines.reverse();

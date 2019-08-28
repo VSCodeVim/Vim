@@ -172,7 +172,7 @@ export class JumpTracker {
     });
 
     const iterations = vimState.recordedState.count || 1;
-    for (var i = 0; i < iterations; i++) {
+    for (let i = 0; i < iterations; i++) {
       jump = getJump(Jump.fromStateNow(vimState));
     }
 

@@ -5,8 +5,8 @@ export function parseWriteCommandArgs(args: string): WriteCommand {
   if (!args) {
     return new WriteCommand({});
   }
-  var scannedArgs: IWriteCommandArguments = {};
-  var scanner = new Scanner(args);
+  const scannedArgs: IWriteCommandArguments = {};
+  const scanner = new Scanner(args);
   while (true) {
     scanner.skipWhiteSpace();
     if (scanner.isAtEof) {
