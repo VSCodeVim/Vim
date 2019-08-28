@@ -7,15 +7,15 @@ import { TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
 import {
   BaseMovement,
+  ExpandingSelection,
   IMovement,
+  MoveABacktick,
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
   MoveAParentheses,
+  MoveAroundTag,
   MoveASingleQuotes,
   MoveASquareBracket,
-  MoveABacktick,
-  MoveAroundTag,
-  ExpandingSelection,
 } from './motion';
 import { ChangeOperator } from './operator';
 
@@ -518,22 +518,32 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   protected includeLineBelow = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return this.execActionWithCount(position, vimState, 1);
+  }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<IMovement> {
+    count = count || 1;
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
     const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
     const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
-    const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
     // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
-    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
-      firstValidLineNumber,
-      cursorIndent,
-      -1
-    );
-    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(
-      firstValidLineNumber,
-      cursorIndent,
-      1
-    );
+    let cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
+    let startLineNumber = firstValidLineNumber;
+    let endLineNumber = firstValidLineNumber;
+
+    for (let i = 0; i < count; i++) {
+      startLineNumber = IndentObjectMatch.findRangeStartOrEnd(startLineNumber, cursorIndent, -1);
+
+      endLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
+
+      cursorIndent = TextEditor.getLineAt(new Position(startLineNumber, 0).getUp(0))
+        .firstNonWhitespaceCharacterIndex;
+    }
 
     // Adjust the start line as needed.
     if (this.includeLineAbove) {

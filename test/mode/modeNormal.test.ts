@@ -1940,6 +1940,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can do 2cai',
+    start: [
+      'if foo > 3:',
+      '    if foo < 20:',
+      '        log("foo is avarage")|',
+      '    foo = 3',
+      'do_something_else()',
+    ],
+    keysPressed: '2cai',
+    end: ['|', 'do_something_else()'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
     title: 'Can do cii',
     start: ['if foo > 3:', '\tlog("foo is big")', '\tfoo = 3', '|', 'do_something_else()'],
     keysPressed: 'cii',
