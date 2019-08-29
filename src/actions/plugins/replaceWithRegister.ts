@@ -11,7 +11,7 @@ import { RegisterAction } from './../base';
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
-  public modes = [ModeName.Normal];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
@@ -27,7 +27,7 @@ export class ReplaceOperator extends BaseOperator {
     const replaceWith = register.text as string;
 
     await TextEditor.replace(range, replaceWith);
-
+    await vimState.setCurrentMode(ModeName.Normal);
     return updateCursorPosition(vimState, range, replaceWith);
   }
 }
