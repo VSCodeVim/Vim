@@ -38,6 +38,13 @@ export class VisualMode extends Mode {
   constructor() {
     super(ModeName.Visual, '-- Visual --', VSCodeVimCursorType.TextDecoration, true);
   }
+
+  getStatusBarCommandText(vimState: VimState): string {
+    const cmd = vimState.recordedState.commandString;
+
+    // Don't show the `v` that brings you into visual mode
+    return cmd.length === 0 || cmd[0] === 'v' ? cmd.slice(1) : cmd;
+  }
 }
 
 export class VisualBlockMode extends Mode {
