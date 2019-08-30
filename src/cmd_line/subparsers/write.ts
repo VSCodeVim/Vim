@@ -3,9 +3,9 @@ import { Scanner } from '../scanner';
 
 export function parseWriteCommandArgs(args: string): WriteCommand {
   if (!args) {
-    return new WriteCommand({});
+    return new WriteCommand({ bgWrite: true });
   }
-  const scannedArgs: IWriteCommandArguments = {};
+  const scannedArgs: IWriteCommandArguments = { bgWrite: true };
   const scanner = new Scanner(args);
   while (true) {
     scanner.skipWhiteSpace();

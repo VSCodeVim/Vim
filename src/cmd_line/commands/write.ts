@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as node from '../node';
 import * as path from 'path';
-import * as util from 'util';
 import * as vscode from 'vscode';
+import { promisify } from 'util';
 import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
@@ -15,6 +15,7 @@ export interface IWriteCommandArguments extends node.ICommandArgs {
   file?: string;
   append?: boolean;
   cmd?: string;
+  bgWrite?: boolean;
 }
 
 //
@@ -52,22 +53,21 @@ export class WriteCommand extends node.CommandBase {
 
     // defer saving the file to vscode if file is new (to present file explorer) or if file is a remote file
     if (vimState.editor.document.isUntitled || vimState.editor.document.uri.scheme !== 'file') {
-      await vscode.commands.executeCommand('workbench.action.files.save');
+      await this.background(vscode.commands.executeCommand('workbench.action.files.save'));
       return;
     }
 
     try {
-      await util.promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
+      await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
       return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
-        fs.chmod(vimState.editor.document.fileName, 666, e => {
-          if (!e) {
-            return this.save(vimState);
-          }
+        try {
+          await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
+          return this.save(vimState);
+        } catch (e) {
           StatusBar.Set(e.message, vimState.currentMode, vimState.isRecordingMacro, true);
-          return;
-        });
+        }
       } else {
         StatusBar.Set(accessErr.message, vimState.currentMode, vimState.isRecordingMacro, true);
       }
@@ -75,19 +75,27 @@ export class WriteCommand extends node.CommandBase {
   }
 
   private async save(vimState: VimState): Promise<void> {
-    await vimState.editor.document.save().then(
-      () => {
-        let text =
-          '"' +
-          path.basename(vimState.editor.document.fileName) +
-          '" ' +
-          vimState.editor.document.lineCount +
-          'L ' +
-          vimState.editor.document.getText().length +
-          'C written';
-        StatusBar.Set(text, vimState.currentMode, vimState.isRecordingMacro, true);
-      },
-      e => StatusBar.Set(e, vimState.currentMode, vimState.isRecordingMacro, true)
+    await this.background(
+      vimState.editor.document.save().then(
+        () => {
+          let text =
+            '"' +
+            path.basename(vimState.editor.document.fileName) +
+            '" ' +
+            vimState.editor.document.lineCount +
+            'L ' +
+            vimState.editor.document.getText().length +
+            'C written';
+          StatusBar.Set(text, vimState.currentMode, vimState.isRecordingMacro, true);
+        },
+        e => StatusBar.Set(e, vimState.currentMode, vimState.isRecordingMacro, true)
+      )
     );
+  }
+
+  private async background(fn: Thenable<void>): Promise<void> {
+    if (!this._arguments.bgWrite) {
+      await fn;
+    }
   }
 }
