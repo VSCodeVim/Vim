@@ -598,11 +598,11 @@ Based on [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegiste
 
 Once active, type `gr` (say "go replace") followed by a motion to describe the text you want replaced by the contents of the register.
 
-| Motion Command          | Description                                                                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the default register or the specified register `a` in the example    |
-| `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the default register or the specified register `a` in the example |
-| `{Visual}["a]gr`        | Replace the selection with the contents of default register or the specified register `a` in the example                           |
+| Motion Command          | Description                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the specified register    |
+| `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the specified register |
+| `{Visual}["a]gr`        | Replace the selection with the contents of the specified register                       |
 
 ## 🎩 VSCodeVim tricks!
 
