@@ -112,4 +112,25 @@ suite('replaceWithRegister plugin', () => {
     keysPressed: `${YankInnerWord}2grr`,
     end: ['|first', 'third'],
   });
+
+  newTest({
+    title: 'Replaces in visual mode',
+    start: ['|first second'],
+    keysPressed: `${YankInnerWord}wviw${ReplaceOperator}`,
+    end: ['first firs|t'],
+  });
+
+  newTest({
+    title: 'Replaces in visual mode using a specified register',
+    start: ['|first second'],
+    keysPressed: `"a${YankInnerWord}wviw"a${ReplaceOperator}`,
+    end: ['first firs|t'],
+  });
+
+  newTest({
+    title: 'Replaces in visual line mode',
+    start: ['|first second'],
+    keysPressed: `${YankInnerWord}wV${ReplaceOperator}`,
+    end: ['firs|t'],
+  });
 });
