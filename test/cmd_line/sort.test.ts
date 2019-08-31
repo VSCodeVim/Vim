@@ -19,7 +19,7 @@ suite('Basic sort', () => {
   test('Sort whole file, asc', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
-      'b',
+      'B',
       '<Esc>',
       'o',
       'a',
@@ -30,7 +30,7 @@ suite('Basic sort', () => {
     ]);
     await commandLine.Run('sort', vimState);
 
-    assertEqualLines(['a', 'b', 'c']);
+    assertEqualLines(['B', 'a', 'c']);
   });
 
   test('Sort whole file, asc, ignoreCase', async () => {
