@@ -1,5 +1,28 @@
 # Change Log
 
+## [v1.10.1](https://github.com/vscodevim/vim/tree/v1.10.1) (2019-08-31)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.10.0...v1.10.1)
+
+**Fixed Bugs:**
+
+- ReplaceWithRegister doesn't work in visual mode [\#4015](https://github.com/VSCodeVim/Vim/issues/4015)
+- \<C-n\> not working in 1.10.0 [\#4011](https://github.com/VSCodeVim/Vim/issues/4011)
+- zh/zl/zH/zL not working properly [\#4008](https://github.com/VSCodeVim/Vim/issues/4008)
+
+**Closed issues:**
+
+- Ctrl-P and Ctrl-N can‘t work in the latest version [\#4017](https://github.com/VSCodeVim/Vim/issues/4017)
+- d Command Removes Mode Text [\#3781](https://github.com/VSCodeVim/Vim/issues/3781)
+- Yanking "clears" mode \(or makes it disappear\) from status bar until INSERT mode [\#3488](https://github.com/VSCodeVim/Vim/issues/3488)
+
+**Merged pull requests:**
+
+- Update dependency @types/node to v12.7.3 [\#4021](https://github.com/VSCodeVim/Vim/pull/4021) ([renovate[bot]](https://github.com/apps/renovate))
+- Make ReplaceWithRegister work in visual mode [\#4016](https://github.com/VSCodeVim/Vim/pull/4016) ([stevenguh](https://github.com/stevenguh))
+- :w write in background [\#4013](https://github.com/VSCodeVim/Vim/pull/4013) ([stevenguh](https://github.com/stevenguh))
+- Update dependency typescript to v3.6.2 [\#4010](https://github.com/VSCodeVim/Vim/pull/4010) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v1.10.0](https://github.com/vscodevim/vim/tree/v1.10.0) (2019-08-28)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.9.0...v1.10.0)
@@ -482,7 +505,6 @@
 - v1.0.6 [\#3438](https://github.com/VSCodeVim/Vim/pull/3438) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency typescript to v3.3.1 [\#3436](https://github.com/VSCodeVim/Vim/pull/3436) ([renovate[bot]](https://github.com/apps/renovate))
 - Adopt latest list navigation support [\#3432](https://github.com/VSCodeVim/Vim/pull/3432) ([joaomoreno](https://github.com/joaomoreno))
-- Fix `C-n` and `C-p` in autocomplete for multi cursor [\#3283](https://github.com/VSCodeVim/Vim/pull/3283) ([jackfranklin](https://github.com/jackfranklin))
 
 ## [v1.0.6](https://github.com/vscodevim/vim/tree/v1.0.6) (2019-02-01)
 
@@ -581,7 +603,6 @@
 
 - Error handling key \<C-d\>: Illegal value for line [\#3345](https://github.com/VSCodeVim/Vim/issues/3345)
 - :set hlsearch? makes plugin freeze out [\#3344](https://github.com/VSCodeVim/Vim/issues/3344)
-- ge doesn't go to the previous line [\#3285](https://github.com/VSCodeVim/Vim/issues/3285)
 
 **Closed issues:**
 
@@ -605,10 +626,6 @@
 ## [v1.0.1](https://github.com/vscodevim/vim/tree/v1.0.1) (2019-01-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.0...v1.0.1)
-
-**Enhancements:**
-
-- bug: fix neovim start-up flags [\#3290](https://github.com/VSCodeVim/Vim/issues/3290)
 
 **Fixed Bugs:**
 
