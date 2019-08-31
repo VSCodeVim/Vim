@@ -41,7 +41,7 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleKeyEvent(':');
     const statusBarBeforeTab = StatusBar.Get();
 
-    await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '.', '/', '<tab>']);
+    await modeHandler.handleMultipleKeyEvents(['e', ' ', '/', '<tab>']);
     const statusBarAfterTab = StatusBar.Get();
 
     await modeHandler.handleKeyEvent('<Esc>');
