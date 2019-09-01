@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.10.2](https://github.com/vscodevim/vim/tree/v1.10.2) (2019-09-01)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.10.1...v1.10.2)
+
+**Closed issues:**
+
+- Cut release 1.10.1 [\#4022](https://github.com/VSCodeVim/Vim/issues/4022)
+
+**Merged pull requests:**
+
+- Fix case sensitive sorting [\#4023](https://github.com/VSCodeVim/Vim/pull/4023) ([noslaver](https://github.com/noslaver))
+
 ## [v1.10.1](https://github.com/vscodevim/vim/tree/v1.10.1) (2019-08-31)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.10.0...v1.10.1)
