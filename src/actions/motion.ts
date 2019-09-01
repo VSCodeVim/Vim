@@ -836,7 +836,10 @@ class MoveLineEnd extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return position.getDownByCount(Math.max(count - 1, 0)).getLineEnd();
+    const pos = position.getDownByCount(Math.max(count - 1, 0)).getLineEnd();
+    return vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualBlock
+      ? pos.getLeftIfEOL()
+      : pos;
   }
 }
 

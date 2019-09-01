@@ -201,7 +201,7 @@ export class VimState implements vscode.Disposable {
    */
   private _currentMode: ModeName = ModeName.Normal;
 
-  public get currentMode(): number {
+  public get currentMode(): ModeName {
     return this._currentMode;
   }
 
