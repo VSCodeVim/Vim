@@ -94,7 +94,7 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 To push a release:
 
 ```bash
-gulp release --semver [SEMVER] --githubToken [TOKEN]
+gulp release --semver [SEMVER] --gitHubToken [TOKEN]
 git push --follow-tags
 ```
 
