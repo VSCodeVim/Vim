@@ -22,16 +22,6 @@ async function doesFileExist(fileUri: vscode.Uri) {
   }
 }
 
-async function createNewFile(fileUri: vscode.Uri) {
-  const activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor) {
-    await vscode.workspace.fs.writeFile(fileUri, new Uint8Array());
-  } else {
-    // fallback to local fs
-    await util.promisify(fs.close)(await util.promisify(fs.open)(fileUri.fsPath, 'w'));
-  }
-}
-
 export enum FilePosition {
   NewWindowVerticalSplit,
   NewWindowHorizontalSplit,
@@ -149,8 +139,9 @@ export class FileCommand extends node.CommandBase {
         // If both with and without ext path do not exist
         if (!fileExists) {
           if (this.arguments.createFileIfNotExists) {
-            await createNewFile(uriPath);
-            fileUri = uriPath;
+            // Change the scheme to untitled to open an
+            // untitled tab
+            fileUri = uriPath.with({ scheme: 'untitled' });
           }
         }
       }
