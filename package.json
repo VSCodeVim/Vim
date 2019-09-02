@@ -733,6 +733,11 @@
           "type": "object",
           "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
           "default": {}
+        },
+        "vim.wrapscan": {
+          "type": "boolean",
+          "description": "Searches wrap around the end of the file",
+          "default": true
         }
       }
     }
