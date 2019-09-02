@@ -104,4 +104,5 @@ export class Configuration implements IConfiguration {
   wrapKeys = {};
   report = 2;
   digraphs: {};
+  wrapscan = true;
 }
