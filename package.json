@@ -752,7 +752,8 @@
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
-    "winston-console-for-electron": "0.0.6"
+    "winston-console-for-electron": "0.0.6",
+    "winston-transport": "4.3.0"
   },
   "devDependencies": {
     "@types/diff": "4.0.2",
