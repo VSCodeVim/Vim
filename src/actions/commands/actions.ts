@@ -2175,15 +2175,16 @@ class CommandRemoveWordCommandline extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    const characterAt = Position.getWordLeft(
-      vimState.currentCommandlineText,
-      vimState.statusBarCursorCharacterPos
-    );
-
-    vimState.currentCommandlineText = characterAt
-      ? vimState.currentCommandlineText.substring(0, characterAt)
-      : '';
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+    const pos = vimState.statusBarCursorCharacterPos;
+    const cmdText = vimState.currentCommandlineText;
+    const characterAt = Position.getWordLeft(cmdText, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      vimState.currentCommandlineText = cmdText
+        .substring(0, characterAt)
+        .concat(cmdText.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
 
     commandLine.lastKeyPressed = key;
     return vimState;
