@@ -48,7 +48,7 @@ suite('comment operator', () => {
     endMode: ModeName.Normal,
   });
 
-  newTestOnly({
+  newTest({
     title: 'comment in visual block mode',
     start: ['one', '|two', 'three', 'four'],
     keysPressed: '<C-v>lljgc',
