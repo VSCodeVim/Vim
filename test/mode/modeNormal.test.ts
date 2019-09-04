@@ -637,6 +637,62 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can handle cj',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'cjasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle ck',
+    start: ['abc', '|def', 'ghi'],
+    keysPressed: 'ckasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2j',
+    start: ['|abc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'c2jasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2k',
+    start: ['abc', 'foo', 'ba|r', 'ghi'],
+    keysPressed: 'c2kasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle cj on last line',
+    start: ['abc', 'foo', 'bar', 'gh|i'],
+    keysPressed: 'cjasdf<Esc>',
+    end: ['abc', 'foo', 'bar', 'asd|f'],
+  });
+
+  newTest({
+    title: 'can handle ck on first line',
+    start: ['|abc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'ckasdf<Esc>',
+    end: ['asd|f', 'foo', 'bar', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2j on last line',
+    start: ['abc', 'foo', 'bar', 'gh|i'],
+    keysPressed: 'c2jasdf<Esc>',
+    end: ['abc', 'foo', 'bar', 'asd|f'],
+  });
+
+  newTest({
+    title: 'can handle c2k on first line',
+    start: ['a|bc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'c2kasdf<Esc>',
+    end: ['asd|f', 'foo', 'bar', 'ghi'],
+  });
+
+  newTest({
     title: "Can handle 'daw' on word with cursor inside spaces",
     start: ['one   two |  three,   four  '],
     keysPressed: 'daw',

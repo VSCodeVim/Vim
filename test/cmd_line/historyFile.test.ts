@@ -10,7 +10,7 @@ suite('HistoryFile', () => {
   let run_cmds: string[];
   const tmpDir = os.tmpdir();
 
-  const assertArrayEquals = (expected: any, actual: any) => {
+  const assertArrayEquals = (expected: any[], actual: any[]) => {
     assertEqual(expected.length, actual.length);
     for (let i: number = 0; i < expected.length; i++) {
       assertEqual(expected[i], actual[i]);
