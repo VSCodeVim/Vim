@@ -377,7 +377,7 @@
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
-          "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
+          "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c.",
           "default": true
         },
         "vim.leader": {
@@ -437,7 +437,7 @@
         },
         "vim.timeout": {
           "type": "number",
-          "description": "Timeout in milliseconds for remapped commands",
+          "description": "Timeout in milliseconds for remapped commands.",
           "default": 1000
         },
         "vim.scroll": {
@@ -457,7 +457,7 @@
         },
         "vim.iskeyword": {
           "type": "string",
-          "description": "keywords contain alphanumeric characters and '_'. If not configured `editor.wordSeparators` is used."
+          "description": "Keywords contain alphanumeric characters and '_'. If not configured `editor.wordSeparators` is used."
         },
         "vim.ignorecase": {
           "type": "boolean",
@@ -523,12 +523,12 @@
         },
         "vim.easymotionKeys": {
           "type": "string",
-          "description": "Set the characters used for jump marker name",
+          "description": "Set the characters used for jump marker name.",
           "default": "hklyuiopnm,qwertzxcvbasdgjf;"
         },
         "vim.easymotionJumpToAnywhereRegex": {
           "type": "string",
-          "description": "Regex matches for JumpToAnywhere motion",
+          "description": "Regex matches for JumpToAnywhere motion.",
           "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
         },
         "vim.replaceWithRegister": {
@@ -543,7 +543,7 @@
         },
         "vim.sneakUseIgnorecaseAndSmartcase": {
           "type": "boolean",
-          "description": "Case sensitivity is determined by 'ignorecase' and 'smartcase'",
+          "description": "Case sensitivity is determined by 'ignorecase' and 'smartcase'.",
           "default": false
         },
         "vim.surround": {
@@ -553,7 +553,7 @@
         },
         "vim.hlsearch": {
           "type": "boolean",
-          "description": "Show all matches of the most recent search pattern",
+          "description": "Show all matches of the most recent search pattern.",
           "default": false
         },
         "vim.incsearch": {
@@ -563,7 +563,7 @@
         },
         "vim.history": {
           "type": "number",
-          "description": "How much search or command history should be remembered",
+          "description": "How much search or command history should be remembered.",
           "default": 50
         },
         "vim.autoindent": {
@@ -577,7 +577,7 @@
         },
         "vim.handleKeys": {
           "type": "object",
-          "description": "Option to delegate certain key combinations back to VSCode to be handled natively",
+          "description": "Option to delegate certain key combinations back to VSCode to be handled natively.",
           "default": {
             "<C-d>": true
           }
@@ -592,7 +592,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Normal mode",
+          "description": "Status bar color when in Normal mode.",
           "default": "#005f5f"
         },
         "vim.statusBarColors.insert": {
@@ -600,7 +600,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Insert mode",
+          "description": "Status bar color when in Insert mode.",
           "default": "#5f0000"
         },
         "vim.statusBarColors.visual": {
@@ -608,7 +608,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Visual mode",
+          "description": "Status bar color when in Visual mode.",
           "default": "#5f00af"
         },
         "vim.statusBarColors.visualline": {
@@ -616,7 +616,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in VisualLine mode",
+          "description": "Status bar color when in VisualLine mode.",
           "default": "#005f5f"
         },
         "vim.statusBarColors.visualblock": {
@@ -624,7 +624,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in VisualBlock mode",
+          "description": "Status bar color when in VisualBlock mode.",
           "default": "#86592d"
         },
         "vim.statusBarColors.replace": {
@@ -632,27 +632,27 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Replace mode",
+          "description": "Status bar color when in Replace mode.",
           "default": "#00000"
         },
         "vim.visualstar": {
           "type": "boolean",
-          "description": "In visual mode, start a search with * or # using the current selection",
+          "description": "In visual mode, start a search with * or # using the current selection.",
           "default": false
         },
         "vim.changeWordIncludesWhitespace": {
           "type": "boolean",
-          "description": "Includes trailing whitespace when changing word",
+          "description": "Includes trailing whitespace when changing word.",
           "default": false
         },
         "vim.foldfix": {
           "type": "boolean",
-          "description": "Uses a hack to move around folds properly",
+          "description": "Uses a hack to move around folds properly.",
           "default": false
         },
         "vim.mouseSelectionGoesIntoVisualMode": {
           "type": "boolean",
-          "description": "Does dragging with the mouse put you into visual mode",
+          "description": "Does dragging with the mouse put you into visual mode.",
           "default": true
         },
         "vim.disableExtension": {
@@ -667,7 +667,7 @@
         },
         "vim.neovimPath": {
           "type": "string",
-          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
+          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe.",
           "default": "nvim"
         },
         "vim.substituteGlobalFlag": {
@@ -677,46 +677,46 @@
         },
         "vim.cursorStylePerMode.normal": {
           "type": "string",
-          "description": "Cursor style for Normal mode"
+          "description": "Cursor style for Normal mode."
         },
         "vim.cursorStylePerMode.insert": {
           "type": "string",
-          "description": "Cursor style for Insert mode"
+          "description": "Cursor style for Insert mode."
         },
         "vim.cursorStylePerMode.replace": {
           "type": "string",
-          "description": "Cursor style for Replace mode"
+          "description": "Cursor style for Replace mode."
         },
         "vim.cursorStylePerMode.visual": {
           "type": "string",
-          "description": "Cursor style for Visual mode"
+          "description": "Cursor style for Visual mode."
         },
         "vim.cursorStylePerMode.visualline": {
           "type": "string",
-          "description": "Cursor style for VisualLine mode"
+          "description": "Cursor style for VisualLine mode."
         },
         "vim.cursorStylePerMode.visualblock": {
           "type": "string",
-          "description": "Cursor style for VisualBlock mode"
+          "description": "Cursor style for VisualBlock mode."
         },
         "vim.autoSwitchInputMethod.enable": {
           "type": "boolean",
-          "description": "Switch input method automatically when mode changed",
+          "description": "Switch input method automatically when mode changed.",
           "default": false
         },
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
-          "description": "The input method for your normal mode, find more information here: https://github.com/VSCodeVim/Vim#input-method",
+          "description": "The input method for your normal mode, find more information here: https://github.com/VSCodeVim/Vim#input-method.",
           "default": ""
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
           "type": "string",
-          "description": "The shell command to switch input method",
+          "description": "The shell command to switch input method.",
           "default": "/path/to/im-select {im}"
         },
         "vim.autoSwitchInputMethod.obtainIMCmd": {
           "type": "string",
-          "description": "The shell command to get current input method",
+          "description": "The shell command to get current input method.",
           "default": "/path/to/im-select"
         },
         "vim.whichwrap": {
@@ -731,12 +731,12 @@
         },
         "vim.digraphs": {
           "type": "object",
-          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
+          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points.",
           "default": {}
         },
         "vim.wrapscan": {
           "type": "boolean",
-          "description": "Searches wrap around the end of the file",
+          "description": "Searches wrap around the end of the file.",
           "default": true
         }
       }
