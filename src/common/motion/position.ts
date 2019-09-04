@@ -536,7 +536,7 @@ export class Position extends vscode.Position {
     pos: number,
     inclusive: boolean = false
   ): number | undefined {
-    return Position.getWordLeftWtihRegex(text, pos, Position._nonWordCharRegex, inclusive);
+    return Position.getWordLeftWithRegex(text, pos, Position._nonWordCharRegex, inclusive);
   }
 
   /**
@@ -1084,7 +1084,7 @@ export class Position extends vscode.Position {
     return positions;
   }
 
-  private static getWordLeftWtihRegex(
+  private static getWordLeftWithRegex(
     text: string,
     pos: number,
     regex: RegExp,
@@ -1102,7 +1102,7 @@ export class Position extends vscode.Position {
    */
   private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine >= 0; currentLine--) {
-      const newCharacter = Position.getWordLeftWtihRegex(
+      const newCharacter = Position.getWordLeftWithRegex(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         this.character,
         regex,
