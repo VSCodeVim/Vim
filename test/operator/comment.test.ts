@@ -39,4 +39,20 @@ suite('comment operator', () => {
     end: ['blah |/* blah */ blah'],
     endMode: ModeName.Normal,
   });
+
+  newTest({
+    title: 'comment in visual line mode',
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: 'Vjgc',
+    end: ['one', '|// two', '// three', 'four'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'comment in visual block mode',
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lljgc',
+    end: ['one', '|// two', '// three', 'four'],
+    endMode: ModeName.Normal,
+  });
 });

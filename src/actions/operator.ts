@@ -592,6 +592,7 @@ export class ChangeOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const isEndOfLine = end.character === end.getLineEnd().character;
+    const isLineWise = vimState.currentRegisterMode === RegisterMode.LineWise;
     vimState = await new YankOperator(this.multicursorIndex).run(vimState, start, end);
     // which means the insert cursor would be one to the left of the end of
     // the line. We do want to run delete if it is a multiline change though ex. c}
@@ -600,7 +601,14 @@ export class ChangeOperator extends BaseOperator {
       Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
       end.line !== start.line
     ) {
-      if (isEndOfLine) {
+      if (isLineWise) {
+        vimState = await new DeleteOperator(this.multicursorIndex).run(
+          vimState,
+          start.getLineBegin(),
+          end.getLineEnd().getLeftThroughLineBreaks(),
+          false
+        );
+      } else if (isEndOfLine) {
         vimState = await new DeleteOperator(this.multicursorIndex).run(
           vimState,
           start,
@@ -763,7 +771,7 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 @RegisterAction
 export class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
