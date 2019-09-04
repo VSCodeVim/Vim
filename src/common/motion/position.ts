@@ -1106,7 +1106,8 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         this.character,
         regex,
-        currentLine !== this.line
+        currentLine !== this.line,
+        inclusive
       );
 
       if (newCharacter !== undefined) {
