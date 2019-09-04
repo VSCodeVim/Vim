@@ -771,7 +771,7 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 @RegisterAction
 export class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
