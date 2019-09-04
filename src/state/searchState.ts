@@ -300,13 +300,22 @@ export class SearchState {
 
       // Wrap around
       // TODO(bell)
-      const range = this._matchRanges[0];
-      return {
-        start: Position.FromVSCodePosition(range.start),
-        end: Position.FromVSCodePosition(range.end),
-        match: true,
-        index: 0,
-      };
+      if (configuration.wrapscan) {
+        const range = this._matchRanges[0];
+        return {
+          start: Position.FromVSCodePosition(range.start),
+          end: Position.FromVSCodePosition(range.end),
+          match: true,
+          index: 0,
+        };
+      } else {
+        return {
+          start: startPosition,
+          end: startPosition,
+          match: true,
+          index: this._matchRanges.length - 1,
+        };
+      }
     } else {
       for (let [index, matchRange] of this._matchRanges
         .slice(0)
@@ -322,14 +331,24 @@ export class SearchState {
         }
       }
 
+      // Wrap around
       // TODO(bell)
-      const range = this._matchRanges[this._matchRanges.length - 1];
-      return {
-        start: Position.FromVSCodePosition(range.start),
-        end: Position.FromVSCodePosition(range.end),
-        match: true,
-        index: this._matchRanges.length - 1,
-      };
+      if (configuration.wrapscan) {
+        const range = this._matchRanges[this._matchRanges.length - 1];
+        return {
+          start: Position.FromVSCodePosition(range.start),
+          end: Position.FromVSCodePosition(range.end),
+          match: true,
+          index: this._matchRanges.length - 1,
+        };
+      } else {
+        return {
+          start: startPosition,
+          end: startPosition,
+          match: true,
+          index: 0,
+        };
+      }
     }
   }
 

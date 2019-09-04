@@ -307,6 +307,7 @@ class Configuration implements IConfiguration {
   wrapKeys = {};
 
   report = 2;
+  wrapscan = true;
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,

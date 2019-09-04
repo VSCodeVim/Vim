@@ -319,4 +319,9 @@ export interface IConfiguration {
    * User-defined digraphs
    */
   digraphs: { [shortcut: string]: Digraph };
+
+  /**
+   * Searches wrap around the end of the file.
+   */
+  wrapscan: boolean;
 }
