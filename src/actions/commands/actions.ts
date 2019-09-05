@@ -1062,11 +1062,11 @@ class CommandEscInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlWInSearchMode extends BaseCommand {
+class CommandRemoveWordInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ['<C-w>'];
   runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
+    return false;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2194,7 +2194,7 @@ class CommandRemoveWordCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
   keys = ['<C-w>'];
   runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
+    return false;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
