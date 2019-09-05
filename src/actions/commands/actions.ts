@@ -1062,26 +1062,9 @@ class CommandEscInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlVInSearchMode extends BaseCommand {
+class CommandPasteInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ['<C-v>'];
-  runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = globalState.searchState!;
-    const textFromClipboard = await Clipboard.Paste();
-
-    searchState.searchString += textFromClipboard;
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandCmdVInSearchMode extends BaseCommand {
-  modes = [ModeName.SearchInProgressMode];
-  keys = ['<D-v>'];
+  keys = [['<C-v>'], ['<D-v']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -2166,30 +2149,9 @@ class CommandEscInCommandline extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlVInCommandline extends BaseCommand {
+class CommandPasteInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = ['<C-v>'];
-  runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const textFromClipboard = await Clipboard.Paste();
-
-    let modifiedString = vimState.currentCommandlineText.split('');
-    modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
-    vimState.currentCommandlineText = modifiedString.join('');
-
-    vimState.statusBarCursorCharacterPos += textFromClipboard.length;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandCmdVInCommandline extends BaseCommand {
-  modes = [ModeName.CommandlineInProgress];
-  keys = ['<D-v>'];
+  keys = [['<C-v>'], ['<D-v']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
