@@ -688,8 +688,9 @@
         },
         "vim.neovimPath": {
           "type": "string",
-          "description": "Path to run Neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe.",
-          "default": "nvim"
+          "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
+          "default": "nvim",
+          "scope": "machine"
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
