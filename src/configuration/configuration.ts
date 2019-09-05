@@ -302,7 +302,9 @@ class Configuration implements IConfiguration {
 
   digraphs = {};
 
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
+
   whichwrap = '';
   wrapKeys = {};
 

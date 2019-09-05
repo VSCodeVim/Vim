@@ -106,7 +106,7 @@ export class SubstituteCommand extends node.CommandBase {
   getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
     let jsRegexFlags = '';
 
-    if (configuration.substituteGlobalFlag === true) {
+    if (configuration.gdefault || configuration.substituteGlobalFlag) {
       // the gdefault flag is on, then /g if on by default and /g negates that
       if (!(args.flags & SubstituteFlags.ReplaceAll)) {
         jsRegexFlags += 'g';
