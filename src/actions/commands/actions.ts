@@ -1062,6 +1062,30 @@ class CommandEscInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlWInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ['<C-w>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = globalState.searchState!;
+    const pos = vimState.statusBarCursorCharacterPos;
+    const searchString = searchState.searchString;
+    const characterAt = Position.getWordLeft(searchString, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      searchState.searchString = searchString
+        .substring(0, characterAt)
+        .concat(searchString.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
+
+    return vimState;
+  }
+}
+@RegisterAction
 class CommandCtrlVInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ['<C-v>'];
