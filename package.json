@@ -360,12 +360,26 @@
         "vim.debug.loggingLevelForAlert": {
           "type": "string",
           "description": "Maximum level of messages to present as VS Code information window.",
-          "default": "error"
+          "default": "error",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "verbose",
+            "debug"
+          ]
         },
         "vim.debug.loggingLevelForConsole": {
           "type": "string",
           "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
-          "default": "error"
+          "default": "error",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "verbose",
+            "debug"
+          ]
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
@@ -402,7 +416,8 @@
         "vim.highlightedyank.duration": {
           "type": "number",
           "description": "Duration in milliseconds of the yank highlight.",
-          "default": 200
+          "default": 200,
+          "minimum": 1
         },
         "vim.useSystemClipboard": {
           "type": "boolean",
@@ -433,17 +448,20 @@
         "vim.textwidth": {
           "type": "number",
           "description": "Width to word-wrap to when using gq.",
-          "default": 80
+          "default": 80,
+          "minimum": 1
         },
         "vim.timeout": {
           "type": "number",
           "description": "Timeout in milliseconds for remapped commands.",
-          "default": 1000
+          "default": 1000,
+          "minimum": 0
         },
         "vim.scroll": {
           "type": "number",
           "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
-          "default": 20
+          "default": 20,
+          "minimum": 1
         },
         "vim.showcmd": {
           "type": "boolean",
@@ -494,12 +512,14 @@
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
           "description": "Set the width (in pixels) allocated to each character in the match.",
-          "default": 8
+          "default": 8,
+          "minimum": 1
         },
         "vim.easymotionMarkerHeight": {
           "type": "number",
           "description": "Set the height of the marker.",
-          "default": 14
+          "default": 14,
+          "minimum": 1
         },
         "vim.easymotionMarkerFontFamily": {
           "type": "string",
@@ -519,7 +539,8 @@
         "vim.easymotionMarkerYOffset": {
           "type": "number",
           "description": "Set the Y offset of the marker text (the distance from the top).",
-          "default": 0
+          "default": 0,
+          "minimum": 1
         },
         "vim.easymotionKeys": {
           "type": "string",
@@ -564,7 +585,8 @@
         "vim.history": {
           "type": "number",
           "description": "How much search or command history should be remembered.",
-          "default": 50
+          "default": 50,
+          "minimum": 1
         },
         "vim.autoindent": {
           "type": "boolean",
@@ -677,27 +699,81 @@
         },
         "vim.cursorStylePerMode.normal": {
           "type": "string",
-          "description": "Cursor style for Normal mode."
+          "description": "Cursor style for Normal mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.insert": {
           "type": "string",
-          "description": "Cursor style for Insert mode."
+          "description": "Cursor style for Insert mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.replace": {
           "type": "string",
-          "description": "Cursor style for Replace mode."
+          "description": "Cursor style for Replace mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visual": {
           "type": "string",
-          "description": "Cursor style for Visual mode."
+          "description": "Cursor style for Visual mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visualline": {
           "type": "string",
-          "description": "Cursor style for VisualLine mode."
+          "description": "Cursor style for VisualLine mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visualblock": {
           "type": "string",
-          "description": "Cursor style for VisualBlock mode."
+          "description": "Cursor style for VisualBlock mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.autoSwitchInputMethod.enable": {
           "type": "boolean",
@@ -727,7 +803,8 @@
         "vim.report": {
           "type": "number",
           "description": "Threshold for reporting number of lines changed.",
-          "default": 2
+          "default": 2,
+          "minimum": 1
         },
         "vim.digraphs": {
           "type": "object",

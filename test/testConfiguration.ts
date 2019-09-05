@@ -84,7 +84,7 @@ export class Configuration implements IConfiguration {
     normal: 'line',
     insert: 'block',
     visual: 'underline',
-    visualline: 'thin-lin',
+    visualline: 'line-thin',
     visualblock: 'block-outline',
     replace: 'underline-thin,',
   };
