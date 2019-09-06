@@ -21,6 +21,7 @@ export class Configuration implements IConfiguration {
   replaceWithRegister = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
   surround = true;
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
