@@ -149,7 +149,7 @@ class Configuration implements IConfiguration {
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
+    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -179,8 +179,11 @@ class Configuration implements IConfiguration {
     enable: true,
   };
 
+  replaceWithRegister = false;
+
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
 
   surround = true;
 
@@ -300,11 +303,14 @@ class Configuration implements IConfiguration {
 
   digraphs = {};
 
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
+
   whichwrap = '';
   wrapKeys = {};
 
   report = 2;
+  wrapscan = true;
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,

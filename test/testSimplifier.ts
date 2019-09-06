@@ -9,6 +9,7 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { waitForCursorSync } from '../src/util/util';
 import { assertEqualLines } from './testUtils';
+import { globalState } from '../src/state/globalState';
 
 export function getTestingFunctions() {
   const getNiceStack = (stack: string | undefined): string => {
@@ -215,7 +216,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
   let helper = new TestObjectHelper(testObj);
-  const jumpTracker = modeHandler.vimState.globalState.jumpTracker;
+  const jumpTracker = globalState.jumpTracker;
 
   // Don't try this at home, kids.
   (modeHandler as any).vimState.cursorPosition = new Position(0, 0);

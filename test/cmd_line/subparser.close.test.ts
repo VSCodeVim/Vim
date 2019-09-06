@@ -8,19 +8,19 @@ suite(':close args parser', () => {
   });
 
   test('can parse empty args', () => {
-    var args = commandParsers.close('');
+    const args = commandParsers.close('');
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.range, undefined);
   });
 
   test('ignores trailing white space', () => {
-    var args = commandParsers.close('  ');
+    const args = commandParsers.close('  ');
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.range, undefined);
   });
 
   test('can parse !', () => {
-    var args = commandParsers.close('!');
+    const args = commandParsers.close('!');
     assert.ok(args.arguments.bang);
     assert.equal(args.arguments.range, undefined);
   });
@@ -30,7 +30,7 @@ suite(':close args parser', () => {
   });
 
   test('ignores space after !', () => {
-    var args = commandParsers.close('! ');
+    const args = commandParsers.close('! ');
     assert.equal(args.arguments.bang, true);
     assert.equal(args.arguments.range, undefined);
   });

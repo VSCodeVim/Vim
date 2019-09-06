@@ -119,6 +119,11 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use ReplaceWithRegister plugin?
+   */
+  replaceWithRegister: boolean;
+
+  /**
    * Use sneak plugin?
    */
   sneak: boolean;
@@ -127,6 +132,11 @@ export interface IConfiguration {
    * Case sensitivity is determined by 'ignorecase' and 'smartcase'
    */
   sneakUseIgnorecaseAndSmartcase: boolean;
+
+  /**
+   * Use single-character `sneak` instead of Vim's native `f`"
+   */
+  sneakReplacesF: boolean;
 
   /**
    * Use surround plugin?
@@ -272,9 +282,10 @@ export interface IConfiguration {
   neovimPath: string;
 
   /**
-   * Automatically apply the /g flag to substitute commands.
+   * Automatically apply the `/g` flag to substitute commands.
    */
-  substituteGlobalFlag: boolean;
+  gdefault: boolean;
+  substituteGlobalFlag: boolean; // Deprecated in favor of gdefault
 
   /**
    * InputMethodSwicher
@@ -314,4 +325,9 @@ export interface IConfiguration {
    * User-defined digraphs
    */
   digraphs: { [shortcut: string]: Digraph };
+
+  /**
+   * Searches wrap around the end of the file.
+   */
+  wrapscan: boolean;
 }
