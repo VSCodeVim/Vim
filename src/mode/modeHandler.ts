@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as modes from './modes';
 
 import { Actions, BaseAction, KeypressState } from './../actions/base';
-import { BaseMovement, isIMovement } from './../actions/motion';
+import { BaseMovement, isIMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';

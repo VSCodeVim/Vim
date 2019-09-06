@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { IMovement } from './../../actions/motion';
+import { IMovement } from '../../actions/baseMotion';
 import { Position, PositionDiff } from './position';
 
 export class Range {

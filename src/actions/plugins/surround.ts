@@ -7,9 +7,8 @@ import { ModeName } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
 import { BaseCommand } from './../commands/actions';
-import { BaseMovement } from './../motion';
+import { BaseMovement, IMovement } from '../baseMotion';
 import {
-  IMovement,
   MoveABacktick,
   MoveACaret,
   MoveACurlyBrace,
@@ -21,7 +20,7 @@ import {
   MoveInsideCharacter,
   MoveInsideTag,
   MoveQuoteMatch,
-} from './../motion';
+} from '../motion';
 import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import {
   SelectInnerBigWord,

@@ -21,6 +21,7 @@ export class Configuration implements IConfiguration {
   replaceWithRegister = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
   surround = true;
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
@@ -79,12 +80,13 @@ export class Configuration implements IConfiguration {
   disableExtension = false;
   enableNeovim = false;
   neovimPath = 'nvim';
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: 'line',
     insert: 'block',
     visual: 'underline',
-    visualline: 'thin-lin',
+    visualline: 'line-thin',
     visualblock: 'block-outline',
     replace: 'underline-thin,',
   };

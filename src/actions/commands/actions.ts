@@ -1086,35 +1086,25 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
   }
 }
 @RegisterAction
-class CommandCtrlVInSearchMode extends BaseCommand {
+class CommandPasteInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<D-v']];
   runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
+    return false;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = globalState.searchState!;
+    const searchString = searchState.searchString;
+    const pos = vimState.statusBarCursorCharacterPos;
     const textFromClipboard = await Clipboard.Paste();
 
-    searchState.searchString += textFromClipboard;
-    return vimState;
-  }
-}
+    searchState.searchString = searchString
+      .substring(0, pos)
+      .concat(textFromClipboard)
+      .concat(searchString.slice(pos));
+    vimState.statusBarCursorCharacterPos += textFromClipboard.length;
 
-@RegisterAction
-class CommandCmdVInSearchMode extends BaseCommand {
-  modes = [ModeName.SearchInProgressMode];
-  keys = ['<D-v>'];
-  runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = globalState.searchState!;
-    const textFromClipboard = await Clipboard.Paste();
-
-    searchState.searchString += textFromClipboard;
     return vimState;
   }
 }
@@ -2216,43 +2206,26 @@ class CommandRemoveWordCommandline extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlVInCommandline extends BaseCommand {
+class CommandPasteInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<D-v']];
   runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
+    return false;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const pos = vimState.statusBarCursorCharacterPos;
+    const cmdText = vimState.currentCommandlineText;
     const textFromClipboard = await Clipboard.Paste();
 
-    let modifiedString = vimState.currentCommandlineText.split('');
-    modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
-    vimState.currentCommandlineText = modifiedString.join('');
-
+    vimState.currentCommandlineText = cmdText
+      .substring(0, pos)
+      .concat(textFromClipboard)
+      .concat(cmdText.slice(pos));
     vimState.statusBarCursorCharacterPos += textFromClipboard.length;
 
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandCmdVInCommandline extends BaseCommand {
-  modes = [ModeName.CommandlineInProgress];
-  keys = ['<D-v>'];
-  runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const textFromClipboard = await Clipboard.Paste();
-
-    let modifiedString = vimState.currentCommandlineText.split('');
-    modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
-    vimState.currentCommandlineText = modifiedString.join('');
-
-    vimState.statusBarCursorCharacterPos += textFromClipboard.length;
-
+    commandLine.lastKeyPressed = key;
     return vimState;
   }
 }

@@ -134,6 +134,11 @@ export interface IConfiguration {
   sneakUseIgnorecaseAndSmartcase: boolean;
 
   /**
+   * Use single-character `sneak` instead of Vim's native `f`"
+   */
+  sneakReplacesF: boolean;
+
+  /**
    * Use surround plugin?
    */
   surround: boolean;
@@ -277,9 +282,10 @@ export interface IConfiguration {
   neovimPath: string;
 
   /**
-   * Automatically apply the /g flag to substitute commands.
+   * Automatically apply the `/g` flag to substitute commands.
    */
-  substituteGlobalFlag: boolean;
+  gdefault: boolean;
+  substituteGlobalFlag: boolean; // Deprecated in favor of gdefault
 
   /**
    * InputMethodSwicher

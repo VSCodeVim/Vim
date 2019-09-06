@@ -5,9 +5,8 @@ import { RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
+import { BaseMovement, IMovement } from './baseMotion';
 import {
-  BaseMovement,
-  IMovement,
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
   MoveAParentheses,

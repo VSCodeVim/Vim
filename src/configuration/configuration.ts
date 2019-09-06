@@ -183,6 +183,7 @@ class Configuration implements IConfiguration {
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
 
   surround = true;
 
@@ -302,7 +303,9 @@ class Configuration implements IConfiguration {
 
   digraphs = {};
 
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
+
   whichwrap = '';
   wrapKeys = {};
 
