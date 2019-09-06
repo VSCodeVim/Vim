@@ -134,6 +134,11 @@ export interface IConfiguration {
   sneakUseIgnorecaseAndSmartcase: boolean;
 
   /**
+   * Use single-character `sneak` instead of Vim's native `f`"
+   */
+  sneakReplacesF: boolean;
+
+  /**
    * Use surround plugin?
    */
   surround: boolean;

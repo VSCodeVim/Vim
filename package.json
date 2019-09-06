@@ -566,6 +566,11 @@
           "markdownDescription": "Case sensitivity is determined by `ignorecase` and `smartcase`.",
           "default": false
         },
+        "vim.sneakReplacesF": {
+          "type": "boolean",
+          "markdownDescription": "Use single-character [Sneak](https://github.com/justinmk/vim-sneak) instead of Vim's native `f`.",
+          "default": false
+        },
         "vim.surround": {
           "type": "boolean",
           "markdownDescription": "Enable the [Surround](https://github.com/tpope/vim-surround) plugin for Vim.",

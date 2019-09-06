@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { BaseMovement } from '../actions/motion';
+import { BaseMovement } from '../actions/baseMotion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
