@@ -3,10 +3,10 @@ import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
 import { Position } from '../../common/motion/position';
-import { IMovement, BaseMovement } from '../motion';
+import { BaseMovement, IMovement } from '../baseMotion';
 
 @RegisterAction
-class SneakForward extends BaseMovement {
+export class SneakForward extends BaseMovement {
   keys = [['s', '<character>', '<character>'], ['z', '<character>', '<character>']];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -67,7 +67,7 @@ class SneakForward extends BaseMovement {
 }
 
 @RegisterAction
-class SneakBackward extends BaseMovement {
+export class SneakBackward extends BaseMovement {
   keys = [['S', '<character>', '<character>'], ['Z', '<character>', '<character>']];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {

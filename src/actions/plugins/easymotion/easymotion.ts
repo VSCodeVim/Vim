@@ -5,6 +5,7 @@ import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { MarkerGenerator } from './markerGenerator';
+import { ModeName } from '../../../mode/mode';
 
 export class EasyMotion {
   /**
@@ -38,7 +39,7 @@ export class EasyMotion {
   /**
    * Mode to return to after attempting easymotion
    */
-  public previousMode: number;
+  public previousMode: ModeName;
 
   constructor() {
     this._markers = [];

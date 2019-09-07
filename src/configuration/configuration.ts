@@ -19,7 +19,7 @@ const packagejson: {
   contributes: {
     keybindings: VSCodeKeybinding[];
   };
-} = require('../../../package.json');
+} = require('../../package.json');
 
 type OptionValue = number | string | boolean;
 
@@ -183,6 +183,7 @@ class Configuration implements IConfiguration {
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
 
   surround = true;
 
@@ -302,11 +303,14 @@ class Configuration implements IConfiguration {
 
   digraphs = {};
 
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
+
   whichwrap = '';
   wrapKeys = {};
 
   report = 2;
+  wrapscan = true;
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,

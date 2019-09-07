@@ -102,7 +102,7 @@ export function assertEqual<T>(one: T, two: T, message: string = ''): void {
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
-): Promise<any> {
+): Promise<void> {
   await commandLine.load();
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
@@ -128,7 +128,7 @@ const mockAndEnable = async () => {
   await mh.handleKeyEvent('<ExtensionEnable>');
 };
 
-export async function cleanUpWorkspace(): Promise<any> {
+export async function cleanUpWorkspace(): Promise<void> {
   return new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
