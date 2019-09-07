@@ -1983,13 +1983,13 @@ class CommandTabInCommandline extends BaseCommand {
     return this.keysPressed[0] === '\n';
   }
 
-  private cycleCompletion(vimState: VimState, tabForward: boolean) {
+  private cycleCompletion(vimState: VimState, isTabForward: boolean) {
     const autoCompleteItems = commandLine.autoCompleteItems;
     if (autoCompleteItems.length === 0) {
       return;
     }
 
-    commandLine.autoCompleteIndex = tabForward
+    commandLine.autoCompleteIndex = isTabForward
       ? (commandLine.autoCompleteIndex + 1) % autoCompleteItems.length
       : (commandLine.autoCompleteIndex - 1 + autoCompleteItems.length) % autoCompleteItems.length;
 
@@ -1998,20 +1998,20 @@ class CommandTabInCommandline extends BaseCommand {
     const evalCmd = lastCmd.slice(0, lastPos);
     const restCmd = lastCmd.slice(lastPos);
 
-    vimState.currentCommandlineText = evalCmd + autoCompleteItems[commandLine.autoCompleteIndex];
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    vimState.currentCommandlineText += restCmd;
+    vimState.currentCommandlineText =
+      evalCmd + autoCompleteItems[commandLine.autoCompleteIndex] + restCmd;
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    const tabForward = key === '<tab>';
+    const isTabForward = key === '<tab>';
 
     if (
       commandLine.autoCompleteItems.length !== 0 &&
-      (commandLine.lastKeyPressed === '<tab>' || commandLine.lastKeyPressed === '<shift+tab>')
+      this.keys.some(k => commandLine.lastKeyPressed === k[0])
     ) {
-      this.cycleCompletion(vimState, tabForward);
+      this.cycleCompletion(vimState, isTabForward);
       commandLine.lastKeyPressed = key;
       return vimState;
     }
@@ -2046,20 +2046,14 @@ class CommandTabInCommandline extends BaseCommand {
 
       // test if the baseName is . or ..
       const shouldAddDotItems = /^\.\.?$/g.test(baseName);
-      newCompletionItems = await readDirectory(
-        currentUri,
-        fullDirPath,
-        p.sep,
-        shouldAddDotItems
-      ).then(dirItems =>
-        dirItems
-          .filter(d => d.path.startsWith(baseName))
-          .map(r => r.path.slice(r.path.search(baseName) + baseName.length))
-          .sort()
-      );
+      const dirItems = await readDirectory(currentUri, fullDirPath, p.sep, shouldAddDotItems);
+      newCompletionItems = dirItems
+        .filter(d => d.path.startsWith(baseName))
+        .map(r => r.path.slice(r.path.search(baseName) + baseName.length))
+        .sort();
     }
 
-    const newIndex = tabForward ? 0 : newCompletionItems.length - 1;
+    const newIndex = isTabForward ? 0 : newCompletionItems.length - 1;
     commandLine.autoCompleteIndex = newIndex;
     // If here only one items we fill cmd direct, so the next tab will not cycle the one item array
     commandLine.autoCompleteItems = newCompletionItems.length <= 1 ? [] : newCompletionItems;
@@ -2067,9 +2061,8 @@ class CommandTabInCommandline extends BaseCommand {
     commandLine.preCompleteCommand = evalCmd + restCmd;
 
     const completion = newCompletionItems.length === 0 ? '' : newCompletionItems[newIndex];
-    vimState.currentCommandlineText = evalCmd + completion;
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    vimState.currentCommandlineText += restCmd;
+    vimState.currentCommandlineText = evalCmd + completion + restCmd;
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
 
     commandLine.lastKeyPressed = key;
     return vimState;
@@ -2938,10 +2931,6 @@ class CommandGoToDefinition extends BaseCommand {
     const oldActiveEditor = vimState.editor;
 
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
-    // `executeCommand` returns immediately before cursor is updated
-    // wait for the editor to update before updating the vim state
-    // https://github.com/VSCodeVim/Vim/issues/3277
-    await waitForCursorSync(1000);
     if (oldActiveEditor === vimState.editor) {
       vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
