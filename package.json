@@ -869,8 +869,8 @@
     "sinon": "7.4.2",
     "typescript": "3.6.2",
     "tslint": "5.19.0",
-    "ts-loader": "^6.0.4",
+    "ts-loader": "6.0.4",
     "vscode": "1.1.36",
-    "webpack-stream": "^5.2.1"
+    "webpack-stream": "5.2.1"
   }
 }
