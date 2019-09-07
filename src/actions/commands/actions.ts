@@ -2921,6 +2921,7 @@ class CommandOpenFile extends BaseCommand {
   }
 }
 
+
 @RegisterAction
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
@@ -2928,16 +2929,16 @@ class CommandGoToDefinition extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vimState.editor;
-
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
-    if (oldActiveEditor === vimState.editor) {
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
       vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
     return vimState;
   }
 }
+
 
 @RegisterAction
 class CommandGoBackInChangelist extends BaseCommand {
