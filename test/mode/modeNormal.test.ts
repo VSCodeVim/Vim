@@ -1347,6 +1347,18 @@ suite('Mode Normal', () => {
   //         '|    // it is hard.']
   // });
 
+  // newTest({
+  //   title: 'gq handles tabs before single line comments correctly',
+  //   start: [
+  //     '\t\t// We choose to write a vim extension, not because it is easy, but because it is hard|.',
+  //   ],
+  //   keysPressed: 'Vgq',
+  //   end: [
+  //     '\t\t// We choose to write a vim extension, not because it is easy, but',
+  //     '|\t\t// because it is hard.',
+  //   ],
+  // });
+
   newTest({
     title: 'Can handle space',
     start: ['|abc', 'def'],
