@@ -2921,7 +2921,6 @@ class CommandOpenFile extends BaseCommand {
   }
 }
 
-
 @RegisterAction
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
@@ -2938,7 +2937,6 @@ class CommandGoToDefinition extends BaseCommand {
     return vimState;
   }
 }
-
 
 @RegisterAction
 class CommandGoBackInChangelist extends BaseCommand {
