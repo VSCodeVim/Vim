@@ -5,7 +5,6 @@
  */
 import './src/actions/include-all';
 
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CompositionState } from './src/state/compositionState';
@@ -159,12 +158,11 @@ export async function activate(context: vscode.ExtensionContext) {
     if (Globals.isTesting && Globals.mockModeHandler) {
       contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
-      _.filter(
-        ModeHandlerMap.getAll(),
-        modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
-      ).forEach(modeHandler => {
-        contentChangeHandler(modeHandler);
-      });
+      ModeHandlerMap.getAll()
+        .filter(modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName)
+        .forEach(modeHandler => {
+          contentChangeHandler(modeHandler);
+        });
     }
 
     setTimeout(() => {
@@ -498,10 +496,9 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
-  _.filter(
-    ModeHandlerMap.getAll(),
-    modeHandler => modeHandler.vimState.identity.fileName === document.fileName
-  ).forEach(modeHandler => {
-    modeHandler.vimState.historyTracker.clear();
-  });
+  ModeHandlerMap.getAll()
+    .filter(modeHandler => modeHandler.vimState.identity.fileName === document.fileName)
+    .forEach(modeHandler => {
+      modeHandler.vimState.historyTracker.clear();
+    });
 }
