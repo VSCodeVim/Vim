@@ -841,22 +841,27 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: true, start: '' },
   ];
 
-  public getIndentationLevel(s: string): number {
+  public getIndentation(s: string): string {
+    // Use the indentation of the first non-whitespace line, if any such line is
+    // selected.
     for (const line of s.split('\n')) {
       const result = line.match(/^\s+/g);
-      const indentLevel = result ? result[0].length : 0;
+      const indent = result ? result[0] : '';
 
-      if (indentLevel !== line.length) {
-        return indentLevel;
+      if (indent !== line) {
+        return indent;
       }
     }
 
-    return 0;
+    return '';
   }
 
-  public reflowParagraph(s: string, indentLevel: number): string {
+  public reflowParagraph(s: string, indent: string): string {
+    let indentLevel = 0;
+    for (const char of indent) {
+      indentLevel += char === '\t' ? configuration.tabstop : 1;
+    }
     const maximumLineLength = configuration.textwidth - indentLevel - 2;
-    const indent = Array(indentLevel + 1).join(' ');
 
     // Chunk the lines by commenting style.
 
@@ -1033,9 +1038,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
     end = Position.LaterOf(start, end);
 
     let textToReflow = TextEditor.getText(new vscode.Range(start, end));
-    let indentLevel = this.getIndentationLevel(textToReflow);
+    let indent = this.getIndentation(textToReflow);
 
-    textToReflow = this.reflowParagraph(textToReflow, indentLevel);
+    textToReflow = this.reflowParagraph(textToReflow, indent);
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',
