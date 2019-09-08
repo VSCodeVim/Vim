@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as util from 'util';
 import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
-import { getFullPath, getUriPath } from '../../util/path';
+import { getPathDetails, resolveUri } from '../../util/path';
 import * as node from '../node';
 import untildify = require('untildify');
 
@@ -108,22 +108,26 @@ export class FileCommand extends node.CommandBase {
       this._arguments.name = this.arguments.name.replace(/^file:\/\//, '');
 
       // Using a filename, open or create the file
-      const { fullPath, path: p } = getFullPath(this.arguments.name);
+      const isRemote = !!vscode.env.remoteName;
+      const { fullPath, path: p } = getPathDetails(this.arguments.name, editorFileUri, isRemote);
       // Only if the expanded path of the full path is different than
       // the currently opened window path
       if (fullPath !== editorFilePath) {
-        const uriPath = getUriPath(editorFileUri, fullPath, p.sep);
+        const uriPath = resolveUri(fullPath, p.sep, editorFileUri, isRemote);
         if (uriPath === null) {
-          // return the if path is invalid
+          // return if the path is invalid
           return;
         }
 
         let fileExists = await doesFileExist(uriPath);
-        if (!fileExists) {
+        if (fileExists) {
+          // If the file without the added ext exists
+          fileUri = uriPath;
+        } else {
           // if file does not exist
           // try to find it with the same extension as the current file
           const pathWithExt = fullPath + p.extname(editorFilePath);
-          const uriPathWithExt = getUriPath(editorFileUri, pathWithExt, p.sep);
+          const uriPathWithExt = resolveUri(pathWithExt, p.sep, editorFileUri, isRemote);
           if (uriPathWithExt !== null) {
             fileExists = await doesFileExist(uriPathWithExt);
             if (fileExists) {
@@ -131,9 +135,6 @@ export class FileCommand extends node.CommandBase {
               fileUri = uriPathWithExt;
             }
           }
-        } else {
-          // If the file without the added ext exists
-          fileUri = uriPath;
         }
 
         // If both with and without ext path do not exist
@@ -142,6 +143,9 @@ export class FileCommand extends node.CommandBase {
             // Change the scheme to untitled to open an
             // untitled tab
             fileUri = uriPath.with({ scheme: 'untitled' });
+          } else {
+            this._logger.error(`${this.arguments.name} does not exist.`);
+            return;
           }
         }
       }

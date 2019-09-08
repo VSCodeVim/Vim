@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync, waitForCursorSync } from '../../util/util';
+import { getCursorsAfterSync } from '../../util/util';
 import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
@@ -26,10 +26,7 @@ import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
-import { readDirectory, getFullPath } from '../../util/path';
-import * as path from 'path';
-import untildify = require('untildify');
-
+import { readDirectory, getPathDetails } from '../../util/path';
 import {
   ReportLinesChanged,
   ReportClear,
@@ -2010,7 +2007,7 @@ class CommandTabInCommandline extends BaseCommand {
     const currentCmd = vimState.currentCommandlineText;
     const cursorPos = vimState.statusBarCursorCharacterPos;
 
-    // Sub string since vim do completion before the cursor
+    // Sub string since vim does completion before the cursor
     let evalCmd = currentCmd.slice(0, cursorPos);
     let restCmd = currentCmd.slice(cursorPos);
 
@@ -2029,17 +2026,28 @@ class CommandTabInCommandline extends BaseCommand {
       // ideally it should be a process of white-listing to selected commands like :e and :vsp
       let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
       const currentUri = vscode.window.activeTextEditor!.document.uri;
+      const isRemote = !!vscode.env.remoteName;
 
-      const { fullDirPath, baseName, partialPath, path: p } = getFullPath(filePathInCmd);
+      const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
+        filePathInCmd,
+        currentUri,
+        isRemote
+      );
       // Update the evalCmd in case of windows, where we change / to \
       evalCmd = evalCmd.slice(0, fileRegex.lastIndex) + partialPath;
 
       // test if the baseName is . or ..
       const shouldAddDotItems = /^\.\.?$/g.test(baseName);
-      const dirItems = await readDirectory(currentUri, fullDirPath, p.sep, shouldAddDotItems);
+      const dirItems = await readDirectory(
+        fullDirPath,
+        p.sep,
+        currentUri,
+        isRemote,
+        shouldAddDotItems
+      );
       newCompletionItems = dirItems
-        .filter(d => d.path.startsWith(baseName))
-        .map(r => r.path.slice(r.path.search(baseName) + baseName.length))
+        .filter(name => name.startsWith(baseName))
+        .map(name => name.slice(name.search(baseName) + baseName.length))
         .sort();
     }
 
