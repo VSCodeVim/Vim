@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync, waitForCursorSync } from '../../util/util';
+import { getCursorsAfterSync } from '../../util/util';
 import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';

@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Logger } from './util/logger';
 
 interface IEnqueuedTask {
@@ -19,7 +18,7 @@ class TaskQueue {
   private isRunning(queueName: string): boolean {
     return (
       this._taskQueue[queueName] &&
-      _.filter(this._taskQueue[queueName].tasks, x => x.isRunning).length > 0
+      this._taskQueue[queueName].tasks.filter(x => x.isRunning).length > 0
     );
   }
 
@@ -27,7 +26,7 @@ class TaskQueue {
     if (!this._taskQueue[queueName]) {
       return 0;
     }
-    return _.filter(this._taskQueue[queueName].tasks, x => x.isHighPriority).length;
+    return this._taskQueue[queueName].tasks.filter(x => x.isHighPriority).length;
   }
 
   private async runTasks(queueName: string): Promise<void> {
@@ -53,7 +52,7 @@ class TaskQueue {
    *       promises don't allow you to stop it.
    */
   private dequeueTask(task: IEnqueuedTask): void {
-    _.remove(this._taskQueue[task.queue].tasks, t => t === task);
+    this._taskQueue[task.queue].tasks = this._taskQueue[task.queue].tasks.filter(t => t !== task);
   }
 
   /**
