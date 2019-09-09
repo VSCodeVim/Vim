@@ -18,6 +18,9 @@ const config = {
     libraryTarget: 'commonjs2',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
+
+  node: false, // prevent to include webpack's node polyfill, 📖 -> https://webpack.js.org/configuration/node/
+
   devtool: 'source-map',
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
@@ -31,7 +34,17 @@ const config = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: ['ts-loader'],
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              compilerOptions: {
+                module: 'esnext', // emit transpiled output with esm to allow tree shaking, code splitting
+              },
+            },
+          },
+        ],
       },
     ],
   },
