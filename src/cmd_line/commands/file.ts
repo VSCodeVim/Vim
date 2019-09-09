@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import * as node from '../node';
-import untildify = require('untildify');
+const untildify: typeof import('untildify') = require('untildify');
 
 async function doesFileExist(fileUri: vscode.Uri) {
   const activeTextEditor = vscode.window.activeTextEditor;

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import AppDirectory = require('appdirectory');
+import * as AppDirectory from 'appdirectory';
 import { Logger } from './logger';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';

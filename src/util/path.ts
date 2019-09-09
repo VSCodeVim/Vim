@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import untildify = require('untildify');
+
+const untildify: typeof import('untildify') = require('untildify');
 
 /**
  * A interface to the path in the node.js.

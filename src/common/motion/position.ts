@@ -4,7 +4,7 @@ import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
-import escapeRegExp = require('lodash.escaperegexp');
+const escapeRegExp: typeof import('lodash.escaperegexp') = require('lodash.escaperegexp');
 
 /**
  * Represents a difference between two positions. Add it to a position
