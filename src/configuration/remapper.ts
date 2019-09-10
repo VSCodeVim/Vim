@@ -110,8 +110,9 @@ export class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
+    const keysAsString = keys.join('');
     for (let remap of userDefinedRemappings.keys()) {
-      if (keys.join('') === remap.slice(0, keys.length)) {
+      if (remap.startsWith(keysAsString)) {
         this._isPotentialRemap = true;
         break;
       }

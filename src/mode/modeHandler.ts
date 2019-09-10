@@ -416,6 +416,10 @@ export class ModeHandler implements vscode.Disposable {
       );
     }
 
+    if (!this._remappers.isPotentialRemap && recordedState.isInsertion) {
+      vimState.recordedState.resetCommandList();
+    }
+
     return vimState;
   }
 
