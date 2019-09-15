@@ -14,7 +14,7 @@ suite('cmd_line tabComplete', () => {
 
   suiteTeardown(t.cleanUpWorkspace);
 
-  afterEach(async () => {
+  teardown(async () => {
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
