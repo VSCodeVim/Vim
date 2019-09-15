@@ -14,6 +14,10 @@ suite('cmd_line tabComplete', () => {
 
   suiteTeardown(t.cleanUpWorkspace);
 
+  afterEach(async () => {
+    await modeHandler.handleKeyEvent('<Esc>');
+  });
+
   test('command line command tab completion', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
