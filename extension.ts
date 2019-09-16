@@ -263,6 +263,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const mh = await getAndUpdateModeHandler();
 
+      // We may receive changes from other panels when, having selections in them containing the same file
+      // and changing text before the selection in current panel.
+      if (e.textEditor !== mh.vimState.editor) {
+        return;
+      }
+
       if (mh.vimState.focusChanged) {
         mh.vimState.focusChanged = false;
         return;
