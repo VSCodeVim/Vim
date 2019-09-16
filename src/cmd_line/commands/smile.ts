@@ -3,17 +3,7 @@ import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 
 export class SmileCommand extends node.CommandBase {
-  constructor() {
-    super();
-  }
-
-  async execute(): Promise<void> {
-    await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
-    await TextEditor.insert(this.getSmileText());
-  }
-
-  getSmileText(): string {
-    return `
+  static readonly smileText: string = `
                                oooo$$$$$$$$$$$$oooo
                           oo$$$$$$$$$$$$$$$$$$$$$$$$o
                        oo$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$o         o$   $$ o$
@@ -40,5 +30,13 @@ export class SmileCommand extends node.CommandBase {
                                         $$$$$$$$$$$$
                                          $$$$$$$$$$"
                                           "$$$""""`;
+
+  constructor() {
+    super();
+  }
+
+  async execute(): Promise<void> {
+    await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
+    await TextEditor.insert(SmileCommand.smileText);
   }
 }
