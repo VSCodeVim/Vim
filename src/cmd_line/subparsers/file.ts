@@ -7,15 +7,12 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
   }
 
   let scanner = new Scanner(args);
-  let bang;
-  const c = scanner.next();
-  bang = c === '!';
+  const bang = scanner.next() === '!';
   if (scanner.isAtEof) {
     return new node.FileCommand({ name: '', bang: bang, createFileIfNotExists: true });
   }
 
-  let name = scanner.nextWord();
-
+  let name = scanner.remaining();
   return new node.FileCommand({
     name: name.trim(),
     bang: bang,
