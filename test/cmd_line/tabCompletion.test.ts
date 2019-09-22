@@ -27,6 +27,21 @@ suite('cmd_line tabComplete', () => {
     assert.equal(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
   });
 
+  test('command line command shift+tab', async () => {
+    await modeHandler.handleMultipleKeyEvents([':', 'e', '<tab>']);
+    const firstTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<tab>');
+    const secondTab = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<shift+tab>');
+    const actual = StatusBar.Get();
+
+    await modeHandler.handleKeyEvent('<Esc>');
+    assert.notEqual(firstTab, secondTab);
+    assert.equal(actual, firstTab, "Command can't go back with shift+tab");
+  });
+
   test('command line file tab completion with no base path', async () => {
     await modeHandler.handleKeyEvent(':');
     const statusBarBeforeTab = StatusBar.Get();

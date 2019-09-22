@@ -89,6 +89,11 @@
         "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
+        "key": "shift+tab",
+        "command": "extension.vim_shift+tab",
+        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
         "key": "left",
         "command": "extension.vim_left",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
