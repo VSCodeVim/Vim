@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
 
-import { BaseAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { ModeName } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { RecordedState } from '../state/recordedState';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
@@ -503,11 +501,15 @@ class MoveFindForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (configuration.sneakReplacesF) {
-      return new SneakForward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
-        position,
-        vimState,
-        count
-      );
+      const pos = await new SneakForward(
+        this.keysPressed.concat('\n'),
+        this.isRepeat
+      ).execActionWithCount(position, vimState, count);
+      if (vimState.recordedState.operator && !isIMovement(pos)) {
+        return pos.getRight();
+      }
+
+      return pos;
     }
 
     count = count || 1;
