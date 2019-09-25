@@ -119,4 +119,4 @@ $ rm -rf .vscode-test/
 
 ## Styleguide
 
-Please try your best to adhere our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
+Please try your best to adhere to our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
