@@ -11,7 +11,7 @@ suite(':write args parser', () => {
     // TODO: perhaps we don't need to export this func at all.
     // TODO: this func must return args only, not a command?
     // TODO: the range must be passed separately, not as arg.
-    var args = commandParsers.write('');
+    const args = commandParsers.write('');
     assert.equal(args.arguments.append, undefined);
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.cmd, undefined);
@@ -22,7 +22,7 @@ suite(':write args parser', () => {
   });
 
   test('can parse ++opt', () => {
-    var args = commandParsers.write('++enc=foo');
+    const args = commandParsers.write('++enc=foo');
     assert.equal(args.arguments.append, undefined);
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.cmd, undefined);
@@ -37,7 +37,7 @@ suite(':write args parser', () => {
   });
 
   test('can parse bang', () => {
-    var args = commandParsers.write('!');
+    const args = commandParsers.write('!');
     assert.equal(args.arguments.append, undefined);
     assert.equal(args.arguments.bang, true);
     assert.equal(args.arguments.cmd, undefined);
@@ -48,7 +48,7 @@ suite(':write args parser', () => {
   });
 
   test("can parse ' !cmd'", () => {
-    var args = commandParsers.write(' !foo');
+    const args = commandParsers.write(' !foo');
     assert.equal(args.arguments.append, undefined);
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.cmd, 'foo');
@@ -59,7 +59,7 @@ suite(':write args parser', () => {
   });
 
   test("can parse ' !cmd' when cmd is empty", () => {
-    var args = commandParsers.write(' !');
+    const args = commandParsers.write(' !');
     assert.equal(args.arguments.append, undefined);
     assert.equal(args.arguments.bang, undefined);
     assert.equal(args.arguments.cmd, undefined);

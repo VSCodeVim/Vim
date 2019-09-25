@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 export class Notation {
   // Mapping from the normalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
@@ -17,7 +15,7 @@ export class Notation {
 
   // Converts keystroke like <tab> to a single control character like \t
   public static ToControlCharacter(key: string) {
-    if (key === "<tab>") {
+    if (key === '<tab>') {
       return '\t';
     }
 
@@ -53,7 +51,7 @@ export class Notation {
       return leaderKey;
     }
 
-    if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {
+    if (['<up>', '<down>', '<left>', '<right>'].includes(key.toLocaleLowerCase())) {
       return key.toLocaleLowerCase();
     }
 

@@ -3,10 +3,10 @@ import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
 import { Position } from '../../common/motion/position';
-import { IMovement, BaseMovement } from '../motion';
+import { BaseMovement, IMovement } from '../baseMotion';
 
 @RegisterAction
-class SneakForward extends BaseMovement {
+export class SneakForward extends BaseMovement {
   keys = [['s', '<character>', '<character>'], ['z', '<character>', '<character>']];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -28,6 +28,12 @@ class SneakForward extends BaseMovement {
     const editor = vscode.window.activeTextEditor!;
     const document = editor.document;
     const lineCount = document.lineCount;
+
+    if (this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
+
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
     for (let i = position.line; i < lineCount; ++i) {
@@ -61,7 +67,7 @@ class SneakForward extends BaseMovement {
 }
 
 @RegisterAction
-class SneakBackward extends BaseMovement {
+export class SneakBackward extends BaseMovement {
   keys = [['S', '<character>', '<character>'], ['Z', '<character>', '<character>']];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -82,6 +88,12 @@ class SneakBackward extends BaseMovement {
 
     const editor = vscode.window.activeTextEditor!;
     const document = editor.document;
+
+    if (this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
+
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
     for (let i = position.line; i >= 0; --i) {

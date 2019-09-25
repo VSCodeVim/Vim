@@ -19,7 +19,7 @@ suite('Basic sort', () => {
   test('Sort whole file, asc', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
-      'b',
+      'B',
       '<Esc>',
       'o',
       'a',
@@ -30,7 +30,24 @@ suite('Basic sort', () => {
     ]);
     await commandLine.Run('sort', vimState);
 
-    assertEqualLines(['a', 'b', 'c']);
+    assertEqualLines(['B', 'a', 'c']);
+  });
+
+  test('Sort whole file, asc, ignoreCase', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'B',
+      '<Esc>',
+      'o',
+      'a',
+      '<Esc>',
+      'o',
+      'c',
+      '<Esc>',
+    ]);
+    await commandLine.Run('sort i', vimState);
+
+    assertEqualLines(['a', 'B', 'c']);
   });
 
   test('Sort whole file, dsc', async () => {
@@ -48,6 +65,23 @@ suite('Basic sort', () => {
     await commandLine.Run('sort!', modeHandler.vimState);
 
     assertEqualLines(['c', 'b', 'a']);
+  });
+
+  test('Sort whole file, dsc, ignoreCase', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'B',
+      '<Esc>',
+      'o',
+      'a',
+      '<Esc>',
+      'o',
+      'c',
+      '<Esc>',
+    ]);
+    await commandLine.Run('sort! i', modeHandler.vimState);
+
+    assertEqualLines(['c', 'B', 'a']);
   });
 
   test('Sort range, asc', async () => {
@@ -70,6 +104,26 @@ suite('Basic sort', () => {
     assertEqualLines(['a', 'b', 'd', 'c']);
   });
 
+  test('Sort range, asc, ignoreCase', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'B',
+      '<Esc>',
+      'o',
+      'd',
+      '<Esc>',
+      'o',
+      'a',
+      '<Esc>',
+      'o',
+      'c',
+      '<Esc>',
+    ]);
+    await commandLine.Run('1,3sort i', vimState);
+
+    assertEqualLines(['a', 'B', 'd', 'c']);
+  });
+
   test('Sort range, dsc', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
@@ -88,5 +142,25 @@ suite('Basic sort', () => {
     await commandLine.Run('2,4sort!', vimState);
 
     assertEqualLines(['b', 'd', 'c', 'a']);
+  });
+
+  test('Sort range, dsc, ignoreCase', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'b',
+      '<Esc>',
+      'o',
+      'd',
+      '<Esc>',
+      'o',
+      'A',
+      '<Esc>',
+      'o',
+      'c',
+      '<Esc>',
+    ]);
+    await commandLine.Run('2,4sort! i', vimState);
+
+    assertEqualLines(['b', 'd', 'c', 'A']);
   });
 });

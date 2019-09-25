@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { join } from 'path';
+import { promisify } from 'util';
 import * as vscode from 'vscode';
 
 import { Configuration } from './testConfiguration';
@@ -21,8 +22,31 @@ export function rndName(): string {
 
 export async function createRandomFile(contents: string, fileExtension: string): Promise<string> {
   const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
-  fs.writeFileSync(tmpFile, contents);
+  await promisify(fs.writeFile)(tmpFile, contents);
   return tmpFile;
+}
+
+export function createRandomDir() {
+  const dirPath = join(os.tmpdir(), rndName());
+  return createDir(dirPath);
+}
+
+export async function createEmptyFile(path: string) {
+  await promisify(fs.writeFile)(path, '');
+  return path;
+}
+
+export async function createDir(path: string) {
+  await promisify(fs.mkdir)(path);
+  return path;
+}
+
+export function removeFile(path: string) {
+  return promisify(fs.unlink)(path);
+}
+
+export function removeDir(path: string) {
+  return promisify(fs.rmdir)(path);
 }
 
 /**
@@ -78,7 +102,7 @@ export function assertEqual<T>(one: T, two: T, message: string = ''): void {
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
-): Promise<any> {
+): Promise<void> {
   await commandLine.load();
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
@@ -104,7 +128,7 @@ const mockAndEnable = async () => {
   await mh.handleKeyEvent('<ExtensionEnable>');
 };
 
-export async function cleanUpWorkspace(): Promise<any> {
+export async function cleanUpWorkspace(): Promise<void> {
   return new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();

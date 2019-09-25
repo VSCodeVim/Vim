@@ -219,9 +219,9 @@ suite('Basic substitute', () => {
     assertEqualLines(['dbc', 'dbc', 'abc']);
   });
 
-  suite('Effects of substituteGlobalFlag=true', () => {
+  suite('Effects of gdefault=true', () => {
     setup(async () => {
-      Globals.mockConfiguration.substituteGlobalFlag = true;
+      Globals.mockConfiguration.gdefault = true;
       await reloadConfiguration();
     });
 

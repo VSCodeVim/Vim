@@ -16,6 +16,8 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
+import { parseMarksCommandArgs } from './subparsers/marks';
+import { parseSmileCommandArgs } from './subparsers/smile';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -75,6 +77,8 @@ export const commandParsers = {
 
   s: parseSubstituteCommandArgs,
 
+  smile: parseSmileCommandArgs,
+
   e: fileCmd.parseEditFileCommandArgs,
   edit: fileCmd.parseEditFileCommandArgs,
   ene: fileCmd.parseEditNewFileCommandArgs,
@@ -114,4 +118,6 @@ export const commandParsers = {
   fi: parseFileInfoCommandArgs,
   fil: parseFileInfoCommandArgs,
   file: parseFileInfoCommandArgs,
+
+  marks: parseMarksCommandArgs,
 };

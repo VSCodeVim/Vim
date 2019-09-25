@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { BaseMovement } from '../actions/motion';
+import { BaseMovement } from '../actions/baseMotion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
@@ -118,8 +118,6 @@ export class VimState implements vscode.Disposable {
    */
   public keyHistory: string[] = [];
 
-  public globalState = globalState;
-
   /**
    * The cursor position (start, stop) when this action finishes.
    */
@@ -203,12 +201,12 @@ export class VimState implements vscode.Disposable {
    */
   private _currentMode: ModeName = ModeName.Normal;
 
-  public get currentMode(): number {
+  public get currentMode(): ModeName {
     return this._currentMode;
   }
 
   private _inputMethodSwitcher: InputMethodSwitcher;
-  public async setCurrentMode(value: number): Promise<void> {
+  public async setCurrentMode(value: ModeName): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
   }

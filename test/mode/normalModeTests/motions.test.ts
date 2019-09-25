@@ -404,6 +404,55 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: 'Search offsets: b does nothing',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b\n',
+    end: ['hay|needlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: b2 goes 2 to the right',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b2\n',
+    end: ['hayne|edlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: b+3 goes 3 to the right',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b+3\n',
+    end: ['haynee|dlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: e goes to the end',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/e\n',
+    end: ['hayneedl|ehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: character offset goes across line boundaries',
+    start: ['|hayneedlehay', '123'],
+    keysPressed: '/needle/e+5\n',
+    end: ['hayneedlehay', '1|23'],
+  });
+
+  newTest({
+    title: 'Search offsets: 2 goes 2 down',
+    start: ['|hayneedlehay', 'abc', 'def'],
+    keysPressed: '/needle/2\n',
+    end: ['hayneedlehay', 'abc', '|def'],
+  });
+
+  newTest({
+    title: 'Search offsets: -2 goes 2 up',
+    start: ['abc', '|def', 'hayneedlehay', 'abc', 'def'],
+    keysPressed: '/needle/-2\n',
+    end: ['|abc', 'def', 'hayneedlehay', 'abc', 'def'],
+  });
+
+  newTest({
     title: 'maintains column position correctly',
     start: ['|one one one', 'two', 'three'],
     keysPressed: 'lllljj',

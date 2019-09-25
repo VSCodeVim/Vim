@@ -132,4 +132,50 @@ suite('motion line wrapping', () => {
       });
     });
   });
+
+  suite('wrapscan enabled', () => {
+    setup(async () => {
+      let configuration = new Configuration();
+      configuration.wrapscan = true;
+
+      await setupWorkspace(configuration);
+    });
+
+    newTest({
+      title: 'search wraps around the end of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nn',
+      end: ['|line 1', 'line 2'],
+    });
+
+    newTest({
+      title: 'search wraps around the start of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nNN',
+      end: ['line 1', '|line 2'],
+    });
+  });
+
+  suite('wrapscan disabled', () => {
+    setup(async () => {
+      let configuration = new Configuration();
+      configuration.wrapscan = false;
+
+      await setupWorkspace(configuration);
+    });
+
+    newTest({
+      title: 'search stops at the end of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nn',
+      end: ['line 1', '|line 2'],
+    });
+
+    newTest({
+      title: 'search stops at the start of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nNN',
+      end: ['|line 1', 'line 2'],
+    });
+  });
 });

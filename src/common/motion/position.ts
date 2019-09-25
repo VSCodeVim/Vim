@@ -1,17 +1,17 @@
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
+import escapeRegExp = require('lodash.escaperegexp');
 
 /**
  * Represents a difference between two positions. Add it to a position
  * to get another position. Create it with the factory methods:
  *
  * - NewDiff
- * - NewBOLDiff
+ * - NewBOLDiff (BOL = Beginning Of Line)
  */
 export class PositionDiff {
   private _line: number;
@@ -432,6 +432,22 @@ export class Position extends vscode.Position {
     return this.getRight();
   }
 
+  public getOffsetThroughLineBreaks(offset: number): Position {
+    let pos = new Position(this.line, this.character);
+
+    if (offset < 0) {
+      for (let i = 0; i < -offset; i++) {
+        pos = pos.getLeftThroughLineBreaks();
+      }
+    } else {
+      for (let i = 0; i < offset; i++) {
+        pos = pos.getRightThroughLineBreaks();
+      }
+    }
+
+    return pos;
+  }
+
   public getRight(count: number = 1): Position {
     if (!this.isLineEnd()) {
       return new Position(this.line, this.character + count);
@@ -505,6 +521,22 @@ export class Position extends vscode.Position {
       this.line,
       Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count)
     );
+  }
+
+  /**
+   * Get the position of the word counting from the position specified.
+   * @param text The string to search from.
+   * @param pos The position of text to search from.
+   * @param inclusive true if we consider the pos a valid result, false otherwise.
+   * @returns The character position of the word to the left relative to the text and the pos.
+   *          undefined if there is no word to the left of the postion.
+   */
+  public static getWordLeft(
+    text: string,
+    pos: number,
+    inclusive: boolean = false
+  ): number | undefined {
+    return Position.getWordLeftWithRegex(text, pos, Position._nonWordCharRegex, inclusive);
   }
 
   /**
@@ -841,7 +873,7 @@ export class Position extends vscode.Position {
   }
 
   private static makeWordRegex(characterSet: string): RegExp {
-    let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
+    let escaped = characterSet && escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
     segments.push(`([^\\s${escaped}]+)`);
@@ -853,7 +885,7 @@ export class Position extends vscode.Position {
   }
 
   private static makeCamelCaseWordRegex(characterSet: string): RegExp {
-    const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
+    const escaped = characterSet && escapeRegExp(characterSet).replace(/-/g, '\\-');
     const segments: string[] = [];
 
     // old versions of VSCode before 1.31 will crash when trying to parse a regex with a lookbehind
@@ -995,7 +1027,7 @@ export class Position extends vscode.Position {
 
     // Symbols in vim.iskeyword or editor.wordSeparators
     // are treated as CharKind.Punctuation
-    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
+    const escapedKeywordChars = escapeRegExp(keywordChars).replace(/-/g, '\\-');
     codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
 
     const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
@@ -1014,7 +1046,7 @@ export class Position extends vscode.Position {
     return regexp;
   }
 
-  private getAllPositions(line: string, regex: RegExp): number[] {
+  private static getAllPositions(line: string, regex: RegExp): number[] {
     let positions: number[] = [];
     let result = regex.exec(line);
 
@@ -1052,21 +1084,30 @@ export class Position extends vscode.Position {
     return positions;
   }
 
+  private static getWordLeftWithRegex(
+    text: string,
+    pos: number,
+    regex: RegExp,
+    forceFirst: boolean = false,
+    inclusive: boolean = false
+  ): number | undefined {
+    const positions = Position.getAllPositions(text, regex);
+    return positions
+      .reverse()
+      .find(index => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
+  }
+
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine >= 0; currentLine--) {
-      let positions = this.getAllPositions(
+      const newCharacter = Position.getWordLeftWithRegex(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
-      let newCharacter = _.find(
-        positions.reverse(),
-        index =>
-          (index < this.character && !inclusive) ||
-          (index <= this.character && inclusive) ||
-          currentLine !== this.line
+        this.character,
+        regex,
+        currentLine !== this.line,
+        inclusive
       );
 
       if (newCharacter !== undefined) {
@@ -1082,12 +1123,11 @@ export class Position extends vscode.Position {
    */
   private getWordRightWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-      let positions = this.getAllPositions(
+      let positions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        positions,
+      let newCharacter = positions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1114,7 +1154,7 @@ export class Position extends vscode.Position {
       }
       // reverse the list to find the biggest element smaller than this.character
       positions = positions.reverse();
-      let index = _.findIndex(positions, i => i < this.character || currentLine !== this.line);
+      let index = positions.findIndex(i => i < this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
         if (currentLine > -1) {
@@ -1142,8 +1182,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        positions,
+      let newCharacter = positions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1165,7 +1204,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(endPositions.reverse(), index => {
+      let newCharacter = endPositions.reverse().find(index => {
         const newPositionBeforeThis = new Position(currentLine, index)
           .getRightThroughLineBreaks()
           .compareTo(this);
@@ -1193,8 +1232,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        endPositions,
+      let newCharacter = endPositions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1212,12 +1250,11 @@ export class Position extends vscode.Position {
   private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
     let paragraphEnd = this.getCurrentParagraphEnd();
     for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-      let allPositions = this.getAllPositions(
+      let allPositions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        allPositions,
+      let newCharacter = allPositions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1239,12 +1276,11 @@ export class Position extends vscode.Position {
       return paragraphEnd;
     } else {
       for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-        let nonWhitePositions = this.getAllPositions(
+        const nonWhitePositions = Position.getAllPositions(
           TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
           /\S/g
         );
-        let newCharacter = _.find(
-          nonWhitePositions,
+        const newCharacter = nonWhitePositions.find(
           index =>
             (index > this.character && !inclusive) ||
             (index >= this.character && inclusive) ||

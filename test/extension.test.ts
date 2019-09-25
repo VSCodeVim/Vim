@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import * as srcConfiguration from '../src/configuration/configuration';
@@ -21,7 +20,7 @@ suite('package.json', () => {
     for (let i = 0; i < keybindings.length; i++) {
       let keybinding = keybindings[i];
 
-      var found = registeredCommands.indexOf(keybinding.command) >= -1;
+      const found = registeredCommands.indexOf(keybinding.command) >= -1;
       assert.ok(
         found,
         'Missing handler for key=' + keybinding.key + '. Expected handler=' + keybinding.command
@@ -38,16 +37,12 @@ suite('package.json', () => {
 
     // configuration
     let handlers = Object.keys(srcConfiguration.configuration);
-    let unhandled = _.filter(keys, k => {
-      return handlers.indexOf(k) >= 0;
-    });
+    let unhandled = keys.filter(k => handlers.indexOf(k) >= 0);
     assert.equal(unhandled, 0, 'Missing src handlers for ' + unhandled.join(','));
 
     // test configuration
     handlers = Object.keys(new testConfiguration.Configuration());
-    unhandled = _.filter(keys, k => {
-      return handlers.indexOf(k) >= 0;
-    });
+    unhandled = keys.filter(k => handlers.indexOf(k) >= 0);
     assert.equal(unhandled, 0, 'Missing test handlers for ' + unhandled.join(','));
   });
 });

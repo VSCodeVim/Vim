@@ -637,6 +637,62 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can handle cj',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'cjasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle ck',
+    start: ['abc', '|def', 'ghi'],
+    keysPressed: 'ckasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2j',
+    start: ['|abc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'c2jasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2k',
+    start: ['abc', 'foo', 'ba|r', 'ghi'],
+    keysPressed: 'c2kasdf<Esc>',
+    end: ['asd|f', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle cj on last line',
+    start: ['abc', 'foo', 'bar', 'gh|i'],
+    keysPressed: 'cjasdf<Esc>',
+    end: ['abc', 'foo', 'bar', 'asd|f'],
+  });
+
+  newTest({
+    title: 'can handle ck on first line',
+    start: ['|abc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'ckasdf<Esc>',
+    end: ['asd|f', 'foo', 'bar', 'ghi'],
+  });
+
+  newTest({
+    title: 'can handle c2j on last line',
+    start: ['abc', 'foo', 'bar', 'gh|i'],
+    keysPressed: 'c2jasdf<Esc>',
+    end: ['abc', 'foo', 'bar', 'asd|f'],
+  });
+
+  newTest({
+    title: 'can handle c2k on first line',
+    start: ['a|bc', 'foo', 'bar', 'ghi'],
+    keysPressed: 'c2kasdf<Esc>',
+    end: ['asd|f', 'foo', 'bar', 'ghi'],
+  });
+
+  newTest({
     title: "Can handle 'daw' on word with cursor inside spaces",
     start: ['one   two |  three,   four  '],
     keysPressed: 'daw',
@@ -1274,22 +1330,41 @@ suite('Mode Normal', () => {
     end: ['testtest', 'testtest', 'testtes|t'],
   });
 
-  //  These tests run poorly on Travis for w.e. reason
-  // newTest({
-  //   title: "gq handles spaces after single line comments correctly",
-  //   start: ['//    We choose to write a vim extension, not because it is easy, but because it is hard|.'],
-  //   keysPressed: 'Vgq',
-  //   end: [ '//    We choose to write a vim extension, not because it is easy, but because it is',
-  //         '|//    hard.'],
-  // });
+  newTest({
+    title: 'gq handles spaces after single line comments correctly',
+    start: [
+      '//    We choose to write a vim extension, not because it is easy, but because it is hard|.',
+    ],
+    keysPressed: 'Vgq',
+    end: [
+      '//    We choose to write a vim extension, not because it is easy, but because it is',
+      '|//    hard.',
+    ],
+  });
 
-  // newTest({
-  //   title: "gq handles spaces before single line comments correctly",
-  //   start: ['    // We choose to write a vim extension, not because it is easy, but because it is hard|.'],
-  //   keysPressed: 'Vgq',
-  //   end: [ '    // We choose to write a vim extension, not because it is easy, but because',
-  //         '|    // it is hard.']
-  // });
+  newTest({
+    title: 'gq handles spaces before single line comments correctly',
+    start: [
+      '    // We choose to write a vim extension, not because it is easy, but because it is hard|.',
+    ],
+    keysPressed: 'Vgq',
+    end: [
+      '    // We choose to write a vim extension, not because it is easy, but because',
+      '|    // it is hard.',
+    ],
+  });
+
+  newTest({
+    title: 'gq handles tabs before single line comments correctly',
+    start: [
+      '\t\t// We choose to write a vim extension, not because it is easy, but because it is hard|.',
+    ],
+    keysPressed: 'Vgq',
+    end: [
+      '\t\t// We choose to write a vim extension, not because it is easy, but',
+      '|\t\t// because it is hard.',
+    ],
+  });
 
   newTest({
     title: 'Can handle space',

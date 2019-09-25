@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
 
-import { BaseAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { ModeName } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { RecordedState } from '../state/recordedState';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
@@ -18,177 +16,13 @@ import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
 import { ReportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
-
-export function isIMovement(o: IMovement | Position): o is IMovement {
-  return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
-}
-
-/**
- * The result of a (more sophisticated) Movement.
- */
-export interface IMovement {
-  start: Position;
-  stop: Position;
-
-  /**
-   * Whether this motion succeeded. Some commands, like fx when 'x' can't be found,
-   * will not move the cursor. Furthermore, dfx won't delete *anything*, even though
-   * deleting to the current character would generally delete 1 character.
-   */
-  failed?: boolean;
-
-  diff?: PositionDiff;
-
-  // It /so/ annoys me that I have to put this here.
-  registerMode?: RegisterMode;
-}
-
-enum SelectionType {
-  Concatenating, // selections that concatenate repeated movements
-  Expanding, // selections that expand the start and end of the previous selection
-}
+import { globalState } from '../state/globalState';
+import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
+import { SneakForward, SneakBackward } from './plugins/sneak';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
-export abstract class BaseMovement extends BaseAction {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-
-  isMotion = true;
-
-  /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   *
-   * Default to false, as many motions operate on a single line and do not count as a jump.
-   */
-  isJump = false;
-
-  /**
-   * If movement can be repeated with semicolon or comma this will be true when
-   * running the repetition.
-   */
-  isRepeat = false;
-
-  /**
-   * Whether we should change desiredColumn in VimState.
-   */
-  public doesntChangeDesiredColumn = false;
-
-  /**
-   * This is for commands like $ which force the desired column to be at
-   * the end of even the longest line.
-   */
-  public setsDesiredColumnToEOL = false;
-
-  protected minCount = 1;
-  protected maxCount = 99999;
-  protected selectionType = SelectionType.Concatenating;
-
-  constructor(keysPressed?: string[], isRepeat?: boolean) {
-    super();
-
-    if (keysPressed) {
-      this.keysPressed = keysPressed;
-    }
-
-    if (isRepeat) {
-      this.isRepeat = isRepeat;
-    }
-  }
-
-  /**
-   * Run the movement a single time.
-   *
-   * Generally returns a new Position. If necessary, it can return an IMovement instead.
-   * Note: If returning an IMovement, make sure that repeated actions on a
-   * visual selection work. For example, V}}
-   */
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    throw new Error('Not implemented!');
-  }
-
-  /**
-   * Run the movement in an operator context a single time.
-   *
-   * Some movements operate over different ranges when used for operators.
-   */
-  public async execActionForOperator(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
-    return this.execAction(position, vimState);
-  }
-
-  /**
-   * Run a movement count times.
-   *
-   * count: the number prefix the user entered, or 0 if they didn't enter one.
-   */
-  public async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
-    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
-    let prevResult: IMovement | undefined = undefined;
-    let firstMovementStart: Position = new Position(position.line, position.character);
-
-    count = this.clampCount(count);
-
-    for (let i = 0; i < count; i++) {
-      const firstIteration = i === 0;
-      const lastIteration = i === count - 1;
-      result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
-
-      if (result instanceof Position) {
-        position = result;
-      } else if (isIMovement(result)) {
-        if (prevResult && result.failed) {
-          return prevResult;
-        }
-
-        if (firstIteration) {
-          firstMovementStart = new Position(result.start.line, result.start.character);
-        }
-
-        position = this.adjustPosition(position, result, lastIteration);
-        prevResult = result;
-      }
-    }
-
-    if (this.selectionType === SelectionType.Concatenating && isIMovement(result)) {
-      result.start = firstMovementStart;
-    }
-
-    return result;
-  }
-
-  protected clampCount(count: number) {
-    count = Math.max(count, this.minCount);
-    count = Math.min(count, this.maxCount);
-    return count;
-  }
-
-  protected async createMovementResult(
-    position: Position,
-    vimState: VimState,
-    recordedState: RecordedState,
-    lastIteration: boolean
-  ): Promise<Position | IMovement> {
-    const result =
-      recordedState.operator && lastIteration
-        ? await this.execActionForOperator(position, vimState)
-        : await this.execAction(position, vimState);
-    return result;
-  }
-  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
-    if (!lastIteration) {
-      position = result.stop.getRightThroughLineBreaks();
-    }
-    return position;
-  }
-}
 
 export abstract class ExpandingSelection extends BaseMovement {
   protected selectionType = SelectionType.Expanding;
@@ -467,13 +301,13 @@ class CommandNextSearchMatch extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.globalState.searchState;
+    const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
       return position;
     }
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    vimState.globalState.hl = true;
+    globalState.hl = true;
 
     let nextMatch: {
       pos: Position;
@@ -497,14 +331,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.globalState.searchState;
+    const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
       return position;
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    vimState.globalState.hl = true;
+    globalState.hl = true;
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
@@ -666,6 +500,18 @@ class MoveFindForward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (configuration.sneakReplacesF) {
+      const pos = await new SneakForward(
+        this.keysPressed.concat('\n'),
+        this.isRepeat
+      ).execActionWithCount(position, vimState, count);
+      if (vimState.recordedState.operator && !isIMovement(pos)) {
+        return pos.getRight();
+      }
+
+      return pos;
+    }
+
     count = count || 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findForwards(toFind, count);
@@ -699,6 +545,14 @@ class MoveFindBackward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (configuration.sneakReplacesF) {
+      return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
+        position,
+        vimState,
+        count
+      );
+    }
+
     count = count || 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findBackwards(toFind, count);

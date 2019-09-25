@@ -10,3 +10,8 @@ typings/**
 .github_changelog_generator
 .gitignore
 *.yml
+# Not needed, due to webpack
+node_modules/
+src/
+tsconfig.json
+webpack.config.js

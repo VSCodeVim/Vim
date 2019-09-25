@@ -121,7 +121,7 @@ These settings are specific to VSCodeVim.
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                 | Boolean | false                                 |
 | vim.searchHighlightColor         | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                               | String  | `editor.findMatchHighlightBackground` |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                      | Boolean | false                                 |
-| vim.substituteGlobalFlag         | Similar to Vim's `gdefault` setting. `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                              | Boolean | false                                 |
+| vim.gdefault                     | `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                                                                   | Boolean | false                                 |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                        | Boolean | true                                  |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                       | Boolean | false                                 |
 | vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                 | Boolean | false                                 |
@@ -598,16 +598,15 @@ Based on [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegiste
 
 Once active, type `gr` (say "go replace") followed by a motion to describe the text you want replaced by the contents of the register.
 
-| Motion Command | Description                                                                        |
-| -------------- | ---------------------------------------------------------------------------------- |
-| `gr<motion>`   | Replace the text described by the motion with the contents of the default register |
-| `"agr<motion>` | Replace the text described by the motion with the contents of the `a` register     |
-| `grr`          | Replace the currentline with the contents of the default register                  |
-| `<count>grr`   | Replace the specified number of lines with the contents of the default register    |
+| Motion Command          | Description                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the specified register    |
+| `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the specified register |
+| `{Visual}["a]gr`        | Replace the selection with the contents of the specified register                       |
 
 ## 🎩 VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to preserve some of them:
+VSCode has a lot of nifty tricks and we try to preserve some of them:
 
 - `gd` - jump to definition.
 - `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.

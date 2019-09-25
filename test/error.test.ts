@@ -6,7 +6,7 @@ suite('Error', () => {
   test('error code has message', () => {
     /* tslint:disable:forin */
     for (const errorCodeString in ErrorCode) {
-      var errorCode = Number(errorCodeString);
+      const errorCode = Number(errorCodeString);
       if (!isNaN(errorCode)) {
         assert.notEqual(ErrorMessage[errorCode], undefined, errorCodeString);
       }

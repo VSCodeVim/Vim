@@ -94,7 +94,7 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 To push a release:
 
 ```bash
-gulp release --semver [SEMVER] --githubToken [TOKEN]
+gulp release --semver [SEMVER] --gitHubToken [TOKEN]
 git push --follow-tags
 ```
 
@@ -119,4 +119,4 @@ $ rm -rf .vscode-test/
 
 ## Styleguide
 
-Please try your best to adhere our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
+Please try your best to adhere to our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).

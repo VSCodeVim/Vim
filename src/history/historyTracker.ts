@@ -10,7 +10,6 @@
  * Undo/Redo will advance forward or backwards through Steps.
  */
 import DiffMatchPatch = require('diff-match-patch');
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { Position } from './../common/motion/position';
@@ -59,7 +58,7 @@ class DocumentChange {
   }
 }
 
-interface IMark {
+export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
@@ -117,10 +116,10 @@ class HistoryStep {
     }
 
     // merged will replace this.changes
-    var merged: DocumentChange[] = [];
+    const merged: DocumentChange[] = [];
     // manually reduce() this.changes with variables `current` and `next`
     // we can't use reduce() directly because the loop can emit multiple elements
-    var current = this.changes[0];
+    let current = this.changes[0];
     for (const next of this.changes.slice(1)) {
       if (current.text.length === 0) {
         // current is eliminated, replace it with top of merged, or adopt next as current
@@ -351,10 +350,7 @@ export class HistoryTracker {
       name: markName,
       isUppercaseMark: markName === markName.toUpperCase(),
     };
-    const previousIndex = _.findIndex(
-      this.currentHistoryStep.marks,
-      mark => mark.name === markName
-    );
+    const previousIndex = this.currentHistoryStep.marks.findIndex(mark => mark.name === markName);
 
     if (previousIndex !== -1) {
       this.currentHistoryStep.marks[previousIndex] = newMark;
@@ -367,7 +363,7 @@ export class HistoryTracker {
    * Retrieves a mark.
    */
   getMark(markName: string): IMark {
-    return <IMark>_.find(this.currentHistoryStep.marks, mark => mark.name === markName);
+    return <IMark>this.currentHistoryStep.marks.find(mark => mark.name === markName);
   }
 
   getMarks(): IMark[] {
