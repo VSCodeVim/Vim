@@ -74,7 +74,7 @@ class StatusBarImpl implements vscode.Disposable {
       if (typeof colorToSet === 'string') {
         background = colorToSet;
       } else {
-        [background, foreground] = colorToSet;
+        [background] = colorToSet;
       }
     }
 
@@ -85,7 +85,6 @@ class StatusBarImpl implements vscode.Disposable {
       'statusBar.background': `${background}`,
       'statusBar.noFolderBackground': `${background}`,
       'statusBar.debuggingBackground': `${background}`,
-      'statusBar.foreground': `${foreground}`,
     });
 
     // if colors are undefined, return to vscode defaults
@@ -93,10 +92,6 @@ class StatusBarImpl implements vscode.Disposable {
       delete colorCustomizations['statusBar.background'];
       delete colorCustomizations['statusBar.noFolderBackground'];
       delete colorCustomizations['statusBar.debuggingBackground'];
-    }
-
-    if (foreground === undefined) {
-      delete colorCustomizations['statusBar.foreground'];
     }
 
     if (currentColorCustomizations !== colorCustomizations) {
