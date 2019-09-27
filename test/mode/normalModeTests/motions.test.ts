@@ -725,4 +725,32 @@ suite('Motions in Normal Mode', () => {
     keysPressed: '<right>',
     end: ['blah', 'duh', 'd|ur', 'hur'],
   });
+
+  newTest({
+    title: "Can handle 'gk'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gk',
+    end: ['blah', '|duh', 'dur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gj'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gj',
+    end: ['blah', 'duh', 'dur', '|hur'],
+  });
+
+  newTest({
+    title: "Preserves cursor position when handling 'gk'",
+    start: ['blah', 'duh', 'a', 'hu|r '],
+    keysPressed: 'gkgk',
+    end: ['blah', 'du|h', 'a', 'hur '],
+  });
+
+  newTest({
+    title: "Preserves cursor position when handling 'gj'",
+    start: ['blah', 'du|h', 'a', 'hur '],
+    keysPressed: 'gjgj',
+    end: ['blah', 'duh', 'a', 'hu|r '],
+  });
 });

@@ -86,11 +86,41 @@ abstract class MoveByScreenLine extends BaseMovement {
   }
 }
 
+export class MoveUpByScreenLine extends MoveByScreenLine {
+  movementType: CursorMovePosition = 'up';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
+class MoveDownByScreenLine extends MoveByScreenLine {
+  movementType: CursorMovePosition = 'down';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   doesntChangeDesiredColumn = true;
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     let prevDesiredColumn = vimState.desiredColumn;
     let prevLine = vimState.editor.selection.active.line;
+
+    if (vimState.currentMode !== ModeName.Normal) {
+      /**
+       * As VIM and VSCode handle the end of selection index a little
+       * differently we need to sometimes move the cursor at the end
+       * of the selection back by a character.
+       */
+      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      if ((this.movementType === 'down' && position.line > start.line) ||
+          (this.movementType === 'up'   && position.line < prevLine)) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'left',
+            select: true,
+            by: 'character',
+            value: 1,
+          });
+      }
+    }
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
@@ -115,21 +145,20 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
       let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos)) {
-        position = start;
+      if (start.isEqual(curPos) && !start.isEqual(stop)) {
         [start, stop] = [stop, start];
-        start = start.getLeft();
+        if (prevLine !== start.line) {
+          start = start.getLeft();
+        }
+      }
+
+      if (position.line !== stop.line) {
+        stop = stop.withColumn(prevDesiredColumn);
       }
 
       return { start, stop };
     }
   }
-}
-
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
 }
 
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
@@ -189,12 +218,6 @@ class MoveDown extends BaseMovement {
 @RegisterAction
 class MoveDownArrow extends MoveDown {
   keys = ['<down>'];
-}
-
-class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
 }
 
 @RegisterAction
@@ -760,7 +783,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByScreenLine extends MoveByScreenLine {
+export class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -769,7 +792,7 @@ export class MoveUpByScreenLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLine {
+class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
