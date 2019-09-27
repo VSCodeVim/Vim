@@ -26,7 +26,11 @@ suite('Smile command', () => {
     await commandLine.Run('smile', modeHandler.vimState);
     await waitForTabChange();
 
-    assertEqual(vscode.window.visibleTextEditors.length, 1, ':smile did not create a new untitled file');
+    assertEqual(
+      vscode.window.visibleTextEditors.length,
+      1,
+      ':smile did not create a new untitled file'
+    );
   });
 
   test(':smile editor contains smile text', async () => {

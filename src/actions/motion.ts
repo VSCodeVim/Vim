@@ -111,14 +111,16 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        * of the selection back by a character.
        */
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      if ((this.movementType === 'down' && position.line > start.line) ||
-          (this.movementType === 'up'   && position.line < prevLine)) {
-          await vscode.commands.executeCommand('cursorMove', {
-            to: 'left',
-            select: true,
-            by: 'character',
-            value: 1,
-          });
+      if (
+        (this.movementType === 'down' && position.line > start.line) ||
+        (this.movementType === 'up' && position.line < prevLine)
+      ) {
+        await vscode.commands.executeCommand('cursorMove', {
+          to: 'left',
+          select: true,
+          by: 'character',
+          value: 1,
+        });
       }
     }
 
