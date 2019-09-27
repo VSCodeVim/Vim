@@ -42,7 +42,7 @@ export class BaseAction {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length >= keysPressed.length
+      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
     ) {
       return false;
     }
