@@ -35,14 +35,14 @@ export class Scanner {
     while (!this.isAtEof) {
       c = this.next();
 
-      if (c === Scanner.EOF || wordSeparators.indexOf(c) !== -1) {
+      if (c === Scanner.EOF || wordSeparators.includes(c)) {
         break;
       }
 
       result += c;
     }
 
-    if (c && wordSeparators.indexOf(c) !== -1) {
+    if (c && wordSeparators.includes(c)) {
       this.backup();
     }
 
@@ -102,7 +102,7 @@ export class Scanner {
     }
     while (!this.isAtEof) {
       let c = this.next();
-      if (chars.indexOf(c) === -1) {
+      if (!chars.includes(c)) {
         break;
       }
     }

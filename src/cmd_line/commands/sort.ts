@@ -29,7 +29,7 @@ export class SortCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     let mode = vimState.currentMode;
-    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(mode) >= 0) {
+    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(mode)) {
       const selection = vimState.editor.selection;
       let start = selection.start;
       let end = selection.end;

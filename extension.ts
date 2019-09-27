@@ -188,7 +188,7 @@ export async function activate(context: vscode.ExtensionContext) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.editor.document;
-          if (documents.indexOf(document) === -1) {
+          if (!documents.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {
               lastClosedModeHandler = modeHandler;

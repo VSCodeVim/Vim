@@ -31,7 +31,7 @@ export class BaseOperator extends BaseAction {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
       return true;
     }
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
@@ -51,7 +51,7 @@ export class BaseOperator extends BaseAction {
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
@@ -79,7 +79,7 @@ export class BaseOperator extends BaseAction {
       this.isOperator &&
       keysPressed.length === 1 &&
       prevAction &&
-      this.modes.indexOf(vimState.currentMode) !== -1 &&
+      this.modes.includes(vimState.currentMode) &&
       // The previous action is the same as the one we're testing
       prevAction.constructor === this.constructor &&
       // The key pressed is the same as the previous action's last key.
