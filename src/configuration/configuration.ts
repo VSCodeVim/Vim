@@ -100,7 +100,7 @@ class Configuration implements IConfiguration {
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
-      if (keybinding.when.indexOf('listFocus') !== -1) {
+      if (keybinding.when.includes('listFocus')) {
         continue;
       }
 

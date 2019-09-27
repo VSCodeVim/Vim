@@ -20,7 +20,7 @@ suite('package.json', () => {
     for (let i = 0; i < keybindings.length; i++) {
       let keybinding = keybindings[i];
 
-      const found = registeredCommands.indexOf(keybinding.command) >= -1;
+      const found = registeredCommands.includes(keybinding.command);
       assert.ok(
         found,
         'Missing handler for key=' + keybinding.key + '. Expected handler=' + keybinding.command
@@ -37,12 +37,12 @@ suite('package.json', () => {
 
     // configuration
     let handlers = Object.keys(srcConfiguration.configuration);
-    let unhandled = keys.filter(k => handlers.indexOf(k) >= 0);
+    let unhandled = keys.filter(k => handlers.includes(k));
     assert.equal(unhandled, 0, 'Missing src handlers for ' + unhandled.join(','));
 
     // test configuration
     handlers = Object.keys(new testConfiguration.Configuration());
-    unhandled = keys.filter(k => handlers.indexOf(k) >= 0);
+    unhandled = keys.filter(k => handlers.includes(k));
     assert.equal(unhandled, 0, 'Missing test handlers for ' + unhandled.join(','));
   });
 });

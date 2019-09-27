@@ -666,9 +666,9 @@ abstract class CommandEditorScroll extends BaseCommand {
         value: timesToRepeat,
         revealCursor: true,
         select:
-          [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+          [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
             vimState.currentMode
-          ) >= 0,
+          ),
       },
     });
     return vimState;
@@ -725,9 +725,9 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
       value: timesToRepeat,
       revealCursor: smoothScrolling,
       select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
           vimState.currentMode
-        ) >= 0,
+        ),
     });
 
     let newPosition: Position;
@@ -779,9 +779,9 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
       value: timesToRepeat,
       revealCursor: smoothScrolling,
       select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
           vimState.currentMode
-        ) >= 0,
+        ),
     });
 
     let newPosition: Position;
@@ -1596,7 +1596,7 @@ export class PutCommand extends BaseCommand {
         diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : -numNewlines, numWhitespace);
       }
     } else {
-      if (text.indexOf('\n') === -1) {
+      if (!text.includes('\n')) {
         if (!position.isLineEnd()) {
           if (register.registerMode === RegisterMode.BlockWise) {
             if (after) {
@@ -3800,7 +3800,7 @@ class ActionReplaceCharacter extends BaseCommand {
      * so we ignore the former two keys and have a special handle for <tab>.
      */
 
-    if (['<BS>', '<SHIFT+BS>'].indexOf(toReplace.toUpperCase()) >= 0) {
+    if (['<BS>', '<SHIFT+BS>'].includes(toReplace.toUpperCase())) {
       return vimState;
     }
 

@@ -188,7 +188,7 @@ export async function activate(context: vscode.ExtensionContext) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.editor.document;
-          if (documents.indexOf(document) === -1) {
+          if (!documents.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {
               lastClosedModeHandler = modeHandler;
@@ -262,6 +262,12 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const mh = await getAndUpdateModeHandler();
+
+      // We may receive changes from other panels when, having selections in them containing the same file
+      // and changing text before the selection in current panel.
+      if (e.textEditor !== mh.vimState.editor) {
+        return;
+      }
 
       if (mh.vimState.focusChanged) {
         mh.vimState.focusChanged = false;

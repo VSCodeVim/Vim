@@ -190,7 +190,7 @@ export class PairMatcher {
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
-    if (charactersToMatch.indexOf(deleteText) > -1) {
+    if (charactersToMatch.includes(deleteText)) {
       const matchPosition = currentPosition.add(new PositionDiff(0, 1));
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
       isNextMatch =

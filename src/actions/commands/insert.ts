@@ -43,7 +43,7 @@ class CommandEscInsertMode extends BaseCommand {
     for (let i = 0; i < vimState.cursors.length; i++) {
       const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
       if (
-        ['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
+        ['o', 'O', '\n'].includes(lastActionBeforeEsc) &&
         vimState.editor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {

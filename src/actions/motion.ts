@@ -1067,7 +1067,7 @@ export class MoveWordBegin extends BaseMovement {
       word does not include the following white space.
       */
 
-      if (' \t'.indexOf(char) >= 0) {
+      if (' \t'.includes(char)) {
         return position.getWordRight();
       } else {
         return position.getCurrentWordEnd(true).getRight();
