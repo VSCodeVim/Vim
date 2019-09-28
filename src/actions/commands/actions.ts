@@ -665,10 +665,9 @@ abstract class CommandEditorScroll extends BaseCommand {
         by: this.by,
         value: timesToRepeat,
         revealCursor: true,
-        select:
-          [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-            vimState.currentMode
-          ),
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+          vimState.currentMode
+        ),
       },
     });
     return vimState;
@@ -724,10 +723,9 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
       by: this.by,
       value: timesToRepeat,
       revealCursor: smoothScrolling,
-      select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-          vimState.currentMode
-        ),
+      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+        vimState.currentMode
+      ),
     });
 
     let newPosition: Position;
@@ -778,10 +776,9 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
       by: this.by,
       value: timesToRepeat,
       revealCursor: smoothScrolling,
-      select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-          vimState.currentMode
-        ),
+      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+        vimState.currentMode
+      ),
     });
 
     let newPosition: Position;
@@ -2261,7 +2258,7 @@ class CommandPasteInCommandline extends BaseCommand {
 }
 
 @RegisterAction
-class CommandShowCommandHistory extends BaseCommand {
+export class CommandShowCommandHistory extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['q', ':'];
 
@@ -2286,7 +2283,7 @@ class CommandShowCommandHistory extends BaseCommand {
 }
 
 @RegisterAction
-class CommandShowSearchHistory extends BaseCommand {
+export class CommandShowSearchHistory extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = [['q', '/'], ['q', '?']];
 
