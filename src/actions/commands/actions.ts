@@ -656,7 +656,20 @@ abstract class CommandEditorScroll extends BaseCommand {
   by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const visibleRange = vimState.editor.visibleRanges[0];
+    const scrolloff = vscode.workspace
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+
+    if (this.to === 'up' && visibleRange.end.line - vimState.cursors[0].stop.line < scrolloff + 1) {
+      vimState.cursors[0] = vimState.cursors[0].getUp(1);
+    } else if (
+      this.to === 'down' &&
+      vimState.cursors[0].stop.line - visibleRange.start.line < scrolloff + 1
+    ) {
+      vimState.cursors[0] = vimState.cursors[0].getDown(1);
+    }
 
     vimState.postponedCodeViewChanges.push({
       command: 'editorScroll',

@@ -57,8 +57,16 @@ export class Range {
     return new Range(this._start.getRight(count), this._stop.getRight(count));
   }
 
+  public getLeft(count = 1): Range {
+    return this.getRight(-count);
+  }
+
   public getDown(count = 1): Range {
     return new Range(this._start.getDownByCount(count), this._stop.getDownByCount(count));
+  }
+
+  public getUp(count = 1): Range {
+    return this.getDown(-count);
   }
 
   public equals(other: Range): boolean {
