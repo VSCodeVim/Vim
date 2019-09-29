@@ -49,13 +49,13 @@ export class HistoryCommand extends CommandBase {
         break;
       // TODO: Implement these
       case HistoryCommandType.Expr:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
       case HistoryCommandType.Input:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
       case HistoryCommandType.Debug:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
       case HistoryCommandType.All:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
     }
   }
 }
