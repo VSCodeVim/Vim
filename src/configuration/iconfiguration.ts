@@ -330,4 +330,9 @@ export interface IConfiguration {
    * Searches wrap around the end of the file.
    */
   wrapscan: boolean;
+
+  /**
+   * Number of lines to scroll with CTRL-U and CTRL-D commands. Set to 0 to use a half page scroll.
+   */
+  scroll: number;
 }
