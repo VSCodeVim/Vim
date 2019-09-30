@@ -4387,34 +4387,32 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         start = start.getLeft();
         word = text[start.character] + word;
       }
+
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      do {
+      while (true) {
         const num = NumericString.parse(word);
-        if (
-          num !== null &&
-          position.character < start.character + num.prefix.length + num.value.toString().length
-        ) {
-          vimState.cursorStopPosition = await this.replaceNum(
+        if (num === null) {
+          break;
+        }
+
+        const numLength = num.prefix.length + num.value.toString().length;
+        const numEnd = start.character + numLength;
+
+        if (position.character < numEnd) {
+          vimState.cursorStopPosition = (await this.replaceNum(
             num,
             this.offset * (vimState.recordedState.count || 1),
             start,
             end
-          );
-          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeftByCount(
-            num.suffix.length
-          );
+          )).getLeftByCount(num.suffix.length);
           return vimState;
-        } else if (num !== null) {
-          word = word.slice(num.prefix.length + num.value.toString().length);
-          start = new Position(
-            start.line,
-            start.character + num.prefix.length + num.value.toString().length
-          );
         } else {
-          break;
+          word = word.slice(numLength);
+          start = new Position(start.line, numEnd);
         }
-      } while (true);
+      }
     }
+    16
     // No usable numbers, return the original position
     return vimState;
   }
@@ -4425,20 +4423,21 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
     startPos: Position,
     endPos: Position
   ): Promise<Position> {
-    const oldWidth = start.toString().length;
+    const oldLength = start.toString().length;
     start.value += offset;
     const newNum = start.toString();
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    if (oldWidth === newNum.length) {
+    if (oldLength === newNum.length) {
       await TextEditor.replace(range, newNum);
     } else {
       // Can't use replace, since new number is a different width than old
       await TextEditor.delete(range);
       await TextEditor.insertAt(newNum, startPos);
+
       // Adjust end position according to difference in width of number-string
-      endPos = new Position(endPos.line, endPos.character + (newNum.length - oldWidth));
+      endPos = new Position(endPos.line, endPos.character + (newNum.length - oldLength));
     }
 
     return endPos;

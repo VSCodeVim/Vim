@@ -11,33 +11,33 @@ export class NumericString {
     { regex: /\d/, base: 10, prefix: '' },
   ];
 
+  // Regex to determine if this number has letters around it,
+  // if it doesn't then that is easy and no prefix or suffix is needed
+  private static findNondigits = /[^\d-+]+/g;
+
+  // Regex to find any leading characters before the number
+  private static findPrefix = /^[^\d-+]+(?=[0-9]+)/g;
+
+  // Regex to find any trailing characters after the number
+  private static findSuffix = /[^\d]*[\d]*(.*)/g;
+
   static parse(input: string): NumericString | null {
     for (const { regex, base, prefix } of NumericString.matchings) {
-      const match = regex.exec(input);
-      if (match == null) {
+      if (!regex.test(input)) {
         continue;
       }
 
-      // Regex to determine if this number has letters around it,
-      // if it doesn't then that is easy and no prefix or suffix is needed
-      let findNondigits = /[^\d-+]+/g;
-
-      // Regex to find any leading characters before the number
-      let findPrefix = /^[^\d-+]+(?=[0-9]+)/g;
-
-      // Regex to find any trailing characters after the number
-      let findSuffix = /[^\d]*[\d]*(.*)/g;
       let newPrefix = prefix;
       let newSuffix = '';
       let newNum = input;
 
       // Only use this section if this is a number surrounded by letters
       if (
-        findNondigits.exec(input) !== null &&
+        NumericString.findNondigits.test(input) &&
         NumericString.matchings[NumericString.matchings.length - 1].regex === regex
       ) {
-        let prefixFound = findPrefix.exec(input);
-        let suffixFound = findSuffix.exec(input);
+        const prefixFound = NumericString.findPrefix.exec(input);
+        const suffixFound = NumericString.findSuffix.exec(input);
 
         // Find the prefix if it exists
         if (prefixFound !== null) {
