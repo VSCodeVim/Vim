@@ -464,9 +464,9 @@
         },
         "vim.scroll": {
           "type": "number",
-          "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands.",
-          "default": 20,
-          "minimum": 1
+          "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",
+          "default": 0,
+          "minimum": 0
         },
         "vim.showcmd": {
           "type": "boolean",

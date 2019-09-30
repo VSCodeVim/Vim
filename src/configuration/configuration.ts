@@ -312,6 +312,13 @@ class Configuration implements IConfiguration {
   report = 2;
   wrapscan = true;
 
+  scroll = 0;
+  getScrollLines(visibleRanges: vscode.Range[]): number {
+    return this.scroll === 0
+      ? Math.ceil((visibleRanges[0].end.line - visibleRanges[0].start.line) / 2)
+      : this.scroll;
+  }
+
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
     insert: undefined,

@@ -107,4 +107,5 @@ export class Configuration implements IConfiguration {
   report = 2;
   digraphs: {};
   wrapscan = true;
+  scroll = 20;
 }
