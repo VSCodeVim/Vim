@@ -2868,7 +2868,7 @@ class CommandSelectPreviousLastSearchWord extends BaseCommand {
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.VisualBlock);
@@ -2880,7 +2880,7 @@ class CommandVisualBlockMode extends BaseCommand {
 @RegisterAction
 class CommandExitVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Normal);
