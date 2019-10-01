@@ -4363,6 +4363,7 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 abstract class IncrementDecrementNumberAction extends BaseCommand {
   canBeRepeatedWithDot = true;
   offset: number;
+  staircase = false;
 
   // The positions from which the algorithm will attempt to find a number
   // Should be overridden in all but the simplest case
@@ -4371,7 +4372,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    positionLoop: for (let pos of this.getPositions(position, vimState.editor.selections)) {
+    let i = 1;
+    for (let pos of this.getPositions(position, vimState.editor.selections)) {
       const text = TextEditor.getLineAt(pos).text;
 
       // Make sure position within the text is possible
@@ -4384,7 +4386,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       // that word.
       const whereToStart = text[pos.character].match(/\s/) ? pos : pos.getWordLeft(true);
 
-      for (let { start, end, word } of Position.IterateWords(whereToStart)) {
+      wordLoop: for (let { start, end, word } of Position.IterateWords(whereToStart)) {
         // '-' doesn't count as a word, but is important to include in parsing
         // the number, as long as it is not just part of the word (-foo2 for example)
         if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
@@ -4403,19 +4405,24 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           const numEnd = start.character + numLength;
 
           if (pos.character < numEnd) {
+            vscode.window.showErrorMessage(i.toString());
+            const totalOffset =
+              this.offset * (vimState.recordedState.count || 1) * (this.staircase ? i : 1);
+
             vimState.cursorStopPosition = (await this.replaceNum(
               num,
-              this.offset * (vimState.recordedState.count || 1),
+              totalOffset,
               start,
               end
             )).getLeftByCount(num.suffix.length);
-            continue positionLoop;
+            break wordLoop;
           } else {
             word = word.slice(numLength);
             start = new Position(start.line, numEnd);
           }
         }
       }
+      i++;
     }
 
     if ([ModeName.Visual, ModeName.VisualLine].includes(vimState.currentMode)) {
@@ -4493,6 +4500,44 @@ class DecrementNumberVisualLine extends IncrementDecrementNumberAction {
   modes = [ModeName.VisualLine];
   keys = ['<C-x>'];
   offset = -1;
+
+  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
+    let positions: Position[] = [];
+    for (const selection of selections) {
+      positions.push(new Position(selection.start.line, selection.start.character));
+      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
+        positions.push(new Position(line, 0));
+      }
+    }
+    return positions;
+  }
+}
+
+@RegisterAction
+class IncrementNumberStaircase extends IncrementDecrementNumberAction {
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ['g', '<C-a>'];
+  offset = +1;
+  staircase = true;
+
+  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
+    let positions: Position[] = [];
+    for (const selection of selections) {
+      positions.push(new Position(selection.start.line, selection.start.character));
+      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
+        positions.push(new Position(line, 0));
+      }
+    }
+    return positions;
+  }
+}
+
+@RegisterAction
+class DecrementNumberStaircase extends IncrementDecrementNumberAction {
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ['g', '<C-x>'];
+  offset = -1;
+  staircase = true;
 
   protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
     let positions: Position[] = [];
