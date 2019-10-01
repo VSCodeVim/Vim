@@ -13,7 +13,7 @@ import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { ModeName, Mode } from './../../mode/mode';
+import { ModeName } from './../../mode/mode';
 import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
@@ -4361,59 +4361,71 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 }
 
 abstract class IncrementDecrementNumberAction extends BaseCommand {
-  modes = [ModeName.Normal];
   canBeRepeatedWithDot = true;
   offset: number;
 
+  // The positions from which the algorithm will attempt to find a number
+  // Should be overridden in all but the simplest case
+  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
+    return [position];
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const text = TextEditor.getLineAt(position).text;
+    positionLoop: for (let pos of this.getPositions(position, vimState.editor.selections)) {
+      const text = TextEditor.getLineAt(pos).text;
 
-    // Make sure position within the text is possible and return if not
-    if (text.length <= position.character) {
-      return vimState;
-    }
-
-    // Start looking to the right for the next word to increment, unless we're
-    // already on a word to increment, in which case start at the beginning of
-    // that word.
-    const whereToStart = text[position.character].match(/\s/)
-      ? position
-      : position.getWordLeft(true);
-
-    for (let { start, end, word } of Position.IterateWords(whereToStart)) {
-      // '-' doesn't count as a word, but is important to include in parsing
-      // the number, as long as it is not just part of the word (-foo2 for example)
-      if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
-        start = start.getLeft();
-        word = text[start.character] + word;
+      // Make sure position within the text is possible
+      if (text.length <= pos.character) {
+        continue;
       }
 
-      // Strict number parsing so "1a" doesn't silently get converted to "1"
-      while (true) {
-        const num = NumericString.parse(word);
-        if (num === null) {
-          break;
+      // Start looking to the right for the next word to increment, unless we're
+      // already on a word to increment, in which case start at the beginning of
+      // that word.
+      const whereToStart = text[pos.character].match(/\s/) ? pos : pos.getWordLeft(true);
+
+      for (let { start, end, word } of Position.IterateWords(whereToStart)) {
+        // '-' doesn't count as a word, but is important to include in parsing
+        // the number, as long as it is not just part of the word (-foo2 for example)
+        if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
+          start = start.getLeft();
+          word = text[start.character] + word;
         }
 
-        const numLength = num.prefix.length + num.value.toString().length;
-        const numEnd = start.character + numLength;
+        // Strict number parsing so "1a" doesn't silently get converted to "1"
+        while (true) {
+          const num = NumericString.parse(word);
+          if (num === null) {
+            break;
+          }
 
-        if (position.character < numEnd) {
-          vimState.cursorStopPosition = (await this.replaceNum(
-            num,
-            this.offset * (vimState.recordedState.count || 1),
-            start,
-            end
-          )).getLeftByCount(num.suffix.length);
-          return vimState;
-        } else {
-          word = word.slice(numLength);
-          start = new Position(start.line, numEnd);
+          const numLength = num.prefix.length + num.value.toString().length;
+          const numEnd = start.character + numLength;
+
+          if (pos.character < numEnd) {
+            vimState.cursorStopPosition = (await this.replaceNum(
+              num,
+              this.offset * (vimState.recordedState.count || 1),
+              start,
+              end
+            )).getLeftByCount(num.suffix.length);
+            continue positionLoop;
+          } else {
+            word = word.slice(numLength);
+            start = new Position(start.line, numEnd);
+          }
         }
       }
     }
-    16
-    // No usable numbers, return the original position
+
+    if ([ModeName.Visual, ModeName.VisualLine].includes(vimState.currentMode)) {
+      vimState.cursorStopPosition = new Position(
+        vimState.editor.selection.start.line,
+        vimState.editor.selection.start.character
+      );
+      vimState.setCurrentMode(ModeName.Normal);
+    }
+
     return vimState;
   }
 
@@ -4446,14 +4458,52 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
 @RegisterAction
 class IncrementNumberAction extends IncrementDecrementNumberAction {
+  modes = [ModeName.Normal];
   keys = ['<C-a>'];
   offset = +1;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
+  modes = [ModeName.Normal];
   keys = ['<C-x>'];
   offset = -1;
+}
+
+@RegisterAction
+class IncrementNumberVisual extends IncrementDecrementNumberAction {
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ['<C-a>'];
+  offset = +1;
+
+  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
+    let positions: Position[] = [];
+    for (const selection of selections) {
+      positions.push(new Position(selection.start.line, selection.start.character));
+      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
+        positions.push(new Position(line, 0));
+      }
+    }
+    return positions;
+  }
+}
+
+@RegisterAction
+class DecrementNumberVisualLine extends IncrementDecrementNumberAction {
+  modes = [ModeName.VisualLine];
+  keys = ['<C-x>'];
+  offset = -1;
+
+  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
+    let positions: Position[] = [];
+    for (const selection of selections) {
+      positions.push(new Position(selection.start.line, selection.start.character));
+      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
+        positions.push(new Position(line, 0));
+      }
+    }
+    return positions;
+  }
 }
 
 @RegisterAction
