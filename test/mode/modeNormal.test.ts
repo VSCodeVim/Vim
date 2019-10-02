@@ -1725,6 +1725,48 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can <C-a> in visual mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3<C-a>',
+    end: ['9 1|2 9', '12 9 9', '12 9 9'],
+  });
+
+  newTest({
+    title: 'can <C-a> in visual-line mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3<C-a>',
+    end: ['1|2 9 9', '12 9 9', '12 9 9'],
+  });
+
+  newTest({
+    title: 'can <C-a> in visual-block mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 1|2 9', '9 12 9', '9 12 9'],
+  });
+
+  newTest({
+    title: 'can g<C-a> in visual mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjjg3<C-a>',
+    end: ['9 1|2 9', '15 9 9', '18 9 9'],
+  });
+
+  newTest({
+    title: 'can g<C-a> in visual-line mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjjg3<C-a>',
+    end: ['1|2 9 9', '15 9 9', '18 9 9'],
+  });
+
+  newTest({
+    title: 'can g<C-a> in visual-block mode',
+    start: ['9 |9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jjg3<C-a>',
+    end: ['9 1|2 9', '9 15 9', '9 18 9'],
+  });
+
+  newTest({
     title: 'can do Y',
     start: ['|blah blah'],
     keysPressed: 'Yp',

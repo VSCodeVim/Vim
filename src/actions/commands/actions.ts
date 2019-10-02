@@ -4365,15 +4365,21 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   offset: number;
   staircase = false;
 
-  // The positions from which the algorithm will attempt to find a number
-  // Should be overridden in all but the simplest case
-  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
-    return [position];
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let i = 1;
-    for (let pos of this.getPositions(position, vimState.editor.selections)) {
+    let positions: Position[] = [];
+    if (vimState.currentMode === ModeName.Normal) {
+      positions.push(position);
+    } else {
+      // In visual modes, we need to run the increment logic on each line
+      for (const selection of vimState.editor.selections) {
+        positions.push(new Position(selection.start.line, selection.start.character));
+        for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
+          positions.push(new Position(line, 0));
+        }
+      }
+    }
+
+    for (let [stair, pos] of positions.entries()) {
       const text = TextEditor.getLineAt(pos).text;
 
       // Make sure position within the text is possible
@@ -4405,9 +4411,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           const numEnd = start.character + numLength;
 
           if (pos.character < numEnd) {
-            vscode.window.showErrorMessage(i.toString());
             const totalOffset =
-              this.offset * (vimState.recordedState.count || 1) * (this.staircase ? i : 1);
+              this.offset * (vimState.recordedState.count || 1) * (this.staircase ? stair : 1);
 
             vimState.cursorStopPosition = (await this.replaceNum(
               num,
@@ -4422,7 +4427,6 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           }
         }
       }
-      i++;
     }
 
     if ([ModeName.Visual, ModeName.VisualLine].includes(vimState.currentMode)) {
@@ -4482,17 +4486,6 @@ class IncrementNumberVisual extends IncrementDecrementNumberAction {
   modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['<C-a>'];
   offset = +1;
-
-  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
-    let positions: Position[] = [];
-    for (const selection of selections) {
-      positions.push(new Position(selection.start.line, selection.start.character));
-      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
-        positions.push(new Position(line, 0));
-      }
-    }
-    return positions;
-  }
 }
 
 @RegisterAction
@@ -4500,17 +4493,6 @@ class DecrementNumberVisualLine extends IncrementDecrementNumberAction {
   modes = [ModeName.VisualLine];
   keys = ['<C-x>'];
   offset = -1;
-
-  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
-    let positions: Position[] = [];
-    for (const selection of selections) {
-      positions.push(new Position(selection.start.line, selection.start.character));
-      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
-        positions.push(new Position(line, 0));
-      }
-    }
-    return positions;
-  }
 }
 
 @RegisterAction
@@ -4519,17 +4501,6 @@ class IncrementNumberStaircase extends IncrementDecrementNumberAction {
   keys = ['g', '<C-a>'];
   offset = +1;
   staircase = true;
-
-  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
-    let positions: Position[] = [];
-    for (const selection of selections) {
-      positions.push(new Position(selection.start.line, selection.start.character));
-      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
-        positions.push(new Position(line, 0));
-      }
-    }
-    return positions;
-  }
 }
 
 @RegisterAction
@@ -4538,17 +4509,6 @@ class DecrementNumberStaircase extends IncrementDecrementNumberAction {
   keys = ['g', '<C-x>'];
   offset = -1;
   staircase = true;
-
-  protected getPositions(position: Position, selections: vscode.Selection[]): Position[] {
-    let positions: Position[] = [];
-    for (const selection of selections) {
-      positions.push(new Position(selection.start.line, selection.start.character));
-      for (let line = selection.start.line + 1; line <= selection.end.line; line++) {
-        positions.push(new Position(line, 0));
-      }
-    }
-    return positions;
-  }
 }
 
 @RegisterAction
