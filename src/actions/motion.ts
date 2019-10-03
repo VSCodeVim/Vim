@@ -440,7 +440,9 @@ class BackSpaceInVisualMode extends BaseMovement {
   keys = ['<BS>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLeftThroughLineBreaks();
+    return configuration.whichwrap.includes('b')
+      ? position.getLeftThroughLineBreaks()
+      : position.getLeft();
   }
 }
 
