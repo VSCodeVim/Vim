@@ -3,7 +3,7 @@ import { getTestingFunctions } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   teardown(cleanUpWorkspace);
 
