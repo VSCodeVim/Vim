@@ -240,20 +240,6 @@ suite('Mode Visual', () => {
       keysPressed: 'vgjx',
       end: ['blah', 'duh', '|ur'],
     });
-
-    newTest({
-      title: "Preserves cursor position when handling 'gk'",
-      start: ['blah', 'word', 'a', 'la|st'],
-      keysPressed: 'vgkgkx',
-      end: ['blah', 'wo|t'],
-    });
-
-    newTest({
-      title: "Preserves cursor position when handling 'gj'",
-      start: ['blah', 'wo|rd', 'a', 'last'],
-      keysPressed: 'vgjgjx',
-      end: ['blah', 'wo|t'],
-    });
   });
 
   suite('handles aw in visual mode', () => {
