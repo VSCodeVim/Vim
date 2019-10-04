@@ -448,6 +448,18 @@ class BackSpaceInNormalMode extends BaseMovement {
 }
 
 @RegisterAction
+class BackSpaceInVisualMode extends BaseMovement {
+  modes = [ModeName.Visual, ModeName.VisualBlock];
+  keys = ['<BS>'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return configuration.whichwrap.includes('b')
+      ? position.getLeftThroughLineBreaks()
+      : position.getLeft();
+  }
+}
+
+@RegisterAction
 class MoveRight extends BaseMovement {
   keys = ['l'];
 

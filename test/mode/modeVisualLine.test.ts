@@ -10,7 +10,7 @@ import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

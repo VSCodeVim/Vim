@@ -662,13 +662,13 @@ abstract class CommandEditorScroll extends BaseCommand {
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
 
-    if (this.to === 'up' && visibleRange.end.line - vimState.cursors[0].stop.line < scrolloff + 1) {
-      vimState.cursors[0] = vimState.cursors[0].getUp(1);
-    } else if (
-      this.to === 'down' &&
-      vimState.cursors[0].stop.line - visibleRange.start.line < scrolloff + 1
-    ) {
-      vimState.cursors[0] = vimState.cursors[0].getDown(1);
+    const linesAboveCursor = visibleRange.end.line - vimState.cursors[0].stop.line - timesToRepeat;
+    const linesBelowCursor =
+      vimState.cursors[0].stop.line - visibleRange.start.line - timesToRepeat;
+    if (this.to === 'up' && scrolloff > linesAboveCursor) {
+      vimState.cursors[0] = vimState.cursors[0].getUp(scrolloff - linesAboveCursor);
+    } else if (this.to === 'down' && scrolloff > linesBelowCursor) {
+      vimState.cursors[0] = vimState.cursors[0].getDown(scrolloff - linesBelowCursor);
     }
 
     vimState.postponedCodeViewChanges.push({
