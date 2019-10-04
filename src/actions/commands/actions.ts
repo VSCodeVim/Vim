@@ -13,7 +13,7 @@ import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { ModeName, Mode } from './../../mode/mode';
+import { ModeName } from './../../mode/mode';
 import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
@@ -417,6 +417,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 
     const searchState = globalState.searchState!;
     searchState.searchString += text;
+    vimState.statusBarCursorCharacterPos += text.length;
     return vimState;
   }
 }
@@ -1440,6 +1441,7 @@ export class PutCommand extends BaseCommand {
     super();
     this.multicursorIndex = multicursorIndex;
   }
+
   public static async GetText(
     vimState: VimState,
     multicursorIndex: number | undefined = undefined
