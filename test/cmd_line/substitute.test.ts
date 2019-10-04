@@ -13,7 +13,7 @@ import {
 import { getTestingFunctions } from '../testSimplifier';
 
 suite('Basic substitute', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {

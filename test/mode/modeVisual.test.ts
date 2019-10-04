@@ -17,7 +17,7 @@ import {
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -131,6 +131,13 @@ suite('Mode Visual', () => {
     start: ['1', '2', '|3', '4', '5'],
     keysPressed: 'vH',
     end: ['|1', '2', '3', '4', '5'],
+  });
+
+  newTest({
+    title: 'Can handle backspace key',
+    start: ['blah', 'duh', 'd|ur', 'hur'],
+    keysPressed: 'v<BS>x',
+    end: ['blah', 'duh', '|r', 'hur'],
   });
 
   test('handles case where we delete over a newline', async () => {
