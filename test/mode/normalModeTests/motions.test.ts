@@ -152,6 +152,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "'gg' obeys startofline",
+    start: ['   text', 'text', 'texttexttex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'texttexttext'],
+  });
+
+  newTest({
     title: 'Retain same column when moving up/down',
     start: ['text text', 'text', 'text tex|t'],
     keysPressed: 'kk',
@@ -468,9 +475,9 @@ suite('Motions in Normal Mode', () => {
 
   newTest({
     title: 'Can handle G ',
-    start: ['|one', 'two', 'three'],
+    start: ['|one', 'two', '  three'],
     keysPressed: 'G',
-    end: ['one', 'two', '|three'],
+    end: ['one', 'two', '  |three'],
   });
 
   newTest({

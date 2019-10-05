@@ -702,55 +702,60 @@ class CommandCtrlY extends CommandEditorScroll {
   by: EditorScrollByUnit = 'line';
 }
 
-@RegisterAction
-class CommandMoveFullPageUp extends CommandEditorScroll {
-  keys = ['<C-b>'];
-  to: EditorScrollDirection = 'up';
-  by: EditorScrollByUnit = 'page';
-}
+/**
+ * Commands like `<C-d>` and `<C-f>` act *sort* of like `<count><C-e>`, but they move
+ * your cursor down and put it on the first non-whitespace character of the line.
+ */
+abstract class CommandScrollAndMoveCursor extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  runsOnceForEachCountPrefix = false;
+  to: EditorScrollDirection;
 
-@RegisterAction
-class CommandMoveFullPageDown extends CommandEditorScroll {
-  keys = ['<C-f>'];
-  to: EditorScrollDirection = 'down';
-  by: EditorScrollByUnit = 'page';
-}
-
-@RegisterAction
-class CommandMoveHalfPageDown extends CommandEditorScroll {
-  keys = ['<C-d>'];
-  to: EditorScrollDirection = 'down';
-  by: EditorScrollByUnit = 'line';
+  /**
+   * @returns the number of lines this command should move the cursor
+   */
+  protected abstract getNumLines(vimState: VimState): number;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
-    const startColumn = vimState.cursorStartPosition.character;
-    const timesToRepeat = vimState.recordedState.count || 1;
-    const scrollLines = configuration.getScrollLines(vimState.editor.visibleRanges) * timesToRepeat;
+    const scrollLines =
+      (this.to === 'down' ? 1 : -1) * (vimState.actionCount || 1) * this.getNumLines(vimState);
 
-    await vscode.commands.executeCommand('editorScroll', {
-      to: this.to,
-      by: this.by,
-      value: scrollLines,
-      revealCursor: smoothScrolling,
-      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-        vimState.currentMode
-      ),
-    });
+    let scrollLinesClamped: number;
+    if (this.to === 'down') {
+      scrollLinesClamped = Math.min(scrollLines, vimState.editor.visibleRanges[0].start.line);
+    } else {
+      scrollLinesClamped = Math.min(
+        scrollLines,
+        vimState.editor.document.lineCount - 1 - vimState.editor.visibleRanges[0].end.line
+      );
+    }
+    if (scrollLinesClamped > 0) {
+      await vscode.commands.executeCommand('editorScroll', {
+        to: this.to,
+        by: 'line',
+        value: scrollLinesClamped,
+        revealCursor: smoothScrolling,
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+          vimState.currentMode
+        ),
+      });
+    }
 
     if (smoothScrolling) {
-      vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.active);
+      vimState.cursorStopPosition = Position.FromVSCodePosition(
+        vimState.editor.selection.active
+      ).obeyStartOfLine();
     } else {
       let newPositionLine = position.line + scrollLines;
-      let newPositionColumn: number;
-      if (newPositionLine >= vimState.editor.document.lineCount - 1) {
+      if (newPositionLine < 0) {
+        // Out of bounds - reset to 0
+        newPositionLine = 0;
+      } else if (newPositionLine > vimState.editor.document.lineCount - 1) {
         // Out of bounds - reset to end of document
         newPositionLine = vimState.editor.document.lineCount - 1;
-        newPositionColumn = 0;
-      } else {
-        newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
       }
-      vimState.cursorStopPosition = new Position(newPositionLine, newPositionColumn);
+      vimState.cursorStopPosition = new Position(newPositionLine, 0).obeyStartOfLine();
     }
 
     return vimState;
@@ -758,43 +763,44 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
 }
 
 @RegisterAction
-class CommandMoveHalfPageUp extends CommandEditorScroll {
+class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
+  keys = ['<C-b>'];
+  to: EditorScrollDirection = 'up';
+
+  protected getNumLines(vimState: VimState) {
+    const visible = vimState.editor.visibleRanges[0];
+    return visible.end.line - visible.start.line;
+  }
+}
+
+@RegisterAction
+class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
+  keys = ['<C-f>'];
+  to: EditorScrollDirection = 'down';
+
+  protected getNumLines(vimState: VimState) {
+    const visible = vimState.editor.visibleRanges[0];
+    return visible.end.line - visible.start.line;
+  }
+}
+
+@RegisterAction
+class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
+  keys = ['<C-d>'];
+  to: EditorScrollDirection = 'down';
+
+  protected getNumLines(vimState: VimState) {
+    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  }
+}
+
+@RegisterAction
+class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
-  by: EditorScrollByUnit = 'line';
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
-    const startColumn = vimState.cursorStartPosition.character;
-    const timesToRepeat = vimState.recordedState.count || 1;
-    const scrollLines = configuration.getScrollLines(vimState.editor.visibleRanges) * timesToRepeat;
-
-    await vscode.commands.executeCommand('editorScroll', {
-      to: this.to,
-      by: this.by,
-      value: scrollLines,
-      revealCursor: smoothScrolling,
-      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-        vimState.currentMode
-      ),
-    });
-
-    if (smoothScrolling) {
-      vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.active);
-    } else {
-      let newPositionLine = position.line - scrollLines;
-      let newPositionColumn: number;
-      if (newPositionLine <= 0) {
-        // Out of bounds - reset to 0
-        newPositionLine = 0;
-        newPositionColumn = 0;
-      } else {
-        newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
-      }
-      vimState.cursorStopPosition = new Position(newPositionLine, newPositionColumn);
-    }
-
-    return vimState;
+  protected getNumLines(vimState: VimState) {
+    return configuration.getScrollLines(vimState.editor.visibleRanges);
   }
 }
 

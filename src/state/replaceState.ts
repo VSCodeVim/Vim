@@ -6,7 +6,7 @@ import { TextEditor } from './../textEditor';
  */
 export class ReplaceState {
   /**
-   * The location of the cursor where you begun to replace characters.
+   * The cursor location where you began replacing characters.
    */
   public replaceCursorStartPosition: Position;
 
