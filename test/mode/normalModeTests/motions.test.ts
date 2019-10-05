@@ -740,14 +740,14 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'dur', '|hur'],
   });
 
-  newTest({
+  newTestSkip({
     title: "Preserves cursor position when handling 'gk'",
     start: ['blah', 'duh', 'a', 'hu|r '],
     keysPressed: 'gkgk',
     end: ['blah', 'du|h', 'a', 'hur '],
   });
 
-  newTest({
+  newTestSkip({
     title: "Preserves cursor position when handling 'gj'",
     start: ['blah', 'du|h', 'a', 'hur '],
     keysPressed: 'gjgj',

@@ -163,6 +163,19 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   }
 }
 
+class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = 'down';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
+
+class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = 'up';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
@@ -797,7 +810,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+export class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -806,7 +819,7 @@ export class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMai
 }
 
 @RegisterAction
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+class MoveDownByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
