@@ -1337,8 +1337,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '//    We choose to write a vim extension, not because it is easy, but because it is',
-      '|//    hard.',
+      '//    We choose to write a vim extension, not because it is easy, but because it i|s',
+      '//    hard.',
     ],
   });
 
@@ -1349,8 +1349,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '    // We choose to write a vim extension, not because it is easy, but because',
-      '|    // it is hard.',
+      '    // We choose to write a vim extension, not because it is easy, but becaus|e',
+      '    // it is hard.',
     ],
   });
 
@@ -1361,8 +1361,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '\t\t// We choose to write a vim extension, not because it is easy, but',
-      '|\t\t// because it is hard.',
+      '\t\t// We choose to write a vim extension, not because it is easy, bu|t',
+      '\t\t// because it is hard.',
     ],
   });
 
