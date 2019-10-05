@@ -119,6 +119,19 @@ export class VimState implements vscode.Disposable {
   public keyHistory: string[] = [];
 
   /**
+   * Track cursor position when initially starting a visual line selection so we
+   * can return to it when exiting that mode
+   */
+  public visualLineStartPos: Position = new Position(0, 0);
+
+  /**
+   * Has the visualLineStartPos been modified
+   */
+  public visualLineStartPosIsDefault(): Boolean {
+    return this.visualLineStartPos.line === 0 && this.visualLineStartPos.character === 0;
+  }
+
+  /**
    * The cursor position (start, stop) when this action finishes.
    */
   public get cursorStartPosition(): Position {

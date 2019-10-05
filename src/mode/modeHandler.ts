@@ -608,7 +608,12 @@ export class ModeHandler implements vscode.Disposable {
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     if (this.currentMode.name === ModeName.Normal) {
-      vimState.cursorStartPosition = vimState.cursorStopPosition;
+      if (vimState.visualLineStartPosIsDefault()) {
+        vimState.cursorStartPosition = vimState.cursorStopPosition;
+      } else {
+        vimState.cursorStopPosition = vimState.visualLineStartPos;
+        vimState.visualLineStartPos = new Position(0, 0);
+      }
     }
 
     // Ensure cursor is within bounds
@@ -1217,6 +1222,11 @@ export class ModeHandler implements vscode.Disposable {
 
           selections = [new vscode.Selection(start, stop)];
         } else if (selectionMode === ModeName.VisualLine) {
+          if (vimState.visualLineStartPosIsDefault()) {
+            // Track initial start position, we will return to it when we exit visual line mode
+            vimState.visualLineStartPos = start;
+          }
+
           selections = [
             new vscode.Selection(
               Position.EarlierOf(start, stop).getLineBegin(),
