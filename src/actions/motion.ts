@@ -169,7 +169,6 @@ class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintain
   value = 1;
 }
 
-
 class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
@@ -1031,11 +1030,11 @@ class MoveNonBlankFirst extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentBegin().getFirstLineNonBlankChar();
+      return position.getDocumentBegin().obeyStartOfLine();
     } else if (count > TextEditor.getLineCount()) {
       count = TextEditor.getLineCount();
     }
-    return new Position(count - 1, 0).getFirstLineNonBlankChar();
+    return new Position(count - 1, 0).obeyStartOfLine();
   }
 }
 
@@ -1052,9 +1051,12 @@ class MoveNonBlankLast extends BaseMovement {
     let stop: Position;
 
     if (count === 0) {
-      stop = new Position(TextEditor.getLineCount() - 1, 0);
+      stop = new Position(TextEditor.getLineCount() - 1, position.character).obeyStartOfLine();
     } else {
-      stop = new Position(Math.min(count, TextEditor.getLineCount()) - 1, 0);
+      stop = new Position(
+        Math.min(count, TextEditor.getLineCount()) - 1,
+        position.character
+      ).obeyStartOfLine();
     }
 
     return {

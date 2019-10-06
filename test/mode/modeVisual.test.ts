@@ -1087,7 +1087,7 @@ suite('Mode Visual', () => {
     newTest({
       title: 'select',
       start: ['    func() {', '    |    hi;', '        alw;', '    }'],
-      keysPressed: 'vi{yGP',
+      keysPressed: 'vi{yG0P',
       end: ['    func() {', '        hi;', '        alw;', '|        hi;', '        alw;', '    }'],
     });
   });
