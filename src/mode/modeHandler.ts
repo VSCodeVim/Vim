@@ -613,7 +613,7 @@ export class ModeHandler implements vscode.Disposable {
         !vimState.visualLineStartPosIsDefault() && returnCursorFromVLMode(recentKeyHistory);
       /**
        * If the user entered visual line mode and immediately exited it then we
-       * want to return the cursor position to its original position instead at
+       * want to return the cursor position to its original position instead of
        * the end of the selection
        */
       if (returnCursorPos) {
