@@ -718,8 +718,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
-    const scrollLines =
-      (this.to === 'down' ? 1 : -1) * (vimState.actionCount || 1) * this.getNumLines(vimState);
+    const scrollLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
     let scrollLinesClamped: number;
     if (this.to === 'down') {
@@ -747,7 +746,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
         vimState.editor.selection.active
       ).obeyStartOfLine();
     } else {
-      let newPositionLine = position.line + scrollLines;
+      let newPositionLine = position.line + (this.to === 'down' ? 1 : -1) * scrollLines;
       if (newPositionLine < 0) {
         // Out of bounds - reset to 0
         newPositionLine = 0;
