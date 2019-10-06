@@ -127,7 +127,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Has the visualLineStartPos been modified
    */
-  public visualLineStartPosIsDefault(): Boolean {
+  public visualLineStartPosIsDefault(): boolean {
     return this.visualLineStartPos.line === 0 && this.visualLineStartPos.character === 0;
   }
 
