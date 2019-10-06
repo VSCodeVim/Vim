@@ -608,11 +608,15 @@ export class ModeHandler implements vscode.Disposable {
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     if (this.currentMode.name === ModeName.Normal) {
-      if (vimState.visualLineStartPosIsDefault()) {
-        vimState.cursorStartPosition = vimState.cursorStopPosition;
-      } else {
+      const immediatlyExitedVLMode =
+        JSON.stringify(vimState.keyHistory.slice(-2)) === JSON.stringify(['V', '<Esc>']);
+      const returnCursorPos = !vimState.visualLineStartPosIsDefault() && immediatlyExitedVLMode;
+      if (returnCursorPos) {
+        vimState.cursorStartPosition = vimState.visualLineStartPos;
         vimState.cursorStopPosition = vimState.visualLineStartPos;
         vimState.visualLineStartPos = new Position(0, 0);
+      } else {
+        vimState.cursorStartPosition = vimState.cursorStopPosition;
       }
     }
 
