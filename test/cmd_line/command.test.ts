@@ -155,4 +155,25 @@ suite('cmd_line/search command', () => {
     assert.equal(StatusBar.Get().trim(), ':|');
     await modeHandler.handleKeyEvent('<Esc>');
   });
+
+  test('<C-r> <C-w> insert word under cursor on command line', async () => {
+    await modeHandler.handleMultipleKeyEvents('iabc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', ':', '<C-r>', '<C-w>']);
+    const statusBar = StatusBar.Get().trim();
+    assert.equal(statusBar, ':abc|', 'Failed to insert word');
+    });
+
+  test('<C-r> <C-w> insert right word of cursor on command line', async () => {
+    await modeHandler.handleMultipleKeyEvents('i::abc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', ':', '<C-r>', '<C-w>']);
+    const statusBar = StatusBar.Get().trim();
+    assert.equal(statusBar, ':abc|', 'Failed to insert word');
+  });
+
+  test('<C-r> <C-w> insert word under cursor in search mode', async () => {
+    await modeHandler.handleMultipleKeyEvents('iabc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '/', '<C-r>', '<C-w>']);
+    const statusBar = StatusBar.Get().trim();
+    assert.equal(statusBar, '/abc|', 'Failed to insert word');
+  });
 });
