@@ -471,4 +471,26 @@ suite('Mode Visual Line', () => {
       end: ['111', '222_|', ' ', '444_', '555'],
     });
   });
+
+  suite('Cursor behavior when immediately exiting', () => {
+    newTest({
+      title: 'Returns cursor to original position when immediately exiting visual line',
+      start: ['rocinante', 'nauvoo', '|anubis', 'canterbury'],
+      keysPressed: 'V<Esc>',
+      end: ['rocinante', 'nauvoo', '|anubis', 'canterbury'],
+    });
+
+    newTest({
+      title: 'Does not return cursor if a movement is made before exiting visual line',
+      start: [
+        'Don\'t cry because it\'s over|,',
+        ':smile because it happened.',
+      ],
+      keysPressed: 'Vj<Esc>',
+      end: [
+        'Don\'t cry because it\'s over,',
+        ':smile because it happened|.',
+      ],
+    });
+  });
 });
