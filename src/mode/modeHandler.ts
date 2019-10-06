@@ -21,7 +21,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync } from '../util/util';
+import { getCursorsAfterSync, returnCursorFromVLMode } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -608,9 +608,14 @@ export class ModeHandler implements vscode.Disposable {
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     if (this.currentMode.name === ModeName.Normal) {
-      const immediatlyExitedVLMode =
-        JSON.stringify(vimState.keyHistory.slice(-2)) === JSON.stringify(['V', '<Esc>']);
-      const returnCursorPos = !vimState.visualLineStartPosIsDefault() && immediatlyExitedVLMode;
+      const recentKeyHistory = vimState.keyHistory.slice(-2);
+      const returnCursorPos =
+        !vimState.visualLineStartPosIsDefault() && returnCursorFromVLMode(recentKeyHistory);
+      /**
+       * If the user entered visual line mode and immediately exited it then we
+       * want to return the cursor position to its original position instead at
+       * the end of the selection
+       */
       if (returnCursorPos) {
         vimState.cursorStartPosition = vimState.visualLineStartPos;
         vimState.cursorStopPosition = vimState.visualLineStartPos;

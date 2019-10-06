@@ -65,3 +65,18 @@ export function executeShell(cmd: string): Promise<string> {
     }
   });
 }
+
+/**
+ * Examine the keyHistory to see if the last two keypresses were to enter visual
+ * line selection mode (V) and then immediately exit it with <Esc>
+ */
+export function returnCursorFromVLMode(keyHistory: string[]): boolean {
+  const expectedKeys = ['V', '<Esc>'];
+  for (let idx = 0; idx < 2; idx++) {
+    if (keyHistory[idx] !== expectedKeys[idx]) {
+      return false;
+    }
+  }
+
+  return true;
+}
