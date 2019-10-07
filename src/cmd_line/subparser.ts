@@ -115,7 +115,6 @@ export const commandParsers = {
   },
 
   tabnew: {
-    // TODO: abbrev: "tabn", ?
     parser: tabCmd.parseTabNewCommandArgs,
   },
 
@@ -140,7 +139,6 @@ export const commandParsers = {
   },
 
   smile: {
-    abbrev: '',
     parser: parseSmileCommandArgs,
   },
 
@@ -165,7 +163,6 @@ export const commandParsers = {
   },
 
   new: {
-    // TODO: abbrev: "?"
     parser: fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs,
   },
 
@@ -204,11 +201,13 @@ export const commandParsers = {
     parser: parseDigraphCommandArgs,
   },
 
-  d: {
+  delete: {
+    abbrev: 'd',
     parser: parseDeleteRangeLinesCommandArgs,
   },
 
   sort: {
+    abbrev: 'sor',
     parser: parseSortCommandArgs,
   },
 

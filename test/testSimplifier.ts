@@ -50,9 +50,24 @@ export function getTestingFunctions() {
     );
   };
 
+  const newTestSkip = (testObj: ITestObject): void => {
+    const stack = new Error().stack;
+    let niceStack = getNiceStack(stack);
+
+    test.skip(testObj.title, async () =>
+      testIt
+        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .catch((reason: Error) => {
+          reason.stack = niceStack;
+          throw reason;
+        })
+    );
+  };
+
   return {
     newTest,
     newTestOnly,
+    newTestSkip,
   };
 }
 

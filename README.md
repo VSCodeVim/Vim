@@ -502,12 +502,12 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
-| Motion Command            | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `s<char><char>`           | Move forward to the first occurence of `<char><char>`                  |
-| `S<char><char>`           | Move backward to the first occurence of `<char><char>`                 |
-| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurence of `<char><char>`  |
-| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurence of `<char><char>` |
+| Motion Command            | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `s<char><char>`           | Move forward to the first occurrence of `<char><char>`                  |
+| `S<char><char>`           | Move backward to the first occurrence of `<char><char>`                 |
+| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurrence of `<char><char>`  |
+| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurrence of `<char><char>` |
 
 ### CamelCaseMotion
 

@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -149,6 +149,13 @@ suite('Motions in Normal Mode', () => {
     start: ['   text', 'text', 'tex|t'],
     keysPressed: 'gg',
     end: ['   |text', 'text', 'text'],
+  });
+
+  newTest({
+    title: "'gg' obeys startofline",
+    start: ['   text', 'text', 'texttexttex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'texttexttext'],
   });
 
   newTest({
@@ -468,9 +475,9 @@ suite('Motions in Normal Mode', () => {
 
   newTest({
     title: 'Can handle G ',
-    start: ['|one', 'two', 'three'],
+    start: ['|one', 'two', '  three'],
     keysPressed: 'G',
-    end: ['one', 'two', '|three'],
+    end: ['one', 'two', '  |three'],
   });
 
   newTest({
@@ -740,14 +747,14 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'dur', '|hur'],
   });
 
-  newTest({
+  newTestSkip({
     title: "Preserves cursor position when handling 'gk'",
     start: ['blah', 'duh', 'a', 'hu|r '],
     keysPressed: 'gkgk',
     end: ['blah', 'du|h', 'a', 'hur '],
   });
 
-  newTest({
+  newTestSkip({
     title: "Preserves cursor position when handling 'gj'",
     start: ['blah', 'du|h', 'a', 'hur '],
     keysPressed: 'gjgj',

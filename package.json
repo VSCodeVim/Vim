@@ -831,6 +831,11 @@
           "type": "boolean",
           "description": "Searches wrap around the end of the file.",
           "default": true
+        },
+        "vim.startofline": {
+          "type": "boolean",
+          "markdownDescription": "When `true` the commands listed below move the cursor to the first non-blank of the line.  When `false` the cursor is kept in the same column (if possible).  This applies to the commands: `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<` and `>>` with a linewise operator.",
+          "default": true
         }
       }
     }
@@ -858,8 +863,8 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.7.8",
-    "@types/sinon": "7.0.13",
+    "@types/node": "12.7.11",
+    "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",

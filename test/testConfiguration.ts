@@ -108,4 +108,5 @@ export class Configuration implements IConfiguration {
   digraphs: {};
   wrapscan = true;
   scroll = 20;
+  startofline = true;
 }

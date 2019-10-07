@@ -309,6 +309,8 @@ class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
 
+  startofline = true;
+
   report = 2;
   wrapscan = true;
 

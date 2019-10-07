@@ -46,7 +46,8 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     # Or run tests by selecting the appropriate drop down option
 
     # Alternatively, build and run tests through gulp and npm scripts
-    gulp build                  # build
+    gulp build                  # build extension
+    gulp prepare-test           # build sources and tests
     npm test                    # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running

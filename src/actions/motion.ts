@@ -163,6 +163,18 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   }
 }
 
+class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = 'down';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
+class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = 'up';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
@@ -431,6 +443,18 @@ class BackSpaceInNormalMode extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLeftThroughLineBreaks();
+  }
+}
+
+@RegisterAction
+class BackSpaceInVisualMode extends BaseMovement {
+  modes = [ModeName.Visual, ModeName.VisualBlock];
+  keys = ['<BS>'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return configuration.whichwrap.includes('b')
+      ? position.getLeftThroughLineBreaks()
+      : position.getLeft();
   }
 }
 
@@ -785,7 +809,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+export class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -794,7 +818,7 @@ export class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMai
 }
 
 @RegisterAction
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+class MoveDownByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
@@ -1006,11 +1030,11 @@ class MoveNonBlankFirst extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentBegin().getFirstLineNonBlankChar();
+      return position.getDocumentBegin().obeyStartOfLine();
     } else if (count > TextEditor.getLineCount()) {
       count = TextEditor.getLineCount();
     }
-    return new Position(count - 1, 0).getFirstLineNonBlankChar();
+    return new Position(count - 1, 0).obeyStartOfLine();
   }
 }
 
@@ -1027,9 +1051,12 @@ class MoveNonBlankLast extends BaseMovement {
     let stop: Position;
 
     if (count === 0) {
-      stop = new Position(TextEditor.getLineCount() - 1, 0);
+      stop = new Position(TextEditor.getLineCount() - 1, position.character).obeyStartOfLine();
     } else {
-      stop = new Position(Math.min(count, TextEditor.getLineCount()) - 1, 0);
+      stop = new Position(
+        Math.min(count, TextEditor.getLineCount()) - 1,
+        position.character
+      ).obeyStartOfLine();
     }
 
     return {
