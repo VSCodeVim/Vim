@@ -848,7 +848,6 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
     "lodash.escaperegexp": "4.1.2",
     "mkdirp": "0.5.1",
