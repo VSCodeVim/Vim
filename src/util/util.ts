@@ -3,7 +3,6 @@ import { Logger } from './logger';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { exec } from 'child_process';
-import { Globals } from '../globals';
 
 /**
  * This is certainly quite janky! The problem we're trying to solve
@@ -36,10 +35,6 @@ export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Pr
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
-}
-
-export function getExtensionDirPath(): string {
-  return Globals.extensionStoragePath;
 }
 
 /**
