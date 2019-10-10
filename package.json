@@ -850,7 +850,6 @@
   "dependencies": {
     "diff-match-patch": "1.0.4",
     "lodash.escaperegexp": "4.1.2",
-    "mkdirp": "0.5.1",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",

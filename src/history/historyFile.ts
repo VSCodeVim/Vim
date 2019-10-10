@@ -5,8 +5,6 @@ import { configuration } from '../configuration/configuration';
 import { promisify } from 'util';
 import { Globals } from './../globals';
 
-const mkdirp = require('mkdirp');
-
 export class HistoryFile {
   private readonly _logger = Logger.get('HistoryFile');
   private _historyFileName: string;
@@ -92,8 +90,15 @@ export class HistoryFile {
 
   private async save(): Promise<void> {
     try {
-      // create supplied directory. if directory already exists, do nothing.
-      await promisify(mkdirp)(Globals.extensionStoragePath, 0o775);
+      // create supplied directory. if directory already exists, do nothing and move on
+      try {
+        await promisify(fs.mkdir)(Globals.extensionStoragePath, { recursive: true });
+      } catch (createDirectoryErr) {
+        if (createDirectoryErr.code !== 'EEXIST') {
+          throw createDirectoryErr;
+        }
+      }
+
       // create file
       await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
     } catch (err) {
