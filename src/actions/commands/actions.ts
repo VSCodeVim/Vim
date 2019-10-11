@@ -1092,7 +1092,7 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandPasteInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2246,7 +2246,7 @@ class CommandRemoveWordCommandline extends BaseCommand {
 @RegisterAction
 class CommandPasteInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
