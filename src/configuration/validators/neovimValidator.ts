@@ -2,6 +2,7 @@ import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { promisify } from 'util';
 import { execFile } from 'child_process';
+import * as path from 'path';
 
 export class NeovimValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -16,8 +17,7 @@ export class NeovimValidator implements IConfigurationValidator {
           if (pathVar) {
             pathVar.split(';').forEach(element => {
               if (element.toLocaleLowerCase().includes('neovim')) {
-                const path = require('path');
-                config.neovimPath = element + path.sep + 'nvim';
+                config.neovimPath = path.join(element, 'nvim');
                 triedToParsePath = true;
                 return;
               }
@@ -28,7 +28,7 @@ export class NeovimValidator implements IConfigurationValidator {
       } catch (e) {
         let errorMessage = `Invalid neovimPath. ${e.message}.`;
         if (triedToParsePath) {
-          errorMessage += 'Tried to parse PATH.';
+          errorMessage += `Tried to parse PATH ${config.neovimPath}.`;
         }
         result.append({
           level: 'error',
