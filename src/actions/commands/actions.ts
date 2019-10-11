@@ -2371,6 +2371,12 @@ abstract class CommandFold extends BaseCommand {
 }
 
 @RegisterAction
+class CommandToggleFold extends CommandFold {
+  keys = ['z', 'a'];
+  commandName = 'editor.toggleFold';
+}
+
+@RegisterAction
 class CommandCloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
