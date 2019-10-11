@@ -408,6 +408,10 @@
           "type": "string",
           "description": "Color of the search highlight."
         },
+        "vim.searchHighlightTextColor": {
+          "type": "string",
+          "description": "Color of the search highlight text."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
@@ -417,6 +421,10 @@
           "type": "string",
           "description": "Color of the yank highlight.",
           "default": "rgba(250, 240, 170, 0.5)"
+        },
+        "vim.highlightedyank.textColor": {
+          "type": "string",
+          "description": "Color of the yank highlight text."
         },
         "vim.highlightedyank.duration": {
           "type": "number",
