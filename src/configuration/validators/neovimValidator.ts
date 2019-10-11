@@ -3,6 +3,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { promisify } from 'util';
 import { execFile } from 'child_process';
 import * as path from 'path';
+import { exists, existsSync, openSync } from 'fs';
 
 export class NeovimValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -16,8 +17,13 @@ export class NeovimValidator implements IConfigurationValidator {
           const pathVar = process.env.PATH;
           if (pathVar) {
             pathVar.split(';').forEach(element => {
-              if (element.toLocaleLowerCase().includes('neovim')) {
-                config.neovimPath = path.join(element, 'nvim');
+              let neovimExecutable = 'nvim';
+              if (process.platform === 'win32') {
+                neovimExecutable += '.exe';
+              }
+              const testPath = path.join(element, neovimExecutable);
+              if (existsSync(testPath)) {
+                config.neovimPath = testPath;
                 triedToParsePath = true;
                 return;
               }
