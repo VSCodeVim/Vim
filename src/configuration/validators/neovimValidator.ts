@@ -3,7 +3,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { promisify } from 'util';
 import { execFile } from 'child_process';
 import * as path from 'path';
-import { exists, existsSync, openSync } from 'fs';
+import { existsSync } from 'fs';
 
 export class NeovimValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
