@@ -6,6 +6,7 @@ import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
+import { StatusBar } from '../statusBar';
 
 interface IRemapper {
   /**
@@ -172,6 +173,13 @@ export class Remapper implements IRemapper {
         } else {
           await vscode.commands.executeCommand(commandString);
         }
+
+        StatusBar.Set(
+          commandString + ' ' + commandArgs,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true
+        );
       }
     }
   }
