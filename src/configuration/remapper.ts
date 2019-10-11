@@ -74,7 +74,7 @@ export class Remapper implements IRemapper {
   ): Promise<boolean> {
     this._isPotentialRemap = false;
 
-    if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
+    if (!this._remappedModes.includes(vimState.currentMode)) {
       return false;
     }
 

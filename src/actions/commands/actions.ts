@@ -13,7 +13,7 @@ import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { ModeName, Mode } from './../../mode/mode';
+import { ModeName } from './../../mode/mode';
 import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
@@ -417,6 +417,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 
     const searchState = globalState.searchState!;
     searchState.searchString += text;
+    vimState.statusBarCursorCharacterPos += text.length;
     return vimState;
   }
 }
@@ -656,7 +657,20 @@ abstract class CommandEditorScroll extends BaseCommand {
   by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const visibleRange = vimState.editor.visibleRanges[0];
+    const scrolloff = vscode.workspace
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+
+    const linesAboveCursor = visibleRange.end.line - vimState.cursors[0].stop.line - timesToRepeat;
+    const linesBelowCursor =
+      vimState.cursors[0].stop.line - visibleRange.start.line - timesToRepeat;
+    if (this.to === 'up' && scrolloff > linesAboveCursor) {
+      vimState.cursors[0] = vimState.cursors[0].getUp(scrolloff - linesAboveCursor);
+    } else if (this.to === 'down' && scrolloff > linesBelowCursor) {
+      vimState.cursors[0] = vimState.cursors[0].getDown(scrolloff - linesBelowCursor);
+    }
 
     vimState.postponedCodeViewChanges.push({
       command: 'editorScroll',
@@ -665,10 +679,9 @@ abstract class CommandEditorScroll extends BaseCommand {
         by: this.by,
         value: timesToRepeat,
         revealCursor: true,
-        select:
-          [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
-            vimState.currentMode
-          ) >= 0,
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+          vimState.currentMode
+        ),
       },
     });
     return vimState;
@@ -689,68 +702,59 @@ class CommandCtrlY extends CommandEditorScroll {
   by: EditorScrollByUnit = 'line';
 }
 
-@RegisterAction
-class CommandMoveFullPageUp extends CommandEditorScroll {
-  keys = ['<C-b>'];
-  to: EditorScrollDirection = 'up';
-  by: EditorScrollByUnit = 'page';
-}
+/**
+ * Commands like `<C-d>` and `<C-f>` act *sort* of like `<count><C-e>`, but they move
+ * your cursor down and put it on the first non-whitespace character of the line.
+ */
+abstract class CommandScrollAndMoveCursor extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  runsOnceForEachCountPrefix = false;
+  to: EditorScrollDirection;
 
-@RegisterAction
-class CommandMoveFullPageDown extends CommandEditorScroll {
-  keys = ['<C-f>'];
-  to: EditorScrollDirection = 'down';
-  by: EditorScrollByUnit = 'page';
-}
-
-@RegisterAction
-class CommandMoveHalfPageDown extends CommandEditorScroll {
-  keys = ['<C-d>'];
-  to: EditorScrollDirection = 'down';
-  by: EditorScrollByUnit = 'halfPage';
+  /**
+   * @returns the number of lines this command should move the cursor
+   */
+  protected abstract getNumLines(vimState: VimState): number;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
-    let lineOffset = 0;
-    let editor = vscode.window.activeTextEditor!;
-    let startColumn = vimState.cursorStartPosition.character;
-    let firstLine = editor.visibleRanges[0].start.line;
-    let currentSelectionLine = vimState.cursorStopPosition.line;
-    lineOffset = currentSelectionLine - firstLine;
+    const scrollLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editorScroll', {
-      to: this.to,
-      by: this.by,
-      value: timesToRepeat,
-      revealCursor: smoothScrolling,
-      select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
-          vimState.currentMode
-        ) >= 0,
-    });
-
-    let newPosition: Position;
-    if (smoothScrolling) {
-      newPosition = new Position(editor.selection.active.line, editor.selection.active.character);
+    let scrollLinesClamped: number;
+    if (this.to === 'down') {
+      scrollLinesClamped = Math.min(scrollLines, vimState.editor.visibleRanges[0].start.line);
     } else {
-      const newFirstLine = editor.visibleRanges[0].start.line;
-      const newPositionLine = newFirstLine + lineOffset;
-
-      const maxLineValue = TextEditor.getLineCount() - 1;
-      if (newPositionLine > maxLineValue) {
-        newPosition = new Position(0, 0).getDocumentEnd();
-      } else {
-        const newPositionColumn = Math.min(
-          startColumn,
-          TextEditor.getLineMaxColumn(newPositionLine)
-        );
-        newPosition = new Position(newPositionLine, newPositionColumn);
-      }
+      scrollLinesClamped = Math.min(
+        scrollLines,
+        vimState.editor.document.lineCount - 1 - vimState.editor.visibleRanges[0].end.line
+      );
+    }
+    if (scrollLinesClamped > 0) {
+      await vscode.commands.executeCommand('editorScroll', {
+        to: this.to,
+        by: 'line',
+        value: scrollLinesClamped,
+        revealCursor: smoothScrolling,
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+          vimState.currentMode
+        ),
+      });
     }
 
-    if (newPosition.isValid()) {
-      vimState.cursorStopPosition = newPosition;
+    if (smoothScrolling) {
+      vimState.cursorStopPosition = Position.FromVSCodePosition(
+        vimState.editor.selection.active
+      ).obeyStartOfLine();
+    } else {
+      let newPositionLine = position.line + (this.to === 'down' ? 1 : -1) * scrollLines;
+      if (newPositionLine < 0) {
+        // Out of bounds - reset to 0
+        newPositionLine = 0;
+      } else if (newPositionLine > vimState.editor.document.lineCount - 1) {
+        // Out of bounds - reset to end of document
+        newPositionLine = vimState.editor.document.lineCount - 1;
+      }
+      vimState.cursorStopPosition = new Position(newPositionLine, 0).obeyStartOfLine();
     }
 
     return vimState;
@@ -758,41 +762,44 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
 }
 
 @RegisterAction
-class CommandMoveHalfPageUp extends CommandEditorScroll {
+class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
+  keys = ['<C-b>'];
+  to: EditorScrollDirection = 'up';
+
+  protected getNumLines(vimState: VimState) {
+    const visible = vimState.editor.visibleRanges[0];
+    return visible.end.line - visible.start.line;
+  }
+}
+
+@RegisterAction
+class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
+  keys = ['<C-f>'];
+  to: EditorScrollDirection = 'down';
+
+  protected getNumLines(vimState: VimState) {
+    const visible = vimState.editor.visibleRanges[0];
+    return visible.end.line - visible.start.line;
+  }
+}
+
+@RegisterAction
+class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
+  keys = ['<C-d>'];
+  to: EditorScrollDirection = 'down';
+
+  protected getNumLines(vimState: VimState) {
+    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  }
+}
+
+@RegisterAction
+class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
-  by: EditorScrollByUnit = 'halfPage';
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
-    let lineOffset = 0;
-    let editor = vscode.window.activeTextEditor!;
-
-    let firstLine = editor.visibleRanges[0].start.line;
-    let currentSelectionLine = vimState.cursorStopPosition.line;
-    let timesToRepeat = vimState.recordedState.count || 1;
-    lineOffset = firstLine === 0 ? 0 : currentSelectionLine - firstLine;
-
-    await vscode.commands.executeCommand('editorScroll', {
-      to: this.to,
-      by: this.by,
-      value: timesToRepeat,
-      revealCursor: smoothScrolling,
-      select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
-          vimState.currentMode
-        ) >= 0,
-    });
-
-    let newPosition: Position;
-    if (smoothScrolling) {
-      newPosition = new Position(editor.selection.active.line, editor.selection.active.character);
-    } else {
-      let newFirstLine = editor.visibleRanges[0].start.line;
-      newPosition = new Position(newFirstLine + lineOffset, 0);
-    }
-    vimState.cursorStopPosition = newPosition;
-    return vimState;
+  protected getNumLines(vimState: VimState) {
+    return configuration.getScrollLines(vimState.editor.visibleRanges);
   }
 }
 
@@ -1059,9 +1066,33 @@ class CommandEscInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandRemoveWordInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ['<C-w>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = globalState.searchState!;
+    const pos = vimState.statusBarCursorCharacterPos;
+    const searchString = searchState.searchString;
+    const characterAt = Position.getWordLeft(searchString, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      searchState.searchString = searchString
+        .substring(0, characterAt)
+        .concat(searchString.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
+
+    return vimState;
+  }
+}
+@RegisterAction
 class CommandPasteInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -1415,6 +1446,7 @@ export class PutCommand extends BaseCommand {
     super();
     this.multicursorIndex = multicursorIndex;
   }
+
   public static async GetText(
     vimState: VimState,
     multicursorIndex: number | undefined = undefined
@@ -1572,7 +1604,7 @@ export class PutCommand extends BaseCommand {
         diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : -numNewlines, numWhitespace);
       }
     } else {
-      if (text.indexOf('\n') === -1) {
+      if (!text.includes('\n')) {
         if (!position.isLineEnd()) {
           if (register.registerMode === RegisterMode.BlockWise) {
             if (after) {
@@ -2186,9 +2218,35 @@ class CommandEscInCommandline extends BaseCommand {
 }
 
 @RegisterAction
+class CommandRemoveWordCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<C-w>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const pos = vimState.statusBarCursorCharacterPos;
+    const cmdText = vimState.currentCommandlineText;
+    const characterAt = Position.getWordLeft(cmdText, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      vimState.currentCommandlineText = cmdText
+        .substring(0, characterAt)
+        .concat(cmdText.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
+
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandPasteInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2211,7 +2269,7 @@ class CommandPasteInCommandline extends BaseCommand {
 }
 
 @RegisterAction
-class CommandShowCommandHistory extends BaseCommand {
+export class CommandShowCommandHistory extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['q', ':'];
 
@@ -2236,7 +2294,7 @@ class CommandShowCommandHistory extends BaseCommand {
 }
 
 @RegisterAction
-class CommandShowSearchHistory extends BaseCommand {
+export class CommandShowSearchHistory extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = [['q', '/'], ['q', '?']];
 
@@ -2817,7 +2875,7 @@ class CommandSelectPreviousLastSearchWord extends BaseCommand {
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.VisualBlock);
@@ -2829,7 +2887,7 @@ class CommandVisualBlockMode extends BaseCommand {
 @RegisterAction
 class CommandExitVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ['<C-v>'];
+  keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(ModeName.Normal);
@@ -3750,7 +3808,7 @@ class ActionReplaceCharacter extends BaseCommand {
      * so we ignore the former two keys and have a special handle for <tab>.
      */
 
-    if (['<BS>', '<SHIFT+BS>'].indexOf(toReplace.toUpperCase()) >= 0) {
+    if (['<BS>', '<SHIFT+BS>'].includes(toReplace.toUpperCase())) {
       return vimState;
     }
 

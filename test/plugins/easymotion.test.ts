@@ -11,7 +11,7 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     let configuration = new Configuration();

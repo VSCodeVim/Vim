@@ -3,7 +3,7 @@ import * as node from './node';
 import * as token from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
-import { commandParsers } from './subparser';
+import { commandParsers, CommandParserMapping, getParser } from './subparser';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
@@ -57,14 +57,14 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
     const tok = state.next();
     switch (tok.type) {
       case token.TokenType.CommandName:
-        const commandParser = (commandParsers as any)[tok.content];
+        const commandParser = getParser(tok.content);
         if (!commandParser) {
           throw VimError.fromCode(ErrorCode.E492);
         }
         // TODO: Pass the args, but keep in mind there could be multiple
         // commands, not just one.
         const argsTok = state.next();
-        const args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : null;
+        const args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : undefined;
         commandLine.command = commandParser(args);
         return null;
       default:

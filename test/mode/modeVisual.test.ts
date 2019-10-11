@@ -17,7 +17,7 @@ import {
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -133,6 +133,13 @@ suite('Mode Visual', () => {
     end: ['|1', '2', '3', '4', '5'],
   });
 
+  newTest({
+    title: 'Can handle backspace key',
+    start: ['blah', 'duh', 'd|ur', 'hur'],
+    keysPressed: 'v<BS>x',
+    end: ['blah', 'duh', '|r', 'hur'],
+  });
+
   test('handles case where we delete over a newline', async () => {
     await modeHandler.handleMultipleKeyEvents('ione two\n\nthree four'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'k', 'k', 'v', '}', 'd']);
@@ -223,6 +230,36 @@ suite('Mode Visual', () => {
       start: ['blah', 'duh', '|dur', 'hur'],
       keysPressed: 'v<right>x',
       end: ['blah', 'duh', '|r', 'hur'],
+    });
+  });
+
+  suite('Screen line motions in Visual Mode', () => {
+    newTest({
+      title: "Can handle 'gk'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'vgkx',
+      end: ['blah', '|ur', 'hur'],
+    });
+
+    newTest({
+      title: "Can handle 'gj'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'vgjx',
+      end: ['blah', 'duh', '|ur'],
+    });
+
+    newTestSkip({
+      title: "Preserves cursor position when handling 'gk'",
+      start: ['blah', 'word', 'a', 'la|st'],
+      keysPressed: 'vgkgkx',
+      end: ['blah', 'wo|t'],
+    });
+
+    newTestSkip({
+      title: "Preserves cursor position when handling 'gj'",
+      start: ['blah', 'wo|rd', 'a', 'last'],
+      keysPressed: 'vgjgjx',
+      end: ['blah', 'wo|t'],
     });
   });
 
@@ -1050,7 +1087,7 @@ suite('Mode Visual', () => {
     newTest({
       title: 'select',
       start: ['    func() {', '    |    hi;', '        alw;', '    }'],
-      keysPressed: 'vi{yGP',
+      keysPressed: 'vi{yG0P',
       end: ['    func() {', '        hi;', '        alw;', '|        hi;', '        alw;', '    }'],
     });
   });

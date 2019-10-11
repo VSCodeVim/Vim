@@ -10,7 +10,7 @@ import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -180,6 +180,22 @@ suite('Mode Visual Line', () => {
       title: 'Can handle <down> key',
       start: ['blah', 'duh', '|dur', 'hur'],
       keysPressed: 'V<down>x',
+      end: ['blah', '|duh'],
+    });
+  });
+
+  suite('Screen line motions in Visual Line Mode', () => {
+    newTest({
+      title: "Can handle 'gk'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgkx',
+      end: ['blah', '|hur'],
+    });
+
+    newTest({
+      title: "Can handle 'gj'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgjx',
       end: ['blah', '|duh'],
     });
   });
