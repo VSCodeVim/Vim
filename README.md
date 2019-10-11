@@ -137,9 +137,9 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                    | Type    | Default Value |
-| ---------------- | ------------------------------ | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
+| Setting          | Description                                                                                                                           | Type    | Default Value |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
+| vim.enableNeovim | Enable Neovim                                                                                                                         | Boolean | false         |
 | vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path automatically. | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
