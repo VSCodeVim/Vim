@@ -140,7 +140,7 @@ To leverage neovim for Ex-commands,
 | Setting          | Description                    | Type    | Default Value |
 | ---------------- | ------------------------------ | ------- | ------------- |
 | vim.enableNeovim | Enable Neovim                  | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable | String  |               |
+| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path automatically. | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
