@@ -699,7 +699,7 @@
         "vim.neovimPath": {
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
-          "default": "nvim",
+          "default": "",
           "scope": "machine"
         },
         "vim.substituteGlobalFlag": {
