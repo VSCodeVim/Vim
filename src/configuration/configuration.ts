@@ -299,7 +299,7 @@ class Configuration implements IConfiguration {
   disableExtension: boolean = false;
 
   enableNeovim = false;
-  neovimPath = 'nvim';
+  neovimPath = '';
 
   digraphs = {};
 
