@@ -109,6 +109,7 @@ export class BaseOperator extends BaseAction {
 
     const yankDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: configuration.highlightedyank.color,
+      color: configuration.highlightedyank.textColor,
     });
 
     vimState.editor.setDecorations(yankDecoration, ranges);
