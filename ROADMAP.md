@@ -567,7 +567,7 @@ Pretty much everything fold-related is blocked by [this issue](https://github.co
 | :white_check_mark: | zO                       | Open all folds under the cursor recursively.                                                                 |
 | :white_check_mark: | zc                       | Close one fold under the cursor. When a count is given, that many folds deep are closed.                     |
 | :white_check_mark: | zC                       | Close all folds under the cursor recursively.                                                                |
-| :arrow_down:       | za                       | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.                         |
+| :white_check_mark: | za                       | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.                         |
 | :arrow_down:       | zA                       | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'. |
 | :arrow_down:       | zv                       | View cursor line: Open just enough folds to make the line in which the cursor is located not folded.         |
 | :arrow_down:       | zx                       | Update folds: Undo manually opened and closed folds: re-apply 'foldlevel', then do "zv": View cursor line.   |

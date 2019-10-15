@@ -2371,6 +2371,18 @@ abstract class CommandFold extends BaseCommand {
 }
 
 @RegisterAction
+class CommandToggleFold extends CommandFold {
+  keys = ['z', 'a'];
+  commandName = 'editor.toggleFold';
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.cursors = await getCursorsAfterSync();
+    await vimState.setCurrentMode(ModeName.Normal);
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
