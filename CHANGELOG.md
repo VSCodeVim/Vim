@@ -1,5 +1,65 @@
 # Change Log
 
+## [v1.11.2](https://github.com/vscodevim/vim/tree/v1.11.2) (2019-10-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.1...v1.11.2)
+
+**Merged pull requests:**
+
+- v1.11.1 [\#4170](https://github.com/VSCodeVim/Vim/pull/4170) ([jpoon](https://github.com/jpoon))
+
+## [v1.11.1](https://github.com/vscodevim/vim/tree/v1.11.1) (2019-10-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.0...v1.11.1)
+
+**Enhancements:**
+
+- `:vspl` [\#4078](https://github.com/VSCodeVim/Vim/issues/4078)
+- Add support for relative :tabm\[ove\] [\#3959](https://github.com/VSCodeVim/Vim/issues/3959)
+- make ctrl+q into visual block on Windows [\#3743](https://github.com/VSCodeVim/Vim/issues/3743)
+- Search PATH for nvim when enableNeovim is true and neovimPath is empty [\#3584](https://github.com/VSCodeVim/Vim/issues/3584)
+
+**Fixed Bugs:**
+
+- Cannot paste with Cmd+v in command mode on OSX. Works with Ctrl+v [\#4149](https://github.com/VSCodeVim/Vim/issues/4149)
+- Implement `startofline` [\#4137](https://github.com/VSCodeVim/Vim/issues/4137)
+- Cursor movement in wrapped lines changed from 1.10.2 to 1.11.0 [\#4120](https://github.com/VSCodeVim/Vim/issues/4120)
+- New editor.cursorSurroundingLines setting breaks \<C-e\> and \<C-y\> [\#4041](https://github.com/VSCodeVim/Vim/issues/4041)
+
+**Closed issues:**
+
+- Trying to map Y to y\$ [\#4158](https://github.com/VSCodeVim/Vim/issues/4158)
+- Jupyter notebook mode [\#4156](https://github.com/VSCodeVim/Vim/issues/4156)
+- Cannot rebind : to ; [\#4124](https://github.com/VSCodeVim/Vim/issues/4124)
+- vs vim [\#4115](https://github.com/VSCodeVim/Vim/issues/4115)
+- Bind u to ctrl+z? [\#4113](https://github.com/VSCodeVim/Vim/issues/4113)
+- 1.8.2 update appears broken [\#3894](https://github.com/VSCodeVim/Vim/issues/3894)
+
+**Merged pull requests:**
+
+- fix: exclude neovim from webpack module. \#4126 [\#4169](https://github.com/VSCodeVim/Vim/pull/4169) ([jpoon](https://github.com/jpoon))
+- Echo remapped command in statusbar [\#4163](https://github.com/VSCodeVim/Vim/pull/4163) ([xconverge](https://github.com/xconverge))
+- Try to parse neovim from PATH if neovimPath is empty [\#4161](https://github.com/VSCodeVim/Vim/pull/4161) ([xconverge](https://github.com/xconverge))
+- Update dependency typescript to v3.6.4 [\#4154](https://github.com/VSCodeVim/Vim/pull/4154) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.7.12 [\#4150](https://github.com/VSCodeVim/Vim/pull/4150) ([renovate[bot]](https://github.com/apps/renovate))
+- Added support for :sort u \(sort + unique\) [\#4148](https://github.com/VSCodeVim/Vim/pull/4148) ([jdxcode](https://github.com/jdxcode))
+- Implement `startofline` [\#4139](https://github.com/VSCodeVim/Vim/pull/4139) ([J-Fields](https://github.com/J-Fields))
+- Render newlines in command line as ^M [\#4136](https://github.com/VSCodeVim/Vim/pull/4136) ([J-Fields](https://github.com/J-Fields))
+- Update dependency @types/node to v12.7.11 [\#4132](https://github.com/VSCodeVim/Vim/pull/4132) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.7.10 [\#4131](https://github.com/VSCodeVim/Vim/pull/4131) ([renovate[bot]](https://github.com/apps/renovate))
+- Make it possible to add skipped tests [\#4129](https://github.com/VSCodeVim/Vim/pull/4129) ([hetmankp](https://github.com/hetmankp))
+- Update CONTRIBUTING.md after webpack bundling addition [\#4128](https://github.com/VSCodeVim/Vim/pull/4128) ([hetmankp](https://github.com/hetmankp))
+- Fixes gj/gk behaviour on wrapped lines; closes \#4120 [\#4127](https://github.com/VSCodeVim/Vim/pull/4127) ([hetmankp](https://github.com/hetmankp))
+- Adding backspace motion in visual mode [\#4125](https://github.com/VSCodeVim/Vim/pull/4125) ([pedroapfilho](https://github.com/pedroapfilho))
+- Update README.md [\#4123](https://github.com/VSCodeVim/Vim/pull/4123) ([z1c0](https://github.com/z1c0))
+- Update dependency @types/node to v12.7.9 [\#4121](https://github.com/VSCodeVim/Vim/pull/4121) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/sinon to v7.5.0 [\#4119](https://github.com/VSCodeVim/Vim/pull/4119) ([renovate[bot]](https://github.com/apps/renovate))
+- Refactor \<C-u\> and \<C-d\> [\#4117](https://github.com/VSCodeVim/Vim/pull/4117) ([J-Fields](https://github.com/J-Fields))
+- Update dependency mocha to v6.2.1 [\#4114](https://github.com/VSCodeVim/Vim/pull/4114) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency ts-loader to v6.2.0 [\#4111](https://github.com/VSCodeVim/Vim/pull/4111) ([renovate[bot]](https://github.com/apps/renovate))
+- v1.11.0 [\#4104](https://github.com/VSCodeVim/Vim/pull/4104) ([jpoon](https://github.com/jpoon))
+- Improve support for :tabm\[ove\] [\#3960](https://github.com/VSCodeVim/Vim/pull/3960) ([mattpap](https://github.com/mattpap))
+
 ## [v1.11.0](https://github.com/vscodevim/vim/tree/v1.11.0) (2019-09-28)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.10.2...v1.11.0)
