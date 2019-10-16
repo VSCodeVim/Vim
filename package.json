@@ -674,6 +674,46 @@
           "description": "Status bar color when in Replace mode.",
           "default": "#00000"
         },
+        "vim.statusBarColors.commandlineinprogress": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in CommandLineInProgress mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.searchinprogressmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in SearchInProgress mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.easymotionmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in EasyMotion mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.easymotioninputmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in EasyMotionInput mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.surroundinputmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in SurroundInput mode.",
+          "default": "#007acc"
+        },
         "vim.visualstar": {
           "type": "boolean",
           "markdownDescription": "In Visual mode, start a search with `*` or `#` using the current selection.",
