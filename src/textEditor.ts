@@ -160,6 +160,14 @@ export class TextEditor {
     return word;
   }
 
+  static getTabCharacter(): string {
+    const { tabstop, expandtab } = configuration;
+    if (expandtab) {
+      return ' '.repeat(tabstop);
+    }
+    return '\t';
+  }
+
   static isFirstLine(position: vscode.Position): boolean {
     return position.line === 0;
   }
