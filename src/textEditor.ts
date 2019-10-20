@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
+import { VimState } from './state/vimState';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -160,10 +161,11 @@ export class TextEditor {
     return word;
   }
 
-  static getTabCharacter(): string {
-    const { tabstop, expandtab } = configuration;
-    if (expandtab) {
-      return ' '.repeat(tabstop);
+  static getTabCharacter(vimState: VimState): string {
+    if (vimState.editor.options.insertSpaces) {
+      // This will always be a number when we're getting it from the options
+      const tabSize = vimState.editor.options.tabSize as number;
+      return ' '.repeat(tabSize);
     }
     return '\t';
   }
