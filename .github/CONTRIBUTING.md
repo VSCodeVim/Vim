@@ -35,7 +35,6 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     cd Vim
 
     # Install the dependencies
-    npm install -g gulp-cli
     npm install
 
     # Open in VSCode
@@ -46,13 +45,13 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     # Or run tests by selecting the appropriate drop down option
 
     # Alternatively, build and run tests through gulp and npm scripts
-    gulp build                  # build extension
-    gulp prepare-test           # build sources and tests
-    npm test                    # test (must close all instances of VSCode)
+    npx gulp build                  # build extension
+    npx gulp prepare-test           # build sources and tests
+    npm test                        # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running
-    gulp test                   # run tests inside Docker container
-    gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+    npx gulp test                   # run tests inside Docker container
+    npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
     ```
 
 ## Code Architecture
@@ -95,7 +94,7 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 To push a release:
 
 ```bash
-gulp release --semver [SEMVER] --gitHubToken [TOKEN]
+npx gulp release --semver [SEMVER] --gitHubToken [TOKEN]
 git push --follow-tags
 ```
 
