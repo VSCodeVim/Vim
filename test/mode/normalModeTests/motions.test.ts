@@ -229,6 +229,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 'f' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'fe,',
+    end: ['text t|ext'],
+  });
+
+  newTest({
     title: "Can handle 'F'",
     start: ['text tex|t'],
     keysPressed: '$Ft',
@@ -240,6 +247,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$FtFt',
     end: ['tex|t text'],
+  });
+
+  newTest({
+    title: "Can handle 'F' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Fx,',
+    end: ['te|xt text'],
   });
 
   newTest({
@@ -257,6 +271,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 't' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'te,',
+    end: ['text te|xt'],
+  });
+
+  newTest({
     title: "Can handle 'T'",
     start: ['text tex|t'],
     keysPressed: '$Tt',
@@ -268,6 +289,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$TtTt',
     end: ['text t|ext'],
+  });
+
+  newTest({
+    title: "Can handle 'T' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Tx,',
+    end: ['t|ext text'],
   });
 
   newTest({
