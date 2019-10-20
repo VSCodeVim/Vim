@@ -54,6 +54,11 @@ export interface IHighlightedYankConfiguration {
   color: string;
 
   /**
+   * Color of the text being highlighted.
+   */
+  textColor: string | undefined;
+
+  /**
    * Duration in milliseconds of the yank highlight.
    */
   duration: number;
@@ -211,6 +216,7 @@ export interface IConfiguration {
    * Color of search highlights.
    */
   searchHighlightColor: string;
+  searchHighlightTextColor: string;
 
   /**
    * Yank highlight settings.

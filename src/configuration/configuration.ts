@@ -243,10 +243,12 @@ class Configuration implements IConfiguration {
     defaultValue: 'rgba(150, 150, 255, 0.3)',
   })
   searchHighlightColor: string;
+  searchHighlightTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
+    textColor: '',
     duration: 200,
   };
 
@@ -299,7 +301,7 @@ class Configuration implements IConfiguration {
   disableExtension: boolean = false;
 
   enableNeovim = false;
-  neovimPath = 'nvim';
+  neovimPath = '';
 
   digraphs = {};
 

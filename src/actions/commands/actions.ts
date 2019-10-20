@@ -1092,7 +1092,7 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandPasteInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2246,7 +2246,7 @@ class CommandRemoveWordCommandline extends BaseCommand {
 @RegisterAction
 class CommandPasteInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<C-v>'], ['<D-v']];
+  keys = [['<C-v>'], ['<D-v>']];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2365,6 +2365,18 @@ abstract class CommandFold extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand(this.commandName);
+    await vimState.setCurrentMode(ModeName.Normal);
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandToggleFold extends CommandFold {
+  keys = ['z', 'a'];
+  commandName = 'editor.toggleFold';
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.cursors = await getCursorsAfterSync();
     await vimState.setCurrentMode(ModeName.Normal);
     return vimState;
   }

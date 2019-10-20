@@ -163,4 +163,24 @@ suite('Basic sort', () => {
 
     assertEqualLines(['b', 'd', 'c', 'A']);
   });
+
+  test('Sort whole file, asc, unique', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'B',
+      '<Esc>',
+      'o',
+      'a',
+      '<Esc>',
+      'o',
+      'a',
+      '<Esc>',
+      'o',
+      'c',
+      '<Esc>',
+    ]);
+    await commandLine.Run('sort u', vimState);
+
+    assertEqualLines(['B', 'a', 'c']);
+  });
 });
