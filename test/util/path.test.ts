@@ -146,7 +146,6 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        const sep = path.sep;
         assert.equal(resultUri.scheme, 'file');
         assert.equal(resultUri.fsPath, `c:\\123\\abc`);
       }
