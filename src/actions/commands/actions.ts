@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync } from '../../util/util';
+import { getCursorsAfterSync, clamp } from '../../util/util';
 import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
@@ -720,41 +720,30 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
     const scrollLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
-    let scrollLinesClamped: number;
-    if (this.to === 'down') {
-      scrollLinesClamped = Math.min(scrollLines, vimState.editor.visibleRanges[0].start.line);
-    } else {
-      scrollLinesClamped = Math.min(
-        scrollLines,
-        vimState.editor.document.lineCount - 1 - vimState.editor.visibleRanges[0].end.line
-      );
-    }
-    if (scrollLinesClamped > 0) {
-      await vscode.commands.executeCommand('editorScroll', {
-        to: this.to,
-        by: 'line',
-        value: scrollLinesClamped,
-        revealCursor: smoothScrolling,
-        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-          vimState.currentMode
-        ),
-      });
-    }
+    await vscode.commands.executeCommand('editorScroll', {
+      to: this.to,
+      by: 'line',
+      value: scrollLines,
+      revealCursor: smoothScrolling,
+      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
+        vimState.currentMode
+      ),
+    });
 
     if (smoothScrolling) {
       vimState.cursorStopPosition = Position.FromVSCodePosition(
         vimState.editor.selection.active
       ).obeyStartOfLine();
     } else {
-      let newPositionLine = position.line + (this.to === 'down' ? 1 : -1) * scrollLines;
-      if (newPositionLine < 0) {
-        // Out of bounds - reset to 0
-        newPositionLine = 0;
-      } else if (newPositionLine > vimState.editor.document.lineCount - 1) {
-        // Out of bounds - reset to end of document
-        newPositionLine = vimState.editor.document.lineCount - 1;
-      }
-      vimState.cursorStopPosition = new Position(newPositionLine, 0).obeyStartOfLine();
+      const newPositionLine = clamp(
+        position.line + (this.to === 'down' ? 1 : -1) * scrollLines,
+        0,
+        vimState.editor.document.lineCount - 1
+      );
+      vimState.cursorStopPosition = new Position(
+        newPositionLine,
+        vimState.desiredColumn
+      ).obeyStartOfLine();
     }
 
     return vimState;
