@@ -100,7 +100,7 @@ suite('Remapper', () => {
     normalModeKeyBindings?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
   }) => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings || [];
     configuration.normalModeKeyBindings = normalModeKeyBindings || [];
@@ -121,7 +121,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remappings: Map<string, IKeyRemapping> = new Map([
+    const remappings: Map<string, IKeyRemapping> = new Map([
       ['abc', { before: ['a', 'b', 'c'] }],
       ['de', { before: ['d', 'e'] }],
       ['f', { before: ['f'] }],
@@ -206,7 +206,7 @@ suite('Remapper', () => {
 
     for (const testCase of testCases) {
       // setup
-      let remappings: Map<string, IKeyRemapping> = new Map();
+      const remappings: Map<string, IKeyRemapping> = new Map();
       remappings.set(testCase.before, {
         before: testCase.before.split(''),
         after: testCase.after.split(''),
@@ -250,7 +250,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remapper = new Remappers();
+    const remapper = new Remappers();
 
     const edit = new vscode.WorkspaceEdit();
     edit.insert(
@@ -285,7 +285,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remapper = new Remappers();
+    const remapper = new Remappers();
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     // act
@@ -311,7 +311,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remapper = new Remappers();
+    const remapper = new Remappers();
 
     const edit = new vscode.WorkspaceEdit();
     edit.insert(
@@ -346,7 +346,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remapper = new Remappers();
+    const remapper = new Remappers();
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     // act
@@ -370,7 +370,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remapper = new Remappers();
+    const remapper = new Remappers();
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleKeyEvent('v');

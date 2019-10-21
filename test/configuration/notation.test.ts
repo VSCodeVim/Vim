@@ -25,9 +25,9 @@ suite('Notation', () => {
 
     for (const test in testCases) {
       if (testCases.hasOwnProperty(test)) {
-        let expected = testCases[test];
+        const expected = testCases[test];
 
-        let actual = Notation.NormalizeKey(test, leaderKey);
+        const actual = Notation.NormalizeKey(test, leaderKey);
         assert.equal(actual, expected);
       }
     }

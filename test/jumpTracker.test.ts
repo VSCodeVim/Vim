@@ -8,7 +8,7 @@ import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { getTestingFunctions } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  let { newTest } = getTestingFunctions();
+  const { newTest } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

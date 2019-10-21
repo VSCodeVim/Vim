@@ -8,10 +8,10 @@ import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
@@ -22,9 +22,9 @@ suite('Mode Normal', () => {
   teardown(cleanUpWorkspace);
 
   test('Can be activated', async () => {
-    let activationKeys = ['<Esc>', '<C-[>'];
+    const activationKeys = ['<Esc>', '<C-[>'];
 
-    for (let key of activationKeys) {
+    for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 

@@ -15,7 +15,7 @@ import { Globals } from '../../src/globals';
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -25,9 +25,9 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
+    const activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
-    for (let key of activationKeys) {
+    for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
       assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 

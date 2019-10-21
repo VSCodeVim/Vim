@@ -15,7 +15,7 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
     assert.equal(actual.numErrors, 0);
@@ -33,7 +33,7 @@ suite('Remapping Validator', () => {
 
   test('jj->esc', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
       {
         before: ['j', 'j'],
@@ -48,7 +48,7 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
     assert.equal(actual.numErrors, 0);
@@ -71,7 +71,7 @@ suite('Remapping Validator', () => {
 
   test('remapping missing after and command', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
       {
         before: ['j', 'j'],
@@ -85,7 +85,7 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
     assert.equal(actual.numErrors, 1);
@@ -103,7 +103,7 @@ suite('Remapping Validator', () => {
 
   test('remappings are de-duped', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [];
     configuration.insertModeKeyBindingsNonRecursive = [];
     configuration.normalModeKeyBindings = [
@@ -122,7 +122,7 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
     assert.equal(actual.numErrors, 0);

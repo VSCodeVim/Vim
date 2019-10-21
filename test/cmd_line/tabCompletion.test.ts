@@ -104,7 +104,7 @@ suite('cmd_line tabComplete', () => {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
       await modeHandler.handleMultipleKeyEvents(baseCmd);
       await modeHandler.handleKeyEvent('<tab>');
-      let statusBarAfterTab = StatusBar.Get().trim();
+      const statusBarAfterTab = StatusBar.Get().trim();
       await modeHandler.handleKeyEvent('<Esc>');
       assert.equal(statusBarAfterTab, `:e ${dirPath}${sep}|`, 'Cannot complete with / at the end');
     } finally {

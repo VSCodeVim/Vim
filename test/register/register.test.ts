@@ -13,7 +13,7 @@ import { RecordedState } from '../../src/state/recordedState';
 suite('register', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -244,7 +244,7 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    let vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!);
     vimState.recordedState.registerName = '0';
     let actual: IRegisterContent;
 

@@ -17,7 +17,7 @@ import {
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

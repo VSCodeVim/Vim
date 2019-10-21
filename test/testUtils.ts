@@ -56,7 +56,7 @@ export function removeDir(path: string) {
  * @param numExpectedEditors Expected number of editors in the window
  */
 export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  let waitForTextEditorsToClose = new Promise((c, e) => {
+  const waitForTextEditorsToClose = new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
@@ -77,8 +77,8 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
 
 export function assertEqualLines(expectedLines: string[]) {
   for (let i = 0; i < expectedLines.length; i++) {
-    let expected = expectedLines[i];
-    let actual = TextEditor.readLineAt(i);
+    const expected = expectedLines[i];
+    const actual = TextEditor.readLineAt(i);
     assert.equal(
       actual,
       expected,
@@ -112,7 +112,7 @@ export async function setupWorkspace(
   Globals.mockConfiguration = config;
   await reloadConfiguration();
 
-  let activeTextEditor = vscode.window.activeTextEditor;
+  const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
   activeTextEditor!.options.tabSize = config.tabstop;
@@ -137,7 +137,7 @@ export async function cleanUpWorkspace(): Promise<void> {
     // TODO: the visibleTextEditors variable doesn't seem to be
     // up to date after a onDidChangeActiveTextEditor event, not
     // even using a setTimeout 0... so we MUST poll :(
-    let interval = setInterval(() => {
+    const interval = setInterval(() => {
       if (vscode.window.visibleTextEditors.length > 0) {
         return;
       }
@@ -160,8 +160,8 @@ export async function cleanUpWorkspace(): Promise<void> {
 }
 
 export async function reloadConfiguration() {
-  let validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
-  for (let validatorResult of validatorResults.get()) {
+  const validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  for (const validatorResult of validatorResults.get()) {
     console.log(validatorResult);
   }
 }

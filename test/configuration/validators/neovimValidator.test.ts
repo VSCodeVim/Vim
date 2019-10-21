@@ -5,13 +5,13 @@ import { NeovimValidator } from '../../../src/configuration/validators/neovimVal
 suite('Neovim Validator', () => {
   test('neovim enabled without path', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.enableNeovim = true;
     configuration.neovimPath = '';
 
     // test
     const validator = new NeovimValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
     validator.disable(configuration);
 
     // assert
@@ -22,13 +22,13 @@ suite('Neovim Validator', () => {
 
   test('neovim disabled', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.enableNeovim = false;
     configuration.neovimPath = '';
 
     // test
     const validator = new NeovimValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
     assert.equal(actual.numErrors, 0);

@@ -3,10 +3,10 @@ import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
@@ -66,10 +66,10 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 

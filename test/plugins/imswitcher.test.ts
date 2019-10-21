@@ -30,7 +30,7 @@ suite('Input method plugin', () => {
   }
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.autoSwitchInputMethod.enable = true;
     configuration.autoSwitchInputMethod.defaultIM = 'default';
     configuration.autoSwitchInputMethod.obtainIMCmd = 'im-select';

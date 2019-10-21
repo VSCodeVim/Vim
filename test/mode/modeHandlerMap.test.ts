@@ -13,7 +13,7 @@ suite('Mode Handler Map', () => {
 
   test('getOrCreate', async () => {
     // getOrCreate
-    let key = Math.random()
+    const key = Math.random()
       .toString(36)
       .substring(7);
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
@@ -24,12 +24,12 @@ suite('Mode Handler Map', () => {
     assert.equal(isNew, false);
 
     // getKeys
-    let keys = ModeHandlerMap.getKeys();
+    const keys = ModeHandlerMap.getKeys();
     assert.equal(keys.length, 1);
     assert.equal(keys[0], key);
 
     // getAll
-    let modeHandlerList = ModeHandlerMap.getAll();
+    const modeHandlerList = ModeHandlerMap.getAll();
     assert.equal(modeHandlerList.length, 1);
 
     // delete

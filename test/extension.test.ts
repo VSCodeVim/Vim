@@ -13,12 +13,12 @@ suite('package.json', () => {
   });
 
   test('all keys have handlers', async () => {
-    let registeredCommands = await vscode.commands.getCommands();
-    let keybindings = pkg.contributes.keybindings;
+    const registeredCommands = await vscode.commands.getCommands();
+    const keybindings = pkg.contributes.keybindings;
     assert.ok(keybindings);
 
     for (let i = 0; i < keybindings.length; i++) {
-      let keybinding = keybindings[i];
+      const keybinding = keybindings[i];
 
       const found = registeredCommands.includes(keybinding.command);
       assert.ok(
@@ -30,9 +30,9 @@ suite('package.json', () => {
 
   test('all defined configurations in package.json have handlers', async () => {
     // package.json
-    let pkgConfigurations = pkg.contributes.configuration.properties;
+    const pkgConfigurations = pkg.contributes.configuration.properties;
     assert.ok(pkgConfigurations);
-    let keys = Object.keys(pkgConfigurations);
+    const keys = Object.keys(pkgConfigurations);
     assert.notEqual(keys.length, 0);
 
     // configuration

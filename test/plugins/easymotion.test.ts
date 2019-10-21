@@ -11,10 +11,10 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.easymotion = true;
 
     await setupWorkspace(configuration);

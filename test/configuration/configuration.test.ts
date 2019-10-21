@@ -8,7 +8,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 
 suite('Configuration', () => {
   const { newTest } = getTestingFunctions();
-  let configuration = new testConfiguration.Configuration();
+  const configuration = new testConfiguration.Configuration();
   configuration.leader = '<space>';
   configuration.normalModeKeyBindingsNonRecursive = [
     {
@@ -41,7 +41,7 @@ suite('Configuration', () => {
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {
-    let wrapKeys = srcConfiguration.configuration.wrapKeys;
+    const wrapKeys = srcConfiguration.configuration.wrapKeys;
 
     const h = 'h';
     const j = 'j';

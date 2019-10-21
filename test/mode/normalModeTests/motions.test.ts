@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
