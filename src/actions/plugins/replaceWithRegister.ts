@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Position } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { ModeName } from '../../mode/mode';
-import { Register } from '../../register/register';
+import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { BaseOperator } from '../operator';
@@ -22,7 +22,10 @@ export class ReplaceOperator extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    const range = new vscode.Range(start, end.getRight());
+    const range =
+      vimState.currentRegisterMode === RegisterMode.LineWise
+        ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
+        : new vscode.Range(start, end.getRight());
     const register = await Register.get(vimState);
     const replaceWith = register.text as string;
 
