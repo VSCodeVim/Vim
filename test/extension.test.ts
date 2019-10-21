@@ -17,9 +17,7 @@ suite('package.json', () => {
     const keybindings = pkg.contributes.keybindings;
     assert.ok(keybindings);
 
-    for (let i = 0; i < keybindings.length; i++) {
-      const keybinding = keybindings[i];
-
+    for (const keybinding of keybindings) {
       const found = registeredCommands.includes(keybinding.command);
       assert.ok(
         found,

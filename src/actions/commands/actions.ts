@@ -61,44 +61,44 @@ export class DocumentContentChangeAction extends BaseAction {
     let newStart: vscode.Position | undefined;
     let newEnd: vscode.Position | undefined;
 
-    for (let i = 0; i < this.contentChanges.length; i++) {
-      let contentChange = this.contentChanges[i].textDiff;
+    for (const contentChange of this.contentChanges) {
+      const textDiff = contentChange.textDiff;
 
-      if (contentChange.range.start.line < originalLeftBoundary.line) {
+      if (textDiff.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
-        let linesAffected = contentChange.range.end.line - contentChange.range.start.line + 1;
-        let resultLines = contentChange.text.split('\n').length;
+        let linesAffected = textDiff.range.end.line - textDiff.range.start.line + 1;
+        let resultLines = textDiff.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
           originalLeftBoundary.line + resultLines - linesAffected
         );
         continue;
       }
 
-      if (contentChange.range.start.line === originalLeftBoundary.line) {
+      if (textDiff.range.start.line === originalLeftBoundary.line) {
         newStart = position.with(
           position.line,
-          position.character + contentChange.range.start.character - originalLeftBoundary.character
+          position.character + textDiff.range.start.character - originalLeftBoundary.character
         );
 
-        if (contentChange.range.end.line === originalLeftBoundary.line) {
+        if (textDiff.range.end.line === originalLeftBoundary.line) {
           newEnd = position.with(
             position.line,
-            position.character + contentChange.range.end.character - originalLeftBoundary.character
+            position.character + textDiff.range.end.character - originalLeftBoundary.character
           );
         } else {
           newEnd = position.with(
-            position.line + contentChange.range.end.line - originalLeftBoundary.line,
-            contentChange.range.end.character
+            position.line + textDiff.range.end.line - originalLeftBoundary.line,
+            textDiff.range.end.character
           );
         }
       } else {
         newStart = position.with(
-          position.line + contentChange.range.start.line - originalLeftBoundary.line,
-          contentChange.range.start.character
+          position.line + textDiff.range.start.line - originalLeftBoundary.line,
+          textDiff.range.start.character
         );
         newEnd = position.with(
-          position.line + contentChange.range.end.line - originalLeftBoundary.line,
-          contentChange.range.end.character
+          position.line + textDiff.range.end.line - originalLeftBoundary.line,
+          textDiff.range.end.character
         );
       }
 
@@ -108,18 +108,15 @@ export class DocumentContentChangeAction extends BaseAction {
       }
 
       // Calculate new right boundary
-      let newLineCount = contentChange.text.split('\n').length;
+      let newLineCount = textDiff.text.split('\n').length;
       let newRightBoundary: vscode.Position;
 
       if (newLineCount === 1) {
-        newRightBoundary = newStart.with(
-          newStart.line,
-          newStart.character + contentChange.text.length
-        );
+        newRightBoundary = newStart.with(newStart.line, newStart.character + textDiff.text.length);
       } else {
         newRightBoundary = new vscode.Position(
           newStart.line + newLineCount - 1,
-          contentChange.text.split('\n').pop()!.length
+          textDiff.text.split('\n').pop()!.length
         );
       }
 
@@ -130,9 +127,9 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(newStart, newEnd);
 
       if (newStart.isEqual(newEnd)) {
-        await TextEditor.insert(contentChange.text, Position.FromVSCodePosition(newStart));
+        await TextEditor.insert(textDiff.text, Position.FromVSCodePosition(newStart));
       } else {
-        await TextEditor.replace(vimState.editor.selection, contentChange.text);
+        await TextEditor.replace(vimState.editor.selection, textDiff.text);
       }
     }
 

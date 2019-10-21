@@ -728,8 +728,7 @@ export class ToggleCaseOperator extends BaseOperator {
     const text = TextEditor.getText(range);
 
     let newText = '';
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
+    for (const char of text) {
       // Try lower-case
       let toggled = char.toLocaleLowerCase();
       if (toggled === char) {
