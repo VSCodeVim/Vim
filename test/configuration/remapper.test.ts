@@ -132,8 +132,8 @@ suite('Remapper', () => {
     const actual = testRemapper.getRemappedKeySequenceLengthRange(remappings);
 
     // assert
-    assert.equal(actual[0], 1);
-    assert.equal(actual[1], 3);
+    assert.strictEqual(actual[0], 1);
+    assert.strictEqual(actual[1], 3);
   });
 
   test('getMatchingRemap', async () => {
@@ -228,9 +228,9 @@ suite('Remapper', () => {
             ModeName[testCase.mode]
           }.`
         );
-        assert.deepEqual(actual!.after, testCase.expectedAfter.split(''));
+        assert.deepStrictEqual(actual!.after, testCase.expectedAfter.split(''));
       } else {
-        assert.equal(actual, undefined);
+        assert.strictEqual(actual, undefined);
       }
 
       if (testCase.expectedAfterMode) {
@@ -272,9 +272,9 @@ suite('Remapper', () => {
     }
 
     // assert
-    assert.equal(actual, true);
+    assert.strictEqual(actual, true);
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-    assert.equal(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
+    assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
   test('0 -> :wq through modehandler', async () => {
@@ -297,8 +297,8 @@ suite('Remapper', () => {
     }
 
     // assert
-    assert.equal(actual, true);
-    assert.equal(vscode.window.visibleTextEditors.length, 0);
+    assert.strictEqual(actual, true);
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
 
   test('<c-e> -> <esc> in insert mode should go to normal mode', async () => {
@@ -333,9 +333,9 @@ suite('Remapper', () => {
     }
 
     // assert
-    assert.equal(actual, true);
+    assert.strictEqual(actual, true);
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-    assert.equal(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
+    assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
   test('leader, w -> closeActiveEditor in normal mode through modehandler', async () => {
@@ -358,8 +358,8 @@ suite('Remapper', () => {
     }
 
     // assert
-    assert.equal(actual, true);
-    assert.equal(vscode.window.visibleTextEditors.length, 0);
+    assert.strictEqual(actual, true);
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
 
   test('leader, c -> closeActiveEditor in visual mode through modehandler', async () => {
@@ -385,8 +385,8 @@ suite('Remapper', () => {
     }
 
     // assert
-    assert.equal(actual, true);
-    assert.equal(vscode.window.visibleTextEditors.length, 0);
+    assert.strictEqual(actual, true);
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
 
   test('d -> black hole register delete in normal mode through modehandler', async () => {
@@ -397,7 +397,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
@@ -406,14 +406,14 @@ suite('Remapper', () => {
     let actual: IRegisterContent;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.equal(actual.text, expected);
+    assert.strictEqual(actual.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'd']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.equal(actual.text, expected);
+    assert.strictEqual(actual.text, expected);
   });
 
   test('d -> black hole register delete in normal mode through modehandler', async () => {
@@ -424,7 +424,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
@@ -433,14 +433,14 @@ suite('Remapper', () => {
     let actual: IRegisterContent;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.equal(actual.text, expected);
+    assert.strictEqual(actual.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'w']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.equal(actual.text, expected);
+    assert.strictEqual(actual.text, expected);
   });
 
   test('jj -> <Esc> after ciw operator through modehandler', async () => {
@@ -454,18 +454,18 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['c', 'i', 'w']);
-    assert.equal(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
 
     // assert
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
   });
 });
 

@@ -76,19 +76,19 @@ suite('HistoryFile', () => {
 
   test('file system', async () => {
     // history file is lazily created, should not exist
-    assert.equal(fs.existsSync(history.historyFilePath), false);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), false);
 
     for (const cmd of run_cmds) {
       await history.add(cmd);
     }
 
     // history file should exist after an `add` operation
-    assert.equal(fs.existsSync(history.historyFilePath), true);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), true);
 
     history.clear();
 
     // expect history file to be deleted from file system and empty
-    assert.equal(fs.existsSync(history.historyFilePath), false);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), false);
   });
 
   test('change configuration.history', async () => {
@@ -96,7 +96,7 @@ suite('HistoryFile', () => {
       await history.add(cmd);
     }
 
-    assert.equal(history.get().length, configuration.history);
+    assert.strictEqual(history.get().length, configuration.history);
 
     configuration.history = 10;
     for (const cmd of run_cmds) {

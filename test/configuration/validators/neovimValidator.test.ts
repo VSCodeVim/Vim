@@ -15,9 +15,9 @@ suite('Neovim Validator', () => {
     validator.disable(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 1);
-    assert.equal(actual.hasError, true);
-    assert.equal(configuration.enableNeovim, false);
+    assert.strictEqual(actual.numErrors, 1);
+    assert.strictEqual(actual.hasError, true);
+    assert.strictEqual(configuration.enableNeovim, false);
   });
 
   test('neovim disabled', async () => {
@@ -31,6 +31,6 @@ suite('Neovim Validator', () => {
     const actual = await validator.validate(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 0);
+    assert.strictEqual(actual.numErrors, 0);
   });
 });

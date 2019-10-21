@@ -79,24 +79,24 @@ export function assertEqualLines(expectedLines: string[]) {
   for (let i = 0; i < expectedLines.length; i++) {
     const expected = expectedLines[i];
     const actual = TextEditor.readLineAt(i);
-    assert.equal(
+    assert.strictEqual(
       actual,
       expected,
       `Content does not match; Expected=${expected}. Actual=${actual}.`
     );
   }
 
-  assert.equal(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
+  assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
 }
 
 /**
  * Assert that the first two arguments are equal, and fail a test otherwise.
  *
- * The only difference between this and assert.equal is that here we
+ * The only difference between this and assert.strictEqual is that here we
  * check to ensure the types of the variables are correct.
  */
 export function assertEqual<T>(one: T, two: T, message: string = ''): void {
-  assert.equal(one, two, message);
+  assert.strictEqual(one, two, message);
 }
 
 export async function setupWorkspace(
@@ -154,7 +154,7 @@ export async function cleanUpWorkspace(): Promise<void> {
       }
     );
   }).then(() => {
-    assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
     assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
   });
 }
