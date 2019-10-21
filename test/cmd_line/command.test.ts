@@ -17,19 +17,19 @@ suite('cmd_line/search command', () => {
   test('command <C-w> can remove word in cmd line', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
     let statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':abc-|', 'Failed to remove word');
+    assert.strictEqual(statusBar, ':abc-|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':abc|', 'Failed to remove word');
+    assert.strictEqual(statusBar, ':abc|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|', 'Failed to remove word');
+    assert.strictEqual(statusBar, ':|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|', 'Failed to remove word');
+    assert.strictEqual(statusBar, ':|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<Esc>');
   });
@@ -37,19 +37,19 @@ suite('cmd_line/search command', () => {
   test('command <C-w> can remove word in search mode', async () => {
     await modeHandler.handleMultipleKeyEvents(['/', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
     let statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, '/abc-|', 'Failed to remove word');
+    assert.strictEqual(statusBar, '/abc-|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, '/abc|', 'Failed to remove word');
+    assert.strictEqual(statusBar, '/abc|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, '/|', 'Failed to remove word');
+    assert.strictEqual(statusBar, '/|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<C-w>');
     statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, '/|', 'Failed to remove word');
+    assert.strictEqual(statusBar, '/|', 'Failed to remove word');
 
     await modeHandler.handleKeyEvent('<Esc>');
   });
@@ -70,7 +70,7 @@ suite('cmd_line/search command', () => {
       '<C-w>',
     ]);
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|123', 'Failed to retain the text on the right of the cursor');
+    assert.strictEqual(statusBar, ':|123', 'Failed to retain the text on the right of the cursor');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -90,7 +90,7 @@ suite('cmd_line/search command', () => {
       '<C-w>',
     ]);
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, '/|123', 'Failed to retain the text on the right of the cursor');
+    assert.strictEqual(statusBar, '/|123', 'Failed to retain the text on the right of the cursor');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -98,7 +98,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(':s/abc/xyz'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<left>', '<left>', '<C-u>']);
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|yz');
+    assert.strictEqual(statusBar, ':|yz');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -106,7 +106,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(':s/abc/xyz'.split(''));
     await modeHandler.handleKeyEvent('<C-b>');
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|s/abc/xyz');
+    assert.strictEqual(statusBar, ':|s/abc/xyz');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -114,7 +114,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(':s/abc/xyz'.split(''));
     await modeHandler.handleKeyEvent('<Home>');
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':|s/abc/xyz');
+    assert.strictEqual(statusBar, ':|s/abc/xyz');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -122,7 +122,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(':s/abc/xyz'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<C-b>', '<C-e>']);
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':s/abc/xyz|');
+    assert.strictEqual(statusBar, ':s/abc/xyz|');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -130,7 +130,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(':s/abc/xyz'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Home>', '<End>']);
     const statusBar = StatusBar.Get().trim();
-    assert.equal(statusBar, ':s/abc/xyz|');
+    assert.strictEqual(statusBar, ':s/abc/xyz|');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
@@ -142,17 +142,17 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents([':', 'w', '<C-p>']);
 
     // Going backward - :s/x/y, then :s/a/b
-    assert.equal(StatusBar.Get().trim(), ':s/x/y|');
+    assert.strictEqual(StatusBar.Get().trim(), ':s/x/y|');
     await modeHandler.handleKeyEvent('<C-p>');
-    assert.equal(StatusBar.Get().trim(), ':s/a/b|');
+    assert.strictEqual(StatusBar.Get().trim(), ':s/a/b|');
 
     // Going forward again - :s/x/y, then :w (the one we started typing)
     await modeHandler.handleKeyEvent('<C-n>');
-    assert.equal(StatusBar.Get().trim(), ':s/x/y|');
+    assert.strictEqual(StatusBar.Get().trim(), ':s/x/y|');
     await modeHandler.handleKeyEvent('<C-n>');
 
     // TODO: Really, this should be `:w|`. See #4093.
-    assert.equal(StatusBar.Get().trim(), ':|');
+    assert.strictEqual(StatusBar.Get().trim(), ':|');
     await modeHandler.handleKeyEvent('<Esc>');
   });
 });

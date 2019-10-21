@@ -28,7 +28,7 @@ suite('Notation', () => {
         const expected = testCases[test];
 
         const actual = Notation.NormalizeKey(test, leaderKey);
-        assert.equal(actual, expected);
+        assert.strictEqual(actual, expected);
       }
     }
   });

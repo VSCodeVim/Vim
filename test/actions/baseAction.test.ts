@@ -48,7 +48,7 @@ suite('base action', () => {
         const expected = testCases[test][2];
 
         const actual = BaseAction.CompareKeypressSequence(left, right);
-        assert.equal(actual, expected, `${left}. ${right}.`);
+        assert.strictEqual(actual, expected, `${left}. ${right}.`);
       }
     }
   });

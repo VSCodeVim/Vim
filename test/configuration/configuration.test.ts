@@ -33,8 +33,8 @@ suite('Configuration', () => {
       srcConfiguration.configuration.normalModeKeyBindingsNonRecursiveMap;
     const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
 
-    assert.equal(normalizedKeybinds.length, testingKeybinds.length);
-    assert.equal(normalizedKeybinds.length, normalizedKeybindsMap.size);
+    assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
+    assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
@@ -45,8 +45,8 @@ suite('Configuration', () => {
     const h = 'h';
     const j = 'j';
 
-    assert.equal(wrapKeys[h], true);
-    assert.equal(wrapKeys[j], undefined);
+    assert.strictEqual(wrapKeys[h], true);
+    assert.strictEqual(wrapKeys[j], undefined);
   });
 
   newTest({

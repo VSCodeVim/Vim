@@ -280,8 +280,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   //
   const actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   const expectedPosition = helper.endPosition;
-  assert.equal(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
-  assert.equal(
+  assert.strictEqual(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
+  assert.strictEqual(
     actualPosition.character,
     expectedPosition.character,
     'Cursor CHARACTER position is wrong.'
@@ -291,7 +291,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   if (typeof testObj.endMode !== 'undefined') {
     const actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
     const expectedMode = ModeName[testObj.endMode].toUpperCase();
-    assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
+    assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }
 
   // jumps: check jumps are correct if given
