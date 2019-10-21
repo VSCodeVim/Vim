@@ -727,21 +727,15 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
       ),
     });
 
-    if (smoothScrolling) {
-      vimState.cursorStopPosition = Position.FromVSCodePosition(
-        vimState.editor.selection.active
-      ).obeyStartOfLine();
-    } else {
-      const newPositionLine = clamp(
-        position.line + (this.to === 'down' ? 1 : -1) * scrollLines,
-        0,
-        vimState.editor.document.lineCount - 1
-      );
-      vimState.cursorStopPosition = new Position(
-        newPositionLine,
-        vimState.desiredColumn
-      ).obeyStartOfLine();
-    }
+    const newPositionLine = clamp(
+      position.line + (this.to === 'down' ? 1 : -1) * scrollLines,
+      0,
+      vimState.editor.document.lineCount - 1
+    );
+    vimState.cursorStopPosition = new Position(
+      newPositionLine,
+      vimState.desiredColumn
+    ).obeyStartOfLine();
 
     return vimState;
   }
