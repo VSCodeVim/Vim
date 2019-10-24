@@ -4456,6 +4456,28 @@ class DecrementNumberAction extends IncrementDecrementNumberAction {
 }
 
 @RegisterAction
+class CommandUnicodeName extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['g', 'a'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
+    const charCode = char.charCodeAt(0);
+    // TODO: Handle charCode > 127 by also including <M-x>
+    StatusBar.Set(
+      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`,
+      vimState.currentMode,
+      vimState.isRecordingMacro,
+      true
+    );
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionTriggerHover extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['g', 'h'];
