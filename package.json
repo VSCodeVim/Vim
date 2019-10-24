@@ -871,7 +871,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.11.6",
+    "@types/node": "12.11.7",
     "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
