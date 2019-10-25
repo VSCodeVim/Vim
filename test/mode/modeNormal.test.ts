@@ -1780,6 +1780,23 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  /**
+   * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
+   */
+  newTest({
+    title: 'Can search for forward slash',
+    start: ['|One/two/three/four'],
+    keysPressed: '/\\/\nn',
+    end: ['One/two|/three/four'],
+  });
+
+  newTest({
+    title: 'Can search backward for question mark',
+    start: ['|One?two?three?four'],
+    keysPressed: '?\\?\nn',
+    end: ['One?two|?three?four'],
+  });
+
   newTest({
     title: '/\\c forces case insensitive search',
     start: ['|__ASDF', 'asdf'],
