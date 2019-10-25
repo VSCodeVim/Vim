@@ -3866,7 +3866,11 @@ class ActionReplaceCharacterVisual extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toInsert = this.keysPressed[1];
+    let toInsert = this.keysPressed[1];
+
+    if (toInsert === '<tab>') {
+      toInsert = TextEditor.getTabCharacter(vimState.editor);
+    }
 
     let visualSelectionOffset = 1;
     let start = vimState.cursorStartPosition;
@@ -3945,7 +3949,12 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toInsert = this.keysPressed[1];
+    let toInsert = this.keysPressed[1];
+
+    if (toInsert === '<tab>') {
+      toInsert = TextEditor.getTabCharacter(vimState.editor);
+    }
+
     for (const { start, end } of Position.IterateLine(vimState)) {
       if (end.isBeforeOrEqual(start)) {
         continue;

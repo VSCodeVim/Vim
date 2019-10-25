@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
+import { VimState } from './state/vimState';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -158,6 +159,15 @@ export class TextEditor {
     }
 
     return word;
+  }
+
+  static getTabCharacter(editor: vscode.TextEditor): string {
+    if (editor.options.insertSpaces) {
+      // This will always be a number when we're getting it from the options
+      const tabSize = editor.options.tabSize as number;
+      return ' '.repeat(tabSize);
+    }
+    return '\t';
   }
 
   static isFirstLine(position: vscode.Position): boolean {
