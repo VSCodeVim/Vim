@@ -3869,7 +3869,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     let toInsert = this.keysPressed[1];
 
     if (toInsert === '<tab>') {
-      toInsert = TextEditor.getTabCharacter(vimState);
+      toInsert = TextEditor.getTabCharacter(vimState.editor);
     }
 
     let visualSelectionOffset = 1;
@@ -3952,7 +3952,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
     let toInsert = this.keysPressed[1];
 
     if (toInsert === '<tab>') {
-      toInsert = TextEditor.getTabCharacter(vimState);
+      toInsert = TextEditor.getTabCharacter(vimState.editor);
     }
 
     for (const { start, end } of Position.IterateLine(vimState)) {

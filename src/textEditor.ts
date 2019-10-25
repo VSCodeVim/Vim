@@ -161,10 +161,10 @@ export class TextEditor {
     return word;
   }
 
-  static getTabCharacter(vimState: VimState): string {
-    if (vimState.editor.options.insertSpaces) {
+  static getTabCharacter(editor: vscode.TextEditor): string {
+    if (editor.options.insertSpaces) {
       // This will always be a number when we're getting it from the options
-      const tabSize = vimState.editor.options.tabSize as number;
+      const tabSize = editor.options.tabSize as number;
       return ' '.repeat(tabSize);
     }
     return '\t';
