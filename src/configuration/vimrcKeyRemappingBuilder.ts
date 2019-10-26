@@ -6,16 +6,16 @@ class VimrcKeyRemappingBuilderImpl {
   private static readonly COMMAND_REG_EX = /(:\w+)/;
 
   public build(line: string): IVimrcKeyRemapping | null {
-    let matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
+    const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
       return null;
     }
 
-    let type = matches[1];
-    let before = matches[2];
-    let after = matches[3];
-    let mapping: IKeyRemapping;
+    const type = matches[1];
+    const before = matches[2];
+    const after = matches[3];
 
+    let mapping: IKeyRemapping;
     if (VimrcKeyRemappingBuilderImpl.isCommand(after)) {
       mapping = {
         before: VimrcKeyRemappingBuilderImpl.buildKeyList(before),
@@ -35,7 +35,7 @@ class VimrcKeyRemappingBuilderImpl {
   }
 
   private static isCommand(commandString: string): boolean {
-    let matches = VimrcKeyRemappingBuilderImpl.COMMAND_REG_EX.exec(commandString);
+    const matches = VimrcKeyRemappingBuilderImpl.COMMAND_REG_EX.exec(commandString);
     if (matches) {
       return true;
     }
@@ -44,8 +44,7 @@ class VimrcKeyRemappingBuilderImpl {
 
   private static buildKeyList(keyString: string): string[] {
     let keyList: string[] = [];
-    let matches;
-
+    let matches: RegExpMatchArray | null = null;
     do {
       matches = VimrcKeyRemappingBuilderImpl.KEY_LIST_REG_EX.exec(keyString);
       if (matches) {

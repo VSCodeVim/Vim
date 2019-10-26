@@ -39,5 +39,5 @@ export class ValidatorResults {
 
 export interface IConfigurationValidator {
   validate(config: IConfiguration): Promise<ValidatorResults>;
-  disable(config: IConfiguration);
+  disable(config: IConfiguration): void;
 }
