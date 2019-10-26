@@ -8,7 +8,7 @@ import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { getTestingFunctions } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  let { newTest } = getTestingFunctions();
+  const { newTest } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -50,8 +50,12 @@ suite('Record and navigate jumps', () => {
         ['file1', 'file2', 'file3'],
         'Unexpected jumps found'
       );
-      assert.equal(jumpTracker.currentJump.fileName, 'file1', 'Unexpected current jump found');
-      assert.equal(jumpTracker.currentJumpNumber, 0, 'Unexpected current jump number found');
+      assert.strictEqual(
+        jumpTracker.currentJump.fileName,
+        'file1',
+        'Unexpected current jump found'
+      );
+      assert.strictEqual(jumpTracker.currentJumpNumber, 0, 'Unexpected current jump number found');
     });
 
     test('Can handle file jump events sent by vscode in response to recordJumpBack', async () => {
@@ -75,8 +79,12 @@ suite('Record and navigate jumps', () => {
         ['file1', 'file2', 'file3', 'file4'],
         'Unexpected jumps found'
       );
-      assert.equal(jumpTracker.currentJump.fileName, 'file2', 'Unexpected current jump found');
-      assert.equal(jumpTracker.currentJumpNumber, 1, 'Unexpected current jump number found');
+      assert.strictEqual(
+        jumpTracker.currentJump.fileName,
+        'file2',
+        'Unexpected current jump found'
+      );
+      assert.strictEqual(jumpTracker.currentJumpNumber, 1, 'Unexpected current jump number found');
     });
 
     test('Can record jumps between files after switching files', async () => {
@@ -93,7 +101,7 @@ suite('Record and navigate jumps', () => {
         ['file1', 'file2', 'file3', 'file2'],
         'Unexpected jumps found'
       );
-      assert.equal(jumpTracker.currentJump, null, 'Unexpected current jump found');
+      assert.strictEqual(jumpTracker.currentJump, null, 'Unexpected current jump found');
     });
 
     test('Can handle jumps to the same file multiple times', async () => {
@@ -109,7 +117,7 @@ suite('Record and navigate jumps', () => {
         ['file1', 'file2', 'file3'],
         'Unexpected jumps found'
       );
-      assert.equal(jumpTracker.currentJump, null, 'Unexpected current jump found');
+      assert.strictEqual(jumpTracker.currentJump, null, 'Unexpected current jump found');
     });
 
     test('Can record up to 100 jumps, the fixed length in vanilla Vim', async () => {
@@ -119,7 +127,7 @@ suite('Record and navigate jumps', () => {
         jumpTracker.recordJump(jump(iteration, 0), jump(iteration + 1, 0));
       });
 
-      assert.equal(jumpTracker.jumps.length, 100, 'Jump tracker should cut off jumps at 100');
+      assert.strictEqual(jumpTracker.jumps.length, 100, 'Jump tracker should cut off jumps at 100');
       assert.deepEqual(
         jumpTracker.jumps.map(j => j.position.line),
         range(102).slice(2, 102),

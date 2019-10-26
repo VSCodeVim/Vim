@@ -65,6 +65,7 @@
       "check-finally",
       "check-whitespace"
     ],
+    "prefer-for-of": true,
     "quotemark": false,
     "radix": true,
     "semicolon": [true, "always"],
