@@ -3009,6 +3009,38 @@ class CommandGoForwardInChangelist extends BaseCommand {
 }
 
 @RegisterAction
+class CommandGoStartPrevOperatedText extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = [['`', '['], ["'", '[']];
+  isJump = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const lastPos = vimState.historyTracker.getLastChangeStartPosition();
+    if (lastPos !== undefined) {
+      vimState.cursorStopPosition = lastPos;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoEndPrevOperatedText extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = [['`', ']'], ["'", ']']];
+  isJump = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
+    if (lastPos !== undefined) {
+      vimState.cursorStopPosition = lastPos;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoLastChange extends BaseCommand {
   modes = [ModeName.Normal];
   keys = [['`', '.'], ["'", '.']];

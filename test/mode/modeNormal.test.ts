@@ -2071,6 +2071,34 @@ suite('Mode Normal', () => {
     endMode: ModeName.Normal,
   });
 
+  newTest({
+    title: '`] go to the end of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`]',
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: "'] go to the end of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>']",
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: '`[ go to the start of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`[',
+    end: ['hello| world'],
+  });
+
+  newTest({
+    title: "'[ go to the start of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>'[",
+    end: ['hello| world'],
+  });
+
   suite('can handle gn', () => {
     test(`gn selects the next match text`, async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
