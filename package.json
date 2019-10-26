@@ -888,7 +888,6 @@
     "ts-loader": "6.2.1",
     "tslint": "5.20.0",
     "typescript": "3.6.4",
-    "vscode": "1.1.36",
-    "webpack-stream": "5.2.1"
+    "vscode": "1.1.36"
   }
 }
