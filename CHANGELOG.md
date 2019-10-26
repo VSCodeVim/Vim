@@ -1,5 +1,53 @@
 # Change Log
 
+## [v1.11.3](https://github.com/vscodevim/vim/tree/v1.11.3) (2019-10-26)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.2...v1.11.3)
+
+**Enhancements:**
+
+- Add :UnicodeName \(aka ga\) [\#4204](https://github.com/VSCodeVim/Vim/issues/4204)
+- Feature request: Highlight text color [\#4164](https://github.com/VSCodeVim/Vim/issues/4164)
+- :sort u command does not remove duplicates [\#4142](https://github.com/VSCodeVim/Vim/issues/4142)
+
+**Fixed Bugs:**
+
+- \<C-d\>, etc. not working at beginning or end of buffer in 1.11.2 [\#4179](https://github.com/VSCodeVim/Vim/issues/4179)
+- `grj` is not linewise [\#4138](https://github.com/VSCodeVim/Vim/issues/4138)
+- A failed `f`/`F` cannot be retried with `;` or `,` [\#4047](https://github.com/VSCodeVim/Vim/issues/4047)
+- Ctrl+R in command line or search mode should show a quote \("\) [\#4000](https://github.com/VSCodeVim/Vim/issues/4000)
+
+**Closed issues:**
+
+- Screen navigation doesn't work at top or bottom [\#4207](https://github.com/VSCodeVim/Vim/issues/4207)
+- Add support for vscode jupyter notebook [\#4203](https://github.com/VSCodeVim/Vim/issues/4203)
+- Cannot search for words which include slashes [\#4200](https://github.com/VSCodeVim/Vim/issues/4200)
+- After ctrl-C into insert mode [\#4189](https://github.com/VSCodeVim/Vim/issues/4189)
+- Extension Version 1.11.1 not Working for me [\#4174](https://github.com/VSCodeVim/Vim/issues/4174)
+- Activating extension 'vscodevim.vim' failed: Cannot find module 'neovim'. [\#4173](https://github.com/VSCodeVim/Vim/issues/4173)
+- S deletes the whole line  [\#4168](https://github.com/VSCodeVim/Vim/issues/4168)
+- Extension activation is slow [\#4083](https://github.com/VSCodeVim/Vim/issues/4083)
+
+**Merged pull requests:**
+
+- Revert "WebPack builds for improved loading times \(\#3889\)" [\#4217](https://github.com/VSCodeVim/Vim/pull/4217) ([rickpr](https://github.com/rickpr))
+- Update dependency @types/node to v12.11.7 [\#4212](https://github.com/VSCodeVim/Vim/pull/4212) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.6 [\#4211](https://github.com/VSCodeVim/Vim/pull/4211) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency ts-loader to v6.2.1 [\#4210](https://github.com/VSCodeVim/Vim/pull/4210) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.5 [\#4208](https://github.com/VSCodeVim/Vim/pull/4208) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.2 [\#4201](https://github.com/VSCodeVim/Vim/pull/4201) ([renovate[bot]](https://github.com/apps/renovate))
+- Replace `assert.equal` with `assert.strictEqual` [\#4199](https://github.com/VSCodeVim/Vim/pull/4199) ([J-Fields](https://github.com/J-Fields))
+- Update CONTRIBUTING.md to recommend npx gulp [\#4198](https://github.com/VSCodeVim/Vim/pull/4198) ([nateroling](https://github.com/nateroling))
+- fix replace commands from visual and visual block mode not inserting tab [\#4195](https://github.com/VSCodeVim/Vim/pull/4195) ([peawyoyoyin](https://github.com/peawyoyoyin))
+- Update dependency mocha to v6.2.2 [\#4191](https://github.com/VSCodeVim/Vim/pull/4191) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.1 [\#4181](https://github.com/VSCodeVim/Vim/pull/4181) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.0 [\#4180](https://github.com/VSCodeVim/Vim/pull/4180) ([renovate[bot]](https://github.com/apps/renovate))
+- v1.11.2 [\#4172](https://github.com/VSCodeVim/Vim/pull/4172) ([jpoon](https://github.com/jpoon))
+- Add configuration for highlight/yank highlight text colors [\#4165](https://github.com/VSCodeVim/Vim/pull/4165) ([J-Fields](https://github.com/J-Fields))
+- Add support for za Vim binding [\#4160](https://github.com/VSCodeVim/Vim/pull/4160) ([aquova](https://github.com/aquova))
+- Fix back search when no matching \(\#4047\) [\#4157](https://github.com/VSCodeVim/Vim/pull/4157) ([seachicken](https://github.com/seachicken))
+- Support `\[ and`\] commands to go to start / end of previously operated text [\#4147](https://github.com/VSCodeVim/Vim/pull/4147) ([haifengkao](https://github.com/haifengkao))
+
 ## [v1.11.2](https://github.com/vscodevim/vim/tree/v1.11.2) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.1...v1.11.2)
