@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.8.2",
+  "version": "1.11.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.31.0"
+    "vscode": "^1.37.0"
   },
   "categories": [
     "Other",
@@ -41,7 +41,7 @@
     "commands": [
       {
         "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
+        "title": "Vim: Remap any key combination that VSCode supports to Vim motions/operators/ExCommands/macro."
       },
       {
         "command": "toggleVim",
@@ -86,6 +86,11 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
+        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "shift+tab",
+        "command": "extension.vim_shift+tab",
         "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
@@ -211,7 +216,7 @@
       {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
       },
       {
         "key": "ctrl+o",
@@ -221,7 +226,7 @@
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
+        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+q",
@@ -359,35 +364,53 @@
         },
         "vim.debug.loggingLevelForAlert": {
           "type": "string",
-          "description": "Maximum level of messages to present as VS Code information window.",
-          "default": "error"
+          "description": "Maximum level of messages to present as VSCode information window.",
+          "default": "error",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "verbose",
+            "debug"
+          ]
         },
         "vim.debug.loggingLevelForConsole": {
           "type": "string",
           "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
-          "default": "error"
+          "default": "error",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "verbose",
+            "debug"
+          ]
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
-          "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
+          "markdownDescription": "Enable some Vim Ctrl key commands that override otherwise common operations, like `Ctrl+C`.",
           "default": true
         },
         "vim.leader": {
           "type": "string",
-          "description": "What key should <leader> map to in remappings?",
+          "markdownDescription": "What key should `<leader>` map to in remappings?",
           "default": "\\"
         },
         "vim.searchHighlightColor": {
           "type": "string",
           "description": "Color of the search highlight."
+        },
+        "vim.searchHighlightTextColor": {
+          "type": "string",
+          "description": "Color of the search highlight text."
         },
         "vim.highlightedyank.enable": {
           "type": "boolean",
@@ -399,10 +422,15 @@
           "description": "Color of the yank highlight.",
           "default": "rgba(250, 240, 170, 0.5)"
         },
+        "vim.highlightedyank.textColor": {
+          "type": "string",
+          "description": "Color of the yank highlight text."
+        },
         "vim.highlightedyank.duration": {
           "type": "number",
           "description": "Duration in milliseconds of the yank highlight.",
-          "default": 200
+          "default": 200,
+          "minimum": 1
         },
         "vim.useSystemClipboard": {
           "type": "boolean",
@@ -416,34 +444,37 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.textwidth": {
           "type": "number",
-          "description": "Width to word-wrap to when using gq.",
-          "default": 80
+          "markdownDescription": "Width to word-wrap to when using `gq`.",
+          "default": 80,
+          "minimum": 1
         },
         "vim.timeout": {
           "type": "number",
-          "description": "Timeout in milliseconds for remapped commands",
-          "default": 1000
+          "description": "Timeout in milliseconds for remapped commands.",
+          "default": 1000,
+          "minimum": 0
         },
         "vim.scroll": {
           "type": "number",
-          "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
-          "default": 20
+          "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",
+          "default": 0,
+          "minimum": 0
         },
         "vim.showcmd": {
           "type": "boolean",
@@ -457,7 +488,7 @@
         },
         "vim.iskeyword": {
           "type": "string",
-          "description": "keywords contain alphanumeric characters and '_'. If not configured `editor.wordSeparators` is used."
+          "markdownDescription": "Keywords contain alphanumeric characters and '_'. If not configured, `editor.wordSeparators` is used."
         },
         "vim.ignorecase": {
           "type": "boolean",
@@ -466,17 +497,17 @@
         },
         "vim.smartcase": {
           "type": "boolean",
-          "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
+          "markdownDescription": "Override the `ignorecase` option if the search pattern contains upper case characters.",
           "default": true
         },
         "vim.camelCaseMotion.enable": {
           "type": "boolean",
-          "description": "Enable the CamelCaseMotion plugin for Vim.",
+          "markdownDescription": "Enable the [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion) plugin for Vim.",
           "default": false
         },
         "vim.easymotion": {
           "type": "boolean",
-          "description": "Enable the EasyMotion plugin for Vim.",
+          "markdownDescription": "Enable the [EasyMotion](https://github.com/easymotion/vim-easymotion) plugin for Vim.",
           "default": false
         },
         "vim.easymotionMarkerBackgroundColor": {
@@ -494,12 +525,14 @@
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
           "description": "Set the width (in pixels) allocated to each character in the match.",
-          "default": 8
+          "default": 8,
+          "minimum": 1
         },
         "vim.easymotionMarkerHeight": {
           "type": "number",
           "description": "Set the height of the marker.",
-          "default": 14
+          "default": 14,
+          "minimum": 1
         },
         "vim.easymotionMarkerFontFamily": {
           "type": "string",
@@ -523,43 +556,54 @@
         },
         "vim.easymotionKeys": {
           "type": "string",
-          "description": "Set the characters used for jump marker name",
+          "description": "Set the characters used for jump marker name.",
           "default": "hklyuiopnm,qwertzxcvbasdgjf;"
         },
         "vim.easymotionJumpToAnywhereRegex": {
           "type": "string",
-          "description": "Regex matches for JumpToAnywhere motion",
+          "description": "Regex matches for JumpToAnywhere motion.",
           "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
+        },
+        "vim.replaceWithRegister": {
+          "type": "boolean",
+          "markdownDescription": "Enable the [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister) plugin for Vim.",
+          "default": false
         },
         "vim.sneak": {
           "type": "boolean",
-          "description": "Enable the Sneak plugin for Vim.",
+          "markdownDescription": "Enable the [Sneak](https://github.com/justinmk/vim-sneak) plugin for Vim.",
           "default": false
         },
         "vim.sneakUseIgnorecaseAndSmartcase": {
           "type": "boolean",
-          "description": "Case sensitivity is determined by 'ignorecase' and 'smartcase'",
+          "markdownDescription": "Case sensitivity is determined by `ignorecase` and `smartcase`.",
+          "default": false
+        },
+        "vim.sneakReplacesF": {
+          "type": "boolean",
+          "markdownDescription": "Use single-character [Sneak](https://github.com/justinmk/vim-sneak) instead of Vim's native `f`.",
           "default": false
         },
         "vim.surround": {
           "type": "boolean",
-          "description": "Enable the Surround plugin for Vim.",
+          "markdownDescription": "Enable the [Surround](https://github.com/tpope/vim-surround) plugin for Vim.",
           "default": true
         },
         "vim.hlsearch": {
           "type": "boolean",
-          "description": "Show all matches of the most recent search pattern",
+          "description": "Show all matches of the most recent search pattern.",
           "default": false
         },
         "vim.incsearch": {
           "type": "boolean",
-          "description": "Show where a / search matches as you type it.",
+          "markdownDescription": "Show where a `/` or `?` search matches as you type it.",
           "default": true
         },
         "vim.history": {
           "type": "number",
-          "description": "How much search or command history should be remembered",
-          "default": 50
+          "description": "How much search or command history should be remembered.",
+          "default": 50,
+          "minimum": 1
         },
         "vim.autoindent": {
           "type": "boolean",
@@ -568,18 +612,18 @@
         },
         "vim.startInInsertMode": {
           "type": "boolean",
-          "description": "Start in Insert Mode."
+          "description": "Start in Insert mode."
         },
         "vim.handleKeys": {
           "type": "object",
-          "description": "Option to delegate certain key combinations back to VSCode to be handled natively",
+          "description": "Delegate certain key combinations back to VSCode to be handled natively.",
           "default": {
             "<C-d>": true
           }
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode",
+          "markdownDescription": "Allow VSCodeVim to change status bar color based on mode. **NOTE:** Using this feature will have a negative impact on performance.",
           "default": false
         },
         "vim.statusBarColors.normal": {
@@ -587,7 +631,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Normal mode",
+          "description": "Status bar color when in Normal mode.",
           "default": "#005f5f"
         },
         "vim.statusBarColors.insert": {
@@ -595,7 +639,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Insert mode",
+          "description": "Status bar color when in Insert mode.",
           "default": "#5f0000"
         },
         "vim.statusBarColors.visual": {
@@ -603,7 +647,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Visual mode",
+          "description": "Status bar color when in Visual mode.",
           "default": "#5f00af"
         },
         "vim.statusBarColors.visualline": {
@@ -611,7 +655,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in VisualLine mode",
+          "description": "Status bar color when in VisualLine mode.",
           "default": "#005f5f"
         },
         "vim.statusBarColors.visualblock": {
@@ -619,7 +663,7 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in VisualBlock mode",
+          "description": "Status bar color when in VisualBlock mode.",
           "default": "#86592d"
         },
         "vim.statusBarColors.replace": {
@@ -627,91 +671,152 @@
             "string",
             "array"
           ],
-          "description": "Status bar color when in Replace mode",
+          "description": "Status bar color when in Replace mode.",
           "default": "#00000"
         },
         "vim.visualstar": {
           "type": "boolean",
-          "description": "In visual mode, start a search with * or # using the current selection",
+          "markdownDescription": "In Visual mode, start a search with `*` or `#` using the current selection.",
           "default": false
         },
         "vim.changeWordIncludesWhitespace": {
           "type": "boolean",
-          "description": "Includes trailing whitespace when changing word",
+          "description": "Includes trailing whitespace when changing word.",
           "default": false
         },
         "vim.foldfix": {
           "type": "boolean",
-          "description": "Uses a hack to move around folds properly",
+          "description": "Uses a hack to move around folds properly.",
           "default": false
         },
         "vim.mouseSelectionGoesIntoVisualMode": {
           "type": "boolean",
-          "description": "Does dragging with the mouse put you into visual mode",
+          "description": "Does dragging with the mouse put you into Visual mode.",
           "default": true
         },
         "vim.disableExtension": {
           "type": "boolean",
-          "description": "Disables the VSCodeVim extension. Extension will continue to be loaded and activated, but VIM functionality will be disabled.",
+          "description": "Disables the VSCodeVim extension. Extension will continue to be loaded and activated, but Vim functionality will be disabled.",
           "default": false
         },
         "vim.enableNeovim": {
           "type": "boolean",
-          "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",
+          "markdownDescription": "Use Neovim on backend. (only works for Ex commands right now). You should restart VSCode after enable/disabling this for the changes to take effect. **NOTE:** Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, VSCodeVim will crash.",
           "default": false
         },
         "vim.neovimPath": {
           "type": "string",
-          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
-          "default": "nvim"
+          "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
+          "default": "",
+          "scope": "machine"
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
-          "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
+          "markdownDescription": "Automatically apply the global flag, `/g`, to substitute commands. When set to true, use `/g` to mean only first match should be replaced.",
+          "default": false,
+          "deprecationMessage": "Use `vim.gdefault` instead."
+        },
+        "vim.gdefault": {
+          "type": "boolean",
+          "markdownDescription": "Automatically apply the global flag, `/g`, to substitute commands. When set to true, use `/g` to mean only first match should be replaced.",
           "default": false
         },
         "vim.cursorStylePerMode.normal": {
           "type": "string",
-          "description": "Cursor style for Normal mode"
+          "description": "Cursor style for Normal mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.insert": {
           "type": "string",
-          "description": "Cursor style for Insert mode"
+          "description": "Cursor style for Insert mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.replace": {
           "type": "string",
-          "description": "Cursor style for Replace mode"
+          "description": "Cursor style for Replace mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visual": {
           "type": "string",
-          "description": "Cursor style for Visual mode"
+          "description": "Cursor style for Visual mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visualline": {
           "type": "string",
-          "description": "Cursor style for VisualLine mode"
+          "description": "Cursor style for VisualLine mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.cursorStylePerMode.visualblock": {
           "type": "string",
-          "description": "Cursor style for VisualBlock mode"
+          "description": "Cursor style for VisualBlock mode.",
+          "enum": [
+            "",
+            "block",
+            "block-outline",
+            "line",
+            "line-thin",
+            "underline",
+            "underline-thin"
+          ]
         },
         "vim.autoSwitchInputMethod.enable": {
           "type": "boolean",
-          "description": "Switch input method automatically when mode changed",
+          "description": "Switch input method automatically when mode changed.",
           "default": false
         },
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
-          "description": "The input method for your normal mode, find more information here: https://github.com/VSCodeVim/Vim#input-method",
+          "markdownDescription": "The input method for your normal mode, find more information [here](https://github.com/VSCodeVim/Vim#input-method).",
           "default": ""
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
           "type": "string",
-          "description": "The shell command to switch input method",
+          "description": "The shell command to switch input method.",
           "default": "/path/to/im-select {im}"
         },
         "vim.autoSwitchInputMethod.obtainIMCmd": {
           "type": "string",
-          "description": "The shell command to get current input method",
+          "description": "The shell command to get current input method.",
           "default": "/path/to/im-select"
         },
         "vim.whichwrap": {
@@ -722,12 +827,23 @@
         "vim.report": {
           "type": "number",
           "description": "Threshold for reporting number of lines changed.",
-          "default": 2
+          "default": 2,
+          "minimum": 1
         },
         "vim.digraphs": {
           "type": "object",
-          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
+          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points.",
           "default": {}
+        },
+        "vim.wrapscan": {
+          "type": "boolean",
+          "description": "Searches wrap around the end of the file.",
+          "default": true
+        },
+        "vim.startofline": {
+          "type": "boolean",
+          "markdownDescription": "When `true` the commands listed below move the cursor to the first non-blank of the line.  When `false` the cursor is kept in the same column (if possible).  This applies to the commands: `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<` and `>>` with a linewise operator.",
+          "default": true
         }
       }
     }
@@ -740,22 +856,21 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
-    "lodash": "4.17.14",
-    "mkdirp": "0.5.1",
+    "lodash.escaperegexp": "4.1.2",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
-    "winston-console-for-electron": "0.0.6"
+    "winston-console-for-electron": "0.0.6",
+    "winston-transport": "4.3.0"
   },
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.136",
+    "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.6.2",
-    "@types/sinon": "7.0.13",
+    "@types/node": "12.11.7",
+    "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
@@ -764,12 +879,13 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.1.4",
+    "mocha": "6.2.2",
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
-    "sinon": "7.3.2",
-    "tslint": "5.18.0",
-    "typescript": "3.5.3",
-    "vscode": "1.1.35"
+    "sinon": "7.5.0",
+    "ts-loader": "6.2.1",
+    "tslint": "5.20.0",
+    "typescript": "3.6.4",
+    "vscode": "1.1.36"
   }
 }

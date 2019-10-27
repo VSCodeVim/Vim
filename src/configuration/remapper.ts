@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
@@ -7,6 +6,7 @@ import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
+import { StatusBar } from '../statusBar';
 
 interface IRemapper {
   /**
@@ -35,7 +35,7 @@ export class Remappers implements IRemapper {
   }
 
   get isPotentialRemap(): boolean {
-    return _.some(this.remappers, r => r.isPotentialRemap);
+    return this.remappers.some(r => r.isPotentialRemap);
   }
 
   public async sendKey(
@@ -75,7 +75,7 @@ export class Remapper implements IRemapper {
   ): Promise<boolean> {
     this._isPotentialRemap = false;
 
-    if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
+    if (!this._remappedModes.includes(vimState.currentMode)) {
       return false;
     }
 
@@ -111,8 +111,9 @@ export class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
+    const keysAsString = keys.join('');
     for (let remap of userDefinedRemappings.keys()) {
-      if (keys.join('') === remap.slice(0, keys.length)) {
+      if (remap.startsWith(keysAsString)) {
         this._isPotentialRemap = true;
         break;
       }
@@ -173,6 +174,13 @@ export class Remapper implements IRemapper {
         } else {
           await vscode.commands.executeCommand(commandString);
         }
+
+        StatusBar.Set(
+          commandString + ' ' + commandArgs,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true
+        );
       }
     }
   }
@@ -229,10 +237,8 @@ export class Remapper implements IRemapper {
     if (remappings.size === 0) {
       return [0, 0];
     }
-    return [
-      _.minBy(Array.from(remappings.keys()), m => m.length)!.length,
-      _.maxBy(Array.from(remappings.keys()), m => m.length)!.length,
-    ];
+    const keyLengths = Array.from(remappings.keys()).map(k => k.length);
+    return [Math.min(...keyLengths), Math.max(...keyLengths)];
   }
 }
 

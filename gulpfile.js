@@ -40,15 +40,12 @@ function runPrettier(command, done) {
     }
 
     const prettierPath = path.normalize('./node_modules/.bin/prettier');
-    exec(
-      `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
-      function(err) {
-        if (err) {
-          return done(new PluginError('runPrettier', { message: err }));
-        }
-        return done();
+    exec(`${prettierPath} --write ${files}`, function(err) {
+      if (err) {
+        return done(new PluginError('runPrettier', { message: err }));
       }
-    );
+      return done();
+    });
   });
 }
 

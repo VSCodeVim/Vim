@@ -13,7 +13,7 @@ import {
 import { getTestingFunctions } from '../testSimplifier';
 
 suite('Basic substitute', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -219,9 +219,9 @@ suite('Basic substitute', () => {
     assertEqualLines(['dbc', 'dbc', 'abc']);
   });
 
-  suite('Effects of substituteGlobalFlag=true', () => {
+  suite('Effects of gdefault=true', () => {
     setup(async () => {
-      Globals.mockConfiguration.substituteGlobalFlag = true;
+      Globals.mockConfiguration.gdefault = true;
       await reloadConfiguration();
     });
 
@@ -333,6 +333,7 @@ suite('Basic substitute', () => {
       assertEqualLines(['bz']);
     });
   });
+
   suite('Substitute should use various previous search/substitute states', () => {
     test('Substitute with previous search using *', async () => {
       await modeHandler.handleMultipleKeyEvents([
@@ -364,6 +365,7 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
+
     test('Substitute with previous search using #', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
@@ -392,6 +394,7 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
     });
+
     test('Substitute with previous search using /', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
@@ -424,6 +427,7 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
+
     newTest({
       title: 'Substitute with parameters should update search state',
       start: ['foo', 'bar', 'foo', 'bar|'],
@@ -434,6 +438,7 @@ suite('Basic substitute', () => {
         'rr', // and replace a with r
       end: ['foo', 'bite', 'foo', 'b|rr'],
     });
+
     newTest({
       title:
         'Substitute with empty replacement should delete previous substitution (all variants) and accepts flags',
@@ -474,6 +479,7 @@ suite('Basic substitute', () => {
         '|  is here',
       ],
     });
+
     newTest({
       title:
         'Substitute with no pattern should repeat previous substitution and not alter search state',
@@ -486,12 +492,14 @@ suite('Basic substitute', () => {
         'rp', // and replace l with p (confirming search state was unaltered)
       end: ['legend', 'zelda', 'legend', 'zelda', '|pink'],
     });
+
     newTest({
       title: 'Substitute repeat previous should accept flags',
       start: ['|fooo'],
       keysPressed: ':s/o/un\n:s g\n', // repeated replacement accepts g flag, replacing all other occurrences
       end: ['|fununun'],
     });
+
     test('Substitute with empty search string should use last searched pattern', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
@@ -527,6 +535,13 @@ suite('Basic substitute', () => {
       await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
+    });
+
+    newTest({
+      title: 'Ampersand (&) should repeat the last substitution',
+      start: ['|foo bar baz'],
+      keysPressed: ':s/ba/t\n' + '&',
+      end: ['|foo tr tz'],
     });
   });
 });

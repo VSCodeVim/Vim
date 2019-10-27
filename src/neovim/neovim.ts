@@ -104,7 +104,7 @@ export class NeovimWrapper implements vscode.Disposable {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
 
-    await this.nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
+    await this.nvim.setOption('gdefault', configuration.gdefault === true);
     await buf.setLines(TextEditor.getText().split('\n'), {
       start: 0,
       end: -1,

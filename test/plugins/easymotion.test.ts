@@ -11,10 +11,10 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.easymotion = true;
 
     await setupWorkspace(configuration);
@@ -209,5 +209,26 @@ suite('easymotion plugin', () => {
     start: ['abcDefGhi|'],
     keysPressed: easymotionCommand({ key: 'h', leaderCount: 2 }, '', 'h'),
     end: ['abcDef|Ghi'],
+  });
+
+  newTest({
+    title: 'Can handle searching for backslash (\\)',
+    start: ['|https:\\\\www.google.com'],
+    keysPressed: easymotionCommand({ key: 'f' }, '\\', 'k'),
+    end: ['https:\\|\\www.google.com'],
+  });
+
+  newTest({
+    title: 'Can handle searching for carat (^)',
+    start: ['|<^_^>'],
+    keysPressed: easymotionCommand({ key: 'f' }, '^', 'h'),
+    end: ['<|^_^>'],
+  });
+
+  newTest({
+    title: 'Can handle searching for dot (.)',
+    start: ['|https:\\\\www.google.com'],
+    keysPressed: easymotionCommand({ key: 'f' }, '.', 'k'),
+    end: ['https:\\\\www.google|.com'],
   });
 });

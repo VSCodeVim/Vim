@@ -4,6 +4,7 @@ import { Position } from './../common/motion/position';
 import { SearchDirection } from '../state/searchState';
 import { VSCodeVimCursorType } from './mode';
 import { VimState } from '../state/vimState';
+import { globalState } from '../state/globalState';
 
 export enum VisualBlockInsertionType {
   /**
@@ -37,6 +38,13 @@ export class VisualMode extends Mode {
   constructor() {
     super(ModeName.Visual, '-- Visual --', VSCodeVimCursorType.TextDecoration, true);
   }
+
+  getStatusBarCommandText(vimState: VimState): string {
+    const cmd = vimState.recordedState.commandString;
+
+    // Don't show the `v` that brings you into visual mode
+    return cmd.length === 0 || cmd[0] === 'v' ? cmd.slice(1) : cmd;
+  }
 }
 
 export class VisualBlockMode extends Mode {
@@ -67,15 +75,19 @@ export class SearchInProgressMode extends Mode {
   }
 
   getStatusBarText(vimState: VimState): string {
-    if (vimState.globalState.searchState === undefined) {
-      this._logger.warn(`vimState.globalState.searchState is undefined.`);
+    if (globalState.searchState === undefined) {
+      this._logger.warn(`globalState.searchState is undefined.`);
       return '';
     }
     const leadingChar =
-      vimState.globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
+      globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
 
-    let stringWithCursor = vimState.globalState.searchState!.searchString.split('');
-    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+    const cursorChar =
+      vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+        ? '"'
+        : '|';
+    let stringWithCursor = globalState.searchState!.searchString.split('');
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
     return `${leadingChar}${stringWithCursor.join('')}`;
   }
@@ -92,7 +104,11 @@ export class CommandlineInProgress extends Mode {
 
   getStatusBarText(vimState: VimState): string {
     let stringWithCursor = vimState.currentCommandlineText.split('');
-    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+    const cursorChar =
+      vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+        ? '"'
+        : '|';
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
     return `:${stringWithCursor.join('')}`;
   }

@@ -11,7 +11,6 @@ import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
-import { IHighlightedYankConfiguration } from '../configuration/iconfiguration';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -31,7 +30,7 @@ export class BaseOperator extends BaseAction {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
       return true;
     }
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
@@ -51,7 +50,7 @@ export class BaseOperator extends BaseAction {
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
@@ -79,7 +78,7 @@ export class BaseOperator extends BaseAction {
       this.isOperator &&
       keysPressed.length === 1 &&
       prevAction &&
-      this.modes.indexOf(vimState.currentMode) !== -1 &&
+      this.modes.includes(vimState.currentMode) &&
       // The previous action is the same as the one we're testing
       prevAction.constructor === this.constructor &&
       // The key pressed is the same as the previous action's last key.
@@ -110,6 +109,7 @@ export class BaseOperator extends BaseAction {
 
     const yankDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: configuration.highlightedyank.color,
+      color: configuration.highlightedyank.textColor,
     });
 
     vimState.editor.setDecorations(yankDecoration, ranges);
@@ -198,8 +198,8 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.getLineBegin();
-      diff = PositionDiff.NewBOLDiff();
+      resultingPosition = resultingPosition.obeyStartOfLine();
+      diff = PositionDiff.NewBOLDiff(0, 0, true);
     }
 
     vimState.recordedState.transformations.push({
@@ -489,7 +489,7 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
   }
@@ -529,7 +529,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
   }
@@ -592,6 +592,7 @@ export class ChangeOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const isEndOfLine = end.character === end.getLineEnd().character;
+    const isLineWise = vimState.currentRegisterMode === RegisterMode.LineWise;
     vimState = await new YankOperator(this.multicursorIndex).run(vimState, start, end);
     // which means the insert cursor would be one to the left of the end of
     // the line. We do want to run delete if it is a multiline change though ex. c}
@@ -600,7 +601,14 @@ export class ChangeOperator extends BaseOperator {
       Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
       end.line !== start.line
     ) {
-      if (isEndOfLine) {
+      if (isLineWise) {
+        vimState = await new DeleteOperator(this.multicursorIndex).run(
+          vimState,
+          start.getLineBegin(),
+          end.getLineEnd().getLeftThroughLineBreaks(),
+          false
+        );
+      } else if (isEndOfLine) {
         vimState = await new DeleteOperator(this.multicursorIndex).run(
           vimState,
           start,
@@ -720,8 +728,7 @@ export class ToggleCaseOperator extends BaseOperator {
     const text = TextEditor.getText(range);
 
     let newText = '';
-    for (var i = 0; i < text.length; i++) {
-      var char = text[i];
+    for (const char of text) {
       // Try lower-case
       let toggled = char.toLocaleLowerCase();
       if (toggled === char) {
@@ -763,7 +770,7 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 @RegisterAction
 export class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
@@ -782,8 +789,12 @@ export class CommentBlockOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    const endPosition = vimState.currentMode === ModeName.Normal ? end.getRight() : end;
-    vimState.editor.selection = new vscode.Selection(start, endPosition);
+    if (vimState.currentMode === ModeName.Normal) {
+      // If we're in normal mode, we need to construct a selection for the
+      // command to operate on. If we're not, we've already got it.
+      const endPosition = end.getRight();
+      vimState.editor.selection = new vscode.Selection(start, endPosition);
+    }
     await vscode.commands.executeCommand('editor.action.blockComment');
 
     vimState.cursorStopPosition = start;
@@ -829,22 +840,27 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: true, start: '' },
   ];
 
-  public getIndentationLevel(s: string): number {
+  public getIndentation(s: string): string {
+    // Use the indentation of the first non-whitespace line, if any such line is
+    // selected.
     for (const line of s.split('\n')) {
       const result = line.match(/^\s+/g);
-      const indentLevel = result ? result[0].length : 0;
+      const indent = result ? result[0] : '';
 
-      if (indentLevel !== line.length) {
-        return indentLevel;
+      if (indent !== line) {
+        return indent;
       }
     }
 
-    return 0;
+    return '';
   }
 
-  public reflowParagraph(s: string, indentLevel: number): string {
+  public reflowParagraph(s: string, indent: string): string {
+    let indentLevel = 0;
+    for (const char of indent) {
+      indentLevel += char === '\t' ? configuration.tabstop : 1;
+    }
     const maximumLineLength = configuration.textwidth - indentLevel - 2;
-    const indent = Array(indentLevel + 1).join(' ');
 
     // Chunk the lines by commenting style.
 
@@ -1021,9 +1037,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
     end = Position.LaterOf(start, end);
 
     let textToReflow = TextEditor.getText(new vscode.Range(start, end));
-    let indentLevel = this.getIndentationLevel(textToReflow);
+    let indent = this.getIndentation(textToReflow);
 
-    textToReflow = this.reflowParagraph(textToReflow, indentLevel);
+    textToReflow = this.reflowParagraph(textToReflow, indent);
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',

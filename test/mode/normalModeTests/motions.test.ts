@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -152,6 +152,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "'gg' obeys startofline",
+    start: ['   text', 'text', 'texttexttex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'texttexttext'],
+  });
+
+  newTest({
     title: 'Retain same column when moving up/down',
     start: ['text text', 'text', 'text tex|t'],
     keysPressed: 'kk',
@@ -215,6 +222,20 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 'f' with <tab>",
+    start: ['|text\tttext'],
+    keysPressed: 'f<tab>',
+    end: ['text|\tttext'],
+  });
+
+  newTest({
+    title: "Can handle 'f' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'fe,',
+    end: ['text t|ext'],
+  });
+
+  newTest({
     title: "Can handle 'F'",
     start: ['text tex|t'],
     keysPressed: '$Ft',
@@ -226,6 +247,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$FtFt',
     end: ['tex|t text'],
+  });
+
+  newTest({
+    title: "Can handle 'F' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Fx,',
+    end: ['te|xt text'],
   });
 
   newTest({
@@ -243,6 +271,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 't' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'te,',
+    end: ['text te|xt'],
+  });
+
+  newTest({
     title: "Can handle 'T'",
     start: ['text tex|t'],
     keysPressed: '$Tt',
@@ -254,6 +289,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$TtTt',
     end: ['text t|ext'],
+  });
+
+  newTest({
+    title: "Can handle 'T' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Tx,',
+    end: ['t|ext text'],
   });
 
   newTest({
@@ -397,6 +439,55 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: 'Search offsets: b does nothing',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b\n',
+    end: ['hay|needlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: b2 goes 2 to the right',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b2\n',
+    end: ['hayne|edlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: b+3 goes 3 to the right',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/b+3\n',
+    end: ['haynee|dlehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: e goes to the end',
+    start: ['|hayneedlehay'],
+    keysPressed: '/needle/e\n',
+    end: ['hayneedl|ehay'],
+  });
+
+  newTest({
+    title: 'Search offsets: character offset goes across line boundaries',
+    start: ['|hayneedlehay', '123'],
+    keysPressed: '/needle/e+5\n',
+    end: ['hayneedlehay', '1|23'],
+  });
+
+  newTest({
+    title: 'Search offsets: 2 goes 2 down',
+    start: ['|hayneedlehay', 'abc', 'def'],
+    keysPressed: '/needle/2\n',
+    end: ['hayneedlehay', 'abc', '|def'],
+  });
+
+  newTest({
+    title: 'Search offsets: -2 goes 2 up',
+    start: ['abc', '|def', 'hayneedlehay', 'abc', 'def'],
+    keysPressed: '/needle/-2\n',
+    end: ['|abc', 'def', 'hayneedlehay', 'abc', 'def'],
+  });
+
+  newTest({
     title: 'maintains column position correctly',
     start: ['|one one one', 'two', 'three'],
     keysPressed: 'lllljj',
@@ -412,9 +503,9 @@ suite('Motions in Normal Mode', () => {
 
   newTest({
     title: 'Can handle G ',
-    start: ['|one', 'two', 'three'],
+    start: ['|one', 'two', '  three'],
     keysPressed: 'G',
-    end: ['one', 'two', '|three'],
+    end: ['one', 'two', '  |three'],
   });
 
   newTest({
@@ -668,5 +759,33 @@ suite('Motions in Normal Mode', () => {
     start: ['blah', 'duh', '|dur', 'hur'],
     keysPressed: '<right>',
     end: ['blah', 'duh', 'd|ur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gk'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gk',
+    end: ['blah', '|duh', 'dur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gj'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gj',
+    end: ['blah', 'duh', 'dur', '|hur'],
+  });
+
+  newTestSkip({
+    title: "Preserves cursor position when handling 'gk'",
+    start: ['blah', 'duh', 'a', 'hu|r '],
+    keysPressed: 'gkgk',
+    end: ['blah', 'du|h', 'a', 'hur '],
+  });
+
+  newTestSkip({
+    title: "Preserves cursor position when handling 'gj'",
+    start: ['blah', 'du|h', 'a', 'hur '],
+    keysPressed: 'gjgj',
+    end: ['blah', 'duh', 'a', 'hu|r '],
   });
 });

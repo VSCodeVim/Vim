@@ -10,6 +10,7 @@ import {
   EasyMotionMoveOptionsBase,
   EasyMotionWordMoveOpions,
 } from './types';
+import { globalState } from '../../../state/globalState';
 
 export interface EasymotionTrigger {
   key: string;
@@ -117,6 +118,12 @@ function getMatchesForString(
       return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
     default:
       // Search all occurences of the character pressed
+
+      // If the input is not a letter, treating it as regex can cause issues
+      if (!/[a-zA-Z]/.test(searchString)) {
+        return vimState.easyMotion.sortedSearch(position, searchString, options);
+      }
+
       const ignorecase =
         configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
@@ -264,7 +271,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion = new EasyMotion();
       vimState.easyMotion.previousMode = vimState.currentMode;
       vimState.easyMotion.searchAction = this._action;
-      vimState.globalState.hl = true;
+      globalState.hl = true;
 
       await vimState.setCurrentMode(ModeName.EasyMotionInputMode);
       return vimState;

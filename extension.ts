@@ -5,7 +5,6 @@
  */
 import './src/actions/include-all';
 
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CompositionState } from './src/state/compositionState';
@@ -99,6 +98,9 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+  // Set the storage path to be used by history files
+  Globals.extensionStoragePath = context.globalStoragePath;
+
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
@@ -159,12 +161,11 @@ export async function activate(context: vscode.ExtensionContext) {
     if (Globals.isTesting && Globals.mockModeHandler) {
       contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
-      _.filter(
-        ModeHandlerMap.getAll(),
-        modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
-      ).forEach(modeHandler => {
-        contentChangeHandler(modeHandler);
-      });
+      ModeHandlerMap.getAll()
+        .filter(modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName)
+        .forEach(modeHandler => {
+          contentChangeHandler(modeHandler);
+        });
     }
 
     setTimeout(() => {
@@ -190,7 +191,7 @@ export async function activate(context: vscode.ExtensionContext) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.editor.document;
-          if (documents.indexOf(document) === -1) {
+          if (!documents.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {
               lastClosedModeHandler = modeHandler;
@@ -264,6 +265,12 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const mh = await getAndUpdateModeHandler();
+
+      // We may receive changes from other panels when, having selections in them containing the same file
+      // and changing text before the selection in current panel.
+      if (e.textEditor !== mh.vimState.editor) {
+        return;
+      }
 
       if (mh.vimState.focusChanged) {
         mh.vimState.focusChanged = false;
@@ -498,10 +505,9 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
-  _.filter(
-    ModeHandlerMap.getAll(),
-    modeHandler => modeHandler.vimState.identity.fileName === document.fileName
-  ).forEach(modeHandler => {
-    modeHandler.vimState.historyTracker.clear();
-  });
+  ModeHandlerMap.getAll()
+    .filter(modeHandler => modeHandler.vimState.identity.fileName === document.fileName)
+    .forEach(modeHandler => {
+      modeHandler.vimState.historyTracker.clear();
+    });
 }

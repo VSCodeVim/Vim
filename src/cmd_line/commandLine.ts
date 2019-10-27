@@ -24,17 +24,10 @@ class CommandLine {
    */
   public lastKeyPressed = '';
 
-  /**
-   * for checking the last pressed key in command mode
-   *
-   */
   public autoCompleteIndex = 0;
-
-  /**
-   * for checking the last pressed key in command mode
-   *
-   */
-  public autoCompleteText = '';
+  public autoCompleteItems: string[] = [];
+  public preCompleteCharacterPos = 0;
+  public preCompleteCommand = '';
 
   public get commandlineHistoryIndex(): number {
     return this._commandLineHistoryIndex;
@@ -67,7 +60,7 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if (command === 'help') {
+    if ('help'.startsWith(command.split(/\s/)[0])) {
       StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
       return;
     }
@@ -84,7 +77,7 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
+      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
       if (useNeovim) {
         const statusBarText = await vimState.nvim.run(vimState, command);

@@ -4,45 +4,45 @@ import { Scanner } from '../../src/cmd_line/scanner';
 
 suite('command line scanner', () => {
   test('ctor', () => {
-    var state = new Scanner('dog');
-    assert.equal(state.input, 'dog');
+    const state = new Scanner('dog');
+    assert.strictEqual(state.input, 'dog');
   });
 
   test('can detect EOF with empty input', () => {
-    var state = new Scanner('');
+    const state = new Scanner('');
     assert.ok(state.isAtEof);
   });
 
   test('next() returns EOF at EOF', () => {
-    var state = new Scanner('');
-    assert.equal(state.next(), Scanner.EOF);
-    assert.equal(state.next(), Scanner.EOF);
-    assert.equal(state.next(), Scanner.EOF);
+    const state = new Scanner('');
+    assert.strictEqual(state.next(), Scanner.EOF);
+    assert.strictEqual(state.next(), Scanner.EOF);
+    assert.strictEqual(state.next(), Scanner.EOF);
   });
 
   test('can scan', () => {
-    var state = new Scanner('dog');
-    assert.equal(state.next(), 'd');
-    assert.equal(state.next(), 'o');
-    assert.equal(state.next(), 'g');
-    assert.equal(state.next(), Scanner.EOF);
+    const state = new Scanner('dog');
+    assert.strictEqual(state.next(), 'd');
+    assert.strictEqual(state.next(), 'o');
+    assert.strictEqual(state.next(), 'g');
+    assert.strictEqual(state.next(), Scanner.EOF);
   });
 
   test('can emit', () => {
-    var state = new Scanner('dog cat');
+    const state = new Scanner('dog cat');
     state.next();
     state.next();
     state.next();
-    assert.equal(state.emit(), 'dog');
+    assert.strictEqual(state.emit(), 'dog');
     state.next();
     state.next();
     state.next();
     state.next();
-    assert.equal(state.emit(), ' cat');
+    assert.strictEqual(state.emit(), ' cat');
   });
 
   test('can ignore', () => {
-    var state = new Scanner('dog cat');
+    const state = new Scanner('dog cat');
     state.next();
     state.next();
     state.next();
@@ -51,69 +51,69 @@ suite('command line scanner', () => {
     state.next();
     state.next();
     state.next();
-    assert.equal(state.emit(), 'cat');
+    assert.strictEqual(state.emit(), 'cat');
   });
 
   test('can skip whitespace', () => {
-    var state = new Scanner('dog   cat');
+    const state = new Scanner('dog   cat');
     state.next();
     state.next();
     state.next();
     state.ignore();
     state.skipWhiteSpace();
-    assert.equal(state.next(), 'c');
+    assert.strictEqual(state.next(), 'c');
   });
 
   test('can skip whitespace with one char before EOF', () => {
-    var state = new Scanner('dog c');
+    const state = new Scanner('dog c');
     state.next();
     state.next();
     state.next();
     state.ignore();
     state.skipWhiteSpace();
-    assert.equal(state.next(), 'c');
+    assert.strictEqual(state.next(), 'c');
   });
 
   test('can skip whitespace at EOF', () => {
-    var state = new Scanner('dog   ');
+    const state = new Scanner('dog   ');
     state.next();
     state.next();
     state.next();
     state.ignore();
     state.skipWhiteSpace();
-    assert.equal(state.next(), Scanner.EOF);
+    assert.strictEqual(state.next(), Scanner.EOF);
   });
 
   test('nextWord() return EOF at EOF', () => {
-    var state = new Scanner('');
-    assert.equal(state.nextWord(), Scanner.EOF);
-    assert.equal(state.nextWord(), Scanner.EOF);
-    assert.equal(state.nextWord(), Scanner.EOF);
+    const state = new Scanner('');
+    assert.strictEqual(state.nextWord(), Scanner.EOF);
+    assert.strictEqual(state.nextWord(), Scanner.EOF);
+    assert.strictEqual(state.nextWord(), Scanner.EOF);
   });
 
   test('nextWord() return word before trailing spaces', () => {
-    var state = new Scanner('dog   cat');
-    assert.equal(state.nextWord(), 'dog');
+    const state = new Scanner('dog   cat');
+    assert.strictEqual(state.nextWord(), 'dog');
   });
 
   test('nextWord() can skip whitespaces and return word ', () => {
-    var state = new Scanner('   dog   cat');
-    assert.equal(state.nextWord(), 'dog');
+    const state = new Scanner('   dog   cat');
+    assert.strictEqual(state.nextWord(), 'dog');
   });
 
   test('nextWord() return word before EOF', () => {
-    var state = new Scanner('dog   cat');
+    const state = new Scanner('dog   cat');
     state.nextWord();
-    assert.equal(state.nextWord(), 'cat');
+    assert.strictEqual(state.nextWord(), 'cat');
   });
 
   test('can expect one of a set', () => {
-    var state = new Scanner('dog cat');
+    const state = new Scanner('dog cat');
     state.expectOneOf(['dog', 'mule', 'monkey']);
   });
 
   test('can expect only one of a set', () => {
-    var state = new Scanner('dog cat');
+    const state = new Scanner('dog cat');
     assert.throws(() => state.expectOneOf(['mule', 'monkey']));
   });
 });

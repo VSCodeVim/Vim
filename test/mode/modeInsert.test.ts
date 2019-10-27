@@ -15,7 +15,7 @@ import { Globals } from '../../src/globals';
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -25,9 +25,9 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
+    const activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
-    for (let key of activationKeys) {
+    for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
       assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 
@@ -62,7 +62,7 @@ suite('Mode Insert', () => {
 
   test('Stay in insert when entering characters', async () => {
     await modeHandler.handleKeyEvent('i');
-    for (var i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
       assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
     }
@@ -331,6 +331,14 @@ suite('Mode Insert', () => {
     start: ['|foobar'],
     keysPressed: '5Ofun<Esc>',
     end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar'],
+  });
+
+  // This corner case caused an issue, see #3915
+  newTest({
+    title: 'Can handle backspace at beginning of line with all spaces',
+    start: ['abc', '|     '],
+    keysPressed: 'i<BS><Esc>',
+    end: ['ab|c     '],
   });
 
   test('Can handle digraph insert', async () => {

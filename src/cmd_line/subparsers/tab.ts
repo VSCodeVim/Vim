@@ -1,30 +1,77 @@
 import * as node from '../commands/tab';
 import { Scanner } from '../scanner';
+import { ErrorCode, VimError } from '../../error';
+
+const isDigit = (c: string) => '0' <= c && c <= '9';
 
 function parseCount(args: string): number | undefined {
   if (!args) {
     return undefined;
   }
 
-  let scanner = new Scanner(args);
+  const scanner = new Scanner(args);
   scanner.skipWhiteSpace();
 
   if (scanner.isAtEof) {
     return undefined;
   }
 
-  let c = scanner.next();
-  let count = Number.parseInt(c, 10);
+  const input = scanner.nextWhile(isDigit);
+  scanner.skipWhiteSpace();
 
-  if (Number.isInteger(count) && count >= 0) {
-    if (count > 999) {
-      count = 999;
-    }
+  const count = Number.parseInt(input, 10);
 
+  if (scanner.isAtEof && Number.isInteger(count) && count >= 0) {
     return count;
   } else {
-    throw new Error(`Invalid tab number (${c}).`);
+    throw VimError.fromCode(ErrorCode.E474);
   }
+}
+
+function parseCountOrOffset(
+  args: string
+): { count: number | undefined; direction?: 'left' | 'right' } {
+  if (!args) {
+    return { count: undefined };
+  }
+
+  const scanner = new Scanner(args);
+  scanner.skipWhiteSpace();
+
+  if (scanner.isAtEof) {
+    return { count: undefined };
+  }
+
+  const c = scanner.next();
+
+  const direction = (() => {
+    if (c === '-') {
+      return 'left';
+    } else if (c === '+') {
+      return 'right';
+    } else {
+      return undefined;
+    }
+  })();
+
+  if (direction === undefined) {
+    scanner.backup();
+  } else {
+    scanner.ignore();
+  }
+
+  const input = scanner.nextWhile(isDigit);
+  scanner.skipWhiteSpace();
+
+  if (scanner.isAtEof) {
+    const count = input.length === 0 ? 1 : Number.parseInt(input, 10);
+
+    if (Number.isInteger(count) && (count > 0 || (direction === undefined && count === 0))) {
+      return { count, direction };
+    }
+  }
+
+  throw VimError.fromCode(ErrorCode.E474);
 }
 
 /**
@@ -102,9 +149,16 @@ export function parseTabOnlyCommandArgs(args: string): node.TabCommand {
   });
 }
 
+/**
+ * :tabm[ove] [N]
+ * :tabm[ove] +[N]
+ * :tabm[ove] -[N]
+ */
 export function parseTabMovementCommandArgs(args: string): node.TabCommand {
+  const { count, direction } = parseCountOrOffset(args);
   return new node.TabCommand({
     tab: node.Tab.Move,
-    count: parseCount(args),
+    count,
+    direction,
   });
 }

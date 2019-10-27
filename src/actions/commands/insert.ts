@@ -43,7 +43,7 @@ class CommandEscInsertMode extends BaseCommand {
     for (let i = 0; i < vimState.cursors.length; i++) {
       const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
       if (
-        ['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
+        ['o', 'O', '\n'].includes(lastActionBeforeEsc) &&
         vimState.editor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {
@@ -79,8 +79,8 @@ class CommandEscInsertMode extends BaseCommand {
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-      for (let i = 0; i < changesArray.length; i++) {
-        docChanges.push(changesArray[i].textDiff);
+      for (const change of changesArray) {
+        docChanges.push(change.textDiff);
       }
 
       let positionDiff = new PositionDiff(0, 0);
@@ -249,9 +249,15 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
-        if (line.length > 0 && line.match(/^ +$/) && configuration.expandtab) {
-          // If the line is empty except whitespace, backspace should return to
-          // the next lowest level of indentation.
+        if (
+          position.character > 0 &&
+          line.length > 0 &&
+          line.match(/^\s+$/) &&
+          configuration.expandtab
+        ) {
+          // If the line is empty except whitespace and we're not on the first
+          // character of the line, backspace should return to the next lowest
+          // level of indentation.
 
           const tabSize = vimState.editor.options.tabSize as number;
           const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;

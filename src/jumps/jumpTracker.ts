@@ -172,7 +172,7 @@ export class JumpTracker {
     });
 
     const iterations = vimState.recordedState.count || 1;
-    for (var i = 0; i < iterations; i++) {
+    for (let i = 0; i < iterations; i++) {
       jump = getJump(Jump.fromStateNow(vimState));
     }
 
@@ -362,7 +362,7 @@ export class JumpTracker {
         linesSeenPerFile[jump.fileName] = [];
       }
 
-      if (linesSeenPerFile[jump.fileName].indexOf(jump.position.line) >= 0) {
+      if (linesSeenPerFile[jump.fileName].includes(jump.position.line)) {
         this._jumps.splice(i, 1);
       } else {
         linesSeenPerFile[jump.fileName].push(jump.position.line);

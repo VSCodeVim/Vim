@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { IMovement } from './../../actions/motion';
+import { IMovement } from '../../actions/baseMotion';
 import { Position, PositionDiff } from './position';
 
 export class Range {
@@ -57,8 +57,16 @@ export class Range {
     return new Range(this._start.getRight(count), this._stop.getRight(count));
   }
 
+  public getLeft(count = 1): Range {
+    return this.getRight(-count);
+  }
+
   public getDown(count = 1): Range {
     return new Range(this._start.getDownByCount(count), this._stop.getDownByCount(count));
+  }
+
+  public getUp(count = 1): Range {
+    return this.getDown(-count);
   }
 
   public equals(other: Range): boolean {

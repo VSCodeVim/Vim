@@ -3,10 +3,10 @@ import { Scanner } from '../scanner';
 
 export function parseWriteCommandArgs(args: string): WriteCommand {
   if (!args) {
-    return new WriteCommand({});
+    return new WriteCommand({ bgWrite: true });
   }
-  var scannedArgs: IWriteCommandArguments = {};
-  var scanner = new Scanner(args);
+  const scannedArgs: IWriteCommandArguments = { bgWrite: true };
+  const scanner = new Scanner(args);
   while (true) {
     scanner.skipWhiteSpace();
     if (scanner.isAtEof) {

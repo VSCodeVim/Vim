@@ -1,7 +1,5 @@
-import * as _ from 'lodash';
-
 export class Notation {
-  // Mapping from the nomalized string to regex strings that could match it.
+  // Mapping from the normalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
     'C-': ['ctrl\\+', 'c\\-'],
     'D-': ['cmd\\+', 'd\\-'],
@@ -14,6 +12,15 @@ export class Notation {
     ' ': ['<space>'],
     '\n': ['<cr>', '<enter>'],
   };
+
+  // Converts keystroke like <tab> to a single control character like \t
+  public static ToControlCharacter(key: string) {
+    if (key === '<tab>') {
+      return '\t';
+    }
+
+    return key;
+  }
 
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
@@ -44,7 +51,7 @@ export class Notation {
       return leaderKey;
     }
 
-    if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {
+    if (['<up>', '<down>', '<left>', '<right>'].includes(key.toLocaleLowerCase())) {
       return key.toLocaleLowerCase();
     }
 

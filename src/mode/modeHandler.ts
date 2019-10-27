@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as modes from './modes';
 
 import { Actions, BaseAction, KeypressState } from './../actions/base';
-import { BaseMovement, isIMovement } from './../actions/motion';
+import { BaseMovement, isIMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
@@ -32,6 +32,8 @@ import {
   isTextTransformation,
   TextTransformations,
 } from './../transformations/transformations';
+import { globalState } from '../state/globalState';
+import { ReportSearch } from '../util/statusBarTextUtils';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -193,7 +195,7 @@ export class ModeHandler implements vscode.Disposable {
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
-        var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+        let selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
@@ -408,10 +410,14 @@ export class ModeHandler implements vscode.Disposable {
     await this.updateView(vimState);
 
     if (action.isJump) {
-      vimState.globalState.jumpTracker.recordJump(
+      globalState.jumpTracker.recordJump(
         Jump.fromStateBefore(vimState),
         Jump.fromStateNow(vimState)
       );
+    }
+
+    if (!this._remappers.isPotentialRemap && recordedState.isInsertion) {
+      vimState.recordedState.resetCommandList();
     }
 
     return vimState;
@@ -437,7 +443,7 @@ export class ModeHandler implements vscode.Disposable {
       if (prevPos !== undefined && !vimState.isRunningDotCommand) {
         if (vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
           vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
-          vimState.globalState.previousFullAction = recordedState;
+          globalState.previousFullAction = recordedState;
           vimState.historyTracker.finishCurrentStep();
         }
       }
@@ -545,7 +551,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
-      vimState.globalState.previousFullAction = vimState.recordedState;
+      globalState.previousFullAction = vimState.recordedState;
 
       if (recordedState.isInsertion) {
         Register.putByKey(recordedState, '.', undefined, true);
@@ -909,16 +915,31 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
 
+        case 'showSearchHistory':
+          const searchState = await globalState.showSearchHistory();
+          if (searchState) {
+            globalState.searchState = searchState;
+            const nextMatch = searchState.getNextSearchMatchPosition(
+              vimState.cursorStartPosition,
+              command.direction
+            );
+
+            vimState.cursorStopPosition = nextMatch.pos;
+            this.updateView(this.vimState);
+            ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+          }
+          break;
+
         case 'dot':
-          if (!vimState.globalState.previousFullAction) {
+          if (!globalState.previousFullAction) {
             return vimState; // TODO(bell)
           }
 
-          const clonedAction = vimState.globalState.previousFullAction.clone();
+          const clonedAction = globalState.previousFullAction.clone();
 
-          await this.rerunRecordedState(vimState, vimState.globalState.previousFullAction);
+          await this.rerunRecordedState(vimState, globalState.previousFullAction);
 
-          vimState.globalState.previousFullAction = clonedAction;
+          globalState.previousFullAction = clonedAction;
           break;
         case 'macro':
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
@@ -1148,7 +1169,7 @@ export class ModeHandler implements vscode.Disposable {
       await this.updateView(vimState);
 
       if (action.isJump) {
-        vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromStateNow(vimState));
+        globalState.jumpTracker.recordJump(originalLocation, Jump.fromStateNow(vimState));
       }
     }
 
@@ -1171,7 +1192,7 @@ export class ModeHandler implements vscode.Disposable {
 
       let selectionMode: ModeName = vimState.currentMode;
       if (vimState.currentMode === ModeName.SearchInProgressMode) {
-        selectionMode = vimState.globalState.searchState!.previousMode;
+        selectionMode = globalState.searchState!.previousMode;
       }
       if (vimState.currentMode === ModeName.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
@@ -1271,7 +1292,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Scroll to position of cursor
     if (this.vimState.currentMode === ModeName.SearchInProgressMode) {
-      const nextMatch = vimState.globalState.searchState!.getNextSearchMatchPosition(
+      const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
         vimState.cursorStopPosition
       ).pos;
 
@@ -1339,9 +1360,9 @@ export class ModeHandler implements vscode.Disposable {
     let searchRanges: vscode.Range[] = [];
     if (
       (configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
-      (configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)
+      (configuration.hlsearch && globalState.hl && globalState.searchState)
     ) {
-      const searchState = vimState.globalState.searchState!;
+      const searchState = globalState.searchState!;
 
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
@@ -1363,8 +1384,7 @@ export class ModeHandler implements vscode.Disposable {
         : [];
     this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
 
-    for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
-      let viewChange = this.vimState.postponedCodeViewChanges[i];
+    for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
       vimState.cursors = await getCursorsAfterSync();
     }
@@ -1378,6 +1398,14 @@ export class ModeHandler implements vscode.Disposable {
     this._renderStatusBar();
 
     await VsCodeContext.Set('vim.mode', ModeName[this.vimState.currentMode]);
+
+    // Tell VSCode that the cursor position changed, so it updates its highlights for
+    // `editor.occurrencesHighlight`.
+    const cursor = vimState.cursors[0];
+    const range = new vscode.Range(cursor.start, cursor.stop);
+    if (!/\s+/.test(vimState.editor.document.getText(range))) {
+      await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+    }
   }
 
   private async setCurrentMode(modeName: ModeName): Promise<void> {
