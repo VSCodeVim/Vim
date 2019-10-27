@@ -4,11 +4,11 @@ import * as os from 'os';
 import { HistoryFile } from '../../src/history/historyFile';
 import { assertEqual, setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
+import { Globals } from '../../src/globals';
 
 suite('HistoryFile', () => {
   let history: HistoryFile;
   let run_cmds: string[];
-  const tmpDir = os.tmpdir();
 
   const assertArrayEquals = (expected: any[], actual: any[]) => {
     assertEqual(expected.length, actual.length);
@@ -25,7 +25,8 @@ suite('HistoryFile', () => {
       run_cmds.push(i.toString());
     }
 
-    history = new HistoryFile(rndName(), tmpDir);
+    Globals.extensionStoragePath = os.tmpdir();
+    history = new HistoryFile(rndName());
     await history.load();
   });
 

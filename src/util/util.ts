@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import AppDirectory = require('appdirectory');
 import { Logger } from './logger';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
@@ -36,15 +35,6 @@ export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Pr
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
-}
-
-export function getExtensionDirPath(): string {
-  const logger = Logger.get('getExtensionDirPath');
-  const dirs = new AppDirectory('VSCodeVim');
-
-  logger.debug('VSCodeVim Cache Directory: ' + dirs.userCache());
-
-  return dirs.userCache();
 }
 
 /**
