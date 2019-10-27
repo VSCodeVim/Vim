@@ -3,12 +3,16 @@ import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Position } from '../common/motion/position';
-import { SearchState } from '../state/searchState';
 
 export function ReportClear(vimState: VimState) {
   StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
 }
 
+/**
+ * Shows the number of lines you just changed (with `dG`, for instance), if it
+ * crosses a configured threshold.
+ * @param numLinesChanged The number of lines changed
+ */
 export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) {
   if (numLinesChanged > configuration.report) {
     StatusBar.Set(
@@ -29,6 +33,10 @@ export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) 
   }
 }
 
+/**
+ * Shows the number of lines you just yanked, if it crosses a configured threshold.
+ * @param numLinesYanked The number of lines yanked
+ */
 export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
   if (numLinesYanked > configuration.report) {
     if (vimState.currentMode === ModeName.VisualBlock) {
@@ -53,7 +61,7 @@ export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
 
 /**
  * Shows the active file's path and line count as well as position in the file as a percentage.
- * Triggered via `ctrl-g` or `:file`.
+ * Triggered via `<C-g>` or `:f[ile]`.
  */
 export function ReportFileInfo(position: Position, vimState: VimState) {
   const doc = vimState.editor.document;

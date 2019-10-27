@@ -16,14 +16,14 @@ suite('Mode Handler', () => {
   teardown(cleanUpWorkspace);
 
   test('ctor', () => {
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
-    assert.equal(modeHandler.currentMode.isActive, true);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.isActive, true);
   });
 
   test('can set current mode', async () => {
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleKeyEvent('i');
-    assert.equal(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode.name, ModeName.Insert);
   });
 });

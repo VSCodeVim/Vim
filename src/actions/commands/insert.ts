@@ -43,7 +43,7 @@ class CommandEscInsertMode extends BaseCommand {
     for (let i = 0; i < vimState.cursors.length; i++) {
       const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
       if (
-        ['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
+        ['o', 'O', '\n'].includes(lastActionBeforeEsc) &&
         vimState.editor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {
@@ -79,8 +79,8 @@ class CommandEscInsertMode extends BaseCommand {
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-      for (let i = 0; i < changesArray.length; i++) {
-        docChanges.push(changesArray[i].textDiff);
+      for (const change of changesArray) {
+        docChanges.push(change.textDiff);
       }
 
       let positionDiff = new PositionDiff(0, 0);

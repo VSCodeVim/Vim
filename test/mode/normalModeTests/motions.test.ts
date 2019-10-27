@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -152,6 +152,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "'gg' obeys startofline",
+    start: ['   text', 'text', 'texttexttex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'texttexttext'],
+  });
+
+  newTest({
     title: 'Retain same column when moving up/down',
     start: ['text text', 'text', 'text tex|t'],
     keysPressed: 'kk',
@@ -222,6 +229,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 'f' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'fe,',
+    end: ['text t|ext'],
+  });
+
+  newTest({
     title: "Can handle 'F'",
     start: ['text tex|t'],
     keysPressed: '$Ft',
@@ -233,6 +247,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$FtFt',
     end: ['tex|t text'],
+  });
+
+  newTest({
+    title: "Can handle 'F' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Fx,',
+    end: ['te|xt text'],
   });
 
   newTest({
@@ -250,6 +271,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: "Can handle 't' and find back search",
+    start: ['text tex|t'],
+    keysPressed: 'te,',
+    end: ['text te|xt'],
+  });
+
+  newTest({
     title: "Can handle 'T'",
     start: ['text tex|t'],
     keysPressed: '$Tt',
@@ -261,6 +289,13 @@ suite('Motions in Normal Mode', () => {
     start: ['text tex|t'],
     keysPressed: '$TtTt',
     end: ['text t|ext'],
+  });
+
+  newTest({
+    title: "Can handle 'T' and find back search",
+    start: ['|text text'],
+    keysPressed: 'Tx,',
+    end: ['t|ext text'],
   });
 
   newTest({
@@ -468,9 +503,9 @@ suite('Motions in Normal Mode', () => {
 
   newTest({
     title: 'Can handle G ',
-    start: ['|one', 'two', 'three'],
+    start: ['|one', 'two', '  three'],
     keysPressed: 'G',
-    end: ['one', 'two', '|three'],
+    end: ['one', 'two', '  |three'],
   });
 
   newTest({
@@ -724,5 +759,33 @@ suite('Motions in Normal Mode', () => {
     start: ['blah', 'duh', '|dur', 'hur'],
     keysPressed: '<right>',
     end: ['blah', 'duh', 'd|ur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gk'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gk',
+    end: ['blah', '|duh', 'dur', 'hur'],
+  });
+
+  newTest({
+    title: "Can handle 'gj'",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: 'gj',
+    end: ['blah', 'duh', 'dur', '|hur'],
+  });
+
+  newTestSkip({
+    title: "Preserves cursor position when handling 'gk'",
+    start: ['blah', 'duh', 'a', 'hu|r '],
+    keysPressed: 'gkgk',
+    end: ['blah', 'du|h', 'a', 'hur '],
+  });
+
+  newTestSkip({
+    title: "Preserves cursor position when handling 'gj'",
+    start: ['blah', 'du|h', 'a', 'hur '],
+    keysPressed: 'gjgj',
+    end: ['blah', 'duh', 'a', 'hu|r '],
   });
 });

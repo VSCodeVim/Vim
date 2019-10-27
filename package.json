@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.10.2",
+  "version": "1.11.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.31.0"
+    "vscode": "^1.37.0"
   },
   "categories": [
     "Other",
@@ -86,6 +86,11 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
+        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "shift+tab",
+        "command": "extension.vim_shift+tab",
         "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
@@ -403,6 +408,10 @@
           "type": "string",
           "description": "Color of the search highlight."
         },
+        "vim.searchHighlightTextColor": {
+          "type": "string",
+          "description": "Color of the search highlight text."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
@@ -412,6 +421,10 @@
           "type": "string",
           "description": "Color of the yank highlight.",
           "default": "rgba(250, 240, 170, 0.5)"
+        },
+        "vim.highlightedyank.textColor": {
+          "type": "string",
+          "description": "Color of the yank highlight text."
         },
         "vim.highlightedyank.duration": {
           "type": "number",
@@ -459,9 +472,9 @@
         },
         "vim.scroll": {
           "type": "number",
-          "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands.",
-          "default": 20,
-          "minimum": 1
+          "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",
+          "default": 0,
+          "minimum": 0
         },
         "vim.showcmd": {
           "type": "boolean",
@@ -694,7 +707,7 @@
         "vim.neovimPath": {
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
-          "default": "nvim",
+          "default": "",
           "scope": "machine"
         },
         "vim.substituteGlobalFlag": {
@@ -826,6 +839,11 @@
           "type": "boolean",
           "description": "Searches wrap around the end of the file.",
           "default": true
+        },
+        "vim.startofline": {
+          "type": "boolean",
+          "markdownDescription": "When `true` the commands listed below move the cursor to the first non-blank of the line.  When `false` the cursor is kept in the same column (if possible).  This applies to the commands: `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<` and `>>` with a linewise operator.",
+          "default": true
         }
       }
     }
@@ -853,8 +871,8 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.7.4",
-    "@types/sinon": "7.0.13",
+    "@types/node": "12.11.7",
+    "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
@@ -863,14 +881,13 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.2.0",
+    "mocha": "6.2.2",
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
-    "sinon": "7.4.2",
-    "ts-loader": "6.0.4",
+    "sinon": "7.5.0",
+    "ts-loader": "6.2.1",
     "tslint": "5.20.0",
-    "typescript": "3.6.2",
-    "vscode": "1.1.36",
-    "webpack-stream": "5.2.1"
+    "typescript": "3.6.4",
+    "vscode": "1.1.36"
   }
 }

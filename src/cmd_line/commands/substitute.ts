@@ -240,7 +240,7 @@ export class SubstituteCommand extends node.CommandBase {
         prompt,
         placeHolder: validSelections.join('/'),
         validateInput: (input: string): string => {
-          if (validSelections.indexOf(input) >= 0) {
+          if (validSelections.includes(input)) {
             selection = input;
             cancellationToken.cancel();
           }

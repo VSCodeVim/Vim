@@ -137,10 +137,10 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                    | Type    | Default Value |
-| ---------------- | ------------------------------ | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable | String  |               |
+| Setting          | Description                                                                                                             | Type    | Default Value |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
+| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
+| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
@@ -502,12 +502,12 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
-| Motion Command            | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `s<char><char>`           | Move forward to the first occurence of `<char><char>`                  |
-| `S<char><char>`           | Move backward to the first occurence of `<char><char>`                 |
-| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurence of `<char><char>`  |
-| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurence of `<char><char>` |
+| Motion Command            | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `s<char><char>`           | Move forward to the first occurrence of `<char><char>`                  |
+| `S<char><char>`           | Move backward to the first occurrence of `<char><char>`                 |
+| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurrence of `<char><char>`  |
+| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurrence of `<char><char>` |
 
 ### CamelCaseMotion
 

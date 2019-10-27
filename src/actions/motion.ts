@@ -86,11 +86,43 @@ abstract class MoveByScreenLine extends BaseMovement {
   }
 }
 
+export class MoveUpByScreenLine extends MoveByScreenLine {
+  movementType: CursorMovePosition = 'up';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
+class MoveDownByScreenLine extends MoveByScreenLine {
+  movementType: CursorMovePosition = 'down';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   doesntChangeDesiredColumn = true;
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     let prevDesiredColumn = vimState.desiredColumn;
     let prevLine = vimState.editor.selection.active.line;
+
+    if (vimState.currentMode !== ModeName.Normal) {
+      /**
+       * As VIM and VSCode handle the end of selection index a little
+       * differently we need to sometimes move the cursor at the end
+       * of the selection back by a character.
+       */
+      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      if (
+        (this.movementType === 'down' && position.line > start.line) ||
+        (this.movementType === 'up' && position.line < prevLine)
+      ) {
+        await vscode.commands.executeCommand('cursorMove', {
+          to: 'left',
+          select: true,
+          by: 'character',
+          value: 1,
+        });
+      }
+    }
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
@@ -115,10 +147,15 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
       let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos)) {
-        position = start;
+      if (start.isEqual(curPos) && !start.isEqual(stop)) {
         [start, stop] = [stop, start];
-        start = start.getLeft();
+        if (prevLine !== start.line) {
+          start = start.getLeft();
+        }
+      }
+
+      if (position.line !== stop.line) {
+        stop = stop.withColumn(prevDesiredColumn);
       }
 
       return { start, stop };
@@ -128,6 +165,12 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
 
 class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'down';
+  by: CursorMoveByUnit = 'wrappedLine';
+  value = 1;
+}
+
+class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
@@ -189,12 +232,6 @@ class MoveDown extends BaseMovement {
 @RegisterAction
 class MoveDownArrow extends MoveDown {
   keys = ['<down>'];
-}
-
-class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
 }
 
 @RegisterAction
@@ -410,6 +447,18 @@ class BackSpaceInNormalMode extends BaseMovement {
 }
 
 @RegisterAction
+class BackSpaceInVisualMode extends BaseMovement {
+  modes = [ModeName.Visual, ModeName.VisualBlock];
+  keys = ['<BS>'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return configuration.whichwrap.includes('b')
+      ? position.getLeftThroughLineBreaks()
+      : position.getLeft();
+  }
+}
+
+@RegisterAction
 class MoveRight extends BaseMovement {
   keys = ['l'];
 
@@ -516,20 +565,15 @@ class MoveFindForward extends BaseMovement {
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findForwards(toFind, count);
 
+    vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+
     if (!result) {
       return { start: position, stop: position, failed: true };
     }
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
-    }
-
-    if (
-      !this.isRepeat &&
-      (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
-    ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
     }
 
     return result;
@@ -557,16 +601,11 @@ class MoveFindBackward extends BaseMovement {
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = position.findBackwards(toFind, count);
 
+    vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+
     if (!result) {
       return { start: position, stop: position, failed: true };
-    }
-
-    if (
-      !this.isRepeat &&
-      (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
-    ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
     }
 
     return result;
@@ -591,20 +630,15 @@ class MoveTilForward extends BaseMovement {
       result = position.tilForwards(toFind, 2);
     }
 
+    vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+
     if (!result) {
       return { start: position, stop: position, failed: true };
     }
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
-    }
-
-    if (
-      !this.isRepeat &&
-      (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
-    ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
     }
 
     return result;
@@ -629,16 +663,11 @@ class MoveTilBackward extends BaseMovement {
       result = position.tilBackwards(toFind, 2);
     }
 
+    vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+
     if (!result) {
       return { start: position, stop: position, failed: true };
-    }
-
-    if (
-      !this.isRepeat &&
-      (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
-    ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
     }
 
     return result;
@@ -760,7 +789,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByScreenLine extends MoveByScreenLine {
+export class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'k'], ['g', '<up>']];
   movementType: CursorMovePosition = 'up';
@@ -769,7 +798,7 @@ export class MoveUpByScreenLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLine {
+class MoveDownByDisplayLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [['g', 'j'], ['g', '<down>']];
   movementType: CursorMovePosition = 'down';
@@ -981,11 +1010,11 @@ class MoveNonBlankFirst extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentBegin().getFirstLineNonBlankChar();
+      return position.getDocumentBegin().obeyStartOfLine();
     } else if (count > TextEditor.getLineCount()) {
       count = TextEditor.getLineCount();
     }
-    return new Position(count - 1, 0).getFirstLineNonBlankChar();
+    return new Position(count - 1, 0).obeyStartOfLine();
   }
 }
 
@@ -1002,9 +1031,12 @@ class MoveNonBlankLast extends BaseMovement {
     let stop: Position;
 
     if (count === 0) {
-      stop = new Position(TextEditor.getLineCount() - 1, 0);
+      stop = new Position(TextEditor.getLineCount() - 1, position.character).obeyStartOfLine();
     } else {
-      stop = new Position(Math.min(count, TextEditor.getLineCount()) - 1, 0);
+      stop = new Position(
+        Math.min(count, TextEditor.getLineCount()) - 1,
+        position.character
+      ).obeyStartOfLine();
     }
 
     return {
@@ -1044,7 +1076,7 @@ export class MoveWordBegin extends BaseMovement {
       word does not include the following white space.
       */
 
-      if (' \t'.indexOf(char) >= 0) {
+      if (' \t'.includes(char)) {
         return position.getWordRight();
       } else {
         return position.getCurrentWordEnd(true).getRight();

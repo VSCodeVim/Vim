@@ -8,10 +8,10 @@ import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
@@ -22,9 +22,9 @@ suite('Mode Normal', () => {
   teardown(cleanUpWorkspace);
 
   test('Can be activated', async () => {
-    let activationKeys = ['<Esc>', '<C-[>'];
+    const activationKeys = ['<Esc>', '<C-[>'];
 
-    for (let key of activationKeys) {
+    for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 
@@ -186,9 +186,9 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'dj'",
-    start: ['|11', '22', '33', '44', '55', '66'],
+    start: ['|11', '22', '\t33', '44', '55', '66'],
     keysPressed: 'dj',
-    end: ['|33', '44', '55', '66'],
+    end: ['\t|33', '44', '55', '66'],
   });
 
   newTest({
@@ -1780,6 +1780,23 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  /**
+   * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
+   */
+  newTest({
+    title: 'Can search for forward slash',
+    start: ['|One/two/three/four'],
+    keysPressed: '/\\/\nn',
+    end: ['One/two|/three/four'],
+  });
+
+  newTest({
+    title: 'Can search backward for question mark',
+    start: ['|One?two?three?four'],
+    keysPressed: '?\\?\nn',
+    end: ['One?two|?three?four'],
+  });
+
   newTest({
     title: '/\\c forces case insensitive search',
     start: ['|__ASDF', 'asdf'],
@@ -2052,6 +2069,34 @@ suite('Mode Normal', () => {
     keysPressed: 'daI',
     end: ['|'],
     endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '`] go to the end of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`]',
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: "'] go to the end of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>']",
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: '`[ go to the start of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`[',
+    end: ['hello| world'],
+  });
+
+  newTest({
+    title: "'[ go to the start of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>'[",
+    end: ['hello| world'],
   });
 
   suite('can handle gn', () => {
@@ -2388,22 +2433,22 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can handle <C-u> when first line is visible and starting column is at the beginning',
-    start: ['hello world', 'hello', 'hi hello', '|foo'],
+    start: ['\t hello world', 'hello', 'hi hello', '|foo'],
     keysPressed: '<C-u>',
-    end: ['|hello world', 'hello', 'hi hello', 'foo'],
+    end: ['\t |hello world', 'hello', 'hi hello', 'foo'],
   });
 
   newTest({
     title: 'can handle <C-u> when first line is visible and starting column is at the end',
-    start: ['hello world', 'hello', 'hi hello', 'very long line at the bottom|'],
+    start: ['\t hello world', 'hello', 'hi hello', 'very long line at the bottom|'],
     keysPressed: '<C-u>',
-    end: ['|hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+    end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
   });
 
   newTest({
     title: 'can handle <C-u> when first line is visible and starting column is in the middle',
-    start: ['hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
+    start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
     keysPressed: '<C-u>',
-    end: ['|hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+    end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
   });
 });

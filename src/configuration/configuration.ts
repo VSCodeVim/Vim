@@ -19,7 +19,7 @@ const packagejson: {
   contributes: {
     keybindings: VSCodeKeybinding[];
   };
-} = require('../../package.json');
+} = require('../../../package.json');
 
 type OptionValue = number | string | boolean;
 
@@ -100,7 +100,7 @@ class Configuration implements IConfiguration {
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
-      if (keybinding.when.indexOf('listFocus') !== -1) {
+      if (keybinding.when.includes('listFocus')) {
         continue;
       }
 
@@ -243,10 +243,12 @@ class Configuration implements IConfiguration {
     defaultValue: 'rgba(150, 150, 255, 0.3)',
   })
   searchHighlightColor: string;
+  searchHighlightTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
+    textColor: '',
     duration: 200,
   };
 
@@ -299,7 +301,7 @@ class Configuration implements IConfiguration {
   disableExtension: boolean = false;
 
   enableNeovim = false;
-  neovimPath = 'nvim';
+  neovimPath = '';
 
   digraphs = {};
 
@@ -309,8 +311,17 @@ class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
 
+  startofline = true;
+
   report = 2;
   wrapscan = true;
+
+  scroll = 0;
+  getScrollLines(visibleRanges: vscode.Range[]): number {
+    return this.scroll === 0
+      ? Math.ceil((visibleRanges[0].end.line - visibleRanges[0].start.line) / 2)
+      : this.scroll;
+  }
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,

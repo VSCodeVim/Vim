@@ -5,9 +5,9 @@ export class NumericString {
   suffix: string;
 
   private static matchings: { regex: RegExp; base: number; prefix: string }[] = [
-    { regex: /^([-+])?0([0-7]+)$/g, base: 8, prefix: '0' },
-    { regex: /^([-+])?(\d+)$/g, base: 10, prefix: '' },
-    { regex: /^([-+])?0x([\da-fA-F]+)$/g, base: 16, prefix: '0x' },
+    { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: '0' },
+    { regex: /^([-+])?(\d+)$/, base: 10, prefix: '' },
+    { regex: /^([-+])?0x([\da-fA-F]+)$/, base: 16, prefix: '0x' },
     { regex: /\d/, base: 10, prefix: '' },
   ];
 

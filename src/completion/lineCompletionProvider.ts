@@ -84,7 +84,7 @@ const getCompletionsForText = (
 
     for (const line of linesWithoutIndentation(document, lineToStartScanFrom, scanAboveFirst)) {
       if (
-        matchedLines.indexOf(line.text) === -1 &&
+        !matchedLines.includes(line.text) &&
         line.text &&
         line.text.startsWith(text) &&
         line.text !== text

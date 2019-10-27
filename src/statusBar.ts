@@ -29,7 +29,7 @@ class StatusBarImpl implements vscode.Disposable {
       isRecordingMacro !== this._wasRecordingMacro ||
       configuration.showcmd;
 
-    // errors and other high-priorty messages remain displayed on the status bar
+    // Errors and other high-priority messages remain displayed on the status bar
     // until specific conditions are met (such as the mode has changed)
     if ((shouldUpdateText && !this._wasHighPriority) || isHighPriority) {
       this.UpdateText(text);
@@ -56,12 +56,12 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   public Get() {
-    let text = this._statusBarItem.text;
-    return text;
+    return this._statusBarItem.text.replace(/\^M/g, '\n');
   }
 
   private UpdateText(text: string) {
-    this._statusBarItem.text = text || '';
+    const escaped = text.replace(/\n/g, '^M');
+    this._statusBarItem.text = escaped || '';
   }
 
   private UpdateColor(mode: ModeName) {

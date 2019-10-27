@@ -6,6 +6,7 @@ import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
+import { StatusBar } from '../statusBar';
 
 interface IRemapper {
   /**
@@ -74,7 +75,7 @@ export class Remapper implements IRemapper {
   ): Promise<boolean> {
     this._isPotentialRemap = false;
 
-    if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
+    if (!this._remappedModes.includes(vimState.currentMode)) {
       return false;
     }
 
@@ -173,6 +174,13 @@ export class Remapper implements IRemapper {
         } else {
           await vscode.commands.executeCommand(commandString);
         }
+
+        StatusBar.Set(
+          commandString + ' ' + commandArgs,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true
+        );
       }
     }
   }

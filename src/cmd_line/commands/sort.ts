@@ -9,6 +9,7 @@ import * as token from '../token';
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
   ignoreCase: boolean;
+  unique: boolean;
 }
 
 export class SortCommand extends node.CommandBase {
@@ -29,7 +30,7 @@ export class SortCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     let mode = vimState.currentMode;
-    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(mode) >= 0) {
+    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(mode)) {
       const selection = vimState.editor.selection;
       let start = selection.start;
       let end = selection.end;
@@ -54,6 +55,9 @@ export class SortCommand extends node.CommandBase {
       currentLine++
     ) {
       originalLines.push(TextEditor.readLineAt(currentLine));
+    }
+    if (this._arguments.unique) {
+      originalLines = [...new Set(originalLines)];
     }
 
     let lastLineLength = originalLines[originalLines.length - 1].length;

@@ -11,7 +11,6 @@ import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
-import { IHighlightedYankConfiguration } from '../configuration/iconfiguration';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -31,7 +30,7 @@ export class BaseOperator extends BaseAction {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
       return true;
     }
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
@@ -51,7 +50,7 @@ export class BaseOperator extends BaseAction {
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
@@ -79,7 +78,7 @@ export class BaseOperator extends BaseAction {
       this.isOperator &&
       keysPressed.length === 1 &&
       prevAction &&
-      this.modes.indexOf(vimState.currentMode) !== -1 &&
+      this.modes.includes(vimState.currentMode) &&
       // The previous action is the same as the one we're testing
       prevAction.constructor === this.constructor &&
       // The key pressed is the same as the previous action's last key.
@@ -110,6 +109,7 @@ export class BaseOperator extends BaseAction {
 
     const yankDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: configuration.highlightedyank.color,
+      color: configuration.highlightedyank.textColor,
     });
 
     vimState.editor.setDecorations(yankDecoration, ranges);
@@ -198,8 +198,8 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.getLineBegin();
-      diff = PositionDiff.NewBOLDiff();
+      resultingPosition = resultingPosition.obeyStartOfLine();
+      diff = PositionDiff.NewBOLDiff(0, 0, true);
     }
 
     vimState.recordedState.transformations.push({
@@ -489,7 +489,7 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
   }
@@ -529,7 +529,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
   }
@@ -728,8 +728,7 @@ export class ToggleCaseOperator extends BaseOperator {
     const text = TextEditor.getText(range);
 
     let newText = '';
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
+    for (const char of text) {
       // Try lower-case
       let toggled = char.toLocaleLowerCase();
       if (toggled === char) {
