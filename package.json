@@ -51,6 +51,10 @@
         "title": "Vim: Toggle Vim Mode"
       },
       {
+        "command": "vim.vimTutor",
+        "title": "Vim: Open Vim tutor"
+      },
+      {
         "command": "vim.showQuickpickCmdLine",
         "title": "Vim: Show Command Line"
       },

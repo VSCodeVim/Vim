@@ -25,6 +25,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { readFileSync } from 'fs';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -405,6 +406,18 @@ export async function activate(context: vscode.ExtensionContext) {
   registerCommand(context, 'toggleVim', async () => {
     configuration.disableExtension = !configuration.disableExtension;
     toggleExtension(configuration.disableExtension, compositionState);
+  });
+
+  registerCommand(context, 'vim.vimTutor', async () => {
+    const textByLine = readFileSync('./src/static/vimtutor.txt').toString();
+    const setting: vscode.Uri = vscode.Uri.parse('untitled:' + 'vimtutor.txt');
+    vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
+      vscode.window.showTextDocument(a, 1, false).then(e => {
+        e.edit(edit => {
+          edit.insert(new vscode.Position(0, 0), textByLine);
+        });
+      });
+    });
   });
 
   registerCommand(context, 'vim.editVimrc', async () => {
