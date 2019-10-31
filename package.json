@@ -52,7 +52,7 @@
       },
       {
         "command": "vim.vimTutor",
-        "title": "Vim: Open Vim tutor"
+        "title": "Vim: Open Vim Tutor"
       },
       {
         "command": "vim.showQuickpickCmdLine",
