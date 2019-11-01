@@ -1,10 +1,10 @@
-## Style Guide
+## 스타일 가이드
 
-In addition, to VS Code's [coding guidelines](https://github.com/Microsoft/vscode/wiki/Coding-Guidelines), please adhere to the following:
+게다가, VS Code의 코딩 지침에 따라 다음을 준수하십시오:
 
-- Use `for ... of` whenever possible
+- 가능할 때마다 `for ... of` 를 이용하십시오.
 
-  **Rationale:** `for ... of` is awesome. It's more readable than any other variant.
+  **이론적 근거:** `for ... of` 는 대단합니다. 다른 variant보다 더 읽기 쉽습니다.
 
 - Don't use `any` as much as possible
 
@@ -28,4 +28,4 @@ In addition, to VS Code's [coding guidelines](https://github.com/Microsoft/vscod
   for (let j = 0; j < 5; j++) { setTimeout(() => console.log(j), 5) }
   ```
 
-  Even if you're not capturing the variable, who knows if someone else might later?
+  변수를 capturing 하지 않더라도 나중에 다른 사람이 있을지 누가 알겠습니까?
