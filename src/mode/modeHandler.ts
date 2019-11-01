@@ -416,6 +416,10 @@ export class ModeHandler implements vscode.Disposable {
       );
     }
 
+    if (!this._remappers.isPotentialRemap && recordedState.isInsertion) {
+      vimState.recordedState.resetCommandList();
+    }
+
     return vimState;
   }
 
@@ -1380,8 +1384,7 @@ export class ModeHandler implements vscode.Disposable {
         : [];
     this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
 
-    for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
-      let viewChange = this.vimState.postponedCodeViewChanges[i];
+    for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
       vimState.cursors = await getCursorsAfterSync();
     }

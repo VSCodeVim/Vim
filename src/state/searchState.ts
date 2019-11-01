@@ -18,6 +18,8 @@ export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   private static caseOverrideRegex: RegExp = /\\[Cc]/g;
+  private static notEscapedSlashRegex: RegExp = /(?<=[^\\])\//g;
+  private static notEscapedQuestionMarkRegex: RegExp = /(?<=[^\\])\?/g;
   public previousMode = ModeName.Normal;
 
   private _matchRanges: vscode.Range[] = [];
@@ -70,7 +72,9 @@ export class SearchState {
       this.offset = undefined;
 
       const needleSegments =
-        this.searchDirection === SearchDirection.Backward ? search.split('?') : search.split('/');
+        this.searchDirection === SearchDirection.Backward
+          ? search.split(SearchState.notEscapedQuestionMarkRegex)
+          : search.split(SearchState.notEscapedSlashRegex);
       if (needleSegments.length > 1) {
         this.needle = needleSegments[0];
         const num = Number(needleSegments[1]);

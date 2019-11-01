@@ -18,6 +18,7 @@ export enum Tab {
 export interface ITabCommandArguments extends node.ICommandArgs {
   tab: Tab;
   count?: number;
+  direction?: 'left' | 'right';
   file?: string;
 }
 
@@ -124,20 +125,21 @@ export class TabCommand extends node.CommandBase {
       case Tab.Only:
         await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
         break;
-      case Tab.Move:
-        if (this.arguments.count === 0) {
-          await vscode.commands.executeCommand('moveActiveEditor', { to: 'first' });
-        } else if (this.arguments.count === undefined) {
-          await vscode.commands.executeCommand('moveActiveEditor', { to: 'last' });
+      case Tab.Move: {
+        const { count, direction } = this.arguments;
+        let args;
+        if (direction !== undefined) {
+          args = { to: direction, by: 'tab', value: count };
+        } else if (count === 0) {
+          args = { to: 'first' };
+        } else if (count === undefined) {
+          args = { to: 'last' };
         } else {
-          await vscode.commands.executeCommand('moveActiveEditor', {
-            to: 'position',
-            by: 'tab',
-            value: this.arguments.count + 1,
-          });
+          args = { to: 'position', by: 'tab', value: count + 1 };
         }
+        await vscode.commands.executeCommand('moveActiveEditor', args);
         break;
-
+      }
       default:
         break;
     }

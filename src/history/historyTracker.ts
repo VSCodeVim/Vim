@@ -667,11 +667,18 @@ export class HistoryTracker {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
+
     const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
     if (lastChangeIndex === 0) {
       return undefined;
     }
-    return this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1].end();
+
+    const lastChange = this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1];
+    if (lastChange.isAdd) {
+      return lastChange.end();
+    }
+
+    return lastChange.start;
   }
 
   getLastHistoryStartPosition(): Position[] | undefined {
@@ -680,6 +687,19 @@ export class HistoryTracker {
     }
 
     return this.historySteps[this.currentHistoryStepIndex].cursorStart;
+  }
+
+  getLastChangeStartPosition(): Position | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
+    if (lastChangeIndex === 0) {
+      return undefined;
+    }
+
+    return this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1].start;
   }
 
   setLastHistoryEndPosition(pos: Position[]) {
