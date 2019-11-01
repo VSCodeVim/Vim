@@ -6,23 +6,24 @@
 
   **이론적 근거:** `for ... of` 는 대단합니다. 다른 variant보다 더 읽기 쉽습니다.
 
-- Don't use `any` as much as possible
+- `any`를 가능한 많이 사용하지 마십시오.
 
-  **Rationale:** The language is called *Type*Script, not *Untyped*Script. :wink: Static typing is wonderful. It catches bugs and improves readability. We should strive to use it as much as possible.
+  **이론적 근거:** 이 언어는*Untyped*Script가 아니라 *Type*Script라고 합니다. :wink: Static typing은 훌륭합니다. 버그를 포착하고 가독성을 향상 시킵니다. 우리는 최대한 많이 사용하도록 노력해야합니다.
 
-- Use `const` wherever possible.
+- 가능하면 `const` 를 사용하십시오.
 
-  **Rationale:** Instead of reading `const` as "constant value," read it as "single assignment." Yes, it means "constant value" in other programming languages, but it's a little different in JavaScript.
+  **이론적 근거:** `const`를 "constant value,"로 읽는대신 "single assignment."으로 읽습니다. 다른 프로그래밍 언어에서는 “constant value”을 의미하지만, JavaScript에서는 약간 다릅니다.
 
-- When we can't use `const`, use `let`; never `var`
+- `const`를 사용할 수 없다면, `let`을 사용하십시오; 절대 `var`은 안됩니다.
 
-  **Rationale:** `var` trips up programmers in a number of cases - hoisting and closure capture are two big ones. Consider the difference between
+  **이론적 근거:** `var`은 많은 경우 프로그래머를 trips합니다 - hoisting and closure capture는 두 가지 큰 요소입니다.
+차이점을 고려하십시오.
 
   ```
   for (var j = 0; j < 5; j++) { setTimeout(() => console.log(j), 5) }
   ```
 
-  and
+  그리고
 
   ```
   for (let j = 0; j < 5; j++) { setTimeout(() => console.log(j), 5) }
