@@ -1,22 +1,22 @@
-## Key
+## 키
 
-:white_check_mark: - command done
+:white_check_mark: - 명령완료
 
-:white_check_mark: :star: - command done with VS Code specific customization
+:white_check_mark: :star: - VSCode 특정사용자 정의로 수행되는 명령완료
 
-:warning: - some variations of the command are not supported
+:warning: - 명령의 일부 변형은 지원되지 않는다.
 
-:running: - work in progress
+:running: - 진행중인 작업
 
-:arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
+:arrow_down: - 명령은 우선순위가 낮습니다. 만약 당신이 더 빨리 보고싶다면 이슈를 여십시오(또는 엄지손가락을 올리십시오)
 
-:x: - command impossible with current VSCode API
+:x: - 현재 VSCode API로는 불가능한 명령어
 
-:1234: - command accepts numeric prefix
+:1234: - 명령은 숫자 접두사를 허용합니다.
 
-## Roadmap
+## 로드맵
 
-These are the big Vim features, put generally in the order in which we plan to implement them.
+이들은 Vim의 큰 기능으로, 일반적으로 구현할 순서대로되어 있습니다.
 
 | Status             | Command                |
 | ------------------ | ---------------------- |
@@ -37,16 +37,16 @@ These are the big Vim features, put generally in the order in which we plan to i
 | :warning:          | Macros                 |
 | :warning:          | Buffer/Window/Tab      |
 
-Now follows an exhaustive list of every known Vim command that we could find.
+이제 우리가 찾을 수있는 모든 알려진 Vim 명령의 전체 목록을 따릅니다.
 
-## Custom commands
+## 사용자 명령어
 
 - `gh` - show the hover tooltip.
 - `gb` - add an additional cursor at the next place that matches `*`.
 
-## Left-right motions
+## 좌-우 동작
 
-| Status             | Command        | Description                                                                    |
+| Status             | Command        | 설명                                                                            
 | ------------------ | -------------- | ------------------------------------------------------------------------------ |
 | :white_check_mark: | :1234: h       | left (also: CTRL-H, BS, or Left key)                                           |
 | :white_check_mark: | :1234: l       | right (also: Space or Right key)                                               |
