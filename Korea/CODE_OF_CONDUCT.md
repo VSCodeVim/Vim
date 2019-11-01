@@ -1,11 +1,16 @@
-# Code of Conduct
+# 행동 강령
 
-## Our Standards
+## 우리의 표준
 
-Be nice. Please. Everybody contributing to open source contributes out of good will in their own free time.
+모두에게 예를 갖추고 대하세요. 오픈소스에 기여하는 모든이가 선의를 가지고 시간을 내여 기여하고 있습니다.
 
-## Our Responsibilities
+## 우리의 책임
 
-Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
+프로젝트 매니저(Project Maintainer)는 다음과 같은 권리와 책임을 가지고 있습니다.
+ 기여활동에 대해 삭제/편집 혹은 코멘트,커밋,코드작성,위키수정,이슈보고, 그리고 기타 규율을 지키지 않는 기여활동에 대해
+또한 임시/영구적으로 부적절한 행동을하고, 공격적으로 타인을 대하거나, 해로운 짓을 하는 사람을 추방(ban)할 수 있습니다.
 
-Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
+프로젝트 매니저는 다음 사항에 대한 수행 권리와 책임을 가지고 있습니다.
+기여에 대한 삭제 및 편집 권한
+거절 권한: 코멘트, 커밋, 코드작성, 위키수정, 이슈보고, 기타 규율을 벗어나는 사항
+영구/임시적인 추방: 부적절한 행동을 하거나, 위협적인 태도로 타인에게 해를 끼치는 것으로 간주되는 경우.
