@@ -1,117 +1,116 @@
-# Contribution Guide
+# 기여 가이드
 
-This document offers a set of guidelines for contributing to VSCodeVim.
-These are just guidelines, not rules; use your best judgment and feel free to propose changes to this document.
-If you need help, drop by on [Slack](https://vscodevim.herokuapp.com/).
+이 문서는 VSCodeVim에 기여하기위한 지침을 제공합니다. 이 기여 가이드는 규칙이 아니라 지침 일뿐입니다. 최선다해서 판단을하고 자유롭게이 문서의 변경을 제안하십시오. 도움이 필요하면 [슬랙](https://vscodevim.herokuapp.com/)에 들르십시오.
 
-Thanks for helping us in making VSCodeVim better! :clap:
+VSCodeVim을 개선하는 데 도움을 주셔서 감사합니다! :clap:
 
-## Submitting Issues
+## 이슈 제출
 
-The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the preferred channel for tracking bugs and enhancement suggestions.
-When creating a new bug report do:
+[GitHub 이슈 트래커](https://github.com/VSCodeVim/Vim/issues)는 버그 및 개선 제안 추적에 선호되는 채널입니다. 
+새로운 버그 리포트를 생성 할 때 :
 
-- Search against existing issues to check if somebody else has already reported your problem or requested your idea
-- Fill out the issue template.
+- 다른 사람이 이미 문제를보고했거나 아이디어를 요청했는지 확인하려면 기존 문제를 검색하십시오.
+- 이슈 템플릿을 작성하십시오.
 
-## Submitting Pull Requests
+## Pull 요청 제출
 
-Pull requests are _awesome_.
-If you're looking to raise a PR for something which doesn't have an open issue, consider creating an issue first.
+풀 요청은 훌륭합니다. 공개 된 이슈가없는 것에 대해 PR을 제기하려면 먼저 이슈를 생성하는 것을 고려하십시오.
 
-When submitting a PR, please fill out the template that is presented by GitHub when a PR is opened.
+PR을 제출할 때 PR이 열릴 때 GitHub에서 제공하는 템플릿을 작성하십시오.
 
-## First Time Setup
+PR을 제출할 때 PR이 열릴 때 GitHub에서 제공하는 템플릿을 작성하십시오.
 
-1.  Install prerequisites:
-    - latest [Visual Studio Code](https://code.visualstudio.com/)
-    - [Node.js](https://nodejs.org/) v8.0.0 or higher
-    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
-1.  In a terminal:
+## 최초 설정
+
+1.  전제 조건 설치 :
+    - 최신 [Visual Studio code](https://code.visualstudio.com/)
+    - [Node.js](https://nodejs.org/) v8.0.0 이상
+    - 선택 사항 : [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
+1.  터미널에서 :
 
     ```bash
-    # fork and clone the repository
+    # 저장소를 포크하고 복제
     git clone git@github.com:<YOUR-FORK>/Vim.git
     cd Vim
 
-    # Install the dependencies
+    # 종속성을 설치
     npm install -g gulp-cli
     npm install
 
-    # Open in VSCode
+    # VSCode에서 열기
     code .
 
-    # Choose the "Build, Run Extension" in the dropdown of VSCode's
-    # debug tab to build and run the extension.
-    # Or run tests by selecting the appropriate drop down option
+    # VSCode 드롭 다운에서 "Build, Run Extension"을 선택하십시오.
+    # 디버그 탭에서 확장을 빌드하고 실행합니다.
+    # 또는 적절한 드롭 다운 옵션을 선택하여 테스트를 실행하십시오.
 
-    # Alternatively, build and run tests through gulp and npm scripts
-    gulp build                  # build
-    npm test                    # test (must close all instances of VSCode)
+    # 또는 gulp 및 npm 스크립트를 통해 테스트를 빌드하고 실행하십시오.
+    gulp build                  # 빌드
+    npm test                    # test (VSCode의 모든 인스턴스를 닫아야 함)
 
-    # Only available if Docker is installed and running
-    gulp test                   # run tests inside Docker container
-    gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+    # Docker가 설치되어 실행중인 경우에만 사용 가능
+    gulp test                   # Docker 컨테이너 내에서 테스트 실행
+    gulp test --grep testSuite  # 컨테이너 내부의 JS 정규식으로 필터링 된 테스트 / 스위트 만 실행
     ```
 
-## Code Architecture
+## 코드 구조
 
-The code is split into two parts:
+코드는 두 부분으로 나뉩니다:
 
-- ModeHandler - Vim state machine
-- Actions - 'actions' which modify the state
+- ModeHandler-Vim 상태 머신
+- 동작-상태를 수정하는 '동작'
 
-### Actions
+### 행위
 
-Actions are all currently stuffed into actions.ts (sorry!). There are:
+액션은 현재 actions.ts에 채워져 있습니다 (죄송합니다). 다음과 같이 제공합니다. :
 
-- `BaseAction` - the base Action type that all Actions derive from.
-- `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) _ONLY_ updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
-- `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
+- `BaseAction`-모든 액션에서 파생 된 기본 액션 유형입니다.
+- `BaseMovement`-이동 (예 : `w`, `h`, `{`등)은 커서 위치 만 업데이트하거나 시작 및 중지를 나타내는 `IMovement`를 반환합니다. 이것은 커서 이전에 실제로 시작될 수있는 `aw`와 같은 움직임에 사용됩니다.
+- `BaseCommand`-단순한 움직임이 아닌 것은 Command입니다. 여기에는 `*`와 같은 방식으로 Vim의 상태를 업데이트하는 동작이 포함됩니다.
 
-At one point, I wanted to have actions.ts be completely pure (no side effects whatsoever), so commands would just return objects indicating what side effects on the editor they would have. This explains the giant switch in handleCommand in ModeHandler. I now believe this to be a dumb idea and someone should get rid of it.
+어느 시점에서 나는 action.ts가 완전히 순수하고 (부작용이 전혀 없음) 명령을 원했기 때문에 명령은 편집기에서 부작용을 나타내는 객체를 반환합니다. 이것은 ModeHandler에서 handleCommand의 거대한 스위치를 설명합니다. 나는 이것이 멍청한 생각이라고 생각하며 누군가 그것을 제거해야합니다.
 
-### The Vim State Machine
+### Vim 상태 머신
 
-Consists of two data structures:
+두 가지 데이터 구조로 구성됩니다:
 
-- `VimState` - this is the state of Vim. It's what actions update.
-- `RecordedState` - this is temporary state that will reset at the end of a change.
+- `VimState`-이것은 Vim의 상태입니다. 행동이 업데이트되는 것입니다.
+- `RecordedState`-변경이 끝날 때 재설정되는 임시 상태입니다.
 
-#### How it works
+#### 작동 원리
 
-1.  `handleKeyEventHelper` is called with the most recent keypress.
-2.  `Actions.getRelevantAction` determines if all the keys pressed so far uniquely specify any action in actions.ts. If not, we continue waiting for keypresses.
-3.  `runAction` runs the action that was matched. Movements, Commands and Operators all have separate functions that dictate how to run them - `executeMovement`, `handleCommand`, and `executeOperator` respectively.
-4.  Now that we've updated VimState, we run `updateView` with the new VimState to "redraw" VSCode to the new state.
+1. `handleKeyEventHelper`는 가장 최근의 키 누름으로 호출됩니다.
+2. `Actions.getRelevantAction`은 지금까지 누른 모든 키가 action.ts에서 동작을 고유하게 지정하는지 여부를 결정합니다. 그렇지 않은 경우 계속해서 키 누르기를 기다립니다.
+3. `runAction`은 일치 된 조치를 실행합니다. 이동, 명령 및 연산자에는 모두 실행 방법을 지정하는 별도의 기능 (`executionMovement`, `handleCommand` 및 `executeOperator`)이 있습니다.
+4. 이제 VimState를 업데이트 했으므로 새로운 VimState와 함께 `updateView`를 실행하여 VSCode를 새 상태로 "다시 그리기"합니다.
 
 #### vscode.window.onDidChangeTextEditorSelection
 
-This is my hack to simulate a click event based API in an IDE that doesn't have them (yet?). I check the selection that just came in to see if it's the same as what I thought I previously set the selection to the last time the state machine updated. If it's not, the user _probably_ clicked. (But she also could have tab completed!)
+이것은 클릭 이벤트 기반 API가없는 IDE에서 클릭 이벤트를 시뮬레이트하는 나의 핵입니다 (아직?). 방금 들어온 선택 항목을 확인하여 이전에 상태 시스템을 마지막으로 업데이트했을 때 선택 항목을 설정했다고 생각한 것과 같은지 확인합니다. 그렇지 않은 경우 사용자가 클릭했을 수 있습니다. (그러나 아마도 또한  탭을 완성 할 수도있었습니다!)
 
-## Release
+## 배포
 
-To push a release:
+릴리즈를 푸시하려면:
 
 ```bash
 gulp release --semver [SEMVER] --gitHubToken [TOKEN]
 git push --follow-tags
 ```
 
-The above Gulp command will:
+위의 Gulp 명령은 다음과 같습니다:
 
-1.  Bump the package version based off the semver supplied. Supported values: patch, minor, major.
-2.  Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
-3.  Create a Git commit with the above changes.
-4.  Create a Git tag using the new package version.
+1. 제공된 semver를 기반으로 패키지 버전을 범프하십시오. 지원되는 값 : patch, minor, major.
+2. [github-changelog-generato](https://github.com/github-changelog-generator/github-changelog-generator)를 사용하여 변경 로그를 작성하십시오.
+3. 위의 변경 사항으로 Git 커밋을 만듭니다.
+4. 새 패키지 버전을 사용하여 Git 태그를 작성하십시오.
 
-In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
+확장을 빌드하고 테스트하는 것 외에도, 커밋에 태그가 적용되면 CI 서버는 GitHub 릴리스를 생성하고 새 버전을 Visual Studio 마켓 플레이스에 게시합니다.
 
-## Troubleshooting
+## 문제 해결
 
-### Visual Studio Code Slowdown
+### Visual Studio 코드 속도 저하
 
-If you notice a slowdown and have ever run `npm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
+VSCode를 통해 테스트를 실행하는 대신 속도 저하가 발생하고 과거에 `npm 테스트`를 실행 한 경우 VSCode가 지속적으로 색인을 생성하기 위해 CPU 사이클을 소비하는 `.vscode-test/` 폴더를 찾을 수 있습니다. 간단히 말해 VSCode의 속도를 높일 수 있습니다:
 
 ```bash
 $ rm -rf .vscode-test/
@@ -119,4 +118,4 @@ $ rm -rf .vscode-test/
 
 ## Styleguide
 
-Please try your best to adhere to our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
+[스타일 가이드 라인](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md)을 준수하기 위해 최선을 다하십시오.
