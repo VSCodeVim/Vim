@@ -12,7 +12,7 @@ suite('VimrcKeyRemappingBuilder', () => {
           after: ['<', '<'],
         },
         keyRemappingType: 'nnoremap',
-        expectNull: false
+        expectNull: false,
       },
       {
         vimrcLine: 'imap jj <Esc>',
@@ -21,7 +21,7 @@ suite('VimrcKeyRemappingBuilder', () => {
           after: ['<Esc>'],
         },
         keyRemappingType: 'imap',
-        expectNull: false
+        expectNull: false,
       },
       {
         vimrcLine: 'vnoremap <leader>" c""<Esc>P',
@@ -30,7 +30,7 @@ suite('VimrcKeyRemappingBuilder', () => {
           after: ['c', '"', '"', '<Esc>', 'P'],
         },
         keyRemappingType: 'vnoremap',
-        expectNull: false
+        expectNull: false,
       },
       {
         // Mapping with a command
@@ -40,24 +40,25 @@ suite('VimrcKeyRemappingBuilder', () => {
           commands: [':w'],
         },
         keyRemappingType: 'nnoremap',
-        expectNull: false
+        expectNull: false,
       },
       {
         // Ignore non-mapping lines
         vimrcLine: 'set scrolloff=8',
-        expectNull: true
+        expectNull: true,
       },
     ];
 
     for (const testCase of testCases) {
-      let vimrcKeyRemapping: IVimrcKeyRemapping | null =
-        vimrcKeyRemappingBuilder.build(testCase.vimrcLine);
+      const vimrcKeyRemapping: IVimrcKeyRemapping | undefined = vimrcKeyRemappingBuilder.build(
+        testCase.vimrcLine
+      );
 
       if (testCase.expectNull) {
-        assert.equal(vimrcKeyRemapping, null);
+        assert.strictEqual(vimrcKeyRemapping, undefined);
       } else {
-        assert.deepEqual(vimrcKeyRemapping!.keyRemapping, testCase.keyRemapping);
-        assert.equal(vimrcKeyRemapping!.keyRemappingType, testCase.keyRemappingType);
+        assert.deepStrictEqual(vimrcKeyRemapping!.keyRemapping, testCase.keyRemapping);
+        assert.strictEqual(vimrcKeyRemapping!.keyRemappingType, testCase.keyRemappingType);
       }
     }
   });

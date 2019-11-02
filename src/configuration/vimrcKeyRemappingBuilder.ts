@@ -5,10 +5,10 @@ class VimrcKeyRemappingBuilderImpl {
   private static readonly KEY_LIST_REG_EX = /(<[^>]+>|.)/g;
   private static readonly COMMAND_REG_EX = /(:\w+)/;
 
-  public build(line: string): IVimrcKeyRemapping | null {
+  public build(line: string): IVimrcKeyRemapping | undefined {
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
-      return null;
+      return undefined;
     }
 
     const type = matches[1];

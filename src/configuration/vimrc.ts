@@ -22,18 +22,19 @@ class VimrcImpl {
     let lines = vimrcContent.split(/\r?\n/);
 
     for (const line of lines) {
-      VimrcImpl.addKeyRemapping(configuration, line);
+      const remap: IVimrcKeyRemapping | undefined = vimrcKeyRemappingBuilder.build(line);
+      if (remap) {
+        VimrcImpl.addRemapToConfig(configuration, remap);
+      }
     }
   }
 
-  private static addKeyRemapping(configuration: IConfiguration, line: string): void {
-    let mapping: IVimrcKeyRemapping | null = vimrcKeyRemappingBuilder.build(line);
-    if (!mapping) {
-      return;
-    }
-
+  /**
+   * Adds a remapping from .vimrc to the given configuration
+   */
+  private static addRemapToConfig(configuration: IConfiguration, remap: IVimrcKeyRemapping): void {
     let collection: IKeyRemapping[];
-    switch (mapping.keyRemappingType) {
+    switch (remap.keyRemappingType) {
       case 'nmap':
         collection = configuration.normalModeKeyBindings;
         break;
@@ -57,8 +58,8 @@ class VimrcImpl {
     }
 
     // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-    if (!collection.some(r => _.isEqual(r.before, mapping!.keyRemapping.before))) {
-      collection.push(mapping.keyRemapping);
+    if (!collection.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
+      collection.push(remap.keyRemapping);
     }
   }
 
