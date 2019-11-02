@@ -2,24 +2,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
-import { getExtensionDirPath } from '../util/util';
 import { promisify } from 'util';
-
-const mkdirp = require('mkdirp');
+import { Globals } from './../globals';
 
 export class HistoryFile {
   private readonly _logger = Logger.get('HistoryFile');
   private _historyFileName: string;
-  private _historyDir: string;
   private _history: string[] = [];
 
   public get historyFilePath(): string {
-    return path.join(this._historyDir, this._historyFileName);
+    return path.join(Globals.extensionStoragePath, this._historyFileName);
   }
 
-  constructor(historyFileName: string, historyDir?: string) {
+  constructor(historyFileName: string) {
     this._historyFileName = historyFileName;
-    this._historyDir = historyDir ? historyDir : getExtensionDirPath();
   }
 
   public async add(value: string | undefined): Promise<void> {
@@ -69,9 +65,9 @@ export class HistoryFile {
       data = await promisify(fs.readFile)(this.historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        this._logger.debug(`History does not exist. path=${this._historyDir}`);
+        this._logger.debug(`History does not exist. path=${this.historyFilePath}`);
       } else {
-        this._logger.warn(`Failed to load history. path=${this._historyDir} err=${err}.`);
+        this._logger.warn(`Failed to load history. path=${this.historyFilePath} err=${err}.`);
       }
       return;
     }
@@ -87,15 +83,22 @@ export class HistoryFile {
       }
       this._history = parsedData;
     } catch (e) {
-      this._logger.warn(`Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
+      this._logger.warn(`Deleting corrupted history file. path=${this.historyFilePath} err=${e}.`);
       this.clear();
     }
   }
 
   private async save(): Promise<void> {
     try {
-      // create supplied directory. if directory already exists, do nothing.
-      await promisify(mkdirp)(this._historyDir, 0o775);
+      // create supplied directory. if directory already exists, do nothing and move on
+      try {
+        await promisify(fs.mkdir)(Globals.extensionStoragePath, { recursive: true });
+      } catch (createDirectoryErr) {
+        if (createDirectoryErr.code !== 'EEXIST') {
+          throw createDirectoryErr;
+        }
+      }
+
       // create file
       await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
     } catch (err) {
@@ -106,13 +109,13 @@ export class HistoryFile {
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor(historyFileDir?: string) {
-    super('.search_history', historyFileDir);
+  constructor() {
+    super('.search_history');
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor(historyFileDir?: string) {
-    super('.cmdline_history', historyFileDir);
+  constructor() {
+    super('.cmdline_history');
   }
 }

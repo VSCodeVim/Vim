@@ -98,6 +98,9 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+  // Set the storage path to be used by history files
+  Globals.extensionStoragePath = context.globalStoragePath;
+
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);

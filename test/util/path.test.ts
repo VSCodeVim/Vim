@@ -96,15 +96,15 @@ suite('util path', () => {
     test('posix', () => {
       let testUri = vscode.Uri.file('/test/path');
       let resultUri = resolveUri('C:\\', path.posix.sep, testUri, false);
-      assert.equal(resultUri, null, 'Failed to return null when it is not posix path');
+      assert.strictEqual(resultUri, null, 'Failed to return null when it is not posix path');
 
       testUri = vscode.Uri.file('/test/path');
       resultUri = resolveUri('/abc/123', path.posix.sep, testUri, false);
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'file');
-        assert.equal(resultUri.path, '/abc/123');
+        assert.strictEqual(resultUri.scheme, 'file');
+        assert.strictEqual(resultUri.path, '/abc/123');
       }
 
       // Convert Uri to local fs Uri if Uri is local untitled
@@ -113,8 +113,8 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'file');
-        assert.equal(resultUri.path, '/abc/123');
+        assert.strictEqual(resultUri.scheme, 'file');
+        assert.strictEqual(resultUri.path, '/abc/123');
       }
 
       testUri = testUri.with({ scheme: 'vscode-remote' });
@@ -123,22 +123,22 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'vscode-remote');
-        assert.equal(resultUri.path, '/abc/123');
+        assert.strictEqual(resultUri.scheme, 'vscode-remote');
+        assert.strictEqual(resultUri.path, '/abc/123');
       }
     });
     test('win32', () => {
       let testUri = vscode.Uri.file('C:\\123');
       let resultUri = resolveUri('/', path.win32.sep, testUri, false);
-      assert.equal(resultUri, null, 'Failed to return null when it is not win32 path');
+      assert.strictEqual(resultUri, null, 'Failed to return null when it is not win32 path');
 
       testUri = vscode.Uri.file('C:\\test');
       resultUri = resolveUri('C:\\123\\abc', path.win32.sep, testUri, false);
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'file');
-        assert.equal(resultUri.fsPath, `c:\\123\\abc`);
+        assert.strictEqual(resultUri.scheme, 'file');
+        assert.strictEqual(resultUri.fsPath, `c:\\123\\abc`);
       }
 
       // Even if remote is true, we can only return local file scheme
@@ -146,9 +146,8 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        const sep = path.sep;
-        assert.equal(resultUri.scheme, 'file');
-        assert.equal(resultUri.fsPath, `c:\\123\\abc`);
+        assert.strictEqual(resultUri.scheme, 'file');
+        assert.strictEqual(resultUri.fsPath, `c:\\123\\abc`);
       }
 
       // Convert Uri to local fs Uri if Uri is local untitled
@@ -157,8 +156,8 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'file');
-        assert.equal(resultUri.path, '/abc/123');
+        assert.strictEqual(resultUri.scheme, 'file');
+        assert.strictEqual(resultUri.path, '/abc/123');
       }
 
       testUri = testUri.with({ scheme: 'vscode-remote' });
@@ -167,8 +166,8 @@ suite('util path', () => {
       if (resultUri === null) {
         assert.fail("null shouldn't be returned.");
       } else {
-        assert.equal(resultUri.scheme, 'vscode-remote');
-        assert.equal(resultUri.path, '/abc/123');
+        assert.strictEqual(resultUri.scheme, 'vscode-remote');
+        assert.strictEqual(resultUri.path, '/abc/123');
       }
     });
   });

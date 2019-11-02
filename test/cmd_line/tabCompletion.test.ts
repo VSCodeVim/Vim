@@ -24,7 +24,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.Get();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.equal(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
+    assert.strictEqual(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
   });
 
   test('command line command shift+tab', async () => {
@@ -39,7 +39,7 @@ suite('cmd_line tabComplete', () => {
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(firstTab, secondTab);
-    assert.equal(actual, firstTab, "Command can't go back with shift+tab");
+    assert.strictEqual(actual, firstTab, "Command can't go back with shift+tab");
   });
 
   test('command line file tab completion with no base path', async () => {
@@ -104,9 +104,13 @@ suite('cmd_line tabComplete', () => {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
       await modeHandler.handleMultipleKeyEvents(baseCmd);
       await modeHandler.handleKeyEvent('<tab>');
-      let statusBarAfterTab = StatusBar.Get().trim();
+      const statusBarAfterTab = StatusBar.Get().trim();
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.equal(statusBarAfterTab, `:e ${dirPath}${sep}|`, 'Cannot complete with / at the end');
+      assert.strictEqual(
+        statusBarAfterTab,
+        `:e ${dirPath}${sep}|`,
+        'Cannot complete with / at the end'
+      );
     } finally {
       await t.removeDir(dirPath);
     }
@@ -128,13 +132,13 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<tab>');
       let statusBarAfterTab = StatusBar.Get().trim();
       let expectedPath = `${tmpDir}${sep}inner0${sep}`;
-      assert.equal(statusBarAfterTab, `:e ${expectedPath}|`, '123');
+      assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // Tab to cycle the completion of tempDir
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}`;
-      assert.equal(statusBarAfterTab, `:e ${expectedPath}|`, '123');
+      assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // <right> and <tab> to select and complete the content in
       // the inner1 directory
@@ -143,20 +147,20 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleMultipleKeyEvents(['<right>', '<tab>']);
       statusBarAfterTab = StatusBar.Get().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}`;
-      assert.equal(statusBarAfterTab, `:e ${expectedPath}|`, '123');
+      assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // A tab would try to complete the content in the inner10.
       // Since the pervious completion is complete, no <right> is needed to select
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}inner100${sep}`;
-      assert.equal(statusBarAfterTab, `:e ${expectedPath}|`, '123');
+      assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // Since there isn't any files or directories in inner100, no completion.
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}inner100${sep}`;
-      assert.equal(statusBarAfterTab, `:e ${expectedPath}|`, '123');
+      assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
@@ -172,15 +176,19 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
     let statusBarAfterTab = StatusBar.Get().trim();
-    assert.equal(statusBarAfterTab, ':edit|', 'Command Tab Completion Failed');
+    assert.strictEqual(statusBarAfterTab, ':edit|', 'Command Tab Completion Failed');
 
     await modeHandler.handleMultipleKeyEvents(['<left>', '<left>']);
     statusBarAfterTab = StatusBar.Get().trim();
-    assert.equal(statusBarAfterTab, ':ed|it', 'Failed to move the cursor to the left');
+    assert.strictEqual(statusBarAfterTab, ':ed|it', 'Failed to move the cursor to the left');
 
     await modeHandler.handleKeyEvent('<tab>');
     statusBarAfterTab = StatusBar.Get().trim();
-    assert.equal(statusBarAfterTab, ':edit|it', 'Failed to complete content left of the cursor');
+    assert.strictEqual(
+      statusBarAfterTab,
+      ':edit|it',
+      'Failed to complete content left of the cursor'
+    );
 
     await modeHandler.handleKeyEvent('<Esc>');
   });
@@ -196,28 +204,36 @@ suite('cmd_line tabComplete', () => {
       // First tab - resolve to .testfile
       await modeHandler.handleKeyEvent('<tab>');
       let statusBarAfterTab = StatusBar.Get();
-      assert.equal(statusBarAfterTab.trim(), `:e ${testFilePath}|`, 'Cannot complete to .testfile');
+      assert.strictEqual(
+        statusBarAfterTab.trim(),
+        `:e ${testFilePath}|`,
+        'Cannot complete to .testfile'
+      );
       // Second tab - resolve to .testfile
       // ./ and ../ because . is not explicitly typed in.
       // This should be consistent with Vim
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
-      assert.equal(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
+      assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
 
       await modeHandler.handleMultipleKeyEvents(baseCmd.concat('.'));
       // First tab - resolve to ../
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
-      assert.equal(statusBarAfterTab, `:e ${dirPath}${sep}..${sep}|`, 'Cannot complete to ../');
+      assert.strictEqual(
+        statusBarAfterTab,
+        `:e ${dirPath}${sep}..${sep}|`,
+        'Cannot complete to ../'
+      );
       // Second tab - resolve to ./
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
-      assert.equal(statusBarAfterTab, `:e ${dirPath}${sep}.${sep}|`, 'Cannot complete to ./');
+      assert.strictEqual(statusBarAfterTab, `:e ${dirPath}${sep}.${sep}|`, 'Cannot complete to ./');
       // Third tab - resolve to .testfile
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
-      assert.equal(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
+      assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
       await t.removeFile(testFilePath);
@@ -242,7 +258,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<tab>');
       let statusBarAfterTab = StatusBar.Get().trim();
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.equal(statusBarAfterTab, `:e ${baseName}|`, `${failMsg} (no base path)`);
+      assert.strictEqual(statusBarAfterTab, `:e ${baseName}|`, `${failMsg} (no base path)`);
 
       // With multiple ./ ./ as base name
       cmd = `:e ././${baseNameExcludeSpace}`.split('');
@@ -250,7 +266,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.equal(statusBarAfterTab, `:e ././${baseName}|`, `${failMsg} (w ././)`);
+      assert.strictEqual(statusBarAfterTab, `:e ././${baseName}|`, `${failMsg} (w ././)`);
 
       // With full path excluding the last space portion
       cmd = `:e ${fullPathExcludeSpace}`.split('');
@@ -258,7 +274,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.Get().trim();
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.equal(statusBarAfterTab, `:e ${spacedFilePath}|`, `(${failMsg} full path)`);
+      assert.strictEqual(statusBarAfterTab, `:e ${spacedFilePath}|`, `(${failMsg} full path)`);
     } finally {
       await t.removeFile(spacedFilePath);
     }

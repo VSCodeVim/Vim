@@ -7,7 +7,6 @@ import { SearchHistory } from '../history/historyFile';
 import { SearchState, SearchDirection } from './searchState';
 import { SubstituteState } from './substituteState';
 import { configuration } from '../configuration/configuration';
-import { VimState } from './vimState';
 
 /**
  * State which stores global state (across editors)

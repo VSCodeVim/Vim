@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.11.2](https://github.com/vscodevim/vim/tree/v1.11.2) (2019-10-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.1...v1.11.2)
+
+**Merged pull requests:**
+
+- v1.11.1 [\#4170](https://github.com/VSCodeVim/Vim/pull/4170) ([jpoon](https://github.com/jpoon))
+
 ## [v1.11.1](https://github.com/vscodevim/vim/tree/v1.11.1) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.0...v1.11.1)

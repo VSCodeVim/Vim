@@ -3,7 +3,6 @@ import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Position } from '../common/motion/position';
-import { SearchState } from '../state/searchState';
 
 export function ReportClear(vimState: VimState) {
   StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);

@@ -15,25 +15,25 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 0);
-    assert.equal(actual.hasError, false);
-    assert.equal(actual.numWarnings, 0);
-    assert.equal(actual.hasWarning, false);
+    assert.strictEqual(actual.numErrors, 0);
+    assert.strictEqual(actual.hasError, false);
+    assert.strictEqual(actual.numWarnings, 0);
+    assert.strictEqual(actual.hasWarning, false);
 
-    assert.equal(configuration.insertModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
   });
 
   test('jj->esc', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
       {
         before: ['j', 'j'],
@@ -48,22 +48,22 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 0);
-    assert.equal(actual.hasError, false);
-    assert.equal(actual.numWarnings, 0);
-    assert.equal(actual.hasWarning, false);
+    assert.strictEqual(actual.numErrors, 0);
+    assert.strictEqual(actual.hasError, false);
+    assert.strictEqual(actual.numWarnings, 0);
+    assert.strictEqual(actual.hasWarning, false);
 
-    assert.equal(configuration.insertModeKeyBindingsMap.size, 1);
-    assert.equal(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsMap.size, 1);
+    assert.strictEqual(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
 
-    assert.equal(
+    assert.strictEqual(
       configuration.insertModeKeyBindingsMap.get('jj'),
       configuration.insertModeKeyBindings[0]
     );
@@ -71,7 +71,7 @@ suite('Remapping Validator', () => {
 
   test('remapping missing after and command', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
       {
         before: ['j', 'j'],
@@ -85,25 +85,25 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 1);
-    assert.equal(actual.hasError, true);
-    assert.equal(actual.numWarnings, 0);
-    assert.equal(actual.hasWarning, false);
+    assert.strictEqual(actual.numErrors, 1);
+    assert.strictEqual(actual.hasError, true);
+    assert.strictEqual(actual.numWarnings, 0);
+    assert.strictEqual(actual.hasWarning, false);
 
-    assert.equal(configuration.insertModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
   });
 
   test('remappings are de-duped', async () => {
     // setup
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.insertModeKeyBindings = [];
     configuration.insertModeKeyBindingsNonRecursive = [];
     configuration.normalModeKeyBindings = [
@@ -122,19 +122,19 @@ suite('Remapping Validator', () => {
 
     // test
     const validator = new RemappingValidator();
-    let actual = await validator.validate(configuration);
+    const actual = await validator.validate(configuration);
 
     // assert
-    assert.equal(actual.numErrors, 0);
-    assert.equal(actual.hasError, false);
-    assert.equal(actual.numWarnings, 1);
-    assert.equal(actual.hasWarning, true);
+    assert.strictEqual(actual.numErrors, 0);
+    assert.strictEqual(actual.hasError, false);
+    assert.strictEqual(actual.numWarnings, 1);
+    assert.strictEqual(actual.hasWarning, true);
 
-    assert.equal(configuration.insertModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.normalModeKeyBindingsMap.size, 1);
-    assert.equal(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsMap.size, 0);
-    assert.equal(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 1);
+    assert.strictEqual(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
   });
 });

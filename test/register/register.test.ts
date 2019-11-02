@@ -13,7 +13,7 @@ import { RecordedState } from '../../src/state/recordedState';
 suite('register', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -244,14 +244,14 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    let vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!);
     vimState.recordedState.registerName = '0';
     let actual: IRegisterContent;
 
     try {
       Register.put(expected, vimState);
       actual = await Register.get(vimState);
-      assert.equal(actual.text, expected);
+      assert.strictEqual(actual.text, expected);
     } catch (err) {
       assert.fail(err);
     }
@@ -312,15 +312,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
-    assert.equal((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
-    assert.equal((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
-    assert.equal((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
   });
 
   test('Search register (/) is set by backward search', async () => {
@@ -330,15 +330,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
-    assert.equal((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
-    assert.equal((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
-    assert.equal((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
   });
 
   test('Search register (/) is set by star search', async () => {
@@ -347,16 +347,16 @@ suite('register', () => {
     );
 
     await modeHandler.handleKeyEvent('*');
-    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '*']);
-    assert.equal((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
 
     await modeHandler.handleKeyEvent('#');
-    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '#']);
-    assert.equal((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
   });
 
   test('Command register (:) is set by command line', async () => {
@@ -367,7 +367,7 @@ suite('register', () => {
     await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
 
     const regStr = ((await Register.getByKey(':')).text as RecordedState).commandString;
-    assert.equal(regStr, command);
+    assert.strictEqual(regStr, command);
   });
 
   test('Read-only registers cannot be written to', async () => {
@@ -383,9 +383,9 @@ suite('register', () => {
     await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('":yy'.split(''));
 
-    assert.equal((await Register.getByKey('/')).text, 'Expected for /');
-    assert.equal((await Register.getByKey('.')).text, 'Expected for .');
-    assert.equal((await Register.getByKey('%')).text, 'Expected for %');
-    assert.equal((await Register.getByKey(':')).text, 'Expected for :');
+    assert.strictEqual((await Register.getByKey('/')).text, 'Expected for /');
+    assert.strictEqual((await Register.getByKey('.')).text, 'Expected for .');
+    assert.strictEqual((await Register.getByKey('%')).text, 'Expected for %');
+    assert.strictEqual((await Register.getByKey(':')).text, 'Expected for :');
   });
 });
