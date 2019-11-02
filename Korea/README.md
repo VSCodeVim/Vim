@@ -1,20 +1,20 @@
 <h2 align="center"><img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128"><br>VSCodeVim</h2>
-<p align="center"><strong>Vim emulation for Visual Studio Code</strong></p>
+<p align="center"><strong>Visual Studio code를 위한 Vim emulation</strong></p>
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![](https://vsmarketplacebadge.apphb.com/installs-short/vscodevim.vim.svg)](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
 [![https://vscodevim.herokuapp.com/](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](https://vscodevim.herokuapp.com/)
 
-VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
+VSCodeVim은  [Visual Studio Code](https://code.visualstudio.com/)를 위한 Vim emulation입니다.
 
-- 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
-- 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
-- ❓ If you need to ask any questions, join us on [Slack](https://vscodevim.herokuapp.com/)
-- Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
+- 🚚 지원되는 Vim 기능의 전체 목록은 [로드맵]을 참조하십시오.(ROADMAP.md).
+- 📃 [변경된 로그](CHANGELOG.md)에는 릴리스 간 주요 / 주요 / 최소 업데이트가 요약되어 있습니다.
+- ❓ 궁금한 점이 있으면 [Slack](https://vscodevim.herokuapp.com/)에서 우리와 함께하십시오.
+- [GitHub](https://github.com/VSCodeVim/Vim/issues)에서 누락 된 기능 / 버그를보고하십시오.
 
 <details>
- <summary><strong>Table of Contents</strong> (click to expand)</summary>
+ <summary><strong>목차</strong> (클릭하여 확장)</summary>
 
 - [Installation](#-installation)
   - [Mac setup](#mac)
@@ -42,35 +42,35 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 </details>
 
-## 💾 Installation
+## 💾 설치
 
-VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
+VSCodeVim은 VS Code를  [설치](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) 하고 다시로드 한 후에 자동으로 활성화됩니다.
 
-> :warning: Vimscript is _not_ supported; therefore, we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#-emulated-plugins).
+> :warning: Vimscript는 지원되지 않습니다. 따라서 `.vimrc`를로드하거나 `.vim` vim 플러그인을 사용할 수 없습니다. [설정](#settings)과 [Emulated plugins](#-emulated-plugins)을 사용하여 이것을 복제해야합니다.
 
 ### Mac
 
-To enable key-repeating execute the following in your Terminal and restart VS Code:
+키 반복을 활성화하려면 터미널에서 다음을 실행하고 VS 코드를 다시 시작하십시오:
 
 ```sh
-$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-$ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # VS Code를 위해
+$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # VS Code Insider를 위해
+$ defaults delete -g ApplePressAndHoldEnabled                                      # 필요하면, global default값을 재설정 하세요
 ```
 
-We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
+시스템 환경 설정-> 키보드에서 키 반복 및 지연 될 때까지 지연 설정을 높이는 것이 좋습니다.
 
 ### Windows
 
-Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
+실제 vim과 마찬가지로 VSCodeVim은 제어 키를 대신합니다. 이 동작은 [`useCtrlKeys`](#vscodevim-settings)과 [`handleKeys`](#vscodevim-settings) 설정으로 조정할 수 있습니다.
 
-## ⚙️ Settings
+## ⚙️ 설정
 
-The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab in the extensions menu of VS Code.
+여기에 설명 된 설정은 지원되는 설정의 일부입니다. 전체 목록은 VS Code의 확장 메뉴에있는 `기여` 탭에 설명되어 있습니다.
 
-### Quick Example
+### 빠른 예시
 
-Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file with settings relevant to VSCodeVim:
+아래는 VSCodeVim과 관련된 설정이있는 [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) 파일의 예입니다:
 
 ```json
 {
@@ -104,11 +104,11 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
-### VSCodeVim settings
+### VSCodeVim 설정
 
-These settings are specific to VSCodeVim.
+이 설정은 VSCodeVim에만 적용됩니다.
 
-| Setting                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                      | Type    | Default Value                         |
+| 셋팅                          | 설명                                                                                                                                                                                                                                                                                                                                                                                                                      | 타입    | 기본값                         |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------- |
 | vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                               | Boolean | false                                 |
 | vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                       | String  | None                                  |
@@ -128,34 +128,34 @@ These settings are specific to VSCodeVim.
 | vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                 | String  | rgba(250, 240, 170, 0.5)              |
 | vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                              | Number  | 200                                   |
 
-### Neovim Integration
+### Neovim 통합
 
-> :warning: Experimental feature. Please leave feedback on neovim integration [here](https://github.com/VSCodeVim/Vim/issues/1735).
+> :warning: 실험적인 특징. neovim 통합에 대한 의견을 [여기에](https://github.com/VSCodeVim/Vim/issues/1735)남겨주세요.
 
-To leverage neovim for Ex-commands,
+Ex-command에 neovim을 활용하려면,
 
-1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
-2.  Modify the following configurations:
+1.  [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)을 설치하세요
+2. 다음 구성을 수정하세요:
 
-| Setting          | Description                    | Type    | Default Value |
+| 환경          | 설명                    | 타입    | 기본 값 |
 | ---------------- | ------------------------------ | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable | String  |               |
+| vim.enableNeovim |  Neovim 활성화                  | Boolean | false         |
+| vim.neovimPath   | neovim 실행 파일의 전체 경로 | String  |               |
 
-Here's some ideas on what you can do with neovim integration:
+neovim 통합으로 할 수있는 작업에 대한 몇 가지 아이디어가 있습니다:
 
 - [The power of g](http://vim.wikia.com/wiki/Power_of_g)
 - [The :normal command](https://vi.stackexchange.com/questions/4418/execute-normal-command-over-range)
-- Faster search and replace!
+- 더 빠른 검색과 교체!
 
-### Key Remapping
+### 키 리매핑(Key Remapping)
 
-Custom remappings are defined on a per-mode basis.
+커스텀 리매핑은 모드별로 정의됩니다.
 
 #### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
 
-- Keybinding overrides to use for insert, normal, and visual modes.
-- Bind `jj` to `<Esc>` in insert mode:
+- 삽입, 일반 및 시각적 모드에 사용하도록 키 바인딩을 재정의합니다.
+- 삽입 모드에서 `jj` 를 `<Esc>`에 바인딩하십시오:
 
 ```json
     "vim.insertModeKeyBindings": [
@@ -166,7 +166,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `£` to goto previous whole word under cursor
+- 커서 아래의 이전 전체 단어로 이동하려면 `£` 를 바인딩하십시오.
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -177,7 +177,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `:` to show the command palette:
+- `:`를 묶어 명령 팔레트를 표시하십시오:
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -190,7 +190,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://marketplace.visualstudio.com/items?itemName=alefragnani.Bookmarks) extension):
+- `<leader>m` 을 바인드하여 책갈피를 추가하고 `<leader>b`를 사용하여 모든  [책갈피](https://marketplace.visualstudio.com/items?itemName=alefragnani.Bookmarks) 목록을 여십시오 (북마크 확장자 사용):
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -209,7 +209,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `ZZ` to the vim command `:wq` (save and close the current file):
+- `ZZ` 를 vim 명령`:wq` 에 바인딩합니다 (현재 파일을 저장하고 닫습니다):
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -222,7 +222,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
+- `ctrl+n` 을 바인드하여 검색 강조 표시를 끄고`<leader>w` 를 사용하여 현재 파일을 저장하십시오:
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -241,7 +241,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `p` in visual mode to paste without overriding the current register
+- 현재 레지스터를 재정의하지 않고 붙여 넣기 위해 `p` 를 비주얼 모드로 바인딩
 
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
@@ -259,7 +259,7 @@ Custom remappings are defined on a per-mode basis.
     ],
 ```
 
-- Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
+- 시각적 모드에서`>` 및 `<`를 바인드하여 줄을 들여 쓰기 / 바꾸기 (반복 가능)
 
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
@@ -282,7 +282,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `<leader>vim` to clone this repository to the selected location.
+- 이 저장소를 선택된 위치에 복제하려면`<leader>vim` 을 바인딩하십시오.
 
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
@@ -302,8 +302,8 @@ Custom remappings are defined on a per-mode basis.
 
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
 
-- Non-recursive keybinding overrides to use for insert, normal, and visual modes
-- _Example:_ Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or normalModeKeyBindingNonRecursive.
+- 비 재귀 키 바인딩은 삽입, 일반 및 시각적 모드에 사용하도록 재정의합니다.
+- _예:_  `j` 를 `gj`에 바인드하십시오.이 바인딩을 정상적으로 시도하면 gj의 j는 계속해서 gj로 확장됩니다. insertModeKeyBindingsNonRecursive 및 / 또는 normalModeKeyBindingNonRecursive를 사용하여이 순환 확장을 중지하십시오.
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -314,11 +314,11 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-#### Debugging Remappings
+#### Remappings 디버깅하기
 
-1.  Are your configurations correct?
+1.  구성이 정확합니까?
 
-    Adjust the extension's [logging level](#vscodevim-settings) to 'debug', restart VS Code. As each remapped configuration is loaded, it is outputted to console. In the Developer Tools console, do you see any errors?
+    확장의 [logging level](#vscodevim-settings) 을 'debug'로 조정하고 VS Code를 다시 시작하십시오. 재 매핑 된 각 구성이 로드 될 때 콘솔로 출력됩니다. 개발자 도구 콘솔에 오류가 있습니까?
 
     ```console
     debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
@@ -326,11 +326,11 @@ Custom remappings are defined on a per-mode basis.
     error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
     ```
 
-    Misconfigured configurations are ignored.
+    잘못 구성된 구성은 무시됩니다.
 
-2.  Does the extension handle the keys you are trying to remap?
+2.  확장 프로그램이 다시 매핑하려는 키를 처리합니까?
 
-    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vscodevim-settings) adjusted to 'debug', as you press keys, you should see output similar to:
+    VSCodeVim은[package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). 을 통해 중요한 이벤트를 VS Code에 명시 적으로 지시합니다. 다시 매핑하려는 키가 vim / vscodevim이 일반적으로 처리하지 않는 키인 경우이 확장은 VS Code에서 해당 키 이벤트를받지 못할 가능성이 큽니다. [logging level](#vscodevim-settings)을 '디버그'로 조정 한 상태에서 키를 누르면 다음과 유사한 출력이 표시됩니다:
 
     ```console
     debug: ModeHandler: handling key=A.
@@ -339,54 +339,54 @@ Custom remappings are defined on a per-mode basis.
     debug: ModeHandler: handling key=<C-a>.
     ```
 
-    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
+    다시 매핑하려는 키를 누르면 여기에 출력되는 것이 보입니까? 그렇지 않은 경우 해당 주요 key에 가입하지 않은 것입니다.
 
-### Vim settings
+### Vim 설정
 
-Configuration settings that have been copied from vim. Vim settings are loaded in the following sequence:
+vim에서 복사 한 구성 설정. Vim 설정은 다음 순서로로드됩니다:
 
 1.  `:set {setting}`
 2.  `vim.{setting}` from user/workspace settings.
-3.  VS Code settings
-4.  VSCodeVim default values
+3.  VS Code 설정
+4.  VSCodeVim 기본 값
 
-| Setting          | Description                                                                                                                                                                                                                                                           | Type    | Default Value |
+| 환경          | 설명                                                                                                                                                                                                                                                           | 타입    | 기본 값 |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.autoindent   | Copy indent from current line when starting a new line                                                                                                                                                                                                                | Boolean | true          |
-| vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                           | Boolean | false         |
-| vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                        | Boolean | true          |
-| vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                           | Boolean | true          |
-| vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                               | String  | `\`           |
-| vim.showcmd      | Show (partial) command in status bar                                                                                                                                                                                                                                  | Boolean | true          |
-| vim.showmodename | Show name of current mode in status bar                                                                                                                                                                                                                               | Boolean | true          |
-| vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                                     | Boolean | true          |
-| vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                                    | Number  | 80            |
-| vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                         | Number  | 1000          |
-| vim.whichwrap    | Controls wrapping at beginning and end of line. Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode. To wrap "everything", set this to `h,l,<,>,[,]`. | String  | ``            |
-| vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                                      | Number  | 2             |
+| vim.autoindent   | 새 줄을 시작할 때 현재 줄에서 들여 쓰기                                                                                                                                                                                                               | Boolean | true          |
+| vim.hlsearch     | 현재 검색과 일치하는 모든 텍스트를 강조 표시합니다                                                                                                                                                                                                                          | Boolean | false         |
+| vim.ignorecase   | 검색 패턴에서 대소 문자 무시                                                                                                                                                                                                                          | Boolean | true          |
+| vim.incsearch    | 검색을 입력하는 동안 다음 매치 표시                                                                                                                                                                                                                           | Boolean | true          |
+| vim.leader       | 키 재 매핑에 사용될`<leader>`의 키를 정의합니다                                                                                                                                                                                                               | String  | `\`           |
+| vim.showcmd      | 상태 표시 줄에 (부분) 명령 표시                                                                                                                                                                                                                     | Boolean | true          |
+| vim.showmodename | 상태 표시 줄에 현재 모드 이름 표시                                                                                                                                                                                                                           | Boolean | true          |
+| vim.smartcase    | 검색 패턴에 대문자가 포함 된 경우 '무시'설정을 대체하십시오.                                                                                                                                                                                     | Boolean | true          |
+| vim.textwidth    | `gq`를 사용할 때 너비를 자동 줄 바꿈                                                                                                                                                                                                                                    | Number  | 80            |
+| vim.timeout      | 재 매핑 된 명령에 대한 시간 초과 (밀리 초)                                                                                                                                                                                                                      | Number  | 1000          |
+| vim.whichwrap    | 줄의 시작과 끝에서 줄 바꿈을 제어합니다. 다음 / 이전 행으로 줄 바꿈해야하는 쉼표로 구분 된 키 집합입니다. 화살표 키는 삽입 모드에서 `[`  및  `]` 로 표시되며 일반 및 시각적 모드에서는`<` 및  `>` 로 표시됩니다. "everything"을 감싸려면 이것을`h,l,<,>,[,]`로 설정하십시오. | String  | ``            |
+| vim.report       |라인 수 보고에 대한 임계 값이 변경되었습니다.                                                                                                                                                                                                                     | Number  | 2             |
 
-## 🖱️ Multi-Cursor Mode
+## 🖱️ 멀티커서모드
 
-> :warning: Multi-Cursor mode is experimental. Please report issues in our [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+> :warning:다중 커서 모드가 실험 중입니다. [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)에 문제를보고하십시오.
 
-Enter multi-cursor mode by:
+다음으로 다중 커서 모드로 들어갑니다:
 
 - On OSX, `cmd-d`. On Windows, `ctrl-d`.
-- `gb`, a new shortcut we added which is equivalent to `cmd-d` (OSX) or `ctrl-d` (Windows). It adds another cursor at the next word that matches the word the cursor is currently on.
-- Running "Add Cursor Above/Below" or the shortcut on any platform.
+- `gb` `cmd-d` (OSX) 또는 `ctrl-d`  (Windows)에 해당하는 새로운 바로 가기가 추가되었습니다. 다음 단어에 커서가 현재있는 단어와 일치하는 다른 커서를 추가합니다.
+- "Add Cursor Above/Below"을 실행하거나 다른 플랫폼으로 빠르게 접근하기.
 
-Once you have multiple cursors, you should be able to use Vim commands as you see fit. Most should work; some are unsupported (ref [PR#587](https://github.com/VSCodeVim/Vim/pull/587)).
+커서가 여러 개 있으면 Vim 명령을 사용할 수 있습니다. 대부분 작동해야합니다. 일부는 지원되지 않습니다(참조 [PR#587](https://github.com/VSCodeVim/Vim/pull/587)).
 
-- Each cursor has its own clipboard.
-- Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
+- 각 커서에는 자체 클립 보드가 있습니다.
+- 다중 커서 시각 모드에서 이스케이프를 누르면 다중 커서 보통 모드로 전환됩니다. 다시 누르면 일반 모드로 돌아갑니다.
 
-## 🔌 Emulated Plugins
+## 🔌 에뮬레이트 된 플러그인
 
 ### vim-airline
 
-> :warning: There are performance implications to using this plugin. In order to change the status bar, we override the configurations in your workspace settings.json which results in increased latency and a constant changing diff in your working directory (see [issue#2124](https://github.com/VSCodeVim/Vim/issues/2124)).
+> :warning: 이 플러그인을 사용하면 성능에 영향을 미칩니다. 상태 표시 줄을 변경하기 위해 작업 공간 settings.json의 구성을 재정 의하여 작업 디렉토리의 대기 시간이 증가하고 diff가 지속적으로 변경됩니다(참조 [이슈#2124](https://github.com/VSCodeVim/Vim/issues/2124)).
 
-Change the color of the status bar based on the current mode. Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
+현재 모드에 따라 상태 표시 줄의 색상을 변경하십시오. 활성화되면`"vim.statusBarColors"`를 구성하십시오. 각 모드의 색상은 `string`  (배경 만) 또는 `string[]` (배경, 전경)로 정의 할 수 있습니다.
 
 ```json
     "vim.statusBarColorControl": true,
@@ -400,26 +400,26 @@ Change the color of the status bar based on the current mode. Once enabled, conf
 
 ### vim-easymotion
 
-Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and configured through the following settings:
+[vim-easymotion](https://github.com/easymotion/vim-easymotion)을 기반으로하며 다음 설정을 통해 구성됩니다:
 
-| Setting                                    | Description                                                                                                                                                                                                                                                       | Type           | Default Value  |
+| 환경                                    | 설명                                                                                                                                                                                                                                                       | 타입           | 기본값  |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- |
-| vim.easymotion                             | Enable/disable easymotion plugin                                                                                                                                                                                                                                  | Boolean        | false          |
-| vim.easymotionMarkerBackgroundColor        | The background color of the marker box.                                                                                                                                                                                                                           |
-| vim.easymotionMarkerForegroundColorOneChar | The font color for one-character markers.                                                                                                                                                                                                                         |
-| vim.easymotionMarkerForegroundColorTwoChar | The font color for two-character markers, used to differentiate from one-character markers.                                                                                                                                                                       |
-| vim.easymotionMarkerWidthPerChar           | The width in pixels allotted to each character.                                                                                                                                                                                                                   |
-| vim.easymotionMarkerHeight                 | The height of the marker.                                                                                                                                                                                                                                         |
-| vim.easymotionMarkerFontFamily             | The font family used for the marker text.                                                                                                                                                                                                                         |
-| vim.easymotionMarkerFontSize               | The font size used for the marker text.                                                                                                                                                                                                                           |
-| vim.easymotionMarkerFontWeight             | The font weight used for the marker text.                                                                                                                                                                                                                         |
-| vim.easymotionMarkerYOffset                | The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).                                                                                                                            |
-| vim.easymotionKeys                         | The characters used for jump marker name                                                                                                                                                                                                                          |
+| vim.easymotion                             | easymotion 플러그인 활성화 / 비활성화                                                                                                                                                                                                                                  | Boolean        | false          |
+| vim.easymotionMarkerBackgroundColor        | 마커 상자의 배경색입니다.                                                                                                                                                                                                                          |
+| vim.easymotionMarkerForegroundColorOneChar | 한 문자 마커의 글꼴 색상입니다.                                                                                                                                                                                                                        |
+| vim.easymotionMarkerForegroundColorTwoChar | 한 문자 마커와 구별하는 데 사용되는 두 문자 마커의 글꼴 색상입니다.                                                                                                                                                                       |
+| vim.easymotionMarkerWidthPerChar           | 각 문자에 할당 된 너비 (픽셀)입니다.                                                                                                                                                                                                                 |
+| vim.easymotionMarkerHeight                 |마커의 높이입니다.                                                                                                                                                                                                                                       |
+| vim.easymotionMarkerFontFamily             | 마커 텍스트에 사용 된 글꼴 모음입니다.                                                                                                                                                                                                                         |
+| vim.easymotionMarkerFontSize               | 마커 텍스트에 사용되는 글꼴 크기입니다.                                                                                                                                                                                                                         |
+| vim.easymotionMarkerFontWeight             | 마커 텍스트에 사용 된 글꼴 굵기입니다.                                                                                                                                                                                                                         |
+| vim.easymotionMarkerYOffset                | 마커 상단과 텍스트 사이의 거리 (일반적으로 높이 또는 글꼴 크기가 변경된 경우 약간의 조정이 필요함).                                                                                                                           |
+| vim.easymotionKeys                         | 점프 마커 이름에 사용되는 문자                                                                                                                                                                                                                          |
 | vim.easymotionJumpToAnywhereRegex          | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s\*. | \\b[A-Za-z0-9] | [A-Za-z0-9]\\b | \_. | \\#. | [a-z][a-z] | // | .\$" |
 
-Once easymotion is active, initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
+easymotion이 활성화되면 다음 명령을 사용하여 모션을 시작하십시오. 모션을 시작하면 텍스트 데코레이터 / 마커가 표시되며 표시된 키를 눌러 해당 위치로 이동할 수 있습니다. `leader`는 설정이 가능하며 기본적으로`\` 입니다.
 
-| Motion Command                      | Description                                                                                                 |
+| Motion 명령어                      | 설명                                                                                                 |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `<leader><leader> s <char>`         | Search character                                                                                            |
 | `<leader><leader> f <char>`         | Find character forwards                                                                                     |
@@ -441,51 +441,50 @@ Once easymotion is active, initiate motions using the following commands. After 
 | `<leader><leader><leader> bdjk`     | Start of line                                                                                               |
 | `<leader><leader><leader> j`        | JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after \_ and after # |
 
-`<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
-The difference is character count required for search.
-For example, `<leader><leader> 2s <char><char>` requires two characters, and search by two characters.
-This mapping is not a standard mapping, so it is recommended to use your custom mapping.
+`<leader><leader> (2s|2f|2F|2t|2T) <char><char>` 그리고 `<leader><leader><leader> bd2t <char>char>` 도 이용할 수 있다.
+차이점은 검색에 필요한 문자 수입니다.
+예를 들어,`<leader><leader> 2s <char><char>` 두 문자가 필요하며 두 문자로 검색한다.
+이 매핑은 표준 매핑이 아니므로 사용자 지정 매핑을 사용하는 것이 좋습니다.
 
 ### vim-surround
 
-Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
+[surround.vim](https://github.com/tpope/vim-surround)을 기반으로 플러그인은 괄호, 괄호, 따옴표 및 XML 태그와 같은 주변 문자를 처리하는 데 사용됩니다.
 
-| Setting      | Description                 | Type    | Default Value |
+| 설정      | 설명                 | 타입    | 기본값 |
 | ------------ | --------------------------- | ------- | ------------- |
 | vim.surround | Enable/disable vim-surround | Boolean | true          |
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
+`<desired char>`또는`<existing char>`로`t` 또는`<`는 태그를 수행하고 태그 입력 모드로 들어갑니다. `>`대신`<CR>`을 사용하여 태그 변경을 마치면 기존 속성이 유지됩니다.
 
-| Surround Command                     | Description                                                           |
+| Surround Command                     | 설명                                                           |
 | ------------------------------------ | --------------------------------------------------------------------- |
-| `d s <existing char>`                | Delete existing surround                                              |
+| `d s <existing char>`                | 기존 서라운드 삭제                                              |
 | `c s <existing char> <desired char>` | Change surround existing to desired                                   |
 | `y s <motion> <desired char>`        | Surround something with something using motion (as in "you surround") |
 | `S <desired char>`                   | Surround when in visual modes (surrounds full selection)              |
 
-Some examples:
+몇가지 예:
 
-- `"test"` with cursor inside quotes type cs"' to end up with `'test'`
-- `"test"` with cursor inside quotes type ds" to end up with `test`
+- ` 'test'`로 끝나기 위해 인용 부호 안에 cs를 입력 한`'test'`
+- `test``로 끝나는 인용 부호 ds 안에 커서가있는 "test"`
 - `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
-- `test` with cursor on word test type ysaw) to end up with `(test)`
+- 단어 테스트 유형 ysaw에 커서가있는`test`는`(test)`로 끝납니다.
 
 ### vim-commentary
 
-Similar to [vim-commentary](https://github.com/tpope/vim-commentary), but uses the VSCode native _Toggle Line Comment_ and _Toggle Block Comment_ features.
+[vim-commentary](https://github.com/tpope/vim-commentary)와 유사하지만 VSCode 기본 토글 라인 주석 및 토글 블록 주석 기능을 사용합니다.
 
-Usage examples:
+사용 예시:
 
-- `gc` - toggles line comment. For example `gcc` to toggle line comment for current line and `gc2j` to toggle line comments for the current line and the next two lines.
-- `gC` - toggles block comment. For example `gCi)` to comment out everything within parenthesis.
+- `gc` -라인 주석을 토글합니다. 예를 들어`gcc`는 현재 행에 대한 라인 주석을 토글하고`gc2j`는 현재 라인과 다음 두 라인에 대한 라인 주석을 토글합니다.
+- `gC`-블록 주석 토글. 예를 들어`gCi)`는 괄호 안의 모든 것을 주석 처리합니다.
 
 ### vim-indent-object
+[vim-indent-object](https://github.com/michaeljsmith/vim-indent-object)를 기반으로하여 현재 들여 쓰기 수준의 코드 블록을 텍스트 객체로 처리 할 수 있습니다. 문장 주위에 중괄호를 사용하지 않는 언어 (예 : Python)에서 유용합니다.
 
-Based on [vim-indent-object](https://github.com/michaeljsmith/vim-indent-object), it allows for treating blocks of code at the current indentation level as text objects. Useful in languages that don't use braces around statements (e.g. Python).
+여는 중괄호 / 태그 사이에 새로운 줄이 있다면, 그것은 무시할 수있는`cib` /`ci {`/`ci [`/`cit`로 간주 될 수 있습니다.
 
-Provided there is a new line between the opening and closing braces / tag, it can be considered an agnostic `cib`/`ci{`/`ci[`/`cit`.
-
-| Command        | Description                                                                                          |
+| 명령어        | 설명                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------- |
 | `<operator>ii` | This indentation level                                                                               |
 | `<operator>ai` | This indentation level and the line above (think `if` statements in Python)                          |
@@ -493,16 +492,16 @@ Provided there is a new line between the opening and closing braces / tag, it ca
 
 ### vim-sneak
 
-Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumping to any location specified by two characters.
+[vim-sneak](https://github.com/justinmk/vim-sneak)를 기반으로 두 문자로 지정된 위치로 이동할 수 있습니다.
 
-| Setting                            | Description                                                 | Type    | Default Value |
+| 환경                            | 설명                                                 | 타입    | 기본 값 |
 | ---------------------------------- | ----------------------------------------------------------- | ------- | ------------- |
 | vim.sneak                          | Enable/disable vim-sneak                                    | Boolean | false         |
 | vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | false         |
 
-Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
+몰래 활성화되면 다음 명령을 사용하여 모션을 시작하십시오. 연산자 sneak은`s` 대신`z`를 사용합니다. `s`는 이미 서라운드 플러그인에 의해 사용되기 때문입니다.
 
-| Motion Command            | Description                                                             |
+| Motion 명령            | 설명                                                             |
 | ------------------------- | ----------------------------------------------------------------------- |
 | `s<char><char>`           | Move forward to the first occurrence of `<char><char>`                  |
 | `S<char><char>`           | Move backward to the first occurrence of `<char><char>`                 |
@@ -511,44 +510,44 @@ Once sneak is active, initiate motions using the following commands. For operato
 
 ### CamelCaseMotion
 
-Based on [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion), though not an exact emulation. This plugin provides an easier way to move through camelCase and snake_case words.
+정확한 에뮬레이션은 아니지만  [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion)을 기반으로합니다. 이 플러그인은 camelCase 및 snake_case 단어를 쉽게 이동할 수있는 방법을 제공합니다.
 
-| Setting                    | Description                    | Type    | Default Value |
+| 환경                    | 설명                    | 타입    | 기본 값 |
 | -------------------------- | ------------------------------ | ------- | ------------- |
 | vim.camelCaseMotion.enable | Enable/disable CamelCaseMotion | Boolean | false         |
 
-Once CamelCaseMotion is enabled, the following motions are available:
+CamelCaseMotion이 활성화되면 다음 모션을 사용할 수 있습니다.
 
-| Motion Command         | Description                                                                |
+| Motion 명령어         | 설명                                                                |
 | ---------------------- | -------------------------------------------------------------------------- |
 | `<leader>w`            | Move forward to the start of the next camelCase or snake_case word segment |
 | `<leader>e`            | Move forward to the next end of a camelCase or snake_case word segment     |
 | `<leader>b`            | Move back to the prior beginning of a camelCase or snake_case word segment |
 | `<operator>i<leader>w` | Select/change/delete/etc. the current camelCase or snake_case word segment |
 
-By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete the current and next camelCase word segment.
+기본적으로`<leader>`는`\`에 매핑되므로 예를 들어`d2i \ w`는 현재 및 다음 camelCase 단어 세그먼트를 삭제합니다.
 
-### Input Method
+### 입력 방법
 
-Disable input method when exiting Insert Mode.
+삽입 모드를 종료 할 때 입력 방법을 비활성화하십시오.
 
-| Setting                                 | Description                                                                                      |
+| 환경                                 | 설명                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `vim.autoSwitchInputMethod.enable`      | Boolean denoting whether autoSwitchInputMethod is on/off.                                        |
 | `vim.autoSwitchInputMethod.defaultIM`   | Default input method.                                                                            |
 | `vim.autoSwitchInputMethod.obtainIMCmd` | The full path to command to retrieve the current input method key.                               |
 | `vim.autoSwitchInputMethod.switchIMCmd` | The full path to command to switch input method, with `{im}` a placeholder for input method key. |
 
-Any third-party program can be used to switch input methods. The following will walkthrough the configuration using [im-select](https://github.com/daipeihust/im-select).
+모든 타사 프로그램을 사용하여 입력 방법을 전환 할 수 있습니다. 다음은 [im-select](https://github.com/daipeihust/im-select)를 사용하여 구성을 안내합니다..
 
-1.  Install im-select (see [installation guide](https://github.com/daipeihust/im-select#installation))
-1.  Find your default input method key
+1. im-select 설치하기 (참조 [installation guide](https://github.com/daipeihust/im-select#installation))
+1.  기본 입력 방법 키 찾기
 
     - Mac:
 
-      Switch your input method to English, and run the following in your terminal: `/<path-to-im-select-installation>/im-select` to output your default input method. The table below lists the common English key layouts for MacOS.
+      입력 방법을 영어로 전환하고 터미널에서 `/<path-to-im-select-installation>/im-select` 를 실행하여 기본 입력 방법을 출력하십시오. 아래 표에는 MacOS의 일반적인 영어 키 레이아웃이 나와 있습니다.
 
-      | Key                            | Description |
+      | Key                            | 설명 |
       | ------------------------------ | ----------- |
       | com.apple.keylayout.US         | U.S.        |
       | com.apple.keylayout.ABC        | ABC         |
@@ -560,13 +559,13 @@ Any third-party program can be used to switch input methods. The following will 
 
     - Windows:
 
-      Refer to the [im-select guide](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale) on how to discover your input method key. Generally, if your keyboard layout is en_US the input method key is 1033 (the locale ID of en_US). You can also find your locale ID from [this page](https://www.science.co.il/language/Locale-codes.php), where the `LCID Decimal` column is the locale ID.
+      입력 방법 키를 검색하는 방법은[im-select guide](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale) 안내서를 참조하십시오.  일반적으로 키보드 레이아웃이 en_US 인 경우 입력 방법 키는 1033 (en_US의 로캘 ID)입니다. `LCID Decimal`열이 로컬 ID인 [이 페이지](https://www.science.co.il/language/Locale-codes.php)에서 로컬 ID를 찾을 수도 있습니다.
 
 1.  Configure `vim.autoSwitchInputMethod`.
 
     - MacOS:
 
-      Given the input method key of `com.apple.keylayout.US` and `im-select` located at `/usr/local/bin`. The configuration is:
+       `com.apple.keylayout.US` 과 `im-select` 은  `/usr/local/bin`에 있다. 구성은 다음과 같다.:
 
       ```json
       "vim.autoSwitchInputMethod.enable": true,
@@ -577,7 +576,7 @@ Any third-party program can be used to switch input methods. The following will 
 
     - Windows:
 
-      Given the input method key of `1033` (en_US) and `im-select.exe` located at `D:/bin`. The configuration is:
+       `1033`  (en_US)과 `im-select.exe` 의 입력 방법 키는`D:/bin`에 있습니다. 구성은 다음과 같습니다:
 
       ```json
       "vim.autoSwitchInputMethod.enable": true,
@@ -586,55 +585,56 @@ Any third-party program can be used to switch input methods. The following will 
       "vim.autoSwitchInputMethod.switchIMCmd": "D:\\bin\\im-select.exe {im}"
       ```
 
-The `{im}` argument above is a command-line option that will be passed to `im-select` denoting the input method to switch to. If using an alternative program to switch input methods, you should add a similar option to the configuration. For example, if the program's usage is `my-program -s imKey` to switch input method, the `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
+위의`{im}`인수는 입력 방법을 나타내는 `im-select` 에 전달되는 명령 행 옵션입니다. 대체 프로그램을 사용하여 입력 방법을 전환하는 경우 유사한 옵션을 구성에 추가해야합니다. 예를 들어, 입력 방법을 전환하기 위해 프로그램의 사용법이`my-program -s imKey` 인 경우,`vim.autoSwitchInputMethod.switchIMCmd` 는 `/path/to/my-program -s {im}`이어야합니다.
+
 
 ### ReplaceWithRegister
 
-Based on [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister), an easy way to replace existing text with the contents of a register.
+ [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister)를 기반으로 기존 텍스트를 레지스터의 내용으로 쉽게 바꿀 수 있습니다.
 
-| Setting                 | Description                        | Type    | Default Value |
+| 환경                 | 설명                        | 타입    | 기본 값 |
 | ----------------------- | ---------------------------------- | ------- | ------------- |
 | vim.replaceWithRegister | Enable/disable ReplaceWithRegister | Boolean | false         |
 
-Once active, type `gr` (say "go replace") followed by a motion to describe the text you want replaced by the contents of the register.
+활성화되면`gr`  (예 : "go replace")을 입력 한 다음 레지스터 내용으로 대체하려는 텍스트를 설명하는 동작을 입력하십시오.
 
-| Motion Command          | Description                                                                             |
+| Motion 명령어          | 설명                                                                             |
 | ----------------------- | --------------------------------------------------------------------------------------- |
-| `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the specified register    |
-| `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the specified register |
-| `{Visual}["a]gr`        | Replace the selection with the contents of the specified register                       |
+| `[count]["a]gr<motion>` |모션에 설명 된 텍스트를 지정된 레지스터의 내용으로 바꿉니다.   |
+| `[count]["a]grr`        |  \[count\] 줄 또는 현재 줄을 지정된 레지스터의 내용으로 바꿉니다.|
+| `{Visual}["a]gr`        | 선택한 레지스터를 지정된 레지스터의 내용으로 바꿉니다.       |
 
-## 🎩 VSCodeVim tricks!
+## 🎩 VSCodeVim 트릭!
 
-VSCode has a lot of nifty tricks and we try to preserve some of them:
+VSCode에는 멋진 트릭이 많이 있으며 그 중 일부를 보존하려고합니다:
 
-- `gd` - jump to definition.
-- `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
-- `gb` - adds another cursor on the next word it finds which is the same as the word under the cursor.
-- `af` - visual mode command which selects increasingly large blocks of text. For example, if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
-- `gh` - equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
+- `gd` - 정의로 이동하십시오.
+- `gq` - 주석 스타일을 유지하면서 시각적 선택 리플 로우 및 텍스트 줄 바꿈 텍스트 블록 문서 주석 형식화에 좋습니다.
+- `gb` - 찾은 다음 단어에 커서 아래에있는 단어와 동일한 다른 커서를 추가합니다.
+- `af` - 점점 더 큰 텍스트 블록을 선택하는 비주얼 모드 명령. 예를 들어 "blah (foo [bar 'ba | z'])"가 있으면 먼저 'baz'를 선택합니다. `af`를 다시 누르면 [bar'baz ']를 선택하고 세 번째로 수행 한 경우 "(foo [bar'baz '])"를 선택합니다.
+- `gh` - 커서가있는 곳에 마우스를 올려 놓는 것과 같습니다. 마우스에 도달하지 않고도 유형 및 오류 메시지를 볼 수 있습니다!
 
-## 📚 F.A.Q.
+## 📚 자주하는 질문
 
-- None of the native Visual Studio Code `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+- 네이티브 Visual Studio Code `ctrl` (예 :`ctrl + f`,`ctrl + v`) 명령은 작동하지 않습니다
 
-  Set the [`useCtrlKeys` setting](#vscodevim-settings) to `false`.
+  [`useCtrlKeys` setting](#vscodevim-settings) 을 `false`로 설정하십시오..
 
-- Moving `j`/`k` over folds opens up the folds
+- 폴드 위로 `j`/`k`를 움직이면 폴드가 열립니다
 
-  Try setting `vim.foldfix` to `true`. This is a hack; it works fine, but there are side effects (see [issue#22276](https://github.com/Microsoft/vscode/issues/22276)).
+  `vim.foldfix` 를 `true`로 설정하십시오. 이것은 해킹입니다. 제대로 작동하지만 부작용이 있습니다(참조 [이슈#22276](https://github.com/Microsoft/vscode/issues/22276)).
 
-- Key repeat doesn't work
+- 키 반복이 작동하지 않습니다
 
-  Are you on a Mac? Did you go through our [mac-setup](#mac) instructions?
+  당신은 Mac유저 입니까? [mac-setup](#mac) 지침을 살펴 보셨습니까?
 
-- There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense
+-  `<esc>`로 닫을 수없는 성가신 정보 / 알림 / 팝업이 있습니다! ! 그리고 나는 단편적인 지식 밖에 없어 좀 더 알고 싶습니다.
 
-  Press `shift+<esc>` to close all of those boxes.
+  `shift+<esc>` 를 눌러 모든 상자를 닫으십시오.
 
-- How can I use the commandline when in Zen mode or when the status bar is disabled?
+- Zen 모드 또는 상태 표시 줄이 비활성화 된 경우 명령 줄을 사용하려면 어떻게해야합니까?
 
-  This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in VS Code's keybindings.json settings file.
+   이 확장 기능은 재 맵핑 가능한 명령을 표시하여 vscode 스타일의 빠른 선택, 제한된 기능 버전의 명령 줄을 보여줍니다. VS 코드의 keybindings.json 설정 파일에서 다음과 같이 다시 매핑 할 수 있습니다.
 
   ```json
   {
@@ -654,9 +654,9 @@ VSCode has a lot of nifty tricks and we try to preserve some of them:
   }
   ```
 
-- How can I move the cursor by each display line with word wrapping?
+- 단어 줄 바꿈을 사용하여 각 표시 줄에서 커서를 어떻게 이동합니까?
 
-  If you have word wrap on and would like the cursor to enter each wrapped line when using <kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd>, set the following in VS Code's keybindings.json settings file.
+  단어 줄 바꿈이 있고<kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> 또는 <kbd>↑</kbd>를 사용할 때 커서가 줄 바꿈 된 각 줄에 들어가도록하려면  keybindings.json 설정 파일에서 다음을 설정하십시오.
 
   <!-- prettier-ignore -->
   ```json
@@ -682,18 +682,18 @@ VSCode has a lot of nifty tricks and we try to preserve some of them:
   }
   ```
 
-  **Caveats:** This solution restores the default VS Code behavior for the <kbd>j</kbd> and <kbd>k</kbd> keys, so motions like `10j` [will not work](https://github.com/VSCodeVim/Vim/pull/3623#issuecomment-481473981). If you need these motions to work, [other, less performant options exist](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848).
+  **경고:** 이 솔루션은<kbd>j</kbd> 및 <kbd>k</kbd> 키에 대한 기본 VS 코드 동작을 복원하므로`10j`와 같은 동작은 [작동하지 않습니다.](https://github.com/VSCodeVim/Vim/pull/3623#issuecomment-481473981). 이러한 동작이 작동해야하는 경우 [성능이 떨어지는 다른 옵션이 있습니다](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848).
 
-## ❤️ Contributing
+## ❤️ 기여하기
 
-This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
+이 프로젝트는 [멋진 사람들](https://github.com/VSCodeVim/Vim/graphs/contributors)의 그룹에 의해 유지되고 기여는 매우 환영합니다 :heart:. 도움을 줄 수있는 방법에 대한 빠른 튜토리얼은 [기여 가이드](/.github/CONTRIBUTING.md)를 참조하십시오.
 
 <a href="https://www.buymeacoffee.com/jasonpoon" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Us A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
-### Special shoutouts to:
+### 도움을 주신 분들:
 
-- Thanks to @xconverge for making over 100 commits to the repo. If you're wondering why your least favorite bug packed up and left, it was probably him.
-- Thanks to @Metamist for implementing EasyMotion!
-- Thanks to @sectioneight for implementing text objects!
-- Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
-- Shoutout to @chillee aka Horace He for his contributions and hard work.
+- 리포지토리에 100 번 이상 커밋 한 @xconverge에게 감사합니다. 가장 좋아하지 않는 버그가 왜 포장되어 떠 났는지 궁금하다면 아마도 xconverge 덕분 일 것입니다.
+- EasyMotion을 구현 한 @Metamist에게 감사합니다!
+- 텍스트 객체를 구현 한 @sectioneight에게 감사합니다!
+- 멋진 로고를 만든 [Kevin Coleman](http://kevincoleman.io)은 나에게 소중한 지주입니다!
+- @chillee (일명 Horace He)에게 그의 기고와 노력에 감사합니다.
