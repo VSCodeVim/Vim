@@ -5,6 +5,9 @@ class VimrcKeyRemappingBuilderImpl {
   private static readonly KEY_LIST_REG_EX = /(<[^>]+>|.)/g;
   private static readonly COMMAND_REG_EX = /(:\w+)/;
 
+  /**
+   * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
+   */
   public build(line: string): IVimrcKeyRemapping | undefined {
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
@@ -34,6 +37,9 @@ class VimrcKeyRemappingBuilderImpl {
     };
   }
 
+  /**
+   * @returns `true` if this remaps a key sequence to a `:` command
+   */
   private static isCommand(commandString: string): boolean {
     const matches = VimrcKeyRemappingBuilderImpl.COMMAND_REG_EX.exec(commandString);
     if (matches) {

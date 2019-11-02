@@ -6,6 +6,7 @@
 import './src/actions/include-all';
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { CompositionState } from './src/state/compositionState';
 import { EditorIdentity } from './src/editorIdentity';
@@ -24,6 +25,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -207,6 +209,16 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     false
   );
+
+  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async document => {
+    if (
+      configuration.vimrc.enable &&
+      path.relative(document.fileName, configuration.vimrc.path) === ''
+    ) {
+      await configuration.load();
+      vscode.window.showInformationMessage('Sourced new .vimrc');
+    }
+  });
 
   // window events
   registerEventListener(
