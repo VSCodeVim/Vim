@@ -22,14 +22,14 @@ class VimrcImpl {
     let lines = vimrcContent.split(/\r?\n/);
 
     for (const line of lines) {
-      VimrcImpl.tryKeyRemapping(configuration, line);
+      VimrcImpl.addKeyRemapping(configuration, line);
     }
   }
 
-  private static tryKeyRemapping(configuration: IConfiguration, line: string): boolean {
+  private static addKeyRemapping(configuration: IConfiguration, line: string): void {
     let mapping: IVimrcKeyRemapping | null = vimrcKeyRemappingBuilder.build(line);
     if (!mapping) {
-      return false;
+      return;
     }
 
     let collection: IKeyRemapping[];
@@ -53,15 +53,13 @@ class VimrcImpl {
         collection = configuration.insertModeKeyBindingsNonRecursive;
         break;
       default:
-        return false;
+        return;
     }
 
     // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
     if (!collection.some(r => _.isEqual(r.before, mapping!.keyRemapping.before))) {
       collection.push(mapping.keyRemapping);
     }
-
-    return true;
   }
 
   private static findDefaultVimrc(): string {
