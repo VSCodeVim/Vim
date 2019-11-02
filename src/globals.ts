@@ -10,4 +10,6 @@ export class Globals {
   static mockModeHandler: ModeHandler;
 
   static mockConfiguration: IConfiguration;
+
+  static extensionStoragePath: string;
 }

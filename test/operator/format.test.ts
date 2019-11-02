@@ -1,9 +1,8 @@
-import { ModeName } from '../../src/mode/mode';
-import { getTestingFunctions, ITestObject } from '../testSimplifier';
+import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('format operator', () => {
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace(undefined, '.ts');

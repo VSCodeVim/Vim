@@ -132,25 +132,27 @@ Now follows an exhaustive list of every known Vim command that we could find.
 
 ## Marks and motions
 
-| Status             | Command                                                     | Description                                        |
-| ------------------ | ----------------------------------------------------------- | -------------------------------------------------- |
-| :white_check_mark: | m{a-zA-Z}                                                   | mark current position with mark {a-zA-Z}           |
+| Status             | Command                                                     | Description                                            |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------ |
+| :white_check_mark: | m{a-zA-Z}                                                   | mark current position with mark {a-zA-Z}               |
 | :white_check_mark: | `{a-z} | go to mark {a-z} within current file               |
 | :white_check_mark: | `{A-Z} | go to mark {A-Z} in any file                       |
 | :white_check_mark: | `{0-9} | go to the position where Vim was previously exited |
 | :white_check_mark: | `` | go to the position before the last jump                |
 | :arrow_down:       | `" | go to the position when last editing this file         |
-| :arrow_down:       | `[ | go to the start of the previously operated or put text |
-| :arrow_down:       | `] | go to the end of the previously operated or put text   |
+| :white_check_mark: | `[ | go to the start of the previously operated or put text |
+| :white_check_mark: | '[                                                          | go to the start of the previously operated or put text |
+| :white_check_mark: | `] | go to the end of the previously operated or put text   |
+| :white_check_mark: | ']                                                          | go to the end of the previously operated or put text   |
 | :arrow_down:       | `< | go to the start of the (previous) Visual area          |
 | :arrow_down:       | `> | go to the end of the (previous) Visual area            |
 | :white_check_mark: | `. | go to the position of the last change in this file     |
-| :white_check_mark: | '.                                                          | go to the position of the last change in this file |
-| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                                         | same as `, but on the first non-blank in the line  |
-| :arrow_down:       | :marks                                                      | print the active marks                             |
-| :white_check_mark: | :1234: CTRL-O                                               | go to Nth older position in jump list              |
-| :white_check_mark: | :1234: CTRL-I                                               | go to Nth newer position in jump list              |
-| :arrow_down:       | :ju[mps]                                                    | print the jump list                                |
+| :white_check_mark: | '.                                                          | go to the position of the last change in this file     |
+| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                                         | same as `, but on the first non-blank in the line      |
+| :arrow_down:       | :marks                                                      | print the active marks                                 |
+| :white_check_mark: | :1234: CTRL-O                                               | go to Nth older position in jump list                  |
+| :white_check_mark: | :1234: CTRL-I                                               | go to Nth newer position in jump list                  |
+| :arrow_down:       | :ju[mps]                                                    | print the jump list                                    |
 
 ## Various motions
 

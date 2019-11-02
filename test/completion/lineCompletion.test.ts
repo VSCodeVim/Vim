@@ -66,7 +66,7 @@ suite('Provide line completions', () => {
         vimState.editor.document
       )!.slice(0, expectedCompletions.length);
 
-      assert.equal(completions.length, 0, 'Completions found, but none were expected');
+      assert.strictEqual(completions.length, 0, 'Completions found, but none were expected');
     });
   });
 });

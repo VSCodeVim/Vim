@@ -23,7 +23,7 @@ suite('VimState', () => {
     vimState.cursors = initialCursors;
 
     // assert
-    assert.equal(vimState.cursors.length, 1);
+    assert.strictEqual(vimState.cursors.length, 1);
   });
 
   test('cursorStart/cursorStop should be first cursor in cursors', () => {
@@ -40,8 +40,8 @@ suite('VimState', () => {
     vimState.cursors = initialCursors;
 
     // assert
-    assert.equal(vimState.cursors.length, 2);
-    assert.equal(vimState.isMultiCursor, true);
+    assert.strictEqual(vimState.cursors.length, 2);
+    assert.strictEqual(vimState.isMultiCursor, true);
     vimState.cursorStartPosition = cursorStart;
     vimState.cursorStopPosition = cursorStop;
   });

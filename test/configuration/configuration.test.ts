@@ -1,14 +1,13 @@
 import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
 import { ModeName } from '../../src/mode/mode';
-import { getAndUpdateModeHandler } from '../../extension';
 
 suite('Configuration', () => {
   const { newTest } = getTestingFunctions();
-  let configuration = new testConfiguration.Configuration();
+  const configuration = new testConfiguration.Configuration();
   configuration.leader = '<space>';
   configuration.normalModeKeyBindingsNonRecursive = [
     {
@@ -34,20 +33,20 @@ suite('Configuration', () => {
       srcConfiguration.configuration.normalModeKeyBindingsNonRecursiveMap;
     const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
 
-    assert.equal(normalizedKeybinds.length, testingKeybinds.length);
-    assert.equal(normalizedKeybinds.length, normalizedKeybindsMap.size);
+    assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
+    assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {
-    let wrapKeys = srcConfiguration.configuration.wrapKeys;
+    const wrapKeys = srcConfiguration.configuration.wrapKeys;
 
     const h = 'h';
     const j = 'j';
 
-    assert.equal(wrapKeys[h], true);
-    assert.equal(wrapKeys[j], undefined);
+    assert.strictEqual(wrapKeys[h], true);
+    assert.strictEqual(wrapKeys[j], undefined);
   });
 
   newTest({

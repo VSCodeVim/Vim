@@ -896,10 +896,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
     "lodash.escaperegexp": "4.1.2",
-    "mkdirp": "0.5.1",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
@@ -911,7 +909,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.11.1",
+    "@types/node": "12.12.5",
     "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
@@ -921,14 +919,13 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.2.1",
+    "mocha": "6.2.2",
     "plugin-error": "1.0.1",
     "prettier": "1.18.2",
     "sinon": "7.5.0",
-    "ts-loader": "6.2.0",
+    "ts-loader": "6.2.1",
     "tslint": "5.20.0",
     "typescript": "3.6.4",
-    "vscode": "1.1.36",
-    "webpack-stream": "5.2.1"
+    "vscode": "1.1.36"
   }
 }

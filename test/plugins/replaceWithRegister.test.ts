@@ -133,4 +133,11 @@ suite('replaceWithRegister plugin', () => {
     keysPressed: `${YankInnerWord}wV${ReplaceOperator}`,
     end: ['firs|t'],
   });
+
+  newTest({
+    title: 'grj is linewise',
+    start: ['|first second', 'third fourth', 'fifth sixth'],
+    keysPressed: `${YankInnerWord}w${ReplaceOperator}j`,
+    end: ['|first', 'fifth sixth'],
+  });
 });

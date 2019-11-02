@@ -5,8 +5,8 @@ import { commandParsers } from '../../src/cmd_line/subparser';
 function testTabMoveParse(args: string, count?: number, direction?: 'left' | 'right'): void {
   const test = (args1: string) => {
     const cmd = commandParsers.tabmove.parser(args1);
-    assert.equal(cmd.arguments.count, count);
-    assert.equal(cmd.arguments.direction, direction);
+    assert.strictEqual(cmd.arguments.count, count);
+    assert.strictEqual(cmd.arguments.direction, direction);
   };
 
   test(args);
@@ -24,7 +24,7 @@ function failsTabMoveParse(args: string): void {
 
 suite(':tabm[ove] args parser', () => {
   test('has :tabm alias', () => {
-    assert.equal(commandParsers.tabmove.abbrev, 'tabm');
+    assert.strictEqual(commandParsers.tabmove.abbrev, 'tabm');
   });
 
   test('can parse empty args', () => {
