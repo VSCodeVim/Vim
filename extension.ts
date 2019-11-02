@@ -391,6 +391,11 @@ export async function activate(context: vscode.ExtensionContext) {
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
+  registerCommand(context, 'vim.editVimrc', async () => {
+    const document = await vscode.workspace.openTextDocument(configuration.vimrcPath);
+    await vscode.window.showTextDocument(document);
+  });
+
   for (const boundKey of configuration.boundKeyCombinations) {
     registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
   }

@@ -50,6 +50,10 @@
       {
         "command": "vim.showQuickpickCmdLine",
         "title": "Vim: Show Command Line"
+      },
+      {
+        "command": "vim.editVimrc",
+        "title": "Vim: Edit .vimrc"
       }
     ],
     "keybindings": [
