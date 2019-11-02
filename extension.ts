@@ -87,6 +87,7 @@ async function loadConfiguration() {
     }
   }
 }
+
 export async function activate(context: vscode.ExtensionContext) {
   // before we do anything else,
   // we need to load the configuration first
@@ -392,7 +393,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'vim.editVimrc', async () => {
-    const document = await vscode.workspace.openTextDocument(configuration.vimrcPath);
+    const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
     await vscode.window.showTextDocument(document);
   });
 

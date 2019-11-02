@@ -3,6 +3,7 @@ import { IConfigurationValidator, ValidatorResults } from './iconfigurationValid
 import { InputMethodSwitcherConfigurationValidator } from './validators/inputMethodSwitcherValidator';
 import { NeovimValidator } from './validators/neovimValidator';
 import { RemappingValidator } from './validators/remappingValidator';
+import { VimrcValidator } from './validators/vimrcValidator';
 
 class ConfigurationValidator {
   private _validators: IConfigurationValidator[];
@@ -12,6 +13,7 @@ class ConfigurationValidator {
       new InputMethodSwitcherConfigurationValidator(),
       new NeovimValidator(),
       new RemappingValidator(),
+      new VimrcValidator(),
     ];
   }
 

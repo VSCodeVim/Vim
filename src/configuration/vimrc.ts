@@ -6,19 +6,19 @@ import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 
 class VimrcImpl {
   public load(configuration: IConfiguration) {
-    if (configuration.vimrcPath) {
-      configuration.vimrcPath = VimrcImpl.expandHome(configuration.vimrcPath);
-      if (!fs.existsSync(configuration.vimrcPath)) {
+    if (configuration.vimrc.path) {
+      configuration.vimrc.path = VimrcImpl.expandHome(configuration.vimrc.path);
+      if (!fs.existsSync(configuration.vimrc.path)) {
         return;
       }
     } else {
-      configuration.vimrcPath = VimrcImpl.findDefaultVimrc();
-      if (!configuration.vimrcPath) {
+      configuration.vimrc.path = VimrcImpl.findDefaultVimrc();
+      if (!configuration.vimrc.path) {
         return;
       }
     }
 
-    let vimrcContent = fs.readFileSync(configuration.vimrcPath, { encoding: 'utf8' });
+    let vimrcContent = fs.readFileSync(configuration.vimrc.path, { encoding: 'utf8' });
     let lines = vimrcContent.split(/\r?\n/);
 
     for (const line of lines) {

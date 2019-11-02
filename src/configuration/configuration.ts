@@ -87,7 +87,7 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.enableVimrc) {
+    if (this.vimrc.enable) {
       vimrc.load(this);
     }
 
@@ -308,8 +308,10 @@ class Configuration implements IConfiguration {
   enableNeovim = false;
   neovimPath = '';
 
-  enableVimrc = true;
-  vimrcPath = '';
+  vimrc = {
+    enable: true,
+    path: '',
+  };
 
   digraphs = {};
 

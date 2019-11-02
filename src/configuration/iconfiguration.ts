@@ -295,8 +295,10 @@ export interface IConfiguration {
   /**
    * .vimrc
    */
-  enableVimrc: boolean;
-  vimrcPath: string;
+  vimrc: {
+    enable: boolean;
+    path: string;
+  };
 
   /**
    * Automatically apply the `/g` flag to substitute commands.
