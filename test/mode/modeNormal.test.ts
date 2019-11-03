@@ -2063,7 +2063,7 @@ suite('Mode Normal', () => {
       'test aaa test aaa test aaa test aaa test',
     ],
     keysPressed: '<C-alt+down>D<Esc>',
-    end: ['test aaa test aaa test aaa tes|t ', 'test aaa test aaa test aaa test '],
+    end: ['test aaa test aaa test aaa test| ', 'test aaa test aaa test aaa test '],
   });
 
   newTest({
