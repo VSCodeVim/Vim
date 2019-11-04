@@ -15,6 +15,7 @@ export interface IKeyRemapping {
   before: string[];
   after?: string[];
   commands?: ({ command: string; args: any[] } | string)[];
+  source?: 'vscode' | 'vimrc';
 }
 
 export interface IVimrcKeyRemapping {

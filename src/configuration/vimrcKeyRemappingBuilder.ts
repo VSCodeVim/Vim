@@ -23,11 +23,13 @@ class VimrcKeyRemappingBuilderImpl {
       mapping = {
         before: VimrcKeyRemappingBuilderImpl.buildKeyList(before),
         commands: [after],
+        source: 'vimrc',
       };
     } else {
       mapping = {
         before: VimrcKeyRemappingBuilderImpl.buildKeyList(before),
         after: VimrcKeyRemappingBuilderImpl.buildKeyList(after),
+        source: 'vimrc',
       };
     }
 

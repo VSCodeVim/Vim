@@ -309,7 +309,7 @@ class Configuration implements IConfiguration {
   neovimPath = '';
 
   vimrc = {
-    enable: true,
+    enable: false,
     path: '',
   };
 
