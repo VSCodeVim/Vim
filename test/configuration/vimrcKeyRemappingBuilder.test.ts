@@ -10,6 +10,7 @@ suite('VimrcKeyRemappingBuilder', () => {
         keyRemapping: {
           before: ['<C-h>'],
           after: ['<', '<'],
+          source: 'vimrc',
         },
         keyRemappingType: 'nnoremap',
         expectNull: false,
@@ -19,6 +20,7 @@ suite('VimrcKeyRemappingBuilder', () => {
         keyRemapping: {
           before: ['j', 'j'],
           after: ['<Esc>'],
+          source: 'vimrc',
         },
         keyRemappingType: 'imap',
         expectNull: false,
@@ -28,6 +30,7 @@ suite('VimrcKeyRemappingBuilder', () => {
         keyRemapping: {
           before: ['<leader>', '"'],
           after: ['c', '"', '"', '<Esc>', 'P'],
+          source: 'vimrc',
         },
         keyRemappingType: 'vnoremap',
         expectNull: false,
@@ -38,6 +41,7 @@ suite('VimrcKeyRemappingBuilder', () => {
         keyRemapping: {
           before: ['<C-s>'],
           commands: [':w'],
+          source: 'vimrc',
         },
         keyRemappingType: 'nnoremap',
         expectNull: false,
