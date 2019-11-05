@@ -1725,12 +1725,9 @@ export class GPutCommand extends BaseCommand {
     const result = await super.execCount(position, vimState);
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      const line = TextEditor.getLineAt(position).text;
-      const addAnotherLine = line.length > 0 && addedLinesCount > 1;
-
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(addedLinesCount + (addAnotherLine ? 1 : 0), 0),
+        diff: PositionDiff.NewBOLDiff(addedLinesCount, 0),
         cursorIndex: this.multicursorIndex,
       });
     }
