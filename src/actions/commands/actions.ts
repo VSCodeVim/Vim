@@ -1730,7 +1730,7 @@ export class GPutCommand extends BaseCommand {
 
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(1 + (addAnotherLine ? 1 : 0), 0),
+        diff: PositionDiff.NewBOLDiff(addedLinesCount + (addAnotherLine ? 1 : 0), 0),
         cursorIndex: this.multicursorIndex,
       });
     }

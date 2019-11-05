@@ -1149,6 +1149,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'gp' after 'Nyy' if pasting more than three lines",
+    start: ['on|e', 'two', 'three', 'four'],
+    keysPressed: '4yyGgp',
+    end: ['one', 'two', 'three', 'four', 'one', 'two', 'three', '|four'],
+  });
+
+  newTest({
     title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
     start: ['on|e', 'two', 'three'],
     keysPressed: '2yyjjgp',
