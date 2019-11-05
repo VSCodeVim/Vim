@@ -1177,6 +1177,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'gP' after 'Nyy' if pasting more than three lines",
+    start: ['on|e', 'two', 'three', 'four'],
+    keysPressed: '4yygP',
+    end: ['one', 'two', 'three', 'four', '|one', 'two', 'three', 'four'],
+  });
+
+  newTest({
     title: "Can handle ']p' after yy",
     start: ['  |one', '   two'],
     keysPressed: 'yyj]p',
