@@ -354,7 +354,7 @@
       }
     ],
     "configuration": {
-      "title": "Vim Configuration",
+      "title": "Vim",
       "type": "object",
       "properties": {
         "vim.debug.silent": {
@@ -748,7 +748,7 @@
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
           "default": "",
-          "scope": "machine"
+          "scope": "machine-overridable"
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
