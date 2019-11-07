@@ -137,10 +137,10 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                    | Type    | Default Value |
-| ---------------- | ------------------------------ | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable | String  |               |
+| Setting          | Description                                                                                                             | Type    | Default Value |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
+| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
+| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
@@ -396,6 +396,11 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.visualline": "#B48EAD",
     "vim.statusBarColors.visualblock": "#A3BE8C",
     "vim.statusBarColors.replace": "#D08770"
+    "vim.statusBarColors.commandlineinprogress": "#007ACC"
+    "vim.statusBarColors.searchinprogressmode": "#007ACC"
+    "vim.statusBarColors.easymotionmode": "#007ACC"
+    "vim.statusBarColors.easymotioninputmode": "#007ACC"
+    "vim.statusBarColors.surroundinputmode": "#007ACC"
 ```
 
 ### vim-easymotion

@@ -7,9 +7,7 @@ var gulp = require('gulp'),
   ts = require('gulp-typescript'),
   PluginError = require('plugin-error'),
   minimist = require('minimist'),
-  path = require('path'),
-  webpack_stream = require('webpack-stream'),
-  webpack_config = require('./webpack.config.js');
+  path = require('path');
 
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
@@ -128,10 +126,6 @@ function updateVersion(done) {
     });
 }
 
-function copyPackageJson() {
-  return gulp.src('./package.json').pipe(gulp.dest('out'));
-}
-
 gulp.task('tsc', function() {
   var isError = false;
 
@@ -149,13 +143,6 @@ gulp.task('tsc', function() {
 
   return tsResult.js
     .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
-    .pipe(gulp.dest('out'));
-});
-
-gulp.task('webpack', function() {
-  return gulp
-    .src('./extension.ts')
-    .pipe(webpack_stream(webpack_config))
     .pipe(gulp.dest('out'));
 });
 
@@ -190,7 +177,7 @@ gulp.task('commit-hash', function(done) {
 });
 
 // test
-gulp.task('run-test', function(done) {
+gulp.task('test', function(done) {
   // the flag --grep takes js regex as a string and filters by test and test suite names
   var knownOptions = {
     string: 'grep',
@@ -241,9 +228,7 @@ gulp.task('run-test', function(done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
-gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
-gulp.task('test', gulp.series('prepare-test', 'run-test'));
+gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint'), 'commit-hash'));
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',

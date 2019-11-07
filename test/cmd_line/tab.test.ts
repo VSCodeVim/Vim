@@ -41,9 +41,9 @@ suite('cmd_line tab', () => {
       assert.fail('File did not open');
     } else {
       if (process.platform !== 'win32') {
-        assert.equal(editor.document.fileName, filePath, 'Opened wrong file');
+        assert.strictEqual(editor.document.fileName, filePath, 'Opened wrong file');
       } else {
-        assert.equal(
+        assert.strictEqual(
           editor.document.fileName.toLowerCase(),
           filePath.toLowerCase(),
           'Opened wrong file'
@@ -60,7 +60,7 @@ suite('cmd_line tab', () => {
     await commandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
-    assert.equal(
+    assert.strictEqual(
       beforeEditor,
       afterEditor,
       'Active editor changed even though :tabe opened the same file'

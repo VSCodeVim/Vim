@@ -1,6 +1,5 @@
 import { CommandBase, ICommandArgs } from '../node';
 import { VimState } from '../../state/vimState';
-import { globalState } from '../../state/globalState';
 import {
   CommandShowSearchHistory,
   CommandShowCommandHistory,

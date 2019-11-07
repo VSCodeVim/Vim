@@ -82,8 +82,12 @@ export class SearchInProgressMode extends Mode {
     const leadingChar =
       globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
 
+    const cursorChar =
+      vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+        ? '"'
+        : '|';
     let stringWithCursor = globalState.searchState!.searchString.split('');
-    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
     return `${leadingChar}${stringWithCursor.join('')}`;
   }
@@ -100,7 +104,11 @@ export class CommandlineInProgress extends Mode {
 
   getStatusBarText(vimState: VimState): string {
     let stringWithCursor = vimState.currentCommandlineText.split('');
-    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+    const cursorChar =
+      vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+        ? '"'
+        : '|';
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
     return `:${stringWithCursor.join('')}`;
   }

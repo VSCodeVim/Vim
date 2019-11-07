@@ -2,7 +2,7 @@ import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('put operator', () => {
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

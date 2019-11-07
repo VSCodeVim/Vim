@@ -79,8 +79,8 @@ class CommandEscInsertMode extends BaseCommand {
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-      for (let i = 0; i < changesArray.length; i++) {
-        docChanges.push(changesArray[i].textDiff);
+      for (const change of changesArray) {
+        docChanges.push(change.textDiff);
       }
 
       let positionDiff = new PositionDiff(0, 0);
