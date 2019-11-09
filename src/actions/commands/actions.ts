@@ -425,10 +425,11 @@ class CommandInsertWord extends BaseCommand {
   keys = ['<C-r>', '<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const isWord = configuration.iskeyword.indexOf(TextEditor.getCharAt(position)) === -1;
-    const word = (isWord
-      ? TextEditor.getWord(position)
-      : TextEditor.getWord(position.getWordRight(false)));
+    // Skip forward to next word, not going past EOL
+    while (!/[a-zA-Z0-9_]/.test(TextEditor.getCharAt(position))) {
+      position = position.getRight();
+    }
+    const word = TextEditor.getWord(position.getLeftIfEOL());
 
     if (word !== undefined) {
       if (vimState.currentMode === ModeName.SearchInProgressMode) {
