@@ -420,6 +420,33 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertWord extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress, ModeName.SearchInProgressMode];
+  keys = ['<C-r>', '<C-w>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Skip forward to next word, not going past EOL
+    while (!/[a-zA-Z0-9_]/.test(TextEditor.getCharAt(position))) {
+      position = position.getRight();
+    }
+    const word = TextEditor.getWord(position.getLeftIfEOL());
+
+    if (word !== undefined) {
+      if (vimState.currentMode === ModeName.SearchInProgressMode) {
+        const searchState = globalState.searchState!;
+        searchState.searchString += word;
+      } else {
+        vimState.currentCommandlineText += word;
+      }
+
+      vimState.statusBarCursorCharacterPos += word.length;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['q', '<alpha>'], ['q', '<number>'], ['q', '"']];
