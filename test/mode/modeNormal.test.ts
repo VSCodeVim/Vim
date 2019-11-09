@@ -8,10 +8,10 @@ import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
@@ -22,9 +22,9 @@ suite('Mode Normal', () => {
   teardown(cleanUpWorkspace);
 
   test('Can be activated', async () => {
-    let activationKeys = ['<Esc>', '<C-[>'];
+    const activationKeys = ['<Esc>', '<C-[>'];
 
-    for (let key of activationKeys) {
+    for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 
@@ -1149,6 +1149,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'gp' after 'Nyy' if pasting more than three lines",
+    start: ['on|e', 'two', 'three', 'four'],
+    keysPressed: '4yyGgp',
+    end: ['one', 'two', 'three', 'four', 'one', 'two', 'three', '|four'],
+  });
+
+  newTest({
     title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
     start: ['on|e', 'two', 'three'],
     keysPressed: '2yyjjgp',
@@ -1167,6 +1174,13 @@ suite('Mode Normal', () => {
     start: ['on|e', 'two', 'three'],
     keysPressed: '2yygP',
     end: ['one', 'two', '|one', 'two', 'three'],
+  });
+
+  newTest({
+    title: "Can handle 'gP' after 'Nyy' if pasting more than three lines",
+    start: ['on|e', 'two', 'three', 'four'],
+    keysPressed: '4yygP',
+    end: ['one', 'two', 'three', 'four', '|one', 'two', 'three', 'four'],
   });
 
   newTest({
@@ -1780,6 +1794,23 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  /**
+   * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
+   */
+  newTest({
+    title: 'Can search for forward slash',
+    start: ['|One/two/three/four'],
+    keysPressed: '/\\/\nn',
+    end: ['One/two|/three/four'],
+  });
+
+  newTest({
+    title: 'Can search backward for question mark',
+    start: ['|One?two?three?four'],
+    keysPressed: '?\\?\nn',
+    end: ['One?two|?three?four'],
+  });
+
   newTest({
     title: '/\\c forces case insensitive search',
     start: ['|__ASDF', 'asdf'],
@@ -2052,6 +2083,34 @@ suite('Mode Normal', () => {
     keysPressed: 'daI',
     end: ['|'],
     endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '`] go to the end of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`]',
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: "'] go to the end of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>']",
+    end: ['hello worl|d'],
+  });
+
+  newTest({
+    title: '`[ go to the start of the previously operated or put text',
+    start: ['hello|'],
+    keysPressed: 'a world<Esc>`[',
+    end: ['hello| world'],
+  });
+
+  newTest({
+    title: "'[ go to the start of the previously operated or put text",
+    start: ['hello|'],
+    keysPressed: "a world<Esc>'[",
+    end: ['hello| world'],
   });
 
   suite('can handle gn', () => {

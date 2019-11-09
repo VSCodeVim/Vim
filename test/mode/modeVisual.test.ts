@@ -17,7 +17,7 @@ import {
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -40,13 +40,13 @@ suite('Mode Visual', () => {
 
     const sel = TextEditor.getSelection();
 
-    assert.equal(sel.start.character, 0);
-    assert.equal(sel.start.line, 0);
+    assert.strictEqual(sel.start.character, 0);
+    assert.strictEqual(sel.start.line, 0);
 
     // The input cursor comes BEFORE the block cursor. Try it out, this
     // is how Vim works.
-    assert.equal(sel.end.character, 6);
-    assert.equal(sel.end.line, 0);
+    assert.strictEqual(sel.end.character, 6);
+    assert.strictEqual(sel.end.line, 0);
   });
 
   test('Can handle wd', async () => {

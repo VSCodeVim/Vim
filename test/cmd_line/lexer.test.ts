@@ -6,96 +6,99 @@ import { Token, TokenType } from '../../src/cmd_line/token';
 suite('command-line lexer', () => {
   test('can lex empty string', () => {
     const tokens = lexer.lex('');
-    assert.equal(tokens.length, 0);
+    assert.strictEqual(tokens.length, 0);
   });
 
   test('can lex comma', () => {
     const tokens = lexer.lex(',');
-    assert.equal(tokens[0].content, new Token(TokenType.Comma, ',').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Comma, ',').content);
   });
 
   test('can lex percent', () => {
     const tokens = lexer.lex('%');
-    assert.equal(tokens[0].content, new Token(TokenType.Percent, '%').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Percent, '%').content);
   });
 
   test('can lex dollar', () => {
     const tokens = lexer.lex('$');
-    assert.equal(tokens[0].content, new Token(TokenType.Dollar, '$').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Dollar, '$').content);
   });
 
   test('can lex dot', () => {
     const tokens = lexer.lex('.');
-    assert.equal(tokens[0].content, new Token(TokenType.Dot, '.').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Dot, '.').content);
   });
 
   test('can lex one number', () => {
     const tokens = lexer.lex('1');
-    assert.equal(tokens[0].content, new Token(TokenType.LineNumber, '1').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.LineNumber, '1').content);
   });
 
   test('can lex longer number', () => {
     const tokens = lexer.lex('100');
-    assert.equal(tokens[0].content, new Token(TokenType.LineNumber, '100').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.LineNumber, '100').content);
   });
 
   test('can lex plus', () => {
     const tokens = lexer.lex('+');
-    assert.equal(tokens[0].content, new Token(TokenType.Plus, '+').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Plus, '+').content);
   });
 
   test('can lex minus', () => {
     const tokens = lexer.lex('-');
-    assert.equal(tokens[0].content, new Token(TokenType.Minus, '-').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.Minus, '-').content);
   });
 
   test('can lex forward search', () => {
     const tokens = lexer.lex('/horses/');
-    assert.equal(tokens[0].content, new Token(TokenType.ForwardSearch, 'horses').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.ForwardSearch, 'horses').content);
   });
 
   test('can lex forward search escaping', () => {
     const tokens = lexer.lex('/hor\\/ses/');
-    assert.equal(tokens[0].content, new Token(TokenType.ForwardSearch, 'hor/ses').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.ForwardSearch, 'hor/ses').content);
   });
 
   test('can lex reverse search', () => {
     const tokens = lexer.lex('?worms?');
-    assert.equal(tokens[0].content, new Token(TokenType.ReverseSearch, 'worms').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.ReverseSearch, 'worms').content);
   });
 
   test('can lex reverse search escaping', () => {
     const tokens = lexer.lex('?wor\\?ms?');
-    assert.equal(tokens[0].content, new Token(TokenType.ReverseSearch, 'wor?ms').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.ReverseSearch, 'wor?ms').content);
   });
 
   test('can lex command name', () => {
     const tokens = lexer.lex('w');
-    assert.equal(tokens[0].content, new Token(TokenType.CommandName, 'w').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.CommandName, 'w').content);
   });
 
   test('can lex command args', () => {
     const tokens = lexer.lex('w something');
-    assert.equal(tokens[0].content, new Token(TokenType.CommandName, 'w').content);
-    assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, ' something').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.CommandName, 'w').content);
+    assert.strictEqual(tokens[1].content, new Token(TokenType.CommandArgs, ' something').content);
   });
 
   test('can lex command args with leading whitespace', () => {
     const tokens = lexer.lex('q something');
-    assert.equal(tokens[0].content, new Token(TokenType.CommandName, 'q').content);
-    assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, ' something').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.CommandName, 'q').content);
+    assert.strictEqual(tokens[1].content, new Token(TokenType.CommandArgs, ' something').content);
   });
 
   test('can lex long command name and args', () => {
     const tokens = lexer.lex('write12 something here');
-    assert.equal(tokens[0].content, new Token(TokenType.CommandName, 'write').content);
-    assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, '12 something here').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.CommandName, 'write').content);
+    assert.strictEqual(
+      tokens[1].content,
+      new Token(TokenType.CommandArgs, '12 something here').content
+    );
   });
 
   test('can lex left and right line refs', () => {
     const tokens = lexer.lex('20,30');
-    assert.equal(tokens[0].content, new Token(TokenType.LineNumber, '20').content);
-    assert.equal(tokens[1].content, new Token(TokenType.LineNumber, ',').content);
-    assert.equal(tokens[2].content, new Token(TokenType.LineNumber, '30').content);
+    assert.strictEqual(tokens[0].content, new Token(TokenType.LineNumber, '20').content);
+    assert.strictEqual(tokens[1].content, new Token(TokenType.LineNumber, ',').content);
+    assert.strictEqual(tokens[2].content, new Token(TokenType.LineNumber, '30').content);
   });
 });

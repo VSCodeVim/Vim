@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.11.0",
+  "version": "1.11.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -354,7 +354,7 @@
       }
     ],
     "configuration": {
-      "title": "Vim Configuration",
+      "title": "Vim",
       "type": "object",
       "properties": {
         "vim.debug.silent": {
@@ -408,6 +408,10 @@
           "type": "string",
           "description": "Color of the search highlight."
         },
+        "vim.searchHighlightTextColor": {
+          "type": "string",
+          "description": "Color of the search highlight text."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
@@ -417,6 +421,10 @@
           "type": "string",
           "description": "Color of the yank highlight.",
           "default": "rgba(250, 240, 170, 0.5)"
+        },
+        "vim.highlightedyank.textColor": {
+          "type": "string",
+          "description": "Color of the yank highlight text."
         },
         "vim.highlightedyank.duration": {
           "type": "number",
@@ -666,6 +674,46 @@
           "description": "Status bar color when in Replace mode.",
           "default": "#00000"
         },
+        "vim.statusBarColors.commandlineinprogress": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in CommandLineInProgress mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.searchinprogressmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in SearchInProgress mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.easymotionmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in EasyMotion mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.easymotioninputmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in EasyMotionInput mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.surroundinputmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in SurroundInput mode.",
+          "default": "#007acc"
+        },
         "vim.visualstar": {
           "type": "boolean",
           "markdownDescription": "In Visual mode, start a search with `*` or `#` using the current selection.",
@@ -699,8 +747,8 @@
         "vim.neovimPath": {
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
-          "default": "nvim",
-          "scope": "machine"
+          "default": "",
+          "scope": "machine-overridable"
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
@@ -848,10 +896,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "appdirectory": "0.1.0",
     "diff-match-patch": "1.0.4",
     "lodash.escaperegexp": "4.1.2",
-    "mkdirp": "0.5.1",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
@@ -863,7 +909,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash.escaperegexp": "4.1.6",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.7.11",
+    "@types/node": "12.12.7",
     "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
@@ -873,14 +919,13 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.2.1",
+    "mocha": "6.2.2",
     "plugin-error": "1.0.1",
-    "prettier": "1.18.2",
+    "prettier": "1.19.1",
     "sinon": "7.5.0",
-    "ts-loader": "6.2.0",
-    "tslint": "5.20.0",
-    "typescript": "3.6.3",
-    "vscode": "1.1.36",
-    "webpack-stream": "5.2.1"
+    "ts-loader": "6.2.1",
+    "tslint": "5.20.1",
+    "typescript": "3.7.2",
+    "vscode": "1.1.36"
   }
 }

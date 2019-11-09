@@ -6,6 +6,7 @@ import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
+import { StatusBar } from '../statusBar';
 
 interface IRemapper {
   /**
@@ -110,8 +111,9 @@ export class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
+    const keysAsString = keys.join('');
     for (let remap of userDefinedRemappings.keys()) {
-      if (keys.join('') === remap.slice(0, keys.length)) {
+      if (remap.startsWith(keysAsString)) {
         this._isPotentialRemap = true;
         break;
       }
@@ -172,6 +174,13 @@ export class Remapper implements IRemapper {
         } else {
           await vscode.commands.executeCommand(commandString);
         }
+
+        StatusBar.Set(
+          commandString + ' ' + commandArgs,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true
+        );
       }
     }
   }

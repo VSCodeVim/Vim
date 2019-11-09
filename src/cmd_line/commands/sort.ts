@@ -9,6 +9,7 @@ import * as token from '../token';
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
   ignoreCase: boolean;
+  unique: boolean;
 }
 
 export class SortCommand extends node.CommandBase {
@@ -54,6 +55,9 @@ export class SortCommand extends node.CommandBase {
       currentLine++
     ) {
       originalLines.push(TextEditor.readLineAt(currentLine));
+    }
+    if (this._arguments.unique) {
+      originalLines = [...new Set(originalLines)];
     }
 
     let lastLineLength = originalLines[originalLines.length - 1].length;

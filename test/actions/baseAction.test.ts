@@ -29,7 +29,7 @@ suite('base action', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('compare key presses', () => {
-    let testCases: Array<[string[] | string[][], string[], boolean]> = [
+    const testCases: Array<[string[] | string[][], string[], boolean]> = [
       [['a'], ['a'], true],
       [[['a']], ['a'], true],
       [[['a'], ['b']], ['b'], true],
@@ -43,12 +43,12 @@ suite('base action', () => {
 
     for (const test in testCases) {
       if (testCases.hasOwnProperty(test)) {
-        let left = testCases[test][0];
-        let right = testCases[test][1];
-        let expected = testCases[test][2];
+        const left = testCases[test][0];
+        const right = testCases[test][1];
+        const expected = testCases[test][2];
 
-        let actual = BaseAction.CompareKeypressSequence(left, right);
-        assert.equal(actual, expected, `${left}. ${right}.`);
+        const actual = BaseAction.CompareKeypressSequence(left, right);
+        assert.strictEqual(actual, expected, `${left}. ${right}.`);
       }
     }
   });

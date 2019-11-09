@@ -1,5 +1,5 @@
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Configuration } from '../testConfiguration';
 
 const { newTest } = getTestingFunctions();
