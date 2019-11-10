@@ -161,7 +161,7 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', ':', '<C-r>', '<C-w>']);
     const statusBar = StatusBar.Get().trim();
     assert.equal(statusBar, ':abc|', 'Failed to insert word');
-    });
+  });
 
   test('<C-r> <C-w> insert right word of cursor on command line', async () => {
     await modeHandler.handleMultipleKeyEvents('i::abc'.split(''));
