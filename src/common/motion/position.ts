@@ -4,7 +4,7 @@ import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
-import escapeRegExp = require('lodash.escaperegexp');
+import * as _ from 'lodash';
 
 enum PositionDiffType {
   Offset,
@@ -874,7 +874,7 @@ export class Position extends vscode.Position {
   }
 
   private static makeWordRegex(characterSet: string): RegExp {
-    let escaped = characterSet && escapeRegExp(characterSet).replace(/-/g, '\\-');
+    let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
     segments.push(`([^\\s${escaped}]+)`);
@@ -886,7 +886,7 @@ export class Position extends vscode.Position {
   }
 
   private static makeCamelCaseWordRegex(characterSet: string): RegExp {
-    const escaped = characterSet && escapeRegExp(characterSet).replace(/-/g, '\\-');
+    const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     const segments: string[] = [];
 
     // old versions of VSCode before 1.31 will crash when trying to parse a regex with a lookbehind
@@ -1028,7 +1028,7 @@ export class Position extends vscode.Position {
 
     // Symbols in vim.iskeyword or editor.wordSeparators
     // are treated as CharKind.Punctuation
-    const escapedKeywordChars = escapeRegExp(keywordChars).replace(/-/g, '\\-');
+    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
     codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
 
     const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));

@@ -46,8 +46,6 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
 
-> :warning: Vimscript is _not_ supported; therefore, we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#-emulated-plugins).
-
 ### Mac
 
 To enable key-repeating execute the following in your Terminal and restart VS Code:
@@ -365,6 +363,12 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 | vim.whichwrap    | Controls wrapping at beginning and end of line. Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode. To wrap "everything", set this to `h,l,<,>,[,]`. | String  | ``            |
 | vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                                      | Number  | 2             |
 
+## .vimrc support
+
+> :warning: .vimrc support is currently experimental. Only remaps are supported, and you may experience bugs. Please [report them](https://github.com/VSCodeVim/Vim/issues/new?template=bug_report.md)!
+
+Set `vim.vimrc.enable` to `true` and set `vim.vimrc.path` appropriately.
+
 ## 🖱️ Multi-Cursor Mode
 
 > :warning: Multi-Cursor mode is experimental. Please report issues in our [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
@@ -396,6 +400,11 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.visualline": "#B48EAD",
     "vim.statusBarColors.visualblock": "#A3BE8C",
     "vim.statusBarColors.replace": "#D08770"
+    "vim.statusBarColors.commandlineinprogress": "#007ACC"
+    "vim.statusBarColors.searchinprogressmode": "#007ACC"
+    "vim.statusBarColors.easymotionmode": "#007ACC"
+    "vim.statusBarColors.easymotioninputmode": "#007ACC"
+    "vim.statusBarColors.surroundinputmode": "#007ACC"
 ```
 
 ### vim-easymotion

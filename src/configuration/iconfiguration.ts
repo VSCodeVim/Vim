@@ -15,6 +15,12 @@ export interface IKeyRemapping {
   before: string[];
   after?: string[];
   commands?: ({ command: string; args: any[] } | string)[];
+  source?: 'vscode' | 'vimrc';
+}
+
+export interface IVimrcKeyRemapping {
+  keyRemapping: IKeyRemapping;
+  keyRemappingType: string;
 }
 
 export interface IAutoSwitchInputMethod {
@@ -286,6 +292,14 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+
+  /**
+   * .vimrc
+   */
+  vimrc: {
+    enable: boolean;
+    path: string;
+  };
 
   /**
    * Automatically apply the `/g` flag to substitute commands.
