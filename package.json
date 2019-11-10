@@ -910,7 +910,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.4",
-    "fs": "0.0.1-security",
+    "fs": "0.0.2",
     "lodash": "^4.17.15",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
