@@ -420,6 +420,33 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertWord extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress, ModeName.SearchInProgressMode];
+  keys = ['<C-r>', '<C-w>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Skip forward to next word, not going past EOL
+    while (!/[a-zA-Z0-9_]/.test(TextEditor.getCharAt(position))) {
+      position = position.getRight();
+    }
+    const word = TextEditor.getWord(position.getLeftIfEOL());
+
+    if (word !== undefined) {
+      if (vimState.currentMode === ModeName.SearchInProgressMode) {
+        const searchState = globalState.searchState!;
+        searchState.searchString += word;
+      } else {
+        vimState.currentCommandlineText += word;
+      }
+
+      vimState.statusBarCursorCharacterPos += word.length;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['q', '<alpha>'], ['q', '<number>'], ['q', '"']];
@@ -1725,12 +1752,9 @@ export class GPutCommand extends BaseCommand {
     const result = await super.execCount(position, vimState);
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      const line = TextEditor.getLineAt(position).text;
-      const addAnotherLine = line.length > 0 && addedLinesCount > 1;
-
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(1 + (addAnotherLine ? 1 : 0), 0),
+        diff: PositionDiff.NewBOLDiff(addedLinesCount, 0),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -1871,12 +1895,9 @@ export class GPutBeforeCommand extends BaseCommand {
     }
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      const line = TextEditor.getLineAt(position).text;
-      const addAnotherLine = line.length > 0 && addedLinesCount > 1;
-
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(1 + (addAnotherLine ? 1 : 0), 0),
+        diff: PositionDiff.NewBOLDiff(addedLinesCount, 0),
         cursorIndex: this.multicursorIndex,
       });
     }

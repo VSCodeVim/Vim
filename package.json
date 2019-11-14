@@ -50,6 +50,10 @@
       {
         "command": "vim.showQuickpickCmdLine",
         "title": "Vim: Show Command Line"
+      },
+      {
+        "command": "vim.editVimrc",
+        "title": "Vim: Edit .vimrc"
       }
     ],
     "keybindings": [
@@ -354,7 +358,7 @@
       }
     ],
     "configuration": {
-      "title": "Vim Configuration",
+      "title": "Vim",
       "type": "object",
       "properties": {
         "vim.debug.silent": {
@@ -748,7 +752,16 @@
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
           "default": "",
-          "scope": "machine"
+          "scope": "machine-overridable"
+        },
+        "vim.vimrc.enable": {
+          "type": "boolean",
+          "description": "Use key mappings from a .vimrc file.",
+          "default": "true"
+        },
+        "vim.vimrc.path": {
+          "type": "string",
+          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc or $HOME/_vimrc."
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
@@ -897,7 +910,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.4",
-    "lodash.escaperegexp": "4.1.2",
+    "lodash": "^4.17.15",
     "neovim": "4.5.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
@@ -907,9 +920,9 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash.escaperegexp": "4.1.6",
+    "@types/lodash": "4.14.147",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.12.6",
+    "@types/node": "12.12.7",
     "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
@@ -921,7 +934,7 @@
     "minimist": "1.2.0",
     "mocha": "6.2.2",
     "plugin-error": "1.0.1",
-    "prettier": "1.18.2",
+    "prettier": "1.19.1",
     "sinon": "7.5.0",
     "ts-loader": "6.2.1",
     "tslint": "5.20.1",
