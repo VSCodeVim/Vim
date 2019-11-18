@@ -922,7 +922,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.148",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.12.7",
+    "@types/node": "12.12.8",
     "@types/sinon": "7.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
