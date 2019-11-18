@@ -71,6 +71,5 @@ export function parseOption(args: string): node.IOptionArgs {
 }
 
 export function parseOptionsCommandArgs(args: string): node.SetOptionsCommand {
-  let option = parseOption(args);
-  return new node.SetOptionsCommand(option);
+  return new node.SetOptionsCommand(parseOption(args));
 }

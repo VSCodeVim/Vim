@@ -17,7 +17,8 @@ class StatusBarImpl implements vscode.Disposable {
     text: string,
     mode: ModeName,
     isRecordingMacro: boolean,
-    isHighPriority: boolean = false
+    isHighPriority = false,
+    isError = false
   ) {
     const hasModeChanged = mode !== this._previousModeName;
 
@@ -33,6 +34,9 @@ class StatusBarImpl implements vscode.Disposable {
     // until specific conditions are met (such as the mode has changed)
     if ((shouldUpdateText && !this._wasHighPriority) || isHighPriority) {
       this.UpdateText(text);
+      if (!configuration.statusBarColorControl) {
+        this._statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
+      }
     }
 
     // color

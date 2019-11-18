@@ -3,7 +3,7 @@ import * as node from './node';
 import * as token from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
-import { commandParsers, CommandParserMapping, getParser } from './subparser';
+import { getParser } from './subparser';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;

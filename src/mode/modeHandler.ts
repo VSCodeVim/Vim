@@ -308,6 +308,7 @@ export class ModeHandler implements vscode.Disposable {
           e.toString(),
           this.vimState.currentMode,
           this.vimState.isRecordingMacro,
+          true,
           true
         );
       } else {
