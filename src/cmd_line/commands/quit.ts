@@ -32,7 +32,11 @@ export class QuitCommand extends node.CommandBase {
       vscode.window.visibleTextEditors.filter(
         editor => editor.document === this.activeTextEditor!.document
       ).length > 1;
-    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang && !duplicatedInSplit) {
+    if (
+      this.activeTextEditor!.document.isDirty &&
+      !this.arguments.bang &&
+      (!duplicatedInSplit || this._arguments.quitAll)
+    ) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 
