@@ -551,6 +551,104 @@ suite('Mode Visual', () => {
     });
   });
 
+  suite('handles bracket blocks in visual mode', () => {
+    const brackets = [
+      {
+        start: '{',
+        end: '}',
+      },
+      {
+        start: '[',
+        end: ']',
+      },
+      {
+        start: '(',
+        end: ')',
+      },
+      {
+        start: '<',
+        end: '>',
+      },
+    ];
+
+    const operators = [
+      {
+        operator: 'd',
+        endMode: ModeName.Normal,
+        joinEnd: true,
+      },
+      {
+        operator: 'c',
+        endMode: ModeName.Insert,
+        joinEnd: false,
+      },
+    ];
+
+    brackets.forEach(({start, end}) => {
+      operators.forEach(({operator, endMode, joinEnd}) => {
+        newTest({
+          title: `Can do ${operator}i${start} on a matching brackets`,
+          start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+          keysPressed: `${operator}i${start}`,
+          end: [`${start} one ${start} two ${start}|${end} four ${end} five ${end}`],
+          endMode,
+        });
+
+        newTest({
+          title: `Can do ${operator}i${end} on a matching brackets`,
+          start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+          keysPressed: `${operator}i${end}`,
+          end: [`${start} one ${start} two ${start}|${end} four ${end} five ${end}`],
+          endMode,
+        });
+
+        newTest({
+          title: `Can do ${operator}3i${start} on a matching brackets`,
+          start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+          keysPressed: `${operator}3i${start}`,
+          end: [`${start}|${end}`],
+          endMode,
+        });
+
+        newTest({
+          title: `Can do ${operator}3i${end} on a matching brackets`,
+          start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+          keysPressed: `${operator}3i${end}`,
+          end: [`${start}|${end}`],
+          endMode,
+        });
+
+        /*
+        newTest({
+          title: `Can do count-prefixed ${operator}3i${start} on a matching brackets`,
+          start: [`one ${start} two ${start} th|ree ${end} four ${end} five`],
+          keysPressed: `${operator}3i${start}`,
+          end: [`one ${start} two ${start} th|ree ${end} four ${end} five`],
+          endMode,
+        });
+        */
+
+        const cursorEnd = joinEnd ? [`|${end}`] : ['|', end];
+
+        newTest({
+          title: `Can do ${operator}i${start} on a matching brackets for multiple lines`,
+          start: [start, 'one', start, 'two', start, 'th|ree', end, 'four', end, 'five', end],
+          keysPressed: `${operator}i${start}`,
+          end: [start, 'one', start, 'two', start, ...cursorEnd, 'four', end, 'five', end],
+          endMode,
+        });
+
+        newTest({
+          title: `Can do ${operator}3i${end} on a matching brackets for multiple lines`,
+          start: [start, 'one', start, 'two', start, 'th|ree', end, 'four', end, 'five', end],
+          keysPressed: `${operator}3i${end}`,
+          end: [start, ...cursorEnd],
+          endMode,
+        });
+      });
+    });
+  });
+
   suite('handles tag blocks in visual mode', () => {
     newTest({
       title: 'Can do vit on a matching tag',
@@ -563,11 +661,22 @@ suite('Mode Visual', () => {
     newTest({
       title:
         'Count-prefixed vit alternates expanding selection between inner and outer tag brackets',
-      start: ['<div> one <p> t|wo </p> three </div>'],
+      start: ['<div> one <p> two <span> th|ree </span> four </p> five </div>'],
       keysPressed: 'v3itd',
       end: ['<div>|</div>'],
       endMode: ModeName.Normal,
     });
+
+    /*
+    newTest({
+      title:
+        'Failed vit does not expand or move selection, remains in visual mode',
+      start: ['one <p> two <span> th|ree </span> four </p> five'],
+      keysPressed: 'v3itd',
+      end: ['one <p> two <span> th|ree </span> four </p> five'],
+      endMode: ModeName.Normal,
+    });
+    */
 
     newTest({
       title: 'Can do vat on a matching tag',

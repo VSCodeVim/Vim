@@ -101,6 +101,13 @@ export class VimState implements vscode.Disposable {
   public returnToInsertAfterCommand = false;
   public actionCount = 0;
 
+  public motionActionCount = 0;
+  public motionActionIndex = 0;
+
+  public get motionActionLast(): boolean {
+    return this.motionActionIndex === this.motionActionCount - 1;
+  }
+
   /**
    * Every time we invoke a VS Code command which might trigger Code's view update,
    * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.

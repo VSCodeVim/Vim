@@ -1371,6 +1371,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const includeSurrounding = vimState.motionActionLast ? this.includeSurrounding : true;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     let cursorStartPos = new Position(
       vimState.cursorStartPosition.line,
@@ -1381,7 +1382,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
 
     // when matching inside content of a pair, search for the next pair if
     // the inner content is already selected in full
-    if (!this.includeSurrounding) {
+    if (!includeSurrounding) {
       const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks();
       let adjacentPosRight = position.getRightThroughLineBreaks();
       if (vimState.recordedState.operator) {
@@ -1416,7 +1417,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
       return failure;
     }
 
-    if (this.includeSurrounding) {
+    if (includeSurrounding) {
       if (vimState.currentMode !== ModeName.Visual) {
         endPos = new Position(endPos.line, endPos.character + 1);
       }
@@ -1768,6 +1769,7 @@ abstract class MoveTagMatch extends ExpandingSelection {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const includeTag = vimState.motionActionLast ? this.includeTag : true;
     const editorText = TextEditor.getText();
     const offset = TextEditor.getOffsetAt(position);
     const tagMatcher = new TagMatcher(editorText, offset, vimState);
@@ -1775,8 +1777,8 @@ abstract class MoveTagMatch extends ExpandingSelection {
       vimState.cursorStartPosition.line,
       vimState.cursorStartPosition.character
     );
-    const start = tagMatcher.findOpening(this.includeTag);
-    const end = tagMatcher.findClosing(this.includeTag);
+    const start = tagMatcher.findOpening(includeTag);
+    const end = tagMatcher.findClosing(includeTag);
 
     if (start === undefined || end === undefined) {
       return {

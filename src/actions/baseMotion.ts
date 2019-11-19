@@ -119,7 +119,10 @@ export abstract class BaseMovement extends BaseAction {
 
     count = this.clampCount(count);
 
+    vimState.motionActionCount = count;
+
     for (let i = 0; i < count; i++) {
+      vimState.motionActionIndex = i;
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
       result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
