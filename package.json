@@ -899,7 +899,22 @@
           "default": true
         }
       }
-    }
+    },
+    "languages": [
+      {
+        "id": "vimrc",
+        "extensions": [
+          ".vimrc"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vimrc",
+        "scopeName": "source.vimrc",
+        "path": "./syntaxes/vimrc.tmLanguage.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "gulp build",
