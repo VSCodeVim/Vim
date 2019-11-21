@@ -61,7 +61,7 @@ class CommandLine {
     }
 
     if ('help'.startsWith(command.split(/\s/)[0])) {
-      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+      StatusBar.Set(`:help Not supported.`, vimState, true);
       return;
     }
 
@@ -81,7 +81,7 @@ class CommandLine {
 
       if (useNeovim) {
         const statusBarText = await vimState.nvim.run(vimState, command);
-        StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
+        StatusBar.Set(statusBarText, vimState, true);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
@@ -90,12 +90,7 @@ class CommandLine {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await vimState.nvim.run(vimState, command);
         } else {
-          StatusBar.Set(
-            `${e.toString()}. ${command}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
-            true
-          );
+          StatusBar.Set(`${e.toString()}. ${command}`, vimState, true);
         }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);
