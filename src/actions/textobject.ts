@@ -565,10 +565,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
     let endCharacter;
-    if (
-      endLineNumber === TextEditor.getLineCount() - 1 ||
-      vimState.currentMode === ModeName.Visual
-    ) {
+    if (endLineNumber === TextEditor.getLineCount() - 1 || vimState.currentMode === ModeName.Visual) {
       endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
     } else {
       endCharacter = 0;

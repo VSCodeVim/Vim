@@ -28,10 +28,10 @@ suite('Mode Visual', () => {
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    assertEqual(modeHandler.currentMode, ModeName.Visual);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
   });
 
   test('Can handle w', async () => {
@@ -62,7 +62,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -71,7 +71,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -152,7 +152,7 @@ suite('Mode Visual', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assertEqual(modeHandler.currentMode, ModeName.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -1073,7 +1073,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
       assertEqualLines(['one two three']);
 
       // test copy by pasting back
@@ -1095,65 +1095,65 @@ suite('Mode Visual', () => {
   suite('Transition between visual mode', () => {
     test('vv will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
     });
 
     test('vV will transit to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
     });
 
     test('v<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
     });
 
     test('Vv will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
     });
 
     test('VV will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
     });
 
     test('V<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
     });
 
     test('<C-v>v will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
     });
 
     test('<C-v>V will back to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
     });
 
     test('<C-v><C-v> will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
     });
   });
 
@@ -1171,7 +1171,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
@@ -1196,7 +1196,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -1223,7 +1223,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
       assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();
@@ -1243,7 +1243,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1259,7 +1259,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1275,7 +1275,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1291,7 +1291,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1307,7 +1307,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1323,7 +1323,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 

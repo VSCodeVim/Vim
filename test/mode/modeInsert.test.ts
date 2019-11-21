@@ -29,10 +29,10 @@ suite('Mode Insert', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+      assertEqual(modeHandler.currentMode, ModeName.Insert);
     }
   });
 
@@ -64,7 +64,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
+      assertEqual(modeHandler.currentMode === ModeName.Insert, true);
     }
   });
 

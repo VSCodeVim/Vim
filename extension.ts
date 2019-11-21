@@ -287,7 +287,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      if (mh.currentMode.name === ModeName.EasyMotionMode) {
+      if (mh.currentMode === ModeName.EasyMotionMode) {
         return;
       }
 

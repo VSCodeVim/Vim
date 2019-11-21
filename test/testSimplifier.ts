@@ -289,7 +289,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // endMode: check end mode is correct if given
   if (typeof testObj.endMode !== 'undefined') {
-    const actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
+    const actualMode = ModeName[modeHandler.currentMode].toUpperCase();
     const expectedMode = ModeName[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }

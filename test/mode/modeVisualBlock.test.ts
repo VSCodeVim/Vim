@@ -22,10 +22,10 @@ suite('Mode Visual Block', () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     await modeHandler.handleKeyEvent('<C-v>');
-    assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+    assertEqual(modeHandler.currentMode, ModeName.VisualBlock);
 
     await modeHandler.handleKeyEvent('<C-v>');
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
   });
 
   newTest({
@@ -127,7 +127,7 @@ suite('Mode Visual Block', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', '<C-v>', 'e', 'j', 'j', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, ModeName.Normal);
 
       // test copy by pasting back
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);

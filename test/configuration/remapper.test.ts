@@ -234,7 +234,7 @@ suite('Remapper', () => {
       }
 
       if (testCase.expectedAfterMode) {
-        assertEqual(modeHandler.currentMode.name, testCase.expectedAfterMode);
+        assertEqual(modeHandler.currentMode, testCase.expectedAfterMode);
         assertEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
       }
     }
@@ -261,7 +261,7 @@ suite('Remapper', () => {
     vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assertEqual(modeHandler.currentMode, ModeName.Insert);
 
     // act
     let actual = false;
@@ -273,7 +273,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -286,7 +286,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
 
     // act
     let actual = false;
@@ -322,7 +322,7 @@ suite('Remapper', () => {
     vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assertEqual(modeHandler.currentMode, ModeName.Insert);
 
     // act
     let actual = false;
@@ -334,7 +334,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -347,7 +347,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
 
     // act
     let actual = false;
@@ -371,10 +371,10 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    assertEqual(modeHandler.currentMode, ModeName.Visual);
 
     // act
     let actual = false;
@@ -397,7 +397,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
@@ -424,7 +424,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
@@ -454,18 +454,18 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['c', 'i', 'w']);
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
   });
 });
 

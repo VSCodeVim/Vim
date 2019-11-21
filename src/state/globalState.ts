@@ -59,13 +59,7 @@ class GlobalState {
       .get()
       .forEach(val =>
         this.searchStatePrevious.push(
-          new SearchState(
-            SearchDirection.Forward,
-            new Position(0, 0),
-            val,
-            undefined,
-            ModeName.Normal
-          )
+          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined, ModeName.Normal)
         )
       );
   }

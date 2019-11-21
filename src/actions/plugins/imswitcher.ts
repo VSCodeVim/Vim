@@ -69,11 +69,6 @@ export class InputMethodSwitcher {
   }
 
   private isInsertLikeMode(mode: ModeName): boolean {
-    const insertLikeModes = new Set([
-      ModeName.Insert,
-      ModeName.Replace,
-      ModeName.SurroundInputMode,
-    ]);
-    return insertLikeModes.has(mode);
+    return [ModeName.Insert, ModeName.Replace, ModeName.SurroundInputMode].includes(mode);
   }
 }

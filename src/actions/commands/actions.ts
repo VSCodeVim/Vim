@@ -13,8 +13,7 @@ import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { ModeName } from './../../mode/mode';
-import { VisualBlockMode } from './../../mode/modes';
+import { ModeName, visualBlockGetTopLeftPosition } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
@@ -703,9 +702,7 @@ abstract class CommandEditorScroll extends BaseCommand {
         by: this.by,
         value: timesToRepeat,
         revealCursor: true,
-        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-          vimState.currentMode
-        ),
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(vimState.currentMode),
       },
     });
     return vimState;
@@ -749,9 +746,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
       by: 'line',
       value: scrollLines,
       revealCursor: smoothScrolling,
-      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(
-        vimState.currentMode
-      ),
+      select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(vimState.currentMode),
     });
 
     const newPositionLine = clamp(
@@ -1129,13 +1124,7 @@ class CommandPasteInSearchMode extends BaseCommand {
  */
 @RegisterAction
 class CommandOverrideCopy extends BaseCommand {
-  modes = [
-    ModeName.Visual,
-    ModeName.VisualLine,
-    ModeName.VisualBlock,
-    ModeName.Insert,
-    ModeName.Normal,
-  ];
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock, ModeName.Insert, ModeName.Normal];
   keys = ['<copy>']; // A special key - see ModeHandler
   runsOnceForEveryCursor() {
     return false;
@@ -1167,10 +1156,7 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
-    } else if (
-      vimState.currentMode === ModeName.Insert ||
-      vimState.currentMode === ModeName.Normal
-    ) {
+    } else if (vimState.currentMode === ModeName.Insert || vimState.currentMode === ModeName.Normal) {
       text = vimState.editor.selections
         .map(selection => {
           return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
@@ -1575,10 +1561,7 @@ export class PutCommand extends BaseCommand {
       vimState.lastVisualMode = vimState.currentMode;
       vimState.lastVisualSelectionStart = whereToAddText;
       let textToEnd = textToAdd;
-      if (
-        vimState.currentMode === ModeName.VisualLine &&
-        textToAdd[textToAdd.length - 1] === '\n'
-      ) {
+      if (vimState.currentMode === ModeName.VisualLine && textToAdd[textToAdd.length - 1] === '\n') {
         // don't go next line
         textToEnd = textToAdd.substring(0, textToAdd.length - 1);
       }
@@ -4026,7 +4009,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       });
     }
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(
+    const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
       vimState.cursorStartPosition
     );
@@ -4062,7 +4045,7 @@ class ActionXVisualBlock extends BaseCommand {
     vimState.currentRegisterMode = RegisterMode.BlockWise;
     Register.put(text, vimState, this.multicursorIndex);
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(
+    const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
       vimState.cursorStartPosition
     );
@@ -4102,7 +4085,7 @@ class ActionShiftDVisualBlock extends BaseCommand {
       });
     }
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(
+    const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
       vimState.cursorStartPosition
     );

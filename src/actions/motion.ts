@@ -1789,10 +1789,7 @@ abstract class MoveTagMatch extends ExpandingSelection {
 
     let startPosition = start >= 0 ? TextEditor.getPositionAt(start) : cursorStartPos;
     let endPosition = end >= 0 ? TextEditor.getPositionAt(end) : position;
-    if (
-      vimState.currentMode === ModeName.Visual ||
-      vimState.currentMode === ModeName.SurroundInputMode
-    ) {
+    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.SurroundInputMode) {
       endPosition = endPosition.getLeftThroughLineBreaks();
     }
 

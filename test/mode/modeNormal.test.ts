@@ -28,13 +28,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal, `${key} doesn't work.`);
+      assertEqual(modeHandler.currentMode, ModeName.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, ModeName.Normal);
   });
 
   newTest({
@@ -2120,7 +2120,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -2136,7 +2136,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -2168,7 +2168,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -2286,7 +2286,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(['G']);
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -2302,7 +2302,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -2334,7 +2334,7 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode, ModeName.Visual);
 
       const selection = TextEditor.getSelection();
 
