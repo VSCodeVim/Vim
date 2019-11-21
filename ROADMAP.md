@@ -1,314 +1,314 @@
 ## Key
 
-:white_check_mark: - command done
+:white_check_mark: - 명령 완료
 
-:white_check_mark: :star: - command done with VS Code specific customization
+:white_check_mark: :star: - VScode 특정 사용자 정의로 수행되는 명령
 
-:warning: - some variations of the command are not supported
+:warning: - 명령의 일부 변형이 지원되지 않습니다
 
-:running: - work in progress
+:running: - 진행중인 작업
 
-:arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
+:arrow_down: - 명령이 우선 순위가 낮습니다. 더 빨리 보고싶다면 이슈를 열거나 관련 이슈를 엄지손가락으로 올리십시오.
 
-:x: - command impossible with current VSCode API
+:x: - 현재 VSCode API로는 불가능한 명령
 
-:1234: - command accepts numeric prefix
+:1234: - 명령어는 숫자 접두사를 허용합니다
 
-## Roadmap
+## 로드맵
 
-These are the big Vim features, put generally in the order in which we plan to implement them.
+이들은 Vim의 큰 기능으로, 일반적으로 구현할 순서대로되어 있습니다.
 
 | Status             | Command                |
 | ------------------ | ---------------------- |
-| :white_check_mark: | Normal Mode            |
-| :white_check_mark: | Insert Mode            |
-| :white_check_mark: | Visual Mode            |
-| :white_check_mark: | Visual Line Mode       |
-| :white_check_mark: | Number Prefixes        |
-| :white_check_mark: | . Operator             |
-| :white_check_mark: | Searching with / and ? |
-| :white_check_mark: | Correct Undo/Redo      |
-| :warning:          | Command Remapping      |
-| :warning:          | Marks                  |
-| :white_check_mark: | Text Objects           |
-| :white_check_mark: | Visual Block Mode      |
-| :white_check_mark: | Replace Mode           |
-| :white_check_mark: | Multiple Select Mode   |
-| :warning:          | Macros                 |
+| :white_check_mark: | 일반 모드               |
+| :white_check_mark: | 삽입 모드               |
+| :white_check_mark: | 비주얼  모드            |
+| :white_check_mark: | 비주얼 라인 모드        |
+| :white_check_mark: | 숫자 접두사             |
+| :white_check_mark: | . 연산자               |
+| :white_check_mark: |  / 과 ? 로 검색        |
+| :white_check_mark: | 실행 취소 / 재실행      |
+| :warning:          | 명령 재 매핑           |
+| :warning:          | 마크                   |
+| :white_check_mark: | 텍스트 객체             |
+| :white_check_mark: | 비주얼 블록 모드        |
+| :white_check_mark: | 교체 모드               |
+| :white_check_mark: | 다중 선택 모드          |
+| :warning:          | 매크로                 |
 | :warning:          | Buffer/Window/Tab      |
 
-Now follows an exhaustive list of every known Vim command that we could find.
+이제 우리가 찾을 수있는 모든 알려진 Vim 명령의 전체 목록을 따릅니다.
 
-## Custom commands
+## 사용자 명령어
 
-- `gh` - show the hover tooltip.
-- `gb` - add an additional cursor at the next place that matches `*`.
+- `gh` - hover tooltip 표시.
+- `gb` - 다음 위치에 `*` 와 일치하는 추가 커서를 추가하십시오.
 
-## Left-right motions
+## 좌우 동작
 
 | Status             | Command        | Description                                                                    |
 | ------------------ | -------------- | ------------------------------------------------------------------------------ |
-| :white_check_mark: | :1234: h       | left (also: CTRL-H, BS, or Left key)                                           |
-| :white_check_mark: | :1234: l       | right (also: Space or Right key)                                               |
-| :white_check_mark: | 0              | to first character in the line (also: Home key)                                |
-| :white_check_mark: | ^              | to first non-blank character in the line                                       |
-| :white_check_mark: | :1234: \$      | to the last character in the line (N-1 lines lower) (also: End key)            |
-| :white_check_mark: | g0             | to first character in screen line (differs from "0" when lines wrap)           |
-| :white_check_mark: | g^             | to first non-blank character in screen line (differs from "^" when lines wrap) |
-| :white_check_mark: | :1234: g\$     | to last character in screen line (differs from "\$" when lines wrap)           |
-| :white_check_mark: | gm             | to middle of the screen line                                                   |
-| :white_check_mark: | :1234: \|      | to column N (default: 1)                                                       |
-| :white_check_mark: | :1234: f{char} | to the Nth occurrence of {char} to the right                                   |
-| :white_check_mark: | :1234: F{char} | to the Nth occurrence of {char} to the left                                    |
-| :white_check_mark: | :1234: t{char} | till before the Nth occurrence of {char} to the right                          |
-| :white_check_mark: | :1234: T{char} | till before the Nth occurrence of {char} to the left                           |
-| :white_check_mark: | :1234: ;       | repeat the last "f", "F", "t", or "T" N times                                  |
-| :white_check_mark: | :1234: ,       | repeat the last "f", "F", "t", or "T" N times in opposite direction            |
+| :white_check_mark: | :1234: h       | 왼쪽 (또한 CTRL-H, BS 또는 왼쪽 키)                                              |
+| :white_check_mark: | :1234: l       | 오른쪽 (또한 스페이스 또는 오른쪽 키)                                             |
+| :white_check_mark: | 0              | 줄의 첫 번째 문자 (또한 Home 키)                                                 |
+| :white_check_mark: | ^              | 행의 첫 번째 공백이 아닌 문자                                                    |
+| :white_check_mark: | :1234: \$      | 줄의 마지막 문자 (N-1 줄 아래) (또한 End 키)                                     |
+| :white_check_mark: | g0             | 화면 줄의 첫 문자 (줄 바꿈시 "0"과 다름)                                          |
+| :white_check_mark: | g^             | 화면 줄에서 공백이 아닌 첫 문자로 줄 바꾸기 (줄 바꿈시 "^"와 다름)                  |
+| :white_check_mark: | :1234: g\$     | 화면 줄의 마지막 문자 (줄 바꿈시 "\ $"와 다름)                                    |
+| :white_check_mark: | gm             | 화면 라인의 중간                                                                |
+| :white_check_mark: | :1234: \|      | N 열까지 (기본값 : 1)                                                           |
+| :white_check_mark: | :1234: f{char} | 오른쪽으로 {char}의 N 번째 발생                                                 |
+| :white_check_mark: | :1234: F{char} | 왼쪽으로 {char}의 N 번째 발생                                                   |
+| :white_check_mark: | :1234: t{char} | 오른쪽으로 {char}의 N 번째 발생 전까지                                           |
+| :white_check_mark: | :1234: T{char} | 왼쪽으로 {char}의 N 번째 발생 전까지                                             |
+| :white_check_mark: | :1234: ;       | 마지막 "f", "F", "t"또는 "T"N 번 반복                                           |
+| :white_check_mark: | :1234: ,       | 반대 방향으로 마지막 "f", "F", "t"또는 "T"N 번 반복                              |
 
-## Up-down motions
+## 상하 동작
 
 | Status             | Command   | Description                                                                               |
 | ------------------ | --------- | ----------------------------------------------------------------------------------------- |
-| :white_check_mark: | :1234: k  | up N lines (also: CTRL-P and Up)                                                          |
-| :white_check_mark: | :1234: j  | down N lines (also: CTRL-J, CTRL-N, NL, and Down)                                         |
-| :white_check_mark: | :1234: -  | up N lines, on the first non-blank character                                              |
-| :white_check_mark: | :1234: +  | down N lines, on the first non-blank character (also: CTRL-M and CR)                      |
-| :white_check_mark: | :1234: \_ | down N-1 lines, on the first non-blank character                                          |
-| :white_check_mark: | :1234: G  | goto line N (default: last line), on the first non-blank character                        |
-| :white_check_mark: | :1234: gg | goto line N (default: first line), on the first non-blank character                       |
-| :white_check_mark: | :1234: %  | goto line N percentage down in the file; N must be given, otherwise it is the `%` command |
-| :white_check_mark: | :1234: gk | up N screen lines (differs from "k" when line wraps)                                      |
-| :white_check_mark: | :1234: gj | down N screen lines (differs from "j" when line wraps)                                    |
+| :white_check_mark: | :1234: k  | N 줄 위로 (CTRL-P 및 Up)                                                                   |
+| :white_check_mark: | :1234: j  | N 줄 아래로 (또한 CTRL-J, CTRL-N, NL 및 Down)                                              |
+| :white_check_mark: | :1234: -  | 공백이 아닌 첫 번째 문자에서 N 줄 위로                                                       |
+| :white_check_mark: | :1234: +  | 공백이 아닌 첫 번째 문자에서 N 줄 아래로 (CTRL-M 및 CR)                                      |
+| :white_check_mark: | :1234: \_ | 공백이 아닌 첫 번째 문자에서 N-1 줄 아래로                                                   |
+| :white_check_mark: | :1234: G  | 공백이 아닌 첫 번째 문자에서 goto 행 N (기본값 : 마지막 행)                                   |
+| :white_check_mark: | :1234: gg | 공백이 아닌 첫 번째 문자의 goto 행 N (기본값 : 첫 번째 행)                                    |
+| :white_check_mark: | :1234: %  | 파일에서 N 줄 아래로 이동; N을 지정해야합니다. 그렇지 않으면 % 명령입니다.                      |
+| :white_check_mark: | :1234: gk | N 화면 줄 위로 (줄 바꿈시 "k"와 다름)                                                        |
+| :white_check_mark: | :1234: gj | N 화면 줄 아래로 (줄 바꿈시 "j"와 다름)                                                      |
 
-## Text object motions
+## 텍스트 객체 동작
 
 | Status             | Command    | Description                                                 |
 | ------------------ | ---------- | ----------------------------------------------------------- |
-| :white_check_mark: | :1234: w   | N words forward                                             |
-| :white_check_mark: | :1234: W   | N blank-separated WORDs forward                             |
-| :white_check_mark: | :1234: e   | N words forward to the end of the Nth word                  |
-| :white_check_mark: | :1234: E   | N words forward to the end of the Nth blank-separated WORD  |
-| :white_check_mark: | :1234: b   | N words backward                                            |
-| :white_check_mark: | :1234: B   | N blank-separated WORDs backward                            |
-| :white_check_mark: | :1234: ge  | N words backward to the end of the Nth word                 |
-| :white_check_mark: | :1234: gE  | N words backward to the end of the Nth blank-separated WORD |
-| :white_check_mark: | :1234: )   | N sentences forward                                         |
-| :white_check_mark: | :1234: (   | N sentences backward                                        |
-| :white_check_mark: | :1234: }   | N paragraphs forward                                        |
-| :white_check_mark: | :1234: {   | N paragraphs backward                                       |
-| :white_check_mark: | :1234: ]]  | N sections forward, at start of section                     |
-| :white_check_mark: | :1234: [[  | N sections backward, at start of section                    |
-| :white_check_mark: | :1234: ][  | N sections forward, at end of section                       |
-| :white_check_mark: | :1234: []  | N sections backward, at end of section                      |
-| :white_check_mark: | :1234: [(  | N times back to unclosed '('                                |
-| :white_check_mark: | :1234: [{  | N times back to unclosed '{'                                |
-| :arrow_down:       | :1234: [m  | N times back to start of method (for Java)                  |
-| :arrow_down:       | :1234: [M  | N times back to end of method (for Java)                    |
-| :white_check_mark: | :1234: ])  | N times forward to unclosed ')'                             |
-| :white_check_mark: | :1234: ]}  | N times forward to unclosed '}'                             |
-| :arrow_down:       | :1234: ]m  | N times forward to start of method (for Java)               |
-| :arrow_down:       | :1234: ]M  | N times forward to end of method (for Java)                 |
-| :arrow_down:       | :1234: [#  | N times back to unclosed "#if" or "#else"                   |
-| :arrow_down:       | :1234: ]#  | N times forward to unclosed "#else" or "#endif"             |
-| :arrow_down:       | :1234: [\* | N times back to start of a C comment "/\*"                  |
-| :arrow_down:       | :1234: ]\* | N times forward to end of a C comment "\*/"                 |
+| :white_check_mark: | :1234: w   | 앞으로 N 단어                                                |
+| :white_check_mark: | :1234: W   | 공백으로 분리 된 N 개의 단어 앞으로                            |
+| :white_check_mark: | :1234: e   | N 번째 단어의 끝까지 N 단어                                   |
+| :white_check_mark: | :1234: E   | 공백으로 분리 된 N 번째 단어의 끝으로 N 단어 앞으로             |
+| :white_check_mark: | :1234: b   | 뒤로 N 단어                                                  |
+| :white_check_mark: | :1234: B   | 공백으로 분리 된 N개의 단어 뒤로                               |
+| :white_check_mark: | :1234: ge  | N번째 단어의 끝까지 N단어                                     |
+| :white_check_mark: | :1234: gE  | 공백으로 분리 된 N 번째 단어의 끝까지 N 단어                   |
+| :white_check_mark: | :1234: )   | 앞으로 N 문장                                                |
+| :white_check_mark: | :1234: (   | 뒤로 N 문장                                                  |
+| :white_check_mark: | :1234: }   | 앞으로 N 단락                                                |
+| :white_check_mark: | :1234: {   | 뒤로 N 단락                                                  |
+| :white_check_mark: | :1234: ]]  | 섹션 시작시 N 섹션 앞으로                                     |
+| :white_check_mark: | :1234: [[  | 섹션 시작시 뒤로 N 섹션                                       |
+| :white_check_mark: | :1234: ][  | 섹션 끝에서 N 섹션 앞으로                                     |
+| :white_check_mark: | :1234: []  | 섹션 끝에서 뒤로 N 섹션                                       |
+| :white_check_mark: | :1234: [(  | 닫히지 않은 '('로 N 번                                        |
+| :white_check_mark: | :1234: [{  | 닫히지 않은 '{'로 N 번                                        |
+| :arrow_down:       | :1234: [m  | 메소드 시작으로 다시 N 번 (Java의 경우)                        |
+| :arrow_down:       | :1234: [M  | 메소드의 끝까지 N 번 (Java의 경우)                            |
+| :white_check_mark: | :1234: ])  | 닫히지 않은 ')'까지 N 번 전달                                 |
+| :white_check_mark: | :1234: ]}  | 닫히지 않은 '}'까지 N 번 전달                                 |
+| :arrow_down:       | :1234: ]m  | 메소드 시작까지 N 배 앞으로 (Java의 경우)                      |
+| :arrow_down:       | :1234: ]M  | 메소드의 끝까지 N 배 앞으로 (Java의 경우)                      |
+| :arrow_down:       | :1234: [#  | 닫히지 않은 "#if"또는 "#else"로 다시 N 번                     |
+| :arrow_down:       | :1234: ]#  | 닫히지 않은 "#else"또는 "#endif"로 N 번 전달                  |
+| :arrow_down:       | :1234: [\* | C 주석 "/ *"의 시작으로 다시 N 번                             |
+| :arrow_down:       | :1234: ]\* | C 주석 "* /"의 끝까지 N 배 앞으로                             |
 
-## Pattern searches
+## 패턴 검색
 
 | Status                    | Command                            | Description                                            | Note                                                                            |
 | ------------------------- | ---------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| :white_check_mark: :star: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern}     | Currently we only support JavaScript Regex but not Vim's in-house Regex engine. |
-| :white_check_mark: :star: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern}    | Currently we only support JavaScript Regex but not Vim's in-house Regex engine. |
-| :warning:                 | :1234: `/<CR>`                     | repeat last search, in the forward direction           | {count} is not supported.                                                       |
-| :warning:                 | :1234: `?<CR>`                     | repeat last search, in the backward direction          | {count} is not supported.                                                       |
-| :white_check_mark:        | :1234: n                           | repeat last search                                     |
-| :white_check_mark:        | :1234: N                           | repeat last search, in opposite direction              |
-| :white_check_mark:        | :1234: \*                          | search forward for the identifier under the cursor     |
-| :white_check_mark:        | :1234: #                           | search backward for the identifier under the cursor    |
-| :white_check_mark:        | :1234: g\*                         | like "\*", but also find partial matches               |
-| :white_check_mark:        | :1234: g#                          | like "#", but also find partial matches                |
-| :white_check_mark:        | gd                                 | goto local declaration of identifier under the cursor  |
-| :arrow_down:              | gD                                 | goto global declaration of identifier under the cursor |
+| :white_check_mark: :star: | :1234: `/{pattern}[/[offset]]<CR>` | {pattern}의 N 번째 발생을 검색                          | 현재는 JavaScript 정규식 만 지원하지만 Vim의 사내 정규식 엔진은 지원하지 않습니다. |
+| :white_check_mark: :star: | :1234: `?{pattern}[?[offset]]<CR>` | {pattern}의 N 번째 발생을 뒤로 검색                      | 현재는 JavaScript 정규식 만 지원하지만 Vim의 사내 정규식 엔진은 지원하지 않습니다. |
+| :warning:                 | :1234: `/<CR>`                     | 정방향으로 마지막 검색 반복                              | {count}는 지원되지 않습니다.                                                      |
+| :warning:                 | :1234: `?<CR>`                     | 역방향으로 마지막 검색 반복                              | {count}는 지원되지 않습니다.                                                      |
+| :white_check_mark:        | :1234: n                           | 마지막 검색 반복                                        |
+| :white_check_mark:        | :1234: N                           | 반대 방향으로 마지막 검색 반복                           |
+| :white_check_mark:        | :1234: \*                          | 커서 아래에서 식별자를 검색                              |
+| :white_check_mark:        | :1234: #                           | 커서 아래에서 식별자를 뒤로 검색                          |
+| :white_check_mark:        | :1234: g\*                         | "*"와 비슷하지만 부분 일치도 찾습니다                     |
+| :white_check_mark:        | :1234: g#                          | "#"과 같지만 부분 일치 항목도 찾습니다.                   |
+| :white_check_mark:        | gd                                 | 커서 아래 식별자의 로컬 선언으로 이동                     |
+| :arrow_down:              | gD                                 | 커서 아래에 식별자의 goto 글로벌 선언                     |
 
-## Marks and motions
+## 마크와 
 
 | Status             | Command                                                     | Description                                            |
 | ------------------ | ----------------------------------------------------------- | ------------------------------------------------------ |
-| :white_check_mark: | m{a-zA-Z}                                                   | mark current position with mark {a-zA-Z}               |
-| :white_check_mark: | `{a-z} | go to mark {a-z} within current file               |
-| :white_check_mark: | `{A-Z} | go to mark {A-Z} in any file                       |
-| :white_check_mark: | `{0-9} | go to the position where Vim was previously exited |
-| :white_check_mark: | `` | go to the position before the last jump                |
-| :arrow_down:       | `" | go to the position when last editing this file         |
-| :white_check_mark: | `[ | go to the start of the previously operated or put text |
-| :white_check_mark: | '[                                                          | go to the start of the previously operated or put text |
-| :white_check_mark: | `] | go to the end of the previously operated or put text   |
-| :white_check_mark: | ']                                                          | go to the end of the previously operated or put text   |
-| :arrow_down:       | `< | go to the start of the (previous) Visual area          |
-| :arrow_down:       | `> | go to the end of the (previous) Visual area            |
-| :white_check_mark: | `. | go to the position of the last change in this file     |
-| :white_check_mark: | '.                                                          | go to the position of the last change in this file     |
-| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                                         | same as `, but on the first non-blank in the line      |
-| :arrow_down:       | :marks                                                      | print the active marks                                 |
-| :white_check_mark: | :1234: CTRL-O                                               | go to Nth older position in jump list                  |
-| :white_check_mark: | :1234: CTRL-I                                               | go to Nth newer position in jump list                  |
-| :arrow_down:       | :ju[mps]                                                    | print the jump list                                    |
+| :white_check_mark: | m{a-zA-Z}                                                   | {a-zA-Z} 표시로 현재 위치 표시                            |
+| :white_check_mark: | `{a-z} | 현재 파일에서 {a-z}로 이동                           |
+| :white_check_mark: | `{A-Z} | 모든 파일에서 {A-Z}로 이동                           |
+| :white_check_mark: | `{0-9} | Vim이 이전에 나간 위치로 이동                        |
+| :white_check_mark: | `` | 마지막 점프 전 위치로 이동                               |
+| :arrow_down:       | `" | 이 파일을 마지막으로 편집 할 때 위치로 이동               |
+| :white_check_mark: | `[ | 이전에 운영 한 텍스트의 시작으로 이동하거나 텍스트를 넣습니다|
+| :white_check_mark: | '[                                                          | 이전에 운영 한 텍스트의 시작으로 이동하거나 텍스트를 넣습니다         |
+| :white_check_mark: | `] | 이전에 운영 한 텍스트의 시작으로 이동하거나 텍스트를 넣습니다|
+| :white_check_mark: | ']                                                          | 이전에 운영 한 텍스트의 시작으로 이동하거나 텍스트를 넣습니다         |
+| :arrow_down:       | `< | (이전) 시각 영역의 시작으로 이동                         |
+| :arrow_down:       | `> | (이전) 시각 영역의 끝으로 이동                           |
+| :white_check_mark: | `. | 이 파일에서 마지막 변경 위치로 이동                      |
+| :white_check_mark: | '.                                                          | 이 파일에서 마지막 변경 위치로 이동     |
+| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                                         | `와 동일하지만 첫 번째 공백이 아닌 행   |
+| :arrow_down:       | :marks                                                      | 활성마크를 인쇄                                          |
+| :white_check_mark: | :1234: CTRL-O                                               | 점프 목록에서 N 번째 이전 위치로 이동                      |
+| :white_check_mark: | :1234: CTRL-I                                               | 점프 목록에서 N 번쨰 새로운 위치로 이동                    |
+| :arrow_down:       | :ju[mps]                                                    | 점프리스트를 인쇄                                       |
 
-## Various motions
+## 다양한 동작
 
 | Status             | Command             | Description                                                                                        |
 | ------------------ | ------------------- | -------------------------------------------------------------------------------------------------- |
-| :white_check_mark: | %                   | find the next brace, bracket, comment, or "#if"/ "#else"/"#endif" in this line and go to its match |
-| :white_check_mark: | :1234: H            | go to the Nth line in the window, on the first non-blank                                           |
-| :white_check_mark: | M                   | go to the middle line in the window, on the first non-blank                                        |
-| :white_check_mark: | :1234: L            | go to the Nth line from the bottom, on the first non-blank                                         |
-| :arrow_down:       | :1234: go           | go to Nth byte in the buffer                                                                       |
-| :arrow_down:       | :[range]go[to][off] | go to [off] byte in the buffer                                                                     |
+| :white_check_mark: | %                   | 이 줄에서 다음 중괄호, 대괄호, 주석 또는 "#if"/ "#else"/ "# endif"를 찾아서 해당 행으로 이동하십시오.  |
+| :white_check_mark: | :1234: H            | 공백이 아닌 첫 번째 창에서 N 번째 줄로 이동                                                           |
+| :white_check_mark: | M                   | 공백이 아닌 첫 번째 창에서 가운데 줄로 이동                                                           |
+| :white_check_mark: | :1234: L            | 첫 번째 공백이 아닌 바닥에서 N 번째 줄로 이동                                                         |
+| :arrow_down:       | :1234: go           | 버퍼의 N 번째 바이트로 이동                                                                         | 
+| :arrow_down:       | :[range]go[to][off] | 버퍼의 [off] 바이트로 이동                                                                           |
 
-## Using tags
+## 태그 사용
 
-The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the command palette if you haven't yet!
+VSCode는 Goto Symbol 태그를 매우 잘 지원하므로 다음은 우선 순위가 낮습니다. 아직 명령 팔레트에서 사용해보십시오!
 
 | Status       | Command                | Description                                                           |
 | ------------ | ---------------------- | --------------------------------------------------------------------- |
-| :arrow_down: | :ta[g][!] {tag}        | jump to tag {tag}                                                     |
-| :arrow_down: | :[count]ta[g][!]       | jump to [count]'th newer tag in tag list                              |
-| :arrow_down: | CTRL-]                 | jump to the tag under cursor, unless changes have been made           |
-| :arrow_down: | :ts[elect][!] [tag]    | list matching tags and select one to jump to                          |
-| :arrow_down: | :tj[ump][!] [tag]      | jump to tag [tag] or select from list when there are multiple matches |
-| :arrow_down: | :lt[ag][!] [tag]       | jump to tag [tag] and add matching tags to the location list          |
-| :arrow_down: | :tagsa                 | print tag list                                                        |
-| :arrow_down: | :1234: CTRL-T          | jump back from Nth older tag in tag list                              |
-| :arrow_down: | :[count]po[p][!]       | jump back from [count]'th older tag in tag list                       |
-| :arrow_down: | :[count]tn[ext][!]     | jump to [count]'th next matching tag                                  |
-| :arrow_down: | :[count]tp[revious][!] | jump to [count]'th previous matching tag                              |
-| :arrow_down: | :[count]tr[ewind][!]   | jump to [count]'th matching tag                                       |
-| :arrow_down: | :tl[ast][!]            | jump to last matching tag                                             |
-| :arrow_down: | :pt[ag] {tag}          | open a preview window to show tag {tag}                               |
-| :arrow_down: | CTRL-W }               | like CTRL-] but show tag in preview window                            |
-| :arrow_down: | :pts[elect]            | like ":tselect" but show tag in preview window                        |
-| :arrow_down: | :ptj[ump]              | like ":tjump" but show tag in preview window                          |
-| :arrow_down: | :pc[lose]              | close tag preview window                                              |
-| :arrow_down: | CTRL-W z               | close tag preview window`                                             |
+| :arrow_down: | :ta[g][!] {tag}        | 태그 {tag}로 이동                                                      |
+| :arrow_down: | :[count]ta[g][!]       | 태그 목록에서 [count] '번째 최신 태그로 이동                             |
+| :arrow_down: | CTRL-]                 | 변경 사항이 없으면 커서 아래의 태그로 이동                               |
+| :arrow_down: | :ts[elect][!] [tag]    | 일치하는 태그를 나열하고 이동할 태그를 선택하십시오.                      |
+| :arrow_down: | :tj[ump][!] [tag]      | 일치하는 태그가 여러 개인 경우 [tag] 태그로 이동하거나 목록에서 선택하십시오.|
+| :arrow_down: | :lt[ag][!] [tag]       | [tag] 태그로 이동하여 위치 목록에 일치하는 태그 추가 인쇄 태그 목록        |
+| :arrow_down: | :tagsa                 | 인쇄 태그 목록                                                         |
+| :arrow_down: | :1234: CTRL-T          | 태그 목록에서 N 번째 오래된 태그에서 뒤로 이동                           |
+| :arrow_down: | :[count]po[p][!]       | 태그 목록에서 [count] 번째 오래된 태그에서 뒤로 이동                     |
+| :arrow_down: | :[count]tn[ext][!]     | 다음으로 일치하는 [count] 번째 태그로 이동                              |
+| :arrow_down: | :[count]tp[revious][!] | 이전 일치하는 [count] 번째 태그로 이동                                  |
+| :arrow_down: | :[count]tr[ewind][!]   | 일치하는 [count] 번째 태그로 이동                                       |
+| :arrow_down: | :tl[ast][!]            | 마지막으로 일치하는 태그로 이동                                         |
+| :arrow_down: | :pt[ag] {tag}          | {tag} 태그를 표시하기 위해 미리보기 창을 엽니 다.                        |
+| :arrow_down: | CTRL-W }               | CTRL-]와 유사하지만 미리보기 창에 태그 표시                              |
+| :arrow_down: | :pts[elect]            | ": tselect"와 같지만 미리보기 창에 태그 표시                             |
+| :arrow_down: | :ptj[ump]              | ": tjump"와 같지만 미리보기 창에 태그 표시                               |
+| :arrow_down: | :pc[lose]              | 태그 미리보기 창 닫기                                                   |
+| :arrow_down: | CTRL-W z               | 태그 미리보기 창 닫기`                                                  |
 
-## Scrolling
+## 스크롤
 
 | Status             | Command       | Description                                    |
 | ------------------ | ------------- | ---------------------------------------------- |
-| :white_check_mark: | :1234: CTRL-E | window N lines downwards (default: 1)          |
-| :white_check_mark: | :1234: CTRL-D | window N lines Downwards (default: 1/2 window) |
-| :white_check_mark: | :1234: CTRL-F | window N pages Forwards (downwards)            |
-| :white_check_mark: | :1234: CTRL-Y | window N lines upwards (default: 1)            |
-| :white_check_mark: | :1234: CTRL-U | window N lines Upwards (default: 1/2 window)   |
-| :white_check_mark: | :1234: CTRL-B | window N pages Backwards (upwards)             |
-| :white_check_mark: | z CR or zt    | redraw, current line at top of window          |
-| :white_check_mark: | z. or zz      | redraw, current line at center of window       |
-| :white_check_mark: | z- or zb      | redraw, current line at bottom of window       |
+| :white_check_mark: | :1234: CTRL-E | window N 줄 아래로 내려갑니다 (기본값: 1)        |
+| :white_check_mark: | :1234: CTRL-D | window N 줄 아래로 내려갑니다(기본값: 1/2 window) |
+| :white_check_mark: | :1234: CTRL-F | window N 페이지 앞으로 (아래로)                  |
+| :white_check_mark: | :1234: CTRL-Y | window N 줄 위쪽을 향합니다 (기본값: 1)          |
+| :white_check_mark: | :1234: CTRL-U | window N 줄 위쪽을 향합니다 (기본값: 1/2 window) |
+| :white_check_mark: | :1234: CTRL-B | window N 페이지 뒤로 (위로)                     |
+| :white_check_mark: | z CR or zt    | window 맨 위에있는 현재 행 다시 그리기           |
+| :white_check_mark: | z. or zz      | window 가운데에 현재 행 다시 그리기              |
+| :white_check_mark: | z- or zb      | window 맨 아래에 현재 행 다시 그리기             |
 
-These only work when 'wrap' is off:
+'wrap'이 꺼져있을 때만 작동합니다.
 
 | Status                    | Command   | Description                                   | Note                                                                                                          |
 | ------------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| :white_check_mark: :star: | :1234: zh | scroll screen N characters to the right       | In Code, the cursor wil always move when you run this command, whether the horizontal scrollbar moves or not. |
-| :white_check_mark: :star: | :1234: zl | scroll screen N characters to the left        | As above                                                                                                      |
-| :white_check_mark: :star: | :1234: zH | scroll screen half a screenwidth to the right | As above                                                                                                      |
-| :white_check_mark: :star: | :1234: zL | scroll screen half a screenwidth to the left  | As above                                                                                                      |
+| :white_check_mark: :star: | :1234: zh | 화면 N 문자를 오른쪽으로 스크롤                 | 코드에서 가로 스크롤 막대의 이동 여부에 관계없이이 명령을 실행할 때 커서는 항상 이동합니다.                          |
+| :white_check_mark: :star: | :1234: zl | 화면 N 문자를 왼쪽으로 스크롤                   | 위와 같음                                                                                                      |
+| :white_check_mark: :star: | :1234: zH | 화면 너비를 화면 너비의 오른쪽으로 스크롤        | 위와 같음                                                                                                      |
+| :white_check_mark: :star: | :1234: zL | 화면 너비를 화면 너비의 왼쪽으로 스크롤          | 위와 같음                                                                                                      |
 
-## Inserting text
+## 텍스트 삽입
 
 | Status             | Command   | Description                                                   |
 | ------------------ | --------- | ------------------------------------------------------------- |
-| :white_check_mark: | :1234: a  | append text after the cursor (N times)                        |
-| :white_check_mark: | :1234: A  | append text at the end of the line (N times)                  |
-| :white_check_mark: | :1234: i  | insert text before the cursor (N times) (also: Insert)        |
-| :white_check_mark: | :1234: I  | insert text before the first non-blank in the line (N times)  |
-| :white_check_mark: | :1234: gI | insert text in column 1 (N times)                             |
-| :white_check_mark: | gi        | insert at the end of the last change                          |
-| :white_check_mark: | :1234: o  | open a new line below the current line, append text (N times) |
-| :white_check_mark: | :1234: O  | open a new line above the current line, append text (N times) |
+| :white_check_mark: | :1234: a  | 커서 다음에 텍스트 추가 (N 회)                                  |
+| :white_check_mark: | :1234: A  | 줄의 끝에 텍스트를 추가하십시오 (N 번)                           |
+| :white_check_mark: | :1234: i  | 커서 앞에 텍스트 삽입 (N 번) (또한 삽입)                         |
+| :white_check_mark: | :1234: I  | 첫 번째 공백이 아닌 줄 앞에 텍스트를 삽입하십시오 (N 번)          |
+| :white_check_mark: | :1234: gI | 1 열에 텍스트 삽입 (N 회)                                       |
+| :white_check_mark: | gi        | 마지막 변경이 끝날 때 삽입                                      |
+| :white_check_mark: | :1234: o  | 현재 줄 아래에 새 줄을 열고 텍스트를 추가하십시오 (N 번)          |
+| :white_check_mark: | :1234: O  | 현재 줄 위에 새 줄을 열고 텍스트를 추가하십시오 (N 번)            |
 
-in Visual block mode:
+비주얼 블록 모드에서:
 
 | Status             | Command | Description                                             |
 | ------------------ | ------- | ------------------------------------------------------- |
-| :white_check_mark: | I       | insert the same text in front of all the selected lines |
-| :white_check_mark: | A       | append the same text after all the selected lines       |
+| :white_check_mark: | I       | 선택한 모든 줄 앞에 같은 텍스트를 삽입                     |
+| :white_check_mark: | A       | 선택한 모든 줄 다음에 같은 텍스트를 추가하십시오            |
 
-## Insert mode keys
+## 모드 키 삽입
 
-leaving Insert mode:
+삽입 모드 종료:
 
 | Status             | Command          | Description                                 |
 | ------------------ | ---------------- | ------------------------------------------- |
-| :white_check_mark: | Esc              | end Insert mode, back to Normal mode        |
-| :white_check_mark: | CTRL-C           | like Esc, but do not use an abbreviation    |
-| :white_check_mark: | CTRL-O {command} | execute {command} and return to Insert mode |
+| :white_check_mark: | Esc              | 삽입 모드 종료, 다시 일반 모드                |
+| :white_check_mark: | CTRL-C           | Esc와 같지만 약어를 사용하지 않습니다          |
+| :white_check_mark: | CTRL-O {command} | {command}를 실행하고 삽입 모드로 돌아갑니다    |
 
-moving around:
+이동:
 
 | Status             | Command          | Description                             |
 | ------------------ | ---------------- | --------------------------------------- |
-| :white_check_mark: | cursor keys      | move cursor left/right/up/down          |
-| :white_check_mark: | shift-left/right | one word left/right                     |
-| :white_check_mark: | shift-up/down    | one screenful backward/forward          |
-| :white_check_mark: | End              | cursor after last character in the line |
-| :white_check_mark: | Home             | cursor to first character in the line   |
+| :white_check_mark: | cursor keys      | 커서를 왼쪽/오른쪽/위/아래로 이동          |
+| :white_check_mark: | shift-left/right | 한 단어 왼쪽/오른쪽                       |
+| :white_check_mark: | shift-up/down    | 한 화면 뒤로/앞으로                       |
+| :white_check_mark: | End              | 줄의 마지막 문자 다음에 커서              |
+| :white_check_mark: | Home             | 줄의 첫 문자에 커서                      |
 
-## Special keys in Insert mode
+## 삽입 모드의 특수 키
 
 | Status                    | Command                      | Description                                                        | Note                                                                                                                   |
 | ------------------------- | ---------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| :arrow_down:              | CTRL-V {char}..              | insert character literally, or enter decimal byte value            |
-| :warning:                 | NL or CR or CTRL-M or CTRL-J | begin new line                                                     | CTRL-M and CTRL-J are not supported                                                                                    |
-| :white_check_mark:        | CTRL-E                       | insert the character from below the cursor                         |
-| :white_check_mark:        | CTRL-Y                       | insert the character from above the cursor                         |
-| :white_check_mark: :star: | CTRL-A                       | insert previously inserted text                                    | We apply previously document change made in previous Insert session and we only apply changes that happen under cursor |
-| :white_check_mark: :star: | CTRL-@                       | insert previously inserted text and stop Insert mode               | As above                                                                                                               |
-| :white_check_mark:        | CTRL-R {0-9a-z%#:.-="}       | insert the contents of a register                                  |
-| :white_check_mark:        | CTRL-N                       | insert next match of identifier before the cursor                  |
-| :white_check_mark:        | CTRL-P                       | insert previous match of identifier before the cursor              |
-| :arrow_down:              | CTRL-X ...                   | complete the word before the cursor in various ways                |
-| :white_check_mark:        | BS or CTRL-H                 | delete the character before the cursor                             |
-| :white_check_mark:        | Del                          | delete the character under the cursor                              |
-| :white_check_mark:        | CTRL-W                       | delete word before the cursor                                      |
-| :white_check_mark:        | CTRL-U                       | delete all entered characters in the current line                  |
-| :white_check_mark:        | CTRL-T                       | insert one shiftwidth of indent in front of the current line       |
-| :white_check_mark:        | CTRL-D                       | delete one shiftwidth of indent in front of the current line       |
-| :arrow_down:              | 0 CTRL-D                     | delete all indent in the current line                              |
-| :arrow_down:              | ^ CTRL-D                     | delete all indent in the current line, restore indent in next line |
+| :arrow_down:              | CTRL-V {char}..              | 문자를 문자 그대로 삽입하거나 10 진수 바이트 값을 입력하십시오.         |
+| :warning:                 | NL or CR or CTRL-M or CTRL-J | 새 줄을 시작하다                                                    | CTRL-M 및 CTRL-J는 지원되지 않습니다                                                                                    |
+| :white_check_mark:        | CTRL-E                       | 커서 아래에서 문자를 삽입                                            |
+| :white_check_mark:        | CTRL-Y                       | 커서 위에서 문자를 삽입                                              |
+| :white_check_mark: :star: | CTRL-A                       | 이전에 삽입 한 텍스트 삽입                                           | 이전 삽입 세션에서 작성된 이전 문서 변경 사항을 적용하고 커서 아래에서 발생하는 변경 사항 만 적용합니다                        |
+| :white_check_mark: :star: | CTRL-@                       | 이전에 삽입 한 텍스트 삽입 및 삽입 모드 중지                          | 위와 같음                                                                                                               |
+| :white_check_mark:        | CTRL-R {0-9a-z%#:.-="}       | 레지스터의 내용을 삽입                                               |
+| :white_check_mark:        | CTRL-N                       | 커서 앞에 식별자의 다음 일치를 삽입                                   |
+| :white_check_mark:        | CTRL-P                       | 커서 앞에 식별자의 이전 일치를 삽입                                   |
+| :arrow_down:              | CTRL-X ...                   | 다양한 방법으로 커서 앞에있는 단어를 완성하십시오                      |
+| :white_check_mark:        | BS or CTRL-H                 | 커서 앞의 문자를 삭제                                                |
+| :white_check_mark:        | Del                          | 커서 아래의 문자를 삭제                                              |
+| :white_check_mark:        | CTRL-W                       | 커서 앞의 단어를 삭제                                                |
+| :white_check_mark:        | CTRL-U                       | 현재 줄에 입력한 모든 문자를 삭제                                    |
+| :white_check_mark:        | CTRL-T                       | 현재 줄 앞에 한 개의 들여 쓰기 폭을 삽입                              |
+| :white_check_mark:        | CTRL-D                       | 현재 줄 앞에 들여 쓰기 한 이동 폭 삭제                                |
+| :arrow_down:              | 0 CTRL-D                     | 현재 줄의 들여 쓰기를 모두 삭제하십시오.                              |
+| :arrow_down:              | ^ CTRL-D                     | 현재 줄에서 들여 쓰기를 모두 삭제하고 다음 줄 들여 쓰기를 복원          |
 
-## Digraphs
+## Di그래프
 
 | Status             | Command                                 | Description                   |
 | ------------------ | --------------------------------------- | ----------------------------- |
-| :white_check_mark: | :dig[raphs]                             | show current list of digraphs |
-| :arrow_down:       | :dig[raphs] {char1}{char2} {number} ... | add digraph(s) to the list    |
+| :white_check_mark: | :dig[raphs]                             | di그래프의 현재 목록 표시       |
+| :arrow_down:       | :dig[raphs] {char1}{char2} {number} ... | 목록에 digraph(s) 추가         |
 
 ## Special inserts
 
 | Status    | Command       | Description                                              |
 | --------- | ------------- | -------------------------------------------------------- |
-| :warning: | :r [file]     | insert the contents of [file] below the cursor           |
-| :warning: | :r! {command} | insert the standard output of {command} below the cursor |
+| :warning: | :r [file]     | 커서 아래에 [file]의 내용을 삽입하십시오.                   |
+| :warning: | :r! {command} | 커서 아래에 {command}의 표준 출력을 삽입하십시오.           |
 
-## Deleting text
+## 텍스트 삭제
 
 | Status             | Command          | Description                                        |
 | ------------------ | ---------------- | -------------------------------------------------- |
-| :white_check_mark: | :1234: x         | delete N characters under and after the cursor     |
-| :white_check_mark: | :1234: Del       | delete N characters under and after the cursor     |
-| :white_check_mark: | :1234: X         | delete N characters before the cursor              |
-| :white_check_mark: | :1234: d{motion} | delete the text that is moved over with {motion}   |
-| :white_check_mark: | {visual}d        | delete the highlighted text                        |
-| :white_check_mark: | :1234: dd        | delete N lines                                     |
-| :white_check_mark: | :1234: D         | delete to the end of the line (and N-1 more lines) |
-| :white_check_mark: | :1234: J         | join N-1 lines (delete EOLs)                       |
-| :white_check_mark: | {visual}J        | join the highlighted lines                         |
-| :white_check_mark: | :1234: gJ        | like "J", but without inserting spaces             |
-| :white_check_mark: | {visual}gJ       | like "{visual}J", but without inserting spaces     |
-| :white_check_mark: | :[range]d [x]    | delete [range] lines [into register x]             |
+| :white_check_mark: | :1234: x         | 커서 아래 및 뒤에 N 문자를 삭제 하십시오.             |
+| :white_check_mark: | :1234: Del       | 커서 아래 및 뒤에 N 문자를 삭제 하십시오.             |
+| :white_check_mark: | :1234: X         | 커서 앞의 N 문자를 삭제 하십시오.                    |
+| :white_check_mark: | :1234: d{motion} | {motion}으로 이동한 텍스트를 삭제하십시오.            |
+| :white_check_mark: | {visual}d        | 강조 표시된 텍스트를 삭제                            |
+| :white_check_mark: | :1234: dd        | N 줄을 삭제                                         |
+| :white_check_mark: | :1234: D         | 줄 끝까지 삭제 (및 N-1 줄 더)                        |
+| :white_check_mark: | :1234: J         | N-1 라인 가입 (EOL 삭제)                            |
+| :white_check_mark: | {visual}J        | 강조 표시된 라인에 참여                              |
+| :white_check_mark: | :1234: gJ        | "J"와 같지만 공백을 삽입하지 않음                    |
+| :white_check_mark: | {visual}gJ       | "{visual} J"와 같지만 공백을 삽입하지 않음           |
+| :white_check_mark: | :[range]d [x]    | [범위] 줄 삭제 [등록 x]                             |
 
-## Copying and moving text
+## 텍스트 복사 및 이동
 
 | Status             | Command          | Description                                            |
 | ------------------ | ---------------- | ------------------------------------------------------ |
@@ -327,265 +327,265 @@ moving around:
 | :white_check_mark: | :1234: gp        | like p, but leave cursor after the new text            |
 | :white_check_mark: | :1234: gP        | like P, but leave cursor after the new text            |
 
-## Changing text
+## 텍스트 변경
 
 | Status                    | Command         | Description                                                                                       | Note                     |
 | ------------------------- | --------------- | ------------------------------------------------------------------------------------------------- | ------------------------ |
-| :white_check_mark:        | :1234: r{char}  | replace N characters with {char}                                                                  |
-| :arrow_down:              | :1234: gr{char} | replace N characters without affecting layout                                                     |
-| :white_check_mark: :star: | :1234: R        | enter Replace mode (repeat the entered text N times)                                              | {count} is not supported |
-| :arrow_down:              | :1234: gR       | enter virtual Replace mode: Like Replace mode but without affecting layout                        |
-| :white_check_mark:        | {visual}r{char} | in Visual block, visual, or visual line modes: Replace each char of the selected text with {char} |
+| :white_check_mark:        | :1234: r{char}  | N 문자를 {char}로 바꾸십시오                                                                       |
+| :arrow_down:              | :1234: gr{char} | 레이아웃에 영향을주지 않고 N 문자를 교체                                                             |
+| :white_check_mark: :star: | :1234: R        | 바꾸기 모드로 들어가십시오 (입력 한 텍스트를 N 번 반복하십시오)                                        | {count} is not supported |
+| :arrow_down:              | :1234: gR       | 가상 교체 모드로 전환 : 대체 모드와 유사하지만 레이아웃에 영향을 미치지 않음                            |
+| :white_check_mark:        | {visual}r{char} | 비주얼 블록, 비주얼 또는 비주얼 라인 모드에서 : 선택한 텍스트의 각 문자를 {char}로 바꿉니다.            |
 
-(change = delete text and enter Insert mode)
+(변경 = 텍스트 삭제 및 삽입 모드 입력)
 
 | Status             | Command                 | Description                                                                                     |
 | ------------------ | ----------------------- | ----------------------------------------------------------------------------------------------- |
-| :white_check_mark: | :1234: c{motion}        | change the text that is moved over with {motion}                                                |
-| :white_check_mark: | {visual}c               | change the highlighted text                                                                     |
-| :white_check_mark: | :1234: cc               | change N lines                                                                                  |
-| :white_check_mark: | :1234: S                | change N lines                                                                                  |
-| :white_check_mark: | :1234: C                | change to the end of the line (and N-1 more lines)                                              |
-| :white_check_mark: | :1234: s                | change N characters                                                                             |
-| :white_check_mark: | {visual}c               | in Visual block mode: Change each of the selected lines with the entered text                   |
-| :white_check_mark: | {visual}C               | in Visual block mode: Change each of the selected lines until end-of-line with the entered text |
-| :white_check_mark: | {visual}~               | switch case for highlighted text                                                                |
-| :white_check_mark: | {visual}u               | make highlighted text lowercase                                                                 |
-| :white_check_mark: | {visual}U               | make highlighted text uppercase                                                                 |
-| :white_check_mark: | g~{motion}              | switch case for the text that is moved over with {motion}                                       |
-| :white_check_mark: | gu{motion}              | make the text that is moved over with {motion} lowercase                                        |
-| :white_check_mark: | gU{motion}              | make the text that is moved over with {motion} uppercase                                        |
-| :arrow_down:       | {visual}g?              | perform rot13 encoding on highlighted text                                                      |
-| :arrow_down:       | g?{motion}              | perform rot13 encoding on the text that is moved over with {motion}                             |
-| :white_check_mark: | :1234: CTRL-A           | add N to the number at or after the cursor                                                      |
-| :white_check_mark: | :1234: CTRL-X           | subtract N from the number at or after the cursor                                               |
-| :white_check_mark: | :1234: <{motion}        | move the lines that are moved over with {motion} one shiftwidth left                            |
-| :white_check_mark: | :1234: <<               | move N lines one shiftwidth left                                                                |
-| :white_check_mark: | :1234: >{motion}        | move the lines that are moved over with {motion} one shiftwidth right                           |
-| :white_check_mark: | :1234: >>               | move N lines one shiftwidth right                                                               |
-| :white_check_mark: | :1234: gq{motion}       | format the lines that are moved over with {motion} to 'textwidth' length                        |
-| :arrow_down:       | :[range]ce[nter][width] | center the lines in [range]                                                                     |
-| :arrow_down:       | :[range]le[ft][indent]  | left-align the lines in [range] (with [indent])                                                 |
-| :arrow_down:       | :[ranee]ri[ght][width]  | right-align the lines in [range]                                                                |
+| :white_check_mark: | :1234: c{motion}        | {motion}으로 이동 한 텍스트를 변경하십시오.                                                         |
+| :white_check_mark: | {visual}c               | 강조 표시된 텍스트를 변경                                                                        |
+| :white_check_mark: | :1234: cc               | N줄 바꾸기                                                                                      |
+| :white_check_mark: | :1234: S                | N줄 바꾸기                                                                                      |
+| :white_check_mark: | :1234: C                | 줄의 끝으로 변경 (및 N-1 더 많은 줄)                                                              |
+| :white_check_mark: | :1234: s                | N 문자를 바꾸다                                                                                  |
+| :white_check_mark: | {visual}c               | 비주얼 블록 모드에서 : 입력 한 텍스트로 선택한 각 줄을 변경합니다                                    |
+| :white_check_mark: | {visual}C               | 비주얼 블록 모드에서 : 입력 한 텍스트로 줄 끝까지 선택된 각 줄을 변경합니다.                          |
+| :white_check_mark: | {visual}~               | 강조 표시된 텍스트의 경우 전환                                                                    |
+| :white_check_mark: | {visual}u               | 강조 표시된 텍스트를 소문자로 설정                                                                 |
+| :white_check_mark: | {visual}U               | 강조 표시된 텍스트를 대문자로 만듭니다.                                                             |
+| :white_check_mark: | g~{motion}              | {motion}으로 이동 한 텍스트의 대소 문자 전환                                                      |
+| :white_check_mark: | gu{motion}              | {motion}으로 옮긴 텍스트를 소문자로 만듭니다.                                                      |
+| :white_check_mark: | gU{motion}              | {motion}으로 이동 한 텍스트를 대문자로 만듭니다.                                                  |
+| :arrow_down:       | {visual}g?              | 강조 표시된 텍스트에서 rot13 인코딩 수행                                                          |
+| :arrow_down:       | g?{motion}              | {motion}으로 이동 한 텍스트에서 rot13 인코딩 수행                                                  |
+| :white_check_mark: | :1234: CTRL-A           | 커서 위 또는 뒤에있는 숫자에 N을 더하다                                                            |
+| :white_check_mark: | :1234: CTRL-X           | 커서에서 또는 뒤에있는 숫자에서 N을 빼기                                                          |
+| :white_check_mark: | :1234: <{motion}        | {motion}으로 이동 한 줄을 한 이동 폭 왼쪽으로 이동                                                |
+| :white_check_mark: | :1234: <<               | N 라인을 한 이동 폭만큼 왼쪽으로 이동                                                              |
+| :white_check_mark: | :1234: >{motion}        | {motion}으로 이동 한 선을 한 이동 폭만큼 오른쪽으로 이동                                            |
+| :white_check_mark: | :1234: >>               | N 라인을 한 이동 폭만큼 오른쪽으로 이동                                                            |
+| :white_check_mark: | :1234: gq{motion}       | {motion}으로 이동 한 행을 'textwidth'길이로 형식화                                                |
+| :arrow_down:       | :[range]ce[nter][width] | [range]에서 선 중심                                                                              |
+| :arrow_down:       | :[range]le[ft][indent]  | [range]에서 줄을 왼쪽 정렬합니다  ([indent] 포함)                                                 |
+| :arrow_down:       | :[ranee]ri[ght][width]  | [range]에서 선을 오른쪽 정렬합니다                                                                |
 
-## Complex changes
+## 복잡한 변화
 
 | Status                              | Command                                        | Description                                                                                                                           | Note                                                                             |
 | ----------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| :arrow_down:                        | :1234: `!{motion}{command}<CR>`                | filter the lines that are moved over through {command}                                                                                |
-| :arrow_down:                        | :1234: `!!{command}<CR>`                       | filter N lines through {command}                                                                                                      |
-| :arrow_down:                        | `{visual}!{command}<CR>`                       | filter the highlighted lines through {command}                                                                                        |
-| :arrow_down:                        | `:[range]! {command}<CR>`                      | filter [range] lines through {command}                                                                                                |
-| :white_check_mark:                  | :1234: ={motion}                               | filter the lines that are moved over through 'equalprg'                                                                               |
-| :white_check_mark:                  | :1234: ==                                      | filter N lines through 'equalprg'                                                                                                     |
-| :white_check_mark:                  | {visual}=                                      | filter the highlighted lines through 'equalprg'                                                                                       |
-| :white_check_mark: :star: :warning: | :[range]s[ubstitute]/{pattern}/{string}/[g][c] | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented |
-| :arrow_down:                        | :[range]s[ubstitute][g][c]                     | repeat previous ":s" with new range and options                                                                                       |
-| :arrow_down:                        | &                                              | Repeat previous ":s" on current line without options                                                                                  |
-| :arrow_down:                        | :[range]ret[ab][!] [tabstop]                   | set 'tabstop' to new value and adjust white space accordingly                                                                         |
+| :arrow_down:                        | :1234: `!{motion}{command}<CR>`                | {command}를 통해 이동 한 행을 필터링                                                                                                        |
+| :arrow_down:                        | :1234: `!!{command}<CR>`                       | {command}를 통해 N 라인 필터링                                                                                                            |
+| :arrow_down:                        | `{visual}!{command}<CR>`                       | {command}를 통해 강조 표시된 줄을 필터링하십시오.                                                                                          |
+| :arrow_down:                        | `:[range]! {command}<CR>`                      | {command}를 통해 [range] 라인 필터링                                                                                                      |
+| :white_check_mark:                  | :1234: ={motion}                               | 'equalprg'를 통해 이동 한 라인을 필터링 through 'equalprg'                                                                               |
+| :white_check_mark:                  | :1234: ==                                      | 'equalprg'를 통해 N 라인 필터링                                                                                                          |
+| :white_check_mark:                  | {visual}=                                      | 'equalprg'를 통해 강조 표시된 줄을 필터링하십시오.                                                                                        |
+| :white_check_mark: :star: :warning: | :[range]s[ubstitute]/{pattern}/{string}/[g][c] | [range] 행에서 {string}으로 {pattern}을 대체하십시오. [g]로, 모든 {pattern}을 대체하십시오. [c]로 각 교체 확인 | 현재는 JavaScript 정규식 만 지원하며 gi 옵션 만 구현됩니다.                                           |
+| :arrow_down:                        | :[range]s[ubstitute][g][c]                     | 새로운 범위와 옵션으로 이전 ": s"반복                                                                                                   |
+| :arrow_down:                        | &                                              | 옵션없이 현재 줄에서 이전 ": s"반복                                                                                                      |
+| :arrow_down:                        | :[range]ret[ab][!] [tabstop]                   | 'tabstop'을 새 값으로 설정하고 그에 따라 공백을 조정하십시오.                                                                              |
 
-## Visual mode
+## 비주얼 모드
 
 | Status             | Command | Description                                         |
 | ------------------ | ------- | --------------------------------------------------- |
-| :white_check_mark: | v       | start highlighting characters or stop highlighting  |
-| :white_check_mark: | V       | start highlighting linewise or stop highlighting    |
-| :white_check_mark: | CTRL-V  | start highlighting blockwise or stop highlighting   |
-| :white_check_mark: | o       | exchange cursor position with start of highlighting |
-| :white_check_mark: | gv      | start highlighting on previous visual area          |
+| :white_check_mark: | v       | 문자 강조 표시 시작 또는 강조 표시 중지                |
+| :white_check_mark: | V       | 선으로 강조 표시 시작 또는 강조 표시 중지              |
+| :white_check_mark: | CTRL-V  | 블록 단위로 강조 표시 시작 또는 강조 표시 중지         |
+| :white_check_mark: | o       | 강조 표시 시작으로 커서 위치 교환                     |
+| :white_check_mark: | gv      | 이전 시각적 영역에서 강조 표시 시작                   |
 
-## Text objects (only in Visual mode or after an operator)
+## 텍스트 객체 (비주얼 모드에서만 또는 연산자 뒤)
 
 | Status             | Command                                           | Description                                                 |
 | ------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
-| :white_check_mark: | :1234: aw                                         | Select "a word"                                             |
-| :white_check_mark: | :1234: iw                                         | Select "inner word"                                         |
-| :white_check_mark: | :1234: aW                                         | Select "a WORD"                                             |
-| :white_check_mark: | :1234: iW                                         | Select "inner WORD"                                         |
-| :white_check_mark: | :1234: as                                         | Select "a sentence"                                         |
-| :white_check_mark: | :1234: is                                         | Select "inner sentence"                                     |
-| :white_check_mark: | :1234: ap                                         | Select "a paragraph"                                        |
-| :white_check_mark: | :1234: ip                                         | Select "inner paragraph"                                    |
-| :white_check_mark: | :1234: a], a[                                     | select '[' ']' blocks                                       |
-| :white_check_mark: | :1234: i], i[                                     | select inner '[' ']' blocks                                 |
-| :white_check_mark: | :1234: ab, a(, a)                                 | Select "a block" (from "[(" to "])")                        |
-| :white_check_mark: | :1234: ib, i), i(                                 | Select "inner block" (from "[(" to "])")                    |
-| :white_check_mark: | :1234: a>, a<                                     | Select "a &lt;&gt; block"                                   |
-| :white_check_mark: | :1234: i>, i<                                     | Select "inner <> block"                                     |
-| :white_check_mark: | :1234: aB, a{, a}                                 | Select "a Block" (from "[{" to "]}")                        |
-| :white_check_mark: | :1234: iB, i{, i}                                 | Select "inner Block" (from "[{" to "]}")                    |
-| :white_check_mark: | :1234: at                                         | Select "a tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;)     |
-| :white_check_mark: | :1234: it                                         | Select "inner tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;) |
-| :white_check_mark: | :1234: a'                                         | Select "a single quoted string"                             |
-| :white_check_mark: | :1234: i'                                         | Select "inner single quoted string"                         |
-| :white_check_mark: | :1234: a"                                         | Select "a double quoted string"                             |
-| :white_check_mark: | :1234: i"                                         | Select "inner double quoted string"                         |
-| :white_check_mark: | :1234: a` | Select "a backward quoted string"     |
-| :white_check_mark: | :1234: i` | Select "inner backward quoted string" |
+| :white_check_mark: | :1234: aw                                         | "a word"를 선택하십시오.                                     |
+| :white_check_mark: | :1234: iw                                         | "inner word"를 선택하십시오.                                 |
+| :white_check_mark: | :1234: aW                                         | "a WORD"를 선택하십시오.                                     |
+| :white_check_mark: | :1234: iW                                         | "inner WORD"를 선택하십시오.                                 |
+| :white_check_mark: | :1234: as                                         | "a sentence"를 선택하십시오.                                 |
+| :white_check_mark: | :1234: is                                         | "inner sentence"를 선택하십시오.                             |
+| :white_check_mark: | :1234: ap                                         | "a paragraph"를 선택하십시오.                                 |
+| :white_check_mark: | :1234: ip                                         | "inner paragraph"를 선택하십시오.                             |
+| :white_check_mark: | :1234: a], a[                                     | '[' ']'블록을 선택하십시오                                     |
+| :white_check_mark: | :1234: i], i[                                     | 내부 '[' ']'블록을 선택하십시오.                               |
+| :white_check_mark: | :1234: ab, a(, a)                                 | "a block"을 선택하십시오. ("[("에서 "])"까지)                 |
+| :white_check_mark: | :1234: ib, i), i(                                 | "inner block"을 선택하십시오. ("[("에서 "])"까지)             |
+| :white_check_mark: | :1234: a>, a<                                     | "a &lt;&gt; block"을 선택하십시오.                           |
+| :white_check_mark: | :1234: i>, i<                                     | "inner <> block"을 선택하십시오.                             |
+| :white_check_mark: | :1234: aB, a{, a}                                 | "a Block"을 선택하십시오. ("[{"에서 "]}"까지)                 |
+| :white_check_mark: | :1234: iB, i{, i}                                 | "inner Block"을 ("[{"에서 "]}"까지)                           |
+| :white_check_mark: | :1234: at                                         | "a tag block"을 선택하십시오. (&lt;aaa&gt;에서 &lt;/aaa&gt;까지)    |
+| :white_check_mark: | :1234: it                                         | "inner tag block"을 선택하십시오. (&lt;aaa&gt;에서 &lt;/aaa&gt;까지)    |
+| :white_check_mark: | :1234: a'                                         | "a single quoted string"을 선택하십시오.                     |
+| :white_check_mark: | :1234: i'                                         | "inner single quoted string"을 선택하십시오.                 |
+| :white_check_mark: | :1234: a"                                         | "a double quoted string"을 선택하십시오.                     |
+| :white_check_mark: | :1234: i"                                         | "inner double quoted string"을 선택하십시오.                 |
+| :white_check_mark: | :1234: a` | "a backward quoted string"을 선택하십시오.    |
+| :white_check_mark: | :1234: i` | "inner backward quoted string"을 선택하십시오.|
 
-## Repeating commands
+## 반복 명령
 
 | Status                    | Command                           | Description                                                                                        | Note                                                                |
 | ------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| :white_check_mark: :star: | :1234: .                          | repeat last change (with count replaced with N)                                                    | Content changes that don't happen under cursor can not be repeated. |
-| :white_check_mark:        | q{a-z}                            | record typed characters into register {a-z}                                                        |
-| :arrow_down:              | q{A-Z}                            | record typed characters, appended to register {a-z}                                                |
-| :white_check_mark:        | q                                 | stop recording                                                                                     |
-| :white_check_mark:        | :1234: @{a-z}                     | execute the contents of register {a-z} (N times)                                                   |
-| :white_check_mark:        | :1234: @@                         | repeat previous @{a-z} (N times)                                                                   |
-| :arrow_down:              | :@{a-z}                           | execute the contents of register {a-z} as an Ex command                                            |
-| :arrow_down:              | :@@                               | repeat previous :@{a-z}                                                                            |
+| :white_check_mark: :star: | :1234: .                          | 마지막 변경을 반복합니다 (N으로 개수를 대체)                                                    | 커서 아래에서 발생하지 않는 내용 변경은 반복 할 수 없습니다.             |
+| :white_check_mark:        | q{a-z}                            | 입력 된 문자를 레지스터 {a-z}에 기록                                                                |
+| :arrow_down:              | q{A-Z}                            | {a-z} 등록을 위해 추가 된 레코드 유형 문자                                                            |
+| :white_check_mark:        | q                                 | 녹화 중지                                                                                          |
+| :white_check_mark:        | :1234: @{a-z}                     | 레지스터 {a-z}의 내용을 실행합니다 (N 회)                                                            |
+| :white_check_mark:        | :1234: @@                         | 이전 @ {a-z} 반복 (N 회)                                                                            |
+| :arrow_down:              | :@{a-z}                           | 레지스터 {a-z}의 내용을 Ex 명령으로 실행                                                            |
+| :arrow_down:              | :@@                               | 이전 반복 : @ {a-z}                                                                                |
 | :arrow_down:              | :[range]g[lobal]/{pattern}/[cmd]  | execute Ex command [cmd](default: ':p') on the lines within [range] where {pattern} matches        |
 | :arrow_down:              | :[range]g[lobal]!/{pattern}/[cmd] | execute Ex command [cmd](default: ':p') on the lines within [range] where {pattern} does NOT match |
-| :arrow_down:              | :so[urce] {file}                  | read Ex commands from {file}                                                                       |
-| :arrow_down:              | :so[urce]! {file}                 | read Vim commands from {file}                                                                      |
-| :arrow_down:              | :sl[eep][sec]                     | don't do anything for [sec] seconds                                                                |
-| :arrow_down:              | :1234: gs                         | goto Sleep for N seconds                                                                           |
+| :arrow_down:              | :so[urce] {file}                  | {file}에서 EX  명령을 읽습니다.                                                                       |
+| :arrow_down:              | :so[urce]! {file}                 | {file}에서 Vim 명령을 읽습니다.                                                                      |
+| :arrow_down:              | :sl[eep][sec]                     | [sec] 초 동안 아무 것도하지 마십시오                                                                  |
+| :arrow_down:              | :1234: gs                         | N 초 동안 절전 모드로 전환                                                                           |
 
-## options
+## 옵션
 
 | Status                    | Command                  | Description                                                                                                       | Note                                 |
 | ------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| :arrow_down:              | :se[t]                   | show all modified options                                                                                         |
-| :arrow_down:              | :se[t] all               | show all non-termcap options                                                                                      |
-| :arrow_down:              | :se[t] termcap           | show all termcap options                                                                                          |
-| :white_check_mark:        | :se[t] {option}          | set boolean option (switch it on), show string or number option                                                   |
-| :white_check_mark:        | :se[t] no{option}        | reset boolean option (switch it off)                                                                              |
-| :white_check_mark:        | :se[t] inv{option}       | invert boolean option                                                                                             |
-| :white_check_mark:        | :se[t] {option}={value}  | set string/number option to {value}                                                                               |
-| :white_check_mark:        | :se[t] {option}+={value} | append {value} to string option, add {value} to number option                                                     |
-| :white_check_mark: :star: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option                                              | We don't support string option here. |
-| :white_check_mark:        | :se[t] {option}?         | show value of {option}                                                                                            |
-| :arrow_down:              | :se[t] {option}&         | reset {option} to its default value                                                                               |
-| :arrow_down:              | :setl[ocal]              | like ":set" but set the local value for options that have one                                                     |
-| :arrow_down:              | :setg[lobal]             | like ":set" but set the global value of a local option                                                            |
-| :arrow_down:              | :fix[del]                | set value of 't_kD' according to value of 't_kb'                                                                  |
-| :arrow_down:              | :opt[ions]               | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help |
+| :arrow_down:              | :se[t]                   | 수정 된 모든 옵션 표시                                                                                              |
+| :arrow_down:              | :se[t] all               | 모든 non-termcap 옵션을 표시                                                                                       |
+| :arrow_down:              | :se[t] termcap           | 모든 termcap 옵션을 표시                                                                                           |
+| :white_check_mark:        | :se[t] {option}          | set boolean option (switch it on), 문자열 또는 숫자 옵션 표시                                                      |
+| :white_check_mark:        | :se[t] no{option}        | boolean option 재설정(switch it off)                                                                              |
+| :white_check_mark:        | :se[t] inv{option}       | boolean option 반전                                                                                              |
+| :white_check_mark:        | :se[t] {option}={value}  | 문자열 / 숫자 옵션을 {value}로 설정                                                                                |
+| :white_check_mark:        | :se[t] {option}+={value} | 문자열 옵션에 {value} 추가, 숫자 옵션에 {value} 추가                                                                |
+| :white_check_mark: :star: | :se[t] {option}-={value} | 문자열 옵션에서 {value}를 제거하고 숫자 옵션에서 {value}를 뺍니다.                                                    | 여기서는 문자열 옵션을 지원하지 않습니다. |
+| :white_check_mark:        | :se[t] {option}?         | {option}의 가치를 보여주십시오.                                                                                    |
+| :arrow_down:              | :se[t] {option}&         | {option}을 기본 값으로 재설정                                                                                      |
+| :arrow_down:              | :setl[ocal]              | ": set"과 같지만 옵션이있는 옵션의 로컬 값을 설정하십시오.                                                            |
+| :arrow_down:              | :setg[lobal]             | ": set"과 같지만 로컬 옵션의 전역 값을 설정하십시오.                                                                |
+| :arrow_down:              | :fix[del]                | 't_kb'값에 따른 't_kD'값 설정                                                                                      |
+| :arrow_down:              | :opt[ions]               | 기능별로 분류 된 옵션, 한 줄 설명 및 도움말 링크를 보려면 새 창을 엽니 다. |
 
-Since the list is too long, now we just put those already supported options here.
+목록이 너무 길기 때문에 이미 지원되는 옵션을 여기에 넣습니다.
 
 | Status             | Command         | Default Value                                                   | Description                                                                                                                                |
 | ------------------ | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| :white_check_mark: | tabstop (ts)    | 4. we use Code's default value `tabSize` instead of Vim         | number of spaces that &lt;Tab&gt; in file uses                                                                                             |
-| :white_check_mark: | hlsearch (hls)  | false                                                           | When there is a previous search pattern, highlight all its matches.                                                                        |
-| :white_check_mark: | ignorecase (ic) | true                                                            | Ignore case in search patterns.                                                                                                            |
-| :white_check_mark: | smartcase (scs) | true                                                            | Override the 'ignorecase' option if the search pattern contains upper case characters.                                                     |
-| :white_check_mark: | iskeyword (isk) | `@,48-57,_,128-167,224-235`                                     | keywords contain alphanumeric characters and '\_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties. |
-| :white_check_mark: | scroll (scr)    | 20                                                              | Number of lines to scroll with CTRL-U and CTRL-D commands.                                                                                 |
-| :white_check_mark: | expandtab (et)  | True. we use Code's default value `insertSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted                                                                                                    |
-| :white_check_mark: | autoindent      | true                                                            | Keep indentation when doing `cc` or `S` in normal mode to replace a line.                                                                  |
+| :white_check_mark: | tabstop (ts)    | 4. we use Code's default value `tabSize` instead of Vim         | 파일의 &lt;Tab&gt;이 사용하는 공백 수                                                                                            |
+| :white_check_mark: | hlsearch (hls)  | false                                                           | 이전 검색 패턴이 있으면 일치하는 항목을 모두 강조 표시하십시오.                                                                                 |
+| :white_check_mark: | ignorecase (ic) | true                                                            | 검색 패턴에서 대소 문자를 무시하십시오.                                                                                                       |
+| :white_check_mark: | smartcase (scs) | true                                                            | 검색 패턴에 대문자가 포함 된 경우 'ignorecase'옵션을 대체하십시오.                                                                              |
+| :white_check_mark: | iskeyword (isk) | `@,48-57,_,128-167,224-235`                                     | 키워드는 영숫자와 '\ _'를 포함합니다. `iskeyword`에 대한 사용자 설정이 없으면`editor.wordSeparators` 속성을 사용합니다.                         |
+| :white_check_mark: | scroll (scr)    | 20                                                              | CTRL-U 및 CTRL-D 명령으로 스크롤 할 행의 수입니다.                                                                                             |
+| :white_check_mark: | expandtab (et)  | True. we use Code's default value `insertSpaces` instead of Vim |  &lt;Tab&gt;을 삽입 할 때 공백을 사용하십시오.                                                                                                 |
+| :white_check_mark: | autoindent      | true                                                            | 정상 모드에서`cc` 또는`S`를 수행 할 때 들여 쓰기를 유지하여 줄을 바꿉니다.                                                                     |
 
-## Undo/Redo commands
+## 실행 취소 / 재실행 명령
 
 | Status             | Command       | Description                | Note                                                       |
 | ------------------ | ------------- | -------------------------- | ---------------------------------------------------------- |
-| :white_check_mark: | :1234: u      | undo last N changes        | Current implementation may not cover every case perfectly. |
-| :white_check_mark: | :1234: CTRL-R | redo last N undone changes | As above.                                                  |
+| :white_check_mark: | :1234: u      | undo last N changes        | 현재 구현이 모든 경우를 완벽하게 다루지는 않을 수 있습니다.    |
+| :white_check_mark: | :1234: CTRL-R | redo last N undone changes | 위와 같음                                                   |
 | :white_check_mark: | U             | restore last changed line  |
 
-## External commands
+## 외부 명령
 
 | Status       | Command     | Description                                                                |
 | ------------ | ----------- | -------------------------------------------------------------------------- |
-| :arrow_down: | :sh[ell]    | start a shell                                                              |
-| :arrow_down: | :!{command} | execute {command} with a shell                                             |
-| :arrow_down: | K           | lookup keyword under the cursor with 'keywordprg' program (default: "man") |
+| :arrow_down: | :sh[ell]    | shell을 시작하다                                                            |
+| :arrow_down: | :!{command} | shell로 {command}를 실행                                                    |
+| :arrow_down: | K           | 'keywordprg'프로그램이있는 커서 아래의 검색 키워드 (기본값 : "man")            |
 
-## Ex ranges
+## 전 번호
 
 | Status                    | Command       | Description                                                                  | Note                                 |
 | ------------------------- | ------------- | ---------------------------------------------------------------------------- | ------------------------------------ |
-| :white_check_mark:        | ,             | separates two line numbers                                                   |
-| :white_check_mark: :star: | ;             | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included. |
-| :white_check_mark:        | {number}      | an absolute line number                                                      |
-| :white_check_mark:        | .             | the current line                                                             |
-| :white_check_mark:        | \$            | the last line in the file                                                    |
-| :white_check_mark:        | %             | equal to 1,\$ (the entire file)                                              |
-| :white_check_mark:        | \*            | equal to '<,'> (visual area)                                                 |
-| :white_check_mark:        | 't            | position of mark t                                                           |
-| :arrow_down:              | /{pattern}[/] | the next line where {pattern} matches                                        |
-| :arrow_down:              | ?{pattern}[?] | the previous line where {pattern} matches                                    |
-| :white_check_mark:        | +[num]        | add [num] to the preceding line number (default: 1)                          |
-| :white_check_mark:        | -[num]        | subtract [num] from the preceding line number (default: 1)                   |
+| :white_check_mark:        | ,             | 두 줄 번호를 구분                                                             |
+| :white_check_mark: :star: | ;             | idem, 두 번째 행을 해석하기 전에 커서를 첫 번째 행 번호로 설정하십시오. 커서 이동은 포함되지 않습니다.               |
+| :white_check_mark:        | {number}      | 절대적인 line number                                                          |
+| :white_check_mark:        | .             | 현재 줄                                                                       |
+| :white_check_mark:        | \$            | 파일의 마지막 줄                                                              |
+| :white_check_mark:        | %             | 1,\$와 같음 (전체 파일)                                                       |
+| :white_check_mark:        | \*            | '<,'>은 같음(시작적 영역)                                                      |
+| :white_check_mark:        | 't            | mark t의 위치                                                                 |
+| :arrow_down:              | /{pattern}[/] | {pattern}이 일치하는 다음 줄                                                   |
+| :arrow_down:              | ?{pattern}[?] | {pattern}이 일치하는 이전 줄                                                   |
+| :white_check_mark:        | +[num]        | 앞 줄 번호에 [num]을 추가하십시오 (기본값 : 1).                                 |
+| :white_check_mark:        | -[num]        | 이전 줄 번호에서 [num]을 뺍니다 (기본값 : 1).                                   |
 
-## Editing a file
+## 파일 편집
 
 | Status                    | Command        | Description  | Note                                                                                        |
 | ------------------------- | -------------- | ------------ | ------------------------------------------------------------------------------------------- |
-| :white_check_mark: :star: | :e[dit] {file} | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab. |
+| :white_check_mark: :star: | :e[dit] {file} | Edit {file}. |현재 탭에서 열지 않고 현재 그룹화 된 편집기의 새 탭에서 파일을 엽니 다. |
 
-## Multi-window commands
+## Multi-window 명령
 
 | Status                    | Command           | Description                                                             | Note                                                                                                                   |
 | ------------------------- | ----------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| :white_check_mark: :star: | :e[dit] {file}    | Edit {file}.                                                            | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.                            |
-| :white_check_mark: :star: | &lt;ctrl-w&gt; hl | Switching between windows.                                              | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors. |
-| :white_check_mark:        | :sp {file}        | Split current window in two.                                            |                                                                                                                        |
-| :white_check_mark: :star: | :vsp {file}       | Split vertically current window in two.                                 |                                                                                                                        |
-| :white_check_mark:        | &lt;ctrl-w&gt; s  | Split current window in two.                                            |                                                                                                                        |
-| :white_check_mark: :star: | &lt;ctrl-w&gt; v  | Split vertically current window in two.                                 |                                                                                                                        |
-| :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. |                                                                                                                        |
-| :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   |                                                                                                                        |
+| :white_check_mark: :star: | :e[dit] {file}    | {file}을 편집하십시오.                                                   | 현재 탭에서 열지 않고 현재 그룹화 된 편집기의 새 탭에서 파일을 엽니 다.                                                       |
+| :white_check_mark: :star: | &lt;ctrl-w&gt; hl | 창 사이를 전환합니다.                                                    | VS Code에는 Window라는 개념이 없으므로 이러한 명령을 그룹화 된 편집기 간 전환에 매핑합니다.                               |
+| :white_check_mark:        | :sp {file}        | 현재 창을 두개로 나눕니다.                                                |                                                                                                                        |
+| :white_check_mark: :star: | :vsp {file}       | 세로로 현재 창을 두 개로 나눕니다.                                        |                                                                                                                        |
+| :white_check_mark:        | &lt;ctrl-w&gt; s  | 현재 창을 두개로 나눕니다.                                                |                                                                                                                        |
+| :white_check_mark: :star: | &lt;ctrl-w&gt; v  | 세로로 현재 창을 두 개로 나눕니다.                                        |                                                                                                                        |
+| :white_check_mark:        | :new              | 새 창을 가로로 만들고 빈 파일 편집을 시작하십시오.                         |                                                                                                                        |
+| :white_check_mark: :star: | :vne[w]           | 새 창을 세로로 만들고 빈 파일 편집을 시작하십시오.                         |                                                                                                                        |
 
-## Tabs
+## 탭
 
 | Status                    | Command                              | Description                                                                   | Note                                                               |
 | ------------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| :white_check_mark:        | :tabn[ext] :1234:                    | Go to next tab page or tab page {count}. The first tab page has number one.   |
-| :white_check_mark:        | {count}&lt;C-PageDown&gt;, {count}gt | Same as above                                                                 |
-| :white_check_mark:        | :tabp[revious] :1234:                | Go to the previous tab page. Wraps around from the first one to the last one. |
-| :white_check_mark:        | :tabN[ext] :1234:                    | Same as above                                                                 |
-| :white_check_mark:        | {count}&lt;C-PageUp&gt;, {count}gT   | Same as above                                                                 |
-| :white_check_mark:        | :tabfir[st]                          | Go to the first tab page.                                                     |
-| :white_check_mark:        | :tabl[ast]                           | Go to the last tab page.                                                      |
-| :white_check_mark:        | :tabe[dit] {file}                    | Open a new tab page with an empty window, after the current tab page          |
-| :arrow_down:              | :[count]tabe[dit], :[count]tabnew    | Same as above                                                                 | [count] is not supported.                                          |
-| :white_check_mark:        | :tabnew {file}                       | Open a new tab page with an empty window, after the current tab page          |
-| :arrow_down:              | :[count]tab {cmd}                    | Execute {cmd} and when it opens a new window open a new tab page instead.     |
-| :white_check_mark: :star: | :tabc[lose][!] :1234:                | Close current tab page or close tab page {count}.                             | Code will close tab directly without saving.                       |
-| :white_check_mark: :star: | :tabo[nly][!]                        | Close all other tab pages.                                                    | `!` is not supported, Code will close tab directly without saving. |
-| :white_check_mark:        | :tabm[ove][n]                        | Move the current tab page to after tab page N.                                |
-| :arrow_down:              | :tabs                                | List the tab pages and the windows they contain.                              | You can always use Code's built-in shortcut: `cmd/ctrl+p`          |
-| :arrow_down:              | :tabd[o] {cmd}                       | Execute {cmd} in each tab page.                                               |
+| :white_check_mark:        | :tabn[ext] :1234:                    | 다음 탭 페이지 또는 탭 페이지 {count}로 이동하십시오. 첫 번째 탭 페이지는 1 번입니다. |
+| :white_check_mark:        | {count}&lt;C-PageDown&gt;, {count}gt | 위와 동일                                                                       |
+| :white_check_mark:        | :tabp[revious] :1234:                | 이전 탭 페이지로 이동하십시오. 첫 번째부터 마지막까지 감싸줍니다.                   |
+| :white_check_mark:        | :tabN[ext] :1234:                    | 위와 동일                                                                       |
+| :white_check_mark:        | {count}&lt;C-PageUp&gt;, {count}gT   | 위와 동일                                                                       |
+| :white_check_mark:        | :tabfir[st]                          | 첫 번째 탭 페이지로 이동하십시오.                                               |
+| :white_check_mark:        | :tabl[ast]                           | 마지막 탭 페이지로 이동하십시오.                                                 |
+| :white_check_mark:        | :tabe[dit] {file}                    | 현재 탭 페이지 다음에 빈 창이있는 새 탭 페이지를 엽니 다.                         |
+| :arrow_down:              | :[count]tabe[dit], :[count]tabnew    | 위와 동일                                                                       | [count] 는 지원되지 않습니다.                                           |
+| :white_check_mark:        | :tabnew {file}                       | 현재 탭 페이지 다음에 빈 창이있는 새 탭 페이지를 엽니 다.                         |
+| :arrow_down:              | :[count]tab {cmd}                    | {cmd}를 실행하고 새 창이 열리면 대신 새 탭 페이지를여십시오.                       |
+| :white_check_mark: :star: | :tabc[lose][!] :1234:                | 현재 탭 페이지를 닫거나 탭 페이지 {count}를 닫습니다.                              | 코드는 저장하지 않고 탭을 직접 닫습니다.                            |
+| :white_check_mark: :star: | :tabo[nly][!]                        | 다른 모든 탭 페이지를 닫습니다.                                                   | `!`는 지원되지 않으며, 코드는 저장하지 않고 탭을 직접 닫습니다.     |
+| :white_check_mark:        | :tabm[ove][n]                        | 현재 탭 페이지를 탭 페이지 N 이후로 이동하십시오.                                 |
+| :arrow_down:              | :tabs                                | 탭 페이지와 포함 된 창을 나열하십시오.                                   | 항상 코드의 내장 단축키를 사용할 수 있습니다 :`cmd / ctrl + p`          |
+| :arrow_down:              | :tabd[o] {cmd}                       | 각 탭 페이지에서 {cmd}를 실행하십시오.                                              |
 
 ## Folding
 
 ### Fold methods
 
-The folding method can be set with the 'foldmethod' option. This is currently not possible as we are relying on Code's Fold logic.
+folding 방법은 'foldmethod' 옵션으로 설정할 수 있습니다. 현재 Code's Fold logic에 의존하고 있기 때문에 불가능합니다.
 
-### Fold commands
+### Fold 명령
 
-Pretty much everything fold-related is blocked by [this issue](https://github.com/VSCodeVim/Vim/issues/1004).
+모든 fold-related가 [this issue](https://github.com/VSCodeVim/Vim/issues/1004)에 의해 차단되었습니다.
 
 | Status             | Command                  | Description                                                                                                  |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| :arrow_down:       | zf{motion} or {Visual}zf | Operator to create a fold.                                                                                   |
-| :arrow_down:       | zF                       | Create a fold for [count] lines. Works like "zf".                                                            |
-| :arrow_down:       | zd                       | Delete one fold at the cursor.                                                                               |
-| :arrow_down:       | zD                       | Delete folds recursively at the cursor.                                                                      |
-| :arrow_down:       | zE                       | Eliminate all folds in the window.                                                                           |
-| :white_check_mark: | zo                       | Open one fold under the cursor.When a count is given, that many folds deep will be opened.                   |
-| :white_check_mark: | zO                       | Open all folds under the cursor recursively.                                                                 |
-| :white_check_mark: | zc                       | Close one fold under the cursor. When a count is given, that many folds deep are closed.                     |
-| :white_check_mark: | zC                       | Close all folds under the cursor recursively.                                                                |
-| :white_check_mark: | za                       | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.                         |
-| :arrow_down:       | zA                       | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'. |
-| :arrow_down:       | zv                       | View cursor line: Open just enough folds to make the line in which the cursor is located not folded.         |
-| :arrow_down:       | zx                       | Update folds: Undo manually opened and closed folds: re-apply 'foldlevel', then do "zv": View cursor line.   |
-| :arrow_down:       | zX                       | Undo manually opened and closed folds                                                                        |
-| :arrow_down:       | zm                       | Fold more: Subtract one from 'foldlevel'.                                                                    |
-| :white_check_mark: | zM                       | Close all folds: set 'foldlevel' to 0. 'foldenable' will be set.                                             |
-| :arrow_down:       | zr                       | Reduce folding: Add one to 'foldlevel'.                                                                      |
-| :white_check_mark: | zR                       | Open all folds. This sets 'foldlevel' to highest fold level.                                                 |
-| :arrow_down:       | zn                       | Fold none: reset 'foldenable'. All folds will be open.                                                       |
-| :arrow_down:       | zN                       | Fold normal: set 'foldenable'. All folds will be as they were before.                                        |
-| :arrow_down:       | zi                       | Invert 'foldenable'.                                                                                         |
-| :arrow_down:       | [z                       | Move to the start of the current open fold.                                                                  |
-| :arrow_down:       | ]z                       | Move to the end of the current open fold.                                                                    |
-| :arrow_down:       | zj                       | Move downwards to the start of the next fold.                                                                |
-| :arrow_down:       | zk                       | Move upwards to the end of the previous fold.                                                                |
+| :arrow_down:       | zf{motion} or {Visual}zf | fold를 만드는 연산자입니다.                                                                                    |
+| :arrow_down:       | zF                       | [count] 줄의 fold를 만듭니다. "zf"처럼 작동합니다.                                                            |
+| :arrow_down:       | zd                       | 커서에서 하나의 fold를 삭제하십시오.                                                                           |
+| :arrow_down:       | zD                       | 커서에서 fold를 재귀적으로 삭제합니다.                                                                           |
+| :arrow_down:       | zE                       | 창의 모든 fold를 제거하십시오.                                                                                |
+| :white_check_mark: | zo                       | 커서 아래에 하나의 fold를 엽니다. 카운트가 주어지면 그 많은 폴드가 열립니다.                   |
+| :white_check_mark: | zO                       | 커서 아래의 모든 fold를 재귀적으로 엽니다.                                                                      |
+| :white_check_mark: | zc                       | 커서 아래에서 한 개의 fold를 닫습니다. 카운트가 주어지면 깊은 곳의 많은 folds가 닫힙니다.                        |
+| :white_check_mark: | zC                       | 커서 아래의 모든fold를 재귀적으로 닫습니다.                                                                    |
+| :white_check_mark: | za                       | 닫힌 fold에있을 때 : 여십시오. 열린 fold시 : 닫고 '접을 수 있음'을 설정하십시오.                                  |
+| :arrow_down:       | zA                       | 열린 fold에 있을 때: 재귀적으로 엽니다. 닫힌 fold에 있을 때 : 재귀적으로 닫고  'foldenable'을 설정하십시오. |
+| :arrow_down:       | zv                       | View cursor line: 라인을 만들기에 충분한 fold를 엽니다.                                                        |
+| :arrow_down:       | zx                       | 'foldlevel'을 다시 적용한 다음 "zv"를 수행하십시오. 커서 행을보십시오.                                          |
+| :arrow_down:       | zX                       | Update folds : 수동으로 열리고 닫힌 fold를 취소합니다. 'foldlevel'을 다시 적용한 다음 "zv"를 수행하십시오. 커서 행을보십시오.                                                   |
+| :arrow_down:       | zm                       | Fold more : 'foldlevel'에서 하나를 빼십시오.                                                                   |
+| :white_check_mark: | zM                       | Close all folds  : 'foldlevel'을 0으로 설정하십시오. 'foldenable'이 설정됩니다.                                  |
+| :arrow_down:       | zr                       | Reduce folding : '폴더'에 하나를 추가하십시오.                                                                   |
+| :white_check_mark: | zR                       | Open all fold. 'foldlevel'을 가장 높은 접기 수준으로 설정합니다.                                             |
+| :arrow_down:       | zn                       | Fold none : 'foldenable'을 재설정하십시오. 모든 주름이 열립니다.                                                 |
+| :arrow_down:       | zN                       | Fold normal : 'foldenable'을 설정하십시오. 모든 주름은 이전과 동일합니다.                                         |
+| :arrow_down:       | zi                       | 'foldenable'을 반전시킵니다.                                                                                  |
+| :arrow_down:       | [z                       | 현재 열린 fold 시작으로 이동합니다.                                                                            |
+| :arrow_down:       | ]z                       | 현재 열린 fold의 끝으로 이동합니다.                                                                            |
+| :arrow_down:       | zj                       | 다음 fold의 시작 부분으로 아래로 이동하십시오.                                                                  |
+| :arrow_down:       | zk                       | 이전 fold의 끝으로 위로 이동하십시오.                                                                          |
 
-### Fold options
+### Fold 옵션
 
-Currently we don't support any fold option and we are following Code configurations.
+현재 fold option을 지원하지 않으며 코드 구성을 따르고 있습니다.
