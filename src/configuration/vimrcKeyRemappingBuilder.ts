@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { IKeyRemapping, IVimrcKeyRemapping } from './iconfiguration';
 
 class VimrcKeyRemappingBuilderImpl {
@@ -8,7 +9,7 @@ class VimrcKeyRemappingBuilderImpl {
   /**
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
-  public build(line: string): IVimrcKeyRemapping | undefined {
+  public async build(line: string): Promise<IVimrcKeyRemapping | undefined> {
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
       return undefined;
@@ -19,7 +20,8 @@ class VimrcKeyRemappingBuilderImpl {
     const after = matches[3];
 
     let mapping: IKeyRemapping;
-    if (VimrcKeyRemappingBuilderImpl.isCommand(after)) {
+    const vscodeCommands = await vscode.commands.getCommands();
+    if (vscodeCommands.includes(after) || VimrcKeyRemappingBuilderImpl.isVimCommand(after)) {
       mapping = {
         before: VimrcKeyRemappingBuilderImpl.buildKeyList(before),
         commands: [after],
@@ -42,7 +44,7 @@ class VimrcKeyRemappingBuilderImpl {
   /**
    * @returns `true` if this remaps a key sequence to a `:` command
    */
-  private static isCommand(commandString: string): boolean {
+  private static isVimCommand(commandString: string): boolean {
     const matches = VimrcKeyRemappingBuilderImpl.COMMAND_REG_EX.exec(commandString);
     if (matches) {
       return true;
