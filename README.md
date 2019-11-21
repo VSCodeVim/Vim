@@ -126,6 +126,11 @@ These settings are specific to VSCodeVim.
 | vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                 | String  | rgba(250, 240, 170, 0.5)              |
 | vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                              | Number  | 200                                   |
 
+
+
+
+<img src="https://github.com/90sFantasyKid/Vim/blob/master/images/VsVimWithNeoVim.png?raw=true" height="70">
+
 ### Neovim Integration
 
 > :warning: Experimental feature. Please leave feedback on neovim integration [here](https://github.com/VSCodeVim/Vim/issues/1735).
