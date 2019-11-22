@@ -88,7 +88,7 @@ class Configuration implements IConfiguration {
     }
 
     if (this.vimrc.enable) {
-      vimrc.load(this);
+      await vimrc.load(this);
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);

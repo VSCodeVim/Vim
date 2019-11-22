@@ -21,6 +21,6 @@ export class NohlCommand extends node.CommandBase {
     globalState.hl = false;
 
     // Clear the `match x of y` message from status bar
-    StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
+    StatusBar.Set('', vimState, true);
   }
 }

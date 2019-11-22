@@ -4531,8 +4531,7 @@ class CommandUnicodeName extends BaseCommand {
     // TODO: Handle charCode > 127 by also including <M-x>
     StatusBar.Set(
       `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`,
-      vimState.currentMode,
-      vimState.isRecordingMacro,
+      vimState,
       true
     );
     return vimState;

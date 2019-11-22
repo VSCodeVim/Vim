@@ -70,8 +70,7 @@ export class SetOptionsCommand extends node.CommandBase {
     if (configuration[this._arguments.name] == null) {
       StatusBar.Set(
         `${VimError.fromCode(ErrorCode.E518).toString()}. ${this._arguments.name}`,
-        vimState.currentMode,
-        vimState.isRecordingMacro,
+        vimState,
         true
       );
       return;
@@ -108,17 +107,11 @@ export class SetOptionsCommand extends node.CommandBase {
         if (value === undefined) {
           StatusBar.Set(
             `${VimError.fromCode(ErrorCode.E518).toString()}. ${value}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
+            vimState,
             true
           );
         } else {
-          StatusBar.Set(
-            `${this._arguments.name}=${value}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
-            true
-          );
+          StatusBar.Set(`${this._arguments.name}=${value}`, vimState, true);
         }
         break;
       default:
