@@ -325,7 +325,7 @@ export class SearchState {
         .slice(0)
         .reverse()
         .entries()) {
-        if (matchRange.start.compareTo(startPosition) < 0) {
+        if (matchRange.end.compareTo(startPosition) <= 0) {
           return {
             start: Position.FromVSCodePosition(matchRange.start),
             end: Position.FromVSCodePosition(matchRange.end),
