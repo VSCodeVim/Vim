@@ -1,22 +1,22 @@
-## Key
+## 키
 
-:white_check_mark: - command done
+:white_check_mark: - 명령 완료
 
-:white_check_mark: :star: - command done with VS Code specific customization
+:white_check_mark: :star: - VSCode 특정 사용자 정의로 수행되는 명령
 
-:warning: - some variations of the command are not supported
+:warning: - 명령의 일부 변형이 지원되지 않습니다
 
-:running: - work in progress
+:running: - 진행중인 작업
 
-:arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
+:arrow_down: - 명령어 우선 순위가 낮습니다. issue를 더 빨리 보고싶다면 issue를 열거나 관련 issue의 엄지손가락을 치켜세우세요.
 
-:x: - command impossible with current VSCode API
+:x: - 현재 VSCode API로는 불가능한 명령
 
-:1234: - command accepts numeric prefix
+:1234: - 명령어는 숫자 접두사를 허용합니다.
 
-## Roadmap
+## 로드맵
 
-These are the big Vim features, put generally in the order in which we plan to implement them.
+이들은 Vim의 큰 기능으로, 일반적으로 구현할 순서대로 되어있습니다.
 
 | Status             | Command                |
 | ------------------ | ---------------------- |
@@ -37,14 +37,14 @@ These are the big Vim features, put generally in the order in which we plan to i
 | :warning:          | Macros                 |
 | :warning:          | Buffer/Window/Tab      |
 
-Now follows an exhaustive list of every known Vim command that we could find.
+현재 우리가 찾을수 있는 모든 알려진 Vim 명령의 전체 목록을 따릅니다.
 
-## Custom commands
+## 사용자 명령어
 
-- `gh` - show the hover tooltip.
-- `gb` - add an additional cursor at the next place that matches `*`.
+- `gh` - hover tooltip 표시.
+- `gb` - 다음 위치에 `*` 와 일치하는 추가 커서를 추가하십시오.
 
-## Left-right motions
+## 좌-우 동작
 
 | Status             | Command        | Description                                                                    |
 | ------------------ | -------------- | ------------------------------------------------------------------------------ |
@@ -65,7 +65,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: ;       | repeat the last "f", "F", "t", or "T" N times                                  |
 | :white_check_mark: | :1234: ,       | repeat the last "f", "F", "t", or "T" N times in opposite direction            |
 
-## Up-down motions
+## 상-하 동작
 
 | Status             | Command   | Description                                                                               |
 | ------------------ | --------- | ----------------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: gk | up N screen lines (differs from "k" when line wraps)                                      |
 | :white_check_mark: | :1234: gj | down N screen lines (differs from "j" when line wraps)                                    |
 
-## Text object motions
+## 텍스트 객체 동작
 
 | Status             | Command    | Description                                                 |
 | ------------------ | ---------- | ----------------------------------------------------------- |
@@ -113,7 +113,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :arrow_down:       | :1234: [\* | N times back to start of a C comment "/\*"                  |
 | :arrow_down:       | :1234: ]\* | N times forward to end of a C comment "\*/"                 |
 
-## Pattern searches
+## 패턴 검색
 
 | Status                    | Command                            | Description                                            | Note                                                                            |
 | ------------------------- | ---------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------- |
@@ -130,7 +130,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark:        | gd                                 | goto local declaration of identifier under the cursor  |
 | :arrow_down:              | gD                                 | goto global declaration of identifier under the cursor |
 
-## Marks and motions
+## 마크와 동작
 
 | Status             | Command                                                     | Description                                            |
 | ------------------ | ----------------------------------------------------------- | ------------------------------------------------------ |
@@ -154,7 +154,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: CTRL-I                                               | go to Nth newer position in jump list                  |
 | :arrow_down:       | :ju[mps]                                                    | print the jump list                                    |
 
-## Various motions
+## 다양한 동작
 
 | Status             | Command             | Description                                                                                        |
 | ------------------ | ------------------- | -------------------------------------------------------------------------------------------------- |
@@ -165,9 +165,9 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :arrow_down:       | :1234: go           | go to Nth byte in the buffer                                                                       |
 | :arrow_down:       | :[range]go[to][off] | go to [off] byte in the buffer                                                                     |
 
-## Using tags
+## 태그 사용
 
-The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the command palette if you haven't yet!
+VSCode는 goto symbol 태그를 매우 잘 지원하므로 다음 사항들은 우선 순위가 낮습니다. 아직 하지 않았다면 명령 팔레트에서 시도해 보십시오.
 
 | Status       | Command                | Description                                                           |
 | ------------ | ---------------------- | --------------------------------------------------------------------- |
@@ -205,7 +205,7 @@ The following are all marked low priority because VSCode has very good support f
 | :white_check_mark: | z. or zz      | redraw, current line at center of window       |
 | :white_check_mark: | z- or zb      | redraw, current line at bottom of window       |
 
-These only work when 'wrap' is off:
+'wrap'이 꺼져 있을 때만 작동합니다:
 
 | Status                    | Command   | Description                                   | Note                                                                                                          |
 | ------------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -214,7 +214,7 @@ These only work when 'wrap' is off:
 | :white_check_mark: :star: | :1234: zH | scroll screen half a screenwidth to the right | As above                                                                                                      |
 | :white_check_mark: :star: | :1234: zL | scroll screen half a screenwidth to the left  | As above                                                                                                      |
 
-## Inserting text
+## 텍스트 삽입
 
 | Status             | Command   | Description                                                   |
 | ------------------ | --------- | ------------------------------------------------------------- |
@@ -227,16 +227,16 @@ These only work when 'wrap' is off:
 | :white_check_mark: | :1234: o  | open a new line below the current line, append text (N times) |
 | :white_check_mark: | :1234: O  | open a new line above the current line, append text (N times) |
 
-in Visual block mode:
+비주얼 블록 모드:
 
 | Status             | Command | Description                                             |
 | ------------------ | ------- | ------------------------------------------------------- |
 | :white_check_mark: | I       | insert the same text in front of all the selected lines |
 | :white_check_mark: | A       | append the same text after all the selected lines       |
 
-## Insert mode keys
+## 모드 키 삽입
 
-leaving Insert mode:
+삽입 모드 종료:
 
 | Status             | Command          | Description                                 |
 | ------------------ | ---------------- | ------------------------------------------- |
@@ -244,7 +244,7 @@ leaving Insert mode:
 | :white_check_mark: | CTRL-C           | like Esc, but do not use an abbreviation    |
 | :white_check_mark: | CTRL-O {command} | execute {command} and return to Insert mode |
 
-moving around:
+이동:
 
 | Status             | Command          | Description                             |
 | ------------------ | ---------------- | --------------------------------------- |
@@ -254,7 +254,7 @@ moving around:
 | :white_check_mark: | End              | cursor after last character in the line |
 | :white_check_mark: | Home             | cursor to first character in the line   |
 
-## Special keys in Insert mode
+## 삽입 모드의 특수 키
 
 | Status                    | Command                      | Description                                                        | Note                                                                                                                   |
 | ------------------------- | ---------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
@@ -277,7 +277,7 @@ moving around:
 | :arrow_down:              | 0 CTRL-D                     | delete all indent in the current line                              |
 | :arrow_down:              | ^ CTRL-D                     | delete all indent in the current line, restore indent in next line |
 
-## Digraphs
+## Di그래프
 
 | Status             | Command                                 | Description                   |
 | ------------------ | --------------------------------------- | ----------------------------- |
@@ -291,7 +291,7 @@ moving around:
 | :warning: | :r [file]     | insert the contents of [file] below the cursor           |
 | :warning: | :r! {command} | insert the standard output of {command} below the cursor |
 
-## Deleting text
+## 텍스트 삭제
 
 | Status             | Command          | Description                                        |
 | ------------------ | ---------------- | -------------------------------------------------- |
@@ -308,7 +308,7 @@ moving around:
 | :white_check_mark: | {visual}gJ       | like "{visual}J", but without inserting spaces     |
 | :white_check_mark: | :[range]d [x]    | delete [range] lines [into register x]             |
 
-## Copying and moving text
+## 텍스트 복사 및 이동
 
 | Status             | Command          | Description                                            |
 | ------------------ | ---------------- | ------------------------------------------------------ |
@@ -327,7 +327,7 @@ moving around:
 | :white_check_mark: | :1234: gp        | like p, but leave cursor after the new text            |
 | :white_check_mark: | :1234: gP        | like P, but leave cursor after the new text            |
 
-## Changing text
+## 텍스트 변경
 
 | Status                    | Command         | Description                                                                                       | Note                     |
 | ------------------------- | --------------- | ------------------------------------------------------------------------------------------------- | ------------------------ |
@@ -337,7 +337,7 @@ moving around:
 | :arrow_down:              | :1234: gR       | enter virtual Replace mode: Like Replace mode but without affecting layout                        |
 | :white_check_mark:        | {visual}r{char} | in Visual block, visual, or visual line modes: Replace each char of the selected text with {char} |
 
-(change = delete text and enter Insert mode)
+(변경 = 텍스트 삭제 및 삽입 모드 입력)
 
 | Status             | Command                 | Description                                                                                     |
 | ------------------ | ----------------------- | ----------------------------------------------------------------------------------------------- |
@@ -368,7 +368,7 @@ moving around:
 | :arrow_down:       | :[range]le[ft][indent]  | left-align the lines in [range] (with [indent])                                                 |
 | :arrow_down:       | :[ranee]ri[ght][width]  | right-align the lines in [range]                                                                |
 
-## Complex changes
+## 복잡한 변화
 
 | Status                              | Command                                        | Description                                                                                                                           | Note                                                                             |
 | ----------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -384,7 +384,7 @@ moving around:
 | :arrow_down:                        | &                                              | Repeat previous ":s" on current line without options                                                                                  |
 | :arrow_down:                        | :[range]ret[ab][!] [tabstop]                   | set 'tabstop' to new value and adjust white space accordingly                                                                         |
 
-## Visual mode
+## 비주얼 모드
 
 | Status             | Command | Description                                         |
 | ------------------ | ------- | --------------------------------------------------- |
@@ -394,7 +394,7 @@ moving around:
 | :white_check_mark: | o       | exchange cursor position with start of highlighting |
 | :white_check_mark: | gv      | start highlighting on previous visual area          |
 
-## Text objects (only in Visual mode or after an operator)
+## 텍스트 객체 (비주얼 모드 또는 연산자 이후에서만)
 
 | Status             | Command                                           | Description                                                 |
 | ------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
@@ -423,7 +423,7 @@ moving around:
 | :white_check_mark: | :1234: a` | Select "a backward quoted string"     |
 | :white_check_mark: | :1234: i` | Select "inner backward quoted string" |
 
-## Repeating commands
+## 반복 명령어
 
 | Status                    | Command                           | Description                                                                                        | Note                                                                |
 | ------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -442,7 +442,7 @@ moving around:
 | :arrow_down:              | :sl[eep][sec]                     | don't do anything for [sec] seconds                                                                |
 | :arrow_down:              | :1234: gs                         | goto Sleep for N seconds                                                                           |
 
-## options
+## 옵션
 
 | Status                    | Command                  | Description                                                                                                       | Note                                 |
 | ------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
@@ -462,7 +462,7 @@ moving around:
 | :arrow_down:              | :fix[del]                | set value of 't_kD' according to value of 't_kb'                                                                  |
 | :arrow_down:              | :opt[ions]               | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help |
 
-Since the list is too long, now we just put those already supported options here.
+목록이 너무 길기 때문에, 이제 우리는 이미 지원되는 옵션을 이곳에 넣습니다.
 
 | Status             | Command         | Default Value                                                   | Description                                                                                                                                |
 | ------------------ | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -475,7 +475,7 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark: | expandtab (et)  | True. we use Code's default value `insertSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted                                                                                                    |
 | :white_check_mark: | autoindent      | true                                                            | Keep indentation when doing `cc` or `S` in normal mode to replace a line.                                                                  |
 
-## Undo/Redo commands
+## 실행 취소 / 재 실행 명령
 
 | Status             | Command       | Description                | Note                                                       |
 | ------------------ | ------------- | -------------------------- | ---------------------------------------------------------- |
@@ -483,7 +483,7 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark: | :1234: CTRL-R | redo last N undone changes | As above.                                                  |
 | :white_check_mark: | U             | restore last changed line  |
 
-## External commands
+## 외부 명령
 
 | Status       | Command     | Description                                                                |
 | ------------ | ----------- | -------------------------------------------------------------------------- |
@@ -491,7 +491,7 @@ Since the list is too long, now we just put those already supported options here
 | :arrow_down: | :!{command} | execute {command} with a shell                                             |
 | :arrow_down: | K           | lookup keyword under the cursor with 'keywordprg' program (default: "man") |
 
-## Ex ranges
+## Ex 범위
 
 | Status                    | Command       | Description                                                                  | Note                                 |
 | ------------------------- | ------------- | ---------------------------------------------------------------------------- | ------------------------------------ |
@@ -508,13 +508,13 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark:        | +[num]        | add [num] to the preceding line number (default: 1)                          |
 | :white_check_mark:        | -[num]        | subtract [num] from the preceding line number (default: 1)                   |
 
-## Editing a file
+## 파일 편집
 
 | Status                    | Command        | Description  | Note                                                                                        |
 | ------------------------- | -------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | :white_check_mark: :star: | :e[dit] {file} | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab. |
 
-## Multi-window commands
+## 다중-창 명령어
 
 | Status                    | Command           | Description                                                             | Note                                                                                                                   |
 | ------------------------- | ----------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -527,7 +527,7 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. |                                                                                                                        |
 | :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   |                                                                                                                        |
 
-## Tabs
+## 탭
 
 | Status                    | Command                              | Description                                                                   | Note                                                               |
 | ------------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -552,11 +552,11 @@ Since the list is too long, now we just put those already supported options here
 
 ### Fold methods
 
-The folding method can be set with the 'foldmethod' option. This is currently not possible as we are relying on Code's Fold logic.
+folding 방법은 'foldmethod' 옵션으로 설정할 수 있습니다. 현재 Code's Fold logic에 의존하고 있기 때문에 불가능합니다.
 
-### Fold commands
+### Fold 명령어
 
-Pretty much everything fold-related is blocked by [this issue](https://github.com/VSCodeVim/Vim/issues/1004).
+모든 fold-related가 [this issue](https://github.com/VSCodeVim/Vim/issues/1004)에 의해 차단 되었습니다.
 
 | Status             | Command                  | Description                                                                                                  |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
@@ -586,6 +586,6 @@ Pretty much everything fold-related is blocked by [this issue](https://github.co
 | :arrow_down:       | zj                       | Move downwards to the start of the next fold.                                                                |
 | :arrow_down:       | zk                       | Move upwards to the end of the previous fold.                                                                |
 
-### Fold options
+### Fold 옵션
 
-Currently we don't support any fold option and we are following Code configurations.
+현재 fold option을 지원하지 않으며 코드 구성을 따르고 있습니다.
