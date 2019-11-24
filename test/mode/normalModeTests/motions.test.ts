@@ -312,6 +312,13 @@ suite('Motions in Normal Mode', () => {
     end: ['one two |two two'],
   });
 
+  newTest({
+    title: 'Can run a forward and find previous search from end of word',
+    start: ['|one two one two'],
+    keysPressed: '/two/e\nN',
+    end: ['one two one tw|o'],
+  });
+
   // These "remembering history between editor" tests have started
   // breaking. Since I don't remember these tests ever breaking for real, and
   // because they're the cause of a lot of flaky tests, I'm disabling these for
