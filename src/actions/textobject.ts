@@ -75,7 +75,7 @@ export class SelectWord extends TextObjectMovement {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        // If current cursor position is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
           stop = position.getWordLeft(true);
         } else {
