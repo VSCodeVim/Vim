@@ -1448,6 +1448,7 @@ export class PutCommand extends BaseCommand {
   modes = [ModeName.Normal];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  doesntChangeDesiredColumn = false;
 
   constructor(multicursorIndex?: number) {
     super();
@@ -3557,6 +3558,7 @@ export class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['X'];
   canBeRepeatedWithDot = true;
+  doesntChangeDesiredColumn = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.character === 0) {

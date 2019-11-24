@@ -257,6 +257,7 @@ export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   canBeRepeatedWithDot = false;
+  doesntChangeDesiredColumn = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Hack to make Surround with y (which takes a motion) work.
@@ -330,6 +331,7 @@ export class YankOperator extends BaseOperator {
 export class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  doesntChangeDesiredColumn = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;

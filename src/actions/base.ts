@@ -17,6 +17,7 @@ export class BaseAction {
 
   public canBeRepeatedWithDot = false;
 
+  public doesntChangeDesiredColumn = true;
   /**
    * Modes that this action can be run in.
    */
