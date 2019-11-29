@@ -5,15 +5,7 @@ import { BaseMovement, isIMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
-import {
-  Mode,
-  VSCodeVimCursorType,
-  statusBarCommandText,
-  statusBarText,
-  isVisualMode,
-  getCursorStyle,
-  getCursorType,
-} from './mode';
+import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, getCursorType } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
@@ -263,6 +255,8 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.cursorsInitialState = this.vimState.cursors;
     this.vimState.recordedState.commandList.push(key);
 
+    const oldMode = this.vimState.currentMode;
+
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
       if (!isWithinTimeout) {
@@ -308,7 +302,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
-    this._renderStatusBar();
+    StatusBar.Clear(this.vimState, this.vimState.currentMode !== oldMode);
 
     return true;
   }
@@ -1385,7 +1379,7 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.easyMotion.updateDecorations();
     }
 
-    this._renderStatusBar();
+    StatusBar.Clear(this.vimState, false);
 
     await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
 
@@ -1396,28 +1390,6 @@ export class ModeHandler implements vscode.Disposable {
     if (!/\s+/.test(vimState.editor.document.getText(range))) {
       await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
-  }
-
-  private _renderStatusBar(): void {
-    let text: string[] = [];
-
-    if (configuration.showmodename) {
-      text.push(statusBarText(this.vimState));
-      if (this.vimState.isMultiCursor) {
-        text.push(' MULTI CURSOR ');
-      }
-    }
-
-    if (configuration.showcmd) {
-      text.push(statusBarCommandText(this.vimState));
-    }
-
-    if (this.vimState.isRecordingMacro) {
-      const macroText = 'Recording @' + this.vimState.recordedMacro.registerName;
-      text.push(macroText);
-    }
-
-    StatusBar.Set(text.join(' '), this.vimState);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

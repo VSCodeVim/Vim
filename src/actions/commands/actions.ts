@@ -26,12 +26,7 @@ import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
 import { readDirectory, getPathDetails } from '../../util/path';
-import {
-  ReportLinesChanged,
-  ReportClear,
-  ReportFileInfo,
-  ReportSearch,
-} from '../../util/statusBarTextUtils';
+import { ReportLinesChanged, ReportFileInfo, ReportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -2611,7 +2606,7 @@ class CommandUndo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.Set('Already at oldest change', vimState, true);
     } else {
-      ReportClear(vimState);
+      StatusBar.Clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2656,7 +2651,7 @@ class CommandRedo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.Set('Already at newest change', vimState, true);
     } else {
-      ReportClear(vimState);
+      StatusBar.Clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Mode } from './mode/mode';
+import { Mode, statusBarText, statusBarCommandText } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 
@@ -101,6 +101,41 @@ class StatusBarImpl implements vscode.Disposable {
     if (currentColorCustomizations !== colorCustomizations) {
       workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
     }
+  }
+
+  /**
+   * Clears any messages from the status bar, leaving the default info, such as
+   * the current mode and macro being recorded.
+   * @param force If true, will clear even high priority messages like errors.
+   */
+  public Clear(vimState: VimState, force = true) {
+    if (this._wasHighPriority && !force) {
+      return;
+    }
+
+    let text: string[] = [];
+
+    if (configuration.showmodename) {
+      text.push(statusBarText(vimState));
+      if (vimState.isMultiCursor) {
+        text.push(' MULTI CURSOR ');
+      }
+    }
+
+    if (configuration.showcmd) {
+      text.push(statusBarCommandText(vimState));
+    }
+
+    if (vimState.isRecordingMacro) {
+      const macroText = 'Recording @' + vimState.recordedMacro.registerName;
+      text.push(macroText);
+    }
+
+    // We've already checked _wasHighPriority and force, so make sure this happens
+    StatusBar.Set(text.join(' '), vimState, true);
+
+    // We want another call to clear() to work even if this one was forced and the next wasn't
+    this._wasHighPriority = false;
   }
 }
 

@@ -1,12 +1,8 @@
-import { Mode } from '../mode/mode';
+import { Mode, statusBarText, statusBarCommandText } from '../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Position } from '../common/motion/position';
-
-export function ReportClear(vimState: VimState) {
-  StatusBar.Set('', vimState, true);
-}
 
 /**
  * Shows the number of lines you just changed (with `dG`, for instance), if it
@@ -19,7 +15,7 @@ export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) 
   } else if (-numLinesChanged > configuration.report) {
     StatusBar.Set(Math.abs(numLinesChanged) + ' fewer lines', vimState, true);
   } else {
-    ReportClear(vimState);
+    StatusBar.Clear(vimState);
   }
 }
 
@@ -35,7 +31,7 @@ export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
       StatusBar.Set(numLinesYanked + ' lines yanked', vimState, true);
     }
   } else {
-    ReportClear(vimState);
+    StatusBar.Clear(vimState);
   }
 }
 
