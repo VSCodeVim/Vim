@@ -18,7 +18,6 @@ export class CloseCommand extends node.CommandBase {
 
   constructor(args: ICloseCommandArguments) {
     super();
-    this._name = 'close';
     this._arguments = args;
   }
 

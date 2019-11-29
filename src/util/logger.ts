@@ -10,7 +10,7 @@ interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
 
 /**
  * Implementation of Winston transport
- * Displays VS Code message to user
+ * Displays VSCode message to user
  */
 class VsCodeMessage extends TransportStream {
   prefix?: string;

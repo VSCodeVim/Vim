@@ -40,7 +40,7 @@ export class PairMatcher {
     position: Position,
     charToFind: string,
     charToStack: string,
-    stackHeight,
+    stackHeight: number,
     isNextMatchForward: boolean,
     vimState?: VimState
   ): Position | undefined {
@@ -107,7 +107,7 @@ export class PairMatcher {
     return undefined;
   }
 
-  private static keepSearching(lineNumber, lineCount, isNextMatchForward) {
+  private static keepSearching(lineNumber: number, lineCount: number, isNextMatchForward: boolean) {
     if (isNextMatchForward) {
       return lineNumber <= lineCount - 1;
     } else {

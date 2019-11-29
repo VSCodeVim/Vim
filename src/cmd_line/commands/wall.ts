@@ -16,8 +16,6 @@ export class WallCommand extends node.CommandBase {
 
   constructor(args: IWallCommandArguments) {
     super();
-
-    this._name = 'wall';
     this._arguments = args;
   }
 

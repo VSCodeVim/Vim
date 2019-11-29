@@ -10,7 +10,7 @@ class VimrcImpl {
     return this._vimrcPath;
   }
 
-  public load(config: IConfiguration) {
+  public async load(config: IConfiguration) {
     const _path = config.vimrc.path
       ? VimrcImpl.expandHome(config.vimrc.path)
       : VimrcImpl.findDefaultVimrc();
@@ -26,7 +26,7 @@ class VimrcImpl {
     // Add the new remappings
     const lines = fs.readFileSync(config.vimrc.path, { encoding: 'utf8' }).split(/\r?\n/);
     for (const line of lines) {
-      const remap = vimrcKeyRemappingBuilder.build(line);
+      const remap = await vimrcKeyRemappingBuilder.build(line);
       if (remap) {
         VimrcImpl.addRemapToConfig(config, remap);
       }

@@ -13,7 +13,6 @@ export class RegisterCommand extends node.CommandBase {
 
   constructor(args: IRegisterCommandArguments) {
     super();
-    this._name = 'register';
     this._arguments = args;
   }
 

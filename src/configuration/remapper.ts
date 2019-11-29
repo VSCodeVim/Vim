@@ -175,12 +175,7 @@ export class Remapper implements IRemapper {
           await vscode.commands.executeCommand(commandString);
         }
 
-        StatusBar.Set(
-          commandString + ' ' + commandArgs,
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true
-        );
+        StatusBar.Set(commandString + ' ' + commandArgs, vimState, true);
       }
     }
   }
