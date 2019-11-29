@@ -1583,6 +1583,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    // TODO: Don't limit quote matching to the same line
     const text = TextEditor.getLineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
     let start = quoteMatcher.findOpening(position.character);

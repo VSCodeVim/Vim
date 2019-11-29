@@ -41,7 +41,6 @@ export class FileCommand extends node.CommandBase {
 
   constructor(args: IFileCommandArguments) {
     super();
-    this._name = 'file';
     this._arguments = args;
   }
 

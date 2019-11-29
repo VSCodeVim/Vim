@@ -25,7 +25,6 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
-import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -91,8 +90,7 @@ async function loadConfiguration() {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-  // before we do anything else,
-  // we need to load the configuration first
+  // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
   const logger = Logger.get('Extension Startup');
@@ -123,13 +121,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async event => {
-    const textWasDeleted = changeEvent =>
+    const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
         changeEvent.contentChanges[0].range.end.line;
 
-    const textWasAdded = changeEvent =>
+    const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
@@ -146,8 +144,8 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     }
 
-    // Change from vscode editor should set document.isDirty to true but they initially don't!
-    // There is a timing issue in vscode codebase between when the isDirty flag is set and
+    // Change from VSCode editor should set document.isDirty to true but they initially don't!
+    // There is a timing issue in VSCode codebase between when the isDirty flag is set and
     // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
     const contentChangeHandler = (modeHandler: ModeHandler) => {
       if (modeHandler.vimState.currentMode === ModeName.Insert) {
@@ -189,7 +187,6 @@ export async function activate(context: vscode.ExtensionContext) {
         const modeHandler = ModeHandlerMap.get(editorIdentity);
 
         let shouldDelete = false;
-
         if (modeHandler == null || modeHandler.vimState.editor === undefined) {
           shouldDelete = true;
         } else {
@@ -388,7 +385,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (args.commands) {
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
-          if (command.command.slice(0, 1) === ':') {
+          if (command.command.startsWith(':')) {
             await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
             mh.updateView(mh.vimState);
           } else {
