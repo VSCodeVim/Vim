@@ -28,7 +28,6 @@ export class WriteCommand extends node.CommandBase {
 
   constructor(args: IWriteCommandArguments) {
     super();
-    this._name = 'write';
     this._arguments = args;
   }
 

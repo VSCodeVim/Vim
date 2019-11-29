@@ -54,7 +54,6 @@ export class SetOptionsCommand extends node.CommandBase {
 
   constructor(args: IOptionArgs) {
     super();
-    this._name = 'setoptions';
     this._arguments = args;
   }
 

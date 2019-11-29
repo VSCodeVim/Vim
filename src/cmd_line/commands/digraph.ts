@@ -19,7 +19,6 @@ export class DigraphsCommand extends node.CommandBase {
 
   constructor(args: IDigraphsCommandArguments) {
     super();
-    this._name = 'digraphs';
     this._arguments = args;
   }
 

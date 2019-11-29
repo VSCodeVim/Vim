@@ -8,8 +8,6 @@ export class NohlCommand extends node.CommandBase {
 
   constructor(args: {}) {
     super();
-
-    this._name = 'nohl';
     this._arguments = args;
   }
 
