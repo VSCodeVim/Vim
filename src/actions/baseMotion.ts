@@ -4,6 +4,7 @@ import { BaseAction } from './base';
 import { ModeName } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
+import { clamp } from '../util/util';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -117,7 +118,7 @@ export abstract class BaseMovement extends BaseAction {
     let prevResult: IMovement | undefined = undefined;
     let firstMovementStart: Position = new Position(position.line, position.character);
 
-    count = this.clampCount(count);
+    count = clamp(count, this.minCount, this.maxCount);
 
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
@@ -147,12 +148,6 @@ export abstract class BaseMovement extends BaseAction {
     return result;
   }
 
-  protected clampCount(count: number) {
-    count = Math.max(count, this.minCount);
-    count = Math.min(count, this.maxCount);
-    return count;
-  }
-
   protected async createMovementResult(
     position: Position,
     vimState: VimState,
@@ -165,6 +160,7 @@ export abstract class BaseMovement extends BaseAction {
         : await this.execAction(position, vimState);
     return result;
   }
+
   protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
     if (!lastIteration) {
       position = result.stop.getRightThroughLineBreaks();

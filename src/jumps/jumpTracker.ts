@@ -10,7 +10,7 @@ import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
 
 /**
- * JumpTracker is a handrolled version of vscode's TextEditorState
+ * JumpTracker is a handrolled version of VSCode's TextEditorState
  * in relation to the 'workbench.action.navigateBack' command.
  */
 export class JumpTracker {
