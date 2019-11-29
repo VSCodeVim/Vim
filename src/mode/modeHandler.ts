@@ -304,12 +304,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        StatusBar.Set(
-          e.toString(),
-          this.vimState.currentMode,
-          this.vimState.isRecordingMacro,
-          true
-        );
+        StatusBar.Set(e.toString(), this.vimState, true, true);
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }
@@ -1434,7 +1429,7 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
-    StatusBar.Set(text.join(' '), this.currentMode.name, this.vimState.isRecordingMacro);
+    StatusBar.Set(text.join(' '), this.vimState);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

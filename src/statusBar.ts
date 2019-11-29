@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ModeName } from './mode/mode';
 import { configuration } from './configuration/configuration';
+import { VimState } from './state/vimState';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
@@ -13,42 +14,40 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.show();
   }
 
-  public Set(
-    text: string,
-    mode: ModeName,
-    isRecordingMacro: boolean,
-    isHighPriority: boolean = false
-  ) {
-    const hasModeChanged = mode !== this._previousModeName;
+  public Set(text: string, vimState: VimState, isHighPriority = false, isError = false) {
+    const hasModeChanged = vimState.currentMode !== this._previousModeName;
 
     // text
     const shouldUpdateText =
       hasModeChanged ||
-      mode === ModeName.SearchInProgressMode ||
-      mode === ModeName.CommandlineInProgress ||
-      isRecordingMacro !== this._wasRecordingMacro ||
+      vimState.currentMode === ModeName.SearchInProgressMode ||
+      vimState.currentMode === ModeName.CommandlineInProgress ||
+      vimState.isRecordingMacro !== this._wasRecordingMacro ||
       configuration.showcmd;
 
     // Errors and other high-priority messages remain displayed on the status bar
     // until specific conditions are met (such as the mode has changed)
     if ((shouldUpdateText && !this._wasHighPriority) || isHighPriority) {
       this.UpdateText(text);
+      if (!configuration.statusBarColorControl) {
+        this._statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
+      }
     }
 
     // color
     const shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
     if (shouldUpdateColor) {
-      this.UpdateColor(mode);
+      this.UpdateColor(vimState.currentMode);
     }
 
-    if (hasModeChanged && mode !== ModeName.Normal) {
+    if (hasModeChanged && vimState.currentMode !== ModeName.Normal) {
       this._wasHighPriority = false;
     } else if (isHighPriority) {
       this._wasHighPriority = true;
     }
 
-    this._previousModeName = mode;
-    this._wasRecordingMacro = isRecordingMacro;
+    this._previousModeName = vimState.currentMode;
+    this._wasRecordingMacro = vimState.isRecordingMacro;
   }
 
   dispose() {
@@ -88,7 +87,7 @@ class StatusBarImpl implements vscode.Disposable {
       'statusBar.foreground': `${foreground}`,
     });
 
-    // if colors are undefined, return to vscode defaults
+    // If colors are undefined, return to VSCode defaults
     if (background === undefined) {
       delete colorCustomizations['statusBar.background'];
       delete colorCustomizations['statusBar.noFolderBackground'];

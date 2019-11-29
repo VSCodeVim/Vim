@@ -54,7 +54,6 @@ export class SetOptionsCommand extends node.CommandBase {
 
   constructor(args: IOptionArgs) {
     super();
-    this._name = 'setoptions';
     this._arguments = args;
   }
 
@@ -68,13 +67,7 @@ export class SetOptionsCommand extends node.CommandBase {
     }
 
     if (configuration[this._arguments.name] == null) {
-      StatusBar.Set(
-        `${VimError.fromCode(ErrorCode.E518).toString()}. ${this._arguments.name}`,
-        vimState.currentMode,
-        vimState.isRecordingMacro,
-        true
-      );
-      return;
+      throw VimError.fromCode(ErrorCode.E518);
     }
 
     switch (this._arguments.operator) {
@@ -106,19 +99,9 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         let value = configuration[this._arguments.name];
         if (value === undefined) {
-          StatusBar.Set(
-            `${VimError.fromCode(ErrorCode.E518).toString()}. ${value}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
-            true
-          );
+          throw VimError.fromCode(ErrorCode.E518);
         } else {
-          StatusBar.Set(
-            `${this._arguments.name}=${value}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
-            true
-          );
+          StatusBar.Set(`${this._arguments.name}=${value}`, vimState, true);
         }
         break;
       default:

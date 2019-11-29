@@ -20,7 +20,7 @@ class GlobalState {
   /**
    * Track jumps, and traverse jump history
    */
-  private _jumpTracker: JumpTracker = new JumpTracker();
+  public readonly jumpTracker: JumpTracker = new JumpTracker();
 
   /**
    * Tracks search history
@@ -124,10 +124,6 @@ class GlobalState {
     });
 
     return item ? item.searchState : undefined;
-  }
-
-  public get jumpTracker(): JumpTracker {
-    return this._jumpTracker;
   }
 }
 

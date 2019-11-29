@@ -102,9 +102,9 @@ export class VimState implements vscode.Disposable {
   public actionCount = 0;
 
   /**
-   * Every time we invoke a VS Code command which might trigger Code's view update,
-   * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
-   * This array is used to cache every VS Code view updating event and they will be triggered once we run the inhouse `viewUpdate`.
+   * Every time we invoke a VSCode command which might trigger a view update.
+   * We should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
+   * This array is used to cache every VSCode view updating event and they will be triggered once we run the inhouse `viewUpdate`.
    */
   public postponedCodeViewChanges: ViewChange[] = [];
 

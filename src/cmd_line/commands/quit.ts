@@ -18,7 +18,6 @@ export class QuitCommand extends node.CommandBase {
 
   constructor(args: IQuitCommandArguments) {
     super();
-    this._name = 'quit';
     this._arguments = args;
   }
 
@@ -27,7 +26,16 @@ export class QuitCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
+    // NOTE: We can't currently get all open text editors, so this isn't perfect. See #3809
+    const duplicatedInSplit =
+      vscode.window.visibleTextEditors.filter(
+        editor => editor.document === this.activeTextEditor!.document
+      ).length > 1;
+    if (
+      this.activeTextEditor!.document.isDirty &&
+      !this.arguments.bang &&
+      (!duplicatedInSplit || this._arguments.quitAll)
+    ) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 

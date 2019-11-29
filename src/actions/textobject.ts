@@ -75,7 +75,7 @@ export class SelectWord extends TextObjectMovement {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        // If current cursor position is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
           stop = position.getWordLeft(true);
         } else {
@@ -156,6 +156,8 @@ export class SelectABigWord extends TextObjectMovement {
  * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
  * select 'baz' first. If you pressed af again, it'd then select [bar 'baz'],
  * and if you did it a third time it would select "(foo [bar 'baz'])".
+ *
+ * Very similar is the now built-in `editor.action.smartSelect.expand`
  */
 @RegisterAction
 export class SelectAnExpandingBlock extends ExpandingSelection {
