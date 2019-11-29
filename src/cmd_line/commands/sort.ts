@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { ModeName, isVisualMode } from '../../mode/mode';
+import { Mode, isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';

@@ -1,4 +1,4 @@
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
@@ -29,7 +29,7 @@ export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) 
  */
 export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
   if (numLinesYanked > configuration.report) {
-    if (vimState.currentMode === ModeName.VisualBlock) {
+    if (vimState.currentMode === Mode.VisualBlock) {
       StatusBar.Set('block of ' + numLinesYanked + ' lines yanked', vimState, true);
     } else {
       StatusBar.Set(numLinesYanked + ' lines yanked', vimState, true);

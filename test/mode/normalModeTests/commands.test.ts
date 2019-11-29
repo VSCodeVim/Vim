@@ -1,4 +1,4 @@
-import { ModeName } from '../../../src/mode/mode';
+import { Mode } from '../../../src/mode/mode';
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
@@ -44,7 +44,7 @@ suite('Mode Normal', () => {
     start: ['|text'],
     keysPressed: '3s',
     end: ['|t'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -52,7 +52,7 @@ suite('Mode Normal', () => {
     start: ['te|xt'],
     keysPressed: '3s',
     end: ['te|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -123,7 +123,7 @@ suite('Mode Normal', () => {
     start: ['tex|t'],
     keysPressed: '^llC',
     end: ['te|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -131,7 +131,7 @@ suite('Mode Normal', () => {
     start: ['tex|t', 'one', 'two'],
     keysPressed: '^ll2C',
     end: ['te|', 'two'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -139,7 +139,7 @@ suite('Mode Normal', () => {
     start: ['tex|t', 'one', 'two'],
     keysPressed: '"a2C<C-r>a',
     end: ['text', 'one|', 'two'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({

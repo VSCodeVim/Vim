@@ -4,7 +4,7 @@ import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
 
-export enum ModeName {
+export enum Mode {
   Normal,
   Insert,
   Visual,
@@ -40,8 +40,8 @@ export enum VisualBlockInsertionType {
   Append,
 }
 
-export function isVisualMode(mode: ModeName) {
-  return [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock].includes(mode);
+export function isVisualMode(mode: Mode) {
+  return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
 }
 
 export function statusBarText(vimState: VimState) {
@@ -50,27 +50,27 @@ export function statusBarText(vimState: VimState) {
       ? '"'
       : '|';
   switch (vimState.currentMode) {
-    case ModeName.Normal:
+    case Mode.Normal:
       return '-- NORMAL --';
-    case ModeName.Insert:
+    case Mode.Insert:
       return '-- INSERT --';
-    case ModeName.Visual:
+    case Mode.Visual:
       return '-- VISUAL --';
-    case ModeName.VisualBlock:
+    case Mode.VisualBlock:
       return '-- VISUAL BLOCK --';
-    case ModeName.VisualLine:
+    case Mode.VisualLine:
       return '-- VISUAL LINE --';
-    case ModeName.Replace:
+    case Mode.Replace:
       return '-- REPLACE --';
-    case ModeName.EasyMotionMode:
+    case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
-    case ModeName.EasyMotionInputMode:
+    case Mode.EasyMotionInputMode:
       return '-- EASYMOTION INPUT --';
-    case ModeName.SurroundInputMode:
+    case Mode.SurroundInputMode:
       return '-- SURROUND INPUT --';
-    case ModeName.Disabled:
+    case Mode.Disabled:
       return '-- VIM: DISABLED --';
-    case ModeName.SearchInProgressMode:
+    case Mode.SearchInProgressMode:
       if (globalState.searchState === undefined) {
         this._logger.warn(`globalState.searchState is undefined.`);
         return '';
@@ -82,7 +82,7 @@ export function statusBarText(vimState: VimState) {
       searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
       return `${leadingChar}${searchWithCursor.join('')}`;
-    case ModeName.CommandlineInProgress:
+    case Mode.CommandlineInProgress:
       let commandWithCursor = vimState.currentCommandlineText.split('');
       commandWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
@@ -94,13 +94,13 @@ export function statusBarText(vimState: VimState) {
 
 export function statusBarCommandText(vimState: VimState) {
   switch (vimState.currentMode) {
-    case ModeName.SurroundInputMode:
+    case Mode.SurroundInputMode:
       return vimState.surround && vimState.surround.replacement
         ? vimState.surround.replacement
         : '';
-    case ModeName.EasyMotionMode:
+    case Mode.EasyMotionMode:
       return `Target key: ${vimState.easyMotion.accumulation}`;
-    case ModeName.EasyMotionInputMode:
+    case Mode.EasyMotionInputMode:
       if (!vimState.easyMotion) {
         return '';
       }
@@ -111,16 +111,16 @@ export function statusBarCommandText(vimState: VimState) {
           ? `Search for ${searchCharCount} character(s): `
           : 'Search for characters: ';
       return message + vimState.easyMotion.searchAction.getSearchString();
-    case ModeName.Visual:
+    case Mode.Visual:
       const cmd = vimState.recordedState.commandString;
 
       // Don't show the `v` that brings you into visual mode
       return cmd.length === 0 || cmd[0] === 'v' ? cmd.slice(1) : cmd;
-    case ModeName.Normal:
-    case ModeName.VisualBlock:
-    case ModeName.VisualLine:
-    case ModeName.Replace:
-    case ModeName.Disabled:
+    case Mode.Normal:
+    case Mode.VisualBlock:
+    case Mode.VisualLine:
+    case Mode.Replace:
+    case Mode.Disabled:
       return vimState.recordedState.commandString;
     default:
       return '';
@@ -145,31 +145,31 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
   }
 }
 
-export function getCursorType(mode: ModeName): VSCodeVimCursorType {
+export function getCursorType(mode: Mode): VSCodeVimCursorType {
   switch (mode) {
-    case ModeName.Normal:
+    case Mode.Normal:
       return VSCodeVimCursorType.Block;
-    case ModeName.Insert:
+    case Mode.Insert:
       return VSCodeVimCursorType.Native;
-    case ModeName.Visual:
+    case Mode.Visual:
       return VSCodeVimCursorType.TextDecoration;
-    case ModeName.VisualBlock:
+    case Mode.VisualBlock:
       return VSCodeVimCursorType.TextDecoration;
-    case ModeName.VisualLine:
+    case Mode.VisualLine:
       return VSCodeVimCursorType.Block;
-    case ModeName.SearchInProgressMode:
+    case Mode.SearchInProgressMode:
       return VSCodeVimCursorType.Block;
-    case ModeName.CommandlineInProgress:
+    case Mode.CommandlineInProgress:
       return VSCodeVimCursorType.Block;
-    case ModeName.Replace:
+    case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case ModeName.EasyMotionMode:
+    case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;
-    case ModeName.EasyMotionInputMode:
+    case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
-    case ModeName.SurroundInputMode:
+    case Mode.SurroundInputMode:
       return VSCodeVimCursorType.Block;
-    case ModeName.Disabled:
+    case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;
   }

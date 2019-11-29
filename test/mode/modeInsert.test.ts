@@ -1,5 +1,5 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
@@ -29,10 +29,10 @@ suite('Mode Insert', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assertEqual(modeHandler.currentMode, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assertEqual(modeHandler.currentMode, ModeName.Insert);
+      assertEqual(modeHandler.currentMode, Mode.Insert);
     }
   });
 
@@ -64,7 +64,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assertEqual(modeHandler.currentMode === ModeName.Insert, true);
+      assertEqual(modeHandler.currentMode === Mode.Insert, true);
     }
   });
 

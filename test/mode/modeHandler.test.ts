@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -16,13 +16,13 @@ suite('Mode Handler', () => {
   teardown(cleanUpWorkspace);
 
   test('ctor', () => {
-    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('can set current mode', async () => {
-    assert.strictEqual(modeHandler.currentMode, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     await modeHandler.handleKeyEvent('i');
-    assert.strictEqual(modeHandler.currentMode, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
   });
 });

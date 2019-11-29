@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extension';
 import { Position } from '../src/common/motion/position';
 import { Globals } from '../src/globals';
-import { ModeName } from '../src/mode/mode';
+import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { waitForCursorSync } from '../src/util/util';
@@ -76,7 +76,7 @@ interface ITestObject {
   start: string[];
   keysPressed: string;
   end: string[];
-  endMode?: ModeName;
+  endMode?: Mode;
   jumps?: string[];
 }
 
@@ -289,8 +289,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // endMode: check end mode is correct if given
   if (typeof testObj.endMode !== 'undefined') {
-    const actualMode = ModeName[modeHandler.currentMode].toUpperCase();
-    const expectedMode = ModeName[testObj.endMode].toUpperCase();
+    const actualMode = Mode[modeHandler.currentMode].toUpperCase();
+    const expectedMode = Mode[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }
 

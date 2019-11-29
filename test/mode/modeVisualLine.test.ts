@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
@@ -21,10 +21,10 @@ suite('Mode Visual Line', () => {
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode, ModeName.Visual);
+    assertEqual(modeHandler.currentMode, Mode.Visual);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle w', async () => {
@@ -55,7 +55,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -64,7 +64,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -131,7 +131,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode, ModeName.Insert);
+    assertEqual(modeHandler.currentMode, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -234,7 +234,7 @@ suite('Mode Visual Line', () => {
       start: ['foo', 'b|ar', 'fun'],
       keysPressed: 'Vc',
       end: ['foo', '|', 'fun'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -244,7 +244,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vr1',
       end: ['|11111111111111111111111', 'one two three four five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -252,7 +252,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vjr1',
       end: ['|11111111111111111111111', '11111111111111111111111'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -260,7 +260,7 @@ suite('Mode Visual Line', () => {
       start: ['test', 'test', 'test', '|test', 'test'],
       keysPressed: 'Vkkr1',
       end: ['test', '|1111', '1111', '1111', 'test'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -294,7 +294,7 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, Mode.Normal);
 
       // test copy by pasting back from clipboard
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
@@ -361,7 +361,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
@@ -386,7 +386,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -413,7 +413,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();

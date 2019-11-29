@@ -1,6 +1,6 @@
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
-import { ModeName } from '../../../src/mode/mode';
+import { Mode } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
@@ -442,7 +442,7 @@ suite('Motions in Normal Mode', () => {
     start: ['|one two three'],
     keysPressed: '/tw<BS><BS><BS>',
     end: ['|one two three'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({

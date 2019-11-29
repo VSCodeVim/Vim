@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { ModeName } from './mode/mode';
+import { Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _previousModeName: ModeName | undefined = undefined;
+  private _previousModeName: Mode | undefined = undefined;
   private _wasRecordingMacro = false;
   private _wasHighPriority = false;
 
@@ -20,8 +20,8 @@ class StatusBarImpl implements vscode.Disposable {
     // text
     const shouldUpdateText =
       hasModeChanged ||
-      vimState.currentMode === ModeName.SearchInProgressMode ||
-      vimState.currentMode === ModeName.CommandlineInProgress ||
+      vimState.currentMode === Mode.SearchInProgressMode ||
+      vimState.currentMode === Mode.CommandlineInProgress ||
       vimState.isRecordingMacro !== this._wasRecordingMacro ||
       configuration.showcmd;
 
@@ -40,7 +40,7 @@ class StatusBarImpl implements vscode.Disposable {
       this.UpdateColor(vimState.currentMode);
     }
 
-    if (hasModeChanged && vimState.currentMode !== ModeName.Normal) {
+    if (hasModeChanged && vimState.currentMode !== Mode.Normal) {
       this._wasHighPriority = false;
     } else if (isHighPriority) {
       this._wasHighPriority = true;
@@ -63,11 +63,11 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.text = escaped || '';
   }
 
-  private UpdateColor(mode: ModeName) {
+  private UpdateColor(mode: Mode) {
     let foreground: string | undefined = undefined;
     let background: string | undefined = undefined;
 
-    let colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    let colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {

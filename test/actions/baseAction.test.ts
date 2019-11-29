@@ -4,16 +4,16 @@ import * as vscode from 'vscode';
 import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
 }
 
 class TestAction2D extends BaseAction {
   keys = [['a', 'b'], ['c', 'd']];
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
 }
 
 suite('base action', () => {
