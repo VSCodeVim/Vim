@@ -2625,13 +2625,14 @@ class CommandUndo extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPositions = await vimState.historyTracker.goBackHistoryStep();
 
-    if (newPositions !== undefined) {
+    if (newPositions === undefined) {
+      StatusBar.Set('Already at oldest change', vimState, true);
+    } else {
+      ReportClear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
     vimState.alteredHistory = true;
-
-    ReportClear(vimState);
 
     return vimState;
   }
@@ -2669,7 +2670,10 @@ class CommandRedo extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPositions = await vimState.historyTracker.goForwardHistoryStep();
 
-    if (newPositions !== undefined) {
+    if (newPositions === undefined) {
+      StatusBar.Set('Already at newest change', vimState, true);
+    } else {
+      ReportClear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
