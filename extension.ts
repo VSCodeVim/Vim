@@ -25,7 +25,6 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
-import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -123,13 +122,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async event => {
-    const textWasDeleted = changeEvent =>
+    const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
         changeEvent.contentChanges[0].range.end.line;
 
-    const textWasAdded = changeEvent =>
+    const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
