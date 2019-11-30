@@ -690,15 +690,12 @@ abstract class CommandEditorScroll extends BaseCommand {
       vimState.cursors[0] = vimState.cursors[0].getDown(scrolloff - linesBelowCursor);
     }
 
-    vimState.postponedCodeViewChanges.push({
-      command: 'editorScroll',
-      args: {
-        to: this.to,
-        by: this.by,
-        value: timesToRepeat,
-        revealCursor: true,
-        select: [Mode.Visual, Mode.VisualBlock, Mode.VisualLine].includes(vimState.currentMode),
-      },
+    await vscode.commands.executeCommand('editorScroll', {
+      to: this.to,
+      by: this.by,
+      value: timesToRepeat,
+      revealCursor: true,
+      select: [Mode.Visual, Mode.VisualBlock, Mode.VisualLine].includes(vimState.currentMode),
     });
     return vimState;
   }
