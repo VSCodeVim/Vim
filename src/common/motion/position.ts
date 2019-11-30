@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
-import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
 import * as _ from 'lodash';
+import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
 
 enum PositionDiffType {
   Offset,
@@ -260,8 +260,8 @@ export class Position extends vscode.Position {
     const start = vimState.cursorStartPosition;
     const stop = vimState.cursorStopPosition;
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(start, stop);
-    const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
+    const topLeft = visualBlockGetTopLeftPosition(start, stop);
+    const bottomRight = visualBlockGetBottomRightPosition(start, stop);
 
     // Special case for $, which potentially makes the block ragged
     // on the right side.

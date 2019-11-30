@@ -1,6 +1,6 @@
 import { TextObjectMovement } from '../textobject';
 import { RegisterAction } from '../base';
-import { ModeName } from '../../mode/mode';
+import { Mode } from '../../mode/mode';
 import { Position } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { IMovement, BaseMovement } from '../baseMotion';
@@ -77,7 +77,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 // based off of `SelectInnerWord`
 @RegisterAction
 export class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [Mode.Normal, Mode.Visual];
   keys = ['i', '<leader>', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -94,7 +94,7 @@ export class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;

@@ -1,6 +1,6 @@
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
@@ -19,7 +19,7 @@ import {
 import { ChangeOperator } from './operator';
 
 export abstract class TextObjectMovement extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = (await this.execAction(position, vimState)) as IMovement;
@@ -69,7 +69,7 @@ export class SelectWord extends TextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -129,7 +129,7 @@ export class SelectABigWord extends TextObjectMovement {
       }
     }
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -162,7 +162,7 @@ export class SelectABigWord extends TextObjectMovement {
 @RegisterAction
 export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const blocks = [
@@ -221,7 +221,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       if (contender) {
         const areTheyEqual =
           contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)) ||
-          (vimState.currentMode === ModeName.VisualLine &&
+          (vimState.currentMode === Mode.VisualLine &&
             contender.start.line === vimState.cursorStartPosition.line &&
             contender.stop.line === vimState.cursorStopPosition.line);
 
@@ -256,7 +256,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
 @RegisterAction
 export class SelectInnerWord extends TextObjectMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -273,7 +273,7 @@ export class SelectInnerWord extends TextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -297,7 +297,7 @@ export class SelectInnerWord extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerBigWord extends TextObjectMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -314,7 +314,7 @@ export class SelectInnerBigWord extends TextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -368,7 +368,7 @@ export class SelectSentence extends TextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -414,7 +414,7 @@ export class SelectInnerSentence extends TextObjectMovement {
     }
 
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       !vimState.cursorStopPosition.isEqual(vimState.cursorStartPosition)
     ) {
       start = vimState.cursorStartPosition;
@@ -565,10 +565,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
     let endCharacter;
-    if (
-      endLineNumber === TextEditor.getLineCount() - 1 ||
-      vimState.currentMode === ModeName.Visual
-    ) {
+    if (endLineNumber === TextEditor.getLineCount() - 1 || vimState.currentMode === Mode.Visual) {
       endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
     } else {
       endCharacter = 0;

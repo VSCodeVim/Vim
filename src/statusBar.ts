@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { ModeName } from './mode/mode';
+import { Mode, statusBarText, statusBarCommandText } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _previousModeName: ModeName | undefined = undefined;
+  private _previousModeName: Mode | undefined = undefined;
   private _wasRecordingMacro = false;
   private _wasHighPriority = false;
 
@@ -20,8 +20,8 @@ class StatusBarImpl implements vscode.Disposable {
     // text
     const shouldUpdateText =
       hasModeChanged ||
-      vimState.currentMode === ModeName.SearchInProgressMode ||
-      vimState.currentMode === ModeName.CommandlineInProgress ||
+      vimState.currentMode === Mode.SearchInProgressMode ||
+      vimState.currentMode === Mode.CommandlineInProgress ||
       vimState.isRecordingMacro !== this._wasRecordingMacro ||
       configuration.showcmd;
 
@@ -40,7 +40,7 @@ class StatusBarImpl implements vscode.Disposable {
       this.UpdateColor(vimState.currentMode);
     }
 
-    if (hasModeChanged && vimState.currentMode !== ModeName.Normal) {
+    if (hasModeChanged && vimState.currentMode !== Mode.Normal) {
       this._wasHighPriority = false;
     } else if (isHighPriority) {
       this._wasHighPriority = true;
@@ -63,11 +63,11 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.text = escaped || '';
   }
 
-  private UpdateColor(mode: ModeName) {
+  private UpdateColor(mode: Mode) {
     let foreground: string | undefined = undefined;
     let background: string | undefined = undefined;
 
-    let colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    let colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
@@ -101,6 +101,41 @@ class StatusBarImpl implements vscode.Disposable {
     if (currentColorCustomizations !== colorCustomizations) {
       workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
     }
+  }
+
+  /**
+   * Clears any messages from the status bar, leaving the default info, such as
+   * the current mode and macro being recorded.
+   * @param force If true, will clear even high priority messages like errors.
+   */
+  public Clear(vimState: VimState, force = true) {
+    if (this._wasHighPriority && !force) {
+      return;
+    }
+
+    let text: string[] = [];
+
+    if (configuration.showmodename) {
+      text.push(statusBarText(vimState));
+      if (vimState.isMultiCursor) {
+        text.push(' MULTI CURSOR ');
+      }
+    }
+
+    if (configuration.showcmd) {
+      text.push(statusBarCommandText(vimState));
+    }
+
+    if (vimState.isRecordingMacro) {
+      const macroText = 'Recording @' + vimState.recordedMacro.registerName;
+      text.push(macroText);
+    }
+
+    // We've already checked _wasHighPriority and force, so make sure this happens
+    StatusBar.Set(text.join(' '), vimState, true);
+
+    // We want another call to clear() to work even if this one was forced and the next wasn't
+    this._wasHighPriority = false;
   }
 }
 

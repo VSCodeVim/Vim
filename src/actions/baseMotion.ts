@@ -1,7 +1,7 @@
 import { PositionDiff, Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
@@ -36,7 +36,7 @@ export interface IMovement {
 }
 
 export abstract class BaseMovement extends BaseAction {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   isMotion = true;
 
