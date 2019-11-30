@@ -1,6 +1,6 @@
 import * as util from '../../util/util';
 import { Logger } from '../../util/logger';
-import { ModeName } from '../../mode/mode';
+import { Mode } from '../../mode/mode';
 import { configuration } from '../../configuration/configuration';
 
 /**
@@ -15,7 +15,7 @@ export class InputMethodSwitcher {
     this.execute = execute;
   }
 
-  public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
+  public async switchInputMethod(prevMode: Mode, newMode: Mode) {
     if (configuration.autoSwitchInputMethod.enable !== true) {
       return;
     }
@@ -68,12 +68,7 @@ export class InputMethodSwitcher {
     }
   }
 
-  private isInsertLikeMode(mode: ModeName): boolean {
-    const insertLikeModes = new Set([
-      ModeName.Insert,
-      ModeName.Replace,
-      ModeName.SurroundInputMode,
-    ]);
-    return insertLikeModes.has(mode);
+  private isInsertLikeMode(mode: Mode): boolean {
+    return [Mode.Insert, Mode.Replace, Mode.SurroundInputMode].includes(mode);
   }
 }

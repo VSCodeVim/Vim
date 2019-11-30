@@ -14,7 +14,7 @@ import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { ModeName } from './src/mode/mode';
+import { Mode } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
 import { Position } from './src/common/motion/position';
@@ -148,7 +148,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // There is a timing issue in VSCode codebase between when the isDirty flag is set and
     // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
     const contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (modeHandler.vimState.currentMode === ModeName.Insert) {
+      if (modeHandler.vimState.currentMode === Mode.Insert) {
         if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
           modeHandler.vimState.historyTracker.currentContentChanges = [];
         }
@@ -246,7 +246,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (vscode.window.activeTextEditor !== undefined) {
           const mh: ModeHandler = await getAndUpdateModeHandler(true);
 
-          await VsCodeContext.Set('vim.mode', ModeName[mh.vimState.currentMode]);
+          await VsCodeContext.Set('vim.mode', Mode[mh.vimState.currentMode]);
 
           await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
@@ -287,7 +287,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      if (mh.currentMode.name === ModeName.EasyMotionMode) {
+      if (mh.currentMode === Mode.EasyMotionMode) {
         return;
       }
 
@@ -348,7 +348,7 @@ export async function activate(context: vscode.ExtensionContext) {
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== ModeName.Insert) {
+      if (mh.vimState.currentMode !== Mode.Insert) {
         compositionState.isInComposition = true;
       }
     });
@@ -357,7 +357,7 @@ export async function activate(context: vscode.ExtensionContext) {
   overrideCommand(context, 'compositionEnd', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== ModeName.Insert) {
+      if (mh.vimState.currentMode !== Mode.Insert) {
         let text = compositionState.composingText;
         compositionState.reset();
         mh.handleMultipleKeyEvents(text.split(''));

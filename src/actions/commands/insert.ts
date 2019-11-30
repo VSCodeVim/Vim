@@ -6,7 +6,7 @@ import { VimState } from '../../state/vimState';
 import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
-import { ModeName } from './../../mode/mode';
+import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
@@ -24,7 +24,7 @@ import { Clipboard } from '../../util/clipboard';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   runsOnceForEveryCursor() {
@@ -59,7 +59,7 @@ class CommandEscInsertMode extends BaseCommand {
         );
       }
     }
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
@@ -116,7 +116,7 @@ class CommandEscInsertMode extends BaseCommand {
 
 @RegisterAction
 export class CommandInsertPreviousText extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -144,26 +144,26 @@ export class CommandInsertPreviousText extends BaseCommand {
 
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    await vimState.setCurrentMode(ModeName.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
     return vimState;
   }
 }
 
 @RegisterAction
 class CommandInsertPreviousTextAndQuit extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-shift+2>']; // <C-@>
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState = await new CommandInsertPreviousText().exec(position, vimState);
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
 }
 
 @RegisterAction
 class CommandInsertBelowChar extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-e>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -191,7 +191,7 @@ class CommandInsertBelowChar extends BaseCommand {
 
 @RegisterAction
 class CommandInsertIndentInCurrentLine extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-t>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -232,7 +232,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 
 @RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<character>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -306,7 +306,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandInsertDigraph extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-k>', '<any>', '<any>'];
   isCompleteAction = false;
 
@@ -325,7 +325,7 @@ class CommandInsertDigraph extends BaseCommand {
     }
     const char = String.fromCharCode(...charCodes);
     await TextEditor.insertAt(char, position);
-    await vimState.setCurrentMode(ModeName.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
@@ -374,7 +374,7 @@ class CommandInsertDigraph extends BaseCommand {
 
 @RegisterAction
 class CommandInsertRegisterContent extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-r>', '<character>'];
   isCompleteAction = false;
 
@@ -402,7 +402,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     }
 
     await TextEditor.insertAt(text, position);
-    await vimState.setCurrentMode(ModeName.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
@@ -424,7 +424,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 
 @RegisterAction
 export class CommandOneNormalCommandInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-o>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -434,7 +434,7 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
 }
 @RegisterAction
 class CommandCtrlW extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -457,7 +457,7 @@ class CommandCtrlW extends BaseCommand {
 
 @RegisterAction
 class CommandDeleteIndentInCurrentLine extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-d>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -487,14 +487,14 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     );
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(ModeName.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
     return vimState;
   }
 }
 
 @RegisterAction
 class CommandInsertAboveChar extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-y>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -522,7 +522,7 @@ class CommandInsertAboveChar extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlHInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-h>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -537,7 +537,7 @@ class CommandCtrlHInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlUInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -553,7 +553,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandNavigateAutocompleteDown extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = [['<C-n>'], ['<C-j>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -581,7 +581,7 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
 
 @RegisterAction
 class CommandNavigateAutocompleteUp extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-p>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -609,7 +609,7 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlVInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -634,7 +634,7 @@ class CommandCtrlVInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandShowLineAutocomplete extends BaseCommand {
-  modes = [ModeName.Insert];
+  modes = [Mode.Insert];
   keys = ['<C-x>', '<C-l>'];
   runsOnceForEveryCursor() {
     return false;

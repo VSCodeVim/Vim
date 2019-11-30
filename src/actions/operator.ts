@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
@@ -120,7 +120,7 @@ export class BaseOperator extends BaseAction {
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
   public keys = ['d'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   /**
    * Deletes from the position of start to 1 past the position of end.
@@ -128,7 +128,7 @@ export class DeleteOperator extends BaseOperator {
   public async delete(
     start: Position,
     end: Position,
-    currentMode: ModeName,
+    currentMode: Mode,
     registerMode: RegisterMode,
     vimState: VimState,
     yank = true
@@ -146,7 +146,7 @@ export class DeleteOperator extends BaseOperator {
     // the newline character, which it places 1 past the last character
     // in the line. Here we interpret a character position 1 past the end
     // as selecting the newline character. Don't allow this in visual block mode
-    if (vimState.currentMode !== ModeName.VisualBlock) {
+    if (vimState.currentMode !== Mode.VisualBlock) {
       if (end.character === TextEditor.getLineAt(end).text.length + 1) {
         end = end.getDown(0);
       }
@@ -186,7 +186,7 @@ export class DeleteOperator extends BaseOperator {
     let diff = new PositionDiff(0, 0);
     let resultingPosition: Position;
 
-    if (currentMode === ModeName.Visual) {
+    if (currentMode === Mode.Visual) {
       resultingPosition = Position.EarlierOf(start, end);
     }
 
@@ -226,8 +226,8 @@ export class DeleteOperator extends BaseOperator {
       yank
     );
 
-    await vimState.setCurrentMode(ModeName.Normal);
-    if (vimState.currentMode === ModeName.Visual) {
+    await vimState.setCurrentMode(Mode.Normal);
+    if (vimState.currentMode === Mode.Visual) {
       vimState.desiredColumn = newPos.character;
     }
 
@@ -241,7 +241,7 @@ export class DeleteOperator extends BaseOperator {
 @RegisterAction
 export class DeleteOperatorVisual extends BaseOperator {
   public keys = ['D'];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // ensures linewise deletion when in visual mode
@@ -255,7 +255,7 @@ export class DeleteOperatorVisual extends BaseOperator {
 @RegisterAction
 export class YankOperator extends BaseOperator {
   public keys = ['y'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   canBeRepeatedWithDot = false;
   doesntChangeDesiredColumn = false;
 
@@ -264,7 +264,7 @@ export class YankOperator extends BaseOperator {
 
     if (vimState.surround) {
       vimState.surround.range = new Range(start, end);
-      await vimState.setCurrentMode(ModeName.SurroundInputMode);
+      await vimState.setCurrentMode(Mode.SurroundInputMode);
       vimState.cursorStopPosition = start;
       vimState.cursorStartPosition = start;
 
@@ -288,7 +288,7 @@ export class YankOperator extends BaseOperator {
 
     // If we selected the newline character, add it as well.
     if (
-      vimState.currentMode === ModeName.Visual &&
+      vimState.currentMode === Mode.Visual &&
       extendedEnd.character === TextEditor.getLineAt(extendedEnd).text.length + 1
     ) {
       text = text + '\n';
@@ -298,12 +298,12 @@ export class YankOperator extends BaseOperator {
 
     Register.put(text, vimState, this.multicursorIndex);
 
-    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) {
+    if (vimState.currentMode === Mode.Visual || vimState.currentMode === Mode.VisualLine) {
       vimState.historyTracker.addMark(start, '<');
       vimState.historyTracker.addMark(end, '>');
     }
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStartPosition = start;
 
     // Only change cursor position if we ran a text object movement
@@ -314,7 +314,7 @@ export class YankOperator extends BaseOperator {
       }
     }
 
-    if (originalMode === ModeName.Normal && !moveCursor) {
+    if (originalMode === Mode.Normal && !moveCursor) {
       vimState.cursors = vimState.cursorsInitialState;
     } else {
       vimState.cursorStopPosition = start;
@@ -330,7 +330,7 @@ export class YankOperator extends BaseOperator {
 @RegisterAction
 export class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
-  public modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   doesntChangeDesiredColumn = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -343,7 +343,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
   public keys = [['x'], ['<Del>']];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
@@ -353,7 +353,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
 @RegisterAction
 export class ChangeOperatorSVisual extends BaseOperator {
   public keys = ['s'];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   // Don't clash with Sneak plugin
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -368,7 +368,7 @@ export class ChangeOperatorSVisual extends BaseOperator {
 @RegisterAction
 export class FormatOperator extends BaseOperator {
   public keys = ['='];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // = operates on complete lines
@@ -385,7 +385,7 @@ export class FormatOperator extends BaseOperator {
     let newCursorPosition = new Position(line, 0).getFirstLineNonBlankChar();
     vimState.cursorStopPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
 }
@@ -393,7 +393,7 @@ export class FormatOperator extends BaseOperator {
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
   public keys = [['g', 'U'], ['U']];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
@@ -401,7 +401,7 @@ export class UpperCaseOperator extends BaseOperator {
 
     await TextEditor.replace(range, text.toUpperCase());
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
 
     return vimState;
@@ -411,13 +411,13 @@ export class UpperCaseOperator extends BaseOperator {
 @RegisterAction
 export class UpperCaseWithMotion extends UpperCaseOperator {
   public keys = [['g', 'U']];
-  public modes = [ModeName.Normal];
+  public modes = [Mode.Normal];
 }
 
 @RegisterAction
 class UpperCaseVisualBlockOperator extends BaseOperator {
   public keys = [['g', 'U'], ['U']];
-  public modes = [ModeName.VisualBlock];
+  public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     for (const { start, end } of Position.IterateLine(vimState)) {
@@ -429,7 +429,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -438,7 +438,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
 @RegisterAction
 export class LowerCaseOperator extends BaseOperator {
   public keys = [['g', 'u'], ['u']];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
@@ -446,7 +446,7 @@ export class LowerCaseOperator extends BaseOperator {
 
     await TextEditor.replace(range, text.toLowerCase());
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
 
     return vimState;
@@ -456,13 +456,13 @@ export class LowerCaseOperator extends BaseOperator {
 @RegisterAction
 export class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = [['g', 'u']];
-  public modes = [ModeName.Normal];
+  public modes = [Mode.Normal];
 }
 
 @RegisterAction
 class LowerCaseVisualBlockOperator extends BaseOperator {
   public keys = [['g', 'u'], ['u']];
-  public modes = [ModeName.VisualBlock];
+  public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     for (const { start, end } of Position.IterateLine(vimState)) {
@@ -474,7 +474,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -482,7 +482,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 class IndentOperator extends BaseOperator {
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -490,7 +490,7 @@ class IndentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.indentLines');
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
@@ -508,7 +508,7 @@ class IndentOperator extends BaseOperator {
  */
 @RegisterAction
 class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -530,7 +530,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
       await vscode.commands.executeCommand('editor.action.indentLines');
     }
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start.obeyStartOfLine();
 
     return vimState;
@@ -539,14 +539,14 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 
 @RegisterAction
 class OutdentOperator extends BaseOperator {
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start, end.getLineEnd());
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
@@ -558,7 +558,7 @@ class OutdentOperator extends BaseOperator {
  */
 @RegisterAction
 class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -580,7 +580,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
       await vscode.commands.executeCommand('editor.action.outdentLines');
     }
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
@@ -590,7 +590,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 @RegisterAction
 export class ChangeOperator extends BaseOperator {
   public keys = ['c'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const isEndOfLine = end.character === end.getLineEnd().character;
@@ -623,7 +623,7 @@ export class ChangeOperator extends BaseOperator {
     }
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
-    await vimState.setCurrentMode(ModeName.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
 
     if (isEndOfLine) {
       vimState.cursorStopPosition = end.getRight();
@@ -669,7 +669,7 @@ export class ChangeOperator extends BaseOperator {
 @RegisterAction
 export class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
-  public modes = [ModeName.VisualBlock];
+  public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
   runsOnceForEveryCursor() {
     return false;
@@ -702,7 +702,7 @@ export class YankVisualBlockMode extends BaseOperator {
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = startPos;
     return vimState;
   }
@@ -711,7 +711,7 @@ export class YankVisualBlockMode extends BaseOperator {
 @RegisterAction
 export class ToggleCaseOperator extends BaseOperator {
   public keys = ['~'];
-  public modes = [ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const range = new vscode.Range(start, end.getRight());
@@ -721,7 +721,7 @@ export class ToggleCaseOperator extends BaseOperator {
     const cursorPosition = start.isBefore(end) ? start : end;
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -746,7 +746,7 @@ export class ToggleCaseOperator extends BaseOperator {
 @RegisterAction
 class ToggleCaseVisualBlockOperator extends BaseOperator {
   public keys = ['~'];
-  public modes = [ModeName.VisualBlock];
+  public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     for (const { start, end } of Position.IterateLine(vimState)) {
@@ -757,7 +757,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -766,20 +766,20 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
   public keys = ['g', '~'];
-  public modes = [ModeName.Normal];
+  public modes = [Mode.Normal];
 }
 
 @RegisterAction
 export class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand('editor.action.commentLine');
 
     vimState.cursorStopPosition = new Position(start.line, 0);
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -788,10 +788,10 @@ export class CommentOperator extends BaseOperator {
 @RegisterAction
 export class CommentBlockOperator extends BaseOperator {
   public keys = ['g', 'C'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    if (vimState.currentMode === ModeName.Normal) {
+    if (vimState.currentMode === Mode.Normal) {
       // If we're in normal mode, we need to construct a selection for the
       // command to operate on. If we're not, we've already got it.
       const endPosition = end.getRight();
@@ -800,7 +800,7 @@ export class CommentBlockOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.blockComment');
 
     vimState.cursorStopPosition = start;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }
@@ -824,7 +824,7 @@ type CommentType = CommentTypeSingle | CommentTypeMultiLine;
 
 @RegisterAction
 class ActionVisualReflowParagraph extends BaseOperator {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', 'q'];
 
   public static CommentTypes: CommentType[] = [
@@ -1052,7 +1052,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       diff: PositionDiff.NewBOLDiff(0, 0),
     });
 
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
   }

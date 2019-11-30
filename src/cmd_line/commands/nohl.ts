@@ -1,7 +1,7 @@
 import { VimState } from '../../state/vimState';
 import * as node from '../node';
 import { globalState } from '../../state/globalState';
-import { ReportClear } from '../../util/statusBarTextUtils';
+import { StatusBar } from '../../statusBar';
 
 export class NohlCommand extends node.CommandBase {
   protected _arguments: {};
@@ -19,6 +19,6 @@ export class NohlCommand extends node.CommandBase {
     globalState.hl = false;
 
     // Clear the `match x of y` message from status bar
-    ReportClear(vimState);
+    StatusBar.Clear(vimState);
   }
 }

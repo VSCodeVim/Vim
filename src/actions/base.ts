@@ -1,5 +1,5 @@
 import { configuration } from './../configuration/configuration';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 import { Notation } from '../configuration/notation';
 
@@ -21,7 +21,7 @@ export class BaseAction {
   /**
    * Modes that this action can be run in.
    */
-  public modes: ModeName[];
+  public modes: Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
@@ -168,7 +168,7 @@ export class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static actionMap = new Map<ModeName, typeof BaseAction[]>();
+  public static actionMap = new Map<Mode, typeof BaseAction[]>();
 
   /**
    * Gets the action that should be triggered given a key

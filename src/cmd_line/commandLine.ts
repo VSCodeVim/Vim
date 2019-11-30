@@ -1,7 +1,7 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { Logger } from '../util/logger';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -41,7 +41,7 @@ class CommandLine {
     return this._history.get();
   }
 
-  public previousMode = ModeName.Normal;
+  public previousMode = Mode.Normal;
 
   constructor() {
     this._history = new CommandLineHistory();
