@@ -5,13 +5,23 @@ import { VimState } from './state/vimState';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
+  private _recordedStateStatusBarItem: vscode.StatusBarItem;
   private _previousModeName: Mode | undefined = undefined;
   private _wasRecordingMacro = false;
   private _wasHighPriority = false;
 
   constructor() {
-    this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    this._statusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Left,
+      Number.MIN_SAFE_INTEGER // Furthest right on the left
+    );
     this._statusBarItem.show();
+
+    this._recordedStateStatusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      Number.MAX_SAFE_INTEGER // Furthest left on the right
+    );
+    this._recordedStateStatusBarItem.show();
   }
 
   public Set(text: string, vimState: VimState, isHighPriority = false, isError = false) {
@@ -123,7 +133,7 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     if (configuration.showcmd) {
-      text.push(statusBarCommandText(vimState));
+      this._recordedStateStatusBarItem.text = statusBarCommandText(vimState);
     }
 
     if (vimState.isRecordingMacro) {
