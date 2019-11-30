@@ -17,6 +17,9 @@ export class BaseAction {
 
   public canBeRepeatedWithDot = false;
 
+  /**
+   * most non-motion actions shouldn't update desired column
+   */
   public doesntChangeDesiredColumn = true;
   /**
    * Modes that this action can be run in.
