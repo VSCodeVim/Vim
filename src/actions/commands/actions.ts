@@ -26,7 +26,7 @@ import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
 import { readDirectory, getPathDetails } from '../../util/path';
-import { ReportLinesChanged, ReportFileInfo, ReportSearch } from '../../util/statusBarTextUtils';
+import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -999,7 +999,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
 
-      ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+      reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
       return vimState;
     } else if (key === '<up>' || key === '<C-p>') {
@@ -1270,7 +1270,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
 
-  ReportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+  reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
 
   return vimState;
 }
@@ -1627,7 +1627,7 @@ export class PutCommand extends BaseCommand {
     });
 
     const numNewlinesAfterPut = textToAdd.split('\n').length;
-    ReportLinesChanged(numNewlinesAfterPut, vimState);
+    reportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
@@ -1688,7 +1688,7 @@ export class PutCommand extends BaseCommand {
         cursorIndex: this.multicursorIndex,
       });
 
-      ReportLinesChanged(numNewlines, vimState);
+      reportLinesChanged(numNewlines, vimState);
     }
 
     return result;
@@ -1949,7 +1949,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   private getTrimmedStatusBarText() {
     // first regex removes the : / and | from the string
     // second regex removes a single space from the end of the string
-    let trimmedStatusBarText = StatusBar.Get()
+    let trimmedStatusBarText = StatusBar.getText()
       .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
       .replace(/(.*) $/, '$1');
     return trimmedStatusBarText;
@@ -2605,9 +2605,9 @@ class CommandUndo extends BaseCommand {
     const newPositions = await vimState.historyTracker.goBackHistoryStep();
 
     if (newPositions === undefined) {
-      StatusBar.Set('Already at oldest change', vimState, true);
+      StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      StatusBar.Clear(vimState);
+      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2650,9 +2650,9 @@ class CommandRedo extends BaseCommand {
     const newPositions = await vimState.historyTracker.goForwardHistoryStep();
 
     if (newPositions === undefined) {
-      StatusBar.Set('Already at newest change', vimState, true);
+      StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      StatusBar.Clear(vimState);
+      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2840,7 +2840,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.cursorStopPosition
   );
 
-  ReportSearch(result.index, searchState.matchRanges.length, vimState);
+  reportSearch(result.index, searchState.matchRanges.length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 
@@ -4513,10 +4513,9 @@ class CommandUnicodeName extends BaseCommand {
     const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
     const charCode = char.charCodeAt(0);
     // TODO: Handle charCode > 127 by also including <M-x>
-    StatusBar.Set(
-      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`,
+    StatusBar.setText(
       vimState,
-      true
+      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`
     );
     return vimState;
   }
@@ -4667,7 +4666,7 @@ class ActionShowFileInfo extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    ReportFileInfo(position, vimState);
+    reportFileInfo(position, vimState);
 
     return vimState;
   }

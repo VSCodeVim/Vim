@@ -14,7 +14,7 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { ReportSearch } from '../util/statusBarTextUtils';
+import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
 import { globalState } from '../state/globalState';
 import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
@@ -356,7 +356,7 @@ class CommandNextSearchMatch extends BaseMovement {
       nextMatch = searchState.getNextSearchMatchPosition(position);
     }
 
-    ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
     return nextMatch.pos;
   }
@@ -379,7 +379,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
-    ReportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
 
     return prevMatch.pos;
   }
@@ -700,9 +700,17 @@ class MoveRepeatReversed extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = vimState.lastCommaRepeatableMovement;
-    if (movement) {
-      return movement.execActionWithCount(position, vimState, count);
+    const semiColonMovement = vimState.lastSemicolonRepeatableMovement;
+    const commaMovement = vimState.lastCommaRepeatableMovement;
+    if (commaMovement) {
+      const result = commaMovement.execActionWithCount(position, vimState, count);
+
+      // Make sure these don't change. Otherwise, comma's direction flips back
+      // and forth when done repeatedly. This is a bit hacky, so feel free to refactor.
+      vimState.lastSemicolonRepeatableMovement = semiColonMovement;
+      vimState.lastCommaRepeatableMovement = commaMovement;
+
+      return result;
     }
     return position;
   }

@@ -256,6 +256,14 @@ suite('Motions in Normal Mode', () => {
     end: ['te|xt text'],
   });
 
+  // See #4313
+  newTest({
+    title: "Can handle 'f' and multiple back searches",
+    start: ['|a a a a a'],
+    keysPressed: 'fa;;;,,,',
+    end: ['a |a a a a'],
+  });
+
   newTest({
     title: "Can handle 't'",
     start: ['text tex|t'],

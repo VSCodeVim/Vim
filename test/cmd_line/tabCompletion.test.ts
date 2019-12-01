@@ -21,7 +21,7 @@ suite('cmd_line tabComplete', () => {
   test('command line command tab completion', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.strictEqual(statusBarAfterTab.trim(), ':edit|', 'Command Tab Completion Failed');
@@ -29,13 +29,13 @@ suite('cmd_line tabComplete', () => {
 
   test('command line command shift+tab', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', '<tab>']);
-    const firstTab = StatusBar.Get();
+    const firstTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<tab>');
-    const secondTab = StatusBar.Get();
+    const secondTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<shift+tab>');
-    const actual = StatusBar.Get();
+    const actual = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(firstTab, secondTab);
@@ -44,10 +44,10 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion with no base path', async () => {
     await modeHandler.handleKeyEvent(':');
-    const statusBarBeforeTab = StatusBar.Get();
+    const statusBarBeforeTab = StatusBar.getText();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '<tab>']);
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
@@ -55,10 +55,10 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion with / as base path', async () => {
     await modeHandler.handleKeyEvent(':');
-    const statusBarBeforeTab = StatusBar.Get();
+    const statusBarBeforeTab = StatusBar.getText();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '/', '<tab>']);
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
@@ -66,10 +66,10 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion with ~/ as base path', async () => {
     await modeHandler.handleKeyEvent(':');
-    const statusBarBeforeTab = StatusBar.Get();
+    const statusBarBeforeTab = StatusBar.getText();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '~', '/', '<tab>']);
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
@@ -77,10 +77,10 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion with ./ as base path', async () => {
     await modeHandler.handleKeyEvent(':');
-    const statusBarBeforeTab = StatusBar.Get();
+    const statusBarBeforeTab = StatusBar.getText();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '/', '<tab>']);
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
@@ -88,10 +88,10 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion with ../ as base path', async () => {
     await modeHandler.handleKeyEvent(':');
-    const statusBarBeforeTab = StatusBar.Get();
+    const statusBarBeforeTab = StatusBar.getText();
 
     await modeHandler.handleMultipleKeyEvents(['e', ' ', '.', '.', '/', '<tab>']);
-    const statusBarAfterTab = StatusBar.Get();
+    const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
     assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
@@ -104,7 +104,7 @@ suite('cmd_line tabComplete', () => {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
       await modeHandler.handleMultipleKeyEvents(baseCmd);
       await modeHandler.handleKeyEvent('<tab>');
-      const statusBarAfterTab = StatusBar.Get().trim();
+      const statusBarAfterTab = StatusBar.getText().trim();
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(
         statusBarAfterTab,
@@ -130,13 +130,13 @@ suite('cmd_line tabComplete', () => {
       const cmd = `:e ${tmpDir}${sep}`.split('');
       await modeHandler.handleMultipleKeyEvents(cmd);
       await modeHandler.handleKeyEvent('<tab>');
-      let statusBarAfterTab = StatusBar.Get().trim();
+      let statusBarAfterTab = StatusBar.getText().trim();
       let expectedPath = `${tmpDir}${sep}inner0${sep}`;
       assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // Tab to cycle the completion of tempDir
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}`;
       assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
@@ -145,20 +145,20 @@ suite('cmd_line tabComplete', () => {
       // Since there is only one directory in inner1 which is inner10,
       // The completion is complete.
       await modeHandler.handleMultipleKeyEvents(['<right>', '<tab>']);
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}`;
       assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // A tab would try to complete the content in the inner10.
       // Since the pervious completion is complete, no <right> is needed to select
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}inner100${sep}`;
       assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
       // Since there isn't any files or directories in inner100, no completion.
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       expectedPath = `${tmpDir}${sep}inner1${sep}inner10${sep}inner100${sep}`;
       assert.strictEqual(statusBarAfterTab, `:e ${expectedPath}|`, '123');
 
@@ -175,15 +175,15 @@ suite('cmd_line tabComplete', () => {
   test('command line tab completion on the content on the left of the cursor', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
-    let statusBarAfterTab = StatusBar.Get().trim();
+    let statusBarAfterTab = StatusBar.getText().trim();
     assert.strictEqual(statusBarAfterTab, ':edit|', 'Command Tab Completion Failed');
 
     await modeHandler.handleMultipleKeyEvents(['<left>', '<left>']);
-    statusBarAfterTab = StatusBar.Get().trim();
+    statusBarAfterTab = StatusBar.getText().trim();
     assert.strictEqual(statusBarAfterTab, ':ed|it', 'Failed to move the cursor to the left');
 
     await modeHandler.handleKeyEvent('<tab>');
-    statusBarAfterTab = StatusBar.Get().trim();
+    statusBarAfterTab = StatusBar.getText().trim();
     assert.strictEqual(
       statusBarAfterTab,
       ':edit|it',
@@ -203,7 +203,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleMultipleKeyEvents(baseCmd);
       // First tab - resolve to .testfile
       await modeHandler.handleKeyEvent('<tab>');
-      let statusBarAfterTab = StatusBar.Get();
+      let statusBarAfterTab = StatusBar.getText();
       assert.strictEqual(
         statusBarAfterTab.trim(),
         `:e ${testFilePath}|`,
@@ -213,14 +213,14 @@ suite('cmd_line tabComplete', () => {
       // ./ and ../ because . is not explicitly typed in.
       // This should be consistent with Vim
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
 
       await modeHandler.handleMultipleKeyEvents(baseCmd.concat('.'));
       // First tab - resolve to ../
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}..${sep}|`,
@@ -228,11 +228,11 @@ suite('cmd_line tabComplete', () => {
       );
       // Second tab - resolve to ./
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       assert.strictEqual(statusBarAfterTab, `:e ${dirPath}${sep}.${sep}|`, 'Cannot complete to ./');
       // Third tab - resolve to .testfile
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
@@ -256,7 +256,7 @@ suite('cmd_line tabComplete', () => {
       let cmd = `:e ${baseNameExcludeSpace}`.split('');
       await modeHandler.handleMultipleKeyEvents(cmd);
       await modeHandler.handleKeyEvent('<tab>');
-      let statusBarAfterTab = StatusBar.Get().trim();
+      let statusBarAfterTab = StatusBar.getText().trim();
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(statusBarAfterTab, `:e ${baseName}|`, `${failMsg} (no base path)`);
 
@@ -264,7 +264,7 @@ suite('cmd_line tabComplete', () => {
       cmd = `:e ././${baseNameExcludeSpace}`.split('');
       await modeHandler.handleMultipleKeyEvents(cmd);
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(statusBarAfterTab, `:e ././${baseName}|`, `${failMsg} (w ././)`);
 
@@ -272,7 +272,7 @@ suite('cmd_line tabComplete', () => {
       cmd = `:e ${fullPathExcludeSpace}`.split('');
       await modeHandler.handleMultipleKeyEvents(cmd);
       await modeHandler.handleKeyEvent('<tab>');
-      statusBarAfterTab = StatusBar.Get().trim();
+      statusBarAfterTab = StatusBar.getText().trim();
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(statusBarAfterTab, `:e ${spacedFilePath}|`, `(${failMsg} full path)`);
     } finally {
