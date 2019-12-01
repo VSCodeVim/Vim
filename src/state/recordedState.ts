@@ -1,5 +1,5 @@
 import { configuration } from '../configuration/configuration';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { BaseAction } from './../actions/base';
 import { BaseCommand } from './../actions/commands/actions';
 import { BaseOperator } from './../actions/operator';
@@ -159,15 +159,15 @@ export class RecordedState {
     return res;
   }
 
-  public operatorReadyToExecute(mode: ModeName): boolean {
+  public operatorReadyToExecute(mode: Mode): boolean {
     // Visual modes do not require a motion -- they ARE the motion.
     return (
       this.operator &&
       !this.hasRunOperator &&
-      mode !== ModeName.SearchInProgressMode &&
-      mode !== ModeName.CommandlineInProgress &&
+      mode !== Mode.SearchInProgressMode &&
+      mode !== Mode.CommandlineInProgress &&
       (this.hasRunAMovement ||
-        (mode === ModeName.Visual || mode === ModeName.VisualLine) ||
+        (mode === Mode.Visual || mode === Mode.VisualLine) ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
     );

@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
-import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
 import * as _ from 'lodash';
+import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
 
 enum PositionDiffType {
   Offset,
@@ -260,8 +260,8 @@ export class Position extends vscode.Position {
     const start = vimState.cursorStartPosition;
     const stop = vimState.cursorStopPosition;
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(start, stop);
-    const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
+    const topLeft = visualBlockGetTopLeftPosition(start, stop);
+    const bottomRight = visualBlockGetBottomRightPosition(start, stop);
 
     // Special case for $, which potentially makes the block ragged
     // on the right side.
@@ -288,7 +288,9 @@ export class Position extends vscode.Position {
     }
   }
 
-  // Iterates through words on the same line, starting from the current position.
+  /**
+   * Iterates through words on the same line, starting from the current position.
+   */
   public static *IterateWords(
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
@@ -1297,16 +1299,19 @@ export class Position extends vscode.Position {
     throw new Error('This should never happen...');
   }
 
-  private findHelper(char: string, count: number, direction: number): Position | undefined {
-    // -1 = backwards, +1 = forwards
+  private findHelper(
+    char: string,
+    count: number,
+    direction: 'forward' | 'backward'
+  ): Position | undefined {
     const line = TextEditor.getLineAt(this);
     let index = this.character;
 
     while (count && index !== -1) {
-      if (direction > 0) {
-        index = line.text.indexOf(char, index + direction);
+      if (direction === 'forward') {
+        index = line.text.indexOf(char, index + 1);
       } else {
-        index = line.text.lastIndexOf(char, index + direction);
+        index = line.text.lastIndexOf(char, index - 1);
       }
       count--;
     }
@@ -1319,7 +1324,7 @@ export class Position extends vscode.Position {
   }
 
   public tilForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, +1);
+    const position = this.findHelper(char, count, 'forward');
     if (!position) {
       return null;
     }
@@ -1328,7 +1333,7 @@ export class Position extends vscode.Position {
   }
 
   public tilBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, -1);
+    const position = this.findHelper(char, count, 'backward');
     if (!position) {
       return null;
     }
@@ -1337,7 +1342,7 @@ export class Position extends vscode.Position {
   }
 
   public findForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, +1);
+    const position = this.findHelper(char, count, 'forward');
     if (!position) {
       return null;
     }
@@ -1346,7 +1351,7 @@ export class Position extends vscode.Position {
   }
 
   public findBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, -1);
+    const position = this.findHelper(char, count, 'backward');
     if (!position) {
       return null;
     }

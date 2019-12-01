@@ -6,7 +6,7 @@ import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
@@ -102,9 +102,9 @@ export class VimState implements vscode.Disposable {
   public actionCount = 0;
 
   /**
-   * Every time we invoke a VS Code command which might trigger Code's view update,
-   * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
-   * This array is used to cache every VS Code view updating event and they will be triggered once we run the inhouse `viewUpdate`.
+   * Every time we invoke a VSCode command which might trigger a view update.
+   * We should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
+   * This array is used to cache every VSCode view updating event and they will be triggered once we run the inhouse `viewUpdate`.
    */
   public postponedCodeViewChanges: ViewChange[] = [];
 
@@ -183,7 +183,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Stores last visual mode for gv
    */
-  public lastVisualMode: ModeName;
+  public lastVisualMode: Mode;
 
   /**
    * Last selection that was active
@@ -199,14 +199,14 @@ export class VimState implements vscode.Disposable {
   /**
    * The mode Vim will be in once this action finishes.
    */
-  private _currentMode: ModeName = ModeName.Normal;
+  private _currentMode: Mode = Mode.Normal;
 
-  public get currentMode(): ModeName {
+  public get currentMode(): Mode {
     return this._currentMode;
   }
 
   private _inputMethodSwitcher: InputMethodSwitcher;
-  public async setCurrentMode(value: ModeName): Promise<void> {
+  public async setCurrentMode(value: Mode): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
   }
@@ -218,9 +218,9 @@ export class VimState implements vscode.Disposable {
       return this.currentRegisterMode;
     }
     switch (this.currentMode) {
-      case ModeName.VisualLine:
+      case Mode.VisualLine:
         return RegisterMode.LineWise;
-      case ModeName.VisualBlock:
+      case Mode.VisualBlock:
         return RegisterMode.BlockWise;
       default:
         return RegisterMode.CharacterWise;

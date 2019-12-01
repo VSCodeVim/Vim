@@ -3,7 +3,7 @@ import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 
 suite('Configuration', () => {
   const { newTest } = getTestingFunctions();
@@ -55,6 +55,6 @@ suite('Configuration', () => {
     // <leader>fes
     keysPressed: ' fes',
     end: ['|'],
-    endMode: ModeName.Visual,
+    endMode: Mode.Visual,
   });
 });

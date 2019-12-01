@@ -5,7 +5,7 @@ import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { MarkerGenerator } from './markerGenerator';
-import { ModeName } from '../../../mode/mode';
+import { Mode } from '../../../mode/mode';
 
 export class EasyMotion {
   /**
@@ -39,7 +39,7 @@ export class EasyMotion {
   /**
    * Mode to return to after attempting easymotion
    */
-  public previousMode: ModeName;
+  public previousMode: Mode;
 
   constructor() {
     this._markers = [];
@@ -186,32 +186,20 @@ export class EasyMotion {
     return matches;
   }
 
-  private themeColorApiSupported(): boolean {
-    // Theme color is available from version 1.12.
-    const vscodeVersionAsNumber = parseInt(vscode.version.replace(/\./g, ''), 10);
-    return vscodeVersionAsNumber >= 1120;
-  }
-
   private getMarkerColor(
     customizedValue: string,
-    defaultValue: string | vscode.ThemeColor,
     themeColorId: string
   ): string | vscode.ThemeColor {
-    if (!this.themeColorApiSupported()) {
-      return customizedValue || defaultValue;
+    if (customizedValue) {
+      return customizedValue;
     } else {
-      if (customizedValue) {
-        return customizedValue;
-      } else {
-        return new vscode.ThemeColor(themeColorId);
-      }
+      return new vscode.ThemeColor(themeColorId);
     }
   }
 
   private getEasymotionMarkerBackgroundColor() {
     return this.getMarkerColor(
       configuration.easymotionMarkerBackgroundColor,
-      '#000',
       'activityBarBadge.background'
     );
   }
@@ -219,7 +207,6 @@ export class EasyMotion {
   private getEasymotionMarkerForegroundColorOneChar() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorOneChar,
-      '#f00',
       'activityBarBadge.foreground'
     );
   }
@@ -227,7 +214,6 @@ export class EasyMotion {
   private getEasymotionMarkerForegroundColorTwoChar() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorTwoChar,
-      '#ffa500',
       'activityBarBadge.foreground'
     );
   }

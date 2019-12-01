@@ -26,7 +26,6 @@ export class WriteQuitCommand extends node.CommandBase {
 
   constructor(args: IWriteQuitCommandArguments) {
     super();
-    this._name = 'writequit';
     this._arguments = args;
   }
 

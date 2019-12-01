@@ -89,7 +89,6 @@ export class SubstituteCommand extends node.CommandBase {
   protected _abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
     super();
-    this._name = 'search';
     this._arguments = args;
     this._abort = false;
   }

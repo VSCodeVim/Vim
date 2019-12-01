@@ -1,22 +1,22 @@
 import { configuration } from './../configuration/configuration';
 import { VimState } from './../state/vimState';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 
 const modes = {};
 
-modes[ModeName.Normal] = {
+modes[Mode.Normal] = {
   '<left>': '<',
   '<right>': '>',
 };
 
-modes[ModeName.Visual] = modes[ModeName.Normal];
+modes[Mode.Visual] = modes[Mode.Normal];
 
-modes[ModeName.Insert] = {
+modes[Mode.Insert] = {
   '<left>': '[',
   '<right>': ']',
 };
 
-const translateMovementKey = (mode: ModeName, key: string) => {
+const translateMovementKey = (mode: Mode, key: string) => {
   return (modes[mode] || {})[key] || key;
 };
 

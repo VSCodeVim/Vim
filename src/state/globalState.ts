@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { JumpTracker } from '../jumps/jumpTracker';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { Position } from '../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { SearchHistory } from '../history/historyFile';
@@ -20,7 +20,7 @@ class GlobalState {
   /**
    * Track jumps, and traverse jump history
    */
-  private _jumpTracker: JumpTracker = new JumpTracker();
+  public readonly jumpTracker: JumpTracker = new JumpTracker();
 
   /**
    * Tracks search history
@@ -59,13 +59,7 @@ class GlobalState {
       .get()
       .forEach(val =>
         this.searchStatePrevious.push(
-          new SearchState(
-            SearchDirection.Forward,
-            new Position(0, 0),
-            val,
-            undefined,
-            ModeName.Normal
-          )
+          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined, Mode.Normal)
         )
       );
   }
@@ -124,10 +118,6 @@ class GlobalState {
     });
 
     return item ? item.searchState : undefined;
-  }
-
-  public get jumpTracker(): JumpTracker {
-    return this._jumpTracker;
   }
 }
 
