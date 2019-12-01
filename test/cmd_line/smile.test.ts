@@ -1,10 +1,10 @@
+import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import {
-  assertEqual,
   assertEqualLines,
   cleanUpWorkspace,
   setupWorkspace,
@@ -26,7 +26,7 @@ suite('Smile command', () => {
     await commandLine.Run('smile', modeHandler.vimState);
     await waitForTabChange();
 
-    assertEqual(
+    assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
       ':smile did not create a new untitled file'

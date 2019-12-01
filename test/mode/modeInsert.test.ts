@@ -1,10 +1,10 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 import {
-  assertEqual,
   assertEqualLines,
   cleanUpWorkspace,
   setupWorkspace,
@@ -29,10 +29,10 @@ suite('Mode Insert', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assertEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assertEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
     }
   });
 
@@ -45,7 +45,11 @@ suite('Mode Insert', () => {
   test('<Esc> should change cursor position', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o', '<Esc>']);
 
-    assertEqual(TextEditor.getSelection().start.character, 4, '<Esc> moved cursor position.');
+    assert.strictEqual(
+      TextEditor.getSelection().start.character,
+      4,
+      '<Esc> moved cursor position.'
+    );
   });
 
   test('<C-c> can exit insert', async () => {
@@ -64,7 +68,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assertEqual(modeHandler.currentMode === Mode.Insert, true);
+      assert.strictEqual(modeHandler.currentMode === Mode.Insert, true);
     }
   });
 
@@ -167,7 +171,7 @@ suite('Mode Insert', () => {
 
     assertEqualLines(['onetwo']);
 
-    assertEqual(
+    assert.strictEqual(
       TextEditor.getSelection().start.character,
       3,
       '<BS> moved cursor to correct position'
