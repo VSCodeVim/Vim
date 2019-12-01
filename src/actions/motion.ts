@@ -700,9 +700,17 @@ class MoveRepeatReversed extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = vimState.lastCommaRepeatableMovement;
-    if (movement) {
-      return movement.execActionWithCount(position, vimState, count);
+    const semiColonMovement = vimState.lastSemicolonRepeatableMovement;
+    const commaMovement = vimState.lastCommaRepeatableMovement;
+    if (commaMovement) {
+      const result = commaMovement.execActionWithCount(position, vimState, count);
+
+      // Make sure these don't change. Otherwise, comma's direction flips back
+      // and forth when done repeatedly. This is a bit hacky, so feel free to refactor.
+      vimState.lastSemicolonRepeatableMovement = semiColonMovement;
+      vimState.lastCommaRepeatableMovement = commaMovement;
+
+      return result;
     }
     return position;
   }
