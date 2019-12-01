@@ -2,10 +2,11 @@ import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { Globals } from '../../src/globals';
-import { ModeName } from '../../src/mode/mode';
+import { ModeName, Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
+import { Configuration } from '../testConfiguration';
 import {
   assertEqual,
   assertEqualLines,
@@ -20,7 +21,9 @@ suite('Mode Visual', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
+    const configuration = new Configuration();
+    configuration.surround = false;
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 
@@ -961,6 +964,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjC',
       end: ['this is', '|', 'the world'],
+      endMode: ModeName.Insert,
     });
 
     newTest({
@@ -968,15 +972,17 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
       end: ['this is', '|', 'the world'],
+      endMode: ModeName.Insert,
     });
   });
 
-  suite('R will delete linewise', () => {
+  suite('R and S will delete linewise', () => {
     newTest({
       title: 'normal selection',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjR',
       end: ['this is', '|', 'the world'],
+      endMode: ModeName.Insert,
     });
 
     newTest({
@@ -984,6 +990,15 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
       end: ['this is', '|', 'the world'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'normal selection for S',
+      start: ['this is', 'the| best', 'test i have seen in', 'the world'],
+      keysPressed: 'vjS',
+      end: ['this is', '|', 'the world'],
+      endMode: ModeName.Insert,
     });
   });
 
