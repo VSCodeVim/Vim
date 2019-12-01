@@ -14,7 +14,7 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { ReportSearch } from '../util/statusBarTextUtils';
+import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
 import { globalState } from '../state/globalState';
 import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
@@ -356,7 +356,7 @@ class CommandNextSearchMatch extends BaseMovement {
       nextMatch = searchState.getNextSearchMatchPosition(position);
     }
 
-    ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
     return nextMatch.pos;
   }
@@ -379,7 +379,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
-    ReportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
 
     return prevMatch.pos;
   }

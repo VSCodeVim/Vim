@@ -101,7 +101,7 @@ export class SetOptionsCommand extends node.CommandBase {
         if (value === undefined) {
           throw VimError.fromCode(ErrorCode.E518);
         } else {
-          StatusBar.Set(`${this._arguments.name}=${value}`, vimState, true);
+          StatusBar.setText(vimState, `${this._arguments.name}=${value}`);
         }
         break;
       default:

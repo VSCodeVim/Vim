@@ -32,7 +32,7 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { globalState } from '../state/globalState';
-import { ReportSearch } from '../util/statusBarTextUtils';
+import { reportSearch } from '../util/statusBarTextUtils';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -257,6 +257,7 @@ export class ModeHandler implements vscode.Disposable {
 
     const oldMode = this.vimState.currentMode;
     const oldVisibleRange = this.vimState.editor.visibleRanges[0];
+    const oldStatusBarText = StatusBar.getText();
 
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
@@ -296,7 +297,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        StatusBar.Set(e.toString(), this.vimState, true, true);
+        StatusBar.setText(this.vimState, e.toString(), true);
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }
@@ -304,11 +305,14 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.lastKeyPressedTimestamp = now;
 
-    // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
-    const forceClearStatusBar =
-      this.vimState.currentMode !== oldMode ||
-      this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
-    StatusBar.Clear(this.vimState, forceClearStatusBar);
+    // We don't want to immediately erase any message that resulted from the action just performed
+    if (StatusBar.getText() === oldStatusBarText) {
+      // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
+      const forceClearStatusBar =
+        (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
+        this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
+      StatusBar.clear(this.vimState, forceClearStatusBar);
+    }
 
     return true;
   }
@@ -917,7 +921,7 @@ export class ModeHandler implements vscode.Disposable {
 
             vimState.cursorStopPosition = nextMatch.pos;
             this.updateView(this.vimState);
-            ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+            reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
           }
           break;
 
@@ -1385,7 +1389,7 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.easyMotion.updateDecorations();
     }
 
-    StatusBar.Clear(this.vimState, false);
+    StatusBar.clear(this.vimState, false);
 
     await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
 

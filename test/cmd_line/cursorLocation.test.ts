@@ -30,10 +30,10 @@ suite('cursor location', () => {
       '<left>',
     ]);
 
-    const statusBarAfterCursorMovement = StatusBar.Get();
+    const statusBarAfterCursorMovement = StatusBar.getText();
     await modeHandler.handleKeyEvent('<Esc>');
 
-    const statusBarAfterEsc = StatusBar.Get();
+    const statusBarAfterEsc = StatusBar.getText();
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       ':tes|t',
@@ -54,10 +54,10 @@ suite('cursor location', () => {
       '<left>',
     ]);
 
-    const statusBarAfterCursorMovement = StatusBar.Get();
+    const statusBarAfterCursorMovement = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    const statusBarAfterEsc = StatusBar.Get();
+    const statusBarAfterEsc = StatusBar.getText();
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       '/tes|t',
