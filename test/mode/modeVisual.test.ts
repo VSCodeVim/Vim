@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { Globals } from '../../src/globals';
-import { ModeName, Mode } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
@@ -31,10 +31,10 @@ suite('Mode Visual', () => {
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode.name, Mode.Normal);
   });
 
   test('Can handle w', async () => {
@@ -65,7 +65,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode.name, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -74,7 +74,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode.name, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -155,7 +155,7 @@ suite('Mode Visual', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assertEqual(modeHandler.currentMode.name, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -272,7 +272,7 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -280,7 +280,7 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -288,7 +288,7 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -296,7 +296,7 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -304,7 +304,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -313,7 +313,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -323,7 +323,7 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -331,7 +331,7 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -339,7 +339,7 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -347,7 +347,7 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -355,7 +355,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -365,7 +365,7 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -373,7 +373,7 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -381,7 +381,7 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -389,7 +389,7 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -397,7 +397,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -407,7 +407,7 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -415,7 +415,7 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -423,7 +423,7 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -431,7 +431,7 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -439,7 +439,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -448,7 +448,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -458,7 +458,7 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -466,7 +466,7 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -474,7 +474,7 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -482,7 +482,7 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -490,7 +490,7 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -498,7 +498,7 @@ suite('Mode Visual', () => {
       start: ['one', '|two'],
       keysPressed: 'vwYP',
       end: ['one', '|two', 'two'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -508,7 +508,7 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlasd',
       end: ["That's my sec|I'm always angry."],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -516,7 +516,7 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhasd',
       end: ["That's my secret, Captain.|ways angry."],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -524,7 +524,7 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I|'m always angry."],
       keysPressed: 'vhhasd',
       end: ['|m always angry.'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -534,7 +534,7 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlisd',
       end: ["That's my sec| I'm always angry."],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -542,7 +542,7 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain. |ways angry."],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -550,7 +550,7 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain.  |  I'm always angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain.| I'm always angry."],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -560,7 +560,7 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vitd',
       end: ['one <blink>|</blink> two'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -569,7 +569,7 @@ suite('Mode Visual', () => {
       start: ['<div> one <p> t|wo </p> three </div>'],
       keysPressed: 'v3itd',
       end: ['<div>|</div>'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -577,7 +577,7 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vatd',
       end: ['one | two'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -586,7 +586,7 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatd',
     end: ['one | four'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -594,7 +594,7 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatatatd',
     end: ['one | four'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -602,7 +602,7 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'v4atd',
     end: ['one | four'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -610,7 +610,7 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t<p>', '\t|test', '\t</p>', '</p>', '', 'do not delete'],
     keysPressed: 'v8atd',
     end: ['|', '', 'do not delete'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -618,7 +618,7 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4atd',
     end: ['one |two'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -626,7 +626,7 @@ suite('Mode Visual', () => {
     start: ['test(te|st)'],
     keysPressed: 'vi)d',
     end: ['test(|)'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -634,7 +634,7 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st)'],
     keysPressed: 'vi)i)d',
     end: ['test(|)'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -642,7 +642,7 @@ suite('Mode Visual', () => {
     start: ['test(te|st);'],
     keysPressed: 'va)d',
     end: ['test|;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -650,7 +650,7 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st);'],
     keysPressed: 'va)a)d',
     end: ['test|;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -658,7 +658,7 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4a)d',
     end: ['one |two'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -666,7 +666,7 @@ suite('Mode Visual', () => {
     start: ['(', '\t(', '\t|', '\t)', ')', '', 'do not delete'],
     keysPressed: 'v8a)d',
     end: ['|', '', 'do not delete'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -674,7 +674,7 @@ suite('Mode Visual', () => {
     start: ['1|{', 'test', '}1'],
     keysPressed: 'va}d',
     end: ['1|1'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -682,7 +682,7 @@ suite('Mode Visual', () => {
     start: ['test{te{te|st}st};'],
     keysPressed: 'va}a}d',
     end: ['test|;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -690,7 +690,7 @@ suite('Mode Visual', () => {
     start: ['test(()=>{', '|', '});'],
     keysPressed: 'vi(d',
     end: ['test(|);'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -698,7 +698,7 @@ suite('Mode Visual', () => {
     start: ['{', '  te|st', '  {', '    test', '  }', '}'],
     keysPressed: 'vi{d',
     end: ['{', '|}'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -706,7 +706,7 @@ suite('Mode Visual', () => {
     start: ['{', '  t|est', ' }'],
     keysPressed: 'vi{d',
     end: ['{', '| }'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -714,7 +714,7 @@ suite('Mode Visual', () => {
     start: ['test[te[te|st]st];'],
     keysPressed: 'va]a]d',
     end: ['test|;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -722,7 +722,7 @@ suite('Mode Visual', () => {
     start: ['test <div><p>[[{{((|))}}]]</p></div> test;'],
     keysPressed: 'v8afd',
     end: ['test | test;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -730,7 +730,7 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t(', '\t|', '\t)', '</p>', '', 'do not delete'],
     keysPressed: 'v8afd',
     end: ['|', '', 'do not delete'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -738,7 +738,7 @@ suite('Mode Visual', () => {
     start: ['test (f|oo) "hi" test;'],
     keysPressed: 'vafd',
     end: ['test | "hi" test;'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
   suite('handles replace in visual mode', () => {
     newTest({
@@ -746,7 +746,7 @@ suite('Mode Visual', () => {
       start: ['one |two three four five'],
       keysPressed: 'vwwer1',
       end: ['one |11111111111111 five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -754,7 +754,7 @@ suite('Mode Visual', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'vjer1',
       end: ['one |1111111111111111111', '1111111 three four five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -763,7 +763,7 @@ suite('Mode Visual', () => {
     start: ['|foobar'],
     keysPressed: 'v>.',
     end: ['    |foobar'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -771,7 +771,7 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v_x',
     end: ['', '|t test', ''],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -779,7 +779,7 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'vg_x',
     end: ['', 'test t|e', ''],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -787,7 +787,7 @@ suite('Mode Visual', () => {
     start: ['te|st', 'test', 'test', 'test'],
     keysPressed: 'v3g_x',
     end: ['t|e', 'test'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -795,7 +795,7 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v$x',
     end: ['', 'test t|e'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -803,7 +803,7 @@ suite('Mode Visual', () => {
     start: ['tes|ttest'],
     keysPressed: 'vl<Esc>llgvd',
     end: ['tes|est'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   suite('D command will remove all selected lines', () => {
@@ -812,7 +812,7 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'test line2', 'second line'],
       keysPressed: 'vjD',
       end: ['first line', '|second line'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -820,7 +820,7 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'second line'],
       keysPressed: 'vlllD',
       end: ['first line', '|second line'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -830,7 +830,7 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaid',
       end: ['|do_something_else()'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -838,7 +838,7 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', '    if baz:', '        foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -846,7 +846,7 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', 'if foo > 3:', '    bar'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|if foo > 3:', '    bar'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -854,7 +854,7 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")', '|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -862,7 +862,7 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaId',
       end: ['|'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -889,7 +889,7 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         '|public modes = [ModeName.VisualLine',
       ],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -909,7 +909,7 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         'public modes = [ModeName.VisualLine',
       ],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -964,7 +964,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjC',
       end: ['this is', '|', 'the world'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -972,7 +972,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
       end: ['this is', '|', 'the world'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -982,7 +982,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjR',
       end: ['this is', '|', 'the world'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -990,7 +990,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
       end: ['this is', '|', 'the world'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -998,7 +998,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjS',
       end: ['this is', '|', 'the world'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -1088,7 +1088,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode.name, Mode.Normal);
       assertEqualLines(['one two three']);
 
       // test copy by pasting back
@@ -1110,65 +1110,65 @@ suite('Mode Visual', () => {
   suite('Transition between visual mode', () => {
     test('vv will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode.name, Mode.Normal);
     });
 
     test('vV will transit to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualLine);
     });
 
     test('v<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualBlock);
     });
 
     test('Vv will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
     });
 
     test('VV will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode.name, Mode.Normal);
     });
 
     test('V<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualBlock);
     });
 
     test('<C-v>v will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
     });
 
     test('<C-v>V will back to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualLine);
     });
 
     test('<C-v><C-v> will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      assertEqual(modeHandler.currentMode.name, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode.name, Mode.Normal);
     });
   });
 
@@ -1186,7 +1186,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
@@ -1211,7 +1211,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -1238,7 +1238,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
       assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();
@@ -1258,7 +1258,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1274,7 +1274,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1290,7 +1290,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1306,7 +1306,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1322,7 +1322,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1338,7 +1338,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqual(modeHandler.currentMode.name, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
@@ -1401,7 +1401,7 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vUwwvgU',
       end: ['One two |Three'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1409,7 +1409,7 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vllllUwwvlgU',
       end: ['ONE Two |THree'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1417,7 +1417,7 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'wvhhUwwvhhgU',
       end: ['onE Tw|O Three'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1425,7 +1425,7 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vuwwvgu',
       end: ['oNE TWO |tHREE'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1433,7 +1433,7 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vlllluwwvlgu',
       end: ['one tWO |thREE'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1441,7 +1441,7 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'wvhhuwwvhhgu',
       end: ['ONe tW|o tHREE'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 });
