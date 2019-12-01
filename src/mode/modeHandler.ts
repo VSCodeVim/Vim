@@ -256,6 +256,7 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState.commandList.push(key);
 
     const oldMode = this.vimState.currentMode;
+    const oldVisibleRange = this.vimState.editor.visibleRanges[0];
 
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
@@ -302,7 +303,12 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
-    StatusBar.Clear(this.vimState, this.vimState.currentMode !== oldMode);
+
+    // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
+    const forceClearStatusBar =
+      this.vimState.currentMode !== oldMode ||
+      this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
+    StatusBar.Clear(this.vimState, forceClearStatusBar);
 
     return true;
   }
