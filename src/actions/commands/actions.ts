@@ -677,7 +677,7 @@ abstract class CommandEditorScroll extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.recordedState.count || 1;
     const visibleRange = vimState.editor.visibleRanges[0];
-    const scrolloff = vscode.workspace
+    const scrolloff = configuration
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
 
@@ -733,7 +733,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   protected abstract getNumLines(vimState: VimState): number;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
+    const smoothScrolling = configuration.getConfiguration('editor').smoothScrolling;
     const scrollLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
     await vscode.commands.executeCommand('editorScroll', {
