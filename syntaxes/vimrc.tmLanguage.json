@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "vimrc",
+  "fileTypes": [".vimrc"],
+  "scopeName": "source.vimrc",
+  "patterns": [
+    {
+      "name": "comment.line",
+      "match": "\".*$"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^set"
+    },
+    {
+      "name": "string.unquoted",
+      "match": ".*$"
+    }
+  ]
+}

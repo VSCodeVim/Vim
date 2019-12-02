@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { ModeName } from '../../mode/mode';
+import { Mode, isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
@@ -29,8 +29,7 @@ export class SortCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    let mode = vimState.currentMode;
-    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].includes(mode)) {
+    if (isVisualMode(vimState.currentMode)) {
       const selection = vimState.editor.selection;
       let start = selection.start;
       let end = selection.end;

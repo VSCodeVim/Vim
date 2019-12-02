@@ -1,6 +1,6 @@
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
-import { ModeName } from '../../../src/mode/mode';
+import { Mode } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
@@ -256,6 +256,14 @@ suite('Motions in Normal Mode', () => {
     end: ['te|xt text'],
   });
 
+  // See #4313
+  newTest({
+    title: "Can handle 'f' and multiple back searches",
+    start: ['|a a a a a'],
+    keysPressed: 'fa;;;,,,',
+    end: ['a |a a a a'],
+  });
+
   newTest({
     title: "Can handle 't'",
     start: ['text tex|t'],
@@ -310,6 +318,13 @@ suite('Motions in Normal Mode', () => {
     start: ['|one two two two'],
     keysPressed: '/two\nn',
     end: ['one two |two two'],
+  });
+
+  newTest({
+    title: 'Can run a forward and find previous search from end of word',
+    start: ['|one two one two'],
+    keysPressed: '/two/e\nN',
+    end: ['one two one tw|o'],
   });
 
   // These "remembering history between editor" tests have started
@@ -435,7 +450,7 @@ suite('Motions in Normal Mode', () => {
     start: ['|one two three'],
     keysPressed: '/tw<BS><BS><BS>',
     end: ['|one two three'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({

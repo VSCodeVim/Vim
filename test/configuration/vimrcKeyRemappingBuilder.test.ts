@@ -3,7 +3,7 @@ import { IKeyRemapping, IVimrcKeyRemapping } from '../../src/configuration/iconf
 import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder';
 
 suite('VimrcKeyRemappingBuilder', () => {
-  test('Build IKeyRemapping objects from .vimrc lines', () => {
+  test('Build IKeyRemapping objects from .vimrc lines', async () => {
     const testCases = [
       {
         vimrcLine: 'nnoremap <C-h> <<',
@@ -36,11 +36,22 @@ suite('VimrcKeyRemappingBuilder', () => {
         expectNull: false,
       },
       {
-        // Mapping with a command
-        vimrcLine: 'nnoremap <C-s> :w',
+        // Mapping with a vim command
+        vimrcLine: 'nnoremap <C-s> :w<CR>',
         keyRemapping: {
           before: ['<C-s>'],
           commands: [':w'],
+          source: 'vimrc',
+        },
+        keyRemappingType: 'nnoremap',
+        expectNull: false,
+      },
+      {
+        // Mapping with a VSCode command
+        vimrcLine: 'nnoremap <C-t> workbench.action.files.newUntitledFile',
+        keyRemapping: {
+          before: ['<C-t>'],
+          commands: ['workbench.action.files.newUntitledFile'],
           source: 'vimrc',
         },
         keyRemappingType: 'nnoremap',
@@ -54,9 +65,7 @@ suite('VimrcKeyRemappingBuilder', () => {
     ];
 
     for (const testCase of testCases) {
-      const vimrcKeyRemapping: IVimrcKeyRemapping | undefined = vimrcKeyRemappingBuilder.build(
-        testCase.vimrcLine
-      );
+      const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.build(testCase.vimrcLine);
 
       if (testCase.expectNull) {
         assert.strictEqual(vimrcKeyRemapping, undefined);

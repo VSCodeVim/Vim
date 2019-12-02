@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
 import { Position, PositionDiff } from './../common/motion/position';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { setFlagsFromString } from 'v8';
 
@@ -20,7 +20,7 @@ export class SearchState {
   private static caseOverrideRegex: RegExp = /\\[Cc]/g;
   private static notEscapedSlashRegex: RegExp = /(?<=[^\\])\//g;
   private static notEscapedQuestionMarkRegex: RegExp = /(?<=[^\\])\?/g;
-  public previousMode = ModeName.Normal;
+  public previousMode = Mode.Normal;
 
   private _matchRanges: vscode.Range[] = [];
 
@@ -325,7 +325,7 @@ export class SearchState {
         .slice(0)
         .reverse()
         .entries()) {
-        if (matchRange.start.compareTo(startPosition) < 0) {
+        if (matchRange.end.compareTo(startPosition) <= 0) {
           return {
             start: Position.FromVSCodePosition(matchRange.start),
             end: Position.FromVSCodePosition(matchRange.end),
@@ -386,7 +386,7 @@ export class SearchState {
     startPosition: Position,
     searchString = '',
     { isRegex = false } = {},
-    currentMode: ModeName
+    currentMode: Mode
   ) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;

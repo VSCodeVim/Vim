@@ -231,11 +231,6 @@ export abstract class CommandBase {
     return vscode.window.activeTextEditor;
   }
 
-  get name(): string {
-    return this._name;
-  }
-  protected _name: string;
-
   get arguments(): ICommandArgs {
     return this._arguments;
   }

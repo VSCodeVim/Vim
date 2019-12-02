@@ -27,7 +27,6 @@ export class HistoryCommand extends CommandBase {
 
   constructor(args: IHistoryCommandArguments) {
     super();
-    this._name = 'history';
     this._arguments = args;
   }
 

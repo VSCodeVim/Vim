@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
@@ -53,7 +53,7 @@ export class Remappers implements IRemapper {
 
 export class Remapper implements IRemapper {
   private readonly _configKey: string;
-  private readonly _remappedModes: ModeName[];
+  private readonly _remappedModes: Mode[];
   private readonly _recursive: boolean;
   private readonly _logger = Logger.get('Remapper');
 
@@ -62,7 +62,7 @@ export class Remapper implements IRemapper {
     return this._isPotentialRemap;
   }
 
-  constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
+  constructor(configKey: string, remappedModes: Mode[], recursive: boolean) {
     this._configKey = configKey;
     this._recursive = recursive;
     this._remappedModes = remappedModes;
@@ -83,7 +83,7 @@ export class Remapper implements IRemapper {
 
     this._logger.debug(
       `trying to find matching remap. keys=${keys}. mode=${
-        ModeName[vimState.currentMode]
+        Mode[vimState.currentMode]
       }. keybindings=${this._configKey}.`
     );
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(
@@ -130,7 +130,7 @@ export class Remapper implements IRemapper {
     const numCharsToRemove = remapping.before.length - 1;
     // Revert previously inserted characters
     // (e.g. jj remapped to esc, we have to revert the inserted "jj")
-    if (vimState.currentMode === ModeName.Insert) {
+    if (vimState.currentMode === Mode.Insert) {
       // Revert every single inserted character.
       // We subtract 1 because we haven't actually applied the last key.
       await vimState.historyTracker.undoAndRemoveChanges(
@@ -175,12 +175,7 @@ export class Remapper implements IRemapper {
           await vscode.commands.executeCommand(commandString);
         }
 
-        StatusBar.Set(
-          commandString + ' ' + commandArgs,
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true
-        );
+        StatusBar.setText(vimState, `${commandString} ${commandArgs}`);
       }
     }
   }
@@ -188,7 +183,7 @@ export class Remapper implements IRemapper {
   protected findMatchingRemap(
     userDefinedRemappings: Map<string, IKeyRemapping>,
     inputtedKeys: string[],
-    currentMode: ModeName
+    currentMode: Mode
   ): IKeyRemapping | undefined {
     let remapping: IKeyRemapping | undefined;
 
@@ -207,7 +202,7 @@ export class Remapper implements IRemapper {
         // with extraneous keystrokes (eg. "hello world jj")
         // In other modes, we have to precisely match the keysequence
         // unless the preceding keys are numbers
-        if (currentMode !== ModeName.Insert) {
+        if (currentMode !== Mode.Insert) {
           const precedingKeys = inputtedKeys
             .slice(0, inputtedKeys.length - keySlice.length)
             .join('');
@@ -246,7 +241,7 @@ class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Insert, ModeName.Replace],
+      [Mode.Insert, Mode.Replace],
       recursive
     );
   }
@@ -256,7 +251,7 @@ class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Normal],
+      [Mode.Normal],
       recursive
     );
   }
@@ -266,7 +261,7 @@ class VisualModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
+      [Mode.Visual, Mode.VisualLine, Mode.VisualBlock],
       recursive
     );
   }

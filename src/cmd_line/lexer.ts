@@ -136,23 +136,10 @@ namespace LexerFunctions {
           return null;
         }
 
-        const c = state.next();
-        switch (c) {
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-            continue;
-          default:
-            state.backup();
-            tokens.push(emitToken(tokenType, state)!);
-            return lexRange;
+        if (!/[0-9]/.test(state.next())) {
+          state.backup();
+          tokens.push(emitToken(tokenType, state)!);
+          return lexRange;
         }
       }
     };
@@ -165,9 +152,8 @@ namespace LexerFunctions {
         tokens.push(emitToken(TokenType.CommandName, state)!);
         break;
       }
-      const c = state.next();
-      const lc = c.toLowerCase();
-      if (lc >= 'a' && lc <= 'z') {
+      const c = state.next().toLowerCase();
+      if (c >= 'a' && c <= 'z') {
         continue;
       } else {
         state.backup();

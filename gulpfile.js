@@ -58,6 +58,13 @@ function validateArgs(done) {
       })
     );
   }
+  if (!['patch', 'minor', 'major'].includes(options.semver)) {
+    return done(
+      new PluginError('updateVersion', {
+        message: 'Invalid `--semver` option. Possible values: patch, minor, major',
+      })
+    );
+  }
 
   const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
   if (!gitHubToken) {

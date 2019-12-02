@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.11.2",
+  "version": "1.12.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -899,7 +899,22 @@
           "default": true
         }
       }
-    }
+    },
+    "languages": [
+      {
+        "id": "vimrc",
+        "extensions": [
+          ".vimrc"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vimrc",
+        "scopeName": "source.vimrc",
+        "path": "./syntaxes/vimrc.tmLanguage.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "gulp build",
@@ -922,8 +937,8 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.149",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.12.9",
-    "@types/sinon": "7.5.0",
+    "@types/node": "12.12.14",
+    "@types/sinon": "7.5.1",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",

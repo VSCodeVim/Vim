@@ -1,7 +1,7 @@
 import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
-import { ModeName } from './../../../mode/mode';
+import { Mode } from './../../../mode/mode';
 import { RegisterAction } from './../../base';
 import { BaseCommand } from './../../commands/actions';
 import { EasyMotion } from './easymotion';
@@ -25,7 +25,7 @@ export function buildTriggerKeys(trigger: EasymotionTrigger) {
 }
 
 abstract class BaseEasyMotionCommand extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   private _baseOptions: EasyMotionMoveOptionsBase;
 
@@ -96,7 +96,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
           // Store mode to return to after performing easy motion
           vimState.easyMotion.previousMode = vimState.currentMode;
           // Enter the EasyMotion mode and await further keys
-          await vimState.setCurrentMode(ModeName.EasyMotionMode);
+          await vimState.setCurrentMode(Mode.EasyMotionMode);
           return vimState;
         }
       }
@@ -254,7 +254,7 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
 }
 
 export class EasyMotionCharMoveCommandBase extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   private _action: EasyMotionSearchAction;
 
   constructor(trigger: EasymotionTrigger, action: EasyMotionSearchAction) {
@@ -273,7 +273,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion.searchAction = this._action;
       globalState.hl = true;
 
-      await vimState.setCurrentMode(ModeName.EasyMotionInputMode);
+      await vimState.setCurrentMode(Mode.EasyMotionInputMode);
       return vimState;
     }
   }
@@ -345,7 +345,7 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
 
 @RegisterAction
 class EasyMotionCharInputMode extends BaseCommand {
-  modes = [ModeName.EasyMotionInputMode];
+  modes = [Mode.EasyMotionInputMode];
   keys = ['<character>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -367,18 +367,18 @@ class EasyMotionCharInputMode extends BaseCommand {
 
 @RegisterAction
 class CommandEscEasyMotionCharInputMode extends BaseCommand {
-  modes = [ModeName.EasyMotionInputMode];
+  modes = [Mode.EasyMotionInputMode];
   keys = ['<Esc>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
 }
 
 @RegisterAction
 class MoveEasyMotion extends BaseCommand {
-  modes = [ModeName.EasyMotionMode];
+  modes = [Mode.EasyMotionMode];
   keys = ['<character>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -395,9 +395,9 @@ class MoveEasyMotion extends BaseCommand {
 
       // If previous mode was visual, restore visual selection
       if (
-        vimState.easyMotion.previousMode === ModeName.Visual ||
-        vimState.easyMotion.previousMode === ModeName.VisualLine ||
-        vimState.easyMotion.previousMode === ModeName.VisualBlock
+        vimState.easyMotion.previousMode === Mode.Visual ||
+        vimState.easyMotion.previousMode === Mode.VisualLine ||
+        vimState.easyMotion.previousMode === Mode.VisualBlock
       ) {
         vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
         vimState.cursorStopPosition = vimState.lastVisualSelectionEnd;

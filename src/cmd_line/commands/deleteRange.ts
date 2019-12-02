@@ -16,7 +16,6 @@ export class DeleteRangeCommand extends node.CommandBase {
 
   constructor(args: IDeleteRangeCommandArguments) {
     super();
-    this._name = 'delete';
     this._arguments = args;
   }
 

@@ -19,7 +19,6 @@ export class ReadCommand extends node.CommandBase {
 
   constructor(args: IReadCommandArguments) {
     super();
-    this._name = 'read';
     this._arguments = args;
   }
 
