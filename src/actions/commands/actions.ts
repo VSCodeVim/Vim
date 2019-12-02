@@ -2078,6 +2078,7 @@ class CommandTabInCommandline extends BaseCommand {
   }
 }
 
+// TODO: Split this into multiple commands and maybe move them to another file
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -2607,7 +2608,6 @@ class CommandUndo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2652,7 +2652,6 @@ class CommandRedo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -4539,7 +4538,7 @@ class ActionTriggerHover extends BaseCommand {
 /**
  * Multi-Cursor Command Overrides
  *
- * We currently have to override the vscode key commands that get us into multi-cursor mode.
+ * We currently have to override the VSCode key commands that get us into multi-cursor mode.
  *
  * Normally, we'd just listen for another cursor to be added in order to go into multi-cursor
  * mode rather than rewriting each keybinding one-by-one. We can't currently do that because
