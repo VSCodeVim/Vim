@@ -1,5 +1,129 @@
 # Change Log
 
+## [v1.12.0](https://github.com/vscodevim/vim/tree/v1.12.0) (2019-12-01)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.3...v1.12.0)
+
+**Enhancements:**
+
+- High priority status bar messages should be cleared when the view scrolls [\#4310](https://github.com/VSCodeVim/Vim/issues/4310)
+- VSCodeVim uses the default node debugging port [\#4264](https://github.com/VSCodeVim/Vim/issues/4264)
+- ed style copy, move [\#4240](https://github.com/VSCodeVim/Vim/issues/4240)
+- Support pulling word under the cursor into a search [\#4102](https://github.com/VSCodeVim/Vim/issues/4102)
+- Filename completion does not work when using :edit. [\#3839](https://github.com/VSCodeVim/Vim/issues/3839)
+
+**Fixed Bugs:**
+
+- Find Backwards \(Comma\) Doesn't Function Correctly [\#4313](https://github.com/VSCodeVim/Vim/issues/4313)
+- Vim commands specified in .vimrc should only be executed if ended with \<CR\> [\#4311](https://github.com/VSCodeVim/Vim/issues/4311)
+- Searching backwards with offset is unaware of current word under cursor [\#4266](https://github.com/VSCodeVim/Vim/issues/4266)
+- `gp` incorrectly places cursor when pasting more than three lines [\#4246](https://github.com/VSCodeVim/Vim/issues/4246)
+- Copy command broke in 1.11.0 release [\#4126](https://github.com/VSCodeVim/Vim/issues/4126)
+- v. 1.11.0 broke \<shift+space\> [\#4110](https://github.com/VSCodeVim/Vim/issues/4110)
+- Macro 'Recording @a' in status bar disappears after delete command [\#3838](https://github.com/VSCodeVim/Vim/issues/3838)
+
+**Closed issues:**
+
+- Reflow \(gq\) treats line strangely [\#4303](https://github.com/VSCodeVim/Vim/issues/4303)
+- d+i+\<leader\> cannot delete content wrapped in single quote [\#4287](https://github.com/VSCodeVim/Vim/issues/4287)
+- c [\#4276](https://github.com/VSCodeVim/Vim/issues/4276)
+- Using VsCode Vim in Microsoft Python Package [\#4245](https://github.com/VSCodeVim/Vim/issues/4245)
+- how can I configure to let easy motion start with one leader key stroke, instead of two, when used frenquetly, one more stroke seems inconvenience [\#4239](https://github.com/VSCodeVim/Vim/issues/4239)
+- Conversion from .vimrc [\#4231](https://github.com/VSCodeVim/Vim/issues/4231)
+- VSCodeVim stopped working with 1.11.3 [\#4225](https://github.com/VSCodeVim/Vim/issues/4225)
+- Version 1.11.3 not work. [\#4220](https://github.com/VSCodeVim/Vim/issues/4220)
+- Changing prefix in easy-motion [\#4218](https://github.com/VSCodeVim/Vim/issues/4218)
+- Use `ExtensionContext.globalStoragePath` instead of `appdirectory` library [\#4055](https://github.com/VSCodeVim/Vim/issues/4055)
+- Make saving errors more obvious [\#3793](https://github.com/VSCodeVim/Vim/issues/3793)
+- Remapped Escape key \(in Gnome desktop\) not working in VS Code, vim mode [\#3674](https://github.com/VSCodeVim/Vim/issues/3674)
+
+**Merged pull requests:**
+
+- Require \<CR\> after a vim command in .vimrc if you want it to run [\#4316](https://github.com/VSCodeVim/Vim/pull/4316) ([J-Fields](https://github.com/J-Fields))
+- Stop comma from switching the find direction [\#4314](https://github.com/VSCodeVim/Vim/pull/4314) ([J-Fields](https://github.com/J-Fields))
+- Update dependency @types/node to v12.12.14 [\#4300](https://github.com/VSCodeVim/Vim/pull/4300) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.12 [\#4295](https://github.com/VSCodeVim/Vim/pull/4295) ([renovate[bot]](https://github.com/apps/renovate))
+- Fixed backward search from end of word \(VSCodeVim \#4266\) [\#4294](https://github.com/VSCodeVim/Vim/pull/4294) ([bdomanski](https://github.com/bdomanski))
+- Big refactor of modes to not use OOP, fix issue with command line getting cleared [\#4291](https://github.com/VSCodeVim/Vim/pull/4291) ([J-Fields](https://github.com/J-Fields))
+- fix comment typos "postion" to "position" [\#4290](https://github.com/VSCodeVim/Vim/pull/4290) ([kchs94](https://github.com/kchs94))
+- Recognize VSCode commands in .vimrc [\#4286](https://github.com/VSCodeVim/Vim/pull/4286) ([J-Fields](https://github.com/J-Fields))
+- Update dependency @types/sinon to v7.5.1 [\#4285](https://github.com/VSCodeVim/Vim/pull/4285) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.11 [\#4282](https://github.com/VSCodeVim/Vim/pull/4282) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.9 [\#4279](https://github.com/VSCodeVim/Vim/pull/4279) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.149 [\#4278](https://github.com/VSCodeVim/Vim/pull/4278) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.8 [\#4271](https://github.com/VSCodeVim/Vim/pull/4271) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.148 [\#4269](https://github.com/VSCodeVim/Vim/pull/4269) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.147 [\#4265](https://github.com/VSCodeVim/Vim/pull/4265) ([renovate[bot]](https://github.com/apps/renovate))
+- Remove fs unused dependency [\#4263](https://github.com/VSCodeVim/Vim/pull/4263) ([xconverge](https://github.com/xconverge))
+- Update dependency @types/lodash to v4.14.146 [\#4262](https://github.com/VSCodeVim/Vim/pull/4262) ([renovate[bot]](https://github.com/apps/renovate))
+- Pin dependency @types/lodash to 4.14.144 [\#4260](https://github.com/VSCodeVim/Vim/pull/4260) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency prettier to v1.19.1 [\#4258](https://github.com/VSCodeVim/Vim/pull/4258) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency prettier to v1.19.0 [\#4257](https://github.com/VSCodeVim/Vim/pull/4257) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v12.12.7 [\#4256](https://github.com/VSCodeVim/Vim/pull/4256) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.6 [\#4248](https://github.com/VSCodeVim/Vim/pull/4248) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix `gp` when pasting more than three lines [\#4247](https://github.com/VSCodeVim/Vim/pull/4247) ([trkoch](https://github.com/trkoch))
+- Update dependency tslint to v5.20.1 [\#4244](https://github.com/VSCodeVim/Vim/pull/4244) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.7.2 [\#4243](https://github.com/VSCodeVim/Vim/pull/4243) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.5 [\#4228](https://github.com/VSCodeVim/Vim/pull/4228) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.0 [\#4226](https://github.com/VSCodeVim/Vim/pull/4226) ([renovate[bot]](https://github.com/apps/renovate))
+- Remove prepare-test step from CONTRIBUTING.md [\#4222](https://github.com/VSCodeVim/Vim/pull/4222) ([JKillian](https://github.com/JKillian))
+- Fix bug causing increment/decrement issues for some number formats [\#4221](https://github.com/VSCodeVim/Vim/pull/4221) ([JKillian](https://github.com/JKillian))
+- Add vim.statusBarColors for 5 remaining modes [\#4185](https://github.com/VSCodeVim/Vim/pull/4185) ([thisisrandy](https://github.com/thisisrandy))
+- upgrade to node v12 [\#4171](https://github.com/VSCodeVim/Vim/pull/4171) ([jpoon](https://github.com/jpoon))
+- Update neovim path to be machine-overridable for remote use [\#4152](https://github.com/VSCodeVim/Vim/pull/4152) ([xconverge](https://github.com/xconverge))
+- Simplify storage directory to use supplied extension directory [\#4151](https://github.com/VSCodeVim/Vim/pull/4151) ([xconverge](https://github.com/xconverge))
+- \<C-r\> \<C-w\> \(insert word under cursor\) in search/commmand line [\#4143](https://github.com/VSCodeVim/Vim/pull/4143) ([fraenkel](https://github.com/fraenkel))
+- fix insertion mappings [\#4063](https://github.com/VSCodeVim/Vim/pull/4063) ([kyazdani42](https://github.com/kyazdani42))
+- Read key remappings from .vimrc [\#3908](https://github.com/VSCodeVim/Vim/pull/3908) ([rdnlsmith](https://github.com/rdnlsmith))
+
+## [v1.11.3](https://github.com/vscodevim/vim/tree/v1.11.3) (2019-10-26)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.2...v1.11.3)
+
+**Enhancements:**
+
+- Add :UnicodeName \(aka ga\) [\#4204](https://github.com/VSCodeVim/Vim/issues/4204)
+- Feature request: Highlight text color [\#4164](https://github.com/VSCodeVim/Vim/issues/4164)
+- :sort u command does not remove duplicates [\#4142](https://github.com/VSCodeVim/Vim/issues/4142)
+
+**Fixed Bugs:**
+
+- \<C-d\>, etc. not working at beginning or end of buffer in 1.11.2 [\#4179](https://github.com/VSCodeVim/Vim/issues/4179)
+- `grj` is not linewise [\#4138](https://github.com/VSCodeVim/Vim/issues/4138)
+- A failed `f`/`F` cannot be retried with `;` or `,` [\#4047](https://github.com/VSCodeVim/Vim/issues/4047)
+- Ctrl+R in command line or search mode should show a quote \("\) [\#4000](https://github.com/VSCodeVim/Vim/issues/4000)
+
+**Closed issues:**
+
+- Screen navigation doesn't work at top or bottom [\#4207](https://github.com/VSCodeVim/Vim/issues/4207)
+- Add support for vscode jupyter notebook [\#4203](https://github.com/VSCodeVim/Vim/issues/4203)
+- Cannot search for words which include slashes [\#4200](https://github.com/VSCodeVim/Vim/issues/4200)
+- After ctrl-C into insert mode [\#4189](https://github.com/VSCodeVim/Vim/issues/4189)
+- Extension Version 1.11.1 not Working for me [\#4174](https://github.com/VSCodeVim/Vim/issues/4174)
+- Activating extension 'vscodevim.vim' failed: Cannot find module 'neovim'. [\#4173](https://github.com/VSCodeVim/Vim/issues/4173)
+- S deletes the whole line  [\#4168](https://github.com/VSCodeVim/Vim/issues/4168)
+- Extension activation is slow [\#4083](https://github.com/VSCodeVim/Vim/issues/4083)
+
+**Merged pull requests:**
+
+- Revert "WebPack builds for improved loading times \(\#3889\)" [\#4217](https://github.com/VSCodeVim/Vim/pull/4217) ([rickpr](https://github.com/rickpr))
+- Update dependency @types/node to v12.11.7 [\#4212](https://github.com/VSCodeVim/Vim/pull/4212) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.6 [\#4211](https://github.com/VSCodeVim/Vim/pull/4211) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency ts-loader to v6.2.1 [\#4210](https://github.com/VSCodeVim/Vim/pull/4210) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.5 [\#4208](https://github.com/VSCodeVim/Vim/pull/4208) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.2 [\#4201](https://github.com/VSCodeVim/Vim/pull/4201) ([renovate[bot]](https://github.com/apps/renovate))
+- Replace `assert.equal` with `assert.strictEqual` [\#4199](https://github.com/VSCodeVim/Vim/pull/4199) ([J-Fields](https://github.com/J-Fields))
+- Update CONTRIBUTING.md to recommend npx gulp [\#4198](https://github.com/VSCodeVim/Vim/pull/4198) ([nateroling](https://github.com/nateroling))
+- fix replace commands from visual and visual block mode not inserting tab [\#4195](https://github.com/VSCodeVim/Vim/pull/4195) ([peawyoyoyin](https://github.com/peawyoyoyin))
+- Update dependency mocha to v6.2.2 [\#4191](https://github.com/VSCodeVim/Vim/pull/4191) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.1 [\#4181](https://github.com/VSCodeVim/Vim/pull/4181) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.11.0 [\#4180](https://github.com/VSCodeVim/Vim/pull/4180) ([renovate[bot]](https://github.com/apps/renovate))
+- v1.11.2 [\#4172](https://github.com/VSCodeVim/Vim/pull/4172) ([jpoon](https://github.com/jpoon))
+- Add configuration for highlight/yank highlight text colors [\#4165](https://github.com/VSCodeVim/Vim/pull/4165) ([J-Fields](https://github.com/J-Fields))
+- Add support for za Vim binding [\#4160](https://github.com/VSCodeVim/Vim/pull/4160) ([aquova](https://github.com/aquova))
+- Fix back search when no matching \(\#4047\) [\#4157](https://github.com/VSCodeVim/Vim/pull/4157) ([seachicken](https://github.com/seachicken))
+- Support `\[ and`\] commands to go to start / end of previously operated text [\#4147](https://github.com/VSCodeVim/Vim/pull/4147) ([haifengkao](https://github.com/haifengkao))
+
 ## [v1.11.2](https://github.com/vscodevim/vim/tree/v1.11.2) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.1...v1.11.2)

@@ -26,7 +26,7 @@ import { Jump } from '../../jumps/jump';
 import { commandParsers } from '../../cmd_line/subparser';
 import { StatusBar } from '../../statusBar';
 import { readDirectory, getPathDetails } from '../../util/path';
-import { ReportLinesChanged, ReportFileInfo, ReportSearch } from '../../util/statusBarTextUtils';
+import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -996,7 +996,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
 
-      ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+      reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
       return vimState;
     } else if (key === '<up>' || key === '<C-p>') {
@@ -1267,7 +1267,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
 
-  ReportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+  reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
 
   return vimState;
 }
@@ -1621,9 +1621,11 @@ export class PutCommand extends BaseCommand {
       position: whereToAddText,
       diff: diff,
     });
-
-    const numNewlinesAfterPut = textToAdd.split('\n').length;
-    ReportLinesChanged(numNewlinesAfterPut, vimState);
+    let numNewlinesAfterPut = textToAdd.split('\n').length;
+    if (register.registerMode === RegisterMode.LineWise) {
+      numNewlinesAfterPut--;
+    }
+    reportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
@@ -1684,7 +1686,7 @@ export class PutCommand extends BaseCommand {
         cursorIndex: this.multicursorIndex,
       });
 
-      ReportLinesChanged(numNewlines, vimState);
+      reportLinesChanged(numNewlines, vimState);
     }
 
     return result;
@@ -1945,7 +1947,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   private getTrimmedStatusBarText() {
     // first regex removes the : / and | from the string
     // second regex removes a single space from the end of the string
-    let trimmedStatusBarText = StatusBar.Get()
+    let trimmedStatusBarText = StatusBar.getText()
       .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
       .replace(/(.*) $/, '$1');
     return trimmedStatusBarText;
@@ -2074,6 +2076,7 @@ class CommandTabInCommandline extends BaseCommand {
   }
 }
 
+// TODO: Split this into multiple commands and maybe move them to another file
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -2601,9 +2604,8 @@ class CommandUndo extends BaseCommand {
     const newPositions = await vimState.historyTracker.goBackHistoryStep();
 
     if (newPositions === undefined) {
-      StatusBar.Set('Already at oldest change', vimState, true);
+      StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      StatusBar.Clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2646,9 +2648,8 @@ class CommandRedo extends BaseCommand {
     const newPositions = await vimState.historyTracker.goForwardHistoryStep();
 
     if (newPositions === undefined) {
-      StatusBar.Set('Already at newest change', vimState, true);
+      StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      StatusBar.Clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2836,7 +2837,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.cursorStopPosition
   );
 
-  ReportSearch(result.index, searchState.matchRanges.length, vimState);
+  reportSearch(result.index, searchState.matchRanges.length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 
@@ -2972,8 +2973,8 @@ class CommandGoBackInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex - 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const prevPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex - 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (prevPos !== undefined) {
       vimState.cursorStopPosition = prevPos[0];
@@ -2994,8 +2995,8 @@ class CommandGoForwardInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex + 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const nextPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex + 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (nextPos !== undefined) {
       vimState.cursorStopPosition = nextPos[0];
@@ -4508,10 +4509,9 @@ class CommandUnicodeName extends BaseCommand {
     const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
     const charCode = char.charCodeAt(0);
     // TODO: Handle charCode > 127 by also including <M-x>
-    StatusBar.Set(
-      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`,
+    StatusBar.setText(
       vimState,
-      true
+      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`
     );
     return vimState;
   }
@@ -4535,7 +4535,7 @@ class ActionTriggerHover extends BaseCommand {
 /**
  * Multi-Cursor Command Overrides
  *
- * We currently have to override the vscode key commands that get us into multi-cursor mode.
+ * We currently have to override the VSCode key commands that get us into multi-cursor mode.
  *
  * Normally, we'd just listen for another cursor to be added in order to go into multi-cursor
  * mode rather than rewriting each keybinding one-by-one. We can't currently do that because
@@ -4662,7 +4662,7 @@ class ActionShowFileInfo extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    ReportFileInfo(position, vimState);
+    reportFileInfo(position, vimState);
 
     return vimState;
   }

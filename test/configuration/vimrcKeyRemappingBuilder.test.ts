@@ -37,7 +37,7 @@ suite('VimrcKeyRemappingBuilder', () => {
       },
       {
         // Mapping with a vim command
-        vimrcLine: 'nnoremap <C-s> :w',
+        vimrcLine: 'nnoremap <C-s> :w<CR>',
         keyRemapping: {
           before: ['<C-s>'],
           commands: [':w'],
