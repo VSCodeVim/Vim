@@ -17,14 +17,17 @@ import { RecordedState } from './../state/recordedState';
 import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
+import { StatusBar } from '../statusBar';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
 
 class DocumentChange {
-  start: Position;
-  text: string;
-  isAdd: boolean;
+  public readonly start: Position;
+  public isAdd: boolean;
+
+  private _end: Position;
+  private _text: string;
 
   constructor(start: Position, text: string, isAdd: boolean) {
     this.start = start;
@@ -39,7 +42,7 @@ class DocumentChange {
     if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
       await TextEditor.insert(this.text, this.start, false);
     } else {
-      await TextEditor.delete(new vscode.Range(this.start, this.end()));
+      await TextEditor.delete(new vscode.Range(this.start, this.end));
     }
   }
 
@@ -51,10 +54,19 @@ class DocumentChange {
   }
 
   /**
-   * the position after advancing start by text
+   * The position after advancing start by text
    */
-  public end(): Position {
-    return this.start.advancePositionByText(this.text);
+  public get end(): Position {
+    return this._end;
+  }
+
+  public get text(): string {
+    return this._text;
+  }
+
+  public set text(text: string) {
+    this._text = text;
+    this._end = this.start.advancePositionByText(this.text);
   }
 }
 
@@ -74,6 +86,11 @@ class HistoryStep {
    * Whether the user is still inserting or deleting for this history step.
    */
   isFinished: boolean;
+
+  /**
+   * When this step was finished.
+   */
+  timestamp: Date | undefined;
 
   /**
    * The cursor position at the start of this history step.
@@ -131,15 +148,15 @@ class HistoryStep {
           continue;
         }
       }
-      // merge logic. also compares start & end() Positions to ensure this is the same location
-      if (current.isAdd && next.isAdd && current.end().isEqual(next.start)) {
+      // merge logic. also compares start & end Positions to ensure this is the same location
+      if (current.isAdd && next.isAdd && current.end.isEqual(next.start)) {
         // merge add+add together
         current.text += next.text;
-      } else if (!current.isAdd && !next.isAdd && next.end().isEqual(current.start)) {
+      } else if (!current.isAdd && !next.isAdd && next.end.isEqual(current.start)) {
         // merge del+del together, but in reverse so it still reads forward
         next.text += current.text;
         current = next;
-      } else if (current.isAdd && !next.isAdd && current.end().isEqual(next.end())) {
+      } else if (current.isAdd && !next.isAdd && current.end.isEqual(next.end)) {
         // collapse add+del into add. this might make current.text.length === 0, see beginning of loop
         current.text = current.text.slice(0, -next.text.length);
       } else {
@@ -151,6 +168,32 @@ class HistoryStep {
     }
     merged.push(current);
     this.changes = merged;
+  }
+
+  /**
+   * Returns, as a string, the time that has passed since this step took place.
+   */
+  public howLongAgo(): string {
+    const timestamp = this.timestamp!;
+    const now = new Date();
+    const timeDiffMillis = now.getTime() - timestamp.getTime();
+    const timeDiffSeconds = Math.floor(timeDiffMillis / 1000);
+    if (timeDiffSeconds === 1) {
+      return `1 second ago`;
+    } else if (timeDiffSeconds >= 100) {
+      const hours = timestamp.getHours();
+      const minutes = timestamp
+        .getMinutes()
+        .toString()
+        .padStart(2, '0');
+      const seconds = timestamp
+        .getSeconds()
+        .toString()
+        .padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    } else {
+      return `${timeDiffSeconds} seconds ago`;
+    }
   }
 }
 
@@ -344,7 +387,7 @@ export class HistoryTracker {
   /**
    * Adds a mark.
    */
-  addMark(position: Position, markName: string): void {
+  public addMark(position: Position, markName: string): void {
     const newMark: IMark = {
       position,
       name: markName,
@@ -362,11 +405,11 @@ export class HistoryTracker {
   /**
    * Retrieves a mark.
    */
-  getMark(markName: string): IMark {
+  public getMark(markName: string): IMark {
     return <IMark>this.currentHistoryStep.marks.find(mark => mark.name === markName);
   }
 
-  getMarks(): IMark[] {
+  public getMarks(): IMark[] {
     return this.currentHistoryStep.marks;
   }
 
@@ -376,7 +419,7 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it
    * used to look like.
    */
-  addChange(cursorPosition = [new Position(0, 0)]): void {
+  public addChange(cursorPosition = [new Position(0, 0)]): void {
     const newText = this._getDocumentText();
 
     if (newText === this.oldText) {
@@ -450,7 +493,7 @@ export class HistoryTracker {
   /**
    * Both undoes and completely removes the last n changes applied.
    */
-  async undoAndRemoveChanges(n: number): Promise<void> {
+  public async undoAndRemoveChanges(n: number): Promise<void> {
     if (this.currentHistoryStep.changes.length < n) {
       this._logger.warn('Something bad happened in removeChange');
       return;
@@ -468,7 +511,7 @@ export class HistoryTracker {
    * ignore that change. Most often used when the change was itself triggered by
    * the HistoryTracker.
    */
-  ignoreChange(): void {
+  public ignoreChange(): void {
     this.oldText = this._getDocumentText();
   }
 
@@ -477,12 +520,13 @@ export class HistoryTracker {
    * accrue multiple changes. This function will mark it as finished,
    * and the next time we add a change, it'll be added to a new Step.
    */
-  finishCurrentStep(): void {
+  public finishCurrentStep(): void {
     if (this.currentHistoryStep.changes.length === 0 || this.currentHistoryStep.isFinished) {
       return;
     }
 
     this.currentHistoryStep.isFinished = true;
+    this.currentHistoryStep.timestamp = new Date();
 
     this.currentHistoryStep.merge();
 
@@ -493,9 +537,7 @@ export class HistoryTracker {
    * Essentially Undo or ctrl+z. Returns undefined if there's no more steps
    * back to go.
    */
-  async goBackHistoryStep(): Promise<Position[] | undefined> {
-    let step: HistoryStep;
-
+  public async goBackHistoryStep(): Promise<Position[] | undefined> {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
@@ -508,11 +550,18 @@ export class HistoryTracker {
       }
     }
 
-    step = this.currentHistoryStep;
+    const step = this.currentHistoryStep;
 
     for (const change of step.changes.slice(0).reverse()) {
       await change!.undo();
     }
+
+    // TODO: if there are more/fewer lines after undoing the change, it should say so
+    const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
+    StatusBar.setText(
+      this.vimState,
+      `${changes}; before #${this.currentHistoryStepIndex}  ${step.howLongAgo()}`
+    );
 
     this.currentHistoryStepIndex--;
 
@@ -536,7 +585,7 @@ export class HistoryTracker {
    * This worst-case scenario tends to offset line values and make it harder to
    * determine the line of the change, so this behavior is also compensated.
    */
-  async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
+  public async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
     let done: boolean = false;
     let stepsToUndo: number = 0;
     let changesToUndo: DocumentChange[] = [];
@@ -613,6 +662,7 @@ export class HistoryTracker {
       cursorEnd: [lastChange.start],
     });
     newStep.changes = changesToUndo;
+    newStep.timestamp = new Date();
 
     this.historySteps.push(newStep);
 
@@ -631,30 +681,27 @@ export class HistoryTracker {
    * Essentially Redo or ctrl+y. Returns undefined if there's no more steps
    * forward to go.
    */
-  async goForwardHistoryStep(): Promise<Position[] | undefined> {
-    let step: HistoryStep;
-
+  public async goForwardHistoryStep(): Promise<Position[] | undefined> {
     if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
       return undefined;
     }
 
     this.currentHistoryStepIndex++;
 
-    step = this.currentHistoryStep;
+    const step = this.currentHistoryStep;
 
+    // TODO: do these transformations in a bacth
     for (const change of step.changes) {
       await change.do();
     }
 
+    const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
+    StatusBar.setText(
+      this.vimState,
+      `${changes}; after #${this.currentHistoryStepIndex}  ${step.howLongAgo()}`
+    );
+
     return step.cursorStart;
-  }
-
-  getLastHistoryEndPosition(): Position[] | undefined {
-    if (this.currentHistoryStepIndex === 0) {
-      return undefined;
-    }
-
-    return this.historySteps[this.currentHistoryStepIndex].cursorEnd;
   }
 
   /**
@@ -663,75 +710,72 @@ export class HistoryTracker {
    * In practice, this sets the cursor position to the end of
    * the most recent text change.
    */
-  getLastChangeEndPosition(): Position | undefined {
+  public getLastChangeEndPosition(): Position | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
 
-    const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
+    const lastChangeIndex = this.currentHistoryStep.changes.length;
     if (lastChangeIndex === 0) {
       return undefined;
     }
 
-    const lastChange = this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1];
+    const lastChange = this.currentHistoryStep.changes[lastChangeIndex - 1];
     if (lastChange.isAdd) {
-      return lastChange.end();
+      return lastChange.end;
     }
 
     return lastChange.start;
   }
 
-  getLastHistoryStartPosition(): Position[] | undefined {
+  public getLastHistoryStartPosition(): Position[] | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
 
-    return this.historySteps[this.currentHistoryStepIndex].cursorStart;
+    return this.currentHistoryStep.cursorStart;
   }
 
-  getLastChangeStartPosition(): Position | undefined {
+  public getLastChangeStartPosition(): Position | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
 
-    const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
+    const lastChangeIndex = this.currentHistoryStep.changes.length;
     if (lastChangeIndex === 0) {
       return undefined;
     }
 
-    return this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1].start;
+    return this.currentHistoryStep.changes[lastChangeIndex - 1].start;
   }
 
-  setLastHistoryEndPosition(pos: Position[]) {
-    this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
+  public setLastHistoryEndPosition(pos: Position[]) {
+    this.currentHistoryStep.cursorEnd = pos;
   }
 
-  getChangePositionAtindex(index: number): Position[] | undefined {
+  public getChangePositionAtIndex(index: number): Position[] | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
 
-    let pos = this.getLastHistoryEndPosition();
-    pos = undefined;
-
     if (this.historySteps[index] !== undefined) {
       if (this.historySteps[index].changes.length > 0) {
         if (this.historySteps[index].changes[0].isAdd) {
-          pos = [this.historySteps[index].changes[0].end()];
+          return [this.historySteps[index].changes[0].end];
         } else {
-          pos = [this.historySteps[index].changes[0].start];
+          return [this.historySteps[index].changes[0].start];
         }
       }
     }
 
-    return pos;
+    return undefined;
   }
 
   /**
    * Handy for debugging the undo/redo stack. + means our current position, check
    * means active.
    */
-  toString(): string {
+  public toString(): string {
     let result = '';
 
     for (let i = 0; i < this.historySteps.length; i++) {

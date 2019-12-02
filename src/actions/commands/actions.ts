@@ -1624,8 +1624,10 @@ export class PutCommand extends BaseCommand {
       position: whereToAddText,
       diff: diff,
     });
-
-    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    let numNewlinesAfterPut = textToAdd.split('\n').length;
+    if (register.registerMode === RegisterMode.LineWise) {
+      numNewlinesAfterPut--;
+    }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
@@ -2077,6 +2079,7 @@ class CommandTabInCommandline extends BaseCommand {
   }
 }
 
+// TODO: Split this into multiple commands and maybe move them to another file
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -2606,7 +2609,6 @@ class CommandUndo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2651,7 +2653,6 @@ class CommandRedo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      StatusBar.clear(vimState);
       vimState.cursors = newPositions.map(x => new Range(x, x));
     }
 
@@ -2975,8 +2976,8 @@ class CommandGoBackInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex - 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const prevPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex - 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (prevPos !== undefined) {
       vimState.cursorStopPosition = prevPos[0];
@@ -2997,8 +2998,8 @@ class CommandGoForwardInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex + 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const nextPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex + 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (nextPos !== undefined) {
       vimState.cursorStopPosition = nextPos[0];
@@ -4537,7 +4538,7 @@ class ActionTriggerHover extends BaseCommand {
 /**
  * Multi-Cursor Command Overrides
  *
- * We currently have to override the vscode key commands that get us into multi-cursor mode.
+ * We currently have to override the VSCode key commands that get us into multi-cursor mode.
  *
  * Normally, we'd just listen for another cursor to be added in order to go into multi-cursor
  * mode rather than rewriting each keybinding one-by-one. We can't currently do that because

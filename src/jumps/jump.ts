@@ -9,9 +9,9 @@ import { VimState } from '../state/vimState';
  * and to be able to open the related file.
  */
 export class Jump {
-  public editor: vscode.TextEditor | null;
-  public fileName: string;
-  public position: Position;
+  public readonly editor: vscode.TextEditor | null;
+  public readonly fileName: string;
+  public readonly position: Position;
 
   /**
    *
@@ -38,7 +38,7 @@ export class Jump {
    * Factory method for creating a Jump from a VimState's current cursor position.
    * @param vimState - State that contains the fileName and position for the jump
    */
-  static fromStateNow(vimState: VimState) {
+  public static fromStateNow(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
@@ -51,7 +51,7 @@ export class Jump {
    * before any actions or commands were performed.
    * @param vimState - State that contains the fileName and prior position for the jump
    */
-  static fromStateBefore(vimState: VimState) {
+  public static fromStateBefore(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
