@@ -17,6 +17,7 @@ import { RecordedState } from './../state/recordedState';
 import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
+import { StatusBar } from '../statusBar';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -74,6 +75,11 @@ class HistoryStep {
    * Whether the user is still inserting or deleting for this history step.
    */
   isFinished: boolean;
+
+  /**
+   * When this step was finished.
+   */
+  timestamp: Date | undefined;
 
   /**
    * The cursor position at the start of this history step.
@@ -151,6 +157,32 @@ class HistoryStep {
     }
     merged.push(current);
     this.changes = merged;
+  }
+
+  /**
+   * Returns, as a string, the time that has passed since this step took place.
+   */
+  public howLongAgo(): string {
+    const timestamp = this.timestamp!;
+    const now = new Date();
+    const timeDiffMillis = now.getTime() - timestamp.getTime();
+    const timeDiffSeconds = Math.floor(timeDiffMillis / 1000);
+    if (timeDiffSeconds === 1) {
+      return `1 second ago`;
+    } else if (timeDiffSeconds >= 100) {
+      const hours = timestamp.getHours();
+      const minutes = timestamp
+        .getMinutes()
+        .toString()
+        .padStart(2, '0');
+      const seconds = timestamp
+        .getSeconds()
+        .toString()
+        .padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    } else {
+      return `${timeDiffSeconds} seconds ago`;
+    }
   }
 }
 
@@ -483,6 +515,7 @@ export class HistoryTracker {
     }
 
     this.currentHistoryStep.isFinished = true;
+    this.currentHistoryStep.timestamp = new Date();
 
     this.currentHistoryStep.merge();
 
@@ -494,8 +527,6 @@ export class HistoryTracker {
    * back to go.
    */
   async goBackHistoryStep(): Promise<Position[] | undefined> {
-    let step: HistoryStep;
-
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
@@ -508,11 +539,18 @@ export class HistoryTracker {
       }
     }
 
-    step = this.currentHistoryStep;
+    const step = this.currentHistoryStep;
 
     for (const change of step.changes.slice(0).reverse()) {
       await change!.undo();
     }
+
+    // TODO: if there are more/fewer lines after undoing the change, it should say so
+    const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
+    StatusBar.setText(
+      this.vimState,
+      `${changes}; before #${this.currentHistoryStepIndex}  ${step.howLongAgo()}`
+    );
 
     this.currentHistoryStepIndex--;
 
@@ -632,19 +670,23 @@ export class HistoryTracker {
    * forward to go.
    */
   async goForwardHistoryStep(): Promise<Position[] | undefined> {
-    let step: HistoryStep;
-
     if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
       return undefined;
     }
 
     this.currentHistoryStepIndex++;
 
-    step = this.currentHistoryStep;
+    const step = this.currentHistoryStep;
 
     for (const change of step.changes) {
       await change.do();
     }
+
+    const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
+    StatusBar.setText(
+      this.vimState,
+      `${changes}; after #${this.currentHistoryStepIndex}  ${step.howLongAgo()}`
+    );
 
     return step.cursorStart;
   }
