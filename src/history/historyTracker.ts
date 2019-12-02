@@ -651,6 +651,7 @@ export class HistoryTracker {
       cursorEnd: [lastChange.start],
     });
     newStep.changes = changesToUndo;
+    newStep.timestamp = new Date();
 
     this.historySteps.push(newStep);
 
