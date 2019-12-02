@@ -574,12 +574,12 @@ suite('Mode Visual', () => {
     const operators = [
       {
         operator: 'd',
-        endMode: ModeName.Normal,
+        endMode: Mode.Normal,
         joinEnd: true,
       },
       {
         operator: 'c',
-        endMode: ModeName.Insert,
+        endMode: Mode.Insert,
         joinEnd: false,
       },
     ];
@@ -674,7 +674,7 @@ suite('Mode Visual', () => {
       start: ['one <p> two <span> th|ree </span> four </p> five'],
       keysPressed: 'v3itd',
       end: ['one <p> two <span> th|ree </span> four </p> five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
     */
 
