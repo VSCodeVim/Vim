@@ -1625,8 +1625,10 @@ export class PutCommand extends BaseCommand {
       position: whereToAddText,
       diff: diff,
     });
-
-    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    let numNewlinesAfterPut = textToAdd.split('\n').length;
+    if (register.registerMode === RegisterMode.LineWise) {
+      numNewlinesAfterPut--;
+    }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
@@ -2975,8 +2977,8 @@ class CommandGoBackInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex - 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const prevPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex - 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (prevPos !== undefined) {
       vimState.cursorStopPosition = prevPos[0];
@@ -2997,8 +2999,8 @@ class CommandGoForwardInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex + 1);
-    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const nextPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex + 1);
+    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
 
     if (nextPos !== undefined) {
       vimState.cursorStopPosition = nextPos[0];
