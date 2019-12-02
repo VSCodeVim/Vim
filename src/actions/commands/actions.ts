@@ -1624,8 +1624,10 @@ export class PutCommand extends BaseCommand {
       position: whereToAddText,
       diff: diff,
     });
-
-    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    let numNewlinesAfterPut = textToAdd.split('\n').length;
+    if (register.registerMode === RegisterMode.LineWise) {
+      numNewlinesAfterPut--;
+    }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
