@@ -27,7 +27,7 @@ import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 
 let extensionContext: vscode.ExtensionContext;
-let previousActiveEditorId: EditorIdentity | null = null;
+let previousActiveEditorId: EditorIdentity | undefined = undefined;
 let lastClosedModeHandler: ModeHandler | null = null;
 
 interface ICodeKeybinding {
@@ -37,9 +37,9 @@ interface ICodeKeybinding {
 
 export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promise<ModeHandler> {
   const activeTextEditor = vscode.window.activeTextEditor;
-  const activeEditorId = new EditorIdentity(activeTextEditor);
+  const activeEditorId = EditorIdentity.fromEditor(activeTextEditor);
 
-  let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
+  let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
@@ -61,7 +61,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     curHandler.vimState.focusChanged = false;
 
     if (previousActiveEditorId) {
-      const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
+      const prevHandler = ModeHandlerMap.get(previousActiveEditorId);
       prevHandler!.vimState.focusChanged = true;
     }
   }
@@ -69,6 +69,9 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
   return curHandler;
 }
 
+/**
+ * Loads and validates the user's configuration
+ */
 async function loadConfiguration() {
   const logger = Logger.get('Configuration');
 
@@ -89,6 +92,9 @@ async function loadConfiguration() {
   }
 }
 
+/**
+ * The extension's entry point
+ */
 export async function activate(context: vscode.ExtensionContext) {
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
@@ -222,9 +228,9 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     vscode.window.onDidChangeActiveTextEditor,
     async () => {
-      const mhPrevious: ModeHandler | null = previousActiveEditorId
-        ? ModeHandlerMap.get(previousActiveEditorId.toString())
-        : null;
+      const mhPrevious: ModeHandler | undefined = previousActiveEditorId
+        ? ModeHandlerMap.get(previousActiveEditorId)
+        : undefined;
       // Track the closed editor so we can use it the next time an open event occurs.
       // When vscode changes away from a temporary file, onDidChangeActiveTextEditor first twice.
       // First it fires when leaving the closed editor. Then onDidCloseTextDocument first, and we delete
@@ -307,7 +313,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const compositionState = new CompositionState();
 
-  // override vscode commands
+  // Override VSCode commands
   overrideCommand(context, 'type', async args => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
@@ -365,7 +371,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  // register extension commands
+  // Register extension commands
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
     await commandLine.PromptAndRun('', mh.vimState);
@@ -493,7 +499,7 @@ function registerCommand(
 function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
-  listener: (e: T) => any,
+  listener: (e: T) => void,
   exitOnExtensionDisable = true,
   exitOnTests = false
 ) {

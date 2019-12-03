@@ -1,41 +1,45 @@
 import { ModeHandler } from './modeHandler';
+import { EditorIdentity } from '../editorIdentity';
 
+/**
+ * Stores one ModeHandler (and therefore VimState) per editor.
+ */
 class ModeHandlerMapImpl {
-  modeHandlerMap: { [key: string]: ModeHandler } = {};
+  private modeHandlerMap = new Map<EditorIdentity, ModeHandler>();
 
-  async getOrCreate(key: string): Promise<[ModeHandler, boolean]> {
+  public async getOrCreate(editorId: EditorIdentity): Promise<[ModeHandler, boolean]> {
     let isNew = false;
-    let modeHandler = this.modeHandlerMap[key];
+    let modeHandler = this.modeHandlerMap.get(editorId);
     if (!modeHandler) {
       isNew = true;
       modeHandler = await ModeHandler.Create();
-      this.modeHandlerMap[key] = modeHandler;
+      this.modeHandlerMap.set(editorId, modeHandler);
     }
     return [modeHandler, isNew];
   }
 
-  get(key: string): ModeHandler | null {
-    return this.modeHandlerMap[key];
+  public get(editorId: EditorIdentity): ModeHandler | undefined {
+    return this.modeHandlerMap.get(editorId);
   }
 
-  getKeys(): string[] {
-    return Object.keys(this.modeHandlerMap);
+  public getKeys(): EditorIdentity[] {
+    return [...this.modeHandlerMap.keys()];
   }
 
-  getAll(): ModeHandler[] {
-    return this.getKeys().map(key => this.modeHandlerMap[key]);
+  public getAll(): ModeHandler[] {
+    return [...this.modeHandlerMap.values()];
   }
 
-  delete(key: string) {
-    if (key in this.modeHandlerMap) {
-      this.modeHandlerMap[key].dispose();
+  public delete(editorId: EditorIdentity) {
+    const modeHandler = this.modeHandlerMap.get(editorId);
+    if (modeHandler) {
+      modeHandler.dispose();
+      this.modeHandlerMap.delete(editorId);
     }
-
-    delete this.modeHandlerMap[key];
   }
 
-  clear() {
-    for (const key of Object.keys(this.modeHandlerMap)) {
+  public clear() {
+    for (const key of this.modeHandlerMap.keys()) {
       this.delete(key);
     }
   }
