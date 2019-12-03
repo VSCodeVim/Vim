@@ -34,6 +34,12 @@ import {
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 
+/**
+ * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
+ * One of these exists for each editor - see ModeHandlerMap
+ *
+ * See:  https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md#the-vim-state-machine
+ */
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _remappers: Remappers;
@@ -67,7 +73,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
-   * Syncs cursors between vscode representation and vim representation
+   * Syncs cursors between VSCode representation and vim representation
    */
   public syncCursors() {
     setImmediate(() => {
