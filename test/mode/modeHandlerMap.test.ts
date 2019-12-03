@@ -1,8 +1,9 @@
 import * as assert from 'assert';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
+import { EditorIdentity } from '../../src/editorIdentity';
 
-suite('Mode Handler Map', () => {
+suite.only('Mode Handler Map', () => {
   setup(() => {
     ModeHandlerMap.clear();
   });
@@ -12,10 +13,7 @@ suite('Mode Handler Map', () => {
   });
 
   test('getOrCreate', async () => {
-    // getOrCreate
-    const key = Math.random()
-      .toString(36)
-      .substring(7);
+    const key = EditorIdentity.createRandomEditorIdentity();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, true);
     assert.notEqual(modeHandler, undefined);
@@ -25,12 +23,12 @@ suite('Mode Handler Map', () => {
 
     // getKeys
     const keys = ModeHandlerMap.getKeys();
-    assert.strictEqual(keys.length, 1);
-    assert.strictEqual(keys[0], key);
+    assert.strictEqual(keys.length, 1, 'getKeys().length');
+    assert.strictEqual(keys[0], key, 'key');
 
     // getAll
     const modeHandlerList = ModeHandlerMap.getAll();
-    assert.strictEqual(modeHandlerList.length, 1);
+    assert.strictEqual(modeHandlerList.length, 1, 'getAll() should have only returned one');
 
     // delete
     ModeHandlerMap.delete(key);
