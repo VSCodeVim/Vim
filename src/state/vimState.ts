@@ -247,7 +247,7 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
-    this.identity = new EditorIdentity(editor);
+    this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
     this.nvim = new NeovimWrapper();
