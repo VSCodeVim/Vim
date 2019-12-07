@@ -9,7 +9,12 @@ class ModeHandlerMapImpl {
 
   public async getOrCreate(editorId: EditorIdentity): Promise<[ModeHandler, boolean]> {
     let isNew = false;
-    let modeHandler = this.modeHandlerMap.get(editorId);
+    let modeHandler: ModeHandler | undefined;
+    for (const [key, value] of this.modeHandlerMap.entries()) {
+      if (key.isEqual(editorId)) {
+        modeHandler = value;
+      }
+    }
     if (!modeHandler) {
       isNew = true;
       modeHandler = await ModeHandler.Create();
