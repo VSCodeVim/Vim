@@ -24,7 +24,7 @@ class VimrcImpl {
     VimrcImpl.removeAllRemapsFromConfig(config);
 
     // Add the new remappings
-    const lines = fs.readFileSync(config.vimrc.path, { encoding: 'utf8' }).split(/\r?\n/);
+    const lines = fs.readFileSync(this.vimrcPath, { encoding: 'utf8' }).split(/\r?\n/);
     for (const line of lines) {
       const remap = await vimrcKeyRemappingBuilder.build(line);
       if (remap) {
