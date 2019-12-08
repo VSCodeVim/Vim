@@ -298,6 +298,9 @@ export interface IConfiguration {
    */
   vimrc: {
     enable: boolean;
+    /**
+     * Do not use this directly - VimrcImpl.path resolves this to a path that's guaranteed to exist.
+     */
     path: string;
   };
 
