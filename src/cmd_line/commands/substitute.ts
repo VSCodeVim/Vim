@@ -124,12 +124,12 @@ export class SubstituteCommand extends node.CommandBase {
     if (args.pattern === undefined) {
       // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
       // i.e. :s
-      const prevSubstiteState = globalState.substituteState;
-      if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
+      const prevSubstituteState = globalState.substituteState;
+      if (prevSubstituteState === undefined || prevSubstituteState.searchPattern === '') {
         throw VimError.fromCode(ErrorCode.E35);
       } else {
-        args.pattern = prevSubstiteState.searchPattern;
-        args.replace = prevSubstiteState.replaceString;
+        args.pattern = prevSubstituteState.searchPattern;
+        args.replace = prevSubstituteState.replaceString;
       }
     } else {
       if (args.pattern === '') {

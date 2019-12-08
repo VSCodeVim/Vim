@@ -6,6 +6,10 @@ import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 
 class VimrcImpl {
   private _vimrcPath: string;
+
+  /**
+   * Fully resolved path to the user's .vimrc
+   */
   public get vimrcPath(): string {
     return this._vimrcPath;
   }
