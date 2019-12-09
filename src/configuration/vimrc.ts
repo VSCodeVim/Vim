@@ -6,6 +6,10 @@ import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 
 class VimrcImpl {
   private _vimrcPath: string;
+
+  /**
+   * Fully resolved path to the user's .vimrc
+   */
   public get vimrcPath(): string {
     return this._vimrcPath;
   }
@@ -16,7 +20,8 @@ class VimrcImpl {
       : VimrcImpl.findDefaultVimrc();
     if (!_path || !fs.existsSync(_path)) {
       // TODO: we may want to offer to create the file for them
-      throw new Error(`Unable to find .vimrc file`);
+      // throw new Error(`Unable to find .vimrc file`);
+      return; // it is okay to fail when there is no .vimrc
     }
     this._vimrcPath = _path;
 
@@ -24,7 +29,7 @@ class VimrcImpl {
     VimrcImpl.removeAllRemapsFromConfig(config);
 
     // Add the new remappings
-    const lines = fs.readFileSync(config.vimrc.path, { encoding: 'utf8' }).split(/\r?\n/);
+    const lines = fs.readFileSync(this.vimrcPath, { encoding: 'utf8' }).split(/\r?\n/);
     for (const line of lines) {
       const remap = await vimrcKeyRemappingBuilder.build(line);
       if (remap) {
