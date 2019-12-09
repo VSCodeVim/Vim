@@ -20,7 +20,8 @@ class VimrcImpl {
       : VimrcImpl.findDefaultVimrc();
     if (!_path || !fs.existsSync(_path)) {
       // TODO: we may want to offer to create the file for them
-      throw new Error(`Unable to find .vimrc file`);
+      // throw new Error(`Unable to find .vimrc file`);
+      return; // it is okay to fail when there is no .vimrc
     }
     this._vimrcPath = _path;
 
