@@ -45,10 +45,7 @@ class VimrcImpl {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'map':
-          return [
-            config.normalModeKeyBindings,
-            config.visualModeKeyBindings,
-          ];
+          return [config.normalModeKeyBindings, config.visualModeKeyBindings];
         case 'nmap':
           return [config.normalModeKeyBindings];
         case 'vmap':
