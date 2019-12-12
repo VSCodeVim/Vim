@@ -461,7 +461,7 @@ export class MarkMovementBOL extends BaseMovement {
       await ensureEditorIsActive(mark.editor);
     }
 
-    return mark.position;
+    return mark.position.getFirstLineNonBlankChar();
   }
 }
 

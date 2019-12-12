@@ -2550,7 +2550,7 @@ suite('Mode Normal', () => {
     newTest({
       title: `can jump to lowercase mark`,
       start: ['|hello world and mars'],
-      keysPressed: `wma2w'a`,
+      keysPressed: 'wma2w`a',
       end: ['hello |world and mars'],
       endMode: Mode.Normal,
     });
