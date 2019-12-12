@@ -118,9 +118,9 @@ class HistoryStep {
   marks: IMark[] = [];
 
   /**
-   * "global" file marks. (when IMark.name is uppercase)
+   * "global" marks which operate across files. (when IMark.name is uppercase)
    */
-  static fileMarks: IMark[] = [];
+  static globalMarks: IMark[] = [];
 
   constructor(init: {
     changes?: DocumentChange[];
@@ -415,17 +415,17 @@ export class HistoryTracker {
    * otherwise returns the currentHistoryStep.marks.
    */
   private getMarkList(isFileMark: boolean): IMark[] {
-    return isFileMark ? HistoryStep.fileMarks : this.currentHistoryStep.marks;
+    return isFileMark ? HistoryStep.globalMarks : this.currentHistoryStep.marks;
   }
 
   /**
    * Gets all local and file marks targeting the current editor.
    */
   private getAllCurrentDocumentMarks(): IMark[] {
-    const fileMarks = HistoryStep.fileMarks.filter(
+    const globalMarks = HistoryStep.globalMarks.filter(
       mark => mark.editor === vscode.window.activeTextEditor
     );
-    return [...this.currentHistoryStep.marks, ...fileMarks];
+    return [...this.currentHistoryStep.marks, ...globalMarks];
   }
 
   /**
@@ -476,8 +476,12 @@ export class HistoryTracker {
   /**
    * Gets all file marks.  I.e., marks that are shared among all editors.
    */
-  public getFileMarks(): IMark[] {
-    return [...HistoryStep.fileMarks];
+  public getGlobalMarks(): IMark[] {
+    return [...HistoryStep.globalMarks];
+  }
+
+  public getMarks(): IMark[] {
+    return [...this.currentHistoryStep.marks, ...HistoryStep.globalMarks];
   }
 
   /**
