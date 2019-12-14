@@ -437,7 +437,8 @@ export class HistoryTracker {
       return;
     }
 
-    // Determine if we should add a new Step. Additionally, If we are on Insert mode and this isn't the first change we made then we should get out of here.
+    // Determine if we should add a new Step.
+    // If we are on Insert mode and this isn't the first change we made then we should get out of here.
     if (
       this.currentHistoryStepIndex === this.historySteps.length - 1 &&
       this.currentHistoryStep.isFinished
