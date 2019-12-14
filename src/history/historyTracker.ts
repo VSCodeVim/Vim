@@ -18,6 +18,7 @@ import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
+import { Mode } from '../mode/mode';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -29,7 +30,7 @@ class DocumentChange {
    * true => addition
    * false => deletion
    */
-   // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
+  // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
   public isAdd: boolean;
 
   private _end: Position;
@@ -427,14 +428,16 @@ export class HistoryTracker {
    * used to look like.
    */
   public addChange(cursorPosition = [new Position(0, 0)]): void {
-    const newText = this._getDocumentText();
+    // Get the current document's text which is conveniently equals to the zero based offset at the document's end.
+    const documentEnd = cursorPosition[0].getDocumentEnd();
+    const newTextLength = this.vimState.editor.document.offsetAt(documentEnd);
 
-    if (newText === this.oldText) {
+    // Check if the document's text changed.
+    if (newTextLength === this.oldText.length) {
       return;
     }
 
-    // Determine if we should add a new Step.
-
+    // Determine if we should add a new Step. Additionally, If we are on Insert mode and this isn't the first change we made then we should get out of here.
     if (
       this.currentHistoryStepIndex === this.historySteps.length - 1 &&
       this.currentHistoryStep.isFinished
@@ -444,7 +447,10 @@ export class HistoryTracker {
       this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
 
       this._addNewHistoryStep();
+    } else if (this.vimState.currentMode === Mode.Insert) {
+      return;
     }
+    const newText = this._getDocumentText();
 
     // TODO: This is actually pretty stupid! Since we already have the cursorPosition,
     // and most diffs are just +/- a few characters, we can just do a direct comparison rather
@@ -456,14 +462,6 @@ export class HistoryTracker {
 
     const diffs = diffEngine.diff_main(this.oldText, newText);
 
-    /*
-    this.historySteps.push(new HistoryStep({
-      changes  : [new DocumentChange(new Position(0, 0), TextEditor._getDocumentText(), true)],
-      isFinished : true,
-      cursorStart: new Position(0, 0)
-    }));
-    */
-
     let currentPosition = new Position(0, 0);
 
     for (const diff of diffs) {
@@ -472,8 +470,6 @@ export class HistoryTracker {
       const removed = whatHappened === DiffMatchPatch.DIFF_DELETE;
 
       let change: DocumentChange;
-      // let lastChange = this.currentHistoryStep.changes.length > 1 &&
-      //   this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
 
       if (added || removed) {
         change = new DocumentChange(currentPosition, text, !!added);
