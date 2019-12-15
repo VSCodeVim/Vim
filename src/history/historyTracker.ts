@@ -18,6 +18,7 @@ import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
+import { Mode } from '../mode/mode';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -231,6 +232,8 @@ export class HistoryTracker {
 
   private vimState: VimState;
 
+  private currentMode: Mode;
+
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
       const msg = 'Tried to modify history at index -1';
@@ -421,6 +424,34 @@ export class HistoryTracker {
   }
 
   /**
+   * Returns true if we need to get the entire document's text
+   * to process an individual change
+   */
+  private _isDocumentTextNeeeded(): boolean {
+    // Get the current document's text length.
+    const documentEnd = new Position(0, 0).getDocumentEnd();
+    const newTextLength = this.vimState.editor.document.offsetAt(documentEnd);
+
+    const isTextLengthDiff = this.oldText.length !== newTextLength;
+
+    // Determine if we just switched modes.
+    // This prevents recording steps in between start-end of a historyStep.
+    const isModeDiff = this.currentMode !== this.vimState.currentMode;
+
+    const isNewHistoryStep =
+      (this.currentHistoryStepIndex === this.historySteps.length - 1 &&
+        this.currentHistoryStep.isFinished) ||
+      this.currentHistoryStepIndex !== this.historySteps.length - 1;
+
+    if (isModeDiff) {
+      this.currentMode = this.vimState.currentMode;
+    }
+
+    // If all of these are false we can avoid requesting the entire doc.
+    return isTextLengthDiff || isNewHistoryStep || isModeDiff;
+  }
+
+  /**
    * Adds an individual Change to the current Step.
    *
    * Determines what changed by diffing the document against what it
@@ -429,6 +460,10 @@ export class HistoryTracker {
    * @returns true if a change was added
    */
   public addChange(cursorPosition = [new Position(0, 0)]): boolean {
+    if (!this._isDocumentTextNeeeded()) {
+      return false;
+    }
+
     const newText = this._getDocumentText();
 
     if (newText === this.oldText) {
