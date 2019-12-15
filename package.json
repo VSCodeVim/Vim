@@ -462,6 +462,14 @@
           "type": "array",
           "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
+        "vim.commandLineModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.commandLineModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
         "vim.textwidth": {
           "type": "number",
           "markdownDescription": "Width to word-wrap to when using `gq`.",

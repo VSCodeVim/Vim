@@ -28,9 +28,11 @@ export class Remappers implements IRemapper {
       new InsertModeRemapper(true),
       new NormalModeRemapper(true),
       new VisualModeRemapper(true),
+      new CommandLineModeRemapper(true),
       new InsertModeRemapper(false),
       new NormalModeRemapper(false),
       new VisualModeRemapper(false),
+      new CommandLineModeRemapper(false),
     ];
   }
 
@@ -185,10 +187,8 @@ export class Remapper implements IRemapper {
     inputtedKeys: string[],
     currentMode: Mode
   ): IKeyRemapping | undefined {
-    let remapping: IKeyRemapping | undefined;
-
     if (userDefinedRemappings.size === 0) {
-      return remapping;
+      return undefined;
     }
 
     const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
@@ -214,12 +214,11 @@ export class Remapper implements IRemapper {
           }
         }
 
-        remapping = userDefinedRemappings.get(keySlice);
-        break;
+        return userDefinedRemappings.get(keySlice);
       }
     }
 
-    return remapping;
+    return undefined;
   }
 
   /**
@@ -262,6 +261,16 @@ class VisualModeRemapper extends Remapper {
     super(
       'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
       [Mode.Visual, Mode.VisualLine, Mode.VisualBlock],
+      recursive
+    );
+  }
+}
+
+class CommandLineModeRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(
+      'commandLineModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
+      [Mode.CommandlineInProgress, Mode.SearchInProgressMode],
       recursive
     );
   }
