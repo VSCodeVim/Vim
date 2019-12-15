@@ -1486,6 +1486,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'u' after :s/abc/def",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>:s/abc/def/\nu',
+    end: ['ab|c'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
