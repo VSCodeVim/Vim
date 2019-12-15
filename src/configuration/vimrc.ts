@@ -50,12 +50,16 @@ class VimrcImpl {
           return config.visualModeKeyBindings;
         case 'imap':
           return config.insertModeKeyBindings;
+        case 'cmap':
+          return config.commandLineModeKeyBindings;
         case 'nnoremap':
           return config.normalModeKeyBindingsNonRecursive;
         case 'vnoremap':
           return config.visualModeKeyBindingsNonRecursive;
         case 'inoremap':
           return config.insertModeKeyBindingsNonRecursive;
+        case 'cnoremap':
+          return config.commandLineModeKeyBindingsNonRecursive;
         default:
           return undefined;
       }
