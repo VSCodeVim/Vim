@@ -227,6 +227,16 @@ class MoveDown extends BaseMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getDown(position.getLineEnd().character);
   }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const line = position.getDownByCount(Math.max(count, 1)).line;
+    return new Position(line, Math.min(Position.getLineLength(line), vimState.desiredColumn));
+  }
 }
 
 @RegisterAction
@@ -249,6 +259,16 @@ class MoveUp extends BaseMovement {
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getUp(position.getLineEnd().character);
+  }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const line = position.getUpByCount(Math.max(count, 1)).line;
+    return new Position(line, Math.min(Position.getLineLength(line), vimState.desiredColumn));
   }
 }
 
