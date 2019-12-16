@@ -574,6 +574,20 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: 'Can handle j with count',
+    start: ['|blah blah', 'blah', 'blah blah'],
+    keysPressed: '5l2j',
+    end: ['blah blah', 'blah', 'blah |blah']
+  });
+
+  newTest({
+    title: 'Can handle k with count',
+    start: ['blah blah', 'blah', 'blah b|lah'],
+    keysPressed: '2k',
+    end: ['blah b|lah', 'blah', 'blah blah']
+  });
+
+  newTest({
     title: 'Can handle g*',
     start: ['|blah duh blahblah duh blah'],
     keysPressed: 'g*',
