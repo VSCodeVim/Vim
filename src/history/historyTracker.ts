@@ -448,7 +448,7 @@ export class HistoryTracker {
     }
 
     // If all of these are false we can avoid requesting the entire doc.
-    return isTextLengthDiff || isNewHistoryStep || isModeDiff;
+    return (isTextLengthDiff && (isNewHistoryStep || isModeDiff)) || isNewHistoryStep || isModeDiff;
   }
 
   /**
