@@ -233,8 +233,11 @@ class MoveDown extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (count <= 1) {
+      return super.execActionWithCount(position, vimState, count);
+    }
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    const line = position.getDownByCount(Math.max(count, 1)).line;
+    const line = position.getDownByCount(count).line;
     return new Position(line, Math.min(Position.getLineLength(line), vimState.desiredColumn));
   }
 }
@@ -266,8 +269,11 @@ class MoveUp extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (count <= 1) {
+      return super.execActionWithCount(position, vimState, count);
+    }
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    const line = position.getUpByCount(Math.max(count, 1)).line;
+    const line = position.getUpByCount(count).line;
     return new Position(line, Math.min(Position.getLineLength(line), vimState.desiredColumn));
   }
 }
