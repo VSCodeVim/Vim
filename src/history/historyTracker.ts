@@ -19,6 +19,7 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
+import { configuration } from '../configuration/configuration';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -460,7 +461,7 @@ export class HistoryTracker {
    * @returns true if a change was added
    */
   public addChange(cursorPosition = [new Position(0, 0)]): boolean {
-    if (!this._isDocumentTextNeeeded()) {
+    if (configuration.experimentalOptimizations && !this._isDocumentTextNeeeded()) {
       return false;
     }
 
