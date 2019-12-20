@@ -399,12 +399,12 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.visual": "#B48EAD",
     "vim.statusBarColors.visualline": "#B48EAD",
     "vim.statusBarColors.visualblock": "#A3BE8C",
-    "vim.statusBarColors.replace": "#D08770"
-    "vim.statusBarColors.commandlineinprogress": "#007ACC"
-    "vim.statusBarColors.searchinprogressmode": "#007ACC"
-    "vim.statusBarColors.easymotionmode": "#007ACC"
-    "vim.statusBarColors.easymotioninputmode": "#007ACC"
-    "vim.statusBarColors.surroundinputmode": "#007ACC"
+    "vim.statusBarColors.replace": "#D08770",
+    "vim.statusBarColors.commandlineinprogress": "#007ACC",
+    "vim.statusBarColors.searchinprogressmode": "#007ACC",
+    "vim.statusBarColors.easymotionmode": "#007ACC",
+    "vim.statusBarColors.easymotioninputmode": "#007ACC",
+    "vim.statusBarColors.surroundinputmode": "#007ACC",
 ```
 
 ### vim-easymotion
