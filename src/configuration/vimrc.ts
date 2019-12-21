@@ -42,33 +42,46 @@ class VimrcImpl {
    * Adds a remapping from .vimrc to the given configuration
    */
   private static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
-    const remaps = (() => {
+    const mappings = (() => {
       switch (remap.keyRemappingType) {
+        case 'map':
+          return [
+            config.normalModeKeyBindings,
+            config.visualModeKeyBindings,
+          ];
         case 'nmap':
-          return config.normalModeKeyBindings;
+          return [config.normalModeKeyBindings];
         case 'vmap':
-          return config.visualModeKeyBindings;
+          return [config.visualModeKeyBindings];
         case 'imap':
-          return config.insertModeKeyBindings;
+          return [config.insertModeKeyBindings];
         case 'cmap':
-          return config.commandLineModeKeyBindings;
+          return [config.commandLineModeKeyBindings];
+        case 'noremap':
+          return [
+            config.normalModeKeyBindingsNonRecursive,
+            config.visualModeKeyBindingsNonRecursive,
+          ];
         case 'nnoremap':
-          return config.normalModeKeyBindingsNonRecursive;
+          return [config.normalModeKeyBindingsNonRecursive];
         case 'vnoremap':
-          return config.visualModeKeyBindingsNonRecursive;
+          return [config.visualModeKeyBindingsNonRecursive];
         case 'inoremap':
-          return config.insertModeKeyBindingsNonRecursive;
+          return [config.insertModeKeyBindingsNonRecursive];
         case 'cnoremap':
-          return config.commandLineModeKeyBindingsNonRecursive;
+          return [config.commandLineModeKeyBindingsNonRecursive];
         default:
+          console.warn('Encountered an unrecognized mapping type.');
           return undefined;
       }
     })();
 
-    // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-    if (remaps && !remaps.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
-      remaps.push(remap.keyRemapping);
-    }
+    mappings?.forEach(remaps => {
+      // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
+      if (!remaps.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
+        remaps.push(remap.keyRemapping);
+      }
+    });
   }
 
   private static removeAllRemapsFromConfig(config: IConfiguration): void {
