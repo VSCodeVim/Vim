@@ -24,6 +24,12 @@ diffEngine.Diff_Timeout = 1; // 1 second
 
 class DocumentChange {
   public readonly start: Position;
+
+  /**
+   * true => addition
+   * false => deletion
+   */
+  // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
   public isAdd: boolean;
 
   private _end: Position;
@@ -89,8 +95,9 @@ class HistoryStep {
 
   /**
    * When this step was finished.
+   * // TODO: we currently set it to the current time upon creation to cover some edge cases, but this is messy.
    */
-  timestamp: Date | undefined;
+  timestamp: Date;
 
   /**
    * The cursor position at the start of this history step.
@@ -107,8 +114,6 @@ class HistoryStep {
    */
   marks: IMark[] = [];
 
-  vimState: VimState;
-
   constructor(init: {
     changes?: DocumentChange[];
     isFinished?: boolean;
@@ -122,6 +127,9 @@ class HistoryStep {
     this.cursorStart = init.cursorStart || undefined;
     this.cursorEnd = init.cursorEnd || undefined;
     this.marks = init.marks || [];
+
+    // This will usually be overwritten when the HistoryStep is finished
+    this.timestamp = new Date();
   }
 
   /**
@@ -174,19 +182,18 @@ class HistoryStep {
    * Returns, as a string, the time that has passed since this step took place.
    */
   public howLongAgo(): string {
-    const timestamp = this.timestamp!;
     const now = new Date();
-    const timeDiffMillis = now.getTime() - timestamp.getTime();
+    const timeDiffMillis = now.getTime() - this.timestamp.getTime();
     const timeDiffSeconds = Math.floor(timeDiffMillis / 1000);
     if (timeDiffSeconds === 1) {
       return `1 second ago`;
     } else if (timeDiffSeconds >= 100) {
-      const hours = timestamp.getHours();
-      const minutes = timestamp
+      const hours = this.timestamp.getHours();
+      const minutes = this.timestamp
         .getMinutes()
         .toString()
         .padStart(2, '0');
-      const seconds = timestamp
+      const seconds = this.timestamp
         .getSeconds()
         .toString()
         .padStart(2, '0');
@@ -662,7 +669,6 @@ export class HistoryTracker {
       cursorEnd: [lastChange.start],
     });
     newStep.changes = changesToUndo;
-    newStep.timestamp = new Date();
 
     this.historySteps.push(newStep);
 

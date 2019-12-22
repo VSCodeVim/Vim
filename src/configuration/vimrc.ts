@@ -20,7 +20,8 @@ class VimrcImpl {
       : VimrcImpl.findDefaultVimrc();
     if (!_path || !fs.existsSync(_path)) {
       // TODO: we may want to offer to create the file for them
-      throw new Error(`Unable to find .vimrc file`);
+      // throw new Error(`Unable to find .vimrc file`);
+      return; // it is okay to fail when there is no .vimrc
     }
     this._vimrcPath = _path;
 
@@ -49,12 +50,16 @@ class VimrcImpl {
           return config.visualModeKeyBindings;
         case 'imap':
           return config.insertModeKeyBindings;
+        case 'cmap':
+          return config.commandLineModeKeyBindings;
         case 'nnoremap':
           return config.normalModeKeyBindingsNonRecursive;
         case 'vnoremap':
           return config.visualModeKeyBindingsNonRecursive;
         case 'inoremap':
           return config.insertModeKeyBindingsNonRecursive;
+        case 'cnoremap':
+          return config.commandLineModeKeyBindingsNonRecursive;
         default:
           return undefined;
       }

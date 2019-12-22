@@ -277,14 +277,24 @@ class Configuration implements IConfiguration {
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: true,
-    map: new Map([['on', true], ['off', false], ['relative', false], ['interval', false]]),
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['relative', false],
+      ['interval', false],
+    ]),
   })
   number: boolean;
 
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: false,
-    map: new Map([['on', false], ['off', false], ['relative', true], ['interval', false]]),
+    map: new Map([
+      ['on', false],
+      ['off', false],
+      ['relative', true],
+      ['interval', false],
+    ]),
   })
   relativenumber: boolean;
 
@@ -359,6 +369,8 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  commandLineModeKeyBindings: IKeyRemapping[] = [];
+  commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
@@ -366,6 +378,8 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

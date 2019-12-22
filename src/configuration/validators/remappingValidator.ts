@@ -15,6 +15,8 @@ export class RemappingValidator implements IConfigurationValidator {
       'normalModeKeyBindingsNonRecursive',
       'visualModeKeyBindings',
       'visualModeKeyBindingsNonRecursive',
+      'commandLineModeKeyBindings',
+      'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
       let keybindings = config[modeKeyBindingsKey];

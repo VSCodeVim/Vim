@@ -7,12 +7,12 @@ export class VimrcValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
 
-    if (config.vimrc.enable && !fs.existsSync(vimrc.vimrcPath)) {
-      result.append({
-        level: 'error',
-        message: `.vimrc not found at ${config.vimrc.path}`,
-      });
-    }
+    // if (config.vimrc.enable && !fs.existsSync(vimrc.vimrcPath)) {
+    //   result.append({
+    //     level: 'error',
+    //     message: `.vimrc not found at ${config.vimrc.path}`,
+    //   });
+    // }
 
     return result;
   }

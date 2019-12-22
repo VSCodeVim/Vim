@@ -799,7 +799,10 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 @RegisterAction
 export class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
-  keys = [['g', 'k'], ['g', '<up>']];
+  keys = [
+    ['g', 'k'],
+    ['g', '<up>'],
+  ];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -808,7 +811,10 @@ export class MoveUpByDisplayLine extends MoveByScreenLine {
 @RegisterAction
 class MoveDownByDisplayLine extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
-  keys = [['g', 'j'], ['g', '<down>']];
+  keys = [
+    ['g', 'j'],
+    ['g', '<down>'],
+  ];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -822,7 +828,10 @@ class MoveDownByDisplayLine extends MoveByScreenLine {
 @RegisterAction
 class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
   modes = [Mode.VisualLine];
-  keys = [['g', 'k'], ['g', '<up>']];
+  keys = [
+    ['g', 'k'],
+    ['g', '<up>'],
+  ];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -831,7 +840,10 @@ class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
 @RegisterAction
 class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
   modes = [Mode.VisualLine];
-  keys = [['g', 'j'], ['g', '<down>']];
+  keys = [
+    ['g', 'j'],
+    ['g', '<down>'],
+  ];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -840,7 +852,10 @@ class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
 @RegisterAction
 class MoveUpByScreenLineVisualBlock extends BaseMovement {
   modes = [Mode.VisualBlock];
-  keys = [['g', 'k'], ['g', '<up>']];
+  keys = [
+    ['g', 'k'],
+    ['g', '<up>'],
+  ];
   doesntChangeDesiredColumn = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
@@ -856,7 +871,10 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
 @RegisterAction
 class MoveDownByScreenLineVisualBlock extends BaseMovement {
   modes = [Mode.VisualBlock];
-  keys = [['g', 'j'], ['g', '<down>']];
+  keys = [
+    ['g', 'j'],
+    ['g', '<down>'],
+  ];
   doesntChangeDesiredColumn = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {

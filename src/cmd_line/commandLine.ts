@@ -98,6 +98,9 @@ class CommandLine {
     }
   }
 
+  /**
+   * Prompts the user for a command using an InputBox, and runs the provided command
+   */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
       this._logger.debug('No active document');

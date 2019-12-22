@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../../src/editorIdentity';
 
-suite.only('Mode Handler Map', () => {
+suite('Mode Handler Map', () => {
   setup(() => {
     ModeHandlerMap.clear();
   });
