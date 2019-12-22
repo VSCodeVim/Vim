@@ -13,7 +13,6 @@ export class RegisterCommand extends node.CommandBase {
 
   constructor(args: IRegisterCommandArguments) {
     super();
-    this._name = 'register';
     this._arguments = args;
   }
 
@@ -47,7 +46,7 @@ export class RegisterCommand extends node.CommandBase {
           reg !== '_' &&
           (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
       );
-      const registerKeyAndContent = new Array<any>();
+      const registerKeyAndContent = new Array<vscode.QuickPickItem>();
 
       for (let registerKey of currentRegisterKeys) {
         registerKeyAndContent.push({

@@ -21,7 +21,6 @@ export class WriteQuitAllCommand extends node.CommandBase {
 
   constructor(args: IWriteQuitAllCommandArguments) {
     super();
-    this._name = 'writequitall';
     this._arguments = args;
   }
 

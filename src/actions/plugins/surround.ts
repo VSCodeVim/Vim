@@ -3,13 +3,12 @@ import { PairMatcher } from './../../common/matching/matcher';
 import { Position } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
-import { ModeName } from './../../mode/mode';
+import { Mode } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
 import { BaseCommand } from './../commands/actions';
-import { BaseMovement } from './../motion';
+import { BaseMovement, IMovement } from '../baseMotion';
 import {
-  IMovement,
   MoveABacktick,
   MoveACaret,
   MoveACurlyBrace,
@@ -21,7 +20,7 @@ import {
   MoveInsideCharacter,
   MoveInsideTag,
   MoveQuoteMatch,
-} from './../motion';
+} from '../motion';
 import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import {
   SelectInnerBigWord,
@@ -33,7 +32,7 @@ import {
 
 @RegisterAction
 class CommandSurroundAddTarget extends BaseCommand {
-  modes = [ModeName.SurroundInputMode];
+  modes = [Mode.SurroundInputMode];
   keys = [
     ['('],
     [')'],
@@ -127,7 +126,7 @@ class CommandSurroundAddTarget extends BaseCommand {
 
 @RegisterAction
 class CommandSurroundModeRepeat extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
   keys = ['s'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {
@@ -151,7 +150,7 @@ class CommandSurroundModeRepeat extends BaseMovement {
 
 @RegisterAction
 class CommandSurroundModeStart extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
   keys = ['s'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {
@@ -196,7 +195,7 @@ class CommandSurroundModeStart extends BaseCommand {
     };
 
     if (operatorString !== 'yank') {
-      await vimState.setCurrentMode(ModeName.SurroundInputMode);
+      await vimState.setCurrentMode(Mode.SurroundInputMode);
     }
 
     return vimState;
@@ -217,7 +216,7 @@ class CommandSurroundModeStart extends BaseCommand {
 
 @RegisterAction
 class CommandSurroundModeStartVisual extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['S'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {
@@ -263,11 +262,11 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       isVisualLine: false,
     };
 
-    if (vimState.currentMode === ModeName.VisualLine) {
+    if (vimState.currentMode === Mode.VisualLine) {
       vimState.surround.isVisualLine = true;
     }
 
-    await vimState.setCurrentMode(ModeName.SurroundInputMode);
+    await vimState.setCurrentMode(Mode.SurroundInputMode);
     vimState.cursorStopPosition = vimState.cursorStartPosition;
 
     return vimState;
@@ -276,7 +275,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 
 @RegisterAction
 export class CommandSurroundAddToReplacement extends BaseCommand {
-  modes = [ModeName.SurroundInputMode];
+  modes = [Mode.SurroundInputMode];
   keys = ['<any>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -340,7 +339,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     vimState.recordedState.actionsRun = [];
     vimState.recordedState.hasRunSurround = true;
     vimState.surround = undefined;
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
 
     // Record keys that were pressed since surround started
     for (

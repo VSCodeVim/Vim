@@ -20,6 +20,25 @@ export class Scanner {
     return c;
   }
 
+  nextWhile(fn: (c: string) => boolean): string {
+    if (this.isAtEof) {
+      return '';
+    }
+
+    while (true) {
+      const c = this.next();
+
+      if (c === Scanner.EOF) {
+        break;
+      } else if (!fn(c)) {
+        this.backup();
+        break;
+      }
+    }
+
+    return this.emit();
+  }
+
   // Returns the next word in the input, or EOF.
   nextWord(wordSeparators: string[] = [' ', '\t']): string {
     this.skipRun(wordSeparators);
@@ -35,14 +54,14 @@ export class Scanner {
     while (!this.isAtEof) {
       c = this.next();
 
-      if (c === Scanner.EOF || wordSeparators.indexOf(c) !== -1) {
+      if (c === Scanner.EOF || wordSeparators.includes(c)) {
         break;
       }
 
       result += c;
     }
 
-    if (c && wordSeparators.indexOf(c) !== -1) {
+    if (c && wordSeparators.includes(c)) {
       this.backup();
     }
 
@@ -84,7 +103,7 @@ export class Scanner {
     if (this.isAtEof) {
       return;
     }
-    var s = this.next();
+    let s = this.next();
     while (!this.isAtEof) {
       if (s !== c) {
         break;
@@ -101,8 +120,8 @@ export class Scanner {
       return;
     }
     while (!this.isAtEof) {
-      var c = this.next();
-      if (chars.indexOf(c) === -1) {
+      let c = this.next();
+      if (!chars.includes(c)) {
         break;
       }
     }

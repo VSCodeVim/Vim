@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { Logger } from './logger';
 
+/**
+ * A thin wrapper around `vscode.env.clipboard`
+ */
 export class Clipboard {
   private static readonly logger = Logger.get('Clipboard');
 

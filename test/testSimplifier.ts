@@ -4,11 +4,12 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extension';
 import { Position } from '../src/common/motion/position';
 import { Globals } from '../src/globals';
-import { ModeName } from '../src/mode/mode';
+import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { waitForCursorSync } from '../src/util/util';
 import { assertEqualLines } from './testUtils';
+import { globalState } from '../src/state/globalState';
 
 export function getTestingFunctions() {
   const getNiceStack = (stack: string | undefined): string => {
@@ -22,11 +23,14 @@ export function getTestingFunctions() {
 
   const newTest = (testObj: ITestObject): void => {
     const stack = new Error().stack;
-    let niceStack = getNiceStack(stack);
+    const niceStack = getNiceStack(stack);
 
     test(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -37,11 +41,31 @@ export function getTestingFunctions() {
   const newTestOnly = (testObj: ITestObject): void => {
     console.log('!!! Running single test !!!');
     const stack = new Error().stack;
-    let niceStack = getNiceStack(stack);
+    const niceStack = getNiceStack(stack);
 
     test.only(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
+        .catch((reason: Error) => {
+          reason.stack = niceStack;
+          throw reason;
+        })
+    );
+  };
+
+  const newTestSkip = (testObj: ITestObject): void => {
+    const stack = new Error().stack;
+    const niceStack = getNiceStack(stack);
+
+    test.skip(testObj.title, async () =>
+      testIt
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -52,6 +76,7 @@ export function getTestingFunctions() {
   return {
     newTest,
     newTestOnly,
+    newTestSkip,
   };
 }
 
@@ -60,7 +85,7 @@ interface ITestObject {
   start: string[];
   keysPressed: string;
   end: string[];
-  endMode?: ModeName;
+  endMode?: Mode;
   jumps?: string[];
 }
 
@@ -89,21 +114,21 @@ class TestObjectHelper {
   }
 
   private _setStartCursorPosition(lines: string[]): boolean {
-    let result = this._getCursorPosition(lines);
+    const result = this._getCursorPosition(lines);
     this.startPosition = result.position;
     return result.success;
   }
 
   private _setEndCursorPosition(lines: string[]): boolean {
-    let result = this._getCursorPosition(lines);
+    const result = this._getCursorPosition(lines);
     this.endPosition = result.position;
     return result.success;
   }
 
   private _getCursorPosition(lines: string[]): { success: boolean; position: Position } {
-    let ret = { success: false, position: new Position(0, 0) };
+    const ret = { success: false, position: new Position(0, 0) };
     for (let i = 0; i < lines.length; i++) {
-      let columnIdx = lines[i].indexOf('|');
+      const columnIdx = lines[i].indexOf('|');
       if (columnIdx >= 0) {
         ret.position = ret.position.withLine(i).withColumn(columnIdx);
         ret.success = true;
@@ -124,12 +149,12 @@ class TestObjectHelper {
   }
 
   public asVimInputText(): string[] {
-    let ret = 'i' + this._testObject.start.join('\n').replace('|', '');
+    const ret = 'i' + this._testObject.start.join('\n').replace('|', '');
     return ret.split('');
   }
 
   public asVimOutputText(): string[] {
-    let ret = this._testObject.end.slice(0);
+    const ret = this._testObject.end.slice(0);
     ret[this.endPosition.line] = ret[this.endPosition.line].replace('|', '');
     return ret;
   }
@@ -140,13 +165,13 @@ class TestObjectHelper {
    */
   public getKeyPressesToMoveToStartPosition(): string[] {
     let ret = '';
-    let linesToMove = this.startPosition.line;
+    const linesToMove = this.startPosition.line;
 
-    let cursorPosAfterEsc =
+    const cursorPosAfterEsc =
       this._testObject.start[this._testObject.start.length - 1].replace('|', '').length - 1;
-    let numCharsInCursorStartLine =
+    const numCharsInCursorStartLine =
       this._testObject.start[this.startPosition.line].replace('|', '').length - 1;
-    let charactersToMove = this.startPosition.character;
+    const charactersToMove = this.startPosition.character;
 
     if (linesToMove > 0) {
       ret += Array(linesToMove + 1).join('j');
@@ -170,7 +195,7 @@ class TestObjectHelper {
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
   let key = '';
-  let result: string[] = [];
+  const result: string[] = [];
 
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
@@ -214,8 +239,8 @@ function tokenizeKeySequence(sequence: string): string[] {
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
   modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-  let helper = new TestObjectHelper(testObj);
-  const jumpTracker = modeHandler.vimState.globalState.jumpTracker;
+  const helper = new TestObjectHelper(testObj);
+  const jumpTracker = globalState.jumpTracker;
 
   // Don't try this at home, kids.
   (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
@@ -262,10 +287,10 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   assertEqualLines(lines);
   // Check final cursor position
   //
-  let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
-  let expectedPosition = helper.endPosition;
-  assert.equal(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
-  assert.equal(
+  const actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
+  const expectedPosition = helper.endPosition;
+  assert.strictEqual(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
+  assert.strictEqual(
     actualPosition.character,
     expectedPosition.character,
     'Cursor CHARACTER position is wrong.'
@@ -273,9 +298,9 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // endMode: check end mode is correct if given
   if (typeof testObj.endMode !== 'undefined') {
-    let actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
-    let expectedMode = ModeName[testObj.endMode].toUpperCase();
-    assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
+    const actualMode = Mode[modeHandler.currentMode].toUpperCase();
+    const expectedMode = Mode[testObj.endMode].toUpperCase();
+    assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }
 
   // jumps: check jumps are correct if given

@@ -3,15 +3,15 @@ import * as node from './node';
 import * as token from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
-import { commandParsers } from './subparser';
+import { getParser } from './subparser';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
 }
 
 export function parse(input: string): node.CommandLine {
-  var cmd = new node.CommandLine();
-  var f: IParseFunction | null = parseLineRange;
+  const cmd = new node.CommandLine();
+  let f: IParseFunction | null = parseLineRange;
   let state: ParserState = new ParserState(input);
   while (f) {
     f = f(state, cmd);
@@ -54,17 +54,17 @@ function parseLineRange(state: ParserState, commandLine: node.CommandLine): IPar
 
 function parseCommand(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
   while (!state.isAtEof) {
-    var tok = state.next();
+    const tok = state.next();
     switch (tok.type) {
       case token.TokenType.CommandName:
-        var commandParser = (commandParsers as any)[tok.content];
+        const commandParser = getParser(tok.content);
         if (!commandParser) {
           throw VimError.fromCode(ErrorCode.E492);
         }
         // TODO: Pass the args, but keep in mind there could be multiple
         // commands, not just one.
-        var argsTok = state.next();
-        var args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : null;
+        const argsTok = state.next();
+        const args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : undefined;
         commandLine.command = commandParser(args);
         return null;
       default:

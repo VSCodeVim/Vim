@@ -4,16 +4,19 @@ import * as vscode from 'vscode';
 import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
 }
 
 class TestAction2D extends BaseAction {
-  keys = [['a', 'b'], ['c', 'd']];
-  modes = [ModeName.Normal];
+  keys = [
+    ['a', 'b'],
+    ['c', 'd'],
+  ];
+  modes = [Mode.Normal];
 }
 
 suite('base action', () => {
@@ -29,26 +32,33 @@ suite('base action', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('compare key presses', () => {
-    let testCases: Array<[string[] | string[][], string[], boolean]> = [
+    const testCases: Array<[string[] | string[][], string[], boolean]> = [
       [['a'], ['a'], true],
       [[['a']], ['a'], true],
       [[['a'], ['b']], ['b'], true],
       [[['a'], ['b']], ['c'], false],
       [['a', 'b'], ['a', 'b'], true],
       [['a', 'b'], ['a', 'c'], false],
-      [[['a', 'b'], ['c', 'd']], ['c', 'd'], true],
+      [
+        [
+          ['a', 'b'],
+          ['c', 'd'],
+        ],
+        ['c', 'd'],
+        true,
+      ],
       [[''], ['a'], false],
       [['<Esc>'], ['<Esc>'], true],
     ];
 
     for (const test in testCases) {
       if (testCases.hasOwnProperty(test)) {
-        let left = testCases[test][0];
-        let right = testCases[test][1];
-        let expected = testCases[test][2];
+        const left = testCases[test][0];
+        const right = testCases[test][1];
+        const expected = testCases[test][2];
 
-        let actual = BaseAction.CompareKeypressSequence(left, right);
-        assert.equal(actual, expected, `${left}. ${right}.`);
+        const actual = BaseAction.CompareKeypressSequence(left, right);
+        assert.strictEqual(actual, expected, `${left}. ${right}.`);
       }
     }
   });

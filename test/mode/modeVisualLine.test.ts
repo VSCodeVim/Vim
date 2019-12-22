@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
@@ -10,7 +10,7 @@ import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
 
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -21,10 +21,10 @@ suite('Mode Visual Line', () => {
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    assertEqual(modeHandler.currentMode, Mode.Visual);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle w', async () => {
@@ -33,13 +33,13 @@ suite('Mode Visual Line', () => {
 
     const sel = TextEditor.getSelection();
 
-    assert.equal(sel.start.character, 0);
-    assert.equal(sel.start.line, 0);
+    assert.strictEqual(sel.start.character, 0);
+    assert.strictEqual(sel.start.line, 0);
 
     // The input cursor comes BEFORE the block cursor. Try it out, this
     // is how Vim works.
-    assert.equal(sel.end.character, 6);
-    assert.equal(sel.end.line, 0);
+    assert.strictEqual(sel.end.character, 6);
+    assert.strictEqual(sel.end.line, 0);
   });
 
   test('Can handle wd', async () => {
@@ -55,7 +55,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -64,7 +64,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assertEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -131,7 +131,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assertEqual(modeHandler.currentMode, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -184,6 +184,22 @@ suite('Mode Visual Line', () => {
     });
   });
 
+  suite('Screen line motions in Visual Line Mode', () => {
+    newTest({
+      title: "Can handle 'gk'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgkx',
+      end: ['blah', '|hur'],
+    });
+
+    newTest({
+      title: "Can handle 'gj'",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'Vgjx',
+      end: ['blah', '|duh'],
+    });
+  });
+
   suite('Can handle d/c correctly in Visual Line Mode', () => {
     newTest({
       title: 'Can handle d key',
@@ -218,7 +234,7 @@ suite('Mode Visual Line', () => {
       start: ['foo', 'b|ar', 'fun'],
       keysPressed: 'Vc',
       end: ['foo', '|', 'fun'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -228,7 +244,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vr1',
       end: ['|11111111111111111111111', 'one two three four five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -236,7 +252,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vjr1',
       end: ['|11111111111111111111111', '11111111111111111111111'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -244,7 +260,7 @@ suite('Mode Visual Line', () => {
       start: ['test', 'test', 'test', '|test', 'test'],
       keysPressed: 'Vkkr1',
       end: ['test', '|1111', '1111', '1111', 'test'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -278,7 +294,7 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqual(modeHandler.currentMode, Mode.Normal);
 
       // test copy by pasting back from clipboard
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
@@ -345,7 +361,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
@@ -370,7 +386,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -397,7 +413,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();

@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
+import { EditorIdentity } from '../../src/editorIdentity';
 
 suite('Mode Handler Map', () => {
   setup(() => {
@@ -12,28 +13,25 @@ suite('Mode Handler Map', () => {
   });
 
   test('getOrCreate', async () => {
-    // getOrCreate
-    let key = Math.random()
-      .toString(36)
-      .substring(7);
+    const key = EditorIdentity.createRandomEditorIdentity();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
-    assert.equal(isNew, true);
+    assert.strictEqual(isNew, true);
     assert.notEqual(modeHandler, undefined);
 
     [, isNew] = await ModeHandlerMap.getOrCreate(key);
-    assert.equal(isNew, false);
+    assert.strictEqual(isNew, false);
 
     // getKeys
-    let keys = ModeHandlerMap.getKeys();
-    assert.equal(keys.length, 1);
-    assert.equal(keys[0], key);
+    const keys = ModeHandlerMap.getKeys();
+    assert.strictEqual(keys.length, 1, 'getKeys().length');
+    assert.strictEqual(keys[0], key, 'key');
 
     // getAll
-    let modeHandlerList = ModeHandlerMap.getAll();
-    assert.equal(modeHandlerList.length, 1);
+    const modeHandlerList = ModeHandlerMap.getAll();
+    assert.strictEqual(modeHandlerList.length, 1, 'getAll() should have only returned one');
 
     // delete
     ModeHandlerMap.delete(key);
-    assert.equal(ModeHandlerMap.getAll().length, 0);
+    assert.strictEqual(ModeHandlerMap.getAll().length, 0);
   });
 });

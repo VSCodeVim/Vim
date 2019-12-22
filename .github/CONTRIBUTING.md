@@ -25,7 +25,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
 1.  Install prerequisites:
     - latest [Visual Studio Code](https://code.visualstudio.com/)
-    - [Node.js](https://nodejs.org/) v8.0.0 or higher
+    - [Node.js](https://nodejs.org/) v12.0.0 or higher
     - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 1.  In a terminal:
 
@@ -35,7 +35,6 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     cd Vim
 
     # Install the dependencies
-    npm install -g gulp-cli
     npm install
 
     # Open in VSCode
@@ -46,12 +45,12 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     # Or run tests by selecting the appropriate drop down option
 
     # Alternatively, build and run tests through gulp and npm scripts
-    gulp build                  # build
-    npm test                    # test (must close all instances of VSCode)
+    npx gulp build                  # build
+    npm test                        # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running
-    gulp test                   # run tests inside Docker container
-    gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+    npx gulp test                   # run tests inside Docker container
+    npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
     ```
 
 ## Code Architecture
@@ -94,7 +93,7 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 To push a release:
 
 ```bash
-gulp release --semver [SEMVER] --githubToken [TOKEN]
+npx gulp release --semver [SEMVER] --gitHubToken [TOKEN]
 git push --follow-tags
 ```
 
@@ -119,4 +118,4 @@ $ rm -rf .vscode-test/
 
 ## Styleguide
 
-Please try your best to adhere our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
+Please try your best to adhere to our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).

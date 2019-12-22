@@ -18,8 +18,10 @@ export class Configuration implements IConfiguration {
   camelCaseMotion = {
     enable: false,
   };
+  replaceWithRegister = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
   surround = true;
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
@@ -60,9 +62,11 @@ export class Configuration implements IConfiguration {
     loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  searchHighlightTextColor = '';
   highlightedyank: {
     enable: false;
     color: 'rgba(250, 240, 170, 0.5)';
+    textColor: '';
     duration: 200;
   };
   tabstop = 2;
@@ -77,13 +81,18 @@ export class Configuration implements IConfiguration {
   foldfix = false;
   disableExtension = false;
   enableNeovim = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
   neovimPath = 'nvim';
-  substituteGlobalFlag = false;
+  vimrc = {
+    enable: false,
+    path: '',
+  };
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: 'line',
     insert: 'block',
     visual: 'underline',
-    visualline: 'thin-lin',
+    visualline: 'line-thin',
     visualblock: 'block-outline',
     replace: 'underline-thin,',
   };
@@ -93,14 +102,21 @@ export class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  commandLineModeKeyBindings: IKeyRemapping[] = [];
+  commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   whichwrap = '';
   wrapKeys = {};
   report = 2;
   digraphs: {};
+  wrapscan = true;
+  scroll = 20;
+  startofline = true;
 }

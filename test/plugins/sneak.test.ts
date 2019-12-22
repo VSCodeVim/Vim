@@ -3,7 +3,7 @@ import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
 
 suite('sneak plugin', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -67,5 +67,68 @@ suite('sneak plugin', () => {
     start: ['abc abc| abc'],
     keysPressed: 'Sab,',
     end: ['abc abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter s motion',
+    start: ['|abc abc'],
+    keysPressed: 'sa\n',
+    end: ['abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S motion',
+    start: ['abc |abc'],
+    keysPressed: 'Sa\n',
+    end: ['|abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter <operator>z motion',
+    start: ['|abc abc'],
+    keysPressed: 'dza\n',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter <operator>Z motion',
+    start: ['abc |abc'],
+    keysPressed: 'dZa\n',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter s; motion',
+    start: ['|abc abc abc'],
+    keysPressed: 'sa\n;',
+    end: ['abc abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter s, motion',
+    start: ['abc abc| abc'],
+    keysPressed: 'sa\n,',
+    end: ['abc |abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S; motion',
+    start: ['abc abc |abc'],
+    keysPressed: 'Sa\n;',
+    end: ['|abc abc abc'],
+  });
+
+  newTest({
+    title: 'Can handle single letter S, motion',
+    start: ['abc abc| abc'],
+    keysPressed: 'Sa\n,',
+    end: ['abc abc |abc'],
+  });
+
+  newTest({
+    title: 'Can handle multiline single char <number>s motion',
+    start: ['|abc', 'aac', 'abc'],
+    keysPressed: '3sa\n',
+    end: ['abc', 'aac', '|abc'],
   });
 });

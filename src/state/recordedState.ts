@@ -1,7 +1,5 @@
-import * as _ from 'lodash';
-
 import { configuration } from '../configuration/configuration';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { BaseAction } from './../actions/base';
 import { BaseCommand } from './../actions/commands/actions';
 import { BaseOperator } from './../actions/operator';
@@ -114,19 +112,19 @@ export class RecordedState {
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): BaseOperator {
-    let list = _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse();
+    let list = this.actionsRun.filter(a => a instanceof BaseOperator).reverse();
     return list[0] as any;
   }
 
   public get operators(): BaseOperator[] {
-    return _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse() as any;
+    return this.actionsRun.filter(a => a instanceof BaseOperator).reverse() as any;
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): BaseCommand {
-    const list = _.filter(this.actionsRun, a => a instanceof BaseCommand).reverse();
+    const list = this.actionsRun.filter(a => a instanceof BaseCommand).reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -134,7 +132,7 @@ export class RecordedState {
   }
 
   public get hasRunAMovement(): boolean {
-    return _.filter(this.actionsRun, a => a.isMotion).length > 0;
+    return this.actionsRun.filter(a => a.isMotion).length > 0;
   }
 
   /**
@@ -161,15 +159,15 @@ export class RecordedState {
     return res;
   }
 
-  public operatorReadyToExecute(mode: ModeName): boolean {
+  public operatorReadyToExecute(mode: Mode): boolean {
     // Visual modes do not require a motion -- they ARE the motion.
     return (
       this.operator &&
       !this.hasRunOperator &&
-      mode !== ModeName.SearchInProgressMode &&
-      mode !== ModeName.CommandlineInProgress &&
+      mode !== Mode.SearchInProgressMode &&
+      mode !== Mode.CommandlineInProgress &&
       (this.hasRunAMovement ||
-        (mode === ModeName.Visual || mode === ModeName.VisualLine) ||
+        mode === Mode.Visual || mode === Mode.VisualLine ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
     );

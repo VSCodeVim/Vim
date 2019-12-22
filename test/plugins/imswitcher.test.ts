@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { Configuration } from '../testConfiguration';
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 
 suite('Input method plugin', () => {
   let savedCmd = '';
@@ -30,7 +30,7 @@ suite('Input method plugin', () => {
   }
 
   setup(async () => {
-    let configuration = new Configuration();
+    const configuration = new Configuration();
     configuration.autoSwitchInputMethod.enable = true;
     configuration.autoSwitchInputMethod.defaultIM = 'default';
     configuration.autoSwitchInputMethod.obtainIMCmd = 'im-select';
@@ -43,26 +43,26 @@ suite('Input method plugin', () => {
   test('use default im in insert mode', async () => {
     savedCmd = '';
     const inputMethodSwitcher = new InputMethodSwitcher(fakeExecuteDefault);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
-    assert.equal('', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
-    assert.equal('', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
-    assert.equal('', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
-    assert.equal('', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Normal, Mode.Insert);
+    assert.strictEqual('', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Insert, Mode.Normal);
+    assert.strictEqual('', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Normal, Mode.Insert);
+    assert.strictEqual('', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Insert, Mode.Normal);
+    assert.strictEqual('', savedCmd);
   });
 
   test('use other im in insert mode', async () => {
     savedCmd = '';
     const inputMethodSwitcher = new InputMethodSwitcher(fakeExecuteChinese);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
-    assert.equal('', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
-    assert.equal('im-select default', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
-    assert.equal('im-select chinese', savedCmd);
-    await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
-    assert.equal('im-select default', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Normal, Mode.Insert);
+    assert.strictEqual('', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Insert, Mode.Normal);
+    assert.strictEqual('im-select default', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Normal, Mode.Insert);
+    assert.strictEqual('im-select chinese', savedCmd);
+    await inputMethodSwitcher.switchInputMethod(Mode.Insert, Mode.Normal);
+    assert.strictEqual('im-select default', savedCmd);
   });
 });

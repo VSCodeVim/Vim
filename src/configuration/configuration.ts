@@ -5,6 +5,7 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VsCodeContext } from '../util/vscode-context';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
+import { vimrc } from './vimrc';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -14,6 +15,7 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
+import { Mode } from '../mode/mode';
 
 const packagejson: {
   contributes: {
@@ -86,6 +88,10 @@ class Configuration implements IConfiguration {
       }
     }
 
+    if (this.vimrc.enable) {
+      await vimrc.load(this);
+    }
+
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
     const validatorResults = await configurationValidator.validate(configuration);
@@ -100,7 +106,7 @@ class Configuration implements IConfiguration {
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
-      if (keybinding.when.indexOf('listFocus') !== -1) {
+      if (keybinding.when.includes('listFocus')) {
         continue;
       }
 
@@ -149,7 +155,7 @@ class Configuration implements IConfiguration {
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
+    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -179,8 +185,11 @@ class Configuration implements IConfiguration {
     enable: true,
   };
 
+  replaceWithRegister = false;
+
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakReplacesF = false;
 
   surround = true;
 
@@ -240,10 +249,12 @@ class Configuration implements IConfiguration {
     defaultValue: 'rgba(150, 150, 255, 0.3)',
   })
   searchHighlightColor: string;
+  searchHighlightTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
+    textColor: '',
     duration: 200,
   };
 
@@ -266,14 +277,24 @@ class Configuration implements IConfiguration {
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: true,
-    map: new Map([['on', true], ['off', false], ['relative', false], ['interval', false]]),
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['relative', false],
+      ['interval', false],
+    ]),
   })
   number: boolean;
 
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: false,
-    map: new Map([['on', false], ['off', false], ['relative', true], ['interval', false]]),
+    map: new Map([
+      ['on', false],
+      ['off', false],
+      ['relative', true],
+      ['interval', false],
+    ]),
   })
   relativenumber: boolean;
 
@@ -296,15 +317,32 @@ class Configuration implements IConfiguration {
   disableExtension: boolean = false;
 
   enableNeovim = false;
-  neovimPath = 'nvim';
+  neovimPath = '';
+
+  vimrc = {
+    enable: false,
+    path: '',
+  };
 
   digraphs = {};
 
-  substituteGlobalFlag = false;
+  gdefault = false;
+  substituteGlobalFlag = false; // Deprecated in favor of gdefault
+
   whichwrap = '';
   wrapKeys = {};
 
+  startofline = true;
+
   report = 2;
+  wrapscan = true;
+
+  scroll = 0;
+  getScrollLines(visibleRanges: vscode.Range[]): number {
+    return this.scroll === 0
+      ? Math.ceil((visibleRanges[0].end.line - visibleRanges[0].start.line) / 2)
+      : this.scroll;
+  }
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
@@ -315,8 +353,8 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
-    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+  getCursorStyleForMode(modeName: Mode): vscode.TextEditorCursorStyle | undefined {
+    let cursorStyle = this.cursorStylePerMode[modeName.toString().toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
     }
@@ -331,6 +369,8 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  commandLineModeKeyBindings: IKeyRemapping[] = [];
+  commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
@@ -338,6 +378,8 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

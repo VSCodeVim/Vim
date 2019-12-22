@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { ModeName } from '../../mode/mode';
+import { Mode, isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
@@ -8,10 +8,11 @@ import * as token from '../token';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
+  ignoreCase: boolean;
+  unique: boolean;
 }
 
 export class SortCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
@@ -23,9 +24,12 @@ export class SortCommand extends node.CommandBase {
     return this._arguments;
   }
 
+  public neovimCapable(): boolean {
+    return true;
+  }
+
   async execute(vimState: VimState): Promise<void> {
-    let mode = vimState.currentMode;
-    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(mode) >= 0) {
+    if (isVisualMode(vimState.currentMode)) {
       const selection = vimState.editor.selection;
       let start = selection.start;
       let end = selection.end;
@@ -51,9 +55,15 @@ export class SortCommand extends node.CommandBase {
     ) {
       originalLines.push(TextEditor.readLineAt(currentLine));
     }
+    if (this._arguments.unique) {
+      originalLines = [...new Set(originalLines)];
+    }
 
     let lastLineLength = originalLines[originalLines.length - 1].length;
-    let sortedLines = originalLines.sort();
+
+    let sortedLines = this._arguments.ignoreCase
+      ? originalLines.sort((a: string, b: string) => a.localeCompare(b))
+      : originalLines.sort();
 
     if (this._arguments.reverse) {
       sortedLines.reverse();

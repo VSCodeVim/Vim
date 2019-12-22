@@ -7,8 +7,6 @@ export class OnlyCommand extends node.CommandBase {
 
   constructor(args: {}) {
     super();
-
-    this._name = 'only';
     this._arguments = args;
   }
 

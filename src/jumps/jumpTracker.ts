@@ -10,7 +10,7 @@ import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
 
 /**
- * JumpTracker is a handrolled version of vscode's TextEditorState
+ * JumpTracker is a handrolled version of VSCode's TextEditorState
  * in relation to the 'workbench.action.navigateBack' command.
  */
 export class JumpTracker {
@@ -114,7 +114,7 @@ export class JumpTracker {
     this.pushJump(from, to);
   }
 
-  async performFileJump(jump: Jump, vimState: VimState) {
+  private async performFileJump(jump: Jump, vimState: VimState) {
     this.isJumpingThroughHistory = true;
 
     if (jump.editor) {
@@ -155,7 +155,7 @@ export class JumpTracker {
     return this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
   }
 
-  async jumpThroughHistory(
+  private async jumpThroughHistory(
     getJump: (Jump) => Jump,
     position: Position,
     vimState?: VimState
@@ -172,7 +172,7 @@ export class JumpTracker {
     });
 
     const iterations = vimState.recordedState.count || 1;
-    for (var i = 0; i < iterations; i++) {
+    for (let i = 0; i < iterations; i++) {
       jump = getJump(Jump.fromStateNow(vimState));
     }
 
@@ -198,7 +198,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  recordJumpBack(from: Jump): Jump {
+  public recordJumpBack(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -225,7 +225,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  recordJumpForward(from: Jump): Jump {
+  public recordJumpForward(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -313,7 +313,7 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  pushJump(from: Jump | null, to?: Jump | null) {
+  private pushJump(from: Jump | null, to?: Jump | null) {
     if (from) {
       this.clearJumpsOnSamePosition(from);
     }
@@ -327,11 +327,7 @@ export class JumpTracker {
     this.clearOldJumps();
   }
 
-  removeJump(index: number) {
-    this._jumps.splice(index, 1);
-  }
-
-  changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
+  private changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
     this._jumps.splice(
       index,
       1,
@@ -343,17 +339,17 @@ export class JumpTracker {
     );
   }
 
-  clearOldJumps(): void {
+  private clearOldJumps(): void {
     if (this._jumps.length > 100) {
       this._jumps.splice(0, this._jumps.length - 100);
     }
   }
 
-  clearJumpsOnSamePosition(jump: Jump): void {
+  private clearJumpsOnSamePosition(jump: Jump): void {
     this._jumps = this._jumps.filter(j => j === jump || !j.isSamePosition(jump));
   }
 
-  removeDuplicateJumps() {
+  private removeDuplicateJumps() {
     const linesSeenPerFile = {};
     for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];
@@ -362,7 +358,7 @@ export class JumpTracker {
         linesSeenPerFile[jump.fileName] = [];
       }
 
-      if (linesSeenPerFile[jump.fileName].indexOf(jump.position.line) >= 0) {
+      if (linesSeenPerFile[jump.fileName].includes(jump.position.line)) {
         this._jumps.splice(i, 1);
       } else {
         linesSeenPerFile[jump.fileName].push(jump.position.line);

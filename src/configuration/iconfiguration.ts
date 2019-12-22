@@ -15,6 +15,12 @@ export interface IKeyRemapping {
   before: string[];
   after?: string[];
   commands?: ({ command: string; args: any[] } | string)[];
+  source?: 'vscode' | 'vimrc';
+}
+
+export interface IVimrcKeyRemapping {
+  keyRemapping: IKeyRemapping;
+  keyRemappingType: string;
 }
 
 export interface IAutoSwitchInputMethod {
@@ -52,6 +58,11 @@ export interface IHighlightedYankConfiguration {
    * Color of the yank highlight.
    */
   color: string;
+
+  /**
+   * Color of the text being highlighted.
+   */
+  textColor: string | undefined;
 
   /**
    * Duration in milliseconds of the yank highlight.
@@ -119,6 +130,11 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use ReplaceWithRegister plugin?
+   */
+  replaceWithRegister: boolean;
+
+  /**
    * Use sneak plugin?
    */
   sneak: boolean;
@@ -127,6 +143,11 @@ export interface IConfiguration {
    * Case sensitivity is determined by 'ignorecase' and 'smartcase'
    */
   sneakUseIgnorecaseAndSmartcase: boolean;
+
+  /**
+   * Use single-character `sneak` instead of Vim's native `f`"
+   */
+  sneakReplacesF: boolean;
 
   /**
    * Use surround plugin?
@@ -201,6 +222,7 @@ export interface IConfiguration {
    * Color of search highlights.
    */
   searchHighlightColor: string;
+  searchHighlightTextColor: string;
 
   /**
    * Yank highlight settings.
@@ -272,9 +294,21 @@ export interface IConfiguration {
   neovimPath: string;
 
   /**
-   * Automatically apply the /g flag to substitute commands.
+   * .vimrc
    */
-  substituteGlobalFlag: boolean;
+  vimrc: {
+    enable: boolean;
+    /**
+     * Do not use this directly - VimrcImpl.path resolves this to a path that's guaranteed to exist.
+     */
+    path: string;
+  };
+
+  /**
+   * Automatically apply the `/g` flag to substitute commands.
+   */
+  gdefault: boolean;
+  substituteGlobalFlag: boolean; // Deprecated in favor of gdefault
 
   /**
    * InputMethodSwicher
@@ -290,13 +324,20 @@ export interface IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
+  commandLineModeKeyBindings: IKeyRemapping[];
+  commandLineModeKeyBindingsNonRecursive: IKeyRemapping[];
 
+  /**
+   * These are constructed by the RemappingValidator
+   */
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   /**
    * Comma-separated list of motion keys that should wrap to next/previous line.
@@ -314,4 +355,22 @@ export interface IConfiguration {
    * User-defined digraphs
    */
   digraphs: { [shortcut: string]: Digraph };
+
+  /**
+   * Searches wrap around the end of the file.
+   */
+  wrapscan: boolean;
+
+  /**
+   * Number of lines to scroll with CTRL-U and CTRL-D commands. Set to 0 to use a half page scroll.
+   */
+  scroll: number;
+
+  /**
+   * When `true` the commands listed below move the cursor to the first non-blank of the line. When
+   * `false` the cursor is kept in the same column (if possible). This applies to the commands:
+   * `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<`
+   * and `>>` with a linewise operator.
+   */
+  startofline: boolean;
 }

@@ -45,7 +45,7 @@ export class NeovimWrapper implements vscode.Disposable {
       this.logger.debug(`version: ${version.major}.${version.minor}.${version.patch}`);
     }
 
-    await this.syncVSToVim(vimState);
+    await this.syncVSCodeToVim(vimState);
     command = (':' + command + '\n').replace('<', '<lt>');
 
     // Clear the previous error and status messages.
@@ -73,8 +73,8 @@ export class NeovimWrapper implements vscode.Disposable {
       }
     }
 
-    // Sync buffer back to vscode
-    await this.syncVimToVs(vimState);
+    // Sync buffer back to VSCode
+    await this.syncVimToVSCode(vimState);
 
     return statusBarText;
   }
@@ -97,14 +97,14 @@ export class NeovimWrapper implements vscode.Disposable {
     return attach({ proc: this.process });
   }
 
-  // Data flows from VS to Vim
-  private async syncVSToVim(vimState: VimState) {
+  // Data flows from VSCode to Vim
+  private async syncVSCodeToVim(vimState: VimState) {
     const buf = await this.nvim.buffer;
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
 
-    await this.nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
+    await this.nvim.setOption('gdefault', configuration.gdefault === true);
     await buf.setLines(TextEditor.getText().split('\n'), {
       start: 0,
       end: -1,
@@ -144,8 +144,8 @@ export class NeovimWrapper implements vscode.Disposable {
     ]);
   }
 
-  // Data flows from Vim to VS
-  private async syncVimToVs(vimState: VimState) {
+  // Data flows from Vim to VSCode
+  private async syncVimToVSCode(vimState: VimState) {
     const buf = await this.nvim.buffer;
     const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 

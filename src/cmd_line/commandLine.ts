@@ -1,7 +1,7 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { Logger } from '../util/logger';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -24,17 +24,10 @@ class CommandLine {
    */
   public lastKeyPressed = '';
 
-  /**
-   * for checking the last pressed key in command mode
-   *
-   */
   public autoCompleteIndex = 0;
-
-  /**
-   * for checking the last pressed key in command mode
-   *
-   */
-  public autoCompleteText = '';
+  public autoCompleteItems: string[] = [];
+  public preCompleteCharacterPos = 0;
+  public preCompleteCommand = '';
 
   public get commandlineHistoryIndex(): number {
     return this._commandLineHistoryIndex;
@@ -48,7 +41,7 @@ class CommandLine {
     return this._history.get();
   }
 
-  public previousMode = ModeName.Normal;
+  public previousMode = Mode.Normal;
 
   constructor() {
     this._history = new CommandLineHistory();
@@ -67,8 +60,8 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if (command === 'help') {
-      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+    if ('help'.startsWith(command.split(/\s/)[0])) {
+      StatusBar.setText(vimState, `:help Not supported.`, true);
       return;
     }
 
@@ -84,11 +77,11 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
+      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
       if (useNeovim) {
         const statusBarText = await vimState.nvim.run(vimState, command);
-        StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
+        StatusBar.setText(vimState, statusBarText);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
@@ -97,12 +90,7 @@ class CommandLine {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await vimState.nvim.run(vimState, command);
         } else {
-          StatusBar.Set(
-            `${e.toString()}. ${command}`,
-            vimState.currentMode,
-            vimState.isRecordingMacro,
-            true
-          );
+          StatusBar.setText(vimState, `${e.toString()}. ${command}`, true);
         }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);
@@ -110,6 +98,9 @@ class CommandLine {
     }
   }
 
+  /**
+   * Prompts the user for a command using an InputBox, and runs the provided command
+   */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
       this._logger.debug('No active document');

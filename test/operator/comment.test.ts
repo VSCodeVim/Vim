@@ -1,9 +1,9 @@
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('comment operator', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace(undefined, '.js');
@@ -35,8 +35,24 @@ suite('comment operator', () => {
   newTest({
     title: 'block comment in Visual Mode',
     start: ['blah |blah blah'],
-    keysPressed: 'vllllgC',
+    keysPressed: 'vlllgC',
     end: ['blah |/* blah */ blah'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'comment in visual line mode',
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: 'Vjgc',
+    end: ['one', '|// two', '// three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'comment in visual block mode',
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lljgc',
+    end: ['one', '|// two', '// three', 'four'],
+    endMode: Mode.Normal,
   });
 });

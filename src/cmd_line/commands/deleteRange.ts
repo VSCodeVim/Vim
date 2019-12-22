@@ -12,17 +12,19 @@ export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
 }
 
 export class DeleteRangeCommand extends node.CommandBase {
-  neovimCapable = true;
   protected _arguments: IDeleteRangeCommandArguments;
 
   constructor(args: IDeleteRangeCommandArguments) {
     super();
-    this._name = 'delete';
     this._arguments = args;
   }
 
   get arguments(): IDeleteRangeCommandArguments {
     return this._arguments;
+  }
+
+  public neovimCapable(): boolean {
+    return true;
   }
 
   async deleteRange(start: Position, end: Position, vimState: VimState): Promise<string> {

@@ -3,11 +3,14 @@ import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
 import { Position } from '../../common/motion/position';
-import { IMovement, BaseMovement } from '../motion';
+import { BaseMovement, IMovement } from '../baseMotion';
 
 @RegisterAction
-class SneakForward extends BaseMovement {
-  keys = [['s', '<character>', '<character>'], ['z', '<character>', '<character>']];
+export class SneakForward extends BaseMovement {
+  keys = [
+    ['s', '<character>', '<character>'],
+    ['z', '<character>', '<character>'],
+  ];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
@@ -28,6 +31,12 @@ class SneakForward extends BaseMovement {
     const editor = vscode.window.activeTextEditor!;
     const document = editor.document;
     const lineCount = document.lineCount;
+
+    if (this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
+
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
     for (let i = position.line; i < lineCount; ++i) {
@@ -40,7 +49,7 @@ class SneakForward extends BaseMovement {
 
       const ignorecase =
         configuration.sneakUseIgnorecaseAndSmartcase &&
-        (configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString)));
+        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
 
       // Check for matches
       if (ignorecase) {
@@ -61,8 +70,11 @@ class SneakForward extends BaseMovement {
 }
 
 @RegisterAction
-class SneakBackward extends BaseMovement {
-  keys = [['S', '<character>', '<character>'], ['Z', '<character>', '<character>']];
+export class SneakBackward extends BaseMovement {
+  keys = [
+    ['S', '<character>', '<character>'],
+    ['Z', '<character>', '<character>'],
+  ];
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
@@ -82,6 +94,12 @@ class SneakBackward extends BaseMovement {
 
     const editor = vscode.window.activeTextEditor!;
     const document = editor.document;
+
+    if (this.keysPressed[2] === '\n') {
+      // Single key sneak
+      this.keysPressed[2] = '';
+    }
+
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
     for (let i = position.line; i >= 0; --i) {
@@ -94,7 +112,7 @@ class SneakBackward extends BaseMovement {
 
       const ignorecase =
         configuration.sneakUseIgnorecaseAndSmartcase &&
-        (configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString)));
+        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
 
       // Check for matches
       if (ignorecase) {

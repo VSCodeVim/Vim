@@ -1,5 +1,5 @@
 import { configuration } from './../configuration/configuration';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 import { Notation } from '../configuration/notation';
 
@@ -20,7 +20,7 @@ export class BaseAction {
   /**
    * Modes that this action can be run in.
    */
-  public modes: ModeName[];
+  public modes: Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
@@ -40,29 +40,24 @@ export class BaseAction {
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
-      return false;
-    }
-
-    if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
-      return false;
-    }
-
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
+      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
     ) {
       return false;
     }
 
-    return true;
+    return (
+      this.modes.includes(vimState.currentMode) &&
+      BaseAction.CompareKeypressSequence(this.keys, keysPressed)
+    );
   }
 
   /**
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) {
+    if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
 
@@ -172,7 +167,8 @@ export class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static actionMap = new Map<ModeName, typeof BaseAction[]>();
+  public static actionMap = new Map<Mode, typeof BaseAction[]>();
+
   /**
    * Gets the action that should be triggered given a key
    * sequence.
@@ -190,7 +186,7 @@ export class Actions {
   ): BaseAction | KeypressState {
     let isPotentialMatch = false;
 
-    var possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
+    const possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
     for (const actionType of possibleActionsForMode) {
       const action = new actionType();
       if (action.doesActionApply(vimState, keysPressed)) {
@@ -210,7 +206,7 @@ export class Actions {
 export function RegisterAction(action: typeof BaseAction): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
-    var actions = Actions.actionMap.get(modeName);
+    let actions = Actions.actionMap.get(modeName);
     if (!actions) {
       actions = [];
       Actions.actionMap.set(modeName, actions);

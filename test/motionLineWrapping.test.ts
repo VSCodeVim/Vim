@@ -3,13 +3,13 @@ import { getTestingFunctions } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   teardown(cleanUpWorkspace);
 
   suite('whichwrap enabled', () => {
     setup(async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
       configuration.whichwrap = 'h,l,<,>,[,]';
@@ -79,7 +79,7 @@ suite('motion line wrapping', () => {
 
   suite('whichwrap disabled', () => {
     setup(async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
 
@@ -130,6 +130,52 @@ suite('motion line wrapping', () => {
         keysPressed: 'i<right><right>',
         end: ['line 1|', 'line 2'],
       });
+    });
+  });
+
+  suite('wrapscan enabled', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.wrapscan = true;
+
+      await setupWorkspace(configuration);
+    });
+
+    newTest({
+      title: 'search wraps around the end of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nn',
+      end: ['|line 1', 'line 2'],
+    });
+
+    newTest({
+      title: 'search wraps around the start of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nNN',
+      end: ['line 1', '|line 2'],
+    });
+  });
+
+  suite('wrapscan disabled', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.wrapscan = false;
+
+      await setupWorkspace(configuration);
+    });
+
+    newTest({
+      title: 'search stops at the end of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nn',
+      end: ['line 1', '|line 2'],
+    });
+
+    newTest({
+      title: 'search stops at the start of the file',
+      start: ['|line 1', 'line 2'],
+      keysPressed: '/line\nNN',
+      end: ['|line 1', 'line 2'],
     });
   });
 });

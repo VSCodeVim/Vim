@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { join } from 'path';
+import { promisify } from 'util';
 import * as vscode from 'vscode';
 
 import { Configuration } from './testConfiguration';
@@ -21,8 +22,31 @@ export function rndName(): string {
 
 export async function createRandomFile(contents: string, fileExtension: string): Promise<string> {
   const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
-  fs.writeFileSync(tmpFile, contents);
+  await promisify(fs.writeFile)(tmpFile, contents);
   return tmpFile;
+}
+
+export function createRandomDir() {
+  const dirPath = join(os.tmpdir(), rndName());
+  return createDir(dirPath);
+}
+
+export async function createEmptyFile(path: string) {
+  await promisify(fs.writeFile)(path, '');
+  return path;
+}
+
+export async function createDir(path: string) {
+  await promisify(fs.mkdir)(path);
+  return path;
+}
+
+export function removeFile(path: string) {
+  return promisify(fs.unlink)(path);
+}
+
+export function removeDir(path: string) {
+  return promisify(fs.rmdir)(path);
 }
 
 /**
@@ -32,7 +56,7 @@ export async function createRandomFile(contents: string, fileExtension: string):
  * @param numExpectedEditors Expected number of editors in the window
  */
 export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  let waitForTextEditorsToClose = new Promise((c, e) => {
+  const waitForTextEditorsToClose = new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
@@ -53,32 +77,32 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
 
 export function assertEqualLines(expectedLines: string[]) {
   for (let i = 0; i < expectedLines.length; i++) {
-    let expected = expectedLines[i];
-    let actual = TextEditor.readLineAt(i);
-    assert.equal(
+    const expected = expectedLines[i];
+    const actual = TextEditor.readLineAt(i);
+    assert.strictEqual(
       actual,
       expected,
       `Content does not match; Expected=${expected}. Actual=${actual}.`
     );
   }
 
-  assert.equal(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
+  assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
 }
 
 /**
  * Assert that the first two arguments are equal, and fail a test otherwise.
  *
- * The only difference between this and assert.equal is that here we
+ * The only difference between this and assert.strictEqual is that here we
  * check to ensure the types of the variables are correct.
  */
 export function assertEqual<T>(one: T, two: T, message: string = ''): void {
-  assert.equal(one, two, message);
+  assert.strictEqual(one, two, message);
 }
 
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
-): Promise<any> {
+): Promise<void> {
   await commandLine.load();
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
@@ -88,7 +112,7 @@ export async function setupWorkspace(
   Globals.mockConfiguration = config;
   await reloadConfiguration();
 
-  let activeTextEditor = vscode.window.activeTextEditor;
+  const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
   activeTextEditor!.options.tabSize = config.tabstop;
@@ -104,7 +128,7 @@ const mockAndEnable = async () => {
   await mh.handleKeyEvent('<ExtensionEnable>');
 };
 
-export async function cleanUpWorkspace(): Promise<any> {
+export async function cleanUpWorkspace(): Promise<void> {
   return new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
@@ -113,7 +137,7 @@ export async function cleanUpWorkspace(): Promise<any> {
     // TODO: the visibleTextEditors variable doesn't seem to be
     // up to date after a onDidChangeActiveTextEditor event, not
     // even using a setTimeout 0... so we MUST poll :(
-    let interval = setInterval(() => {
+    const interval = setInterval(() => {
       if (vscode.window.visibleTextEditors.length > 0) {
         return;
       }
@@ -130,14 +154,14 @@ export async function cleanUpWorkspace(): Promise<any> {
       }
     );
   }).then(() => {
-    assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
     assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
   });
 }
 
 export async function reloadConfiguration() {
-  let validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
-  for (let validatorResult of validatorResults.get()) {
+  const validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  for (const validatorResult of validatorResults.get()) {
     console.log(validatorResult);
   }
 }

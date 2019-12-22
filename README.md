@@ -35,6 +35,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [vim-sneak](#vim-sneak)
   - [CamelCaseMotion](#camelcasemotion)
   - [Input Method](#input-method)
+  - [ReplaceWithRegister](#replacewithregister)
 - [VSCodeVim tricks](#-vscodevim-tricks)
 - [F.A.Q / Troubleshooting](#-faq)
 - [Contributing](#️-contributing)
@@ -44,8 +45,6 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 ## 💾 Installation
 
 VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
-
-> :warning: Vimscript is _not_ supported; therefore, we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#-emulated-plugins).
 
 ### Mac
 
@@ -120,7 +119,7 @@ These settings are specific to VSCodeVim.
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                 | Boolean | false                                 |
 | vim.searchHighlightColor         | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                               | String  | `editor.findMatchHighlightBackground` |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                      | Boolean | false                                 |
-| vim.substituteGlobalFlag         | Similar to Vim's `gdefault` setting. `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                              | Boolean | false                                 |
+| vim.gdefault                     | `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                                                                   | Boolean | false                                 |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                        | Boolean | true                                  |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                       | Boolean | false                                 |
 | vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                 | Boolean | false                                 |
@@ -136,10 +135,10 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                    | Type    | Default Value |
-| ---------------- | ------------------------------ | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable | String  |               |
+| Setting          | Description                                                                                                             | Type    | Default Value |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
+| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
+| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
@@ -364,6 +363,12 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 | vim.whichwrap    | Controls wrapping at beginning and end of line. Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode. To wrap "everything", set this to `h,l,<,>,[,]`. | String  | ``            |
 | vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                                      | Number  | 2             |
 
+## .vimrc support
+
+> :warning: .vimrc support is currently experimental. Only remaps are supported, and you may experience bugs. Please [report them](https://github.com/VSCodeVim/Vim/issues/new?template=bug_report.md)!
+
+Set `vim.vimrc.enable` to `true` and set `vim.vimrc.path` appropriately.
+
 ## 🖱️ Multi-Cursor Mode
 
 > :warning: Multi-Cursor mode is experimental. Please report issues in our [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
@@ -394,7 +399,12 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.visual": "#B48EAD",
     "vim.statusBarColors.visualline": "#B48EAD",
     "vim.statusBarColors.visualblock": "#A3BE8C",
-    "vim.statusBarColors.replace": "#D08770"
+    "vim.statusBarColors.replace": "#D08770",
+    "vim.statusBarColors.commandlineinprogress": "#007ACC",
+    "vim.statusBarColors.searchinprogressmode": "#007ACC",
+    "vim.statusBarColors.easymotionmode": "#007ACC",
+    "vim.statusBarColors.easymotioninputmode": "#007ACC",
+    "vim.statusBarColors.surroundinputmode": "#007ACC",
 ```
 
 ### vim-easymotion
@@ -501,12 +511,12 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
-| Motion Command            | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `s<char><char>`           | Move forward to the first occurence of `<char><char>`                  |
-| `S<char><char>`           | Move backward to the first occurence of `<char><char>`                 |
-| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurence of `<char><char>`  |
-| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurence of `<char><char>` |
+| Motion Command            | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `s<char><char>`           | Move forward to the first occurrence of `<char><char>`                  |
+| `S<char><char>`           | Move backward to the first occurrence of `<char><char>`                 |
+| `<operator>z<char><char>` | Perform `<operator>` forward to the first occurrence of `<char><char>`  |
+| `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurrence of `<char><char>` |
 
 ### CamelCaseMotion
 
@@ -587,9 +597,25 @@ Any third-party program can be used to switch input methods. The following will 
 
 The `{im}` argument above is a command-line option that will be passed to `im-select` denoting the input method to switch to. If using an alternative program to switch input methods, you should add a similar option to the configuration. For example, if the program's usage is `my-program -s imKey` to switch input method, the `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
 
+### ReplaceWithRegister
+
+Based on [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister), an easy way to replace existing text with the contents of a register.
+
+| Setting                 | Description                        | Type    | Default Value |
+| ----------------------- | ---------------------------------- | ------- | ------------- |
+| vim.replaceWithRegister | Enable/disable ReplaceWithRegister | Boolean | false         |
+
+Once active, type `gr` (say "go replace") followed by a motion to describe the text you want replaced by the contents of the register.
+
+| Motion Command          | Description                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the specified register    |
+| `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the specified register |
+| `{Visual}["a]gr`        | Replace the selection with the contents of the specified register                       |
+
 ## 🎩 VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to preserve some of them:
+VSCode has a lot of nifty tricks and we try to preserve some of them:
 
 - `gd` - jump to definition.
 - `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.

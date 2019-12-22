@@ -40,15 +40,12 @@ function runPrettier(command, done) {
     }
 
     const prettierPath = path.normalize('./node_modules/.bin/prettier');
-    exec(
-      `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
-      function(err) {
-        if (err) {
-          return done(new PluginError('runPrettier', { message: err }));
-        }
-        return done();
+    exec(`${prettierPath} --write ${files}`, function(err) {
+      if (err) {
+        return done(new PluginError('runPrettier', { message: err }));
       }
-    );
+      return done();
+    });
   });
 }
 
@@ -58,6 +55,13 @@ function validateArgs(done) {
     return done(
       new PluginError('updateVersion', {
         message: 'Missing `--semver` option. Possible values: patch, minor, major',
+      })
+    );
+  }
+  if (!['patch', 'minor', 'major'].includes(options.semver)) {
+    return done(
+      new PluginError('updateVersion', {
+        message: 'Invalid `--semver` option. Possible values: patch, minor, major',
       })
     );
   }

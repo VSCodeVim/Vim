@@ -40,7 +40,7 @@ export class PairMatcher {
     position: Position,
     charToFind: string,
     charToStack: string,
-    stackHeight,
+    stackHeight: number,
     isNextMatchForward: boolean,
     vimState?: VimState
   ): Position | undefined {
@@ -107,7 +107,7 @@ export class PairMatcher {
     return undefined;
   }
 
-  private static keepSearching(lineNumber, lineCount, isNextMatchForward) {
+  private static keepSearching(lineNumber: number, lineCount: number, isNextMatchForward: boolean) {
     if (isNextMatchForward) {
       return lineNumber <= lineCount - 1;
     } else {
@@ -158,16 +158,30 @@ export class PairMatcher {
     return undefined;
   }
 
+  static shouldDeleteMatchingBracket(type: 'bracket' | 'quote') {
+    // Don't delete bracket unless autoClosingBrackets is set.
+    const cfgKey = type === 'bracket' ? 'editor.autoClosingBrackets' : 'editor.autoClosingQuotes';
+    const cfgValue = configuration.getConfiguration().get(cfgKey);
+
+    if (cfgValue === 'never') {
+      return false;
+    } else if (cfgValue === 'languageDefined') {
+      // TODO: if possible, we should look up and use the current language's configuration
+      return true;
+    }
+
+    return true;
+  }
+
   /**
    * Given a current position, find an immediate following bracket and return the range. If
    * no matching bracket is found immediately following the opening bracket, return undefined.
+   * This is intended for the deletion of such pairs, so it respects `editor.autoClosingBrackets`.
    */
   static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
-    // Don't delete bracket unless autoClosingBrackets is set
-    if (!configuration.getConfiguration().get('editor.autoClosingBrackets')) {
-      return undefined;
-    }
-
+    const charactersToMatch =
+      (this.shouldDeleteMatchingBracket('bracket') ? '{[(' : '') +
+      (this.shouldDeleteMatchingBracket('quote') ? '"\'`' : '');
     const deleteRange = new vscode.Range(
       currentPosition,
       currentPosition.getLeftThroughLineBreaks()
@@ -176,7 +190,7 @@ export class PairMatcher {
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
-    if ('{[("\'`'.indexOf(deleteText) > -1) {
+    if (charactersToMatch.includes(deleteText)) {
       const matchPosition = currentPosition.add(new PositionDiff(0, 1));
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
       isNextMatch =

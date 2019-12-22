@@ -1,67 +1,60 @@
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
-import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
+import * as _ from 'lodash';
+import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
+
+enum PositionDiffType {
+  Offset,
+  BOL,
+  ObeyStartOfLine,
+}
 
 /**
  * Represents a difference between two positions. Add it to a position
  * to get another position. Create it with the factory methods:
  *
  * - NewDiff
- * - NewBOLDiff
+ * - NewBOLDiff (BOL = Beginning Of Line)
  */
 export class PositionDiff {
   private _line: number;
   private _character: number;
-  private _isBOLDiff: boolean;
+  private _type: PositionDiffType;
 
   constructor(line: number, character: number) {
     this._line = line;
     this._character = character;
+    this._type = PositionDiffType.Offset;
   }
 
   /**
-   * Creates a new PositionDiff that always brings the cursor to the beginning of the line
-   * when applied to a position.
+   * Creates a new PositionDiff that always brings the cursor to the beginning
+   * of the line when * applied to a position. If `obeysStartOfLine` is true,
+   * it will go to BOL only if `vim.startofline` is true.
    */
-  public static NewBOLDiff(line = 0, character = 0): PositionDiff {
+  public static NewBOLDiff(line = 0, character = 0, obeysStartOfLine = false): PositionDiff {
     const result = new PositionDiff(line, character);
 
-    result._isBOLDiff = true;
+    result._type = obeysStartOfLine ? PositionDiffType.ObeyStartOfLine : PositionDiffType.BOL;
     return result;
   }
 
   /**
    * Add this PositionDiff to another PositionDiff.
    */
-  public addDiff(other: PositionDiff) {
-    if (this._isBOLDiff || other._isBOLDiff) {
+  addDiff(other: PositionDiff) {
+    if (this._type !== PositionDiffType.Offset || other._type !== PositionDiffType.Offset) {
       throw new Error("johnfn hasn't done this case yet and doesnt want to");
     }
 
     return new PositionDiff(this._line + other._line, this._character + other._character);
   }
 
-  /**
-   * Adds a Position to this PositionDiff, returning a new PositionDiff.
-   */
-  public addPosition(other: Position, { boundsCheck = true } = {}): Position {
-    let resultChar = this.isBOLDiff() ? 0 : this.character + other.character;
-    let resultLine = this.line + other.line;
-
-    if (boundsCheck) {
-      if (resultChar < 0) {
-        resultChar = 0;
-      }
-      if (resultLine < 0) {
-        resultLine = 0;
-      }
-    }
-
-    return new Position(resultLine, resultChar);
+  public get type(): PositionDiffType {
+    return this._type;
   }
 
   /**
@@ -78,19 +71,17 @@ export class PositionDiff {
     return this._character;
   }
 
-  /**
-   * Does this diff move the position to the beginning of the line?
-   */
-  public isBOLDiff(): boolean {
-    return this._isBOLDiff;
-  }
-
   public toString(): string {
-    if (this._isBOLDiff) {
-      return `[ Diff: BOL ]`;
+    switch (this._type) {
+      case PositionDiffType.Offset:
+        return `[ Diff: ${this._line} ${this._character} ]`;
+      case PositionDiffType.BOL:
+        return '[ Diff: BOL ]';
+      case PositionDiffType.ObeyStartOfLine:
+        return '[ Diff: ObeyStartOfLine ]';
+      default:
+        throw new Error('Unknown PositionDiffType');
     }
-
-    return `[ Diff: ${this._line} ${this._character} ]`;
   }
 }
 
@@ -269,8 +260,8 @@ export class Position extends vscode.Position {
     const start = vimState.cursorStartPosition;
     const stop = vimState.cursorStopPosition;
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(start, stop);
-    const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
+    const topLeft = visualBlockGetTopLeftPosition(start, stop);
+    const bottomRight = visualBlockGetBottomRightPosition(start, stop);
 
     // Special case for $, which potentially makes the block ragged
     // on the right side.
@@ -297,7 +288,9 @@ export class Position extends vscode.Position {
     }
   }
 
-  // Iterates through words on the same line, starting from the current position.
+  /**
+   * Iterates through words on the same line, starting from the current position.
+   */
   public static *IterateWords(
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
@@ -320,23 +313,25 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Subtracts another position from this one, returning the
-   * difference between the two.
+   * Subtracts another position from this one, returning the difference between the two.
    */
   public subtract(other: Position): PositionDiff {
     return new PositionDiff(this.line - other.line, this.character - other.character);
   }
 
   /**
-   * Adds a PositionDiff to this position, returning a new
-   * position.
+   * Adds a PositionDiff to this position, returning a new position.
    */
   public add(diff: PositionDiff, { boundsCheck = true } = {}): Position {
-    let resultChar = this.character + diff.character;
     let resultLine = this.line + diff.line;
+    let resultChar = this.character;
 
-    if (diff.isBOLDiff()) {
+    if (diff.type === PositionDiffType.Offset) {
+      resultChar += diff.character;
+    } else if (diff.type === PositionDiffType.BOL) {
       resultChar = diff.character;
+    } else if (diff.type === PositionDiffType.ObeyStartOfLine && configuration.startofline) {
+      resultChar = new Position(resultLine, 0).obeyStartOfLine().character;
     }
 
     if (boundsCheck) {
@@ -346,6 +341,7 @@ export class Position extends vscode.Position {
       if (resultLine < 0) {
         resultLine = 0;
       }
+      // TODO: check character does not go over line's max
       if (resultLine >= TextEditor.getLineCount() - 1) {
         resultLine = TextEditor.getLineCount() - 1;
       }
@@ -432,6 +428,22 @@ export class Position extends vscode.Position {
     return this.getRight();
   }
 
+  public getOffsetThroughLineBreaks(offset: number): Position {
+    let pos = new Position(this.line, this.character);
+
+    if (offset < 0) {
+      for (let i = 0; i < -offset; i++) {
+        pos = pos.getLeftThroughLineBreaks();
+      }
+    } else {
+      for (let i = 0; i < offset; i++) {
+        pos = pos.getRightThroughLineBreaks();
+      }
+    }
+
+    return pos;
+  }
+
   public getRight(count: number = 1): Position {
     if (!this.isLineEnd()) {
       return new Position(this.line, this.character + count);
@@ -505,6 +517,22 @@ export class Position extends vscode.Position {
       this.line,
       Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count)
     );
+  }
+
+  /**
+   * Get the position of the word counting from the position specified.
+   * @param text The string to search from.
+   * @param pos The position of text to search from.
+   * @param inclusive true if we consider the pos a valid result, false otherwise.
+   * @returns The character position of the word to the left relative to the text and the pos.
+   *          undefined if there is no word to the left of the postion.
+   */
+  public static getWordLeft(
+    text: string,
+    pos: number,
+    inclusive: boolean = false
+  ): number | undefined {
+    return Position.getWordLeftWithRegex(text, pos, Position._nonWordCharRegex, inclusive);
   }
 
   /**
@@ -816,6 +844,13 @@ export class Position extends vscode.Position {
     return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
   }
 
+  /**
+   * If `vim.startofline` is set, get first non-blank character's position.
+   */
+  public obeyStartOfLine(): Position {
+    return configuration.startofline ? this.getFirstLineNonBlankChar() : this;
+  }
+
   public static getLineLength(line: number): number {
     return TextEditor.readLineAt(line).length;
   }
@@ -1014,7 +1049,7 @@ export class Position extends vscode.Position {
     return regexp;
   }
 
-  private getAllPositions(line: string, regex: RegExp): number[] {
+  private static getAllPositions(line: string, regex: RegExp): number[] {
     let positions: number[] = [];
     let result = regex.exec(line);
 
@@ -1052,21 +1087,30 @@ export class Position extends vscode.Position {
     return positions;
   }
 
+  private static getWordLeftWithRegex(
+    text: string,
+    pos: number,
+    regex: RegExp,
+    forceFirst: boolean = false,
+    inclusive: boolean = false
+  ): number | undefined {
+    const positions = Position.getAllPositions(text, regex);
+    return positions
+      .reverse()
+      .find(index => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
+  }
+
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine >= 0; currentLine--) {
-      let positions = this.getAllPositions(
+      const newCharacter = Position.getWordLeftWithRegex(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
-      let newCharacter = _.find(
-        positions.reverse(),
-        index =>
-          (index < this.character && !inclusive) ||
-          (index <= this.character && inclusive) ||
-          currentLine !== this.line
+        this.character,
+        regex,
+        currentLine !== this.line,
+        inclusive
       );
 
       if (newCharacter !== undefined) {
@@ -1082,12 +1126,11 @@ export class Position extends vscode.Position {
    */
   private getWordRightWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-      let positions = this.getAllPositions(
+      let positions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        positions,
+      let newCharacter = positions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1114,7 +1157,7 @@ export class Position extends vscode.Position {
       }
       // reverse the list to find the biggest element smaller than this.character
       positions = positions.reverse();
-      let index = _.findIndex(positions, i => i < this.character || currentLine !== this.line);
+      let index = positions.findIndex(i => i < this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
         if (currentLine > -1) {
@@ -1142,8 +1185,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        positions,
+      let newCharacter = positions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1165,7 +1207,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(endPositions.reverse(), index => {
+      let newCharacter = endPositions.reverse().find(index => {
         const newPositionBeforeThis = new Position(currentLine, index)
           .getRightThroughLineBreaks()
           .compareTo(this);
@@ -1193,8 +1235,7 @@ export class Position extends vscode.Position {
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        endPositions,
+      let newCharacter = endPositions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1212,12 +1253,11 @@ export class Position extends vscode.Position {
   private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
     let paragraphEnd = this.getCurrentParagraphEnd();
     for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-      let allPositions = this.getAllPositions(
+      let allPositions = Position.getAllPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        allPositions,
+      let newCharacter = allPositions.find(
         index =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
@@ -1239,12 +1279,11 @@ export class Position extends vscode.Position {
       return paragraphEnd;
     } else {
       for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-        let nonWhitePositions = this.getAllPositions(
+        const nonWhitePositions = Position.getAllPositions(
           TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
           /\S/g
         );
-        let newCharacter = _.find(
-          nonWhitePositions,
+        const newCharacter = nonWhitePositions.find(
           index =>
             (index > this.character && !inclusive) ||
             (index >= this.character && inclusive) ||
@@ -1260,16 +1299,19 @@ export class Position extends vscode.Position {
     throw new Error('This should never happen...');
   }
 
-  private findHelper(char: string, count: number, direction: number): Position | undefined {
-    // -1 = backwards, +1 = forwards
+  private findHelper(
+    char: string,
+    count: number,
+    direction: 'forward' | 'backward'
+  ): Position | undefined {
     const line = TextEditor.getLineAt(this);
     let index = this.character;
 
     while (count && index !== -1) {
-      if (direction > 0) {
-        index = line.text.indexOf(char, index + direction);
+      if (direction === 'forward') {
+        index = line.text.indexOf(char, index + 1);
       } else {
-        index = line.text.lastIndexOf(char, index + direction);
+        index = line.text.lastIndexOf(char, index - 1);
       }
       count--;
     }
@@ -1282,7 +1324,7 @@ export class Position extends vscode.Position {
   }
 
   public tilForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, +1);
+    const position = this.findHelper(char, count, 'forward');
     if (!position) {
       return null;
     }
@@ -1291,7 +1333,7 @@ export class Position extends vscode.Position {
   }
 
   public tilBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, -1);
+    const position = this.findHelper(char, count, 'backward');
     if (!position) {
       return null;
     }
@@ -1300,7 +1342,7 @@ export class Position extends vscode.Position {
   }
 
   public findForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, +1);
+    const position = this.findHelper(char, count, 'forward');
     if (!position) {
       return null;
     }
@@ -1309,7 +1351,7 @@ export class Position extends vscode.Position {
   }
 
   public findBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, -1);
+    const position = this.findHelper(char, count, 'backward');
     if (!position) {
       return null;
     }

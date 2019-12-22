@@ -60,8 +60,8 @@ export class LineRange {
     if (this.isEmpty) {
       return;
     }
-    var lineRef = this.right.length === 0 ? this.left : this.right;
-    var pos = this.lineRefToPosition(document, lineRef, vimState);
+    const lineRef = this.right.length === 0 ? this.left : this.right;
+    const pos = this.lineRefToPosition(document, lineRef, vimState);
     vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos);
   }
 
@@ -227,20 +227,18 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  public neovimCapable = false;
   protected get activeTextEditor() {
     return vscode.window.activeTextEditor;
   }
-
-  get name(): string {
-    return this._name;
-  }
-  protected _name: string;
 
   get arguments(): ICommandArgs {
     return this._arguments;
   }
   protected _arguments: ICommandArgs;
+
+  public neovimCapable(): boolean {
+    return false;
+  }
 
   abstract execute(vimState: VimState): Promise<void>;
 

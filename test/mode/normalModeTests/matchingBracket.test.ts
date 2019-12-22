@@ -2,7 +2,7 @@ import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Matching Bracket (%)', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -57,5 +57,19 @@ suite('Matching Bracket (%)', () => {
     start: ['[(( }}} ))|]'],
     keysPressed: '%',
     end: ['|[(( }}} ))]'],
+  });
+
+  newTest({
+    title: 'parentheses after >',
+    start: ['|foo->bar(baz);'],
+    keysPressed: '%',
+    end: ['foo->bar(baz|);'],
+  });
+
+  newTest({
+    title: 'parentheses after "',
+    start: ['|test "in quotes" [(in brackets)]'],
+    keysPressed: '%',
+    end: ['test "in quotes" [(in brackets)|]'],
   });
 });
