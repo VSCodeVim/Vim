@@ -29,7 +29,7 @@ class DocumentChange {
    * true => addition
    * false => deletion
    */
-   // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
+  // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
   public isAdd: boolean;
 
   private _end: Position;

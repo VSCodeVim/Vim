@@ -167,7 +167,7 @@ export class RecordedState {
       mode !== Mode.SearchInProgressMode &&
       mode !== Mode.CommandlineInProgress &&
       (this.hasRunAMovement ||
-        (mode === Mode.Visual || mode === Mode.VisualLine) ||
+        mode === Mode.Visual || mode === Mode.VisualLine ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
     );

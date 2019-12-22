@@ -443,7 +443,11 @@ class CommandInsertWord extends BaseCommand {
 @RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [['q', '<alpha>'], ['q', '<number>'], ['q', '"']];
+  keys = [
+    ['q', '<alpha>'],
+    ['q', '<number>'],
+    ['q', '"'],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -2277,7 +2281,10 @@ export class CommandShowCommandHistory extends BaseCommand {
 @RegisterAction
 export class CommandShowSearchHistory extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [['q', '/'], ['q', '?']];
+  keys = [
+    ['q', '/'],
+    ['q', '?'],
+  ];
 
   private direction = SearchDirection.Forward;
 
@@ -3015,7 +3022,10 @@ class CommandGoForwardInChangelist extends BaseCommand {
 @RegisterAction
 class CommandGoStartPrevOperatedText extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [['`', '['], ["'", '[']];
+  keys = [
+    ['`', '['],
+    ["'", '['],
+  ];
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3031,7 +3041,10 @@ class CommandGoStartPrevOperatedText extends BaseCommand {
 @RegisterAction
 class CommandGoEndPrevOperatedText extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [['`', ']'], ["'", ']']];
+  keys = [
+    ['`', ']'],
+    ["'", ']'],
+  ];
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3047,7 +3060,10 @@ class CommandGoEndPrevOperatedText extends BaseCommand {
 @RegisterAction
 class CommandGoLastChange extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['`', '.'], ["'", '.']];
+  keys = [
+    ['`', '.'],
+    ["'", '.'],
+  ];
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3297,7 +3313,12 @@ class CommandNavigateLastBOL extends BaseCommand {
 @RegisterAction
 class CommandQuit extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['<C-w>', 'q'], ['<C-w>', '<C-q>'], ['<C-w>', 'c'], ['<C-w>', '<C-c>']];
+  keys = [
+    ['<C-w>', 'q'],
+    ['<C-w>', '<C-q>'],
+    ['<C-w>', 'c'],
+    ['<C-w>', '<C-c>'],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new QuitCommand({}).execute();
@@ -3309,7 +3330,10 @@ class CommandQuit extends BaseCommand {
 @RegisterAction
 class CommandOnly extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['<C-w>', 'o'], ['<C-w>', '<C-o>']];
+  keys = [
+    ['<C-w>', 'o'],
+    ['<C-w>', '<C-o>'],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new OnlyCommand({}).execute();
@@ -3385,7 +3409,10 @@ class MoveToLeftPane extends BaseCommand {
 @RegisterAction
 class CycleThroughPanes extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [['<C-w>', '<C-w>'], ['<C-w>', 'w']];
+  keys = [
+    ['<C-w>', '<C-w>'],
+    ['<C-w>', 'w'],
+  ];
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3406,7 +3433,10 @@ class BaseTabCommand extends BaseCommand {
 @RegisterAction
 class VerticalSplit extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [['<C-w>', 'v'], ['<C-w>', '<C-v>']];
+  keys = [
+    ['<C-w>', 'v'],
+    ['<C-w>', '<C-v>'],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -3421,7 +3451,10 @@ class VerticalSplit extends BaseCommand {
 @RegisterAction
 class OrthogonalSplit extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [['<C-w>', 's'], ['<C-w>', '<C-s>']];
+  keys = [
+    ['<C-w>', 's'],
+    ['<C-w>', '<C-s>'],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({

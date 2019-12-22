@@ -170,7 +170,13 @@ suite('Record and navigate jumps', () => {
       // Note the column number was preserved for newer jump when it found duplicates on a line.
       assert.deepEqual(
         jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
-        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1'], [3, 5, 'file1'], [4, 0, 'file1']],
+        [
+          [0, 0, 'file2'],
+          [5, 0, 'file2'],
+          [0, 0, 'file1'],
+          [3, 5, 'file1'],
+          [4, 0, 'file1'],
+        ],
         `Jump tracker doesn't contain the expected jumps after deleting two lines`
       );
 
@@ -183,7 +189,12 @@ suite('Record and navigate jumps', () => {
       // Preserve the newest jump in that case
       assert.deepEqual(
         jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
-        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1'], [3, 0, 'file1']],
+        [
+          [0, 0, 'file2'],
+          [5, 0, 'file2'],
+          [0, 0, 'file1'],
+          [3, 0, 'file1'],
+        ],
         `Jump tracker doesn't contain the expected jumps after deleting another line`
       );
 
@@ -195,7 +206,11 @@ suite('Record and navigate jumps', () => {
       // If you delete lines such that jumps are past EOF, delete the jumps
       assert.deepEqual(
         jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
-        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1']],
+        [
+          [0, 0, 'file2'],
+          [5, 0, 'file2'],
+          [0, 0, 'file1'],
+        ],
         `Jump tracker doesn't contain the expected jumps after deleting all lines in file`
       );
     });
