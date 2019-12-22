@@ -12,7 +12,10 @@ class TestAction1D extends BaseAction {
 }
 
 class TestAction2D extends BaseAction {
-  keys = [['a', 'b'], ['c', 'd']];
+  keys = [
+    ['a', 'b'],
+    ['c', 'd'],
+  ];
   modes = [Mode.Normal];
 }
 
@@ -36,7 +39,14 @@ suite('base action', () => {
       [[['a'], ['b']], ['c'], false],
       [['a', 'b'], ['a', 'b'], true],
       [['a', 'b'], ['a', 'c'], false],
-      [[['a', 'b'], ['c', 'd']], ['c', 'd'], true],
+      [
+        [
+          ['a', 'b'],
+          ['c', 'd'],
+        ],
+        ['c', 'd'],
+        true,
+      ],
       [[''], ['a'], false],
       [['<Esc>'], ['<Esc>'], true],
     ];

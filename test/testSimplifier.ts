@@ -27,7 +27,10 @@ export function getTestingFunctions() {
 
     test(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -42,7 +45,10 @@ export function getTestingFunctions() {
 
     test.only(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -56,7 +62,10 @@ export function getTestingFunctions() {
 
     test.skip(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
