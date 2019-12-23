@@ -1,10 +1,11 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
@@ -28,13 +29,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 
-      assertEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -2127,14 +2128,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     const gnSelectsCurrentWord = async (jumpCmd: string) => {
@@ -2143,14 +2144,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     };
 
     test(`gn selects the current word at |hello`, async () => {
@@ -2175,14 +2176,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     });
   });
 
@@ -2293,14 +2294,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(['G']);
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 'hi '.length);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hi hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 'hi '.length);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hi hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     });
 
     const gnSelectsCurrentWord = async (jumpCmd: string) => {
@@ -2309,14 +2310,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 'hi '.length);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hi hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 'hi '.length);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hi hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     };
 
     test(`gN selects the current word at hell|o`, async () => {
@@ -2341,14 +2342,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     });
   });
 
