@@ -5,7 +5,7 @@ import { Remappers, Remapper } from '../../src/configuration/remapper';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
@@ -234,8 +234,8 @@ suite('Remapper', () => {
       }
 
       if (testCase.expectedAfterMode) {
-        assertEqual(modeHandler.currentMode, testCase.expectedAfterMode);
-        assertEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
+        assert.strictEqual(modeHandler.currentMode, testCase.expectedAfterMode);
+        assert.strictEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
       }
     }
   });
@@ -261,7 +261,7 @@ suite('Remapper', () => {
     vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
 
     // act
     let actual = false;
@@ -273,7 +273,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -286,7 +286,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     // act
     let actual = false;
@@ -322,7 +322,7 @@ suite('Remapper', () => {
     vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
 
     // act
     let actual = false;
@@ -334,7 +334,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -347,7 +347,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     // act
     let actual = false;
@@ -371,10 +371,10 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode, Mode.Visual);
+    assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
     // act
     let actual = false;
