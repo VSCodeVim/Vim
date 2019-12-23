@@ -12,6 +12,7 @@ import { IConfiguration } from '../src/configuration/iconfiguration';
 import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
+import { StatusBar } from '../src/statusBar';
 
 export function rndName(): string {
   return Math.random()
@@ -97,6 +98,13 @@ export function assertEqualLines(expectedLines: string[]) {
  */
 export function assertEqual<T>(one: T, two: T, message: string = ''): void {
   assert.strictEqual(one, two, message);
+}
+
+export function assertStatusBarEqual(
+  expectedText: string,
+  message: string = 'Status bar text does not match'
+) {
+  assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
 export async function setupWorkspace(

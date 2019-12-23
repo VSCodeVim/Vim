@@ -20,38 +20,12 @@ suite('Vertical split', () => {
 
   teardown(cleanUpWorkspace);
 
-  test('Run :vs', async () => {
-    await commandLine.Run('vs', modeHandler.vimState);
-    await WaitForEditorsToClose(2);
+  for (const cmd of ['vs', 'vsp', 'vsplit', 'vnew', 'vne']) {
+    test(`:${cmd} creates a second split`, async () => {
+      await commandLine.Run(cmd, modeHandler.vimState);
+      await WaitForEditorsToClose(2);
 
-    assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
-  });
-
-  test('Run :vsp', async () => {
-    await commandLine.Run('vsp', modeHandler.vimState);
-    await WaitForEditorsToClose(2);
-
-    assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
-  });
-
-  test('Run :vsplit', async () => {
-    await commandLine.Run('vsplit', modeHandler.vimState);
-    await WaitForEditorsToClose(2);
-
-    assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
-  });
-
-  test('Run :vnew', async () => {
-    await commandLine.Run('vnew', modeHandler.vimState);
-    await WaitForEditorsToClose(2);
-
-    assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
-  });
-
-  test('Run :vne', async () => {
-    await commandLine.Run('vne', modeHandler.vimState);
-    await WaitForEditorsToClose(2);
-
-    assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
-  });
+      assert.strictEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
+    });
+  }
 });

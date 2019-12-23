@@ -275,18 +275,17 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   jumpTracker.clearJumps();
 
-  // assumes key presses are single characters for nowkA
+  // Assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
   // Check valid test object input
   assert(helper.isValid, "Missing '|' in test object.");
 
-  // end: check given end output is correct
-  //
+  // Check given end output is correct
   const lines = helper.asVimOutputText();
   assertEqualLines(lines);
+
   // Check final cursor position
-  //
   const actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   const expectedPosition = helper.endPosition;
   assert.strictEqual(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');

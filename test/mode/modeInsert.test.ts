@@ -74,95 +74,44 @@ suite('Mode Insert', () => {
     return assertEqualLines(['', 'text']);
   });
 
-  test("Can handle 'i'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      't',
-      'e',
-      'x',
-      't', // insert 'texttext'
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l', // move to the 4th character
-      'i',
-      '!', // insert a !
-    ]);
-
-    assertEqualLines(['text!text']);
+  newTest({
+    title: "'i' puts you in insert mode before the cursor",
+    start: ['text|text'],
+    keysPressed: 'i!',
+    end: ['text!|text'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'I'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'I',
-      '!',
-    ]);
-
-    assertEqualLines(['!text']);
+  newTest({
+    title: "'I' puts you in insert mode at start of line",
+    start: ['text|text'],
+    keysPressed: 'I!',
+    end: ['!|texttext'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'a'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      't',
-      'e',
-      'x',
-      't', // insert 'texttext'
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l', // move to the 4th character
-      'a',
-      '!', // append a !
-    ]);
-
-    assertEqualLines(['textt!ext']);
+  newTest({
+    title: "'a' puts you in insert mode after the cursor",
+    start: ['text|text'],
+    keysPressed: 'a!',
+    end: ['textt!|ext'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'A'", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'x', 't', '<Esc>', '^', 'A', '!']);
-
-    assertEqualLines(['text!']);
+  newTest({
+    title: "'A' appends to end of line",
+    start: ['t|ext'],
+    keysPressed: 'A!',
+    end: ['text!|'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle '<C-w>'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      ' ',
-      't',
-      'e',
-      'x',
-      't',
-      '<C-w>',
-    ]);
-
-    assertEqualLines(['text ']);
+  newTest({
+    title: "'<C-w>' deletes a word",
+    start: ['text text| text'],
+    keysPressed: 'i<C-w>',
+    end: ['text | text'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -180,7 +129,7 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: 'Can handle <C-u>',
+    title: '<C-u> deletes to start of line',
     start: ['text |text'],
     keysPressed: 'i<C-u>',
     end: ['|text'],
