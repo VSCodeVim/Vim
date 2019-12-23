@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { HistoryFile } from '../../src/history/historyFile';
-import { assertEqual, setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
 import { Globals } from '../../src/globals';
 
@@ -11,9 +11,9 @@ suite('HistoryFile', () => {
   let run_cmds: string[];
 
   const assertArrayEquals = (expected: any[], actual: any[]) => {
-    assertEqual(expected.length, actual.length);
+    assert.strictEqual(expected.length, actual.length);
     for (let i: number = 0; i < expected.length; i++) {
-      assertEqual(expected[i], actual[i]);
+      assert.strictEqual(expected[i], actual[i]);
     }
   };
 

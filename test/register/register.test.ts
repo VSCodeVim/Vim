@@ -7,7 +7,7 @@ import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { RecordedState } from '../../src/state/recordedState';
 
 suite('register', () => {
@@ -66,7 +66,7 @@ suite('register', () => {
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
     Clipboard.Copy(testString);
-    assertEqual(testString, await Clipboard.Paste());
+    assert.strictEqual(testString, await Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
