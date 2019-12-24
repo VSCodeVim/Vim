@@ -231,69 +231,71 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 // }
 
 @RegisterAction
+export class CommandBackspaceInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<BS>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const line = TextEditor.getLineAt(position).text;
+    const selection = TextEditor.getSelection();
+
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      vimState.recordedState.transformations.push({
+        type: 'deleteRange',
+        range: new Range(selection.start as Position, selection.end as Position),
+      });
+    } else if (
+      position.character > 0 &&
+      line.length > 0 &&
+      line.match(/^\s+$/) &&
+      configuration.expandtab
+    ) {
+      // If the line is empty except whitespace and we're not on the first
+      // character of the line, backspace should return to the next lowest
+      // level of indentation.
+      // TODO: similar logic is needed for whitespace at the start or end of a line. See #1691
+
+      const tabSize = vimState.editor.options.tabSize as number;
+      const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
+
+      vimState.recordedState.transformations.push({
+        type: 'deleteRange',
+        range: new Range(position.withColumn(desiredLineLength), position.withColumn(line.length)),
+      });
+    } else if (position.line !== 0 || position.character !== 0) {
+      // Otherwise, just delete a character (unless we're at the start of the document)
+      vimState.recordedState.transformations.push({
+        type: 'deleteText',
+        position: position,
+      });
+    }
+
+    vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
+    vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
-    const line = TextEditor.getLineAt(position).text;
 
-    if (char === '<BS>') {
-      const selection = TextEditor.getSelection();
-
-      // Check if a selection is active
-      if (!selection.isEmpty) {
-        vimState.recordedState.transformations.push({
-          type: 'deleteRange',
-          range: new Range(selection.start as Position, selection.end as Position),
-        });
-      } else {
-        if (
-          position.character > 0 &&
-          line.length > 0 &&
-          line.match(/^\s+$/) &&
-          configuration.expandtab
-        ) {
-          // If the line is empty except whitespace and we're not on the first
-          // character of the line, backspace should return to the next lowest
-          // level of indentation.
-
-          const tabSize = vimState.editor.options.tabSize as number;
-          const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
-
-          vimState.recordedState.transformations.push({
-            type: 'deleteRange',
-            range: new Range(
-              position.withColumn(desiredLineLength),
-              position.withColumn(line.length)
-            ),
-          });
-        } else {
-          if (position.line !== 0 || position.character !== 0) {
-            vimState.recordedState.transformations.push({
-              type: 'deleteText',
-              position: position,
-            });
-          }
-        }
-      }
-
-      vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
-      vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
+    if (vimState.isMultiCursor) {
+      vimState.recordedState.transformations.push({
+        type: 'insertText',
+        text: char,
+        position: vimState.cursorStopPosition,
+      });
     } else {
-      if (vimState.isMultiCursor) {
-        vimState.recordedState.transformations.push({
-          type: 'insertText',
-          text: char,
-          position: vimState.cursorStopPosition,
-        });
-      } else {
-        vimState.recordedState.transformations.push({
-          type: 'insertTextVSCode',
-          text: char,
-        });
-      }
+      vimState.recordedState.transformations.push({
+        type: 'insertTextVSCode',
+        text: char,
+      });
     }
 
     return vimState;
