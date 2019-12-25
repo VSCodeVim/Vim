@@ -644,6 +644,22 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: '* ignores smartcase (ignorecase=true)',
+    config: { ignorecase: true, smartcase: true },
+    start: ['|test TEST test'],
+    keysPressed: '*',
+    end: ['test |TEST test'],
+  });
+
+  newTest({
+    title: '* ignores smartcase (ignorecase=false)',
+    config: { ignorecase: false, smartcase: true },
+    start: ['|test TEST test'],
+    keysPressed: '*',
+    end: ['test TEST |test'],
+  });
+
+  newTest({
     title: 'Can handle # on whitespace',
     start: ['abc abcdef| abc'],
     keysPressed: '#',
