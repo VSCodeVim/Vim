@@ -1090,6 +1090,7 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
     return vimState;
   }
 }
+
 @RegisterAction
 class CommandPasteInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];

@@ -434,6 +434,7 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
     return new CommandEscInsertMode().exec(position, vimState);
   }
 }
+
 @RegisterAction
 class CommandCtrlW extends BaseCommand {
   modes = [Mode.Insert];

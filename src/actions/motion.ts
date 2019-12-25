@@ -418,6 +418,7 @@ export class MarkMovement extends BaseMovement {
     return mark.position;
   }
 }
+
 @RegisterAction
 export class MoveLeft extends BaseMovement {
   keys = ['h'];
