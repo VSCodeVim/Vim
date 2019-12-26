@@ -214,7 +214,7 @@ export abstract class BaseCommand extends BaseAction {
       .map(x => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
-        (a.start.line === b.start.line && a.start.character > b.start.character)
+          (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
           : -1
       );
@@ -3157,6 +3157,7 @@ export class CommandInsertAfterCursor extends BaseCommand {
 export class CommandInsertAtLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['A'];
+  doesntChangeDesiredColumn = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Insert);
@@ -3732,7 +3733,7 @@ class ActionJoin extends BaseCommand {
       .map(x => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
-        (a.start.line === b.start.line && a.start.character > b.start.character)
+          (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
           : -1
       );
@@ -3810,9 +3811,9 @@ class ActionJoinNoWhitespace extends BaseCommand {
       position.getLineBegin(),
       lineTwo.length > 0
         ? position
-            .getNextLineBegin()
-            .getLineEnd()
-            .getLeft()
+          .getNextLineBegin()
+          .getLineEnd()
+          .getLeft()
         : position.getLineEnd()
     );
 
@@ -4295,6 +4296,7 @@ export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCo
 export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLineModeCommand {
   modes = [Mode.Visual];
   keys = ['A'];
+  doesntChangeDesiredColumn = false;
 
   getCursorRangeForLine(
     line: vscode.TextLine,
@@ -4313,6 +4315,7 @@ export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLine
 class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['A'];
+  doesntChangeDesiredColumn = false;
   runsOnceForEveryCursor() {
     return false;
   }

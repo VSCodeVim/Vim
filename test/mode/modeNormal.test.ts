@@ -1093,6 +1093,13 @@ suite('Mode Normal', () => {
     end: ['text te|x'],
   });
 
+  newTestOnly({
+    title: 'A should update desiredColumn',
+    start: ['|longer line', 'short'],
+    keysPressed: 'A<Esc>jk',
+    end: ['longer lin|e', 'short'],
+  });
+
   newTest({
     title: "Can handle 'yy' without changing cursor position",
     start: ['one', 'tw|o'],
