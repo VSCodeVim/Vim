@@ -765,7 +765,7 @@
         "vim.vimrc.enable": {
           "type": "boolean",
           "description": "Use key mappings from a .vimrc file.",
-          "default": "false"
+          "default": false
         },
         "vim.vimrc.path": {
           "type": "string",
