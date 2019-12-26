@@ -21,7 +21,11 @@ suite('Horizontal split', () => {
       await commandLine.Run(cmd, modeHandler.vimState);
       await WaitForEditorsToClose(2);
 
-      assert.strictEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
+      assert.strictEqual(
+        vscode.window.visibleTextEditors.length,
+        2,
+        'Editor did not split in 1 sec'
+      );
     });
   }
 });
