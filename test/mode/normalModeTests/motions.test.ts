@@ -803,4 +803,11 @@ suite('Motions in Normal Mode', () => {
     keysPressed: 'gjgj',
     end: ['blah', 'duh', 'a', 'hu|r '],
   });
+
+  newTest({
+    title: 'Preserves desired cursor position when pressing zz',
+    start: ['very long line of text....|.', 'short line'],
+    keysPressed: 'jzzk',
+    end: ['very long line of text....|.', 'short line'],
+  });
 });
