@@ -1,5 +1,75 @@
 # Change Log
 
+## [v1.12.3](https://github.com/vscodevim/vim/tree/v1.12.3) (2019-12-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.12.0...v1.12.3)
+
+**Enhancements:**
+
+- Undo/redo should show info in the status bar [\#4317](https://github.com/VSCodeVim/Vim/issues/4317)
+- Key Remapping for Search Mode [\#3966](https://github.com/VSCodeVim/Vim/issues/3966)
+
+**Fixed Bugs:**
+
+- Undo After Replace Causes Error: "Cannot read property 'getTime' of undefined." [\#4351](https://github.com/VSCodeVim/Vim/issues/4351)
+- Normal mode key binding for '0' make 0 not usable in command count [\#4339](https://github.com/VSCodeVim/Vim/issues/4339)
+- CTRL-\* commands for page scrolling are not working correctly in 1.11.3 \(latest\) [\#4338](https://github.com/VSCodeVim/Vim/issues/4338)
+- Can't use control characters in %s replace [\#4334](https://github.com/VSCodeVim/Vim/issues/4334)
+- Deleting a line intermittently screws up the cursor position. [\#3694](https://github.com/VSCodeVim/Vim/issues/3694)
+
+**Closed issues:**
+
+- Rebinding 'yy' \(yank line\) is not working [\#4392](https://github.com/VSCodeVim/Vim/issues/4392)
+- double sursor [\#4388](https://github.com/VSCodeVim/Vim/issues/4388)
+- taskqueue: cannot read property 'getTime' [\#4381](https://github.com/VSCodeVim/Vim/issues/4381)
+- Replace using range selection not working [\#4375](https://github.com/VSCodeVim/Vim/issues/4375)
+- Remapping ":" [\#4374](https://github.com/VSCodeVim/Vim/issues/4374)
+- Sometimes cannot undo [\#4372](https://github.com/VSCodeVim/Vim/issues/4372)
+- vim emulation stops working after disablign ApplePressAndHoldEnabled [\#4365](https://github.com/VSCodeVim/Vim/issues/4365)
+- Cursor Style incorrect all the time. [\#4358](https://github.com/VSCodeVim/Vim/issues/4358)
+- vim 无法使用 [\#4357](https://github.com/VSCodeVim/Vim/issues/4357)
+- not working anymore... [\#4356](https://github.com/VSCodeVim/Vim/issues/4356)
+- VSCodeVim doesn't recognize \<Esc\>/\<CapsLock\> swap [\#4350](https://github.com/VSCodeVim/Vim/issues/4350)
+- Change mode in version 1.12.0 [\#4348](https://github.com/VSCodeVim/Vim/issues/4348)
+- no work [\#4346](https://github.com/VSCodeVim/Vim/issues/4346)
+- v1.12.0 does not load at all on Linux [\#4345](https://github.com/VSCodeVim/Vim/issues/4345)
+- v1.12.0 stop working [\#4344](https://github.com/VSCodeVim/Vim/issues/4344)
+- vim extentions does not work, "Cannot find module './../actions/commands/actions'" [\#4343](https://github.com/VSCodeVim/Vim/issues/4343)
+- vim not work [\#4342](https://github.com/VSCodeVim/Vim/issues/4342)
+- Does not start due to error finding './../actions/commands/actions' module on Linux on ChromeOS [\#4341](https://github.com/VSCodeVim/Vim/issues/4341)
+- Plugin no longer works on 1.40.2 [\#4340](https://github.com/VSCodeVim/Vim/issues/4340)
+- Extension fails to activate when vimrc path is undefined [\#4336](https://github.com/VSCodeVim/Vim/issues/4336)
+- Cannot type 'fd' in edit mode [\#4333](https://github.com/VSCodeVim/Vim/issues/4333)
+- Insert mode not working [\#4332](https://github.com/VSCodeVim/Vim/issues/4332)
+- :w does not trigger "format on save" in ruby [\#4329](https://github.com/VSCodeVim/Vim/issues/4329)
+- Not able to use "j" motion when Cursor Smooth Caret Animation set [\#4321](https://github.com/VSCodeVim/Vim/issues/4321)
+- -- VIM DISABLE -- is is being overidden [\#3806](https://github.com/VSCodeVim/Vim/issues/3806)
+- "ii" Insert Mode Mapping Unexpected Behavior [\#3786](https://github.com/VSCodeVim/Vim/issues/3786)
+
+**Merged pull requests:**
+
+- Update dependency sinon to v8.0.1 [\#4415](https://github.com/VSCodeVim/Vim/pull/4415) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency sinon to v8 [\#4413](https://github.com/VSCodeVim/Vim/pull/4413) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.7.4 [\#4408](https://github.com/VSCodeVim/Vim/pull/4408) ([renovate[bot]](https://github.com/apps/renovate))
+- Add commas to statusBarColors JSON on README [\#4406](https://github.com/VSCodeVim/Vim/pull/4406) ([victorsenam](https://github.com/victorsenam))
+- Update dependency @types/node to v12.12.21 [\#4401](https://github.com/VSCodeVim/Vim/pull/4401) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.20 [\#4398](https://github.com/VSCodeVim/Vim/pull/4398) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.19 [\#4397](https://github.com/VSCodeVim/Vim/pull/4397) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.18 [\#4391](https://github.com/VSCodeVim/Vim/pull/4391) ([renovate[bot]](https://github.com/apps/renovate))
+- Added test to check can handle 'u' after :s/abc/def [\#4385](https://github.com/VSCodeVim/Vim/pull/4385) ([CVVPK](https://github.com/CVVPK))
+- Update dependency @types/node to v12.12.17 [\#4361](https://github.com/VSCodeVim/Vim/pull/4361) ([renovate[bot]](https://github.com/apps/renovate))
+- Make sure DocumentChange.timestamp is always set [\#4360](https://github.com/VSCodeVim/Vim/pull/4360) ([J-Fields](https://github.com/J-Fields))
+- Update dependency @types/node to v12.12.16 [\#4349](https://github.com/VSCodeVim/Vim/pull/4349) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/node to v12.12.15 [\#4347](https://github.com/VSCodeVim/Vim/pull/4347) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix fs.readFileSync\(\) receiving a possibly undefined path [\#4337](https://github.com/VSCodeVim/Vim/pull/4337) ([CVVPK](https://github.com/CVVPK))
+- Fixed modeHandler being recreated on every key stroke [\#4335](https://github.com/VSCodeVim/Vim/pull/4335) ([CVVPK](https://github.com/CVVPK))
+- Update dependency gulp-git to v2.10.0 [\#4327](https://github.com/VSCodeVim/Vim/pull/4327) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.7.3 [\#4326](https://github.com/VSCodeVim/Vim/pull/4326) ([renovate[bot]](https://github.com/apps/renovate))
+- Refactor ModeHandlerMap to use EditorIdentity in its interface. Add some documentation [\#4322](https://github.com/VSCodeVim/Vim/pull/4322) ([J-Fields](https://github.com/J-Fields))
+- Little bit of cleanup in HistoryTracker [\#4320](https://github.com/VSCodeVim/Vim/pull/4320) ([J-Fields](https://github.com/J-Fields))
+- Simplify and clean up tests [\#4315](https://github.com/VSCodeVim/Vim/pull/4315) ([J-Fields](https://github.com/J-Fields))
+- Close sidebar and bottom panel with :only command [\#4304](https://github.com/VSCodeVim/Vim/pull/4304) ([kizza](https://github.com/kizza))
+
 ## [v1.12.0](https://github.com/vscodevim/vim/tree/v1.12.0) (2019-12-01)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.3...v1.12.0)
@@ -141,7 +211,6 @@
 - `:vspl` [\#4078](https://github.com/VSCodeVim/Vim/issues/4078)
 - Add support for relative :tabm\[ove\] [\#3959](https://github.com/VSCodeVim/Vim/issues/3959)
 - make ctrl+q into visual block on Windows [\#3743](https://github.com/VSCodeVim/Vim/issues/3743)
-- Search PATH for nvim when enableNeovim is true and neovimPath is empty [\#3584](https://github.com/VSCodeVim/Vim/issues/3584)
 
 **Fixed Bugs:**
 

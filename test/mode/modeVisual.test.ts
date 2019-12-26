@@ -7,7 +7,6 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 import {
-  assertEqual,
   assertEqualLines,
   cleanUpWorkspace,
   reloadConfiguration,
@@ -28,10 +27,10 @@ suite('Mode Visual', () => {
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode, Mode.Visual);
+    assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle w', async () => {
@@ -62,7 +61,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -71,7 +70,7 @@ suite('Mode Visual', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -152,7 +151,7 @@ suite('Mode Visual', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -1041,10 +1040,10 @@ suite('Mode Visual', () => {
       const selection = TextEditor.getSelection();
 
       // ensuring selection range starts from the beginning
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 4);
-      assertEqual(selection.end.line, 0);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 4);
+      assert.strictEqual(selection.end.line, 0);
     });
   });
 
@@ -1182,7 +1181,7 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
       assertEqualLines(['one two three']);
 
       // test copy by pasting back
@@ -1204,65 +1203,65 @@ suite('Mode Visual', () => {
   suite('Transition between visual mode', () => {
     test('vv will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     });
 
     test('vV will transit to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
     });
 
     test('v<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.VisualBlock);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
     });
 
     test('Vv will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
     });
 
     test('VV will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     });
 
     test('V<C-v> will transit to visual block mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.VisualBlock);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
     });
 
     test('<C-v>v will transit to visual (char) mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.VisualBlock);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['v']);
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
     });
 
     test('<C-v>V will back to visual line mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.VisualBlock);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['V']);
-      assertEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
     });
 
     test('<C-v><C-v> will back to normal mode', async () => {
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.VisualBlock);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
       await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assertEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     });
   });
 
@@ -1280,16 +1279,16 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'with me' at the first line
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 'with me'.length);
-      assertEqual(selection.end.line, 0);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 'with me'.length);
+      assert.strictEqual(selection.end.line, 0);
     });
 
     test('gv selects the last pasted text (which is longer than original)', async () => {
@@ -1305,7 +1304,7 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -1315,10 +1314,10 @@ suite('Mode Visual', () => {
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'or with me longer than the target' at the first line
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 'or with me longer than the target'.length);
-      assertEqual(selection.end.line, 0);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 'or with me longer than the target'.length);
+      assert.strictEqual(selection.end.line, 0);
     });
 
     test('gv selects the last pasted text (multiline)', async () => {
@@ -1332,16 +1331,16 @@ suite('Mode Visual', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
       assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'foo\nbar'
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 3);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 3);
+      assert.strictEqual(selection.end.line, 1);
     });
   });
 
@@ -1352,14 +1351,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     test('gn selects the current word at |hello', async () => {
@@ -1368,14 +1367,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 5);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 5);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     test('gn selects the current word at h|ello', async () => {
@@ -1384,14 +1383,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 1);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 5);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 1);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 5);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     test('gn selects the current word at hel|lo', async () => {
@@ -1400,14 +1399,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 3);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 5);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 3);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 5);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     test('gn selects the next word at hell|o', async () => {
@@ -1416,14 +1415,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 4);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 5);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 4);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 5);
+      assert.strictEqual(selection.end.line, 2);
     });
 
     test('gn selects the next word at hello|', async () => {
@@ -1432,14 +1431,14 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 5);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 5);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 5);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 5);
+      assert.strictEqual(selection.end.line, 2);
     });
   });
 

@@ -1,6 +1,7 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
@@ -23,7 +24,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+down>']);
     }
 
-    assertEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '3', '3', '<Esc>']);
     assertEqualLines(['33', '33']);
   });
@@ -39,7 +40,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+up>', '<C-alt+up>']);
     }
 
-    assertEqual(modeHandler.vimState.cursors.length, 3, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 3, 'Cursor succesfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
     assertEqualLines(['44', '44', '44']);
   });
