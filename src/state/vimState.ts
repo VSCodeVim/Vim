@@ -87,13 +87,13 @@ export class VimState implements vscode.Disposable {
   public surround:
     | undefined
     | {
-        active: boolean;
-        operator: 'change' | 'delete' | 'yank';
-        target: string | undefined;
-        replacement: string | undefined;
-        range: Range | undefined;
-        isVisualLine: boolean;
-      } = undefined;
+      active: boolean;
+      operator: 'change' | 'delete' | 'yank';
+      target: string | undefined;
+      replacement: string | undefined;
+      range: Range | undefined;
+      isVisualLine: boolean;
+    } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command

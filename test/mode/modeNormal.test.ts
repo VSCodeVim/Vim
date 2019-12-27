@@ -1093,11 +1093,32 @@ suite('Mode Normal', () => {
     end: ['text te|x'],
   });
 
-  newTestOnly({
+  newTest({
     title: 'A should update desiredColumn',
     start: ['|longer line', 'short'],
     keysPressed: 'A<Esc>jk',
     end: ['longer lin|e', 'short'],
+  });
+
+  newTest({
+    title: 'I should updated desiredColumn',
+    start: ['     hell|o', 'a'],
+    keysPressed: 'I<Esc>jk',
+    end: ['     |hello', 'a'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with a',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'amore<Esc>kj',
+    end: ['a long line of text', 'shortmor|e'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with i',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'imore<Esc>kj',
+    end: ['a long line of text', 'shormore|t'],
   });
 
   newTest({

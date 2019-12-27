@@ -281,6 +281,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
+  doesntChangeDesiredColumn = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
