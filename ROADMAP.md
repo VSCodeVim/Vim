@@ -355,8 +355,8 @@ moving around:
 | :white_check_mark: | g~{motion}              | switch case for the text that is moved over with {motion}                                       |
 | :white_check_mark: | gu{motion}              | make the text that is moved over with {motion} lowercase                                        |
 | :white_check_mark: | gU{motion}              | make the text that is moved over with {motion} uppercase                                        |
-| :arrow_down:       | {visual}g?              | perform rot13 encoding on highlighted text                                                      |
-| :arrow_down:       | g?{motion}              | perform rot13 encoding on the text that is moved over with {motion}                             |
+| :white_check_mark: | {visual}g?              | perform rot13 encoding on highlighted text                                                      |
+| :white_check_mark: | g?{motion}              | perform rot13 encoding on the text that is moved over with {motion}                             |
 | :white_check_mark: | :1234: CTRL-A           | add N to the number at or after the cursor                                                      |
 | :white_check_mark: | :1234: CTRL-X           | subtract N from the number at or after the cursor                                               |
 | :white_check_mark: | :1234: <{motion}        | move the lines that are moved over with {motion} one shiftwidth left                            |

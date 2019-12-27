@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
-import { Mode } from './../mode/mode';
+import { Mode, isVisualMode } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
@@ -780,6 +780,59 @@ export class CommentOperator extends BaseOperator {
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
+  }
+}
+
+@RegisterAction
+export class ROT13Operator extends BaseOperator {
+  public keys = ['g', '?'];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    let selections: vscode.Selection[];
+    if (isVisualMode(vimState.currentMode)) {
+      selections = vimState.editor.selections;
+    } else if (vimState.currentRegisterMode === RegisterMode.LineWise) {
+      selections = [new vscode.Selection(start.getLineBegin(), end.getLineEnd())];
+    } else {
+      selections = [new vscode.Selection(start, end.getRight())];
+    }
+
+    for (const range of selections) {
+      const original = TextEditor.getText(range);
+      vimState.recordedState.transformations.push({
+        type: 'replaceText',
+        text: ROT13Operator.rot13(original),
+        start: Position.FromVSCodePosition(range.start),
+        end: Position.FromVSCodePosition(range.end),
+      });
+    }
+
+    return vimState;
+  }
+
+  /**
+   * https://en.wikipedia.org/wiki/ROT13
+   */
+  public static rot13(str: string) {
+    return str
+      .split('')
+      .map((char: string) => {
+        let charCode = char.charCodeAt(0);
+
+        if (char >= 'a' && char <= 'z') {
+          const a = 'a'.charCodeAt(0);
+          charCode = ((charCode - a + 13) % 26) + a;
+        }
+
+        if (char >= 'A' && char <= 'Z') {
+          const A = 'A'.charCodeAt(0);
+          charCode = ((charCode - A + 13) % 26) + A;
+        }
+
+        return String.fromCharCode(charCode);
+      })
+      .join('');
   }
 }
 
