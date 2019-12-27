@@ -8,7 +8,7 @@ import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { waitForCursorSync } from '../src/util/util';
-import { assertEqualLines } from './testUtils';
+import { assertEqualLines, setupWorkspace } from './testUtils';
 import { globalState } from '../src/state/globalState';
 
 export function getTestingFunctions() {
@@ -27,7 +27,10 @@ export function getTestingFunctions() {
 
     test(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -42,7 +45,10 @@ export function getTestingFunctions() {
 
     test.only(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -56,7 +62,10 @@ export function getTestingFunctions() {
 
     test.skip(testObj.title, async () =>
       testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
+        .bind(
+          null,
+          await getAndUpdateModeHandler()
+        )(testObj)
         .catch((reason: Error) => {
           reason.stack = niceStack;
           throw reason;
@@ -266,18 +275,17 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   jumpTracker.clearJumps();
 
-  // assumes key presses are single characters for nowkA
+  // Assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
   // Check valid test object input
   assert(helper.isValid, "Missing '|' in test object.");
 
-  // end: check given end output is correct
-  //
+  // Check given end output is correct
   const lines = helper.asVimOutputText();
   assertEqualLines(lines);
+
   // Check final cursor position
-  //
   const actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   const expectedPosition = helper.endPosition;
   assert.strictEqual(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
@@ -288,21 +296,21 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   );
 
   // endMode: check end mode is correct if given
-  if (typeof testObj.endMode !== 'undefined') {
+  if (testObj.endMode !== undefined) {
     const actualMode = Mode[modeHandler.currentMode].toUpperCase();
     const expectedMode = Mode[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }
 
   // jumps: check jumps are correct if given
-  if (typeof testObj.jumps !== 'undefined') {
+  if (testObj.jumps !== undefined) {
     assert.deepEqual(
       jumpTracker.jumps.map(j => lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map(t => t.replace('|', '')),
       'Incorrect jumps found'
     );
 
-    const stripBar = text => (text ? text.replace('|', '') : text);
+    const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
     const actualJumpPosition =
       (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
     const expectedJumpPosition = stripBar(testObj.jumps.find(t => t.includes('|'))) || '<FRONT>';

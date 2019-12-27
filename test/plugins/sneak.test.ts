@@ -2,9 +2,9 @@ import { Globals } from '../../src/globals';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
 
-suite('sneak plugin', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
+const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
+suite('sneak plugin', () => {
   setup(async () => {
     await setupWorkspace();
     Globals.mockConfiguration.sneak = true;
@@ -130,5 +130,30 @@ suite('sneak plugin', () => {
     start: ['|abc', 'aac', 'abc'],
     keysPressed: '3sa\n',
     end: ['abc', 'aac', '|abc'],
+  });
+});
+
+suite('sneakReplacesF', () => {
+  setup(async () => {
+    await setupWorkspace();
+    Globals.mockConfiguration.sneak = true;
+    Globals.mockConfiguration.sneakReplacesF = true;
+    await reloadConfiguration();
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title: 'sneakReplacesF forward',
+    start: ['|apple', 'banana', 'carrot'],
+    keysPressed: 'fa;',
+    end: ['apple', 'ban|ana', 'carrot'],
+  });
+
+  newTest({
+    title: 'sneakReplacesF backward',
+    start: ['apple', 'banana', '|carrot'],
+    keysPressed: 'Fa;',
+    end: ['apple', 'ban|ana', 'carrot'],
   });
 });

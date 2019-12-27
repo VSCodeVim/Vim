@@ -54,14 +54,18 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
+    const searchHighlightColor = configuration.searchHighlightColor
+      ? configuration.searchHighlightColor
+      : new vscode.ThemeColor('editor.findMatchHighlightBackground');
+
     this.SearchHighlight = vscode.window.createTextEditorDecorationType({
-      backgroundColor: configuration.searchHighlightColor,
+      backgroundColor: searchHighlightColor,
       color: configuration.searchHighlightTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
     this.EasyMotion = vscode.window.createTextEditorDecorationType({
-      backgroundColor: configuration.searchHighlightColor,
+      backgroundColor: searchHighlightColor,
     });
   }
 }

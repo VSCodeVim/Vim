@@ -113,11 +113,11 @@ export class RecordedState {
    */
   public get operator(): BaseOperator {
     let list = this.actionsRun.filter(a => a instanceof BaseOperator).reverse();
-    return list[0] as any;
+    return list[0] as BaseOperator;
   }
 
   public get operators(): BaseOperator[] {
-    return this.actionsRun.filter(a => a instanceof BaseOperator).reverse() as any;
+    return this.actionsRun.filter(a => a instanceof BaseOperator).reverse() as BaseOperator[];
   }
 
   /**
@@ -128,7 +128,7 @@ export class RecordedState {
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
-    return list[0] as any;
+    return list[0] as BaseCommand;
   }
 
   public get hasRunAMovement(): boolean {
@@ -167,7 +167,8 @@ export class RecordedState {
       mode !== Mode.SearchInProgressMode &&
       mode !== Mode.CommandlineInProgress &&
       (this.hasRunAMovement ||
-        (mode === Mode.Visual || mode === Mode.VisualLine) ||
+        mode === Mode.Visual ||
+        mode === Mode.VisualLine ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
     );

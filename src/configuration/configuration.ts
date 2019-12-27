@@ -244,11 +244,7 @@ class Configuration implements IConfiguration {
     loggingLevelForConsole: 'error',
   };
 
-  @overlapSetting({
-    settingName: 'findMatchHighlightBackground',
-    defaultValue: 'rgba(150, 150, 255, 0.3)',
-  })
-  searchHighlightColor: string;
+  searchHighlightColor = '';
   searchHighlightTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {

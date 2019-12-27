@@ -10,6 +10,10 @@ class VimrcKeyRemappingBuilderImpl {
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
   public async build(line: string): Promise<IVimrcKeyRemapping | undefined> {
+    if (line.trimLeft().startsWith('"')) {
+      return;
+    }
+
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
       return undefined;
