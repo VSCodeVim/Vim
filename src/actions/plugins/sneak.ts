@@ -49,7 +49,8 @@ export class SneakForward extends BaseMovement {
 
       const ignorecase =
         configuration.sneakUseIgnorecaseAndSmartcase &&
-        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
+        configuration.ignorecase &&
+        !(configuration.smartcase && /[A-Z]/.test(searchString));
 
       // Check for matches
       if (ignorecase) {
@@ -112,7 +113,8 @@ export class SneakBackward extends BaseMovement {
 
       const ignorecase =
         configuration.sneakUseIgnorecaseAndSmartcase &&
-        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
+        configuration.ignorecase &&
+        !(configuration.smartcase && /[A-Z]/.test(searchString));
 
       // Check for matches
       if (ignorecase) {
