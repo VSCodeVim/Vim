@@ -97,7 +97,7 @@ export class BaseAction {
     const isSingleNumber: RegExp = /^[0-9]$/;
     const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
-    for (let i = 0, j = 0; i < one.length; i++ , j++) {
+    for (let i = 0, j = 0; i < one.length; i++, j++) {
       const left = one[i],
         right = two[j];
 

@@ -214,7 +214,7 @@ export abstract class BaseCommand extends BaseAction {
       .map(x => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
-          (a.start.line === b.start.line && a.start.character > b.start.character)
+        (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
           : -1
       );
@@ -3738,7 +3738,7 @@ class ActionJoin extends BaseCommand {
       .map(x => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
-          (a.start.line === b.start.line && a.start.character > b.start.character)
+        (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
           : -1
       );
@@ -3816,9 +3816,9 @@ class ActionJoinNoWhitespace extends BaseCommand {
       position.getLineBegin(),
       lineTwo.length > 0
         ? position
-          .getNextLineBegin()
-          .getLineEnd()
-          .getLeft()
+            .getNextLineBegin()
+            .getLineEnd()
+            .getLeft()
         : position.getLineEnd()
     );
 
