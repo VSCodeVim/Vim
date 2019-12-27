@@ -470,6 +470,7 @@ suite('Mode Visual Line', () => {
       keysPressed: 'VjjA_',
       end: ['111', '222_|', ' ', '444_', '555'],
     });
+
     newTest({
       title: 'updates desired column correctly',
       start: ['|111111', '222', '333'],
