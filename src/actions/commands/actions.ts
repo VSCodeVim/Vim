@@ -711,6 +711,7 @@ abstract class CommandEditorScroll extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends CommandEditorScroll {
   keys = ['<C-e>'];
+  doesntUpdateDesiredColumn = true;
   to: EditorScrollDirection = 'down';
   by: EditorScrollByUnit = 'line';
 }
@@ -2490,6 +2491,7 @@ class CommandCenterScrollFirstChar extends BaseCommand {
 class CommandTopScroll extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['z', 't'];
+  doesntUpdateDesiredColumn = true;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -2544,6 +2546,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
 class CommandBottomScroll extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['z', 'b'];
+  doesntUpdateDesiredColumn = true;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
