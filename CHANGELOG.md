@@ -1,5 +1,31 @@
 # Change Log
 
+## [v1.12.4](https://github.com/vscodevim/vim/tree/v1.12.4) (2019-12-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.12.3...v1.12.4)
+
+**Enhancements:**
+
+- Unable to remap keys via noremap in vimrc [\#4403](https://github.com/VSCodeVim/Vim/issues/4403)
+- Support `g?` operator \(rot13\) [\#4363](https://github.com/VSCodeVim/Vim/issues/4363)
+
+**Fixed Bugs:**
+
+- Setting vim.searchHighlightColor uses editor.findMatchHighlightBackground as default, but it is no longer available. [\#4369](https://github.com/VSCodeVim/Vim/issues/4369)
+
+**Closed issues:**
+
+- enable Vimrc seems to be on by default [\#4419](https://github.com/VSCodeVim/Vim/issues/4419)
+- Getting error notifications when undoing things [\#4417](https://github.com/VSCodeVim/Vim/issues/4417)
+- If no .vimrc can be found, offer to create it [\#4325](https://github.com/VSCodeVim/Vim/issues/4325)
+
+**Merged pull requests:**
+
+- Some basic `sneakReplacesF` tests with refactored `newTest` which acc… [\#4422](https://github.com/VSCodeVim/Vim/pull/4422) ([J-Fields](https://github.com/J-Fields))
+- Change default value of experimental vimrc support to a boolean [\#4420](https://github.com/VSCodeVim/Vim/pull/4420) ([ctobolski](https://github.com/ctobolski))
+- support vimrc map & noremap [\#4409](https://github.com/VSCodeVim/Vim/pull/4409) ([jjoekoullas](https://github.com/jjoekoullas))
+- `g?` \(rot13\) support [\#4367](https://github.com/VSCodeVim/Vim/pull/4367) ([J-Fields](https://github.com/J-Fields))
+
 ## [v1.12.3](https://github.com/vscodevim/vim/tree/v1.12.3) (2019-12-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.12.0...v1.12.3)
