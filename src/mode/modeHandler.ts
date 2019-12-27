@@ -272,7 +272,7 @@ export class ModeHandler implements vscode.Disposable {
         // only consider the last keypress for remapping
         this.vimState.recordedState.commandList = [
           this.vimState.recordedState.commandList[
-            this.vimState.recordedState.commandList.length - 1
+          this.vimState.recordedState.commandList.length - 1
           ],
         ];
       }
@@ -526,8 +526,8 @@ export class ModeHandler implements vscode.Disposable {
       vimState.cursors = vimState.cursors.map(x =>
         x.start.isEarlierThan(x.stop)
           ? x.withNewStop(
-              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-            )
+            x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+          )
           : x
       );
     }
@@ -565,7 +565,8 @@ export class ModeHandler implements vscode.Disposable {
 
     if (
       (movement && !movement.doesntChangeDesiredColumn) ||
-      (!movement && vimState.currentMode !== Mode.VisualBlock)
+      (!movement && vimState.currentMode !== Mode.VisualBlock) ||
+      !action.doesntUpdateDesiredColumn
     ) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
@@ -774,7 +775,7 @@ export class ModeHandler implements vscode.Disposable {
       if (
         recordedState.operators.length > 1 &&
         recordedState.operators.reverse()[0].constructor ===
-          recordedState.operators.reverse()[1].constructor
+        recordedState.operators.reverse()[1].constructor
       ) {
         resultVimState = await recordedState.operator.runRepeat(
           resultVimState,
@@ -1379,8 +1380,8 @@ export class ModeHandler implements vscode.Disposable {
     const easyMotionHighlightRanges =
       this.currentMode === Mode.EasyMotionInputMode
         ? vimState.easyMotion.searchAction
-            .getMatches(vimState.cursorStopPosition, vimState)
-            .map(x => x.toRange())
+          .getMatches(vimState.cursorStopPosition, vimState)
+          .map(x => x.toRange())
         : [];
     this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
 
