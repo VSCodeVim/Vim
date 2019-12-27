@@ -244,7 +244,7 @@ class Configuration implements IConfiguration {
     loggingLevelForConsole: 'error',
   };
 
-  searchHighlightColor: string;
+  searchHighlightColor = '';
   searchHighlightTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {

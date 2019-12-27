@@ -56,7 +56,7 @@ class DecorationImpl {
 
     const searchHighlightColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
-      : new vscode.ThemeColor('findMatchHighlightBackground');
+      : new vscode.ThemeColor('editor.findMatchHighlightBackground');
 
     this.SearchHighlight = vscode.window.createTextEditorDecorationType({
       backgroundColor: searchHighlightColor,
