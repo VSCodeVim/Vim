@@ -804,7 +804,7 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'a', 'hu|r '],
   });
 
-  suite("doesn't update desiredColumn when it shouldn't", () => {
+  suite.only("doesn't update desiredColumn when it shouldn't", () => {
     newTest({
       title: 'Preserves desired cursor position when pressing zz',
       start: ['very long line of text....|.', 'short line'],
@@ -831,6 +831,13 @@ suite('Motions in Normal Mode', () => {
       start: ['very long line of text....|.', 'short line'],
       keysPressed: 'j<C-e>k',
       end: ['very long line of text....|.', 'short line'],
+    });
+
+    newTest({
+      title: 'Preserves desired cursor position when pressing <C-y>',
+      start: ['short line', 'very long line of text....|.'],
+      keysPressed: 'k<C-y>j',
+      end: ['short line', 'very long line of text....|.'],
     });
   });
 });

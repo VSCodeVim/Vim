@@ -721,6 +721,9 @@ class CommandCtrlE extends CommandEditorScroll {
 @RegisterAction
 class CommandCtrlY extends CommandEditorScroll {
   keys = ['<C-y>'];
+  doesntChangeDesiredColumn() {
+    return true;
+  }
   to: EditorScrollDirection = 'up';
   by: EditorScrollByUnit = 'line';
 }
