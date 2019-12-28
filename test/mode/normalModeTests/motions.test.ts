@@ -804,7 +804,7 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'a', 'hu|r '],
   });
 
-  suite.only("doesn't update desiredColumn when it shouldn't", () => {
+  suite("doesn't update desiredColumn when it shouldn't", () => {
     newTest({
       title: 'Preserves desired cursor position when pressing zz',
       start: ['very long line of text....|.', 'short line'],
