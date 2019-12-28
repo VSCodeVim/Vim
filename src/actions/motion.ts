@@ -99,7 +99,9 @@ class MoveDownByScreenLine extends MoveByScreenLine {
 }
 
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
-  doesntChangeDesiredColumn = true;
+  doesntChangeDesiredColumn() {
+    return true;
+  }
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     let prevDesiredColumn = vimState.desiredColumn;
     let prevLine = vimState.editor.selection.active.line;
@@ -214,7 +216,9 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 @RegisterAction
 class MoveDown extends BaseMovement {
   keys = ['j'];
-  doesntChangeDesiredColumn = true;
+  doesntChangeDesiredColumn() {
+    return true;
+  }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
@@ -237,7 +241,9 @@ class MoveDownArrow extends MoveDown {
 @RegisterAction
 class MoveUp extends BaseMovement {
   keys = ['k'];
-  doesntChangeDesiredColumn = true;
+  doesntChangeDesiredColumn() {
+    return true;
+  }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
@@ -857,7 +863,9 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     ['g', 'k'],
     ['g', '<up>'],
   ];
-  doesntChangeDesiredColumn = true;
+  doesntChangeDesiredColumn() {
+    return true;
+  }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     return position.getUp(vimState.desiredColumn);
@@ -876,7 +884,9 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     ['g', 'j'],
     ['g', '<down>'],
   ];
-  doesntChangeDesiredColumn = true;
+  doesntChangeDesiredColumn() {
+    return true;
+  }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     return position.getDown(vimState.desiredColumn);
