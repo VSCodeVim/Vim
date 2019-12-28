@@ -803,4 +803,41 @@ suite('Motions in Normal Mode', () => {
     keysPressed: 'gjgj',
     end: ['blah', 'duh', 'a', 'hu|r '],
   });
+
+  suite("doesn't update desiredColumn when it shouldn't", () => {
+    newTest({
+      title: 'Preserves desired cursor position when pressing zz',
+      start: ['very long line of text....|.', 'short line'],
+      keysPressed: 'jzzk',
+      end: ['very long line of text....|.', 'short line'],
+    });
+
+    newTest({
+      title: 'Preserves desired cursor position when pressing zt',
+      start: ['very long line of text....|.', 'short line'],
+      keysPressed: 'jztk',
+      end: ['very long line of text....|.', 'short line'],
+    });
+
+    newTest({
+      title: 'Preserves desired cursor position when pressing zb',
+      start: ['very long line of text....|.', 'short line'],
+      keysPressed: 'jzbk',
+      end: ['very long line of text....|.', 'short line'],
+    });
+
+    newTest({
+      title: 'Preserves desired cursor position when pressing <C-e>',
+      start: ['very long line of text....|.', 'short line'],
+      keysPressed: 'j<C-e>k',
+      end: ['very long line of text....|.', 'short line'],
+    });
+
+    newTest({
+      title: 'Preserves desired cursor position when pressing <C-y>',
+      start: ['short line', 'very long line of text....|.'],
+      keysPressed: 'k<C-y>j',
+      end: ['short line', 'very long line of text....|.'],
+    });
+  });
 });

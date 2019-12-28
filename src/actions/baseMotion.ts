@@ -54,11 +54,6 @@ export abstract class BaseMovement extends BaseAction {
   isRepeat = false;
 
   /**
-   * Whether we should change desiredColumn in VimState.
-   */
-  public doesntChangeDesiredColumn = false;
-
-  /**
    * This is for commands like $ which force the desired column to be at
    * the end of even the longest line.
    */
