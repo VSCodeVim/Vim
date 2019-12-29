@@ -14,7 +14,7 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { BaseMovement } from './baseMotion';
+import { BaseMovement, SelectionType, IMovement, isIMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
@@ -23,35 +23,6 @@ import { globalState } from '../state/globalState';
 import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { SearchDirection } from '../state/searchState';
-
-export function isIMovement(o: IMovement | Position): o is IMovement {
-  return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
-}
-
-/**
- * The result of a (more sophisticated) Movement.
- */
-export interface IMovement {
-  start: Position;
-  stop: Position;
-
-  /**
-   * Whether this motion succeeded. Some commands, like fx when 'x' can't be found,
-   * will not move the cursor. Furthermore, dfx won't delete *anything*, even though
-   * deleting to the current character would generally delete 1 character.
-   */
-  failed?: boolean;
-
-  diff?: PositionDiff;
-
-  // It /so/ annoys me that I have to put this here.
-  registerMode?: RegisterMode;
-}
-
-enum SelectionType {
-  Concatenating, // selections that concatenate repeated movements
-  Expanding, // selections that expand the start and end of the previous selection
-}
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
