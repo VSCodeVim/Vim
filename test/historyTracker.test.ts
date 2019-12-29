@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-
 import * as vscode from 'vscode';
+
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
 import { VimState } from '../src/state/vimState';
 import { Position } from '../src/common/motion/position';
@@ -22,7 +22,7 @@ suite('historyTracker unit tests', () => {
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
-  const setupVsCode = () => {
+  const setupVSCode = () => {
     activeTextEditor = sandbox.createStubInstance<TextEditor>(TextEditor);
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
@@ -39,7 +39,7 @@ suite('historyTracker unit tests', () => {
 
   suite('addMark', () => {
     setup(() => {
-      setupVsCode();
+      setupVSCode();
       historyTracker = setupHistoryTracker();
     });
 
