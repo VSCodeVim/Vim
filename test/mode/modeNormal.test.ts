@@ -1094,6 +1094,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'A should update desiredColumn',
+    start: ['|longer line', 'short'],
+    keysPressed: 'A<Esc>jk',
+    end: ['longer lin|e', 'short'],
+  });
+
+  newTest({
+    title: 'I should updated desiredColumn',
+    start: ['     hell|o', 'a'],
+    keysPressed: 'I<Esc>jk',
+    end: ['    | hello', 'a'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with a',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'amore<Esc>kj',
+    end: ['a long line of text', 'shortmor|e'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with i',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'imore<Esc>kj',
+    end: ['a long line of text', 'shormor|et'],
+  });
+
+  newTest({
     title: "Can handle 'yy' without changing cursor position",
     start: ['one', 'tw|o'],
     keysPressed: 'yy',
@@ -2035,7 +2063,7 @@ suite('Mode Normal', () => {
       'test aaa test aaa test aaa test aaa test',
     ],
     keysPressed: '<C-alt+down>D<Esc>',
-    end: ['test aaa test aaa test aaa tes|t ', 'test aaa test aaa test aaa test '],
+    end: ['test aaa test aaa test aaa test| ', 'test aaa test aaa test aaa test '],
   });
 
   newTest({

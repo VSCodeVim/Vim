@@ -33,6 +33,7 @@ import {
 } from './../transformations/transformations';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
+import { Notation } from '../configuration/notation';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -227,10 +228,11 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  public async handleKeyEvent(key: string): Promise<Boolean> {
+  public async handleKeyEvent(key: string): Promise<void> {
     const now = Number(new Date());
+    const printableKey = Notation.printableKey(key);
 
-    this._logger.debug(`handling key=${key}.`);
+    this._logger.debug(`handling key=${printableKey}.`);
 
     // rewrite copy
     if (configuration.overrideCopy) {
@@ -320,7 +322,7 @@ export class ModeHandler implements vscode.Disposable {
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
 
-    return true;
+    this._logger.debug(`handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`);
   }
 
   private async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
@@ -564,8 +566,10 @@ export class ModeHandler implements vscode.Disposable {
     const movement = action instanceof BaseMovement ? action : undefined;
 
     if (
-      (movement && !movement.doesntChangeDesiredColumn) ||
-      (!movement && vimState.currentMode !== Mode.VisualBlock)
+      (movement && !movement.doesntChangeDesiredColumn()) ||
+      (!movement &&
+        vimState.currentMode !== Mode.VisualBlock &&
+        !action.doesntChangeDesiredColumn())
     ) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 

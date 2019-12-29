@@ -470,5 +470,12 @@ suite('Mode Visual Line', () => {
       keysPressed: 'VjjA_',
       end: ['111', '222_|', ' ', '444_', '555'],
     });
+
+    newTest({
+      title: 'updates desired column correctly',
+      start: ['|111111', '222', '333'],
+      keysPressed: 'VjjA<Esc>jk',
+      end: ['11111|1', '222', '333'],
+    });
   });
 });

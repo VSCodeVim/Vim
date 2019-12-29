@@ -18,6 +18,12 @@ export class BaseAction {
   public canBeRepeatedWithDot = false;
 
   /**
+   * Whether we should change desiredColumn in VimState.
+   */
+  public doesntChangeDesiredColumn(): boolean {
+    return false;
+  }
+  /**
    * Modes that this action can be run in.
    */
   public modes: Mode[];
