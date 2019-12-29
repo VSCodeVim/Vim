@@ -400,8 +400,8 @@ export class HistoryTracker {
   /**
    * Updates all marks affecting the active text editor.
    * Since all currentHistoryStep's marks are affected, just update the
-   * array.  File marks might not be from the active editor, so the
-   * filemark collection is mutated with the new element in place.
+   * array.  Global marks might not be from the active editor, so the
+   * global mark collection is mutated with the new element in place.
    */
   private updateMarks(): void {
     const newMarks = this.updateAndReturnMarks();
@@ -419,7 +419,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Gets all local and file marks targeting the current editor.
+   * Gets all local and global marks targeting the current editor.
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
@@ -443,7 +443,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Puts the mark either the static or local marks array depending on
+   * Puts the mark into either the global or local marks array depending on
    * mark.isUppercaseMark.
    */
   private putMarkInList(mark: IMark): void {
@@ -457,7 +457,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Retrieves a mark from either the static or local array depending on
+   * Retrieves a mark from either the global or local array depending on
    * mark.isUppercaseMark.
    */
   public getMark(markName: string): IMark {
@@ -474,7 +474,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Gets all file marks.  I.e., marks that are shared among all editors.
+   * Gets all global marks.  I.e., marks that are shared among all editors.
    */
   public getGlobalMarks(): IMark[] {
     return [...HistoryStep.globalMarks];

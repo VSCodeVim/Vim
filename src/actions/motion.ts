@@ -465,12 +465,6 @@ export class MarkMovementBOL extends BaseMovement {
   }
 }
 
-async function ensureEditorIsActive(editor: vscode.TextEditor) {
-  if (editor !== vscode.window.activeTextEditor) {
-    await vscode.window.showTextDocument(editor.document);
-  }
-}
-
 @RegisterAction
 export class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
@@ -485,10 +479,16 @@ export class MarkMovement extends BaseMovement {
     }
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
-      ensureEditorIsActive(mark.editor);
+      await ensureEditorIsActive(mark.editor);
     }
 
     return mark.position;
+  }
+}
+
+async function ensureEditorIsActive(editor: vscode.TextEditor) {
+  if (editor !== vscode.window.activeTextEditor) {
+    await vscode.window.showTextDocument(editor.document);
   }
 }
 
