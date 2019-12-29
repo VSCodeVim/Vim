@@ -30,7 +30,10 @@
     "Other",
     "Keymaps"
   ],
-  "extensionKind": "ui",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "activationEvents": [
     "*",
     "onCommand:type"
