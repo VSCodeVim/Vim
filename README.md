@@ -110,7 +110,7 @@ These settings are specific to VSCodeVim.
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------- |
 | vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                                  | Boolean | false                                 |
 | vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                          | String  | None                                  |
-| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                   | object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`     |  |
+| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                   | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`     |  |
 | vim.debug.silent                 | Boolean indicating whether log messages will be suppressed.                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                 |
 | vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                               | String  | error                                 |
 | vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                 | String  | error                                 |
@@ -328,7 +328,7 @@ Custom remappings are defined on a per-mode basis.
 
 2.  Does the extension handle the keys you are trying to remap?
 
-    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vscodevim-settings) adjusted to 'debug', as you press keys, you should see output similar to:
+    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/9bab33c75d0a53873880a79c5d2de41c8be1bef9/package.json#L62). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vscodevim-settings) adjusted to 'debug', as you press keys, you should see output similar to:
 
     ```console
     debug: ModeHandler: handling key=A.
@@ -428,27 +428,27 @@ Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and conf
 
 Once easymotion is active, initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
-| Motion Command                      | Description                                                                                                 |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `<leader><leader> s <char>`         | Search character                                                                                            |
-| `<leader><leader> f <char>`         | Find character forwards                                                                                     |
-| `<leader><leader> F <char>`         | Find character backwards                                                                                    |
-| `<leader><leader> t <char>`         | Til character forwards                                                                                      |
-| `<leader><leader> T <char>`         | Til character backwards                                                                                     |
-| `<leader><leader> w`                | Start of word forwards                                                                                      |
-| `<leader><leader> b`                | Start of word backwards                                                                                     |
-| `<leader><leader> l`                | matches beginning & ending of word, camelCase, after \_ and after # forwards                                |
-| `<leader><leader> h`                | matches beginning & ending of word, camelCase, after \_ and after # backwards                               |
-| `<leader><leader> e`                | End of word forwards                                                                                        |
-| `<leader><leader> ge`               | End of word backwards                                                                                       |
-| `<leader><leader> j`                | Start of line forwards                                                                                      |
-| `<leader><leader> k`                | Start of line backwards                                                                                     |
-| `<leader><leader> / <char>... <CR>` | Search n-character                                                                                          |
-| `<leader><leader><leader> bdt`      | Til character                                                                                               |
-| `<leader><leader><leader> bdw`      | Start of word                                                                                               |
-| `<leader><leader><leader> bde`      | End of word                                                                                                 |
-| `<leader><leader><leader> bdjk`     | Start of line                                                                                               |
-| `<leader><leader><leader> j`        | JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after \_ and after # |
+| Motion Command                      | Description                                                                                                    |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `<leader><leader> s <char>`         | Search character                                                                                               |
+| `<leader><leader> f <char>`         | Find character forwards                                                                                        |
+| `<leader><leader> F <char>`         | Find character backwards                                                                                       |
+| `<leader><leader> t <char>`         | Til character forwards                                                                                         |
+| `<leader><leader> T <char>`         | Til character backwards                                                                                        |
+| `<leader><leader> w`                | Start of word forwards                                                                                         |
+| `<leader><leader> b`                | Start of word backwards                                                                                        |
+| `<leader><leader> l`                | Matches beginning & ending of word, camelCase, after `_`, and after `#` forwards                               |
+| `<leader><leader> h`                | Matches beginning & ending of word, camelCase, after `_`, and after `#` backwards                              |
+| `<leader><leader> e`                | End of word forwards                                                                                           |
+| `<leader><leader> ge`               | End of word backwards                                                                                          |
+| `<leader><leader> j`                | Start of line forwards                                                                                         |
+| `<leader><leader> k`                | Start of line backwards                                                                                        |
+| `<leader><leader> / <char>... <CR>` | Search n-character                                                                                             |
+| `<leader><leader><leader> bdt`      | Til character                                                                                                  |
+| `<leader><leader><leader> bdw`      | Start of word                                                                                                  |
+| `<leader><leader><leader> bde`      | End of word                                                                                                    |
+| `<leader><leader><leader> bdjk`     | Start of line                                                                                                  |
+| `<leader><leader><leader> j`        | JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after `_` and after `#` |
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
@@ -457,7 +457,7 @@ This mapping is not a standard mapping, so it is recommended to use your custom 
 
 ### vim-surround
 
-Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
+Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is used to work with surrounding characters like parentheses, brackets, quotes, and XML tags.
 
 | Setting      | Description                 | Type    | Default Value |
 | ------------ | --------------------------- | ------- | ------------- |
@@ -474,10 +474,9 @@ Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is us
 
 Some examples:
 
-- `"test"` with cursor inside quotes type cs"' to end up with `'test'`
-- `"test"` with cursor inside quotes type ds" to end up with `test`
-- `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
-- `test` with cursor on word test type ysaw) to end up with `(test)`
+- `"test"` with cursor inside quotes type `cs"'` to end up with `'test'`
+- `"test"` with cursor inside quotes type `ds"` to end up with `test`
+- `"test"` with cursor inside quotes type `cs"t` and enter `123>` to end up with `<123>test</123>`
 
 ### vim-commentary
 
@@ -486,7 +485,7 @@ Similar to [vim-commentary](https://github.com/tpope/vim-commentary), but uses t
 Usage examples:
 
 - `gc` - toggles line comment. For example `gcc` to toggle line comment for current line and `gc2j` to toggle line comments for the current line and the next two lines.
-- `gC` - toggles block comment. For example `gCi)` to comment out everything within parenthesis.
+- `gC` - toggles block comment. For example `gCi)` to comment out everything within parentheses.
 
 ### vim-indent-object
 
