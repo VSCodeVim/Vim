@@ -1294,17 +1294,26 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    const visibleRange = vimState.editor.visibleRanges[0];
+    const centerViewportAroundCursor =
+      visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||
+      vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+    const revealType = centerViewportAroundCursor
+      ? vscode.TextEditorRevealType.InCenter
+      : vscode.TextEditorRevealType.Default;
+
     // Scroll to position of cursor
     if (this.vimState.currentMode === Mode.SearchInProgressMode) {
       const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
         vimState.cursorStopPosition
       ).pos;
 
-      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
+      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch), revealType);
     } else {
       if (args.revealRange) {
         this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition)
+          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
+          revealType
         );
       }
     }
