@@ -7,7 +7,6 @@ import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { waitForCursorSync } from '../src/util/util';
 import { assertEqualLines, setupWorkspace } from './testUtils';
 import { globalState } from '../src/state/globalState';
 
@@ -254,8 +253,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
-  await waitForCursorSync();
-
   // Since we bypassed VSCodeVim to add text,
   // we need to tell the history tracker that we added it.
   modeHandler.vimState.historyTracker.addChange();
@@ -263,8 +260,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
-
-  await waitForCursorSync();
 
   Globals.mockModeHandler = modeHandler;
 
