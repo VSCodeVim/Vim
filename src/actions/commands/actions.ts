@@ -2366,7 +2366,7 @@ class CommandToggleFold extends CommandFold {
   commandName = 'editor.toggleFold';
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand(this.commandName);
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
     await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
@@ -2381,7 +2381,7 @@ class CommandCloseFold extends CommandFold {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
     return vimState;
   }
 }
@@ -3202,7 +3202,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
     for (let i = 0; i < count; i++) {
       const newPos = new Position(
         vimState.cursors[0].start.line + i,
@@ -3232,7 +3232,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.cursorStartPosition.line - i,
@@ -4604,7 +4604,7 @@ class ActionOverrideCmdD extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -4657,7 +4657,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     );
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
     return vimState;
   }
 }
@@ -4676,7 +4676,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
 
     return vimState;
   }
@@ -4696,7 +4696,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.cursors = await getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync();
 
     return vimState;
   }

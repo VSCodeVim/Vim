@@ -184,7 +184,7 @@ export class JumpTracker {
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);
-      vimState.cursors = await getCursorsAfterSync();
+      vimState.cursors = getCursorsAfterSync();
     } else {
       vimState.cursorStopPosition = jump.position;
     }
