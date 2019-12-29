@@ -590,18 +590,6 @@ class CommandEsc extends BaseCommand {
       return vimState;
     }
 
-    if (
-      vimState.currentMode !== Mode.Visual &&
-      vimState.currentMode !== Mode.VisualLine &&
-      vimState.currentMode !== Mode.EasyMotionMode
-    ) {
-      // Normally, you don't have to iterate over all cursors,
-      // as that is handled for you by the state machine. ESC is
-      // a special case since runsOnceForEveryCursor is false.
-
-      vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
-    }
-
     if (vimState.currentMode === Mode.SearchInProgressMode) {
       vimState.statusBarCursorCharacterPos = 0;
       if (globalState.searchState) {
