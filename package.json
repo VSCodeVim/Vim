@@ -303,6 +303,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl"
       },
       {
+        "key": "ctrl+space",
+        "command": "extension.vim_ctrl+space",
+        "when": "editorTextFocus && vim.active && vim.use<C-space> && !inDebugRepl"
+      },
+      {
         "key": "shift+G",
         "command": "list.focusLast",
         "when": "listFocus && !inputFocus"
