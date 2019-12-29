@@ -5,12 +5,11 @@ import * as vscode from 'vscode';
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
 import { VimState } from '../src/state/vimState';
 import { Position } from '../src/common/motion/position';
-import { TextEditor } from '../src/textEditor';
 
 suite('historyTracker unit tests', () => {
   let sandbox: sinon.SinonSandbox;
   let historyTracker: HistoryTracker;
-  let activeTextEditor: TextEditor;
+  let activeTextEditor: vscode.TextEditor;
 
   const retrieveLocalMark = (markName: string): IMark | undefined =>
     historyTracker.getLocalMarks().find(mark => mark.name === markName);
@@ -23,7 +22,7 @@ suite('historyTracker unit tests', () => {
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
   const setupVSCode = () => {
-    activeTextEditor = sandbox.createStubInstance<TextEditor>(TextEditor);
+    activeTextEditor = sandbox.createStubInstance<vscode.TextEditor>(TextEditorStub);
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
@@ -91,3 +90,39 @@ suite('historyTracker unit tests', () => {
     });
   });
 });
+
+// tslint:disable: no-empty
+class TextEditorStub implements vscode.TextEditor {
+  readonly document: vscode.TextDocument;
+  selection: vscode.Selection;
+  selections: vscode.Selection[];
+  readonly visibleRanges: vscode.Range[];
+  options: vscode.TextEditorOptions;
+  viewColumn?: vscode.ViewColumn;
+
+  constructor() {}
+  async edit(
+    callback: (editBuilder: vscode.TextEditorEdit) => void,
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+  ) {
+    return true;
+  }
+  async insertSnippet(
+    snippet: vscode.SnippetString,
+    location?:
+      | vscode.Position
+      | vscode.Range
+      | ReadonlyArray<Position>
+      | ReadonlyArray<vscode.Range>,
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+  ) {
+    return true;
+  }
+  setDecorations(
+    decorationType: vscode.TextEditorDecorationType,
+    rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]
+  ) {}
+  revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {}
+  show(column?: vscode.ViewColumn) {}
+  hide() {}
+}
