@@ -942,7 +942,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.4",
     "lodash": "^4.17.15",
-    "neovim": "4.5.0",
+    "neovim": "4.7.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6",
