@@ -355,6 +355,7 @@ export class Position extends vscode.Position {
   }
 
   public withColumn(column: number): Position {
+    column = Math.min(column, Position.getLineLength(this.line));
     return new Position(this.line, column);
   }
 
