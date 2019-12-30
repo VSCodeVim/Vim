@@ -9,7 +9,7 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import { Position, PositionDiff } from './../../common/motion/position';
+import { Position, PositionDiff, PositionDiffType } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
@@ -639,7 +639,7 @@ class CommandEscReplaceMode extends BaseCommand {
       type: 'insertText',
       text: textToAdd,
       position: position,
-      diff: new PositionDiff(0, -1),
+      diff: new PositionDiff({ character: -1 }),
     });
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -892,7 +892,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
           text: replaceState.originalChars[position.character - 1],
           start: position.getLeft(),
           end: position,
-          diff: new PositionDiff(0, -1),
+          diff: new PositionDiff({ character: -1 }),
         });
       }
 
@@ -904,7 +904,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
           text: char,
           start: position,
           end: position.getRight(),
-          diff: new PositionDiff(0, 1),
+          diff: new PositionDiff({ character: 1 }),
         });
       } else {
         vimState.recordedState.transformations.push({
@@ -1498,7 +1498,6 @@ export class PutCommand extends BaseCommand {
 
     let textToAdd: string;
     let whereToAddText: Position;
-    let diff = new PositionDiff(0, 0);
 
     const noPrevLine = vimState.cursorStartPosition.isAtDocumentBegin();
     const noNextLine = vimState.cursorStopPosition.isAtDocumentEnd();
@@ -1580,12 +1579,13 @@ export class PutCommand extends BaseCommand {
     const numNewlines = text.split('\n').length - 1;
     const currentLineLength = TextEditor.getLineAt(position).text.length;
 
+    let diff = new PositionDiff();
     if (
       vimState.currentMode === Mode.VisualLine &&
       register.registerMode === RegisterMode.LineWise
     ) {
       const numNewline = [...text].filter(c => c === '\n').length;
-      diff = PositionDiff.NewBOLDiff(-numNewline - (noNextLine ? 0 : 1));
+      diff = PositionDiff.newBOLDiff(-numNewline - (noNextLine ? 0 : 1));
     } else if (register.registerMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
       let numWhitespace = 0;
@@ -1595,35 +1595,61 @@ export class PutCommand extends BaseCommand {
       }
 
       if (after) {
-        diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
+        diff = new PositionDiff({
+          line: -numNewlines - 1,
+          character: numWhitespace,
+          type: PositionDiffType.ExactCharacter,
+        });
       } else {
-        diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : -numNewlines, numWhitespace);
+        diff = new PositionDiff({
+          line: currentLineLength > 0 ? 1 : -numNewlines,
+          character: numWhitespace,
+          type: PositionDiffType.ExactCharacter,
+        });
       }
     } else {
       if (!text.includes('\n')) {
         if (!position.isLineEnd()) {
           if (register.registerMode === RegisterMode.BlockWise) {
             if (after) {
-              diff = new PositionDiff(0, -1 * text.length);
+              diff = new PositionDiff({
+                character: -text.length,
+              });
             } else {
-              diff = new PositionDiff(0, 1);
+              diff = new PositionDiff({
+                character: 1,
+              });
             }
           } else {
             if (after) {
-              diff = new PositionDiff(0, -1);
+              diff = new PositionDiff({
+                character: -1,
+              });
             } else {
-              diff = new PositionDiff(0, textToAdd.length);
+              diff = new PositionDiff({
+                character: textToAdd.length,
+              });
             }
           }
         }
       } else {
         if (position.isLineEnd()) {
-          diff = PositionDiff.NewBOLDiff(-numNewlines, position.character);
+          diff = new PositionDiff({
+            line: -numNewlines,
+            character: position.character,
+            type: PositionDiffType.ExactCharacter,
+          });
         } else {
           if (after) {
-            diff = PositionDiff.NewBOLDiff(-numNewlines, position.character);
+            diff = new PositionDiff({
+              line: -numNewlines,
+              character: position.character,
+              type: PositionDiffType.ExactCharacter,
+            });
           } else {
-            diff = new PositionDiff(0, 1);
+            diff = new PositionDiff({
+              character: 1,
+            });
           }
         }
       }
@@ -1696,7 +1722,7 @@ export class PutCommand extends BaseCommand {
 
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: new PositionDiff(-numNewlines + 1, 0),
+        diff: new PositionDiff({ line: -numNewlines + 1 }),
         cursorIndex: this.multicursorIndex,
       });
 
@@ -1715,9 +1741,7 @@ export class GPutCommand extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const result = await new PutCommand().exec(position, vimState);
-
-    return result;
+    return new PutCommand().exec(position, vimState);
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
@@ -1745,7 +1769,7 @@ export class GPutCommand extends BaseCommand {
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(addedLinesCount, 0),
+        diff: PositionDiff.newBOLDiff(addedLinesCount),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -1888,7 +1912,7 @@ export class GPutBeforeCommand extends BaseCommand {
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       result.recordedState.transformations.push({
         type: 'moveCursor',
-        diff: PositionDiff.NewBOLDiff(addedLinesCount, 0),
+        diff: PositionDiff.newBOLDiff(addedLinesCount),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -3646,18 +3670,18 @@ class ActionJoin extends BaseCommand {
         startLineNumber = position.line;
         startColumn = 0;
         endLineNumber = startLineNumber + count;
-        endColumn = TextEditor.getLineMaxColumn(endLineNumber);
+        endColumn = TextEditor.getLineLength(endLineNumber);
       } else {
         startLineNumber = position.line;
         startColumn = 0;
         endLineNumber = position.line;
-        endColumn = TextEditor.getLineMaxColumn(endLineNumber);
+        endColumn = TextEditor.getLineLength(endLineNumber);
       }
     } else {
       startLineNumber = startPosition.line;
       startColumn = 0;
       endLineNumber = position.line;
-      endColumn = TextEditor.getLineMaxColumn(endLineNumber);
+      endColumn = TextEditor.getLineLength(endLineNumber);
     }
 
     let trimmedLinesContent = TextEditor.getLineAt(startPosition).text;
@@ -3715,10 +3739,9 @@ class ActionJoin extends BaseCommand {
           text: trimmedLinesContent,
           start: deleteStartPosition,
           end: deleteEndPosition,
-          diff: new PositionDiff(
-            0,
-            trimmedLinesContent.length - columnDeltaOffset - position.character
-          ),
+          diff: new PositionDiff({
+            character: trimmedLinesContent.length - columnDeltaOffset - position.character,
+          }),
         });
       } else {
         vimState.recordedState.transformations.push({
@@ -3836,7 +3859,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
       type: 'insertText',
       text: resultLine,
       position: position,
-      diff: new PositionDiff(0, -lineTwo.length),
+      diff: new PositionDiff({ character: -lineTwo.length }),
     });
 
     newState.cursorStopPosition = new Position(position.line, lineOne.length);
@@ -3915,7 +3938,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
-        diff: new PositionDiff(0, -1),
+        diff: new PositionDiff({ character: -1 }),
       });
     } else if (toReplace === '\n') {
       // A newline replacement always inserts exactly one newline (regardless
@@ -3925,7 +3948,7 @@ class ActionReplaceCharacter extends BaseCommand {
         text: '\n',
         start: position,
         end: endPos,
-        diff: PositionDiff.NewBOLDiff(1),
+        diff: PositionDiff.newBOLDiff(1),
       });
     } else {
       vimState.recordedState.transformations.push({
@@ -3933,7 +3956,7 @@ class ActionReplaceCharacter extends BaseCommand {
         text: toReplace.repeat(timesToRepeat),
         start: position,
         end: endPos,
-        diff: new PositionDiff(0, timesToRepeat - 1),
+        diff: new PositionDiff({ character: timesToRepeat - 1 }),
       });
     }
     return vimState;

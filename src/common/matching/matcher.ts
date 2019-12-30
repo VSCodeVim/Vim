@@ -191,7 +191,7 @@ export class PairMatcher {
     let isNextMatch = false;
 
     if (charactersToMatch.includes(deleteText)) {
-      const matchPosition = currentPosition.add(new PositionDiff(0, 1));
+      const matchPosition = currentPosition.add(new PositionDiff({ character: 1 }));
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
       isNextMatch =
         vscode.window.activeTextEditor!.document.getText(matchRange) ===
