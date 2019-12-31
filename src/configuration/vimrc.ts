@@ -139,11 +139,16 @@ class VimrcImpl {
       return filePath;
     }
 
-    if (!filePath.startsWith('~')) {
+    const regex = /(?<=^(?:~|\$HOME)).*/;
+
+    // Matches /pathToVimrc in $HOME/pathToVimrc or ~/pathToVimrc
+    const matches = filePath.match(regex);
+
+    if (!matches || matches.length > 1) {
       return filePath;
     }
 
-    return path.join(process.env.HOME, filePath.slice(1));
+    return path.join(process.env.HOME, matches[0]);
   }
 }
 
