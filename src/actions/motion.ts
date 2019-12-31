@@ -1478,7 +1478,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     return {
       start: startPos,
       stop: endPos,
-      diff: new PositionDiff(0, startPos === position ? 1 : 0),
+      diff: new PositionDiff({ character: startPos === position ? 1 : 0 }),
     };
   }
 }

@@ -373,7 +373,7 @@ export class ModeHandler implements vscode.Disposable {
           lastAction.contentChanges = lastAction.contentChanges.concat(
             vimState.historyTracker.currentContentChanges.map(x => ({
               textDiff: x,
-              positionDiff: new PositionDiff(0, 0),
+              positionDiff: new PositionDiff(),
             }))
           );
           vimState.historyTracker.currentContentChanges = [];
@@ -728,7 +728,7 @@ export class ModeHandler implements vscode.Disposable {
       // the newline character, which it places 1 past the last character
       // in the line. This is why we use > instead of >=.
 
-      if (stop.character > Position.getLineLength(stop.line)) {
+      if (stop.character > TextEditor.getLineLength(stop.line)) {
         vimState.cursorStopPosition = stop.getLineEnd();
       }
     }
@@ -913,7 +913,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandHistory':
-          let cmd = await commandLine.ShowHistory(vimState.currentCommandlineText, this.vimState);
+          let cmd = await commandLine.showHistory(vimState.currentCommandlineText);
           if (cmd && cmd.length !== 0) {
             await commandLine.Run(cmd, this.vimState);
             this.updateView(this.vimState);
