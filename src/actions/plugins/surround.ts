@@ -168,11 +168,9 @@ class CommandSurroundModeStart extends BaseCommand {
 
     if (operator instanceof ChangeOperator) {
       operatorString = 'change';
-    }
-    if (operator instanceof DeleteOperator) {
+    } else if (operator instanceof DeleteOperator) {
       operatorString = 'delete';
-    }
-    if (operator instanceof YankOperator) {
+    } else if (operator instanceof YankOperator) {
       operatorString = 'yank';
     }
 

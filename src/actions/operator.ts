@@ -274,7 +274,7 @@ export class YankOperator extends BaseOperator {
 
     const originalMode = vimState.currentMode;
 
-    if (end.isEarlierThan(start)) {
+    if (end.isBefore(start)) {
       [start, end] = [end, start];
     }
     let extendedEnd = new Position(end.line, end.character + 1);

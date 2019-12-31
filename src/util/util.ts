@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { Logger } from './logger';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { exec } from 'child_process';

@@ -99,7 +99,7 @@ class MoveDownByScreenLine extends MoveByScreenLine {
 }
 
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
-  doesntChangeDesiredColumn() {
+  preservesDesiredColumn() {
     return true;
   }
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
@@ -216,7 +216,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 @RegisterAction
 class MoveDown extends BaseMovement {
   keys = ['j'];
-  doesntChangeDesiredColumn() {
+  preservesDesiredColumn() {
     return true;
   }
 
@@ -241,7 +241,7 @@ class MoveDownArrow extends MoveDown {
 @RegisterAction
 class MoveUp extends BaseMovement {
   keys = ['k'];
-  doesntChangeDesiredColumn() {
+  preservesDesiredColumn() {
     return true;
   }
 
@@ -863,7 +863,7 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     ['g', 'k'],
     ['g', '<up>'],
   ];
-  doesntChangeDesiredColumn() {
+  preservesDesiredColumn() {
     return true;
   }
 
@@ -884,7 +884,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     ['g', 'j'],
     ['g', '<down>'],
   ];
-  doesntChangeDesiredColumn() {
+  preservesDesiredColumn() {
     return true;
   }
 
@@ -1478,7 +1478,6 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     return {
       start: startPos,
       stop: endPos,
-      diff: new PositionDiff({ character: startPos === position ? 1 : 0 }),
     };
   }
 }
@@ -1871,7 +1870,7 @@ export class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
-export class ArrowsInInsertMode extends BaseMovement {
+export abstract class ArrowsInInsertMode extends BaseMovement {
   modes = [Mode.Insert];
   keys: string[];
 
@@ -1882,8 +1881,8 @@ export class ArrowsInInsertMode extends BaseMovement {
       vimState.recordedState.actionsRun.shift()!,
       vimState.recordedState.actionsRun.pop()!,
     ];
-    let newPosition: Position = position;
 
+    let newPosition: Position;
     switch (this.keys[0]) {
       case '<up>':
         newPosition = <Position>await new MoveUpArrow().execAction(position, vimState);
@@ -1898,7 +1897,7 @@ export class ArrowsInInsertMode extends BaseMovement {
         newPosition = await new MoveRightArrow(this.keysPressed).execAction(position, vimState);
         break;
       default:
-        break;
+        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
     vimState.replaceState = new ReplaceState(newPosition);
     return newPosition;

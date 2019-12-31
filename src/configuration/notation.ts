@@ -15,7 +15,9 @@ export class Notation {
     '\n': ['<cr>', '<enter>'],
   };
 
-  // Converts keystroke like <tab> to a single control character like \t
+  /**
+   * Converts keystroke like <tab> to a single control character like \t
+   */
   public static ToControlCharacter(key: string) {
     if (key === '<tab>') {
       return '\t';
