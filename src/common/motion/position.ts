@@ -105,18 +105,14 @@ export class Position extends vscode.Position {
    * Returns which of the 2 provided Positions comes earlier in the document.
    */
   public static EarlierOf(p1: Position, p2: Position): Position {
-    return p1.isEarlierThan(p2) ? p1 : p2;
+    return p1.isBefore(p2) ? p1 : p2;
   }
 
   /**
    * Returns which of the 2 provided Positions comes later in the document.
    */
   public static LaterOf(p1: Position, p2: Position): Position {
-    return p1.isEarlierThan(p2) ? p2 : p1;
-  }
-
-  public isEarlierThan(other: Position): boolean {
-    return this.line < other.line || (this.line === other.line && this.character < other.character);
+    return p1.isBefore(p2) ? p2 : p1;
   }
 
   /**

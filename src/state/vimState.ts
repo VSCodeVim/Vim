@@ -20,6 +20,8 @@ import { ReplaceState } from './../state/replaceState';
  *
  * Actions defined in actions.ts are only allowed to mutate a VimState in order to
  * indicate what they want to do.
+ *
+ * Each ModeHandler holds a VimState, so there is one for each open editor.
  */
 export class VimState implements vscode.Disposable {
   private readonly logger = Logger.get('VimState');
@@ -95,7 +97,8 @@ export class VimState implements vscode.Disposable {
       } = undefined;
 
   /**
-   * Used for command like <C-o> which allows you to return to insert after a command
+   * Used for `<C-o>` in insert mode, which allows you run one normal mode
+   * command, then go back to insert mode.
    */
   public returnToInsertAfterCommand = false;
   public actionCount = 0;
@@ -180,15 +183,15 @@ export class VimState implements vscode.Disposable {
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
-   * Stores last visual mode for gv
+   * Stores last visual mode as well as what was selected for `gv`
    */
-  public lastVisualMode: Mode;
-
-  /**
-   * Last selection that was active
-   */
-  public lastVisualSelectionStart: Position;
-  public lastVisualSelectionEnd: Position;
+  public lastVisualSelection:
+    | {
+        mode: Mode;
+        start: Position;
+        end: Position;
+      }
+    | undefined = undefined;
 
   /**
    * Was the previous mouse click past EOL
