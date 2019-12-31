@@ -373,7 +373,7 @@ export class ModeHandler implements vscode.Disposable {
           lastAction.contentChanges = lastAction.contentChanges.concat(
             vimState.historyTracker.currentContentChanges.map(x => ({
               textDiff: x,
-              positionDiff: new PositionDiff(0, 0),
+              positionDiff: new PositionDiff(),
             }))
           );
           vimState.historyTracker.currentContentChanges = [];
@@ -456,7 +456,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === Mode.Visual) {
       vimState.cursors = vimState.cursors.map(x =>
-        x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
+        x.start.isBefore(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
       );
     }
 
@@ -526,7 +526,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === Mode.Visual) {
       vimState.cursors = vimState.cursors.map(x =>
-        x.start.isEarlierThan(x.stop)
+        x.start.isBefore(x.stop)
           ? x.withNewStop(
               x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
             )
@@ -566,10 +566,8 @@ export class ModeHandler implements vscode.Disposable {
     const movement = action instanceof BaseMovement ? action : undefined;
 
     if (
-      (movement && !movement.doesntChangeDesiredColumn()) ||
-      (!movement &&
-        vimState.currentMode !== Mode.VisualBlock &&
-        !action.doesntChangeDesiredColumn())
+      (movement && !movement.preservesDesiredColumn()) ||
+      (!movement && vimState.currentMode !== Mode.VisualBlock && !action.preservesDesiredColumn())
     ) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
@@ -659,9 +657,11 @@ export class ModeHandler implements vscode.Disposable {
 
     if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv
-      this.vimState.lastVisualMode = this.vimState.currentMode;
-      this.vimState.lastVisualSelectionStart = this.vimState.cursorStartPosition;
-      this.vimState.lastVisualSelectionEnd = this.vimState.cursorStopPosition;
+      this.vimState.lastVisualSelection = {
+        mode: this.vimState.currentMode,
+        start: this.vimState.cursorStartPosition,
+        end: this.vimState.cursorStopPosition,
+      };
     }
 
     return vimState;
@@ -728,7 +728,7 @@ export class ModeHandler implements vscode.Disposable {
       // the newline character, which it places 1 past the last character
       // in the line. This is why we use > instead of >=.
 
-      if (stop.character > Position.getLineLength(stop.line)) {
+      if (stop.character > TextEditor.getLineLength(stop.line)) {
         vimState.cursorStopPosition = stop.getLineEnd();
       }
     }
@@ -913,7 +913,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandHistory':
-          let cmd = await commandLine.ShowHistory(vimState.currentCommandlineText, this.vimState);
+          let cmd = await commandLine.showHistory(vimState.currentCommandlineText);
           if (cmd && cmd.length !== 0) {
             await commandLine.Run(cmd, this.vimState);
             this.updateView(this.vimState);
@@ -1021,7 +1021,7 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = this.vimState.editor.selections.map(x => {
       let y = Range.FromVSCodeSelection(x);
-      y = y.start.isEarlierThan(y.stop) ? y.withNewStop(y.stop.getLeftThroughLineBreaks(true)) : y;
+      y = y.start.isBefore(y.stop) ? y.withNewStop(y.stop.getLeftThroughLineBreaks(true)) : y;
       return new vscode.Selection(
         new vscode.Position(y.start.line, y.start.character),
         new vscode.Position(y.stop.line, y.stop.character)
@@ -1114,10 +1114,10 @@ export class ModeHandler implements vscode.Disposable {
     vimState.isRunningDotCommand = true;
 
     // If a previous visual selection exists, store it for use in replay of some commands
-    if (vimState.lastVisualSelectionStart && vimState.lastVisualSelectionEnd) {
+    if (vimState.lastVisualSelection) {
       vimState.dotCommandPreviousVisualSelection = new vscode.Selection(
-        vimState.lastVisualSelectionStart,
-        vimState.lastVisualSelectionEnd
+        vimState.lastVisualSelection.start,
+        vimState.lastVisualSelection.end
       );
     }
 
@@ -1294,27 +1294,29 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    const visibleRange = vimState.editor.visibleRanges[0];
-    const centerViewportAroundCursor =
-      visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||
-      vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
-    const revealType = centerViewportAroundCursor
-      ? vscode.TextEditorRevealType.InCenter
-      : vscode.TextEditorRevealType.Default;
-
     // Scroll to position of cursor
-    if (this.vimState.currentMode === Mode.SearchInProgressMode) {
-      const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
-        vimState.cursorStopPosition
-      ).pos;
+    if (vimState.editor.visibleRanges.length > 0) {
+      const visibleRange = vimState.editor.visibleRanges[0];
+      const centerViewportAroundCursor =
+        visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||
+        vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+      const revealType = centerViewportAroundCursor
+        ? vscode.TextEditorRevealType.InCenter
+        : vscode.TextEditorRevealType.Default;
 
-      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch), revealType);
-    } else {
-      if (args.revealRange) {
-        this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
-          revealType
-        );
+      if (this.vimState.currentMode === Mode.SearchInProgressMode) {
+        const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
+          vimState.cursorStopPosition
+        ).pos;
+
+        this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch), revealType);
+      } else {
+        if (args.revealRange) {
+          this.vimState.editor.revealRange(
+            new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
+            revealType
+          );
+        }
       }
     }
 
@@ -1343,7 +1345,7 @@ export class ModeHandler implements vscode.Disposable {
       // in the middle of a selection natively, which is what we need for Visual Mode.
       if (this.currentMode === Mode.Visual) {
         for (const { start: cursorStart, stop: cursorStop } of vimState.cursors) {
-          if (cursorStart.isEarlierThan(cursorStop)) {
+          if (cursorStart.isBefore(cursorStop)) {
             cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
           } else {
             cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));

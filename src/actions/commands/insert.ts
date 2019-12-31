@@ -83,12 +83,12 @@ class CommandEscInsertMode extends BaseCommand {
         docChanges.push(change.textDiff);
       }
 
-      let positionDiff = new PositionDiff(0, 0);
+      let positionDiff = new PositionDiff();
       // Add count amount of inserts in the case of 4i=<esc>
       for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         // If this is the last transform, move cursor back one character
         if (i === vimState.recordedState.count - 2) {
-          positionDiff = new PositionDiff(0, -1);
+          positionDiff = new PositionDiff({ character: -1 });
         }
 
         // Add a transform containing the change
@@ -205,7 +205,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
       start: position.getLineBegin(),
       end: position.getLineEnd(),
-      diff: new PositionDiff(0, newIndentationWidth - indentationWidth),
+      diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
     });
 
     return vimState;

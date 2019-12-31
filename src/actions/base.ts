@@ -18,11 +18,12 @@ export class BaseAction {
   public canBeRepeatedWithDot = false;
 
   /**
-   * Whether we should change desiredColumn in VimState.
+   * Whether we should change `vimState.desiredColumn`
    */
-  public doesntChangeDesiredColumn(): boolean {
+  public preservesDesiredColumn(): boolean {
     return false;
   }
+
   /**
    * Modes that this action can be run in.
    */
@@ -41,6 +42,9 @@ export class BaseAction {
    * The keys pressed at the time that this action was triggered.
    */
   public keysPressed: string[] = [];
+
+  private static readonly isSingleNumber: RegExp = /^[0-9]$/;
+  private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
   /**
    * Is this action valid in the current Vim state?
@@ -98,31 +102,25 @@ export class BaseAction {
       return false;
     }
 
-    const isSingleNumber: RegExp = /^[0-9]$/;
-    const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
-
     for (let i = 0, j = 0; i < one.length; i++, j++) {
       const left = one[i],
         right = two[j];
 
-      if (left === '<any>') {
-        continue;
-      }
-      if (right === '<any>') {
+      if (left === '<any>' || right === '<any>') {
         continue;
       }
 
-      if (left === '<number>' && isSingleNumber.test(right)) {
+      if (left === '<number>' && this.isSingleNumber.test(right)) {
         continue;
       }
-      if (right === '<number>' && isSingleNumber.test(left)) {
+      if (right === '<number>' && this.isSingleNumber.test(left)) {
         continue;
       }
 
-      if (left === '<alpha>' && isSingleAlpha.test(right)) {
+      if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
       }
-      if (right === '<alpha>' && isSingleAlpha.test(left)) {
+      if (right === '<alpha>' && this.isSingleAlpha.test(left)) {
         continue;
       }
 
@@ -140,10 +138,7 @@ export class BaseAction {
         continue;
       }
 
-      if (left === configuration.leader) {
-        return false;
-      }
-      if (right === configuration.leader) {
+      if (left === configuration.leader || right === configuration.leader) {
         return false;
       }
 
@@ -169,7 +164,7 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
-export class Actions {
+export abstract class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */

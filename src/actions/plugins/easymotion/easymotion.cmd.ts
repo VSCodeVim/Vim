@@ -399,8 +399,8 @@ class MoveEasyMotion extends BaseCommand {
         vimState.easyMotion.previousMode === Mode.VisualLine ||
         vimState.easyMotion.previousMode === Mode.VisualBlock
       ) {
-        vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
-        vimState.cursorStopPosition = vimState.lastVisualSelectionEnd;
+        vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
+        vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
       }
 
       if (markers.length === 1) {

@@ -1,86 +1,73 @@
 import * as vscode from 'vscode';
+import * as _ from 'lodash';
 
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
-import * as _ from 'lodash';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
+import { clamp } from '../../util/util';
 
-enum PositionDiffType {
+/**
+ * Controls how a PositionDiff affects the Position it's applied to.
+ */
+export enum PositionDiffType {
+  /** Simple line and column offset */
   Offset,
-  BOL,
+  /**
+   * Sets the Position's column to `PositionDiff.character`
+   */
+  ExactCharacter,
+  /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   ObeyStartOfLine,
 }
 
 /**
- * Represents a difference between two positions. Add it to a position
- * to get another position. Create it with the factory methods:
- *
- * - NewDiff
- * - NewBOLDiff (BOL = Beginning Of Line)
+ * Represents a difference between two Positions.
+ * Add it to a Position to get another Position.
  */
 export class PositionDiff {
-  private _line: number;
-  private _character: number;
-  private _type: PositionDiffType;
+  public readonly line: number;
+  public readonly character: number;
+  public readonly type: PositionDiffType;
 
-  constructor(line: number, character: number) {
-    this._line = line;
-    this._character = character;
-    this._type = PositionDiffType.Offset;
-  }
-
-  /**
-   * Creates a new PositionDiff that always brings the cursor to the beginning
-   * of the line when * applied to a position. If `obeysStartOfLine` is true,
-   * it will go to BOL only if `vim.startofline` is true.
-   */
-  public static NewBOLDiff(line = 0, character = 0, obeysStartOfLine = false): PositionDiff {
-    const result = new PositionDiff(line, character);
-
-    result._type = obeysStartOfLine ? PositionDiffType.ObeyStartOfLine : PositionDiffType.BOL;
-    return result;
+  constructor({ line = 0, character = 0, type = PositionDiffType.Offset } = {}) {
+    this.line = line;
+    this.character = character;
+    this.type = type;
   }
 
   /**
    * Add this PositionDiff to another PositionDiff.
    */
-  addDiff(other: PositionDiff) {
-    if (this._type !== PositionDiffType.Offset || other._type !== PositionDiffType.Offset) {
+  public addDiff(other: PositionDiff) {
+    if (this.type !== PositionDiffType.Offset || other.type !== PositionDiffType.Offset) {
       throw new Error("johnfn hasn't done this case yet and doesnt want to");
     }
 
-    return new PositionDiff(this._line + other._line, this._character + other._character);
+    return new PositionDiff({
+      line: this.line + other.line,
+      character: this.character + other.character,
+    });
   }
 
-  public get type(): PositionDiffType {
-    return this._type;
-  }
-
-  /**
-   * Difference in lines.
-   */
-  public get line(): number {
-    return this._line;
-  }
-
-  /**
-   * Difference in characters.
-   */
-  public get character(): number {
-    return this._character;
+  public static newBOLDiff(lineOffset: number = 0) {
+    return new PositionDiff({
+      line: lineOffset,
+      character: 0,
+      type: PositionDiffType.ExactCharacter,
+    });
   }
 
   public toString(): string {
-    switch (this._type) {
+    switch (this.type) {
       case PositionDiffType.Offset:
-        return `[ Diff: ${this._line} ${this._character} ]`;
-      case PositionDiffType.BOL:
-        return '[ Diff: BOL ]';
+        return `[ Diff: Offset ${this.line} ${this.character} ]`;
+      case PositionDiffType.ExactCharacter:
+        return `[ Diff: ExactCharacter ${this.line} ${this.character} ]`;
       case PositionDiffType.ObeyStartOfLine:
-        return '[ Diff: ObeyStartOfLine ]';
+        return `[ Diff: ObeyStartOfLine ${this.line} ]`;
       default:
-        throw new Error('Unknown PositionDiffType');
+        throw new Error(`Unknown PositionDiffType: ${this.type}`);
     }
   }
 }
@@ -118,36 +105,14 @@ export class Position extends vscode.Position {
    * Returns which of the 2 provided Positions comes earlier in the document.
    */
   public static EarlierOf(p1: Position, p2: Position): Position {
-    if (p1.line < p2.line) {
-      return p1;
-    }
-    if (p1.line === p2.line && p1.character < p2.character) {
-      return p1;
-    }
-
-    return p2;
-  }
-
-  public isEarlierThan(other: Position): boolean {
-    if (this.line < other.line) {
-      return true;
-    }
-    if (this.line === other.line && this.character < other.character) {
-      return true;
-    }
-
-    return false;
+    return p1.isBefore(p2) ? p1 : p2;
   }
 
   /**
    * Returns which of the 2 provided Positions comes later in the document.
    */
   public static LaterOf(p1: Position, p2: Position): Position {
-    if (Position.EarlierOf(p1, p2) === p1) {
-      return p2;
-    }
-
-    return p1;
+    return p1.isBefore(p2) ? p2 : p1;
   }
 
   /**
@@ -158,13 +123,11 @@ export class Position extends vscode.Position {
     start: Position,
     forward = true
   ): Iterable<{ line: string; char: string; pos: Position }> {
-    let lineIndex: number, charIndex: number;
-
     if (forward) {
-      for (lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
-        charIndex = lineIndex === start.line ? start.character : 0;
+      for (let lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
         const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
 
+        let charIndex = lineIndex === start.line ? start.character : 0;
         for (; charIndex < line.length; charIndex++) {
           yield {
             line: line,
@@ -174,10 +137,10 @@ export class Position extends vscode.Position {
         }
       }
     } else {
-      for (lineIndex = start.line; lineIndex >= 0; lineIndex--) {
+      for (let lineIndex = start.line; lineIndex >= 0; lineIndex--) {
         const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
-        charIndex = lineIndex === start.line ? start.character : line.length - 1;
 
+        let charIndex = lineIndex === start.line ? start.character : line.length - 1;
         for (; charIndex >= 0; charIndex--) {
           yield {
             line: line,
@@ -316,7 +279,10 @@ export class Position extends vscode.Position {
    * Subtracts another position from this one, returning the difference between the two.
    */
   public subtract(other: Position): PositionDiff {
-    return new PositionDiff(this.line - other.line, this.character - other.character);
+    return new PositionDiff({
+      line: this.line - other.line,
+      character: this.character - other.character,
+    });
   }
 
   /**
@@ -324,37 +290,33 @@ export class Position extends vscode.Position {
    */
   public add(diff: PositionDiff, { boundsCheck = true } = {}): Position {
     let resultLine = this.line + diff.line;
-    let resultChar = this.character;
 
+    let resultChar: number;
     if (diff.type === PositionDiffType.Offset) {
-      resultChar += diff.character;
-    } else if (diff.type === PositionDiffType.BOL) {
+      resultChar = this.character + diff.character;
+    } else if (diff.type === PositionDiffType.ExactCharacter) {
       resultChar = diff.character;
     } else if (diff.type === PositionDiffType.ObeyStartOfLine && configuration.startofline) {
       resultChar = new Position(resultLine, 0).obeyStartOfLine().character;
+    } else {
+      throw new Error(`Unknown PositionDiffType: ${diff.type}`);
     }
 
     if (boundsCheck) {
-      if (resultChar < 0) {
-        resultChar = 0;
-      }
-      if (resultLine < 0) {
-        resultLine = 0;
-      }
-      // TODO: check character does not go over line's max
-      if (resultLine >= TextEditor.getLineCount() - 1) {
-        resultLine = TextEditor.getLineCount() - 1;
-      }
+      resultLine = clamp(resultLine, 0, TextEditor.getLineCount() - 1);
+      resultChar = clamp(resultChar, 0, TextEditor.getLineLength(resultLine));
     }
 
     return new Position(resultLine, resultChar);
   }
 
   public withLine(line: number): Position {
+    line = clamp(line, 0, TextEditor.getLineCount() - 1);
     return new Position(line, this.character);
   }
 
   public withColumn(column: number): Position {
+    column = clamp(column, 0, TextEditor.getLineLength(this.line));
     return new Position(this.line, column);
   }
 
@@ -458,7 +420,7 @@ export class Position extends vscode.Position {
   public getDown(desiredColumn: number): Position {
     if (this.getDocumentEnd().line !== this.line) {
       let nextLine = this.line + 1;
-      let nextLineLength = Position.getLineLength(nextLine);
+      let nextLineLength = TextEditor.getLineLength(nextLine);
 
       return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
     }
@@ -472,7 +434,7 @@ export class Position extends vscode.Position {
   public getUp(desiredColumn: number): Position {
     if (this.getDocumentBegin().line !== this.line) {
       let prevLine = this.line - 1;
-      let prevLineLength = Position.getLineLength(prevLine);
+      let prevLineLength = TextEditor.getLineLength(prevLine);
 
       return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
     }
@@ -683,6 +645,9 @@ export class Position extends vscode.Position {
     return (trimWhite ? text.trim() : text) === '';
   }
 
+  /**
+   * Returns true if the line this Position is on consists of only whitespace.
+   */
   public isLineWhite(): boolean {
     return this.isLineBlank(true);
   }
@@ -744,7 +709,7 @@ export class Position extends vscode.Position {
    * Returns a new position at the end of this position's line.
    */
   public getLineEnd(): Position {
-    return new Position(this.line, Position.getLineLength(this.line));
+    return new Position(this.line, TextEditor.getLineLength(this.line));
   }
 
   /**
@@ -752,7 +717,7 @@ export class Position extends vscode.Position {
    * invisible newline character.
    */
   public getLineEndIncludingEOL(): Position {
-    return new Position(this.line, Position.getLineLength(this.line) + 1);
+    return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
   }
 
   public getDocumentBegin(): Position {
@@ -764,7 +729,7 @@ export class Position extends vscode.Position {
    * returns this position.
    */
   public getLeftIfEOL(): Position {
-    if (this.character === Position.getLineLength(this.line)) {
+    if (this.character === TextEditor.getLineLength(this.line)) {
       return this.getLeft();
     } else {
       return this;
@@ -787,10 +752,9 @@ export class Position extends vscode.Position {
   }
 
   public getDocumentEnd(textEditor?: vscode.TextEditor): Position {
-    textEditor = textEditor || vscode.window.activeTextEditor;
-    let lineCount = TextEditor.getLineCount(textEditor);
-    let line = lineCount > 0 ? lineCount - 1 : 0;
-    let char = Position.getLineLength(line);
+    const lineCount = TextEditor.getLineCount(textEditor);
+    const line = lineCount > 0 ? lineCount - 1 : 0;
+    const char = TextEditor.getLineLength(line);
 
     return new Position(line, char);
   }
@@ -806,7 +770,7 @@ export class Position extends vscode.Position {
    * Is this position at the end of the line?
    */
   public isLineEnd(): boolean {
-    return this.character >= Position.getLineLength(this.line);
+    return this.character >= TextEditor.getLineLength(this.line);
   }
 
   public isFirstWordOfLine(): boolean {
@@ -851,20 +815,17 @@ export class Position extends vscode.Position {
     return configuration.startofline ? this.getFirstLineNonBlankChar() : this;
   }
 
-  public static getLineLength(line: number): number {
-    return TextEditor.readLineAt(line).length;
-  }
-
-  public isValid(textEditor?: vscode.TextEditor): boolean {
+  public isValid(textEditor: vscode.TextEditor): boolean {
     try {
       // line
+      // TODO: this `|| 1` seems dubious...
       let lineCount = TextEditor.getLineCount(textEditor) || 1;
       if (this.line >= lineCount) {
         return false;
       }
 
       // char
-      let charCount = Position.getLineLength(this.line);
+      let charCount = TextEditor.getLineLength(this.line);
       if (this.character > charCount + 1) {
         return false;
       }

@@ -129,7 +129,7 @@ class TestObjectHelper {
     for (let i = 0; i < lines.length; i++) {
       const columnIdx = lines[i].indexOf('|');
       if (columnIdx >= 0) {
-        ret.position = ret.position.withLine(i).withColumn(columnIdx);
+        ret.position = new Position(i, columnIdx);
         ret.success = true;
       }
     }

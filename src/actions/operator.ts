@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position, PositionDiff, PositionDiffType } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -183,7 +183,7 @@ export class DeleteOperator extends BaseOperator {
       Register.put(text, vimState, this.multicursorIndex);
     }
 
-    let diff = new PositionDiff(0, 0);
+    let diff = new PositionDiff();
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
@@ -192,14 +192,16 @@ export class DeleteOperator extends BaseOperator {
 
     if (start.character > TextEditor.getLineAt(start).text.length) {
       resultingPosition = start.getLeft();
-      diff = new PositionDiff(0, -1);
+      diff = new PositionDiff({ character: -1 });
     } else {
       resultingPosition = start;
     }
 
     if (registerMode === RegisterMode.LineWise) {
       resultingPosition = resultingPosition.obeyStartOfLine();
-      diff = PositionDiff.NewBOLDiff(0, 0, true);
+      diff = new PositionDiff({
+        type: PositionDiffType.ObeyStartOfLine,
+      });
     }
 
     vimState.recordedState.transformations.push({
@@ -272,7 +274,7 @@ export class YankOperator extends BaseOperator {
 
     const originalMode = vimState.currentMode;
 
-    if (end.isEarlierThan(start)) {
+    if (end.isBefore(start)) {
       [start, end] = [end, start];
     }
     let extendedEnd = new Position(end.line, end.character + 1);
@@ -598,7 +600,7 @@ export class ChangeOperator extends BaseOperator {
     // the line. We do want to run delete if it is a multiline change though ex. c}
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     if (
-      Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
+      TextEditor.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
       end.line !== start.line
     ) {
       if (isLineWise) {
@@ -655,7 +657,7 @@ export class ChangeOperator extends BaseOperator {
         vimState.recordedState.transformations.push({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: new PositionDiff(0, 1), // Handle transition from Normal to Insert modes
+          diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
         });
       }
     }
@@ -1100,7 +1102,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       start: start,
       end: end,
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.NewBOLDiff(0, 0),
+      diff: PositionDiff.newBOLDiff(),
     });
 
     await vimState.setCurrentMode(Mode.Normal);
