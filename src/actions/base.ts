@@ -102,7 +102,6 @@ export class BaseAction {
       return false;
     }
 
-
     for (let i = 0, j = 0; i < one.length; i++, j++) {
       const left = one[i],
         right = two[j];

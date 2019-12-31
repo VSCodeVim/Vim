@@ -2986,6 +2986,7 @@ class CommandGoToDefinition extends BaseCommand {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
 
     if (vimState.editor === vscode.window.activeTextEditor) {
+      // We didn't switch to a different editor
       vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
@@ -4487,7 +4488,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           break;
         }
         if (
-          position.character < start.character + num.prefix.length + num.value.toString().length
+          position.character <
+          start.character + num.prefix.length + num.value.toString().length
         ) {
           vimState.cursorStopPosition = await this.replaceNum(
             num,
