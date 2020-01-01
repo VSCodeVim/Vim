@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { TextEditor } from './../../textEditor';
-import { Position, PositionDiff } from './../motion/position';
+import { Position } from './../motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 
@@ -179,6 +179,10 @@ export class PairMatcher {
    * This is intended for the deletion of such pairs, so it respects `editor.autoClosingBrackets`.
    */
   static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
+    if (currentPosition.isLineEnd()) {
+      return undefined;
+    }
+
     const charactersToMatch =
       (this.shouldDeleteMatchingBracket('bracket') ? '{[(' : '') +
       (this.shouldDeleteMatchingBracket('quote') ? '"\'`' : '');
@@ -191,7 +195,7 @@ export class PairMatcher {
     let isNextMatch = false;
 
     if (charactersToMatch.includes(deleteText)) {
-      const matchPosition = currentPosition.add(new PositionDiff({ character: 1 }));
+      const matchPosition = currentPosition.getRight();
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
       isNextMatch =
         vscode.window.activeTextEditor!.document.getText(matchRange) ===
