@@ -428,7 +428,7 @@ export class HistoryTracker {
    * Returns true if we need to get the entire document's text
    * to process an individual change
    */
-  private _isDocumentTextNeeeded(): boolean {
+  private _isDocumentTextNeeded(): boolean {
     // Get the current document's text length.
     const documentEnd = new Position(0, 0).getDocumentEnd();
     const newTextLength = this.vimState.editor.document.offsetAt(documentEnd);
@@ -461,7 +461,7 @@ export class HistoryTracker {
    * @returns true if a change was added
    */
   public addChange(cursorPosition = [new Position(0, 0)]): boolean {
-    if (configuration.experimentalOptimizations && !this._isDocumentTextNeeeded()) {
+    if (configuration.experimentalOptimizations && !this._isDocumentTextNeeded()) {
       return false;
     }
 
