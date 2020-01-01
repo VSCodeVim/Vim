@@ -603,7 +603,15 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState.alteredHistory = false;
         vimState.historyTracker.ignoreChange();
       } else {
-        vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map(c => c.stop));
+        const addedChange = vimState.historyTracker.addChange(
+          this.vimState.cursorsInitialState.map(c => c.stop)
+        );
+        const mightChangeDocument = recordedState.hasRunOperator
+          ? recordedState.operator.mightChangeDocument
+          : action.mightChangeDocument;
+        if (addedChange && !mightChangeDocument) {
+          throw new Error(`Action '${action.toString()}' changed the document unexpectedly!`);
+        }
       }
     }
 
