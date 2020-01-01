@@ -20,6 +20,9 @@ export class BaseOperator extends BaseAction {
   canBeRepeatedWithDot = true;
   isOperator = true;
 
+  // All operators other than yank can change the document
+  mightChangeDocument = true;
+
   /**
    * If this is being run in multi cursor mode, the index of the cursor
    * this operator is being applied to.
@@ -259,6 +262,7 @@ export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   canBeRepeatedWithDot = false;
+  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Hack to make Surround with y (which takes a motion) work.
@@ -332,6 +336,7 @@ export class YankOperator extends BaseOperator {
 export class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
@@ -671,6 +676,7 @@ export class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
+  mightChangeDocument = false;
   runsOnceForEveryCursor() {
     return false;
   }
