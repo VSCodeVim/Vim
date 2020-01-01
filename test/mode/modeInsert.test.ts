@@ -216,6 +216,13 @@ suite('Mode Insert', () => {
   });
 
   newTest({
+    title: 'Can <Esc> after entering insert mode from <ctrl+o>',
+    start: ['abc|'],
+    keysPressed: '<C-o>a<Esc>d',
+    end: ['ab|c'],
+  });
+
+  newTest({
     title: 'Can perform <ctrl+o> to exit and perform one command in normal',
     start: ['testtest|'],
     keysPressed: 'a123<C-o>b123',
