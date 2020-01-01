@@ -429,12 +429,6 @@ export class HistoryTracker {
    * to process an individual change
    */
   private _isDocumentTextNeeded(): boolean {
-    // Get the current document's text length.
-    const documentEnd = new Position(0, 0).getDocumentEnd();
-    const newTextLength = this.vimState.editor.document.offsetAt(documentEnd);
-
-    const isTextLengthDiff = this.oldText.length !== newTextLength;
-
     // Determine if we just switched modes.
     // This prevents recording steps in between start-end of a historyStep.
     const isModeDiff = this.currentMode !== this.vimState.currentMode;
@@ -448,8 +442,8 @@ export class HistoryTracker {
       this.currentMode = this.vimState.currentMode;
     }
 
-    // If all of these are false we can avoid requesting the entire doc.
-    return (isTextLengthDiff && (isNewHistoryStep || isModeDiff)) || isNewHistoryStep || isModeDiff;
+    // If these are false we can avoid requesting the entire doc.
+    return isNewHistoryStep || isModeDiff;
   }
 
   /**
