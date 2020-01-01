@@ -34,6 +34,7 @@ export class DocumentContentChangeAction extends BaseAction {
     positionDiff: PositionDiff;
     textDiff: vscode.TextDocumentContentChangeEvent;
   }[] = [];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
@@ -510,6 +511,7 @@ class CommandExecuteMacro extends BaseCommand {
   keys = ['@', '<character>'];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -546,6 +548,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
   isJump = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
@@ -624,6 +627,7 @@ class CommandEsc extends BaseCommand {
 class CommandEscReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.replaceState!.timesToRepeat;
@@ -859,6 +863,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<character>'];
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[0];
@@ -1433,6 +1438,7 @@ export class PutCommand extends BaseCommand {
   modes = [Mode.Normal];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   constructor(multicursorIndex?: number) {
     super();
@@ -1718,6 +1724,7 @@ export class GPutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return new PutCommand().exec(position, vimState);
@@ -1763,6 +1770,7 @@ export class PutWithIndentCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, false, true);
@@ -1779,6 +1787,7 @@ export class PutCommandVisual extends BaseCommand {
   keys = [['p'], ['P']];
   modes = [Mode.Visual, Mode.VisualLine];
   runsOnceForEachCountPrefix = true;
+  mightChangeDocument = true;
 
   public async exec(
     position: Position,
@@ -1852,6 +1861,7 @@ export class PutBeforeCommand extends BaseCommand {
   public modes = [Mode.Normal];
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const command = new PutCommand();
@@ -1867,6 +1877,7 @@ export class PutBeforeCommand extends BaseCommand {
 export class GPutBeforeCommand extends BaseCommand {
   keys = ['g', 'P'];
   modes = [Mode.Normal];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, true);
@@ -1904,6 +1915,7 @@ export class GPutBeforeCommand extends BaseCommand {
 export class PutBeforeWithIndentCommand extends BaseCommand {
   keys = ['[', 'p'];
   modes = [Mode.Normal];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, true, true);
@@ -2093,7 +2105,7 @@ class CommandTabInCommandline extends BaseCommand {
   }
 }
 
-// TODO: Split this into multiple commands and maybe move them to another file
+// TODO: Split this into multiple commands and maybe move them to another file (mightChangeDocument can be false for some!)
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -2115,6 +2127,7 @@ class CommandInsertInCommandline extends BaseCommand {
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
@@ -2326,6 +2339,7 @@ export class CommandShowSearchHistory extends BaseCommand {
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.transformations.push({
@@ -2340,6 +2354,7 @@ class CommandDot extends BaseCommand {
 class CommandRepeatSubstitution extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['&'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Parsing the command from a string, while not ideal, is currently
@@ -2631,6 +2646,7 @@ class CommandUndo extends BaseCommand {
     return false;
   }
   mustBeFirstKey = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPositions = await vimState.historyTracker.goBackHistoryStep();
@@ -2655,6 +2671,7 @@ class CommandUndoOnLine extends BaseCommand {
     return false;
   }
   mustBeFirstKey = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPositions = await vimState.historyTracker.goBackHistoryStepsOnLine();
@@ -2672,6 +2689,7 @@ class CommandUndoOnLine extends BaseCommand {
 class CommandRedo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['<C-r>'];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2695,6 +2713,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['D'];
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return true;
   }
@@ -2733,6 +2752,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['C'];
   runsOnceForEachCountPrefix = false;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const count = vimState.recordedState.count || 1;
@@ -2753,6 +2773,7 @@ class CommandClearLine extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['S'];
   runsOnceForEachCountPrefix = false;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return new operator.ChangeOperator(this.multicursorIndex).runRepeat(
@@ -3187,6 +3208,7 @@ export class CommandInsertAtLineEnd extends BaseCommand {
 class CommandInsertNewLineAbove extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['O'];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -3226,6 +3248,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 class CommandInsertNewLineBefore extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['o'];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -3544,6 +3567,7 @@ export class ActionDeleteChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['x'];
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // If line is empty, do nothing
@@ -3571,6 +3595,7 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
   keys = ['<Del>'];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     // If <del> has a count in front of it, then <del> deletes a character
@@ -3592,6 +3617,7 @@ export class ActionDeleteLastChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['X'];
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.character === 0) {
@@ -3616,6 +3642,7 @@ class ActionJoin extends BaseCommand {
   keys = ['J'];
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = false;
+  mightChangeDocument = true;
 
   private firstNonWhitespaceIndex(str: string): number {
     for (let i = 0, len = str.length; i < len; i++) {
@@ -3779,6 +3806,7 @@ class ActionJoin extends BaseCommand {
 class ActionJoinVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['J'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let actionJoin = new ActionJoin();
@@ -3805,6 +3833,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   keys = ['g', 'J'];
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
+  mightChangeDocument = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
@@ -3848,6 +3877,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
 class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
   modes = [Mode.Visual];
   keys = ['g', 'J'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let actionJoin = new ActionJoinNoWhitespace();
@@ -3876,6 +3906,7 @@ class ActionReplaceCharacter extends BaseCommand {
   keys = ['r', '<character>'];
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = false;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
@@ -3951,6 +3982,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     return false;
   }
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let toInsert = this.keysPressed[1];
@@ -4034,6 +4066,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
     return false;
   }
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let toInsert = this.keysPressed[1];
@@ -4075,6 +4108,7 @@ class ActionXVisualBlock extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const lines: string[] = [];
@@ -4106,9 +4140,11 @@ class ActionXVisualBlock extends BaseCommand {
 
 @RegisterAction
 class ActionDVisualBlock extends ActionXVisualBlock {
+  // TODO: can't this be lumped in with the previous command without subclassing?
   modes = [Mode.VisualBlock];
   keys = ['d'];
   canBeRepeatedWithDot = true;
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -4122,6 +4158,7 @@ class ActionShiftDVisualBlock extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     for (const { start } of Position.IterateLine(vimState)) {
@@ -4172,6 +4209,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 class ActionChangeInVisualBlockMode extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = [['c'], ['s']];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -4202,6 +4240,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = [['C'], ['S']];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -4328,6 +4367,7 @@ export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLine
 class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['A'];
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -4357,6 +4397,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
 class ActionDeleteLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['X'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === Mode.Visual) {
@@ -4379,6 +4420,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 class ActionChangeLineVisualMode extends BaseCommand {
   modes = [Mode.Visual];
   keys = ['C'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return new operator.DeleteOperator(this.multicursorIndex).run(
@@ -4393,6 +4435,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
 class ActionRemoveLineVisualMode extends BaseCommand {
   modes = [Mode.Visual];
   keys = ['R'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return new operator.DeleteOperator(this.multicursorIndex).run(
@@ -4408,6 +4451,7 @@ class ActionChangeChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['s'];
   runsOnceForEachCountPrefix = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new operator.ChangeOperator().run(vimState, position, position);
@@ -4441,6 +4485,7 @@ class ToggleCaseAndMoveForward extends BaseCommand {
   keys = ['~'];
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await new operator.ToggleCaseOperator().run(
@@ -4458,6 +4503,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [Mode.Normal];
   canBeRepeatedWithDot = true;
   offset: number;
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;

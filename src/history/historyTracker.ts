@@ -425,12 +425,14 @@ export class HistoryTracker {
    *
    * Determines what changed by diffing the document against what it
    * used to look like.
+   *
+   * @returns true if a change was added
    */
-  public addChange(cursorPosition = [new Position(0, 0)]): void {
+  public addChange(cursorPosition = [new Position(0, 0)]): boolean {
     const newText = this._getDocumentText();
 
     if (newText === this.oldText) {
-      return;
+      return false;
     }
 
     // Determine if we should add a new Step.
@@ -495,6 +497,8 @@ export class HistoryTracker {
 
     // A change has been made, reset the changelist navigation index to the end
     this.changelistIndex = this.historySteps.length - 1;
+
+    return true;
   }
 
   /**
