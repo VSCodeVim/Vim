@@ -3339,12 +3339,14 @@ class ActionReplaceCharacter extends BaseCommand {
     } else if (toReplace === '\n') {
       // A newline replacement always inserts exactly one newline (regardless
       // of count prefix) and puts the cursor on the next line.
+      // We use `insertTextVSCode` so we get the right indentation
       vimState.recordedState.transformations.push({
-        type: 'replaceText',
+        type: 'deleteRange',
+        range: new Range(position, endPos),
+      });
+      vimState.recordedState.transformations.push({
+        type: 'insertTextVSCode',
         text: '\n',
-        start: position,
-        end: endPos,
-        diff: PositionDiff.newBOLDiff(1),
       });
     } else {
       vimState.recordedState.transformations.push({
