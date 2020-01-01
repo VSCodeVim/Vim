@@ -1,27 +1,133 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import { RegisterAction } from "../base";
-import { BaseCommand, CommandShowCommandHistory, CommandShowSearchHistory } from "./actions";
-import { Mode } from "../../mode/mode";
-import { VimState } from "../../state/vimState";
-import { commandLine } from "../../cmd_line/commandLine";
-import { globalState } from "../../state/globalState";
-import { Register, RegisterMode } from "../../register/register";
-import { reportSearch } from "../../util/statusBarTextUtils";
-import { RecordedState } from "../../state/recordedState";
-import { TextEditor } from "../../textEditor";
-import { StatusBar } from "../../statusBar";
-import { commandParsers } from "../../cmd_line/subparser";
-import { getPathDetails, readDirectory } from "../../util/path";
-import { Clipboard } from "../../util/clipboard";
-import { Position } from "../../common/motion/position";
+import { RegisterAction } from '../base';
+import { BaseCommand, CommandShowCommandHistory, CommandShowSearchHistory } from './actions';
+import { Mode } from '../../mode/mode';
+import { VimState } from '../../state/vimState';
+import { commandLine } from '../../cmd_line/commandLine';
+import { globalState } from '../../state/globalState';
+import { Register, RegisterMode } from '../../register/register';
+import { reportSearch } from '../../util/statusBarTextUtils';
+import { RecordedState } from '../../state/recordedState';
+import { TextEditor } from '../../textEditor';
+import { StatusBar } from '../../statusBar';
+import { commandParsers } from '../../cmd_line/subparser';
+import { getPathDetails, readDirectory } from '../../util/path';
+import { Clipboard } from '../../util/clipboard';
+import { Position } from '../../common/motion/position';
 
 /**
  * Commands that are only relevant when entering a command or search
  */
 
- // TODO: Much of the code in this file is duplicated.
- //       We need an interface to the status bar which can be used by both modes.
+// TODO: Much of the code in this file is duplicated.
+//       We need an interface to the status bar which can be used by both modes.
+
+// Command tab backward from behind shift tab
+@RegisterAction
+class CommandTabInCommandline extends BaseCommand {
+  modes = [Mode.CommandlineInProgress];
+  keys = [['<tab>'], ['<shift+tab>']];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  private cycleCompletion(vimState: VimState, isTabForward: boolean) {
+    const autoCompleteItems = commandLine.autoCompleteItems;
+    if (autoCompleteItems.length === 0) {
+      return;
+    }
+
+    commandLine.autoCompleteIndex = isTabForward
+      ? (commandLine.autoCompleteIndex + 1) % autoCompleteItems.length
+      : (commandLine.autoCompleteIndex - 1 + autoCompleteItems.length) % autoCompleteItems.length;
+
+    const lastPos = commandLine.preCompleteCharacterPos;
+    const lastCmd = commandLine.preCompleteCommand;
+    const evalCmd = lastCmd.slice(0, lastPos);
+    const restCmd = lastCmd.slice(lastPos);
+
+    vimState.currentCommandlineText =
+      evalCmd + autoCompleteItems[commandLine.autoCompleteIndex] + restCmd;
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const isTabForward = key === '<tab>';
+
+    if (
+      commandLine.autoCompleteItems.length !== 0 &&
+      this.keys.some(k => commandLine.lastKeyPressed === k[0])
+    ) {
+      this.cycleCompletion(vimState, isTabForward);
+      commandLine.lastKeyPressed = key;
+      return vimState;
+    }
+
+    let newCompletionItems: string[] = [];
+    const currentCmd = vimState.currentCommandlineText;
+    const cursorPos = vimState.statusBarCursorCharacterPos;
+
+    // Sub string since vim does completion before the cursor
+    let evalCmd = currentCmd.slice(0, cursorPos);
+    let restCmd = currentCmd.slice(cursorPos);
+
+    // \s* is the match the extra space before any character like ':  edit'
+    const cmdRegex = /^\s*\w+$/;
+    const fileRegex = /^\s*\w+\s+/g;
+    if (cmdRegex.test(evalCmd)) {
+      // Command completion
+      newCompletionItems = Object.keys(commandParsers)
+        .filter(cmd => cmd.startsWith(evalCmd))
+        // Remove the already typed portion in the array
+        .map(cmd => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
+        .sort();
+    } else if (fileRegex.exec(evalCmd)) {
+      // File completion by searching if there is a space after the first word/command
+      // ideally it should be a process of white-listing to selected commands like :e and :vsp
+      let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
+      const currentUri = vscode.window.activeTextEditor!.document.uri;
+      const isRemote = !!vscode.env.remoteName;
+
+      const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
+        filePathInCmd,
+        currentUri,
+        isRemote
+      );
+      // Update the evalCmd in case of windows, where we change / to \
+      evalCmd = evalCmd.slice(0, fileRegex.lastIndex) + partialPath;
+
+      // test if the baseName is . or ..
+      const shouldAddDotItems = /^\.\.?$/g.test(baseName);
+      const dirItems = await readDirectory(
+        fullDirPath,
+        p.sep,
+        currentUri,
+        isRemote,
+        shouldAddDotItems
+      );
+      newCompletionItems = dirItems
+        .filter(name => name.startsWith(baseName))
+        .map(name => name.slice(name.search(baseName) + baseName.length))
+        .sort();
+    }
+
+    const newIndex = isTabForward ? 0 : newCompletionItems.length - 1;
+    commandLine.autoCompleteIndex = newIndex;
+    // If here only one items we fill cmd direct, so the next tab will not cycle the one item array
+    commandLine.autoCompleteItems = newCompletionItems.length <= 1 ? [] : newCompletionItems;
+    commandLine.preCompleteCharacterPos = cursorPos;
+    commandLine.preCompleteCommand = evalCmd + restCmd;
+
+    const completion = newCompletionItems.length === 0 ? '' : newCompletionItems[newIndex];
+    vimState.currentCommandlineText = evalCmd + completion + restCmd;
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
+
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
 
 @RegisterAction
 // TODO: break up
@@ -113,7 +219,7 @@ class CommandInsertInCommandline extends BaseCommand {
       }
 
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key !== '<tab>') {
+    } else {
       let modifiedString = vimState.currentCommandlineText.split('');
       modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
       vimState.currentCommandlineText = modifiedString.join('');
@@ -465,112 +571,6 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
     } else if (key === '<left>') {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     }
-
-    commandLine.lastKeyPressed = key;
-    return vimState;
-  }
-}
-
-// Command tab backward from behind shift tab
-@RegisterAction
-class CommandTabInCommandline extends BaseCommand {
-  modes = [Mode.CommandlineInProgress];
-  keys = [['<tab>'], ['<shift+tab>']];
-  runsOnceForEveryCursor() {
-    return this.keysPressed[0] === '\n';
-  }
-
-  private cycleCompletion(vimState: VimState, isTabForward: boolean) {
-    const autoCompleteItems = commandLine.autoCompleteItems;
-    if (autoCompleteItems.length === 0) {
-      return;
-    }
-
-    commandLine.autoCompleteIndex = isTabForward
-      ? (commandLine.autoCompleteIndex + 1) % autoCompleteItems.length
-      : (commandLine.autoCompleteIndex - 1 + autoCompleteItems.length) % autoCompleteItems.length;
-
-    const lastPos = commandLine.preCompleteCharacterPos;
-    const lastCmd = commandLine.preCompleteCommand;
-    const evalCmd = lastCmd.slice(0, lastPos);
-    const restCmd = lastCmd.slice(lastPos);
-
-    vimState.currentCommandlineText =
-      evalCmd + autoCompleteItems[commandLine.autoCompleteIndex] + restCmd;
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const key = this.keysPressed[0];
-    const isTabForward = key === '<tab>';
-
-    if (
-      commandLine.autoCompleteItems.length !== 0 &&
-      this.keys.some(k => commandLine.lastKeyPressed === k[0])
-    ) {
-      this.cycleCompletion(vimState, isTabForward);
-      commandLine.lastKeyPressed = key;
-      return vimState;
-    }
-
-    let newCompletionItems: string[] = [];
-    const currentCmd = vimState.currentCommandlineText;
-    const cursorPos = vimState.statusBarCursorCharacterPos;
-
-    // Sub string since vim does completion before the cursor
-    let evalCmd = currentCmd.slice(0, cursorPos);
-    let restCmd = currentCmd.slice(cursorPos);
-
-    // \s* is the match the extra space before any character like ':  edit'
-    const cmdRegex = /^\s*\w+$/;
-    const fileRegex = /^\s*\w+\s+/g;
-    if (cmdRegex.test(evalCmd)) {
-      // Command completion
-      newCompletionItems = Object.keys(commandParsers)
-        .filter(cmd => cmd.startsWith(evalCmd))
-        // Remove the already typed portion in the array
-        .map(cmd => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
-        .sort();
-    } else if (fileRegex.exec(evalCmd)) {
-      // File completion by searching if there is a space after the first word/command
-      // ideally it should be a process of white-listing to selected commands like :e and :vsp
-      let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
-      const currentUri = vscode.window.activeTextEditor!.document.uri;
-      const isRemote = !!vscode.env.remoteName;
-
-      const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
-        filePathInCmd,
-        currentUri,
-        isRemote
-      );
-      // Update the evalCmd in case of windows, where we change / to \
-      evalCmd = evalCmd.slice(0, fileRegex.lastIndex) + partialPath;
-
-      // test if the baseName is . or ..
-      const shouldAddDotItems = /^\.\.?$/g.test(baseName);
-      const dirItems = await readDirectory(
-        fullDirPath,
-        p.sep,
-        currentUri,
-        isRemote,
-        shouldAddDotItems
-      );
-      newCompletionItems = dirItems
-        .filter(name => name.startsWith(baseName))
-        .map(name => name.slice(name.search(baseName) + baseName.length))
-        .sort();
-    }
-
-    const newIndex = isTabForward ? 0 : newCompletionItems.length - 1;
-    commandLine.autoCompleteIndex = newIndex;
-    // If here only one items we fill cmd direct, so the next tab will not cycle the one item array
-    commandLine.autoCompleteItems = newCompletionItems.length <= 1 ? [] : newCompletionItems;
-    commandLine.preCompleteCharacterPos = cursorPos;
-    commandLine.preCompleteCommand = evalCmd + restCmd;
-
-    const completion = newCompletionItems.length === 0 ? '' : newCompletionItems[newIndex];
-    vimState.currentCommandlineText = evalCmd + completion + restCmd;
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
 
     commandLine.lastKeyPressed = key;
     return vimState;
