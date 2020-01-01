@@ -4,59 +4,46 @@ export class NumericString {
   prefix: string;
   suffix: string;
 
-  private static matchings: { regex: RegExp; base: number; prefix: string }[] = [
-    { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: '0' },
-    { regex: /^([-+])?(\d+)$/, base: 10, prefix: '' },
-    { regex: /^([-+])?0x([\da-fA-F]+)$/, base: 16, prefix: '0x' },
-    { regex: /\d/, base: 10, prefix: '' },
+  private static matchings: { regex: RegExp; radix: number; prefix: string }[] = [
+    { regex: /([-+])?0([0-7]+)/, radix: 8, prefix: '0' },
+    { regex: /([-+])?(\d+)/, radix: 10, prefix: '' },
+    { regex: /([-+])?0x([\da-fA-F]+)/, radix: 16, prefix: '0x' },
   ];
 
   public static parse(input: string): NumericString | undefined {
-    for (const { regex, base, prefix } of NumericString.matchings) {
+    // Find core numeric part of input
+    let coreBegin = -1;
+    let coreLength = -1;
+    let coreRadix = -1;
+    let numPrefix = '';
+    for (const { regex, radix, prefix } of NumericString.matchings) {
       const match = regex.exec(input);
-      if (match == null) {
-        continue;
-      }
-
-      // Regex to determine if this number has letters around it,
-      // if it doesn't then that is easy and no prefix or suffix is needed
-      let findNondigits = /[^\d-+]+/g;
-
-      // Regex to find any leading characters before the number
-      let findPrefix = /^[^\d-+]+(?=[0-9]+)/g;
-
-      // Regex to find any trailing characters after the number
-      let findSuffix = /[^\d]*[\d]*(.*)/g;
-      let newPrefix = prefix;
-      let newSuffix = '';
-      let newNum = input;
-
-      // Only use this section if this is a number surrounded by letters
-      if (
-        findNondigits.exec(input) !== null &&
-        NumericString.matchings[NumericString.matchings.length - 1].regex === regex
-      ) {
-        let prefixFound = findPrefix.exec(input);
-        let suffixFound = findSuffix.exec(input);
-
-        // Find the prefix if it exists
-        if (prefixFound !== null) {
-          newPrefix = prefixFound.toString();
+      if (match != null) {
+        // Get the left and large possible match
+        if (
+          coreRadix < 0 ||
+          match.index < coreBegin ||
+          (match.index === coreBegin && match[0].length > coreLength)
+        ) {
+          coreBegin = match.index;
+          coreLength = match[0].length;
+          coreRadix = radix;
+          numPrefix = prefix;
         }
-
-        // Find the suffix if it exists
-        if (suffixFound !== null) {
-          newSuffix = suffixFound[1].toString();
-        }
-
-        // Obtain just the number with no extra letters
-        newNum = newNum.slice(newPrefix.length, newNum.length - newSuffix.length);
       }
-
-      return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix);
     }
 
-    return undefined;
+    if (coreRadix < 0) {
+      return undefined;
+    }
+
+    const coreEnd = coreBegin + coreLength;
+
+    const corePrefix = input.slice(0, coreBegin) + numPrefix;
+    const core = input.slice(coreBegin, coreEnd);
+    const coreSuffix = input.slice(coreEnd, input.length);
+
+    return new NumericString(parseInt(core, coreRadix), coreRadix, corePrefix, coreSuffix);
   }
 
   private constructor(value: number, radix: number, prefix: string, suffix: string) {

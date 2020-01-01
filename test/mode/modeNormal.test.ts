@@ -1719,6 +1719,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can ctrl-a on a hex number behind a word',
+    start: ['|test0xf'],
+    keysPressed: '<C-a>',
+    end: ['test0x1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a distinguish fake hex number',
+    start: ['|00xf'],
+    keysPressed: '<C-a>',
+    end: ['0|1xf'],
+  });
+
+  newTest({
     title: 'can ctrl-x correctly behind a word',
     start: ['|one 10'],
     keysPressed: '<C-x>',
