@@ -62,6 +62,11 @@ suite('VimrcKeyRemappingBuilder', () => {
         vimrcLine: 'set scrolloff=8',
         expectNull: true,
       },
+      {
+        // Ignore lines attempting to remap a plug in using <Plug>
+        vimrcLine: 'nmap s <Plug>(easymotion-s2)',
+        expectNull: true,
+      },
     ];
 
     for (const testCase of testCases) {
