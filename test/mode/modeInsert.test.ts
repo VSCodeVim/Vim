@@ -217,9 +217,10 @@ suite('Mode Insert', () => {
 
   newTest({
     title: 'Can <Esc> after entering insert mode from <ctrl+o>',
-    start: ['abc|'],
-    keysPressed: '<C-o>a<Esc>d',
-    end: ['ab|c'],
+    start: ['|'],
+    keysPressed: 'i<C-o>i<Esc>',
+    end: ['|'],
+    endMode: Mode.Normal,
   });
 
   newTest({
