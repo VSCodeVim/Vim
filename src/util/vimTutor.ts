@@ -1,3 +1,4 @@
+export default `
 ===============================================================================
 =    W e l c o m e   t o   t h e   V I M   T u t o r    -    Version 1.5      =
 ===============================================================================
@@ -806,3 +807,4 @@ Note: This avoids typing  i , the last character, the text to insert, <ESC>,
   Modified for Vim by Bram Moolenaar.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`;

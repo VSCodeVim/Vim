@@ -25,7 +25,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
-import { readFileSync } from 'fs';
+import vimTutor from './src/util/vimTutor';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -409,7 +409,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'vim.vimTutor', async () => {
-    const textByLine = readFileSync('./src/static/vimtutor.txt').toString();
     const setting: vscode.Uri = vscode.Uri.parse('untitled:' + 'vimtutor.txt');
 
     const document = await vscode.workspace.openTextDocument(setting);
@@ -417,7 +416,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const text = await vscode.window.showTextDocument(document, 1, false);
 
     text.edit(edit => {
-      edit.insert(new vscode.Position(0, 0), textByLine);
+      edit.insert(new vscode.Position(0, 0), vimTutor);
     });
   });
 
