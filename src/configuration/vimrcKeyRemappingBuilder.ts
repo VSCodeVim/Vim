@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IKeyRemapping, IVimrcKeyRemapping } from './iconfiguration';
 
 class VimrcKeyRemappingBuilderImpl {
-  private static readonly KEY_REMAPPING_REG_EX = /(^.*map)\s([\S]+)\s+([\S]+)$/;
+  private static readonly KEY_REMAPPING_REG_EX = /(^.*map)\s([\S]+)\s+(?!<Plug>)([\S]+)$/;
   private static readonly KEY_LIST_REG_EX = /(<[^>]+>|.)/g;
   private static readonly VIM_COMMAND_REG_EX = /^(:\w+)<[Cc][Rr]>$/;
 
