@@ -462,7 +462,7 @@ export class HistoryTracker {
    */
   public addChange(cursorPosition = [new Position(0, 0)]): boolean {
     if (configuration.experimentalOptimizations && !this._isDocumentTextNeeeded()) {
-      return;
+      return false;
     }
     const newText = this._getDocumentText();
 
