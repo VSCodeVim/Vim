@@ -106,8 +106,16 @@ export class TextEditor {
   }
 
   static getLineCount(textEditor?: vscode.TextEditor): number {
-    textEditor = textEditor || vscode.window.activeTextEditor;
-    return textEditor ? textEditor.document.lineCount : -1;
+    textEditor = textEditor ?? vscode.window.activeTextEditor;
+    return textEditor?.document.lineCount ?? -1;
+  }
+
+  public static getLineLength(line: number): number {
+    if (line < 0 || line > TextEditor.getLineCount()) {
+      throw new Error(`getLineLength() called with out-of-bounds line ${line}`);
+    }
+
+    return TextEditor.readLineAt(line).length;
   }
 
   static getLineAt(position: vscode.Position): vscode.TextLine {
@@ -118,14 +126,6 @@ export class TextEditor {
     const line = TextEditor.getLineAt(position);
 
     return line.text[position.character];
-  }
-
-  static getLineMaxColumn(lineNumber: number): number {
-    if (lineNumber < 0 || lineNumber > TextEditor.getLineCount()) {
-      throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');
-    }
-
-    return TextEditor.readLineAt(lineNumber).length;
   }
 
   static getSelection(): vscode.Range {

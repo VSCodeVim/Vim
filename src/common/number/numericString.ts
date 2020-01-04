@@ -11,7 +11,7 @@ export class NumericString {
     { regex: /\d/, base: 10, prefix: '' },
   ];
 
-  static parse(input: string): NumericString | null {
+  public static parse(input: string): NumericString | undefined {
     for (const { regex, base, prefix } of NumericString.matchings) {
       const match = regex.exec(input);
       if (match == null) {
@@ -55,10 +55,11 @@ export class NumericString {
 
       return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix);
     }
-    return null;
+
+    return undefined;
   }
 
-  constructor(value: number, radix: number, prefix: string, suffix: string) {
+  private constructor(value: number, radix: number, prefix: string, suffix: string) {
     this.value = value;
     this.radix = radix;
     this.prefix = prefix;

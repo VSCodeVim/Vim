@@ -56,6 +56,7 @@ class CommandSurroundAddTarget extends BaseCommand {
     ['a'],
   ];
   isCompleteAction = false;
+  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -168,11 +169,9 @@ class CommandSurroundModeStart extends BaseCommand {
 
     if (operator instanceof ChangeOperator) {
       operatorString = 'change';
-    }
-    if (operator instanceof DeleteOperator) {
+    } else if (operator instanceof DeleteOperator) {
       operatorString = 'delete';
-    }
-    if (operator instanceof YankOperator) {
+    } else if (operator instanceof YankOperator) {
       operatorString = 'yank';
     }
 
@@ -277,6 +276,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 export class CommandSurroundAddToReplacement extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   keys = ['<any>'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (!vimState.surround) {

@@ -154,17 +154,14 @@ export class NeovimWrapper implements vscode.Disposable {
     const fixedLines =
       process.platform === 'win32' ? lines.map((line, index) => line.replace(/\r$/, '')) : lines;
 
+    const lineCount = TextEditor.getLineCount();
+
     await TextEditor.replace(
-      new vscode.Range(
-        0,
-        0,
-        TextEditor.getLineCount() - 1,
-        TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)
-      ),
+      new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
       fixedLines.join('\n')
     );
 
-    this.logger.debug(`${lines.length} lines in nvim. ${TextEditor.getLineCount()} in editor.`);
+    this.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
     let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,

@@ -30,7 +30,10 @@
     "Other",
     "Keymaps"
   ],
-  "extensionKind": "ui",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "activationEvents": [
     "*",
     "onCommand:type"
@@ -41,7 +44,7 @@
     "commands": [
       {
         "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VSCode supports to Vim motions/operators/ExCommands/macro."
+        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
       },
       {
         "command": "toggleVim",
@@ -305,7 +308,7 @@
       {
         "key": "ctrl+space",
         "command": "extension.vim_ctrl+space",
-        "when": "editorTextFocus && vim.active && vim.use<C-space> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-space> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "shift+G",
@@ -325,7 +328,7 @@
       {
         "key": "cmd+right",
         "command": "extension.vim_cmd+right",
-        "when": "editorTextFocus && vim.active && vim.use<D-right> &&  !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-right> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+a",
@@ -373,7 +376,7 @@
         },
         "vim.debug.loggingLevelForAlert": {
           "type": "string",
-          "description": "Maximum level of messages to present as VSCode information window.",
+          "description": "Maximum level of messages to present as VS Code information window.",
           "default": "error",
           "enum": [
             "error",
@@ -397,11 +400,11 @@
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -448,32 +451,32 @@
         },
         "vim.overrideCopy": {
           "type": "boolean",
-          "description": "Override VSCode's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
+          "description": "Override VS Code's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
           "default": true
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.commandLineModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.commandLineModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VSCode actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.textwidth": {
           "type": "number",
@@ -939,7 +942,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.4",
     "lodash": "^4.17.15",
-    "neovim": "4.5.0",
+    "neovim": "4.7.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6",
@@ -963,7 +966,7 @@
     "mocha": "6.2.2",
     "plugin-error": "1.0.1",
     "prettier": "1.19.1",
-    "sinon": "8.0.1",
+    "sinon": "8.0.2",
     "ts-loader": "6.2.1",
     "tslint": "5.20.1",
     "typescript": "3.7.4",

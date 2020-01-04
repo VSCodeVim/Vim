@@ -29,8 +29,6 @@ export interface IMovement {
    */
   failed?: boolean;
 
-  diff?: PositionDiff;
-
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }

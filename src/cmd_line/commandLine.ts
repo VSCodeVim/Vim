@@ -119,7 +119,7 @@ class CommandLine {
     };
   }
 
-  public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
+  public async showHistory(initialText: string): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
       this._logger.debug('No active document.');
       return '';

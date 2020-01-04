@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position, PositionDiff, PositionDiffType } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -19,6 +19,9 @@ export class BaseOperator extends BaseAction {
   }
   canBeRepeatedWithDot = true;
   isOperator = true;
+
+  // All operators other than yank can change the document
+  mightChangeDocument = true;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
@@ -183,7 +186,7 @@ export class DeleteOperator extends BaseOperator {
       Register.put(text, vimState, this.multicursorIndex);
     }
 
-    let diff = new PositionDiff(0, 0);
+    let diff = new PositionDiff();
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
@@ -192,14 +195,16 @@ export class DeleteOperator extends BaseOperator {
 
     if (start.character > TextEditor.getLineAt(start).text.length) {
       resultingPosition = start.getLeft();
-      diff = new PositionDiff(0, -1);
+      diff = new PositionDiff({ character: -1 });
     } else {
       resultingPosition = start;
     }
 
     if (registerMode === RegisterMode.LineWise) {
       resultingPosition = resultingPosition.obeyStartOfLine();
-      diff = PositionDiff.NewBOLDiff(0, 0, true);
+      diff = new PositionDiff({
+        type: PositionDiffType.ObeyStartOfLine,
+      });
     }
 
     vimState.recordedState.transformations.push({
@@ -257,6 +262,7 @@ export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   canBeRepeatedWithDot = false;
+  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Hack to make Surround with y (which takes a motion) work.
@@ -272,7 +278,7 @@ export class YankOperator extends BaseOperator {
 
     const originalMode = vimState.currentMode;
 
-    if (end.isEarlierThan(start)) {
+    if (end.isBefore(start)) {
       [start, end] = [end, start];
     }
     let extendedEnd = new Position(end.line, end.character + 1);
@@ -330,6 +336,7 @@ export class YankOperator extends BaseOperator {
 export class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
@@ -598,7 +605,7 @@ export class ChangeOperator extends BaseOperator {
     // the line. We do want to run delete if it is a multiline change though ex. c}
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     if (
-      Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
+      TextEditor.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
       end.line !== start.line
     ) {
       if (isLineWise) {
@@ -655,7 +662,7 @@ export class ChangeOperator extends BaseOperator {
         vimState.recordedState.transformations.push({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: new PositionDiff(0, 1), // Handle transition from Normal to Insert modes
+          diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
         });
       }
     }
@@ -669,6 +676,7 @@ export class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
+  mightChangeDocument = false;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -1100,7 +1108,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       start: start,
       end: end,
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.NewBOLDiff(0, 0),
+      diff: PositionDiff.newBOLDiff(),
     });
 
     await vimState.setCurrentMode(Mode.Normal);
