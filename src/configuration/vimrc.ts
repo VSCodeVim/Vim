@@ -139,6 +139,8 @@ class VimrcImpl {
       return filePath;
     }
 
+    // regex = Anything preceded by beginning of line
+    // and immediately followed by '~' or '$HOME'
     const regex = /(?<=^(?:~|\$HOME)).*/;
 
     // Matches /pathToVimrc in $HOME/pathToVimrc or ~/pathToVimrc
