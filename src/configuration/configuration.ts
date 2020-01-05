@@ -15,7 +15,6 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
-import { Mode } from '../mode/mode';
 
 const packagejson: {
   contributes: {
@@ -351,8 +350,8 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  getCursorStyleForMode(modeName: Mode): vscode.TextEditorCursorStyle | undefined {
-    let cursorStyle = this.cursorStylePerMode[modeName.toString().toLowerCase()];
+  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
     }
