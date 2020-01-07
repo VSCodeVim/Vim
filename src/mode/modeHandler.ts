@@ -1329,7 +1329,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // cursor style
-    let cursorStyle = configuration.getCursorStyleForMode(this.currentMode);
+    const modeName = Mode[this.currentMode];
+    let cursorStyle = configuration.getCursorStyleForMode(modeName);
     if (!cursorStyle) {
       const cursorType = getCursorType(this.currentMode);
       cursorStyle = getCursorStyle(cursorType);
