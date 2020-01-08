@@ -224,7 +224,7 @@ export class ModeHandler implements vscode.Disposable {
         await this.setCurrentMode(Mode.Normal);
       }
 
-      return this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
+      return this.updateView(this.vimState, { drawSelection: toDraw, revealRange: false });
     }
   }
 
