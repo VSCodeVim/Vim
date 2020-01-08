@@ -3497,9 +3497,9 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 }
 
 @RegisterAction
-class ActionXVisualBlock extends BaseCommand {
+class ActionDeleteVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
-  keys = ['x'];
+  keys = [['d'], ['x'], ['X']];
   canBeRepeatedWithDot = true;
   runsOnceForEveryCursor() {
     return false;
@@ -3531,18 +3531,6 @@ class ActionXVisualBlock extends BaseCommand {
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
-  }
-}
-
-@RegisterAction
-class ActionDVisualBlock extends ActionXVisualBlock {
-  // TODO: can't this be lumped in with the previous command without subclassing?
-  modes = [Mode.VisualBlock];
-  keys = ['d'];
-  canBeRepeatedWithDot = true;
-  mightChangeDocument = true;
-  runsOnceForEveryCursor() {
-    return false;
   }
 }
 
