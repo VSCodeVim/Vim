@@ -83,6 +83,11 @@ export class VimState implements vscode.Disposable {
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
+  /**
+   * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
+   */
+  public visualLineStartColumn: number | undefined = undefined;
+
   public focusChanged = false;
 
   public surround:
@@ -208,9 +213,13 @@ export class VimState implements vscode.Disposable {
   }
 
   private _inputMethodSwitcher: InputMethodSwitcher;
-  public async setCurrentMode(value: Mode): Promise<void> {
-    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
-    this._currentMode = value;
+  public async setCurrentMode(mode: Mode): Promise<void> {
+    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, mode);
+    this._currentMode = mode;
+
+    if (mode !== Mode.VisualLine) {
+      this.visualLineStartColumn = undefined;
+    }
   }
 
   public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
