@@ -482,6 +482,10 @@ class CommandEsc extends BaseCommand {
     return false;
   }
 
+  preservesDesiredColumn() {
+    return true;
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === Mode.Normal && !vimState.isMultiCursor) {
       // If there's nothing to do on the vim side, we might as well call some
@@ -504,6 +508,12 @@ class CommandEsc extends BaseCommand {
     // Abort surround operation
     if (vimState.currentMode === Mode.SurroundInputMode) {
       vimState.surround = undefined;
+    }
+
+    if (vimState.currentMode === Mode.VisualLine && vimState.visualLineStartColumn !== undefined) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
+        vimState.visualLineStartColumn
+      );
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -2337,6 +2347,7 @@ class CommandVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.visualLineStartColumn = position.character;
     await vimState.setCurrentMode(Mode.VisualLine);
 
     return vimState;
