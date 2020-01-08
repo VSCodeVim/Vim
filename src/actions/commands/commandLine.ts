@@ -130,6 +130,22 @@ class CommandTabInCommandline extends BaseCommand {
 }
 
 @RegisterAction
+class CommandEnterInCommandline extends BaseCommand {
+  modes = [Mode.CommandlineInProgress];
+  keys = ['\n'];
+  mightChangeDocument = true;
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
+    await vimState.setCurrentMode(Mode.Normal);
+    return vimState;
+  }
+}
+
+@RegisterAction
 // TODO: break up
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -151,7 +167,6 @@ class CommandInsertInCommandline extends BaseCommand {
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
-  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
@@ -182,10 +197,6 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key === '\n') {
-      await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
-      await vimState.setCurrentMode(Mode.Normal);
-      return vimState;
     } else if (key === '<up>' || key === '<C-p>') {
       commandLine.commandlineHistoryIndex -= 1;
 
