@@ -584,7 +584,6 @@ export class ModeHandler implements vscode.Disposable {
       // Return to insert mode after 1 command in this case for <C-o>
       if (vimState.returnToInsertAfterCommand) {
         if (vimState.actionCount > 0) {
-          vimState.returnToInsertAfterCommand = false;
           vimState.actionCount = 0;
           await this.setCurrentMode(Mode.Insert);
         } else {
@@ -1329,7 +1328,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // cursor style
-    let cursorStyle = configuration.getCursorStyleForMode(this.currentMode);
+    const modeName = Mode[this.currentMode];
+    let cursorStyle = configuration.getCursorStyleForMode(modeName);
     if (!cursorStyle) {
       const cursorType = getCursorType(this.currentMode);
       cursorStyle = getCursorStyle(cursorType);

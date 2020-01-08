@@ -88,7 +88,8 @@ class CommandLine {
     } catch (e) {
       if (e instanceof VimError) {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
-          await vimState.nvim.run(vimState, command);
+          const statusBarText = await vimState.nvim.run(vimState, command);
+          StatusBar.setText(vimState, statusBarText, true);
         } else {
           StatusBar.setText(vimState, `${e.toString()}. ${command}`, true);
         }

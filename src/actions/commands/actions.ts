@@ -482,6 +482,10 @@ class CommandEsc extends BaseCommand {
     return false;
   }
 
+  preservesDesiredColumn() {
+    return true;
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === Mode.Normal && !vimState.isMultiCursor) {
       // If there's nothing to do on the vim side, we might as well call some
@@ -504,6 +508,12 @@ class CommandEsc extends BaseCommand {
     // Abort surround operation
     if (vimState.currentMode === Mode.SurroundInputMode) {
       vimState.surround = undefined;
+    }
+
+    if (vimState.currentMode === Mode.VisualLine && vimState.visualLineStartColumn !== undefined) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
+        vimState.visualLineStartColumn
+      );
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -2332,6 +2342,7 @@ class CommandVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.visualLineStartColumn = position.character;
     await vimState.setCurrentMode(Mode.VisualLine);
 
     return vimState;
@@ -3492,9 +3503,9 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 }
 
 @RegisterAction
-class ActionXVisualBlock extends BaseCommand {
+class ActionDeleteVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
-  keys = ['x'];
+  keys = [['d'], ['x'], ['X']];
   canBeRepeatedWithDot = true;
   runsOnceForEveryCursor() {
     return false;
@@ -3526,18 +3537,6 @@ class ActionXVisualBlock extends BaseCommand {
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
-  }
-}
-
-@RegisterAction
-class ActionDVisualBlock extends ActionXVisualBlock {
-  // TODO: can't this be lumped in with the previous command without subclassing?
-  modes = [Mode.VisualBlock];
-  keys = ['d'];
-  canBeRepeatedWithDot = true;
-  mightChangeDocument = true;
-  runsOnceForEveryCursor() {
-    return false;
   }
 }
 
