@@ -478,4 +478,11 @@ suite('Mode Visual Line', () => {
       end: ['11111|1', '222', '333'],
     });
   });
+
+  newTest({
+    title: 'Exiting via <Esc> returns cursor to original column',
+    start: ['rocinante', 'nau|voo', 'anubis', 'canterbury'],
+    keysPressed: 'Vj<Esc>',
+    end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
+  });
 });

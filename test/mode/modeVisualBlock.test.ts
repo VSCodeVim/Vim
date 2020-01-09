@@ -160,4 +160,25 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>jjllold',
     end: ['|f', 'b', 'b'],
   });
+
+  newTest({
+    title: 'd deletes block',
+    start: ['11111', '2|2222', '33333', '44444', '55555'],
+    keysPressed: '<C-v>jjlld',
+    end: ['11111', '2|2', '33', '44', '55555'],
+  });
+
+  newTest({
+    title: 'x deletes block',
+    start: ['11111', '2|2222', '33333', '44444', '55555'],
+    keysPressed: '<C-v>jjllx',
+    end: ['11111', '2|2', '33', '44', '55555'],
+  });
+
+  newTest({
+    title: 'X deletes block',
+    start: ['11111', '2|2222', '33333', '44444', '55555'],
+    keysPressed: '<C-v>jjllX',
+    end: ['11111', '2|2', '33', '44', '55555'],
+  });
 });
