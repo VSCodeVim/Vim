@@ -404,7 +404,12 @@ export class UpperCaseOperator extends BaseOperator {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     let text = vimState.editor.document.getText(range);
 
-    await TextEditor.replace(range, text.toUpperCase());
+    vimState.recordedState.transformations.push({
+      type: 'replaceText',
+      start: Position.FromVSCodePosition(range.start),
+      end: Position.FromVSCodePosition(range.end),
+      text: text.toUpperCase(),
+    });
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
@@ -449,7 +454,12 @@ export class LowerCaseOperator extends BaseOperator {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     let text = vimState.editor.document.getText(range);
 
-    await TextEditor.replace(range, text.toLowerCase());
+    vimState.recordedState.transformations.push({
+      type: 'replaceText',
+      start: Position.FromVSCodePosition(range.start),
+      end: Position.FromVSCodePosition(range.end),
+      text: text.toLowerCase(),
+    });
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;

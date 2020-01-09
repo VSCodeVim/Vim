@@ -70,6 +70,9 @@ export class TextEditor {
     });
   }
 
+  /**
+   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
+   */
   static async delete(range: vscode.Range): Promise<boolean> {
     return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);

@@ -1280,6 +1280,8 @@ export class ModeHandler implements vscode.Disposable {
             }
             break;
           }
+          // TODO: Mode.VisualLine
+          // TODO: Mode.VisualBlock
           case Mode.Normal:
           case Mode.Insert: {
             for (const { stop: cursorStop } of vimState.cursors) {

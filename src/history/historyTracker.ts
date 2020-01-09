@@ -276,6 +276,7 @@ export class HistoryTracker {
     this.lastContentChanges = [];
   }
 
+  // Note: this is slow in large files; avoid calling if you can.
   private _getDocumentText(): string {
     return (
       (this.vimState.editor &&
@@ -486,7 +487,9 @@ export class HistoryTracker {
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
 
+    const now = Number(new Date());
     const diffs = diffEngine.diff_main(this.oldText, newText);
+    this._logger.debug(`diff_main() took ${Number(new Date()) - now}ms`);
 
     /*
     this.historySteps.push(new HistoryStep({

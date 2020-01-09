@@ -184,7 +184,11 @@ class CommandInsertBelowChar extends BaseCommand {
     const char = TextEditor.getText(
       new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight())
     );
-    await TextEditor.insert(char, position);
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: char,
+      position,
+    });
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
@@ -413,7 +417,11 @@ class CommandInsertRegisterContent extends BaseCommand {
       text += '\n';
     }
 
-    await TextEditor.insertAt(text, position);
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text,
+      position,
+    });
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
@@ -462,7 +470,10 @@ class CommandCtrlW extends BaseCommand {
       wordBegin = position.getWordLeft();
     }
 
-    await TextEditor.delete(new vscode.Range(wordBegin, position));
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(wordBegin, position),
+    });
 
     vimState.cursorStopPosition = wordBegin;
 
@@ -503,7 +514,10 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     );
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
+
+    // TODO: necessary?
     await vimState.setCurrentMode(Mode.Insert);
+
     return vimState;
   }
 }
@@ -528,7 +542,11 @@ class CommandInsertAboveChar extends BaseCommand {
     const char = TextEditor.getText(
       new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight())
     );
-    await TextEditor.insert(char, position);
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: char,
+      position,
+    });
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
@@ -563,7 +581,10 @@ class CommandCtrlUInInsertMode extends BaseCommand {
     const start = position.isInLeadingWhitespace()
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
-    await TextEditor.delete(new vscode.Range(start, position));
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(start, position),
+    });
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
     return vimState;

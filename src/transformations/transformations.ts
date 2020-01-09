@@ -256,7 +256,6 @@ export type Transformation =
   | Dot
   | Macro
   | ContentChangeTransformation
-  | DeleteTextTransformation
   | Tab
   | Reindent;
 
