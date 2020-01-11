@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * We consider two editors to be the same iff their EditorIdentities are the same
+ * We consider two editors to be the same if their EditorIdentities are the same
  */
 export class EditorIdentity {
   private _fileName: string;
