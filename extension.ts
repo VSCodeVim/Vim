@@ -409,11 +409,11 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'vim.vimTutor', async () => {
-    const setting: vscode.Uri = vscode.Uri.parse('untitled:' + 'vimtutor.txt');
+    const setting: vscode.Uri = vscode.Uri.parse('untitled:' + 'vimtutor.txt', true);
 
     const document = await vscode.workspace.openTextDocument(setting);
 
-    const text = await vscode.window.showTextDocument(document, 1, false);
+    const text = await vscode.window.showTextDocument(document);
 
     text.edit(edit => {
       edit.insert(new vscode.Position(0, 0), vimTutor);
