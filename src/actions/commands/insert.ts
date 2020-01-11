@@ -438,6 +438,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 export class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
+  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.returnToInsertAfterCommand = true;

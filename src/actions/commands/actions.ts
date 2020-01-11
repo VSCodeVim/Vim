@@ -833,6 +833,11 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 class CommandOverrideCopy extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock, Mode.Insert, Mode.Normal];
   keys = ['<copy>']; // A special key - see ModeHandler
+
+  // We need this because <C-c>(CommandEscInsertMode)
+  // may be overwritten to <copy>
+  mightChangeDocument = true;
+
   runsOnceForEveryCursor() {
     return false;
   }

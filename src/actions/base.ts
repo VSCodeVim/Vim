@@ -52,8 +52,9 @@ export class BaseAction {
    * what changed to create that undo step if this returns false.
    *
    * Most commands do not modify the document, so this is false by default. This means if you add a
-   * command that can modify the document, you MUST set mightChangeDocument = true. Otherwise undo
+   * command that can modify the document or switch modes, you MUST set mightChangeDocument = true. Otherwise undo
    * will not work properly.
+   *
    *
    * TODO: if all actions were pure, I think this would be unnecessary, as we could deduce it from
    * vimState.transformations being empty or not.
