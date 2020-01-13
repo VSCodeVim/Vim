@@ -285,6 +285,32 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+export class CommandDeleteInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<Del>'];
+  mightChangeDocument = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const selection = TextEditor.getSelection();
+
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      vimState.recordedState.transformations.push({
+        type: 'deleteRange',
+        range: new Range(selection.start as Position, selection.end as Position),
+      });
+    } else if (!position.isAtDocumentEnd()) {
+      // Otherwise, just delete a character (unless we're at the end of the document)
+      vimState.recordedState.transformations.push({
+        type: 'deleteText',
+        position: position.getRightThroughLineBreaks(true),
+      });
+    }
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
