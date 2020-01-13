@@ -270,7 +270,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
         type: 'deleteRange',
         range: new Range(position.withColumn(desiredLineLength), position.withColumn(line.length)),
       });
-    } else if (position.line !== 0 || position.character !== 0) {
+    } else if (!position.isAtDocumentBegin()) {
       // Otherwise, just delete a character (unless we're at the start of the document)
       vimState.recordedState.transformations.push({
         type: 'deleteText',
