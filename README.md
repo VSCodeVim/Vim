@@ -46,6 +46,8 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
 
+Vim keybindings are incompatible with [VSCode's HTML mirror cursor feature](https://code.visualstudio.com/updates/v1_41). You will need to set `"html.mirrorCursorOnMatchingTag": false` in `settings.json` to avoid errors and unexpected behavior (for both Mac and Windows).
+
 ### Mac
 
 To enable key-repeating execute the following in your Terminal and restart VS Code:
