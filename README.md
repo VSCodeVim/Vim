@@ -66,6 +66,12 @@ Like real vim, VSCodeVim will take over your control keys. This behaviour can be
 
 The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-gallery#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-gallery) of VS Code.
 
+## WARNING
+
+Due to the amount of behavior this extension needs to modify, it may break some core VSCode functionality.  At present, VSCodeVim is known to cause the following problems:
+* Snippet placeholder transforms don't work (#3176)
+* VSCodeVim causes performance problems (#2021).  In particular, there will be a severe lag before the autocomplete menu pops up.  The only workaround at the moment is to disable all `editor.quickSuggestions` in your `settings.json`.
+
 ### Quick Example
 
 Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file with settings relevant to VSCodeVim:
