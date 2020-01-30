@@ -134,7 +134,7 @@ class CommandTabInCommandline extends BaseCommand {
 @RegisterAction
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
-  keys = ['\n'];
+  keys = [['\n'], ['<C-m>']];
   mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
@@ -259,6 +259,8 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-n>'], // Next
     ['<C-f>'], // Find
     ['<C-u>'], // Delete to beginning
+    // Another way to run search
+    ['<C-m>'],
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -305,7 +307,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = globalState.searchState!.searchString.length;
-    } else if (key === '\n') {
+    } else if (key === '\n' || key === '<C-m>') {
       await vimState.setCurrentMode(globalState.searchState!.previousMode);
 
       // Repeat the previous search if no new string is entered

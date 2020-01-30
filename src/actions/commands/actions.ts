@@ -466,6 +466,23 @@ class CommandExecuteLastMacro extends BaseCommand {
 }
 
 @RegisterAction
+class CtrlM extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [['<C-m>']];
+  mightChangeDocument = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: '\n',
+      position: position,
+      diff: new PositionDiff({ character: -1 }),
+    });
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [
     Mode.Visual,
