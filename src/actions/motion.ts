@@ -59,6 +59,37 @@ abstract class MoveByScreenLine extends BaseMovement {
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
       let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+      let anchorPos = Position.FromVSCodePosition(vimState.editor.selection.anchor);
+      let prevPos =
+        this.movementType === 'up'
+          ? curPos.getDown(curPos.character)
+          : curPos.getUp(curPos.character);
+      if (prevPos.line === start.line && prevPos.isAfter(start)) {
+        prevPos = prevPos.getLeft();
+      }
+
+      // Make cursor moves properly
+      if (this.movementType === 'up') {
+        if (start.isEqual(stop)) {
+          start = start.getLeft();
+          curPos = curPos.getLeft();
+          stop = stop.getRight();
+        } else if (stop.isEqual(curPos)) {
+          stop = stop.getLeft();
+        } else if (prevPos.isAfter(anchorPos)) {
+          start = start.getLeft();
+          curPos = curPos.getLeft();
+          stop = stop.getRight();
+        } else if (prevPos.isEqual(anchorPos)) {
+          stop = stop.getRight();
+        }
+      } else if (this.movementType === 'down') {
+        if (prevPos.isBefore(anchorPos) && curPos.isAfter(anchorPos)) {
+          start = start.getLeft();
+        } else if (stop.isEqual(curPos) && !prevPos.isEqual(anchorPos) && !start.isEqual(stop)) {
+          stop = stop.getLeft();
+        }
+      }
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
       if (start.isEqual(curPos)) {
