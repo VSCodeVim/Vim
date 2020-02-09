@@ -318,7 +318,7 @@ export class CommandNumber extends BaseCommand {
 
 @RegisterAction
 export class CommandRegister extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['"', '<character>'];
   isCompleteAction = false;
 
