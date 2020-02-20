@@ -974,7 +974,7 @@
     "sinon": "9.0.0",
     "ts-loader": "6.2.1",
     "tslint": "5.20.1",
-    "typescript": "3.7.5",
+    "typescript": "3.8.2",
     "vscode": "1.1.36"
   }
 }
