@@ -293,18 +293,11 @@ export class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
-    if (vimState.isMultiCursor) {
-      vimState.recordedState.transformations.push({
-        type: 'insertText',
-        text: char,
-        position: vimState.cursorStopPosition,
-      });
-    } else {
-      vimState.recordedState.transformations.push({
-        type: 'insertTextVSCode',
-        text: char,
-      });
-    }
+    vimState.recordedState.transformations.push({
+      type: 'insertTextVSCode',
+      text: char,
+      isMultiCursor: vimState.isMultiCursor,
+    });
 
     return vimState;
   }

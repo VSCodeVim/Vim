@@ -30,6 +30,9 @@ import {
   areAnyTransformationsOverlapping,
   isTextTransformation,
   TextTransformations,
+  areAllSameTransformation,
+  isMultiCursorTextTransformation,
+  InsertTextVSCodeTransformation,
 } from './../transformations/transformations';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
@@ -834,7 +837,13 @@ export class ModeHandler implements vscode.Disposable {
     const textTransformations: TextTransformations[] = transformations.filter(x =>
       isTextTransformation(x)
     ) as any;
-    const otherTransformations = transformations.filter(x => !isTextTransformation(x));
+    const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
+      x => isMultiCursorTextTransformation(x)
+    ) as any;
+
+    const otherTransformations = transformations.filter(
+      x => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
+    );
 
     let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
@@ -904,6 +913,26 @@ export class ModeHandler implements vscode.Disposable {
             doTextEditorEdit(command, edit);
           }
         });
+      }
+    }
+
+    if (multicursorTextTransformations.length > 0) {
+      if (areAllSameTransformation(multicursorTextTransformations)) {
+        /**
+         * Apply the transformation only once instead of to each cursor
+         * if they are all the same.
+         *
+         * This lets VSCode do multicursor snippets, auto braces and
+         * all the usual jazz VSCode does on text insertion.
+         */
+        const { text } = multicursorTextTransformations[0];
+
+        // await vscode.commands.executeCommand('default:type', { text });
+        await TextEditor.insert(text);
+      } else {
+        this._logger.warn(
+          `Unhandled multicursor transformations. Not all transformations are the same!`
+        );
       }
     }
 
