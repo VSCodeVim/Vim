@@ -947,7 +947,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.4",
     "lodash": "^4.17.15",
-    "neovim": "4.7.0",
+    "neovim": "4.8.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6",
@@ -957,7 +957,7 @@
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.149",
-    "@types/mocha": "5.2.7",
+    "@types/mocha": "7.0.1",
     "@types/node": "12.12.21",
     "@types/sinon": "7.5.1",
     "gulp": "4.0.2",
@@ -968,13 +968,13 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "7.0.0",
+    "mocha": "7.0.1",
     "plugin-error": "1.0.1",
     "prettier": "1.19.1",
-    "sinon": "8.0.4",
+    "sinon": "9.0.0",
     "ts-loader": "6.2.1",
     "tslint": "5.20.1",
-    "typescript": "3.7.4",
+    "typescript": "3.8.2",
     "vscode": "1.1.36"
   }
 }

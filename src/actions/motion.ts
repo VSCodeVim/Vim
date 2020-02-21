@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { ChangeOperator, DeleteOperator, YankOperator, BaseOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
@@ -1257,17 +1257,54 @@ class MoveNextSentenceBegin extends BaseMovement {
 class MoveParagraphEnd extends BaseMovement {
   keys = ['}'];
   isJump = true;
+  iteration = 0;
+  isFirstLineWise = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const isLineWise =
-      position.isLineBeginning() &&
-      vimState.currentMode === Mode.Normal &&
-      vimState.recordedState.operator;
-    let paragraphEnd = position.getCurrentParagraphEnd();
-    vimState.currentRegisterMode = isLineWise
-      ? RegisterMode.LineWise
-      : RegisterMode.AscertainFromCurrentMode;
-    return isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd;
+    const hasOperator = vimState.recordedState.operator;
+    const paragraphEnd = position.getCurrentParagraphEnd();
+
+    if (hasOperator) {
+      /**
+       * When paired with an `operator` and a `count` this move will be executed
+       * multiple times which could cause issues like https://github.com/VSCodeVim/Vim/issues/4488
+       * because subsequent runs will receive back whatever position we return
+       * (See comment in `BaseMotion.execActionWithCount()`).
+       *
+       * We keep track of the iteration we are in, this way we can
+       * return the correct position when on the last iteration, and we don't
+       * accidentally set the `registerMode` incorrectly.
+       */
+      this.iteration++;
+
+      const isLineWise = position.isLineBeginning() && vimState.currentMode === Mode.Normal;
+
+      const isLastIteration = vimState.recordedState.count
+        ? vimState.recordedState.count === this.iteration
+        : true;
+
+      /**
+       * `position` may not represent the position of the cursor from which the command was initiated.
+       * In the case that we will be repeating this move more than once
+       * we want to respect whether the starting position was at the beginning of line or not.
+       */
+      this.isFirstLineWise = this.iteration === 1 ? isLineWise : this.isFirstLineWise;
+
+      vimState.currentRegisterMode = this.isFirstLineWise
+        ? RegisterMode.LineWise
+        : RegisterMode.AscertainFromCurrentMode;
+
+      /**
+       * `paragraphEnd` is the first blank line after the last word in the
+       * current paragraph, we want the position just before that one to
+       * accurately emulate Vim's behaviour, unless we are at EOF.
+       */
+      return isLastIteration && !paragraphEnd.isAtDocumentEnd()
+        ? paragraphEnd.getLeftThroughLineBreaks(true)
+        : paragraphEnd;
+    }
+
+    return paragraphEnd;
   }
 }
 
