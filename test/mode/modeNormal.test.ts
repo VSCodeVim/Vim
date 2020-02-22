@@ -1003,7 +1003,7 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle d}',
+    title: 'Can handle d} at beginning of line',
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|', 'fun'],
@@ -1015,6 +1015,30 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'y}p',
     end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle d} when not at beginning of line',
+    start: ['f|oo', 'bar', '', 'fun'],
+    keysPressed: 'd}',
+    end: ['|f', '', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, at beginning of line',
+    start: ['|foo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, and not at beginning of line',
+    start: ['f|oo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|f', '', 'fun'],
     endMode: Mode.Normal,
   });
 
