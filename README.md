@@ -36,6 +36,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [CamelCaseMotion](#camelcasemotion)
   - [Input Method](#input-method)
   - [ReplaceWithRegister](#replacewithregister)
+  - [vim-textobj-entire](#vim-textobj-entire)
 - [VSCodeVim tricks](#-vscodevim-tricks)
 - [F.A.Q / Troubleshooting](#-faq)
 - [Contributing](#️-contributing)
@@ -611,6 +612,22 @@ Once active, type `gr` (say "go replace") followed by a motion to describe the t
 | `[count]["a]gr<motion>` | Replace the text described by the motion with the contents of the specified register    |
 | `[count]["a]grr`        | Replace the \[count\] lines or current line with the contents of the specified register |
 | `{Visual}["a]gr`        | Replace the selection with the contents of the specified register                       |
+
+### vim-textobj-entire
+
+Similar to [vim-textobj-entire](https://github.com/kana/vim-textobj-entire).
+
+Adds two useful text-objects:
+
+* `ae` which represents the entire content of a buffer
+* `ie` which represents the entire content of a buffer without the leading and trailing spaces.
+
+Usage examples:
+
+- `dae` - delete the whole buffer content.
+- `yie` - will yank the buffer content except leading and trailing blank lines
+- `gUae` - transform the whole buffer to uppercase.
+
 
 ## 🎩 VSCodeVim tricks!
 
