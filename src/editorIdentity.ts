@@ -13,11 +13,15 @@ export class EditorIdentity {
   /**
    * For use in tests
    */
-  public static createRandomEditorIdentity(): EditorIdentity {
+  public static createRandomEditorIdentity(
+    injectName: string | undefined = undefined
+  ): EditorIdentity {
     return new EditorIdentity(
-      Math.random()
-        .toString(36)
-        .substring(7)
+      injectName
+        ? injectName
+        : Math.random()
+            .toString(36)
+            .substring(7)
     );
   }
 

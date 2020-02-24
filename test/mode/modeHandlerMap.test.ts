@@ -2,6 +2,8 @@ import * as assert from 'assert';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../../src/editorIdentity';
+import { testIt } from '../testSimplifier';
+import { KeypressState } from '../../src/actions/base';
 
 suite('Mode Handler Map', () => {
   setup(() => {
@@ -33,5 +35,19 @@ suite('Mode Handler Map', () => {
     // delete
     ModeHandlerMap.delete(key);
     assert.strictEqual(ModeHandlerMap.getAll().length, 0);
+  });
+
+  test('get', async () => {
+    // same file name returns same modehandler
+    const key = EditorIdentity.createRandomEditorIdentity();
+
+    let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
+    assert.strictEqual(isNew, true);
+    assert.notEqual(modeHandler, undefined);
+
+    [, isNew] = await ModeHandlerMap.getOrCreate(
+      EditorIdentity.createRandomEditorIdentity(key.fileName)
+    );
+    assert.strictEqual(isNew, false);
   });
 });
