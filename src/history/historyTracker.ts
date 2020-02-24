@@ -328,7 +328,7 @@ export class HistoryTracker {
           for (const ch of change.text) {
             // Update mark
 
-            if (pos.compareTo(newMark.position) <= 0) {
+            if (pos.isBeforeOrEqual(newMark.position)) {
               if (ch === '\n') {
                 newMark.position = new Position(
                   newMark.position.line + 1,
@@ -354,7 +354,7 @@ export class HistoryTracker {
           for (const ch of change.text) {
             // Update mark
 
-            if (pos.compareTo(newMark.position) < 0) {
+            if (pos.isBefore(newMark.position)) {
               if (ch === '\n') {
                 newMark.position = new Position(
                   newMark.position.line - 1,
@@ -387,7 +387,7 @@ export class HistoryTracker {
     // Ensure the position of every mark is within the range of the document.
 
     for (const mark of newMarks) {
-      if (mark.position.compareTo(mark.position.getDocumentEnd()) > 0) {
+      if (mark.position.isAfter(mark.position.getDocumentEnd())) {
         mark.position = mark.position.getDocumentEnd();
       }
     }

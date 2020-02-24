@@ -12,7 +12,7 @@ import { Transformation } from './../transformations/transformations';
  *
  * 5"qdw
  *
- * Then the relevent state would be
+ * Then the relevant state would be
  *   * count of 5
  *   * copy into q register
  *   * delete operator

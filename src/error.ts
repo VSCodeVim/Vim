@@ -3,20 +3,23 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
-  E20 = 20,
-  E32 = 32,
-  E35 = 35,
-  E37 = 37,
-  E208 = 208,
-  E348 = 348,
-  E444 = 444,
-  E474 = 474,
-  E486 = 486,
-  E488 = 488,
-  E492 = 492,
-  E518 = 518,
+  MarkNotSet = 20,
+  NoFileName = 32,
+  NoPreviousRegularExpression = 35,
+  NoWriteSinceLastChange = 37,
+  ErrorWritingToFile = 208,
+  NoStringUnderCursor = 348,
+  SearchHitTop = 384,
+  SearchHitBottom = 385,
+  CannotCloseLastWindow = 444,
+  InvalidArgument = 474,
+  PatternNotFound = 486,
+  TrailingCharacters = 488,
+  NotAnEditorCommand = 492,
+  UnknownOption = 518,
 }
 
+// TODO: we need this to be a bit more sophisticated at some point - for example, 486 should have the search term in it
 export const ErrorMessage: IErrorMessage = {
   20: 'Mark not set',
   32: 'No file name',
@@ -24,6 +27,8 @@ export const ErrorMessage: IErrorMessage = {
   37: 'No write since last change (add ! to override)',
   208: 'Error writing to file',
   348: 'No string under cursor',
+  384: 'Search hit TOP without match',
+  385: 'Search hit BOTTOM without match',
   444: 'Cannot close last window',
   474: 'Invalid argument',
   486: 'Pattern not found',
@@ -59,6 +64,6 @@ export class VimError extends Error {
   }
 
   toString(): string {
-    return 'E' + this.code.toString() + ': ' + this.message;
+    return `E${this.code}: ${this.message}`;
   }
 }

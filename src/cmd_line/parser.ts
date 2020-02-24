@@ -59,7 +59,7 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
       case token.TokenType.CommandName:
         const commandParser = getParser(tok.content);
         if (!commandParser) {
-          throw VimError.fromCode(ErrorCode.E492);
+          throw VimError.fromCode(ErrorCode.NotAnEditorCommand);
         }
         // TODO: Pass the args, but keep in mind there could be multiple
         // commands, not just one.

@@ -36,7 +36,7 @@ export class QuitCommand extends node.CommandBase {
       !this.arguments.bang &&
       (!duplicatedInSplit || this._arguments.quitAll)
     ) {
-      throw error.VimError.fromCode(error.ErrorCode.E37);
+      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 
     if (this._arguments.quitAll) {

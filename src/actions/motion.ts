@@ -19,6 +19,7 @@ import { Notation } from '../configuration/notation';
 import { globalState } from '../state/globalState';
 import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
 import { SneakForward, SneakBackward } from './plugins/sneak';
+import { SearchDirection } from '../state/searchState';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -352,14 +353,24 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    let nextMatch: {
-      pos: Position;
-      index: number;
-    };
+    let nextMatch:
+      | {
+          pos: Position;
+          index: number;
+        }
+      | undefined;
     if (position.getRight().isEqual(position.getLineEnd())) {
       nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
     } else {
       nextMatch = searchState.getNextSearchMatchPosition(position);
+    }
+
+    if (!nextMatch) {
+      throw VimError.fromCode(
+        searchState.searchDirection === SearchDirection.Forward
+          ? ErrorCode.SearchHitBottom
+          : ErrorCode.SearchHitTop
+      );
     }
 
     reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
@@ -385,6 +396,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
+    if (!prevMatch) {
+      throw VimError.fromCode(
+        searchState.searchDirection === SearchDirection.Forward
+          ? ErrorCode.SearchHitTop
+          : ErrorCode.SearchHitBottom
+      );
+    }
+
     reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
 
     return prevMatch.pos;
@@ -403,7 +422,7 @@ export class MarkMovementBOL extends BaseMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
     return mark.position.getFirstLineNonBlankChar();
   }
@@ -419,7 +438,7 @@ export class MarkMovement extends BaseMovement {
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
     return mark.position;
   }
@@ -1399,7 +1418,7 @@ class MoveToMatchingBracket extends BaseMovement {
       }
     }
 
-    if (position.compareTo(result) > 0) {
+    if (position.isAfter(result)) {
       return {
         start: result,
         stop: position.getRight(),
