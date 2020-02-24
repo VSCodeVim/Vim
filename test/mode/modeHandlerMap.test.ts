@@ -5,6 +5,14 @@ import { EditorIdentity } from '../../src/editorIdentity';
 import { testIt } from '../testSimplifier';
 import { KeypressState } from '../../src/actions/base';
 
+function createRandomEditorIdentity(): EditorIdentity {
+  return new EditorIdentity(
+    Math.random()
+      .toString(36)
+      .substring(7)
+  );
+}
+
 suite('Mode Handler Map', () => {
   setup(() => {
     ModeHandlerMap.clear();
@@ -15,7 +23,7 @@ suite('Mode Handler Map', () => {
   });
 
   test('getOrCreate', async () => {
-    const key = EditorIdentity.createRandomEditorIdentity();
+    const key = createRandomEditorIdentity();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, true);
     assert.notEqual(modeHandler, undefined);
@@ -38,16 +46,16 @@ suite('Mode Handler Map', () => {
   });
 
   test('get', async () => {
-    // same file name returns same modehandler
-    const key = EditorIdentity.createRandomEditorIdentity();
+    // same file name should return the same modehandler
+    const identity = createRandomEditorIdentity();
 
-    let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
+    let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(identity);
     assert.strictEqual(isNew, true);
     assert.notEqual(modeHandler, undefined);
 
-    [, isNew] = await ModeHandlerMap.getOrCreate(
-      EditorIdentity.createRandomEditorIdentity(key.fileName)
-    );
+    const prevModeHandler = modeHandler;
+    [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(new EditorIdentity(identity.fileName));
     assert.strictEqual(isNew, false);
+    assert.strictEqual(prevModeHandler, modeHandler);
   });
 });
