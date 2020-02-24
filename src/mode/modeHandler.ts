@@ -938,7 +938,9 @@ export class ModeHandler implements vscode.Disposable {
             );
 
             if (!nextMatch) {
-              throw VimError.fromCode(command.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop);
+              throw VimError.fromCode(
+                command.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop
+              );
             }
 
             vimState.cursorStopPosition = nextMatch.pos;

@@ -619,15 +619,14 @@ Similar to [vim-textobj-entire](https://github.com/kana/vim-textobj-entire).
 
 Adds two useful text-objects:
 
-* `ae` which represents the entire content of a buffer
-* `ie` which represents the entire content of a buffer without the leading and trailing spaces.
+- `ae` which represents the entire content of a buffer
+- `ie` which represents the entire content of a buffer without the leading and trailing spaces.
 
 Usage examples:
 
 - `dae` - delete the whole buffer content.
 - `yie` - will yank the buffer content except leading and trailing blank lines
 - `gUae` - transform the whole buffer to uppercase.
-
 
 ## 🎩 VSCodeVim tricks!
 

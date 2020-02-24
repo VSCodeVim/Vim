@@ -359,7 +359,12 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'cie' with leading space",
-    start: ['     ', '    ', '|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
     keysPressed: 'cie',
     end: ['     ', '    ', '|'],
     endMode: Mode.Insert,
@@ -367,17 +372,29 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'cie' with trailing space",
-    start: ['Two roads |diverged in a wood, and I', 'I took the one less traveled by', '    ',  '   '],
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
     keysPressed: 'cie',
-    end: ['|', '    ',  '   '],
+    end: ['|', '    ', '   '],
     endMode: Mode.Insert,
   });
 
   newTest({
     title: "Can handle 'cie' with both leading and trailing space",
-    start: ['  ', ' ', 'Two roads diverged in a |wood, and I', 'I took the one less traveled by', '    ',  '   '],
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
     keysPressed: 'cie',
-    end: ['  ', ' ', '|', '    ',  '   '],
+    end: ['  ', ' ', '|', '    ', '   '],
     endMode: Mode.Insert,
   });
 
@@ -1100,7 +1117,12 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'die' with leading space",
-    start: ['     ', '    ', '|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
     keysPressed: 'die',
     end: ['     ', '    ', '|'],
     endMode: Mode.Normal,
@@ -1108,17 +1130,29 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'die' with trailing space",
-    start: ['Two roads |diverged in a wood, and I', 'I took the one less traveled by', '    ',  '   '],
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
     keysPressed: 'die',
-    end: ['|', '    ',  '   '],
+    end: ['|', '    ', '   '],
     endMode: Mode.Normal,
   });
 
   newTest({
     title: "Can handle 'die' with both leading and trailing space",
-    start: ['  ', ' ', 'Two roads diverged in a |wood, and I', 'I took the one less traveled by', '    ',  '   '],
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
     keysPressed: 'die',
-    end: ['  ', ' ', '|', '    ',  '   '],
+    end: ['  ', ' ', '|', '    ', '   '],
     endMode: Mode.Normal,
   });
 
@@ -1712,14 +1746,14 @@ suite('Mode Normal', () => {
     title: 'Can handle guae',
     start: ['|ABC', 'DEF', 'GHI'],
     keysPressed: 'guae',
-    end: ['|abc', 'def', 'ghi']
+    end: ['|abc', 'def', 'ghi'],
   });
 
   newTest({
     title: 'Can handle guie',
     start: [' ', ' ', '|ABC', 'DEF', 'GHI'],
     keysPressed: 'guie',
-    end: [' ', ' ', '|abc', 'def', 'ghi']
+    end: [' ', ' ', '|abc', 'def', 'ghi'],
   });
 
   newTest({
@@ -1733,14 +1767,14 @@ suite('Mode Normal', () => {
     title: 'Can handle gUae',
     start: ['|Abc', 'def', 'GhI'],
     keysPressed: 'gUae',
-    end: ['|ABC', 'DEF', 'GHI']
+    end: ['|ABC', 'DEF', 'GHI'],
   });
 
   newTest({
     title: 'Can handle gUie',
     start: [' ', ' ', '|abc', 'def', 'ghi'],
     keysPressed: 'gUie',
-    end: [' ', ' ', '|ABC', 'DEF', 'GHI']
+    end: [' ', ' ', '|ABC', 'DEF', 'GHI'],
   });
 
   newTest({
