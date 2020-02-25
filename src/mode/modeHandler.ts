@@ -79,6 +79,11 @@ export class ModeHandler implements vscode.Disposable {
   public syncCursors() {
     setImmediate(() => {
       if (this.vimState.editor) {
+        this.vimState.cursors = this.vimState.editor.selections.map(
+          ({ start, end }) =>
+            new Range(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end))
+        );
+
         this.vimState.cursorStartPosition = Position.FromVSCodePosition(
           this.vimState.editor.selection.start
         );
