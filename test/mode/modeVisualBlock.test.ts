@@ -33,63 +33,64 @@ suite('Mode Visual Block', () => {
     title: 'Can handle A forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljA123',
-    end: ['tes123|t', 'tes123t'],
+    end: ['tes123|t', 'tes123|t'],
   });
 
   newTest({
     title: 'Can handle A backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjA123',
-    end: ['tes123|t', 'tes123t'],
+    end: ['tes123|t', 'tes123|t'],
   });
 
   newTest({
     title: 'Can handle I forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
-    end: ['t123|est', 't123est'],
+    end: ['t123|est', 't123|est'],
   });
 
   newTest({
     title: 'Can handle I backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjI123',
-    end: ['t123|est', 't123est'],
+    end: ['t123|est', 't123|est'],
   });
 
   newTest({
     title: 'Can handle I with empty lines on first character (inserts on empty line)',
     start: ['|test', '', 'test'],
     keysPressed: '<C-v>lljjI123',
-    end: ['123|test', '123', '123test'],
+    end: ['123|test', '123|', '123|test'],
   });
 
   newTest({
     title: 'Can handle I with empty lines on non-first character (does not insert on empty line)',
     start: ['t|est', '', 'test'],
     keysPressed: '<C-v>lljjI123',
-    end: ['t123|est', '', 't123est'],
+    end: ['t123|est', '', 't123|est'],
   });
 
   newTest({
     title: 'Can handle c forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljc123',
-    end: ['t123|t', 't123t'],
+    end: ['t123|t', 't123|t'],
   });
 
   newTest({
     title: 'Can handle c backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjc123',
-    end: ['t123|t', 't123t'],
+    end: ['t123|t', 't123|t'],
   });
 
   newTest({
     title: 'Can handle C',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjC123',
-    end: ['t123|', 't123'],
+    end: ['t123|', 't123|'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -144,7 +145,7 @@ suite('Mode Visual Block', () => {
     title: 'Properly add to end of lines j then $',
     start: ['|Dog', 'Angry', 'Dog', 'Angry', 'Dog'],
     keysPressed: '<C-v>4j$Aaa',
-    end: ['Dogaa|', 'Angryaa', 'Dogaa', 'Angryaa', 'Dogaa'],
+    end: ['Dogaa|', 'Angryaa|', 'Dogaa|', 'Angryaa|', 'Dogaa|'],
   });
 
   newTest({

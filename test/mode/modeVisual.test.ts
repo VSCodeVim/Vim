@@ -1338,21 +1338,24 @@ suite('Mode Visual', () => {
       title: 'multiline insert from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkI_',
-      end: ['111', '2_|22', '_333', '_444', '555'],
+      end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
       title: 'multiline insert from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjI_',
-      end: ['111', '2_|22', '_333', '_444', '555'],
+      end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjI_',
-      end: ['111', '2_|22', ' ', '_444', '555'],
+      end: ['111', '2_|22', ' ', '_|444', '555'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1361,21 +1364,24 @@ suite('Mode Visual', () => {
       title: 'multiline append from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkA_',
-      end: ['111', '222_|', '333_', '44_4', '555'],
+      end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
       title: 'multiline append from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjA_',
-      end: ['111', '222_|', '333_', '44_4', '555'],
+      end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjA_',
-      end: ['111', '222_|', ' ', '44_4', '555'],
+      end: ['111', '222_|', ' ', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
   });
 

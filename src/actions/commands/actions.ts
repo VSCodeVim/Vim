@@ -511,7 +511,7 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode === Mode.Normal && vimState.isMultiCursor) {
-      vimState.isMultiCursor = false;
+      vimState.collapseCursors();
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
@@ -532,10 +532,6 @@ class CommandEsc extends BaseCommand {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-
-    if (!vimState.isMultiCursor) {
-      vimState.cursors = [vimState.cursors[0]];
-    }
 
     return vimState;
   }
@@ -2649,7 +2645,6 @@ class CommandInsertNewLineAbove extends BaseCommand {
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
-    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -2689,7 +2684,6 @@ class CommandInsertNewLineBefore extends BaseCommand {
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
-    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -3594,7 +3588,6 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { line, start } of TextEditor.iterateLinesInBlock(vimState)) {
@@ -3626,7 +3619,6 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     }
 
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
@@ -3656,7 +3648,6 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     }
 
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { end } of TextEditor.iterateLinesInBlock(vimState)) {
@@ -3681,7 +3672,6 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     vimState.cursors = [];
@@ -3778,7 +3768,6 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { line, end } of TextEditor.iterateLinesInBlock(vimState)) {

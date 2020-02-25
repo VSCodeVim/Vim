@@ -51,12 +51,6 @@ export class VimState implements vscode.Disposable {
   public lastKeyPressedTimestamp = 0;
 
   /**
-   * Are multiple cursors currently present?
-   */
-  // TODO: why isn't this a function?
-  public isMultiCursor = false;
-
-  /**
    * Is the multicursor something like visual block "multicursor", where
    * natively in vim there would only be one cursor whose changes were applied
    * to all lines after edit.
@@ -174,7 +168,6 @@ export class VimState implements vscode.Disposable {
     }
 
     this._cursors = Array.from(map.values());
-    this.isMultiCursor = this._cursors.length > 1;
   }
 
   /**
@@ -186,6 +179,16 @@ export class VimState implements vscode.Disposable {
   }
   public set cursorsInitialState(value: Range[]) {
     this._cursorsInitialState = Object.assign([], value);
+  }
+
+  /**
+   * Are multiple cursors currently present?
+   */
+  public get isMultiCursor(): boolean {
+    return this.cursors.length > 1;
+  }
+  public collapseCursors(): void {
+    this.cursors = [this.cursors[0]];
   }
 
   public isRecordingMacro: boolean = false;
