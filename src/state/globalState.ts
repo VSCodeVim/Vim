@@ -97,6 +97,11 @@ class GlobalState {
     this.searchStateIndex = this.searchStatePrevious.length - 1;
   }
 
+  /**
+   * Shows the search history as a QuickPick (popup list)
+   *
+   * @returns The SearchState that was selected by the user, if there was one.
+   */
   public async showSearchHistory(): Promise<SearchState | undefined> {
     if (!vscode.window.activeTextEditor) {
       return undefined;
