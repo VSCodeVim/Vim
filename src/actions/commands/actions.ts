@@ -957,7 +957,7 @@ async function createSearchStateAndMoveToMatch(args: {
   direction: SearchDirection;
   isExact: boolean;
   searchStartCursorPosition: Position;
-}) {
+}): Promise<VimState> {
   const { needle, vimState, isExact } = args;
 
   if (needle === undefined || needle.length === 0) {
@@ -974,20 +974,19 @@ async function createSearchStateAndMoveToMatch(args: {
     { isRegex: isExact },
     vimState.currentMode
   );
+  Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
+  globalState.addSearchStateToHistory(globalState.searchState);
 
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
     args.searchStartCursorPosition
   );
-  vimState.cursorStopPosition = nextMatch.pos;
+  if (nextMatch) {
+    vimState.cursorStopPosition = nextMatch.pos;
 
-  // Turn one of the highlighting flags back on (turned off with :nohl)
-  globalState.hl = true;
-
-  globalState.addSearchStateToHistory(globalState.searchState);
-
-  Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
-
-  reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    globalState.hl = true;
+    reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+  }
 
   return vimState;
 }
@@ -2240,7 +2239,10 @@ class CommandReselectVisual extends BaseCommand {
   }
 }
 
-async function selectLastSearchWord(vimState: VimState, direction: SearchDirection) {
+async function selectLastSearchWord(
+  vimState: VimState,
+  direction: SearchDirection
+): Promise<VimState> {
   const searchState = globalState.searchState;
   if (!searchState || searchState.searchString === '') {
     return vimState;
@@ -2254,12 +2256,14 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.currentMode
   );
 
-  let result = {
-    start: vimState.cursorStopPosition,
-    end: vimState.cursorStopPosition,
-    match: false,
-    index: -1,
-  };
+  let result:
+    | {
+        start: Position;
+        end: Position;
+        match: boolean;
+        index: number;
+      }
+    | undefined;
 
   // At first, try to search for current word, and stop searching if matched.
   // Try to search for the next word if not matched or
@@ -2275,7 +2279,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
   if (!result.match) {
     // Try to search for the next word
     result = newSearchState.getNextSearchMatchRange(vimState.cursorStopPosition, 1);
-    if (!result.match) {
+    if (!result?.match) {
       return vimState; // no match...
     }
   }

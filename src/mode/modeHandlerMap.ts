@@ -9,12 +9,8 @@ class ModeHandlerMapImpl {
 
   public async getOrCreate(editorId: EditorIdentity): Promise<[ModeHandler, boolean]> {
     let isNew = false;
-    let modeHandler: ModeHandler | undefined;
-    for (const [key, value] of this.modeHandlerMap.entries()) {
-      if (key.isEqual(editorId)) {
-        modeHandler = value;
-      }
-    }
+    let modeHandler: ModeHandler | undefined = this.get(editorId);
+
     if (!modeHandler) {
       isNew = true;
       modeHandler = await ModeHandler.Create();
@@ -24,7 +20,12 @@ class ModeHandlerMapImpl {
   }
 
   public get(editorId: EditorIdentity): ModeHandler | undefined {
-    return this.modeHandlerMap.get(editorId);
+    for (const [key, value] of this.modeHandlerMap.entries()) {
+      if (key.isEqual(editorId)) {
+        return value;
+      }
+    }
+    return undefined;
   }
 
   public getKeys(): EditorIdentity[] {

@@ -87,7 +87,7 @@ class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
+        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
           const statusBarText = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {

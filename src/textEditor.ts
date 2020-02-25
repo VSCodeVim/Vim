@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor

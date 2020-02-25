@@ -14,7 +14,7 @@ import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
 import { TextEditor } from './../textEditor';
-import { VimError } from './../error';
+import { VimError, ErrorCode } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
@@ -124,7 +124,7 @@ export class ModeHandler implements vscode.Disposable {
         sel =>
           new Range(
             // Adjust the cursor positions because cursors & selections don't match exactly
-            sel.anchor.compareTo(sel.active) > 0
+            sel.anchor.isAfter(sel.active)
               ? Position.FromVSCodePosition(sel.anchor).getLeft()
               : Position.FromVSCodePosition(sel.anchor),
             Position.FromVSCodePosition(sel.active)
@@ -207,7 +207,7 @@ export class ModeHandler implements vscode.Disposable {
 
         this.vimState.cursorStartPosition = selectionStart;
 
-        if (selectionStart.compareTo(newPosition) > 0) {
+        if (selectionStart.isAfter(newPosition)) {
           this.vimState.cursorStartPosition = this.vimState.cursorStartPosition.getLeft();
         }
 
@@ -771,7 +771,7 @@ export class ModeHandler implements vscode.Disposable {
     let startingModeName = vimState.currentMode;
 
     for (let { start, stop } of vimState.cursors) {
-      if (start.compareTo(stop) > 0) {
+      if (start.isAfter(stop)) {
         [start, stop] = [stop, start];
       }
 
@@ -944,6 +944,10 @@ export class ModeHandler implements vscode.Disposable {
               vimState.cursorStartPosition,
               command.direction
             );
+
+            if (!nextMatch) {
+              throw VimError.fromCode(command.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop);
+            }
 
             vimState.cursorStopPosition = nextMatch.pos;
             this.updateView(this.vimState);
@@ -1235,7 +1239,7 @@ export class ModeHandler implements vscode.Disposable {
            * start of the selection when it precedes where we started visual mode.
            */
 
-          if (start.compareTo(stop) > 0) {
+          if (start.isAfter(stop)) {
             start = start.getRightThroughLineBreaks();
           }
 
@@ -1280,7 +1284,7 @@ export class ModeHandler implements vscode.Disposable {
         switch (selectionMode) {
           case Mode.Visual: {
             for (let { start: cursorStart, stop: cursorStop } of vimState.cursors) {
-              if (cursorStart.compareTo(cursorStop) > 0) {
+              if (cursorStart.isAfter(cursorStop)) {
                 cursorStart = cursorStart.getRight();
               }
 
@@ -1323,9 +1327,14 @@ export class ModeHandler implements vscode.Disposable {
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
         const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
           vimState.cursorStopPosition
-        ).pos;
+        );
 
-        this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch), revealType);
+        if (nextMatch) {
+          this.vimState.editor.revealRange(
+            new vscode.Range(nextMatch.pos, nextMatch.pos),
+            revealType
+          );
+        }
       } else {
         if (args.revealRange) {
           this.vimState.editor.revealRange(
@@ -1391,19 +1400,21 @@ export class ModeHandler implements vscode.Disposable {
     // Draw search highlight
     let searchRanges: vscode.Range[] = [];
     if (
-      (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
-      (configuration.hlsearch && globalState.hl && globalState.searchState)
+      globalState.searchState &&
+      ((configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
+        (configuration.hlsearch && globalState.hl))
     ) {
-      const searchState = globalState.searchState!;
+      searchRanges.push.apply(searchRanges, globalState.searchState.matchRanges);
 
-      searchRanges.push.apply(searchRanges, searchState.matchRanges);
-
-      const { start, end, match } = searchState.getNextSearchMatchRange(
+      const nextMatch = globalState.searchState.getNextSearchMatchRange(
         vimState.cursorStopPosition
       );
 
-      if (match) {
-        searchRanges.push(new vscode.Range(start, end));
+      if (nextMatch) {
+        const { start, end, match } = nextMatch;
+        if (match) {
+          searchRanges.push(new vscode.Range(start, end));
+        }
       }
     }
     this.vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
@@ -1459,14 +1470,14 @@ export class ModeHandler implements vscode.Disposable {
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
       let result = PairMatcher.nextPairedChar(vimState.cursorStopPosition, key);
       if (result !== undefined) {
-        if (vimState.cursorStopPosition.compareTo(result) === 0) {
+        if (vimState.cursorStopPosition.isEqual(result)) {
           return true;
         }
       }
 
       result = PairMatcher.nextPairedChar(vimState.cursorStopPosition.getLeft(), key);
       if (result !== undefined) {
-        if (vimState.cursorStopPosition.getLeftByCount(2).compareTo(result) === 0) {
+        if (vimState.cursorStopPosition.getLeftByCount(2).isEqual(result)) {
           return true;
         }
       }
