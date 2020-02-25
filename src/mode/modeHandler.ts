@@ -943,7 +943,9 @@ export class ModeHandler implements vscode.Disposable {
             );
 
             if (!nextMatch) {
-              throw VimError.fromCode(command.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop);
+              throw VimError.fromCode(
+                command.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop
+              );
             }
 
             vimState.cursorStopPosition = nextMatch.pos;
@@ -1269,7 +1271,7 @@ export class ModeHandler implements vscode.Disposable {
         } else if (selectionMode === Mode.VisualBlock) {
           selections = [];
 
-          for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+          for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState)) {
             selections.push(new vscode.Selection(lineStart, end));
           }
         } else {
@@ -1286,6 +1288,20 @@ export class ModeHandler implements vscode.Disposable {
               }
 
               selections.push(new vscode.Selection(cursorStart, cursorStop));
+            }
+            break;
+          }
+          case Mode.VisualLine: {
+            selections = vimState.cursors.map((c: Range) => {
+              return new vscode.Selection(c.start.getLineBegin(), c.stop.getLineEnd());
+            });
+            break;
+          }
+          case Mode.VisualBlock: {
+            for (const c of vimState.cursors) {
+              for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState, c)) {
+                selections.push(new vscode.Selection(lineStart, end));
+              }
             }
             break;
           }
