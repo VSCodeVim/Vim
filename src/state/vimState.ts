@@ -53,6 +53,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Are multiple cursors currently present?
    */
+  // TODO: why isn't this a function?
   public isMultiCursor = false;
 
   /**

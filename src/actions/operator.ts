@@ -425,7 +425,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toUpperCase());
@@ -470,7 +470,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toLowerCase());
@@ -687,7 +687,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
     const isMultiline = startPos.line !== endPos.line;
 
-    for (const { line, start, end } of Position.IterateLine(vimState)) {
+    for (const { line, start, end } of Position.IterateLinesInBlock(vimState)) {
       ranges.push(new vscode.Range(start, end));
       if (isMultiline) {
         toCopy += line + '\n';
@@ -755,7 +755,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       await ToggleCaseOperator.toggleCase(range);
     }
