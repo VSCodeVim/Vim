@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { ChangeOperator, DeleteOperator, YankOperator, BaseOperator } from './operator';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -19,9 +19,6 @@ import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
-import { globalState } from '../state/globalState';
-import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
-import { SneakForward, SneakBackward } from './plugins/sneak';
 import { SearchDirection } from '../state/searchState';
 
 /**
