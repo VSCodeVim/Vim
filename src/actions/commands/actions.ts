@@ -599,7 +599,7 @@ abstract class CommandEditorScroll extends BaseCommand {
         by: this.by,
         value: timesToRepeat,
         revealCursor: true,
-        select: [Mode.Visual, Mode.VisualBlock, Mode.VisualLine].includes(vimState.currentMode),
+        select: isVisualMode(vimState.currentMode),
       },
     });
     return vimState;

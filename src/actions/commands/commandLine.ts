@@ -410,6 +410,23 @@ class CommandEscInSearchMode extends BaseCommand {
       ? prevSearchList[prevSearchList.length - 1]
       : undefined;
 
+    if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+      const offset =
+        vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+      if (offset !== 0) {
+        vimState.postponedCodeViewChanges.push({
+          command: 'editorScroll',
+          args: {
+            to: offset > 0 ? 'up' : 'down',
+            by: 'line',
+            value: Math.abs(offset),
+            revealCursor: false,
+            select: false,
+          },
+        });
+      }
+    }
+
     await vimState.setCurrentMode(searchState.previousMode);
     vimState.statusBarCursorCharacterPos = 0;
 
