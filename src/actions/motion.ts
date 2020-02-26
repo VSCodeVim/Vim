@@ -350,6 +350,11 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!searchState || searchState.searchString === '') {
       return position;
     }
+
+    if (searchState.matchRanges.length === 0) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+    }
+
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
@@ -389,6 +394,10 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
     if (!searchState || searchState.searchString === '') {
       return position;
+    }
+
+    if (searchState.matchRanges.length === 0) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)

@@ -91,7 +91,7 @@ class CommandLine {
           const statusBarText = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
-          StatusBar.setText(vimState, `${e.toString()}. ${command}`, true);
+          StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);

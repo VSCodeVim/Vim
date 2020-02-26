@@ -7,7 +7,7 @@ import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines, setupWorkspace } from './testUtils';
+import { assertEqualLines } from './testUtils';
 import { globalState } from '../src/state/globalState';
 
 export function getTestingFunctions() {

@@ -27,7 +27,7 @@ suite('command-line parser', () => {
 
   test('can parse separator - comma', () => {
     const cmd: node.CommandLine = parser.parse(',');
-    assert.strictEqual(cmd.range.separator.type, token.TokenType.Comma);
+    assert.strictEqual(cmd.range.separator?.type, token.TokenType.Comma);
   });
 
   test('can parse right - dollar', () => {

@@ -320,7 +320,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
 
       if (searchState.matchRanges.length === 0) {
-        throw VimError.fromCode(ErrorCode.PatternNotFound);
+        throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
       }
 
       // Move cursor to next match
