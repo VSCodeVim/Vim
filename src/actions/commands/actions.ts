@@ -2364,6 +2364,12 @@ class CommandExitVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.visualLineStartColumn !== undefined) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
+        vimState.visualLineStartColumn
+      );
+    }
+
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
