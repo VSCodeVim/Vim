@@ -10,18 +10,7 @@ export class EditorIdentity {
     return new EditorIdentity(textEditor?.document?.fileName ?? '');
   }
 
-  /**
-   * For use in tests
-   */
-  public static createRandomEditorIdentity(): EditorIdentity {
-    return new EditorIdentity(
-      Math.random()
-        .toString(36)
-        .substring(7)
-    );
-  }
-
-  private constructor(fileName: string) {
+  public constructor(fileName: string) {
     this._fileName = fileName;
   }
 

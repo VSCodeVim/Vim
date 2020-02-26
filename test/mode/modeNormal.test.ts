@@ -2525,4 +2525,34 @@ suite('Mode Normal', () => {
     keysPressed: '<C-u>',
     end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
   });
+
+  suite('marks', async () => {
+    const jumpToNewFile = async () => {
+      let configuration = new Configuration();
+      configuration.tabstop = 4;
+      configuration.expandtab = false;
+      await setupWorkspace(configuration);
+      return getAndUpdateModeHandler();
+    };
+
+    test('capital marks can change the editors active document', async () => {
+      const firstDocumentName = TextEditor.getDocumentName();
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+
+      const otherModeHandler = await jumpToNewFile();
+      const otherDocumentName = TextEditor.getDocumentName();
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+
+      await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
+      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+    });
+
+    newTest({
+      title: `can jump to lowercase mark`,
+      start: ['|hello world and mars'],
+      keysPressed: 'wma2w`a',
+      end: ['hello |world and mars'],
+      endMode: Mode.Normal,
+    });
+  });
 });
