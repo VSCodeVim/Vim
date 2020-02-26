@@ -661,6 +661,11 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const textFromClipboard = await Clipboard.Paste();
 
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
+    });
+
     if (vimState.isMultiCursor) {
       vimState.recordedState.transformations.push({
         type: 'insertText',
