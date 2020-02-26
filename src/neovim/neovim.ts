@@ -127,7 +127,7 @@ export class NeovimWrapper implements vscode.Disposable {
       "'>",
       [0, rangeEnd.line + 1, rangeEnd.character, false],
     ]);
-    for (const mark of vimState.historyTracker.getMarks()) {
+    for (const mark of vimState.historyTracker.getLocalMarks()) {
       await this.nvim.callFunction('setpos', [
         `'${mark.name}`,
         [0, mark.position.line + 1, mark.position.character, false],

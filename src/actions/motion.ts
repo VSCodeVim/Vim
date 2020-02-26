@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { ChangeOperator, DeleteOperator, YankOperator, BaseOperator } from './operator';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -14,11 +14,11 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { reportSearch } from '../util/statusBarTextUtils';
-import { Notation } from '../configuration/notation';
+import { BaseMovement, SelectionType, IMovement, isIMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
-import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
+import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
+import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 
 /**
@@ -424,6 +424,11 @@ export class MarkMovementBOL extends BaseMovement {
     if (mark == null) {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -440,7 +445,18 @@ export class MarkMovement extends BaseMovement {
     if (mark == null) {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position;
+  }
+}
+
+async function ensureEditorIsActive(editor: vscode.TextEditor) {
+  if (editor !== vscode.window.activeTextEditor) {
+    await vscode.window.showTextDocument(editor.document);
   }
 }
 
