@@ -524,7 +524,6 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
-    // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
       firstValidLineNumber,
       cursorIndent,

@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -34,7 +33,7 @@ export class TextEditor {
     text: string,
     at: Position | undefined = undefined,
     letVSCodeHandleKeystrokes: boolean | undefined = undefined
-  ): Promise<boolean> {
+  ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
     if (letVSCodeHandleKeystrokes === undefined) {
@@ -57,8 +56,6 @@ export class TextEditor {
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
-
-    return true;
   }
 
   /**
@@ -70,6 +67,9 @@ export class TextEditor {
     });
   }
 
+  /**
+   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
+   */
   static async delete(range: vscode.Range): Promise<boolean> {
     return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);

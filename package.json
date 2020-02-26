@@ -88,7 +88,7 @@
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "tab",
@@ -959,7 +959,7 @@
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.1",
     "@types/node": "12.12.21",
-    "@types/sinon": "7.5.1",
+    "@types/sinon": "7.5.2",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.10.0",
@@ -971,10 +971,10 @@
     "mocha": "7.0.1",
     "plugin-error": "1.0.1",
     "prettier": "1.19.1",
-    "sinon": "8.1.1",
+    "sinon": "9.0.0",
     "ts-loader": "6.2.1",
     "tslint": "5.20.1",
-    "typescript": "3.7.5",
+    "typescript": "3.8.2",
     "vscode": "1.1.36"
   }
 }
