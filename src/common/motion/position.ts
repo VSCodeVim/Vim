@@ -1238,7 +1238,7 @@ export class Position extends vscode.Position {
 
   private getFirstNonWhitespaceInParagraph(paragraphEnd: Position, inclusive: boolean): Position {
     // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
-    // Find the first non-whitepsace character.
+    // Find the first non-whitespace character.
     if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
       return paragraphEnd;
     } else {
@@ -1260,7 +1260,8 @@ export class Position extends vscode.Position {
       }
     }
 
-    throw new Error('This should never happen...');
+    // Only happens at end of document
+    return this;
   }
 
   private findHelper(
