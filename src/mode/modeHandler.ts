@@ -959,11 +959,7 @@ export class ModeHandler implements vscode.Disposable {
             return vimState; // TODO(bell)
           }
 
-          const clonedAction = globalState.previousFullAction.clone();
-
-          await this.rerunRecordedState(vimState, globalState.previousFullAction);
-
-          globalState.previousFullAction = clonedAction;
+          await this.rerunRecordedState(vimState, globalState.previousFullAction.clone());
           break;
         case 'macro':
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
