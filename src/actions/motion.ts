@@ -799,7 +799,7 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveScreenLineEndNonBlank extends MoveByScreenLine {
+export class MoveScreenLineEndNonBlank extends MoveByScreenLine {
   keys = ['g', '_'];
   movementType: CursorMovePosition = 'wrappedLineLastNonWhitespaceCharacter';
 
