@@ -126,7 +126,7 @@ export class SubstituteCommand extends node.CommandBase {
       // i.e. :s
       const prevSubstituteState = globalState.substituteState;
       if (prevSubstituteState === undefined || prevSubstituteState.searchPattern === '') {
-        throw VimError.fromCode(ErrorCode.E35);
+        throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
       } else {
         args.pattern = prevSubstituteState.searchPattern;
         args.replace = prevSubstituteState.replaceString;
@@ -137,7 +137,7 @@ export class SubstituteCommand extends node.CommandBase {
         // e.g :s/ or :s///
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
-          throw VimError.fromCode(ErrorCode.E35);
+          throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
         } else {
           args.pattern = prevSearchState.searchString;
         }

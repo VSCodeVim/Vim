@@ -485,4 +485,11 @@ suite('Mode Visual Line', () => {
     keysPressed: 'Vj<Esc>',
     end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
   });
+
+  newTest({
+    title: 'Exiting via `VV` returns cursor to original column',
+    start: ['rocinante', 'nau|voo', 'anubis', 'canterbury'],
+    keysPressed: 'VjV',
+    end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
+  });
 });

@@ -13,11 +13,11 @@ export function parseQuitCommandArgs(args: string): node.QuitCommand {
     scannedArgs.bang = true;
     scanner.ignore();
   } else if (c !== ' ') {
-    throw VimError.fromCode(ErrorCode.E488);
+    throw VimError.fromCode(ErrorCode.TrailingCharacters);
   }
   scanner.skipWhiteSpace();
   if (!scanner.isAtEof) {
-    throw VimError.fromCode(ErrorCode.E488);
+    throw VimError.fromCode(ErrorCode.TrailingCharacters);
   }
   return new node.QuitCommand(scannedArgs);
 }

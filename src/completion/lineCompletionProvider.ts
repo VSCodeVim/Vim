@@ -9,7 +9,7 @@ import { Range } from '../common/motion/range';
  * Return open text documents, with a given file at the top of the list.
  * @param startingFileName File that will be first in the array, typically current file
  */
-const documentsStartingWith = startingFileName => {
+const documentsStartingWith = (startingFileName: string) => {
   return vscode.workspace.textDocuments.sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;

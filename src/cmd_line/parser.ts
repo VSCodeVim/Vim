@@ -4,6 +4,7 @@ import * as token from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
 import { getParser } from './subparser';
+import { CommandNumber } from '../actions/commands/actions';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
@@ -46,7 +47,7 @@ function parseLineRange(state: ParserState, commandLine: node.CommandLine): IPar
       // commandLine.command = new node.CommandLineCommand(tok.content, null);
       // continue;
       default:
-        logger.warn('Parser: skipping token ' + 'Token(' + tok.type + ',{' + tok.content + '})');
+        logger.warn(`Parser: skipping token Token(${tok.type},{${tok.content}})`);
         return null;
     }
   }
@@ -59,7 +60,7 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
       case token.TokenType.CommandName:
         const commandParser = getParser(tok.content);
         if (!commandParser) {
-          throw VimError.fromCode(ErrorCode.E492);
+          throw VimError.fromCode(ErrorCode.NotAnEditorCommand, state.input);
         }
         // TODO: Pass the args, but keep in mind there could be multiple
         // commands, not just one.
@@ -82,10 +83,12 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
 
 // Keeps track of parsing state.
 class ParserState {
+  input: string;
   tokens: token.Token[] = [];
   pos: number = 0;
 
   constructor(input: string) {
+    this.input = input;
     this.lex(input);
   }
 
