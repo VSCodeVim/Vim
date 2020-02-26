@@ -7,6 +7,7 @@ import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, getCursorType } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
+import { MoveByScreenLine } from '../actions/motion';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './../state/recordedState';
@@ -525,13 +526,21 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (vimState.currentMode === Mode.Visual) {
-      vimState.cursors = vimState.cursors.map(x =>
-        x.start.isBefore(x.stop)
-          ? x.withNewStop(
-              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-            )
-          : x
-      );
+      // If the movement is gk/gj, don't have to adjust the cursor position.
+      if (
+        !(
+          recordedState.actionsRun.length > 0 &&
+          recordedState.actionsRun[recordedState.actionsRun.length - 1] instanceof MoveByScreenLine
+        )
+      ) {
+        vimState.cursors = vimState.cursors.map(x =>
+          x.start.isBefore(x.stop)
+            ? x.withNewStop(
+                x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+              )
+            : x
+        );
+      }
     }
 
     // And then we have to do it again because an operator could

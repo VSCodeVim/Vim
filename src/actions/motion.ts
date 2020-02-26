@@ -35,7 +35,7 @@ export abstract class ExpandingSelection extends BaseMovement {
   }
 }
 
-abstract class MoveByScreenLine extends BaseMovement {
+export abstract class MoveByScreenLine extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   movementType: CursorMovePosition;
   by: CursorMoveByUnit;
@@ -70,13 +70,7 @@ abstract class MoveByScreenLine extends BaseMovement {
 
       // Make cursor moves properly
       if (this.movementType === 'up') {
-        if (start.isEqual(stop)) {
-          start = start.getLeft();
-          curPos = curPos.getLeft();
-          stop = stop.getRight();
-        } else if (stop.isEqual(curPos)) {
-          stop = stop.getLeft();
-        } else if (prevPos.isAfter(anchorPos)) {
+        if (prevPos.isAfter(anchorPos) && curPos.isBeforeOrEqual(anchorPos)) {
           start = start.getLeft();
           curPos = curPos.getLeft();
           stop = stop.getRight();
@@ -84,10 +78,11 @@ abstract class MoveByScreenLine extends BaseMovement {
           stop = stop.getRight();
         }
       } else if (this.movementType === 'down') {
-        if (prevPos.isBefore(anchorPos) && curPos.isAfter(anchorPos)) {
+        if (prevPos.isBefore(anchorPos) && curPos.isAfterOrEqual(anchorPos)) {
           start = start.getLeft();
-        } else if (stop.isEqual(curPos) && !prevPos.isEqual(anchorPos) && !start.isEqual(stop)) {
-          stop = stop.getLeft();
+          stop = stop.getRight();
+        } else if (prevPos.isEqual(anchorPos)) {
+          stop = stop.getRight();
         }
       }
 
