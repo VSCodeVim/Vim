@@ -682,3 +682,215 @@ class InsideIndentObjectBoth extends IndentObjectMatch {
   includeLineAbove = true;
   includeLineBelow = true;
 }
+
+abstract class SelectArgument extends TextObjectMovement {
+  modes = [Mode.Normal, Mode.Visual];
+  keys = ['i', 'a'];
+
+  // Depending on the language or context, it may be useful to have
+  // custom delimiters, such as ';' or '{}'
+  static openingDelimiters = ['(', '['];
+  static closingDelimiters = [')', ']'];
+  static delimiters = [','];
+
+  protected selectAround = false;
+
+  // Requirement is that below example still works as expected, i.e.
+  // when we have nested pairs of parens
+  //
+  //        ( a, b, (void*) | c(void*, void*), a)
+  //
+  // Procedure:
+  //
+  // 1.  Find delimiters left and right
+  // 1.2 Walk left until we find a comma or an opening paren, that does not
+  //     have a matching closed one. This way we can ignore pairs
+  //     of parentheses which are part of the current argument.
+  // 1.2 Vice versa for walking right.
+  // 2.  Depending on our mode (inner or around), improve the delimiter
+  //     locations for most consistent behaviour, especially in case of
+  //     multi-line statements.
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let cursorStartPos = new Position(
+      vimState.cursorStartPosition.line,
+      vimState.cursorStartPosition.character
+    );
+    // maintain current selection on failure
+    const failure = { start: cursorStartPos, stop: position, failed: true };
+
+    // When the cursor is on a delimiter already, pre-advance the cursor,
+    // so that our search does not fail. We always advance to the next argument,
+    // in case of opening delimiters or regular delimiters, and advance to the
+    // previous on closing delimiters.
+    let leftSearchStartPosition = new Position(
+      vimState.cursorStartPosition.line,
+      vimState.cursorStartPosition.character
+    );
+    let rightSearchStartPosition = new Position(
+      vimState.cursorStartPosition.line,
+      vimState.cursorStartPosition.character
+    );
+    if (
+      SelectArgument.delimiters.includes(TextEditor.getCharAt(position)) ||
+      SelectArgument.openingDelimiters.includes(TextEditor.getCharAt(position))
+    ) {
+      rightSearchStartPosition = position.getRightThroughLineBreaks(true);
+    } else if (SelectArgument.closingDelimiters.includes(TextEditor.getCharAt(position))) {
+      leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
+    }
+
+    const leftDelimiterPosition = SelectInnerArgument.getLeftDelimiter(leftSearchStartPosition);
+    const rightDelimiterPosition = SelectInnerArgument.getRightDelimiter(rightSearchStartPosition);
+
+    if (leftDelimiterPosition === null || rightDelimiterPosition === null) {
+      return failure;
+    }
+
+    let start: Position;
+    let stop: Position;
+
+    if (this.selectAround) {
+      // Edge-case:
+      // Ensure we do not delete anything if we have an empty argument list, e.g. "()"
+      let isEmptyArgumentList =
+        leftDelimiterPosition.getRight().isEqual(rightDelimiterPosition) &&
+        SelectArgument.openingDelimiters.includes(TextEditor.getCharAt(leftDelimiterPosition)) &&
+        SelectArgument.closingDelimiters.includes(TextEditor.getCharAt(rightDelimiterPosition));
+      if (isEmptyArgumentList) {
+        return failure;
+      }
+
+      let cursorIsInLastArgument = SelectArgument.closingDelimiters.includes(
+        TextEditor.getCharAt(rightDelimiterPosition)
+      );
+
+      // If we are on the right most argument, we delete the left delimiter
+      // along with the argument.
+      //
+      // In any other case we delete the right delimiter.
+      if (cursorIsInLastArgument) {
+        let thereIsOnlyOneArgument = SelectArgument.openingDelimiters.includes(
+          TextEditor.getCharAt(leftDelimiterPosition)
+        );
+
+        // It may be that there is only a single argument.
+        // In that case we need to inset the left position as well.
+        if (thereIsOnlyOneArgument) {
+          start = leftDelimiterPosition.getRightThroughLineBreaks(true);
+        } else {
+          start = leftDelimiterPosition;
+        }
+
+        stop = rightDelimiterPosition.getLeftThroughLineBreaks(true);
+      } else {
+        start = leftDelimiterPosition.getRightThroughLineBreaks(true);
+        stop = rightDelimiterPosition;
+      }
+    } else {
+      // Multi-line UX-boost:
+      // When the left delimiter is at the end of the line, we can skip over
+      // to the next line. This pre-advance prevents the cursor staying
+      // right behind the delimiter on the line above.
+      start = leftDelimiterPosition;
+      if (leftDelimiterPosition.getRight().isLineEnd()) {
+        start = start.getRightThroughLineBreaks(true);
+      }
+      start = start.getRightThroughLineBreaks(true);
+      stop = rightDelimiterPosition.getLeftThroughLineBreaks(true);
+    }
+
+    // Handle case when cursor is not inside the anticipated movement range
+    if (position.isBefore(start)) {
+      vimState.recordedState.operatorPositionDiff = start.subtract(position);
+    }
+    vimState.cursorStartPosition = start;
+
+    return {
+      start: start,
+      stop: stop,
+    };
+  }
+
+  public static getLeftDelimiter(position: Position): Position | null {
+    let leftDelimiterPosition: Position | null = null;
+    let leftWalkPos = position;
+    let closedParensCount = 0;
+    while (true) {
+      let char = TextEditor.getCharAt(leftWalkPos);
+      if (closedParensCount === 0) {
+        if (
+          SelectArgument.openingDelimiters.includes(char) ||
+          SelectArgument.delimiters.includes(char)
+        ) {
+          // We have found the left most delimiter or the first proper delimiter
+          // in our cursor's list 'depth' and thus can abort.
+          leftDelimiterPosition = leftWalkPos;
+          break;
+        }
+      }
+      if (SelectArgument.closingDelimiters.includes(char)) {
+        closedParensCount++;
+      }
+      if (SelectArgument.openingDelimiters.includes(char)) {
+        closedParensCount--;
+      }
+
+      if (leftWalkPos.isAtDocumentBegin()) {
+        break;
+      }
+
+      leftWalkPos = leftWalkPos.getLeftThroughLineBreaks(true);
+    }
+
+    return leftDelimiterPosition;
+  }
+
+  public static getRightDelimiter(position: Position): Position | null {
+    let rightDelimiterPosition: Position | null = null;
+    let rightWalkPos = position;
+    let openedParensCount = 0;
+
+    while (true) {
+      let char = TextEditor.getCharAt(rightWalkPos);
+      if (openedParensCount === 0) {
+        if (
+          SelectArgument.closingDelimiters.includes(char) ||
+          SelectArgument.delimiters.includes(char)
+        ) {
+          rightDelimiterPosition = rightWalkPos;
+          break;
+        }
+      }
+      if (SelectArgument.openingDelimiters.includes(char)) {
+        openedParensCount++;
+      }
+      if (SelectArgument.closingDelimiters.includes(char)) {
+        openedParensCount--;
+      }
+
+      if (rightWalkPos.isAtDocumentEnd()) {
+        break;
+      }
+
+      // We need to include the EOL so that isAtDocumentEnd actually
+      // becomes true.
+      rightWalkPos = rightWalkPos.getRightThroughLineBreaks(true);
+    }
+
+    return rightDelimiterPosition;
+  }
+}
+
+@RegisterAction
+export class SelectInnerArgument extends SelectArgument {
+  modes = [Mode.Normal, Mode.Visual];
+  keys = ['i', 'a'];
+}
+
+@RegisterAction
+export class SelectAroundArgument extends SelectArgument {
+  modes = [Mode.Normal, Mode.Visual];
+  keys = ['a', 'a'];
+  selectAround = true;
+}
