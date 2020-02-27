@@ -544,7 +544,7 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
       start = start.getDown(0);
     }
 
-    for (let lineNo = lines - 1; lineNo >= 0; --lineNo) {
+    for (let lineNo = lines - 1; lineNo >= start.line; --lineNo) {
       let line = TextEditor.getLineAt(stop);
       if (!line.isEmptyOrWhitespace) {
         break;
