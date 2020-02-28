@@ -63,7 +63,6 @@ export class EasyMotion {
       const type = vscode.window.createTextEditorDecorationType({
         after: {
           margin: `0 0 0 -${width}px`,
-          height: `14px`,
           // This is a tricky part. Set position and z-index property along with width
           // to bring markers to front
           width: `${width}px; position:absoulute; z-index:99;`,
@@ -200,21 +199,21 @@ export class EasyMotion {
   private getEasymotionMarkerBackgroundColor() {
     return this.getMarkerColor(
       configuration.easymotionMarkerBackgroundColor,
-      'activityBarBadge.background'
+      'editorCursor.foreground'
     );
   }
 
   private getEasymotionMarkerForegroundColorOneChar() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorOneChar,
-      'activityBarBadge.foreground'
+      'editor.background'
     );
   }
 
   private getEasymotionMarkerForegroundColorTwoChar() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorTwoChar,
-      'activityBarBadge.foreground'
+      'editor.background'
     );
   }
 
@@ -243,16 +242,15 @@ export class EasyMotion {
         after: {
           contentText: keystroke,
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
-          height: `${configuration.easymotionMarkerHeight}px`,
+          height: 'auto',
           width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px`,
           color: fontColor,
           textDecoration: `none;
-          font-family: ${configuration.easymotionMarkerFontFamily};
+          font-family: ${vscode.workspace.getConfiguration('editor').get('fontFamily')};
           font-size: ${configuration.easymotionMarkerFontSize}px;
           font-weight: ${configuration.easymotionMarkerFontWeight};
           position: absolute;
-          z-index: 99;
-          bottom: ${configuration.easymotionMarkerYOffset}px`,
+          z-index: 99;`,
         },
       };
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
