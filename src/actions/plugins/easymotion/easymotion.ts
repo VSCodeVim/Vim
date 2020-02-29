@@ -59,18 +59,8 @@ export class EasyMotion {
     if (cache) {
       return cache;
     } else {
-      const width = length * 8;
-      const type = vscode.window.createTextEditorDecorationType({
-        after: {
-          margin: `0 0 0 -${width}px`,
-          // This is a tricky part. Set position and z-index property along with width
-          // to bring markers to front
-          width: `${width}px; position:absoulute; z-index:99;`,
-        },
-      });
-
+      const type = vscode.window.createTextEditorDecorationType({});
       this.decorationTypeCache[length] = type;
-
       return type;
     }
   }
@@ -243,7 +233,6 @@ export class EasyMotion {
           contentText: keystroke,
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
           height: 'auto',
-          width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px`,
           color: fontColor,
           textDecoration: `none;
           font-family: ${vscode.workspace.getConfiguration('editor').get('fontFamily')};
@@ -253,10 +242,8 @@ export class EasyMotion {
           z-index: 99;`,
         },
       };
-      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
-      const charPos = pos.character + 1 + (keystroke.length - 1);
       this.decorations[keystroke.length].push({
-        range: new vscode.Range(pos.line, charPos, pos.line, charPos),
+        range: new vscode.Range(pos.line, pos.character, pos.line, pos.character),
         renderOptions: {
           dark: renderOptions,
           light: renderOptions,
