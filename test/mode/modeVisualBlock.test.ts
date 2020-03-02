@@ -181,4 +181,11 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>jjllX',
     end: ['11111', '2|2', '33', '44', '55555'],
   });
+
+  newTest({
+    title: 'Select register using " works in visual block mode',
+    start: ['abcde', '0|1234', 'abcde', '01234'],
+    keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
+    end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
+  });
 });

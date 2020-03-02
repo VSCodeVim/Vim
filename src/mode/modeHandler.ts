@@ -79,6 +79,11 @@ export class ModeHandler implements vscode.Disposable {
   public syncCursors() {
     setImmediate(() => {
       if (this.vimState.editor) {
+        this.vimState.cursors = this.vimState.editor.selections.map(
+          ({ start, end }) =>
+            new Range(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end))
+        );
+
         this.vimState.cursorStartPosition = Position.FromVSCodePosition(
           this.vimState.editor.selection.start
         );
@@ -954,11 +959,7 @@ export class ModeHandler implements vscode.Disposable {
             return vimState; // TODO(bell)
           }
 
-          const clonedAction = globalState.previousFullAction.clone();
-
-          await this.rerunRecordedState(vimState, globalState.previousFullAction);
-
-          globalState.previousFullAction = clonedAction;
+          await this.rerunRecordedState(vimState, globalState.previousFullAction.clone());
           break;
         case 'macro':
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
@@ -1266,7 +1267,7 @@ export class ModeHandler implements vscode.Disposable {
         } else if (selectionMode === Mode.VisualBlock) {
           selections = [];
 
-          for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+          for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState)) {
             selections.push(new vscode.Selection(lineStart, end));
           }
         } else {
@@ -1283,6 +1284,20 @@ export class ModeHandler implements vscode.Disposable {
               }
 
               selections.push(new vscode.Selection(cursorStart, cursorStop));
+            }
+            break;
+          }
+          case Mode.VisualLine: {
+            selections = vimState.cursors.map((c: Range) => {
+              return new vscode.Selection(c.start.getLineBegin(), c.stop.getLineEnd());
+            });
+            break;
+          }
+          case Mode.VisualBlock: {
+            for (const c of vimState.cursors) {
+              for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState, c)) {
+                selections.push(new vscode.Selection(lineStart, end));
+              }
             }
             break;
           }
@@ -1309,7 +1324,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Scroll to position of cursor
-    if (vimState.editor.visibleRanges.length > 0) {
+    if (
+      vimState.editor.visibleRanges.length > 0 &&
+      vimState.postponedCodeViewChanges.filter(change => change.command === 'editorScroll')
+        .length === 0
+    ) {
       const visibleRange = vimState.editor.visibleRanges[0];
       const centerViewportAroundCursor =
         visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||

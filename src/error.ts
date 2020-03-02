@@ -19,7 +19,6 @@ export enum ErrorCode {
   UnknownOption = 518,
 }
 
-// TODO: we need this to be a bit more sophisticated at some point - for example, 486 should have the search term in it
 export const ErrorMessage: IErrorMessage = {
   20: 'Mark not set',
   32: 'No file name',
@@ -47,9 +46,9 @@ export class VimError extends Error {
     this._message = message;
   }
 
-  static fromCode(code: ErrorCode): VimError {
+  static fromCode(code: ErrorCode, extraValue?: string): VimError {
     if (ErrorMessage[code]) {
-      return new VimError(code, ErrorMessage[code]);
+      return new VimError(code, ErrorMessage[code] + (extraValue ? `: ${extraValue}` : ''));
     }
 
     throw new Error('unknown error code: ' + code);
