@@ -957,7 +957,7 @@
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.149",
-    "@types/mocha": "7.0.1",
+    "@types/mocha": "7.0.2",
     "@types/node": "12.12.21",
     "@types/sinon": "7.5.2",
     "gulp": "4.0.2",
