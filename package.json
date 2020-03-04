@@ -550,14 +550,11 @@
         },
         "vim.easymotionMarkerHeight": {
           "type": "number",
-          "description": "Set the height of the marker.",
-          "default": 14,
-          "minimum": 1
+          "description": "Set the height of the marker."
         },
         "vim.easymotionMarkerFontFamily": {
           "type": "string",
-          "description": "Set the font family of the marker text.",
-          "default": "Consolas"
+          "description": "Set the font family of the marker text."
         },
         "vim.easymotionMarkerFontSize": {
           "type": "string",

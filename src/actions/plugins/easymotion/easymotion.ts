@@ -207,6 +207,13 @@ export class EasyMotion {
     );
   }
 
+  private getEasymotionMarkerHeight() {
+    if (configuration.easymotionMarkerHeight === 0) {
+      return 'auto';
+    }
+    return `${configuration.easymotionMarkerHeight}px`;
+  }
+
   public updateDecorations() {
     this.clearDecorations();
 
@@ -232,14 +239,15 @@ export class EasyMotion {
         after: {
           contentText: keystroke,
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
-          height: 'auto',
+          height: this.getEasymotionMarkerHeight(),
           color: fontColor,
           textDecoration: `none;
-          font-family: ${vscode.workspace.getConfiguration('editor').get('fontFamily')};
+          font-family: ${configuration.easymotionMarkerFontFamily};
           font-size: ${configuration.easymotionMarkerFontSize}px;
           font-weight: ${configuration.easymotionMarkerFontWeight};
           position: absolute;
-          z-index: 99;`,
+          z-index: 99;
+          bottom: ${configuration.easymotionMarkerYOffset}px`,
         },
       };
       this.decorations[keystroke.length].push({

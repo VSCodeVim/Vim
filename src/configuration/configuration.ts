@@ -199,7 +199,7 @@ class Configuration implements IConfiguration {
   easymotionMarkerForegroundColorOneChar = '#ff0000';
   easymotionMarkerForegroundColorTwoChar = '#ffa500';
   easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
+  easymotionMarkerHeight = 0;
   easymotionMarkerFontFamily = 'Consolas';
   easymotionMarkerFontSize = '14';
   easymotionMarkerFontWeight = 'normal';
