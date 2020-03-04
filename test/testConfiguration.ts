@@ -40,6 +40,7 @@ export class Configuration implements IConfiguration {
     defaultIM: '',
     switchIMCmd: '',
     obtainIMCmd: '',
+    insertmodeInitialIM: '',
   };
   timeout = 1000;
   showcmd = true;

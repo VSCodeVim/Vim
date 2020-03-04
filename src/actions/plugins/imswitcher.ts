@@ -9,7 +9,7 @@ import { configuration } from '../../configuration/configuration';
 export class InputMethodSwitcher {
   private readonly logger = Logger.get('IMSwitcher');
   private execute: (cmd: string) => Promise<string>;
-  private savedIMKey = '';
+  private savedIMKey = configuration.autoSwitchInputMethod.insertmodeInitialIM;
 
   constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
     this.execute = execute;

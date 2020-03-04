@@ -35,6 +35,7 @@ suite('Input method plugin', () => {
     configuration.autoSwitchInputMethod.defaultIM = 'default';
     configuration.autoSwitchInputMethod.obtainIMCmd = 'im-select';
     configuration.autoSwitchInputMethod.switchIMCmd = 'im-select {im}';
+    configuration.autoSwitchInputMethod.switchIMCmd = '';
     await setupWorkspace(configuration);
   });
 

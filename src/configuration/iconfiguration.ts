@@ -28,6 +28,7 @@ export interface IAutoSwitchInputMethod {
   defaultIM: string;
   switchIMCmd: string;
   obtainIMCmd: string;
+  insertmodeInitialIM: string;
 }
 
 export interface IDebugConfiguration {

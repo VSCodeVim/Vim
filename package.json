@@ -888,6 +888,11 @@
           "description": "The shell command to get current input method.",
           "default": "/path/to/im-select"
         },
+        "vim.autoSwitchInputMethod.insertmodeInitialIM": {
+          "type": "string",
+          "description": "The imput method when you first time switch to insert mode.",
+          "default": ""
+        },
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",

@@ -540,12 +540,13 @@ By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete th
 
 Disable input method when exiting Insert Mode.
 
-| Setting                                 | Description                                                                                      |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `vim.autoSwitchInputMethod.enable`      | Boolean denoting whether autoSwitchInputMethod is on/off.                                        |
-| `vim.autoSwitchInputMethod.defaultIM`   | Default input method.                                                                            |
-| `vim.autoSwitchInputMethod.obtainIMCmd` | The full path to command to retrieve the current input method key.                               |
-| `vim.autoSwitchInputMethod.switchIMCmd` | The full path to command to switch input method, with `{im}` a placeholder for input method key. |
+| Setting                                       | Description                                                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `vim.autoSwitchInputMethod.enable`            | Boolean denoting whether autoSwitchInputMethod is on/off.                                        |
+| `vim.autoSwitchInputMethod.defaultIM`         | Default input method.                                                                            |
+| `vim.autoSwitchInputMethod.insermodeInitialIM`| Initial input method when switch to insert mode.                                                 |
+| `vim.autoSwitchInputMethod.obtainIMCmd`       | The full path to command to retrieve the current input method key.                               |
+| `vim.autoSwitchInputMethod.switchIMCmd`       | The full path to command to switch input method, with `{im}` a placeholder for input method key. |
 
 Any third-party program can be used to switch input methods. The following will walkthrough the configuration using [im-select](https://github.com/daipeihust/im-select).
 
