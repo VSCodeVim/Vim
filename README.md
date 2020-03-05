@@ -694,7 +694,7 @@ VS Code has a lot of nifty tricks and we try to preserve some of them:
 
 - I've swapped Escape and Caps Lock with setxkbmap and it isn't working
 
-  This is a (known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keycode"` and restart VS Code.
+  This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keycode"` and restart VS Code.
 
 ## ❤️ Contributing
 
