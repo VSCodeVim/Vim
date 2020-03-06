@@ -15,6 +15,8 @@ import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
 import { Position } from '../../common/motion/position';
+import { VimError, ErrorCode } from '../../error';
+import { SearchDirection } from '../../state/searchState';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -313,16 +315,26 @@ class CommandInsertInSearchMode extends BaseCommand {
         }
       }
 
+      vimState.statusBarCursorCharacterPos = 0;
+      Register.putByKey(searchState.searchString, '/', undefined, true);
       globalState.addSearchStateToHistory(searchState);
+
+      if (searchState.matchRanges.length === 0) {
+        throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+      }
 
       // Move cursor to next match
       const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
+      if (nextMatch === undefined) {
+        throw VimError.fromCode(
+          searchState.searchDirection === SearchDirection.Backward
+            ? ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitBottom
+        );
+      }
+
       vimState.cursorStopPosition = nextMatch.pos;
-
       globalState.hl = true;
-
-      vimState.statusBarCursorCharacterPos = 0;
-      Register.putByKey(searchState.searchString, '/', undefined, true);
 
       reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
@@ -397,6 +409,23 @@ class CommandEscInSearchMode extends BaseCommand {
     globalState.searchState = prevSearchList
       ? prevSearchList[prevSearchList.length - 1]
       : undefined;
+
+    if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+      const offset =
+        vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+      if (offset !== 0) {
+        vimState.postponedCodeViewChanges.push({
+          command: 'editorScroll',
+          args: {
+            to: offset > 0 ? 'up' : 'down',
+            by: 'line',
+            value: Math.abs(offset),
+            revealCursor: false,
+            select: false,
+          },
+        });
+      }
+    }
 
     await vimState.setCurrentMode(searchState.previousMode);
     vimState.statusBarCursorCharacterPos = 0;

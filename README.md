@@ -64,7 +64,7 @@ Like real vim, VSCodeVim will take over your control keys. This behaviour can be
 
 ## ⚙️ Settings
 
-The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab in the extensions menu of VS Code.
+The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-gallery#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-gallery) of VS Code.
 
 ### Quick Example
 
@@ -73,7 +73,6 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 ```json
 {
   "vim.easymotion": true,
-  "vim.sneak": true,
   "vim.incsearch": true,
   "vim.useSystemClipboard": true,
   "vim.useCtrlKeys": true,

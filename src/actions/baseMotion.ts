@@ -122,6 +122,10 @@ export abstract class BaseMovement extends BaseAction {
       result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
 
       if (result instanceof Position) {
+        /**
+         * This position will be passed to the `motion` on the next iteration,
+         * it may cause some issues when count > 1.
+         */
         position = result;
       } else if (isIMovement(result)) {
         if (prevResult && result.failed) {

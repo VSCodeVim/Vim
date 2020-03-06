@@ -4,7 +4,7 @@ import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -14,11 +14,12 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { reportSearch } from '../util/statusBarTextUtils';
-import { Notation } from '../configuration/notation';
+import { BaseMovement, SelectionType, IMovement, isIMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
-import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
+import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
+import { Notation } from '../configuration/notation';
+import { SearchDirection } from '../state/searchState';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -349,17 +350,32 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!searchState || searchState.searchString === '') {
       return position;
     }
+
+    if (searchState.matchRanges.length === 0) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+    }
+
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    let nextMatch: {
-      pos: Position;
-      index: number;
-    };
+    let nextMatch:
+      | {
+          pos: Position;
+          index: number;
+        }
+      | undefined;
     if (position.getRight().isEqual(position.getLineEnd())) {
       nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
     } else {
       nextMatch = searchState.getNextSearchMatchPosition(position);
+    }
+
+    if (!nextMatch) {
+      throw VimError.fromCode(
+        searchState.searchDirection === SearchDirection.Forward
+          ? ErrorCode.SearchHitBottom
+          : ErrorCode.SearchHitTop
+      );
     }
 
     reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
@@ -380,10 +396,22 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
+    if (searchState.matchRanges.length === 0) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+    }
+
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+
+    if (!prevMatch) {
+      throw VimError.fromCode(
+        searchState.searchDirection === SearchDirection.Forward
+          ? ErrorCode.SearchHitTop
+          : ErrorCode.SearchHitBottom
+      );
+    }
 
     reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
 
@@ -403,8 +431,13 @@ export class MarkMovementBOL extends BaseMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -419,9 +452,20 @@ export class MarkMovement extends BaseMovement {
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position;
+  }
+}
+
+async function ensureEditorIsActive(editor: vscode.TextEditor) {
+  if (editor !== vscode.window.activeTextEditor) {
+    await vscode.window.showTextDocument(editor.document);
   }
 }
 
@@ -1257,17 +1301,54 @@ class MoveNextSentenceBegin extends BaseMovement {
 class MoveParagraphEnd extends BaseMovement {
   keys = ['}'];
   isJump = true;
+  iteration = 0;
+  isFirstLineWise = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const isLineWise =
-      position.isLineBeginning() &&
-      vimState.currentMode === Mode.Normal &&
-      vimState.recordedState.operator;
-    let paragraphEnd = position.getCurrentParagraphEnd();
-    vimState.currentRegisterMode = isLineWise
-      ? RegisterMode.LineWise
-      : RegisterMode.AscertainFromCurrentMode;
-    return isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd;
+    const hasOperator = vimState.recordedState.operator;
+    const paragraphEnd = position.getCurrentParagraphEnd();
+
+    if (hasOperator) {
+      /**
+       * When paired with an `operator` and a `count` this move will be executed
+       * multiple times which could cause issues like https://github.com/VSCodeVim/Vim/issues/4488
+       * because subsequent runs will receive back whatever position we return
+       * (See comment in `BaseMotion.execActionWithCount()`).
+       *
+       * We keep track of the iteration we are in, this way we can
+       * return the correct position when on the last iteration, and we don't
+       * accidentally set the `registerMode` incorrectly.
+       */
+      this.iteration++;
+
+      const isLineWise = position.isLineBeginning() && vimState.currentMode === Mode.Normal;
+
+      const isLastIteration = vimState.recordedState.count
+        ? vimState.recordedState.count === this.iteration
+        : true;
+
+      /**
+       * `position` may not represent the position of the cursor from which the command was initiated.
+       * In the case that we will be repeating this move more than once
+       * we want to respect whether the starting position was at the beginning of line or not.
+       */
+      this.isFirstLineWise = this.iteration === 1 ? isLineWise : this.isFirstLineWise;
+
+      vimState.currentRegisterMode = this.isFirstLineWise
+        ? RegisterMode.LineWise
+        : RegisterMode.AscertainFromCurrentMode;
+
+      /**
+       * `paragraphEnd` is the first blank line after the last word in the
+       * current paragraph, we want the position just before that one to
+       * accurately emulate Vim's behaviour, unless we are at EOF.
+       */
+      return isLastIteration && !paragraphEnd.isAtDocumentEnd()
+        ? paragraphEnd.getLeftThroughLineBreaks(true)
+        : paragraphEnd;
+    }
+
+    return paragraphEnd;
   }
 }
 
@@ -1362,7 +1443,7 @@ class MoveToMatchingBracket extends BaseMovement {
       }
     }
 
-    if (position.compareTo(result) > 0) {
+    if (position.isAfter(result)) {
       return {
         start: result,
         stop: position.getRight(),

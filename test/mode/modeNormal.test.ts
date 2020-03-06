@@ -1003,7 +1003,7 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle d}',
+    title: 'Can handle d} at beginning of line',
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|', 'fun'],
@@ -1015,6 +1015,30 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'y}p',
     end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle d} when not at beginning of line',
+    start: ['f|oo', 'bar', '', 'fun'],
+    keysPressed: 'd}',
+    end: ['|f', '', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, at beginning of line',
+    start: ['|foo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, and not at beginning of line',
+    start: ['f|oo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|f', '', 'fun'],
     endMode: Mode.Normal,
   });
 
@@ -2500,5 +2524,35 @@ suite('Mode Normal', () => {
     start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
     keysPressed: '<C-u>',
     end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+  });
+
+  suite('marks', async () => {
+    const jumpToNewFile = async () => {
+      let configuration = new Configuration();
+      configuration.tabstop = 4;
+      configuration.expandtab = false;
+      await setupWorkspace(configuration);
+      return getAndUpdateModeHandler();
+    };
+
+    test('capital marks can change the editors active document', async () => {
+      const firstDocumentName = TextEditor.getDocumentName();
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+
+      const otherModeHandler = await jumpToNewFile();
+      const otherDocumentName = TextEditor.getDocumentName();
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+
+      await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
+      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+    });
+
+    newTest({
+      title: `can jump to lowercase mark`,
+      start: ['|hello world and mars'],
+      keysPressed: 'wma2w`a',
+      end: ['hello |world and mars'],
+      endMode: Mode.Normal,
+    });
   });
 });

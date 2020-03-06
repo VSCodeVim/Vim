@@ -6,6 +6,7 @@ import { configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
 import { clamp } from '../../util/util';
+import { Range } from './range';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
@@ -211,27 +212,29 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Iterate over every line in the block defined by the two positions passed in.
+   * Iterate over every line in the block defined by the two positions (Range) passed in.
+   * If no range is given, the primary cursor will be used as the block.
    *
    * This is intended for visual block mode.
    */
-  public static *IterateLine(
+  public static *IterateLinesInBlock(
     vimState: VimState,
+    range?: Range,
     options: { reverse?: boolean } = { reverse: false }
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
-    const start = vimState.cursorStartPosition;
-    const stop = vimState.cursorStopPosition;
 
-    const topLeft = visualBlockGetTopLeftPosition(start, stop);
-    const bottomRight = visualBlockGetBottomRightPosition(start, stop);
+    if (range === undefined) {
+      range = vimState.cursors[0];
+    }
 
-    // Special case for $, which potentially makes the block ragged
-    // on the right side.
-    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
+    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
+    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
 
     const itrStart = reverse ? bottomRight.line : topLeft.line;
     const itrEnd = reverse ? topLeft.line : bottomRight.line;
+
+    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
 
     for (
       let lineIndex = itrStart;
@@ -1235,7 +1238,7 @@ export class Position extends vscode.Position {
 
   private getFirstNonWhitespaceInParagraph(paragraphEnd: Position, inclusive: boolean): Position {
     // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
-    // Find the first non-whitepsace character.
+    // Find the first non-whitespace character.
     if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
       return paragraphEnd;
     } else {
@@ -1257,7 +1260,8 @@ export class Position extends vscode.Position {
       }
     }
 
-    throw new Error('This should never happen...');
+    // Only happens at end of document
+    return this;
   }
 
   private findHelper(
