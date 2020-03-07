@@ -3087,7 +3087,7 @@ class ActionJoin extends BaseCommand {
       if (position.line + 1 < TextEditor.getLineCount()) {
         startLineNumber = position.line;
         startColumn = 0;
-        endLineNumber = startLineNumber + count;
+        endLineNumber = position.getDownByCount(count).line;
         endColumn = TextEditor.getLineLength(endLineNumber);
       } else {
         startLineNumber = position.line;
