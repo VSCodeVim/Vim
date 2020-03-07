@@ -2142,7 +2142,7 @@ export class CommandYankFullLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const linesDown = (vimState.recordedState.count || 1) - 1;
     const start = position.getLineBegin();
-    const end = new Position(position.line + linesDown, 0).getLineEnd().getLeft();
+    const end = position.getDownByCount(linesDown).getLeft();
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
