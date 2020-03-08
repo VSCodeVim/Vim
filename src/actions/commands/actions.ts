@@ -2357,6 +2357,12 @@ class CommandVisualLineMode extends BaseCommand {
     vimState.visualLineStartColumn = position.character;
     await vimState.setCurrentMode(Mode.VisualLine);
 
+    if (vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getDownByCount(
+        vimState.recordedState.count - 1
+      );
+    }
+
     return vimState;
   }
 }
