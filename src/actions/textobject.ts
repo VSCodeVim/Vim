@@ -712,17 +712,7 @@ abstract class SelectArgument extends TextObjectMovement {
   //     multi-line statements.
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let cursorStartPos = new Position(
-      vimState.cursorStartPosition.line,
-      vimState.cursorStartPosition.character
-    );
-    // maintain current selection on failure
-    const failure = { start: cursorStartPos, stop: position, failed: true };
-
-    // When the cursor is on a delimiter already, pre-advance the cursor,
-    // so that our search does not fail. We always advance to the next argument,
-    // in case of opening delimiters or regular delimiters, and advance to the
-    // previous on closing delimiters.
+    const failure = { start: position, stop: position, failed: true };
     let leftSearchStartPosition = new Position(
       vimState.cursorStartPosition.line,
       vimState.cursorStartPosition.character
@@ -731,6 +721,11 @@ abstract class SelectArgument extends TextObjectMovement {
       vimState.cursorStartPosition.line,
       vimState.cursorStartPosition.character
     );
+
+    // When the cursor is on a delimiter already, pre-advance the cursor,
+    // so that our search actually spans a range. We will advance to the next argument,
+    // in case of opening delimiters or regular delimiters, and advance to the
+    // previous on closing delimiters.
     if (
       SelectArgument.delimiters.includes(TextEditor.getCharAt(position)) ||
       SelectArgument.openingDelimiters.includes(TextEditor.getCharAt(position))

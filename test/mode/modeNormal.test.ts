@@ -2569,7 +2569,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in (,) with cursor at regular delimiter",
     start: ['(|,)'],
     keysPressed: 'cia',
-    end: ['(|,)'],
+    end: ['(,|)'],
     endMode: Mode.Insert,
   });
 
@@ -2585,7 +2585,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in (,,,) with cursor at regular delimiter",
     start: ['(|,,,)'],
     keysPressed: 'cia',
-    end: ['(|,,,)'],
+    end: ['(,|,,)'],
     endMode: Mode.Insert,
   });
 
@@ -2653,21 +2653,87 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   f|oo,', '   bar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '|,', '   bar,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '|,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   |baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '   bar,', '|', ')'],
+    endMode: Mode.Insert,
+  });
 
   newTest({
     title: "Can do 'daa' in a single argument",
     start: ['(f|oo)'],
     keysPressed: 'daa',
     end: ['(|)'],
-    endMode: Mode.Insert,
+    endMode: Mode.Normal,
   });
-
 
   newTest({
     title: "Will fail 'daa' in ()",
     start: ['(|)'],
     keysPressed: 'daa',
     end: ['(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in first argument",
+    start: ['(f|oo, bar, baz)'],
+    keysPressed: 'daa',
+    end: ['(| bar, baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in middle argument",
+    start: ['(foo, b|ar, baz)'],
+    keysPressed: 'daa',
+    end: ['(foo,| baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in last argument",
+    start: ['(foo, bar, |baz)'],
+    keysPressed: 'daa',
+    end: ['(foo, bar|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   |foo,', '   bar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['|(', '   bar,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo|,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   ba|z', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo,', '   ba|r', ')'],
     endMode: Mode.Normal,
   });
 
