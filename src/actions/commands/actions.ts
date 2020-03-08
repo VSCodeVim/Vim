@@ -2126,11 +2126,14 @@ class CommandDeleteToLineEnd extends BaseCommand {
       return vimState;
     }
 
-    return new operator.DeleteOperator(this.multicursorIndex).run(
-      vimState,
-      position,
-      position.getLineEnd().getLeft()
-    );
+    const linesDown = (vimState.recordedState.count || 1) - 1;
+    const start = position;
+    const end = position
+      .getDownByCount(linesDown)
+      .getLineEnd()
+      .getLeftThroughLineBreaks();
+
+    return new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
