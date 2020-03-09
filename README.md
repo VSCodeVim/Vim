@@ -74,7 +74,6 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 ```json
 {
   "vim.easymotion": true,
-  "vim.sneak": true,
   "vim.incsearch": true,
   "vim.useSystemClipboard": true,
   "vim.useCtrlKeys": true,
