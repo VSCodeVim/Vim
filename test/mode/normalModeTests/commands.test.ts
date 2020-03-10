@@ -312,6 +312,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'g~~'",
+    start: ['oNe', 'Tw|O', 'tHrEe'],
+    keysPressed: 'g~~',
+    end: ['oNe', '|tWo', 'tHrEe'],
+  });
+
+  newTest({
     title: "Can handle '<BS>' in insert mode",
     start: ['one', '|'],
     keysPressed: 'i<BS><Esc>',
