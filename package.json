@@ -318,7 +318,7 @@
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "cmd+left",
