@@ -188,4 +188,12 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
     end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
   });
+
+  newTest({
+    title: 'Can handle ~/g~ in visual block mode',
+    start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+    keysPressed: '<C-v>jl~jjl<C-v>jlg~',
+    end: ['oNE', 'Two', 'T|HreE', 'foUR'],
+    endMode: Mode.Normal,
+  });
 });
