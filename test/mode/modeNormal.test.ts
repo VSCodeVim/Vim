@@ -2606,6 +2606,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can do 'cia' with nested parentheses in argument",
+    start: ['(foo, (void*) ba|r(Foo<T>), baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can do 'cia' in a single-line comma seperated list with cursor in first argument",
     start: ['(f|oo, bar, baz)'],
     keysPressed: 'cia',
