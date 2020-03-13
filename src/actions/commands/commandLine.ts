@@ -259,8 +259,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-n>'], // Next
     ['<C-f>'], // Find
     ['<C-u>'], // Delete to beginning
-    // Another way to run search
-    ['<C-m>'],
+    ['<C-m>'], // Another way to run search
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
