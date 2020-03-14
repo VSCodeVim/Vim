@@ -20,11 +20,21 @@ suite('Mode Visual Line', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+    await modeHandler.handleKeyEvent('V');
+    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
 
-    await modeHandler.handleKeyEvent('v');
+    await modeHandler.handleKeyEvent('V');
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('<count>V selects <count> lines', async () => {
+    await modeHandler.handleMultipleKeyEvents('iLine 1\nLine 2\nLine 3\nLine 4\nLine 5'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+
+    await modeHandler.handleMultipleKeyEvents(['j', '3', 'V']);
+    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+    assert.strictEqual(modeHandler.vimState.cursorStartPosition.line, 1);
+    assert.strictEqual(modeHandler.vimState.cursorStopPosition.line, 3);
   });
 
   test('Can handle w', async () => {
