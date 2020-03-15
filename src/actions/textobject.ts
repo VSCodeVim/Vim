@@ -685,7 +685,6 @@ class InsideIndentObjectBoth extends IndentObjectMatch {
 
 abstract class SelectArgument extends TextObjectMovement {
   modes = [Mode.Normal, Mode.Visual];
-  keys = ['i', 'a'];
 
   // Depending on the language or context, it may be useful to have
   // custom delimiters, such as ';' or '{}'.
