@@ -221,6 +221,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl"
       },
       {
+        "key": "ctrl+m",
+        "command": "extension.vim_ctrl+m",
+        "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
         "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
