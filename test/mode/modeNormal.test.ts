@@ -2526,14 +2526,6 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Will fail 'cia' in mismatching delimiters",
-    start: ['(|]'],
-    keysPressed: 'cia',
-    end: ['(|]'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
     title: "Can do 'cia' in a single argument",
     start: ['(f|oo)'],
     keysPressed: 'cia',
@@ -2668,6 +2660,7 @@ suite('Mode Normal', () => {
     end: ['(', '|,', '   bar,', '   baz', ')'],
     endMode: Mode.Insert,
   });
+
   newTest({
     title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
     start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
@@ -2675,6 +2668,7 @@ suite('Mode Normal', () => {
     end: ['(', '   foo,', '|,', '   baz', ')'],
     endMode: Mode.Insert,
   });
+
   newTest({
     title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
     start: ['(', '   foo,', '   bar,', '   |baz', ')'],
@@ -2730,6 +2724,7 @@ suite('Mode Normal', () => {
     end: ['|(', '   bar,', '   baz', ')'],
     endMode: Mode.Normal,
   });
+
   newTest({
     title: "Can do 'daa' in a multiline-line comma seperated list with cursor in center argument",
     start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
@@ -2737,6 +2732,7 @@ suite('Mode Normal', () => {
     end: ['(', '   foo|,', '   baz', ')'],
     endMode: Mode.Normal,
   });
+
   newTest({
     title: "Can do 'daa' in a multiline-line comma seperated list with cursor in last argument",
     start: ['(', '   foo,', '   bar,', '   ba|z', ')'],

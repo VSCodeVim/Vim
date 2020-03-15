@@ -688,7 +688,9 @@ abstract class SelectArgument extends TextObjectMovement {
   keys = ['i', 'a'];
 
   // Depending on the language or context, it may be useful to have
-  // custom delimiters, such as ';' or '{}'
+  // custom delimiters, such as ';' or '{}'.
+  // Warning: For now, mismatched opening and closing delimiters, e.g.
+  // in (foo] will still be matched by this movement.
   static openingDelimiters = ['(', '['];
   static closingDelimiters = [')', ']'];
   static delimiters = [','];
@@ -702,12 +704,12 @@ abstract class SelectArgument extends TextObjectMovement {
   //
   // Procedure:
   //
-  // 1.  Find delimiters left and right
-  // 1.2 Walk left until we find a comma or an opening paren, that does not
+  // 1   Find delimiters left and right
+  // 1.1 Walk left until we find a comma or an opening paren, that does not
   //     have a matching closed one. This way we can ignore pairs
   //     of parentheses which are part of the current argument.
   // 1.2 Vice versa for walking right.
-  // 2.  Depending on our mode (inner or around), improve the delimiter
+  // 2   Depending on our mode (inner or around), improve the start/stop
   //     locations for most consistent behaviour, especially in case of
   //     multi-line statements.
 
