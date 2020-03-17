@@ -144,4 +144,10 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '/', '<C-r>', '<C-w>']);
     assertStatusBarEqual('/abc|', 'Failed to insert word under cursor');
   });
+
+  test('<C-p> insert word under cursor in search mode', async () => {
+    await modeHandler.handleMultipleKeyEvents('/abc'.split('').concat('<Esc>'));
+    await modeHandler.handleMultipleKeyEvents(['/', '<C-p>']);
+    assertStatusBarEqual('/abc|', 'Failed to insert word under cursor');
+  });
 });
