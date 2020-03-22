@@ -13,7 +13,12 @@ import { Position, PositionDiff, PositionDiffType } from './../../common/motion/
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { Mode, visualBlockGetTopLeftPosition, isVisualMode } from './../../mode/mode';
+import {
+  Mode,
+  visualBlockGetTopLeftPosition,
+  visualBlockGetBottomRightPosition,
+  isVisualMode,
+} from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
@@ -3264,6 +3269,24 @@ class ActionJoinVisualMode extends BaseCommand {
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     vimState = await actionJoin.execJoinLines(start, end, vimState, 1);
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionJoinVisualBlockMode extends BaseCommand {
+  modes = [Mode.VisualBlock];
+  keys = ['J'];
+  mightChangeDocument = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let actionJoin = new ActionJoin();
+    const range = vimState.cursors[0];
+    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
+    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
+
+    vimState.currentRegisterMode = RegisterMode.CharacterWise;
+    vimState = await actionJoin.execJoinLines(topLeft, bottomRight, vimState, 1);
     return vimState;
   }
 }

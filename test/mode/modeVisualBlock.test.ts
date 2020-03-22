@@ -188,4 +188,12 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
     end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
   });
+
+  newTest({
+    title: "Can handle 'J'",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '<C-v>jjlJ',
+    end: ['one| two three', 'four'],
+    endMode: Mode.Normal,
+  });
 });
