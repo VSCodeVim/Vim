@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Mode, statusBarText, statusBarCommandText } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
+import { VimError } from './error';
 
 class StatusBarImpl implements vscode.Disposable {
   // Displays the current state (mode, recording macro, etc.) and messages to the user
@@ -55,6 +56,10 @@ class StatusBarImpl implements vscode.Disposable {
 
     this._previousModeName = vimState.currentMode;
     this._showingDefaultMessage = false;
+  }
+
+  public displayError(vimState: VimState, error: VimError) {
+    StatusBar.setText(vimState, error.toString(), true);
   }
 
   public getText() {

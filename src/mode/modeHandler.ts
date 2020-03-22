@@ -310,7 +310,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        StatusBar.setText(this.vimState, e.toString(), true);
+        StatusBar.displayError(this.vimState, e);
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }

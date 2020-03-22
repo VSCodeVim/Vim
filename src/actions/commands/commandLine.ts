@@ -322,17 +322,25 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
 
       if (searchState.matchRanges.length === 0) {
-        throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+        );
+        return vimState;
       }
 
       // Move cursor to next match
       const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
       if (nextMatch === undefined) {
-        throw VimError.fromCode(
-          searchState.searchDirection === SearchDirection.Backward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(
+            searchState.searchDirection === SearchDirection.Backward
+              ? ErrorCode.SearchHitTop
+              : ErrorCode.SearchHitBottom
+          )
         );
+        return vimState;
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
