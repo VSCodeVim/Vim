@@ -17,6 +17,7 @@ import { Clipboard } from '../../util/clipboard';
 import { Position } from '../../common/motion/position';
 import { VimError, ErrorCode } from '../../error';
 import { SearchDirection } from '../../state/searchState';
+import { scrollView } from '../../util/util';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -321,17 +322,25 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
 
       if (searchState.matchRanges.length === 0) {
-        throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+        );
+        return vimState;
       }
 
       // Move cursor to next match
       const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
       if (nextMatch === undefined) {
-        throw VimError.fromCode(
-          searchState.searchDirection === SearchDirection.Backward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(
+            searchState.searchDirection === SearchDirection.Backward
+              ? ErrorCode.SearchHitTop
+              : ErrorCode.SearchHitBottom
+          )
         );
+        return vimState;
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
@@ -414,18 +423,7 @@ class CommandEscInSearchMode extends BaseCommand {
     if (vimState.firstVisibleLineBeforeSearch !== undefined) {
       const offset =
         vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
-      if (offset !== 0) {
-        vimState.postponedCodeViewChanges.push({
-          command: 'editorScroll',
-          args: {
-            to: offset > 0 ? 'up' : 'down',
-            by: 'line',
-            value: Math.abs(offset),
-            revealCursor: false,
-            select: false,
-          },
-        });
-      }
+      scrollView(vimState, offset);
     }
 
     await vimState.setCurrentMode(searchState.previousMode);

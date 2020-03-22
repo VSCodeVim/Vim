@@ -20,6 +20,7 @@ import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
+import { StatusBar } from '../statusBar';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -351,12 +352,16 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
-    if (searchState.matchRanges.length === 0) {
-      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
-    }
-
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
+
+    if (searchState.matchRanges.length === 0) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+      );
+      return position;
+    }
 
     let nextMatch:
       | {
@@ -371,11 +376,15 @@ class CommandNextSearchMatch extends BaseMovement {
     }
 
     if (!nextMatch) {
-      throw VimError.fromCode(
-        searchState.searchDirection === SearchDirection.Forward
-          ? ErrorCode.SearchHitBottom
-          : ErrorCode.SearchHitTop
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(
+          searchState.searchDirection === SearchDirection.Forward
+            ? ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitTop
+        )
       );
+      return position;
     }
 
     reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
@@ -396,21 +405,29 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    if (searchState.matchRanges.length === 0) {
-      throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
-    }
-
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
+
+    if (searchState.matchRanges.length === 0) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+      );
+      return position;
+    }
 
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
 
     if (!prevMatch) {
-      throw VimError.fromCode(
-        searchState.searchDirection === SearchDirection.Forward
-          ? ErrorCode.SearchHitTop
-          : ErrorCode.SearchHitBottom
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(
+          searchState.searchDirection === SearchDirection.Forward
+            ? ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitBottom
+        )
       );
+      return position;
     }
 
     reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);

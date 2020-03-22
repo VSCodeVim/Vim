@@ -20,7 +20,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync } from '../util/util';
+import { getCursorsAfterSync, scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -310,7 +310,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        StatusBar.setText(this.vimState, e.toString(), true);
+        StatusBar.displayError(this.vimState, e);
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }
@@ -1347,11 +1347,15 @@ export class ModeHandler implements vscode.Disposable {
           vimState.cursorStopPosition
         );
 
-        if (nextMatch) {
+        if (nextMatch?.match) {
           this.vimState.editor.revealRange(
             new vscode.Range(nextMatch.pos, nextMatch.pos),
             revealType
           );
+        } else if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+          const offset =
+            vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+          scrollView(vimState, offset);
         }
       } else {
         if (args.revealRange) {
