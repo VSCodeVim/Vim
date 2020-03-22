@@ -299,8 +299,8 @@ export class Position extends vscode.Position {
       resultChar = this.character + diff.character;
     } else if (diff.type === PositionDiffType.ExactCharacter) {
       resultChar = diff.character;
-    } else if (diff.type === PositionDiffType.ObeyStartOfLine && configuration.startofline) {
-      resultChar = new Position(resultLine, 0).obeyStartOfLine().character;
+    } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
+      resultChar = this.withLine(resultLine).obeyStartOfLine().character;
     } else {
       throw new Error(`Unknown PositionDiffType: ${diff.type}`);
     }
