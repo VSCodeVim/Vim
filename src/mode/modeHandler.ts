@@ -1329,10 +1329,19 @@ export class ModeHandler implements vscode.Disposable {
       vimState.postponedCodeViewChanges.filter(change => change.command === 'editorScroll')
         .length === 0
     ) {
-      const visibleRange = vimState.editor.visibleRanges[0];
-      const centerViewportAroundCursor =
-        visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||
+      const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
+        visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
+      const isCursorBelowRange = (visibleRange: vscode.Range): boolean =>
         vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+
+      const { visibleRanges } = vimState.editor;
+      const centerViewportAroundCursor =
+        visibleRanges.reduce(
+          (acc, visibleRange) => acc && isCursorAboveRange(visibleRange),
+          true
+        ) ||
+        visibleRanges.reduce((acc, visibleRange) => acc && isCursorBelowRange(visibleRange), true);
+
       const revealType = centerViewportAroundCursor
         ? vscode.TextEditorRevealType.InCenter
         : vscode.TextEditorRevealType.Default;
