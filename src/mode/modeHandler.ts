@@ -524,7 +524,7 @@ export class ModeHandler implements vscode.Disposable {
       if (vimState.recordedState.operator) {
         vimState = await this.executeOperator(vimState);
         vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+        ranRepeatableAction = vimState.recordedState.operator!.canBeRepeatedWithDot;
         ranAction = true;
       }
     }
@@ -603,9 +603,10 @@ export class ModeHandler implements vscode.Disposable {
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      const mightChangeDocument = recordedState.hasRunOperator
-        ? recordedState.operator.mightChangeDocument
-        : action.mightChangeDocument;
+      const mightChangeDocument =
+        recordedState.hasRunOperator && recordedState.operator
+          ? recordedState.operator.mightChangeDocument
+          : action.mightChangeDocument;
 
       if (this.vimState.alteredHistory) {
         this.vimState.alteredHistory = false;
