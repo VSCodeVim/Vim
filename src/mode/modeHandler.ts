@@ -1336,11 +1336,7 @@ export class ModeHandler implements vscode.Disposable {
 
       const { visibleRanges } = vimState.editor;
       const centerViewportAroundCursor =
-        visibleRanges.reduce(
-          (acc, visibleRange) => acc && isCursorAboveRange(visibleRange),
-          true
-        ) ||
-        visibleRanges.reduce((acc, visibleRange) => acc && isCursorBelowRange(visibleRange), true);
+        visibleRanges.every(isCursorAboveRange) || visibleRanges.every(isCursorBelowRange);
 
       const revealType = centerViewportAroundCursor
         ? vscode.TextEditorRevealType.InCenter
