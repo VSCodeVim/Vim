@@ -977,7 +977,7 @@
     "plugin-error": "1.0.1",
     "prettier": "1.19.1",
     "sinon": "9.0.1",
-    "ts-loader": "6.2.1",
+    "ts-loader": "6.2.2",
     "tslint": "6.1.0",
     "typescript": "3.8.3",
     "vscode": "1.1.36"
