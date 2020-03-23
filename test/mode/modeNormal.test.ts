@@ -214,6 +214,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'd/'",
+    start: ['one |two three four'],
+    keysPressed: 'd/four\n',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count",
+    start: ['one |two two two two'],
+    keysPressed: '3d/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
     title: "Can handle 'cw'",
     start: ['text text tex|t'],
     keysPressed: '^lllllllcw',
