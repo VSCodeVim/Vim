@@ -118,6 +118,10 @@ export class TextEditor {
     return TextEditor.readLineAt(line).length;
   }
 
+  static getLine(lineNumber: number): vscode.TextLine {
+    return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
+  }
+
   static getLineAt(position: vscode.Position): vscode.TextLine {
     return vscode.window.activeTextEditor!.document.lineAt(position);
   }

@@ -568,7 +568,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
     const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
-    const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
+    const firstValidLine = TextEditor.getLine(firstValidLineNumber);
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
@@ -604,8 +604,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // of the block.
     let startCharacter = 0;
     if (isChangeOperator) {
-      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0))
-        .firstNonWhitespaceCharacterIndex;
+      startCharacter = TextEditor.getLine(startLineNumber).firstNonWhitespaceCharacterIndex;
     }
     // TextEditor.getLineMaxColumn throws when given line 0, which we don't
     // care about here since it just means this text object wouldn't work on a
@@ -632,9 +631,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
    */
   public static findFirstValidLine(cursorPosition: Position): number {
     for (let i = cursorPosition.line; i >= 0; i--) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
-
-      if (!line.isEmptyOrWhitespace) {
+      if (!TextEditor.getLine(i).isEmptyOrWhitespace) {
         return i;
       }
     }
@@ -655,7 +652,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     const end = step === 1 ? TextEditor.getLineCount() : -1;
 
     for (; i !== end; i += step) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
+      const line = TextEditor.getLine(i);
       const isLineEmpty = line.isEmptyOrWhitespace;
       const lineIndent = line.firstNonWhitespaceCharacterIndex;
 

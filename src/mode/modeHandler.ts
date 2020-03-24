@@ -20,7 +20,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync } from '../util/util';
+import { getCursorsAfterSync, scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -310,7 +310,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        StatusBar.setText(this.vimState, e.toString(), true);
+        StatusBar.displayError(this.vimState, e);
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }
@@ -524,7 +524,7 @@ export class ModeHandler implements vscode.Disposable {
       if (vimState.recordedState.operator) {
         vimState = await this.executeOperator(vimState);
         vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+        ranRepeatableAction = vimState.recordedState.operator!.canBeRepeatedWithDot;
         ranAction = true;
       }
     }
@@ -603,9 +603,10 @@ export class ModeHandler implements vscode.Disposable {
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      const mightChangeDocument = recordedState.hasRunOperator
-        ? recordedState.operator.mightChangeDocument
-        : action.mightChangeDocument;
+      const mightChangeDocument =
+        recordedState.hasRunOperator && recordedState.operator
+          ? recordedState.operator.mightChangeDocument
+          : action.mightChangeDocument;
 
       if (this.vimState.alteredHistory) {
         this.vimState.alteredHistory = false;
@@ -1329,10 +1330,15 @@ export class ModeHandler implements vscode.Disposable {
       vimState.postponedCodeViewChanges.filter(change => change.command === 'editorScroll')
         .length === 0
     ) {
-      const visibleRange = vimState.editor.visibleRanges[0];
-      const centerViewportAroundCursor =
-        visibleRange.start.line - vimState.cursorStopPosition.line >= 15 ||
+      const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
+        visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
+      const isCursorBelowRange = (visibleRange: vscode.Range): boolean =>
         vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+
+      const { visibleRanges } = vimState.editor;
+      const centerViewportAroundCursor =
+        visibleRanges.every(isCursorAboveRange) || visibleRanges.every(isCursorBelowRange);
+
       const revealType = centerViewportAroundCursor
         ? vscode.TextEditorRevealType.InCenter
         : vscode.TextEditorRevealType.Default;
@@ -1342,11 +1348,15 @@ export class ModeHandler implements vscode.Disposable {
           vimState.cursorStopPosition
         );
 
-        if (nextMatch) {
+        if (nextMatch?.match) {
           this.vimState.editor.revealRange(
             new vscode.Range(nextMatch.pos, nextMatch.pos),
             revealType
           );
+        } else if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+          const offset =
+            vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+          scrollView(vimState, offset);
         }
       } else {
         if (args.revealRange) {
