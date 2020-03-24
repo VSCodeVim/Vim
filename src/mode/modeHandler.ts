@@ -1309,6 +1309,12 @@ export class ModeHandler implements vscode.Disposable {
             }
             break;
           }
+          case Mode.Replace: {
+            selections = vimState.cursors.map((c: Range) => {
+              return new vscode.Selection(c.start, c.stop);
+            });
+            break;
+          }
           default: {
             this._logger.error(`unexpected selection mode. selectionMode=${selectionMode}`);
             break;
