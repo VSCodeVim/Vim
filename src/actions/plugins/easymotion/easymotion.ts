@@ -135,7 +135,7 @@ export class EasyMotion {
     const lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
 
     outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
-      const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+      const line = TextEditor.getLine(lineIdx).text;
       let result = regex.exec(line);
 
       while (result) {

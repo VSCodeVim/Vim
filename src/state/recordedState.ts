@@ -132,7 +132,7 @@ export class RecordedState {
   }
 
   public get hasRunAMovement(): boolean {
-    return this.actionsRun.filter(a => a.isMotion).length > 0;
+    return this.actionsRun.some(a => a.isMotion);
   }
 
   /**

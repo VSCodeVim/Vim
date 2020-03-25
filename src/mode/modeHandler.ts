@@ -88,6 +88,7 @@ export class ModeHandler implements vscode.Disposable {
           this.vimState.editor.selection.start
         );
         this.vimState.cursorStopPosition = Position.FromVSCodePosition(
+          // TODO: why are we doing this? If this should be stop, it's redundant; if it shouldn't be, it needs to be explained
           this.vimState.editor.selection.start
         );
         this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
@@ -1208,118 +1209,79 @@ export class ModeHandler implements vscode.Disposable {
     // Draw selection (or cursor)
 
     if (args.drawSelection) {
-      let selections: vscode.Selection[];
-
       let selectionMode: Mode = vimState.currentMode;
       if (vimState.currentMode === Mode.SearchInProgressMode) {
         selectionMode = globalState.searchState!.previousMode;
-      }
-      if (vimState.currentMode === Mode.CommandlineInProgress) {
+      } else if (vimState.currentMode === Mode.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
       }
 
-      if (!vimState.isMultiCursor) {
-        let start = vimState.cursorStartPosition;
-        let stop = vimState.cursorStopPosition;
-
-        if (selectionMode === Mode.Visual) {
-          /**
-           * Always select the letter that we started visual mode on, no matter
-           * if we are in front or behind it. Imagine that we started visual mode
-           * with some text like this:
-           *
-           *   abc|def
-           *
-           * (The | represents the cursor.) If we now press w, we'll select def,
-           * but if we hit b we expect to select abcd, so we need to getRight() on the
-           * start of the selection when it precedes where we started visual mode.
-           */
-
-          if (start.isAfter(stop)) {
-            start = start.getRightThroughLineBreaks();
-          }
-
-          selections = [new vscode.Selection(start, stop)];
-        } else if (selectionMode === Mode.VisualLine) {
-          selections = [
-            new vscode.Selection(
-              Position.EarlierOf(start, stop).getLineBegin(),
-              Position.LaterOf(start, stop).getLineEnd()
-            ),
-          ];
-
-          // Maintain cursor position based on which direction the selection is going
-          if (start.line <= stop.line) {
-            vimState.cursorStartPosition = selections[0].start as Position;
-            vimState.cursorStopPosition = selections[0].end as Position;
-          } else {
-            vimState.cursorStartPosition = selections[0].end as Position;
-            vimState.cursorStopPosition = selections[0].start as Position;
-          }
-
-          // Adjust the selection so that active and anchor are correct, this
-          // makes relative line numbers display correctly
-          if (
-            selections[0].start.line <= selections[0].end.line &&
-            vimState.cursorStopPosition.line <= vimState.cursorStartPosition.line
-          ) {
-            selections = [new vscode.Selection(selections[0].end, selections[0].start)];
-          }
-        } else if (selectionMode === Mode.VisualBlock) {
-          selections = [];
-
-          for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState)) {
-            selections.push(new vscode.Selection(lineStart, end));
-          }
-        } else {
-          selections = [new vscode.Selection(stop, stop)];
-        }
-      } else {
-        // MultiCursor mode is active.
-        selections = [];
-        switch (selectionMode) {
-          case Mode.Visual: {
-            for (let { start: cursorStart, stop: cursorStop } of vimState.cursors) {
-              if (cursorStart.isAfter(cursorStop)) {
-                cursorStart = cursorStart.getRight();
+      if (!vimState.recordedState.actionsRun.some(x => x instanceof DocumentContentChangeAction)) {
+        const selections = [] as vscode.Selection[];
+        for (const cursor of vimState.cursors) {
+          let { start, stop } = cursor;
+          switch (selectionMode) {
+            case Mode.Visual:
+              /**
+               * Always select the letter that we started visual mode on, no matter
+               * if we are in front or behind it. Imagine that we started visual mode
+               * with some text like this:
+               *
+               *   abc|def
+               *
+               * (The | represents the cursor.) If we now press w, we'll select def,
+               * but if we hit b we expect to select abcd, so we need to getRight() on the
+               * start of the selection when it precedes where we started visual mode.
+               */
+              if (start.isAfter(stop)) {
+                start = start.getRightThroughLineBreaks();
               }
 
-              selections.push(new vscode.Selection(cursorStart, cursorStop));
-            }
-            break;
-          }
-          case Mode.VisualLine: {
-            selections = vimState.cursors.map((c: Range) => {
-              return new vscode.Selection(c.start.getLineBegin(), c.stop.getLineEnd());
-            });
-            break;
-          }
-          case Mode.VisualBlock: {
-            for (const c of vimState.cursors) {
-              for (const { start: lineStart, end } of Position.IterateLinesInBlock(vimState, c)) {
-                selections.push(new vscode.Selection(lineStart, end));
+              selections.push(new vscode.Selection(start, stop));
+              break;
+
+            case Mode.VisualLine:
+              selections.push(
+                new vscode.Selection(
+                  Position.EarlierOf(start, stop).getLineBegin(),
+                  Position.LaterOf(start, stop).getLineEnd()
+                )
+              );
+              break;
+
+            case Mode.VisualBlock:
+              for (const line of Position.IterateLinesInBlock(vimState, cursor)) {
+                selections.push(new vscode.Selection(line.start, line.end));
               }
-            }
-            break;
-          }
-          case Mode.Normal:
-          case Mode.Insert: {
-            for (const { stop: cursorStop } of vimState.cursors) {
-              selections.push(new vscode.Selection(cursorStop, cursorStop));
-            }
-            break;
-          }
-          default: {
-            this._logger.error(`unexpected selection mode. selectionMode=${selectionMode}`);
-            break;
+              break;
+
+            default:
+              // Note that this collapses the selection onto one position
+              selections.push(new vscode.Selection(stop, stop));
+              break;
           }
         }
-      }
 
-      if (
-        vimState.recordedState.actionsRun.filter(x => x instanceof DocumentContentChangeAction)
-          .length === 0
-      ) {
+        if (selectionMode === Mode.VisualLine) {
+          for (let i = 0; i < vimState.cursors.length; i++) {
+            // Maintain cursor position based on which direction the selection is going
+            const { start, stop } = vimState.cursors[i];
+            const selectionStart = Position.FromVSCodePosition(selections[i].start);
+            const selectionEnd = Position.FromVSCodePosition(selections[i].end);
+            if (start.line <= stop.line) {
+              vimState.cursors[i] = new Range(selectionStart, selectionEnd);
+            } else {
+              vimState.cursors[i] = new Range(selectionEnd, selectionStart);
+            }
+
+            // Adjust the selection so that active and anchor are correct; this
+            // makes relative line numbers display correctly
+            if (selectionStart.line <= selectionEnd.line && stop.line <= start.line) {
+              selections[i] = new vscode.Selection(selectionEnd, selectionStart);
+            }
+          }
+        }
+
         this.vimState.editor.selections = selections;
       }
     }
@@ -1327,8 +1289,7 @@ export class ModeHandler implements vscode.Disposable {
     // Scroll to position of cursor
     if (
       vimState.editor.visibleRanges.length > 0 &&
-      vimState.postponedCodeViewChanges.filter(change => change.command === 'editorScroll')
-        .length === 0
+      !vimState.postponedCodeViewChanges.some(change => change.command === 'editorScroll')
     ) {
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
         visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
@@ -1467,8 +1428,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Tell VSCode that the cursor position changed, so it updates its highlights for
     // `editor.occurrencesHighlight`.
-    const cursor = vimState.cursors[0];
-    const range = new vscode.Range(cursor.start, cursor.stop);
+    const range = new vscode.Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (!/\s+/.test(vimState.editor.document.getText(range))) {
       await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
