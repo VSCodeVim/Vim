@@ -428,7 +428,9 @@ class CommandEscInSearchMode extends BaseCommand {
 
     await vimState.setCurrentMode(searchState.previousMode);
     vimState.statusBarCursorCharacterPos = 0;
-    globalState.addSearchStateToHistory(searchState);
+    if (searchState.searchString.length > 0) {
+      globalState.addSearchStateToHistory(searchState);
+    }
 
     return vimState;
   }
