@@ -527,10 +527,12 @@ class CommandEsc extends BaseCommand {
       vimState.surround = undefined;
     }
 
-    if (vimState.currentMode === Mode.VisualLine && vimState.visualLineStartColumn !== undefined) {
-      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
-        vimState.visualLineStartColumn
-      );
+    if (vimState.currentMode === Mode.VisualLine) {
+      // TODO: need a visualLineStartColumn for each cursor
+      vimState.cursors = vimState.cursors.map((cursor: Range) => {
+        const pos = cursor.stop.withColumn(vimState.visualLineStartColumn!);
+        return new Range(pos, pos);
+      });
     }
 
     await vimState.setCurrentMode(Mode.Normal);
