@@ -1322,10 +1322,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      if (
-        vimState.recordedState.actionsRun.filter(x => x instanceof DocumentContentChangeAction)
-          .length === 0
-      ) {
+      if (!vimState.recordedState.actionsRun.some(x => x instanceof DocumentContentChangeAction)) {
         this.vimState.editor.selections = selections;
       }
     }
@@ -1333,8 +1330,7 @@ export class ModeHandler implements vscode.Disposable {
     // Scroll to position of cursor
     if (
       vimState.editor.visibleRanges.length > 0 &&
-      vimState.postponedCodeViewChanges.filter(change => change.command === 'editorScroll')
-        .length === 0
+      !vimState.postponedCodeViewChanges.some(change => change.command === 'editorScroll')
     ) {
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
         visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
