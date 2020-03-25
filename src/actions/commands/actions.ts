@@ -3716,21 +3716,25 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
-
     vimState.cursors = [];
-    for (let i = start.line; i <= end.line; i++) {
-      const line = TextEditor.getLine(i);
 
-      if (line.text.trim() !== '') {
-        vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+    for (const selection of vimState.editor.selections) {
+      let start = Position.FromVSCodePosition(selection.start);
+      let end = Position.FromVSCodePosition(selection.end);
+
+      if (start.isAfter(end)) {
+        [start, end] = [end, start];
+      }
+
+      for (let i = start.line; i <= end.line; i++) {
+        const line = TextEditor.getLine(i);
+
+        if (!line.isEmptyOrWhitespace) {
+          vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+        }
       }
     }
+
     return vimState;
   }
 }
