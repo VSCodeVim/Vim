@@ -164,7 +164,7 @@ export class SearchState {
       // through it in order to find the current line and character.
       const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
       const text = TextEditor.getText(new vscode.Range(new Position(0, 0), finalPos));
-      const lineLengths = text.split('\n').map(x => x.length + 1);
+      const lineLengths = text.split('\n').map((x) => x.length + 1);
       let sumLineLengths: number[] = [];
       let curLength = 0;
       for (const length of lineLengths) {
@@ -318,10 +318,7 @@ export class SearchState {
         return undefined;
       }
     } else {
-      for (let [index, matchRange] of this._matchRanges
-        .slice(0)
-        .reverse()
-        .entries()) {
+      for (let [index, matchRange] of this._matchRanges.slice(0).reverse().entries()) {
         if (matchRange.end.isBeforeOrEqual(startPosition)) {
           return {
             start: Position.FromVSCodePosition(matchRange.start),

@@ -47,21 +47,6 @@ export class BaseAction {
   private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
   /**
-   * True if this action has the potential to change the document's text, and therefore trigger an
-   * undo step. This is for optimization purposes - we skip the expensive process of figuring out
-   * what changed to create that undo step if this returns false.
-   *
-   * Most commands do not modify the document, so this is false by default. This means if you add a
-   * command that can modify the document or switch modes, you MUST set mightChangeDocument = true. Otherwise undo
-   * will not work properly.
-   *
-   *
-   * TODO: if all actions were pure, I think this would be unnecessary, as we could deduce it from
-   * vimState.transformations being empty or not.
-   */
-  public mightChangeDocument: boolean = false;
-
-  /**
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -87,14 +72,14 @@ export class BaseAction {
     }
 
     const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
-    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }
 
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
+      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
     ) {
       return false;
     }
@@ -179,6 +164,7 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
+// TODO: this should not be a class (#4429)
 export abstract class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
@@ -186,15 +172,14 @@ export abstract class Actions {
   public static actionMap = new Map<Mode, typeof BaseAction[]>();
 
   /**
-   * Gets the action that should be triggered given a key
-   * sequence.
+   * Gets the action that should be triggered given a key sequence.
    *
    * If there is a definitive action that matched, returns that action.
    *
-   * If an action could potentially match if more keys were to be pressed, returns true. (e.g.
-   * you pressed "g" and are about to press "g" action to make the full action "gg".)
+   * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
+   * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
    *
-   * If no action could ever match, returns false.
+   * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
    */
   public static getRelevantAction(
     keysPressed: string[],

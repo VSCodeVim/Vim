@@ -40,8 +40,19 @@ export enum VisualBlockInsertionType {
   Append,
 }
 
+/**
+ * Is the given mode visual, visual line, or visual block?
+ */
 export function isVisualMode(mode: Mode) {
   return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
+}
+
+/**
+ * Is the given mode one where the cursor is on the status bar?
+ * This means SearchInProgess and CommandlineInProgress modes.
+ */
+export function isStatusBarMode(mode: Mode): boolean {
+  return [Mode.SearchInProgressMode, Mode.CommandlineInProgress].includes(mode);
 }
 
 export function statusBarText(vimState: VimState) {

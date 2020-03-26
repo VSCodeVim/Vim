@@ -15,6 +15,7 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
+import { Mode } from '../mode/mode';
 
 const packagejson: {
   contributes: {
@@ -161,8 +162,6 @@ class Configuration implements IConfiguration {
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     return this.cursorTypeMap[cursorStyle];
   }
-
-  experimentalOptimizations = false;
 
   handleKeys: IHandleKeys[] = [];
 
@@ -351,7 +350,7 @@ class Configuration implements IConfiguration {
   };
 
   getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
-    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+    const cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
     }
@@ -396,9 +395,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function(target: any, propertyKey: string) {
+  return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function() {
+      get: function () {
         // retrieve value from vim configuration
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
@@ -415,7 +414,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function(value) {
+      set: function (value) {
         // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
