@@ -517,12 +517,9 @@ export class SelectEntire extends TextObjectMovement {
   keys = ['a', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let lines: number = TextEditor.getLineCount();
-    let lastLine = lines > 0 ? lines - 1 : 0;
-
     return {
-      start: new Position(0, 0),
-      stop: new Position(lastLine, TextEditor.getLineLength(lastLine)),
+      start: position.getDocumentBegin(),
+      stop: position.getDocumentEnd(),
     };
   }
 }
@@ -532,23 +529,14 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
   keys = ['i', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let lines: number = TextEditor.getLineCount();
-    let start: Position = new Position(0, 0);
-    let stop: Position = new Position(lines - 1, 0).getLineEnd();
+    let start: Position = position.getDocumentBegin();
+    let stop: Position = position.getDocumentEnd();
 
-    for (let lineNo = 0; lineNo < lines; ++lineNo) {
-      let line = TextEditor.getLineAt(start);
-      if (!line.isEmptyOrWhitespace) {
-        break;
-      }
+    while (start.line < stop.line && TextEditor.getLineAt(start).isEmptyOrWhitespace) {
       start = start.getDown(0);
     }
 
-    for (let lineNo = lines - 1; lineNo >= start.line; --lineNo) {
-      let line = TextEditor.getLineAt(stop);
-      if (!line.isEmptyOrWhitespace) {
-        break;
-      }
+    while (stop.line > start.line && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
       stop = stop.getUp(0).getLineEnd();
     }
 
