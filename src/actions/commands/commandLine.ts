@@ -329,8 +329,17 @@ class CommandInsertInSearchMode extends BaseCommand {
         return vimState;
       }
 
-      // Move cursor to next match
-      const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
+      const count = vimState.recordedState.count || 1;
+      let searchPos = vimState.cursorStopPosition;
+      let nextMatch: { pos: Position; match: boolean; index: number } | undefined;
+      for (let i = 0; i < count; i++) {
+        // Move cursor to next match
+        nextMatch = searchState.getNextSearchMatchPosition(searchPos);
+        if (nextMatch === undefined) {
+          break;
+        }
+        searchPos = nextMatch.pos;
+      }
       if (nextMatch === undefined) {
         StatusBar.displayError(
           vimState,

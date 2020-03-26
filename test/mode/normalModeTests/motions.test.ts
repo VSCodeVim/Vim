@@ -327,6 +327,27 @@ suite('Motions in Normal Mode', () => {
     end: ['one two one tw|o'],
   });
 
+  newTest({
+    title: 'Can run a forward search with count 1',
+    start: ['|one two two two'],
+    keysPressed: '1/tw\n',
+    end: ['one |two two two'],
+  });
+
+  newTest({
+    title: 'Can run a forward search with count 3',
+    start: ['|one two two two'],
+    keysPressed: '3/tw\n',
+    end: ['one two two |two'],
+  });
+
+  newTest({
+    title: 'Can run a forward search with count exceeding max number of matches',
+    start: ['|one two two two'],
+    keysPressed: '5/tw\n',
+    end: ['one two |two two'],
+  });
+
   // These "remembering history between editor" tests have started
   // breaking. Since I don't remember these tests ever breaking for real, and
   // because they're the cause of a lot of flaky tests, I'm disabling these for
@@ -390,6 +411,27 @@ suite('Motions in Normal Mode', () => {
     start: ['one two two thre|e'],
     keysPressed: '?two\nn',
     end: ['one |two two three'],
+  });
+
+  newTest({
+    title: 'Can run a reverse search with count 1',
+    start: ['one one one |two'],
+    keysPressed: '1?on\n',
+    end: ['one one |one two'],
+  });
+
+  newTest({
+    title: 'Can run a reverse search with count 3',
+    start: ['one one one |two'],
+    keysPressed: '3?on\n',
+    end: ['|one one one two'],
+  });
+
+  newTest({
+    title: 'Can run a reverse search with count exceeding max number of matches',
+    start: ['one one one |two'],
+    keysPressed: '5?on\n',
+    end: ['one |one one two'],
   });
 
   // test('Remembers a reverse search from another editor', async () => {
