@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
+    "lib": [
+      "ES2019"
+    ],
     "module": "commonjs",
-    "target": "es6",
+    "target": "ES2019",
     "outDir": "out",
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
-    "lib": [
-      "es6"
-    ],
     "sourceMap": true,
     "strictNullChecks": true,
     "experimentalDecorators": true,
