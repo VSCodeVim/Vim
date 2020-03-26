@@ -109,13 +109,13 @@ suite('basic motion', () => {
   });
 
   test('document begin', () => {
-    const motion = new Position(1, 0).getDocumentBegin();
+    const motion = TextEditor.getDocumentBegin();
     assert.strictEqual(motion.line, 0);
     assert.strictEqual(motion.character, 0);
   });
 
   test('document end', () => {
-    const motion = new Position(0, 0).getDocumentEnd();
+    const motion = TextEditor.getDocumentEnd();
     assert.strictEqual(motion.line, text.length - 1);
     assert.strictEqual(motion.character, text[text.length - 1].length);
   });

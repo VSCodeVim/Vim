@@ -250,6 +250,18 @@ export class TextEditor {
   static getOffsetAt(position: Position): number {
     return vscode.window.activeTextEditor!.document.offsetAt(position);
   }
+
+  static getDocumentBegin(): Position {
+    return new Position(0, 0);
+  }
+
+  static getDocumentEnd(textEditor?: vscode.TextEditor): Position {
+    const lineCount = TextEditor.getLineCount(textEditor);
+    const line = lineCount > 0 ? lineCount - 1 : 0;
+    const char = TextEditor.getLineLength(line);
+
+    return new Position(line, char);
+  }
 }
 
 /**

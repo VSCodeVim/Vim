@@ -631,7 +631,7 @@ export class ModeHandler implements vscode.Disposable {
       const cursors = new Array<Range>();
       for (let { range } of Range.IterateRanges(vimState.cursors)) {
         // adjust start/stop
-        const documentEndPosition = vimState.cursorStopPosition.getDocumentEnd(vimState.editor);
+        const documentEndPosition = TextEditor.getDocumentEnd(vimState.editor);
         const documentLineCount = TextEditor.getLineCount(vimState.editor);
         if (range.start.line >= documentLineCount) {
           range = range.withNewStart(documentEndPosition);
