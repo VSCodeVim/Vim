@@ -94,7 +94,7 @@ export class BaseAction {
 
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
+      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
     ) {
       return false;
     }
@@ -179,6 +179,7 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
+// TODO: this should not be a class (#4429)
 export abstract class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
@@ -186,15 +187,14 @@ export abstract class Actions {
   public static actionMap = new Map<Mode, typeof BaseAction[]>();
 
   /**
-   * Gets the action that should be triggered given a key
-   * sequence.
+   * Gets the action that should be triggered given a key sequence.
    *
    * If there is a definitive action that matched, returns that action.
    *
-   * If an action could potentially match if more keys were to be pressed, returns true. (e.g.
-   * you pressed "g" and are about to press "g" action to make the full action "gg".)
+   * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
+   * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
    *
-   * If no action could ever match, returns false.
+   * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
    */
   public static getRelevantAction(
     keysPressed: string[],
