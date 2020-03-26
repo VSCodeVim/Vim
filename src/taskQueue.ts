@@ -18,7 +18,7 @@ class TaskQueue {
   private isRunning(queueName: string): boolean {
     return (
       this._taskQueue[queueName] &&
-      this._taskQueue[queueName].tasks.filter(x => x.isRunning).length > 0
+      this._taskQueue[queueName].tasks.some(x => x.isRunning)
     );
   }
 
