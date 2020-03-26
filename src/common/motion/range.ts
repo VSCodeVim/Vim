@@ -27,8 +27,8 @@ export class Range {
   /**
    * Create a range from a VSCode selection.
    */
-  public static FromVSCodeSelection(e: vscode.Selection): Range {
-    return new Range(Position.FromVSCodePosition(e.start), Position.FromVSCodePosition(e.end));
+  public static FromVSCodeSelection(sel: vscode.Selection): Range {
+    return new Range(Position.FromVSCodePosition(sel.start), Position.FromVSCodePosition(sel.end));
   }
 
   public static *IterateRanges(

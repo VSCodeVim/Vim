@@ -112,6 +112,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'D' with count 1",
+    start: ['o|ne', 'two', 'three'],
+    keysPressed: '1D',
+    end: ['|o', 'two', 'three'],
+  });
+
+  newTest({
+    title: "Can handle 'D' with count 3",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '3D',
+    end: ['|o', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'D' with count exceeding max number of rows",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '100D',
+    end: ['|o'],
+  });
+
+  newTest({
+    title: "Can handle 'D' with count when end position is on blank line",
+    start: ['o|ne', '', 'three'],
+    keysPressed: '2D',
+    end: ['|o', 'three'],
+  });
+
+  newTest({
     title: "Can handle 'DD'",
     start: ['tex|t'],
     keysPressed: '^llDD',

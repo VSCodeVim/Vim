@@ -69,7 +69,7 @@ export class FileCommand extends node.CommandBase {
       split = true;
     }
 
-    let hidePreviousEditor = async function() {
+    let hidePreviousEditor = async function () {
       if (split === true) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');

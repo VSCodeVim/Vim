@@ -7,7 +7,7 @@ type LineRefOperation = token.TokenType.Plus | token.TokenType.Minus | undefined
 
 export class LineRange {
   left: token.Token[];
-  separator: token.Token;
+  separator: token.Token | undefined;
   right: token.Token[];
 
   constructor() {
@@ -53,7 +53,7 @@ export class LineRange {
   }
 
   toString(): string {
-    return this.left.toString() + this.separator.content + this.right.toString();
+    return this.left.toString() + (this.separator?.content ?? '') + this.right.toString();
   }
 
   execute(document: vscode.TextEditor, vimState: VimState): void {
@@ -95,7 +95,7 @@ export class LineRange {
       case token.TokenType.SelectionFirstLine:
         currentLineNum = Math.min.apply(
           null,
-          doc.selections.map(selection =>
+          doc.selections.map((selection) =>
             selection.start.isBeforeOrEqual(selection.end)
               ? selection.start.line
               : selection.end.line
@@ -105,7 +105,7 @@ export class LineRange {
       case token.TokenType.SelectionLastLine:
         currentLineNum = Math.max.apply(
           null,
-          doc.selections.map(selection =>
+          doc.selections.map((selection) =>
             selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line
           )
         );
@@ -193,7 +193,7 @@ export class LineRange {
 
 export class CommandLine {
   range: LineRange;
-  command: CommandBase;
+  command: CommandBase | undefined;
 
   constructor() {
     this.range = new LineRange();
@@ -204,7 +204,7 @@ export class CommandLine {
   }
 
   toString(): string {
-    return ':' + this.range.toString() + ' ' + this.command.toString();
+    return ':' + this.range.toString() + ' ' + (this.command?.toString() ?? '');
   }
 
   async execute(document: vscode.TextEditor, vimState: VimState): Promise<void> {

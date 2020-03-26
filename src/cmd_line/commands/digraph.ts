@@ -47,7 +47,7 @@ export class DigraphsCommand extends node.CommandBase {
       this.makeQuickPicks(DefaultDigraphs)
     );
 
-    vscode.window.showQuickPick(digraphKeyAndContent).then(async val => {
+    vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
       if (val) {
         const char = String.fromCharCode(...val.charCodes);
         await TextEditor.insert(char);

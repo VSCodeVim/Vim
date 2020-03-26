@@ -232,7 +232,7 @@ export async function readDirectory(
     return (
       directoryResult
         // Add the separator at the end to the path if it is a directory
-        .map(d => d[0] + (d[1] === vscode.FileType.Directory ? sep : ''))
+        .map((d) => d[0] + (d[1] === vscode.FileType.Directory ? sep : ''))
         // Add ./ and ../ to the result if specified
         .concat(addCurrentAndUp ? [`.${sep}`, `..${sep}`] : [])
     );

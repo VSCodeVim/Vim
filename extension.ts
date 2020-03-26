@@ -126,7 +126,7 @@ export async function activate(context: vscode.ExtensionContext) {
     false
   );
 
-  registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async event => {
+  registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async (event) => {
     const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
@@ -169,8 +169,8 @@ export async function activate(context: vscode.ExtensionContext) {
       contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
       ModeHandlerMap.getAll()
-        .filter(modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName)
-        .forEach(modeHandler => {
+        .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
+        .forEach((modeHandler) => {
           contentChangeHandler(modeHandler);
         });
     }
@@ -185,7 +185,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerEventListener(
     context,
     vscode.workspace.onDidCloseTextDocument,
-    async closedDocument => {
+    async (closedDocument) => {
       const documents = vscode.workspace.textDocuments;
 
       // Delete modehandler once all tabs of this document have been closed
@@ -213,7 +213,7 @@ export async function activate(context: vscode.ExtensionContext) {
     false
   );
 
-  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async document => {
+  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async (document) => {
     if (
       configuration.vimrc.enable &&
       path.relative(document.fileName, configuration.vimrc.path) === ''
@@ -314,7 +314,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const compositionState = new CompositionState();
 
   // Override VSCode commands
-  overrideCommand(context, 'type', async args => {
+  overrideCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
 
@@ -326,7 +326,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  overrideCommand(context, 'replacePreviousChar', async args => {
+  overrideCommand(context, 'replacePreviousChar', async (args) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
 
@@ -460,7 +460,7 @@ function overrideCommand(
   command: string,
   callback: (...args: any[]) => any
 ) {
-  const disposable = vscode.commands.registerCommand(command, async args => {
+  const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (configuration.disableExtension) {
       return vscode.commands.executeCommand('default:' + command, args);
     }
@@ -486,7 +486,7 @@ function registerCommand(
   command: string,
   callback: (...args: any[]) => any
 ) {
-  const disposable = vscode.commands.registerCommand(command, async args => {
+  const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (!vscode.window.activeTextEditor) {
       return;
     }
@@ -503,7 +503,7 @@ function registerEventListener<T>(
   exitOnExtensionDisable = true,
   exitOnTests = false
 ) {
-  const disposable = event(async e => {
+  const disposable = event(async (e) => {
     if (exitOnExtensionDisable && configuration.disableExtension) {
       return;
     }
@@ -527,8 +527,8 @@ async function handleKeyEvent(key: string): Promise<void> {
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   ModeHandlerMap.getAll()
-    .filter(modeHandler => modeHandler.vimState.identity.fileName === document.fileName)
-    .forEach(modeHandler => {
+    .filter((modeHandler) => modeHandler.vimState.identity.fileName === document.fileName)
+    .forEach((modeHandler) => {
       modeHandler.vimState.historyTracker.clear();
     });
 }

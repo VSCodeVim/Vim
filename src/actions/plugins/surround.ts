@@ -1,6 +1,6 @@
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
-import { Position } from './../../common/motion/position';
+import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
@@ -56,7 +56,6 @@ class CommandSurroundAddTarget extends BaseCommand {
     ['a'],
   ];
   isCompleteAction = false;
-  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -137,10 +136,7 @@ class CommandSurroundModeRepeat extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start: position.getLineBeginRespectingIndent(),
-      stop: position
-        .getLineEnd()
-        .getLastWordEnd()
-        .getRight(),
+      stop: position.getLineEnd().getLastWordEnd().getRight(),
     };
   }
 
@@ -276,7 +272,6 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 export class CommandSurroundAddToReplacement extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   keys = ['<any>'];
-  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (!vimState.surround) {
@@ -485,6 +480,9 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         type: 'insertText',
         text: startReplace,
         position: start,
+        // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
+        // which matches vim-surround better
+        diff: new PositionDiff({ character: -startReplace.length }),
       });
       vimState.recordedState.transformations.push({
         type: 'insertText',

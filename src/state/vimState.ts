@@ -13,6 +13,7 @@ import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { TextEditor } from '../textEditor';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -53,6 +54,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Are multiple cursors currently present?
    */
+  // TODO: why isn't this a function?
   public isMultiCursor = false;
 
   /**
@@ -87,6 +89,11 @@ export class VimState implements vscode.Disposable {
    * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
    */
   public visualLineStartColumn: number | undefined = undefined;
+
+  /**
+   * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
+   */
+  public firstVisibleLineBeforeSearch: number | undefined = undefined;
 
   public focusChanged = false;
 
@@ -222,6 +229,12 @@ export class VimState implements vscode.Disposable {
 
     if (mode !== Mode.VisualLine) {
       this.visualLineStartColumn = undefined;
+    }
+
+    if (mode === Mode.SearchInProgressMode) {
+      this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
+    } else {
+      this.firstVisibleLineBeforeSearch = undefined;
     }
   }
 

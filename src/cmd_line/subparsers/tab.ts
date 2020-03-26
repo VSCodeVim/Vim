@@ -24,7 +24,7 @@ function parseCount(args: string): number | undefined {
   if (scanner.isAtEof && Number.isInteger(count) && count >= 0) {
     return count;
   } else {
-    throw VimError.fromCode(ErrorCode.E474);
+    throw VimError.fromCode(ErrorCode.InvalidArgument);
   }
 }
 
@@ -71,7 +71,7 @@ function parseCountOrOffset(
     }
   }
 
-  throw VimError.fromCode(ErrorCode.E474);
+  throw VimError.fromCode(ErrorCode.InvalidArgument);
 }
 
 /**

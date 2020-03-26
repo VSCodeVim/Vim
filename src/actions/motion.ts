@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { ChangeOperator, DeleteOperator, YankOperator, BaseOperator } from './operator';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -14,11 +14,13 @@ import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
 import { VimError, ErrorCode } from '../error';
-import { reportSearch } from '../util/statusBarTextUtils';
-import { Notation } from '../configuration/notation';
+import { BaseMovement, SelectionType, IMovement, isIMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
-import { BaseMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
+import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
+import { Notation } from '../configuration/notation';
+import { SearchDirection } from '../state/searchState';
+import { StatusBar } from '../statusBar';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -349,17 +351,40 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!searchState || searchState.searchString === '') {
       return position;
     }
+
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    let nextMatch: {
-      pos: Position;
-      index: number;
-    };
+    if (searchState.matchRanges.length === 0) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+      );
+      return position;
+    }
+
+    let nextMatch:
+      | {
+          pos: Position;
+          index: number;
+        }
+      | undefined;
     if (position.getRight().isEqual(position.getLineEnd())) {
       nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
     } else {
       nextMatch = searchState.getNextSearchMatchPosition(position);
+    }
+
+    if (!nextMatch) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(
+          searchState.searchDirection === SearchDirection.Forward
+            ? ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitTop
+        )
+      );
+      return position;
     }
 
     reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
@@ -383,7 +408,27 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
+    if (searchState.matchRanges.length === 0) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+      );
+      return position;
+    }
+
     const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+
+    if (!prevMatch) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(
+          searchState.searchDirection === SearchDirection.Forward
+            ? ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitBottom
+        )
+      );
+      return position;
+    }
 
     reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
 
@@ -403,8 +448,13 @@ export class MarkMovementBOL extends BaseMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -419,9 +469,20 @@ export class MarkMovement extends BaseMovement {
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark == null) {
-      throw VimError.fromCode(ErrorCode.E20);
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    if (mark.isUppercaseMark && mark.editor !== undefined) {
+      await ensureEditorIsActive(mark.editor);
+    }
+
     return mark.position;
+  }
+}
+
+async function ensureEditorIsActive(editor: vscode.TextEditor) {
+  if (editor !== vscode.window.activeTextEditor) {
+    await vscode.window.showTextDocument(editor.document);
   }
 }
 
@@ -1399,7 +1460,7 @@ class MoveToMatchingBracket extends BaseMovement {
       }
     }
 
-    if (position.compareTo(result) > 0) {
+    if (position.isAfter(result)) {
       return {
         start: result,
         stop: position.getRight(),

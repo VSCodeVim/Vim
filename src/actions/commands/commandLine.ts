@@ -15,6 +15,9 @@ import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
 import { Position } from '../../common/motion/position';
+import { VimError, ErrorCode } from '../../error';
+import { SearchDirection } from '../../state/searchState';
+import { scrollView } from '../../util/util';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -58,7 +61,7 @@ class CommandTabInCommandline extends BaseCommand {
 
     if (
       commandLine.autoCompleteItems.length !== 0 &&
-      this.keys.some(k => commandLine.lastKeyPressed === k[0])
+      this.keys.some((k) => commandLine.lastKeyPressed === k[0])
     ) {
       this.cycleCompletion(vimState, isTabForward);
       commandLine.lastKeyPressed = key;
@@ -79,9 +82,9 @@ class CommandTabInCommandline extends BaseCommand {
     if (cmdRegex.test(evalCmd)) {
       // Command completion
       newCompletionItems = Object.keys(commandParsers)
-        .filter(cmd => cmd.startsWith(evalCmd))
+        .filter((cmd) => cmd.startsWith(evalCmd))
         // Remove the already typed portion in the array
-        .map(cmd => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
+        .map((cmd) => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
         .sort();
     } else if (fileRegex.exec(evalCmd)) {
       // File completion by searching if there is a space after the first word/command
@@ -108,8 +111,8 @@ class CommandTabInCommandline extends BaseCommand {
         shouldAddDotItems
       );
       newCompletionItems = dirItems
-        .filter(name => name.startsWith(baseName))
-        .map(name => name.slice(name.search(baseName) + baseName.length))
+        .filter((name) => name.startsWith(baseName))
+        .map((name) => name.slice(name.search(baseName) + baseName.length))
         .sort();
     }
 
@@ -132,8 +135,7 @@ class CommandTabInCommandline extends BaseCommand {
 @RegisterAction
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
-  keys = ['\n'];
-  mightChangeDocument = true;
+  keys = [['\n'], ['<C-m>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -257,6 +259,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-n>'], // Next
     ['<C-f>'], // Find
     ['<C-u>'], // Delete to beginning
+    ['<C-m>'], // Another way to run search
     ['<Home>'],
     ['<End>'],
     ['<Del>'],
@@ -303,7 +306,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = globalState.searchState!.searchString.length;
-    } else if (key === '\n') {
+    } else if (key === '\n' || key === '<C-m>') {
       await vimState.setCurrentMode(globalState.searchState!.previousMode);
 
       // Repeat the previous search if no new string is entered
@@ -313,16 +316,43 @@ class CommandInsertInSearchMode extends BaseCommand {
         }
       }
 
-      globalState.addSearchStateToHistory(searchState);
-
-      // Move cursor to next match
-      const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
-      vimState.cursorStopPosition = nextMatch.pos;
-
-      globalState.hl = true;
-
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
+      globalState.addSearchStateToHistory(searchState);
+
+      if (searchState.matchRanges.length === 0) {
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+        );
+        return vimState;
+      }
+
+      const count = vimState.recordedState.count || 1;
+      let searchPos = vimState.cursorStopPosition;
+      let nextMatch: { pos: Position; match: boolean; index: number } | undefined;
+      for (let i = 0; i < count; i++) {
+        // Move cursor to next match
+        nextMatch = searchState.getNextSearchMatchPosition(searchPos);
+        if (nextMatch === undefined) {
+          break;
+        }
+        searchPos = nextMatch.pos;
+      }
+      if (nextMatch === undefined) {
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(
+            searchState.searchDirection === SearchDirection.Backward
+              ? ErrorCode.SearchHitTop
+              : ErrorCode.SearchHitBottom
+          )
+        );
+        return vimState;
+      }
+
+      vimState.cursorStopPosition = nextMatch.pos;
+      globalState.hl = true;
 
       reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
 
@@ -398,8 +428,17 @@ class CommandEscInSearchMode extends BaseCommand {
       ? prevSearchList[prevSearchList.length - 1]
       : undefined;
 
+    if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+      const offset =
+        vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+      scrollView(vimState, offset);
+    }
+
     await vimState.setCurrentMode(searchState.previousMode);
     vimState.statusBarCursorCharacterPos = 0;
+    if (searchState.searchString.length > 0) {
+      globalState.addSearchStateToHistory(searchState);
+    }
 
     return vimState;
   }

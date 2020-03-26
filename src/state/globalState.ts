@@ -57,7 +57,7 @@ class GlobalState {
     await this._searchHistory.load();
     this._searchHistory
       .get()
-      .forEach(val =>
+      .forEach((val) =>
         this.searchStatePrevious.push(
           new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined, Mode.Normal)
         )
@@ -97,6 +97,11 @@ class GlobalState {
     this.searchStateIndex = this.searchStatePrevious.length - 1;
   }
 
+  /**
+   * Shows the search history as a QuickPick (popup list)
+   *
+   * @returns The SearchState that was selected by the user, if there was one.
+   */
   public async showSearchHistory(): Promise<SearchState | undefined> {
     if (!vscode.window.activeTextEditor) {
       return undefined;
@@ -105,7 +110,7 @@ class GlobalState {
     const items = this._searchStatePrevious
       .slice()
       .reverse()
-      .map(searchState => {
+      .map((searchState) => {
         return {
           label: searchState.searchString,
           searchState: searchState,

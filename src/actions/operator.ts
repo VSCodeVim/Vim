@@ -20,9 +20,6 @@ export class BaseOperator extends BaseAction {
   canBeRepeatedWithDot = true;
   isOperator = true;
 
-  // All operators other than yank can change the document
-  mightChangeDocument = true;
-
   /**
    * If this is being run in multi cursor mode, the index of the cursor
    * this operator is being applied to.
@@ -74,7 +71,7 @@ export class BaseOperator extends BaseAction {
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
     const nonCountActions = vimState.recordedState.actionsRun.filter(
-      x => !(x instanceof CommandNumber)
+      (x) => !(x instanceof CommandNumber)
     );
     const prevAction = nonCountActions[nonCountActions.length - 1];
     return (
@@ -262,7 +259,6 @@ export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   canBeRepeatedWithDot = false;
-  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Hack to make Surround with y (which takes a motion) work.
@@ -336,7 +332,6 @@ export class YankOperator extends BaseOperator {
 export class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  mightChangeDocument = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
@@ -377,9 +372,7 @@ export class FormatOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // = operates on complete lines
-    start = new Position(start.line, 0);
-    end = end.getLineEnd();
-    vimState.editor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand('editor.action.formatSelection');
     let line = vimState.cursorStartPosition.line;
 
@@ -425,7 +418,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toUpperCase());
@@ -470,7 +463,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toLowerCase());
@@ -676,7 +669,6 @@ export class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
-  mightChangeDocument = false;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -687,7 +679,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
     const isMultiline = startPos.line !== endPos.line;
 
-    for (const { line, start, end } of Position.IterateLine(vimState)) {
+    for (const { line, start, end } of Position.IterateLinesInBlock(vimState)) {
       ranges.push(new vscode.Range(start, end));
       if (isMultiline) {
         toCopy += line + '\n';
@@ -755,7 +747,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       await ToggleCaseOperator.toggleCase(range);
     }

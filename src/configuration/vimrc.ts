@@ -95,9 +95,9 @@ class VimrcImpl {
       }
     })();
 
-    mappings?.forEach(remaps => {
+    mappings?.forEach((remaps) => {
       // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-      if (!remaps.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
+      if (!remaps.some((r) => _.isEqual(r.before, remap!.keyRemapping.before))) {
         remaps.push(remap.keyRemapping);
       }
     });
@@ -115,7 +115,7 @@ class VimrcImpl {
       config.commandLineModeKeyBindingsNonRecursive,
     ];
     for (const remaps of remapCollections) {
-      _.remove(remaps, remap => remap.source === 'vimrc');
+      _.remove(remaps, (remap) => remap.source === 'vimrc');
     }
   }
 

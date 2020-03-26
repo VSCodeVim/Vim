@@ -79,14 +79,6 @@ export interface ICamelCaseMotionConfiguration {
 
 export interface IConfiguration {
   /**
-   * When `true` it changes the way a HistoryTracker adds changes.
-   * Instead of adding each individual change to a historyStep,
-   * we will only store the first change and the last one.
-   * Increases performance when editing and navigating through large files.
-   */
-  experimentalOptimizations: boolean;
-
-  /**
    * Use the system's clipboard when copying.
    */
   useSystemClipboard: boolean;

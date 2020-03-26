@@ -6,6 +6,7 @@ import { configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
 import { clamp } from '../../util/util';
+import { Range } from './range';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
@@ -125,7 +126,7 @@ export class Position extends vscode.Position {
   ): Iterable<{ line: string; char: string; pos: Position }> {
     if (forward) {
       for (let lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
-        const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+        const line = TextEditor.getLine(lineIndex).text;
 
         let charIndex = lineIndex === start.line ? start.character : 0;
         for (; charIndex < line.length; charIndex++) {
@@ -138,7 +139,7 @@ export class Position extends vscode.Position {
       }
     } else {
       for (let lineIndex = start.line; lineIndex >= 0; lineIndex--) {
-        const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+        const line = TextEditor.getLine(lineIndex).text;
 
         let charIndex = lineIndex === start.line ? start.character : line.length - 1;
         for (; charIndex >= 0; charIndex--) {
@@ -160,7 +161,7 @@ export class Position extends vscode.Position {
     bottomRight: Position
   ): Iterable<{ line: string; char: string; pos: Position }> {
     for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
-      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+      const line = TextEditor.getLine(lineIndex).text;
 
       for (let charIndex = topLeft.character; charIndex < bottomRight.character + 1; charIndex++) {
         yield {
@@ -180,7 +181,7 @@ export class Position extends vscode.Position {
     bottomRight: Position
   ): Iterable<{ line: string; char: string; pos: Position }> {
     for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
-      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+      const line = TextEditor.getLine(lineIndex).text;
 
       if (lineIndex === topLeft.line) {
         for (let charIndex = topLeft.character; charIndex < line.length + 1; charIndex++) {
@@ -211,34 +212,36 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Iterate over every line in the block defined by the two positions passed in.
+   * Iterate over every line in the block defined by the two positions (Range) passed in.
+   * If no range is given, the primary cursor will be used as the block.
    *
    * This is intended for visual block mode.
    */
-  public static *IterateLine(
+  public static *IterateLinesInBlock(
     vimState: VimState,
+    range?: Range,
     options: { reverse?: boolean } = { reverse: false }
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
-    const start = vimState.cursorStartPosition;
-    const stop = vimState.cursorStopPosition;
 
-    const topLeft = visualBlockGetTopLeftPosition(start, stop);
-    const bottomRight = visualBlockGetBottomRightPosition(start, stop);
+    if (range === undefined) {
+      range = vimState.cursors[0];
+    }
 
-    // Special case for $, which potentially makes the block ragged
-    // on the right side.
-    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
+    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
+    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
 
     const itrStart = reverse ? bottomRight.line : topLeft.line;
     const itrEnd = reverse ? topLeft.line : bottomRight.line;
+
+    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
 
     for (
       let lineIndex = itrStart;
       reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd;
       reverse ? lineIndex-- : lineIndex++
     ) {
-      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+      const line = TextEditor.getLine(lineIndex).text;
       const endCharacter = runToLineEnd
         ? line.length + 1
         : Math.min(line.length, bottomRight.character + 1);
@@ -296,8 +299,8 @@ export class Position extends vscode.Position {
       resultChar = this.character + diff.character;
     } else if (diff.type === PositionDiffType.ExactCharacter) {
       resultChar = diff.character;
-    } else if (diff.type === PositionDiffType.ObeyStartOfLine && configuration.startofline) {
-      resultChar = new Position(resultLine, 0).obeyStartOfLine().character;
+    } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
+      resultChar = this.withLine(resultLine).obeyStartOfLine().character;
     } else {
       throw new Error(`Unknown PositionDiffType: ${diff.type}`);
     }
@@ -367,9 +370,7 @@ export class Position extends vscode.Position {
     if (includeEol) {
       return this.getUp(0).getLineEnd();
     } else {
-      return this.getUp(0)
-        .getLineEnd()
-        .getLeft();
+      return this.getUp(0).getLineEnd().getLeft();
     }
   }
 
@@ -994,8 +995,8 @@ export class Position extends vscode.Position {
     const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
     codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
 
-    const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
-    const symbolSegments = codePointRanges.map(range => `([${range}]+)`);
+    const codePointRanges = codePointRangePatterns.map((patterns) => patterns.join(''));
+    const symbolSegments = codePointRanges.map((range) => `([${range}]+)`);
 
     // wordSegment matches word characters.
     // A word character is a symbol which is neither
@@ -1058,7 +1059,7 @@ export class Position extends vscode.Position {
     const positions = Position.getAllPositions(text, regex);
     return positions
       .reverse()
-      .find(index => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
+      .find((index) => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
   }
 
   /**
@@ -1067,7 +1068,7 @@ export class Position extends vscode.Position {
   private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine >= 0; currentLine--) {
       const newCharacter = Position.getWordLeftWithRegex(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
+        TextEditor.getLine(currentLine).text,
         this.character,
         regex,
         currentLine !== this.line,
@@ -1087,12 +1088,9 @@ export class Position extends vscode.Position {
    */
   private getWordRightWithRegex(regex: RegExp, inclusive: boolean = false): Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-      let positions = Position.getAllPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
+      let positions = Position.getAllPositions(TextEditor.getLine(currentLine).text, regex);
       let newCharacter = positions.find(
-        index =>
+        (index) =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
           currentLine !== this.line
@@ -1108,17 +1106,14 @@ export class Position extends vscode.Position {
 
   private getLastWordEndWithRegex(regex: RegExp): Position {
     for (let currentLine = this.line; currentLine > -1; currentLine--) {
-      let positions = this.getAllEndPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
+      let positions = this.getAllEndPositions(TextEditor.getLine(currentLine).text, regex);
       // if one line is empty, use the 0 position as the default value
       if (positions.length === 0) {
         positions.push(0);
       }
       // reverse the list to find the biggest element smaller than this.character
       positions = positions.reverse();
-      let index = positions.findIndex(i => i < this.character || currentLine !== this.line);
+      let index = positions.findIndex((i) => i < this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
         if (currentLine > -1) {
@@ -1142,12 +1137,9 @@ export class Position extends vscode.Position {
    */
   private getCurrentWordEndWithRegex(regex: RegExp, inclusive: boolean): Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-      let positions = this.getAllEndPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
+      let positions = this.getAllEndPositions(TextEditor.getLine(currentLine).text, regex);
       let newCharacter = positions.find(
-        index =>
+        (index) =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
           currentLine !== this.line
@@ -1164,11 +1156,8 @@ export class Position extends vscode.Position {
   private getPreviousSentenceBeginWithRegex(regex: RegExp): Position {
     let paragraphBegin = this.getCurrentParagraphBeginning();
     for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
-      let endPositions = this.getAllEndPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
-      let newCharacter = endPositions.reverse().find(index => {
+      let endPositions = this.getAllEndPositions(TextEditor.getLine(currentLine).text, regex);
+      let newCharacter = endPositions.reverse().find((index) => {
         const newPositionBeforeThis = new Position(currentLine, index)
           .getRightThroughLineBreaks()
           .compareTo(this);
@@ -1192,12 +1181,9 @@ export class Position extends vscode.Position {
     // A paragraph and section boundary is also a sentence boundary.
     let paragraphEnd = this.getCurrentParagraphEnd();
     for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-      let endPositions = this.getAllEndPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
+      let endPositions = this.getAllEndPositions(TextEditor.getLine(currentLine).text, regex);
       let newCharacter = endPositions.find(
-        index =>
+        (index) =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
           currentLine !== this.line
@@ -1214,12 +1200,9 @@ export class Position extends vscode.Position {
   private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
     let paragraphEnd = this.getCurrentParagraphEnd();
     for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-      let allPositions = Position.getAllPositions(
-        TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
-        regex
-      );
+      let allPositions = Position.getAllPositions(TextEditor.getLine(currentLine).text, regex);
       let newCharacter = allPositions.find(
-        index =>
+        (index) =>
           (index > this.character && !inclusive) ||
           (index >= this.character && inclusive) ||
           currentLine !== this.line
@@ -1235,17 +1218,17 @@ export class Position extends vscode.Position {
 
   private getFirstNonWhitespaceInParagraph(paragraphEnd: Position, inclusive: boolean): Position {
     // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
-    // Find the first non-whitepsace character.
-    if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
+    // Find the first non-whitespace character.
+    if (TextEditor.getLine(this.line).text) {
       return paragraphEnd;
     } else {
       for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
         const nonWhitePositions = Position.getAllPositions(
-          TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
+          TextEditor.getLine(currentLine).text,
           /\S/g
         );
         const newCharacter = nonWhitePositions.find(
-          index =>
+          (index) =>
             (index > this.character && !inclusive) ||
             (index >= this.character && inclusive) ||
             currentLine !== this.line
@@ -1257,7 +1240,8 @@ export class Position extends vscode.Position {
       }
     }
 
-    throw new Error('This should never happen...');
+    // Only happens at end of document
+    return this;
   }
 
   private findHelper(

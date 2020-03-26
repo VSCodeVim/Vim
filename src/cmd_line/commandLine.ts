@@ -87,11 +87,11 @@ class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
+        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
           const statusBarText = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
-          StatusBar.setText(vimState, `${e.toString()}. ${command}`, true);
+          StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);
@@ -128,16 +128,10 @@ class CommandLine {
 
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(
-      this._history
-        .get()
-        .slice()
-        .reverse(),
-      {
-        placeHolder: 'Vim command history',
-        ignoreFocusOut: false,
-      }
-    );
+    let cmd = await vscode.window.showQuickPick(this._history.get().slice().reverse(), {
+      placeHolder: 'Vim command history',
+      ignoreFocusOut: false,
+    });
 
     return cmd;
   }

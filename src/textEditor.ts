@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -34,7 +33,7 @@ export class TextEditor {
     text: string,
     at: Position | undefined = undefined,
     letVSCodeHandleKeystrokes: boolean | undefined = undefined
-  ): Promise<boolean> {
+  ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
     if (letVSCodeHandleKeystrokes === undefined) {
@@ -44,7 +43,7 @@ export class TextEditor {
     if (!letVSCodeHandleKeystrokes) {
       // const selections = vscode.window.activeTextEditor!.selections.slice(0);
 
-      await vscode.window.activeTextEditor!.edit(editBuilder => {
+      await vscode.window.activeTextEditor!.edit((editBuilder) => {
         if (!at) {
           at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
         }
@@ -57,21 +56,22 @@ export class TextEditor {
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
-
-    return true;
   }
 
   /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
   static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(position, text);
     });
   }
 
+  /**
+   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
+   */
   static async delete(range: vscode.Range): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.delete(range);
     });
   }
@@ -88,7 +88,7 @@ export class TextEditor {
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.replace(range, text);
     });
   }
@@ -116,6 +116,10 @@ export class TextEditor {
     }
 
     return TextEditor.readLineAt(line).length;
+  }
+
+  static getLine(lineNumber: number): vscode.TextLine {
+    return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
   }
 
   static getLineAt(position: vscode.Position): vscode.TextLine {

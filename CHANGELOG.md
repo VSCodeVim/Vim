@@ -1,5 +1,176 @@
 # Change Log
 
+## [v1.13.1](https://github.com/vscodevim/vim/tree/v1.13.1) (2020-03-21)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.13.0...v1.13.1)
+
+**Fixed Bugs:**
+
+- `/` ignored after failed search [\#4658](https://github.com/VSCodeVim/Vim/issues/4658)
+- Cancelled searches should be added to history [\#4650](https://github.com/VSCodeVim/Vim/issues/4650)
+- \[v1.13\] Cannot read property 'mightChangeDocument' of undefined [\#4640](https://github.com/VSCodeVim/Vim/issues/4640)
+- Unable to highlight text during "insert mode" in conjunction with insertCursorAtEndOfEachLineSelected [\#4638](https://github.com/VSCodeVim/Vim/issues/4638)
+- Cursor is always in center of page [\#4632](https://github.com/VSCodeVim/Vim/issues/4632)
+- 'Error running task' in 1.13.0 [\#4630](https://github.com/VSCodeVim/Vim/issues/4630)
+- Vim not enabled at all [\#4615](https://github.com/VSCodeVim/Vim/issues/4615)
+- `dd` raises error when vim.startofline is false [\#4607](https://github.com/VSCodeVim/Vim/issues/4607)
+- Extension doesn't work at all after update [\#4599](https://github.com/VSCodeVim/Vim/issues/4599)
+- `V` \(visual line mode\) should be able to take a count [\#4579](https://github.com/VSCodeVim/Vim/issues/4579)
+- Viewport position is not restored after a search is canceled or not found [\#4577](https://github.com/VSCodeVim/Vim/issues/4577)
+
+**Closed issues:**
+
+- format selection == doesn't work with rust [\#4659](https://github.com/VSCodeVim/Vim/issues/4659)
+- Screen scrolls with cursor if code is folded [\#4643](https://github.com/VSCodeVim/Vim/issues/4643)
+- Disable MoveRightWithSpace motion if Leader is \<space\> [\#4634](https://github.com/VSCodeVim/Vim/issues/4634)
+- I can't move a cursor continuously by hold longly the key. [\#4629](https://github.com/VSCodeVim/Vim/issues/4629)
+- Remap keys not working [\#4612](https://github.com/VSCodeVim/Vim/issues/4612)
+- Navigational keys not repeating when holding down. [\#4608](https://github.com/VSCodeVim/Vim/issues/4608)
+- Editor window lock up [\#4604](https://github.com/VSCodeVim/Vim/issues/4604)
+- dont switch, if not insertMode; or switch but no save [\#4600](https://github.com/VSCodeVim/Vim/issues/4600)
+- ctrl-e / ctrl-y scrolling is lagging substantially [\#4485](https://github.com/VSCodeVim/Vim/issues/4485)
+- dd does not copy the deleted line to current register [\#4352](https://github.com/VSCodeVim/Vim/issues/4352)
+
+**Merged pull requests:**
+
+- Update dependency ts-loader to v6.2.2 [\#4664](https://github.com/VSCodeVim/Vim/pull/4664) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix cursor movement with large folded regions. [\#4662](https://github.com/VSCodeVim/Vim/pull/4662) ([DianeLooney](https://github.com/DianeLooney))
+- Update dependency mocha to v7.1.1 [\#4657](https://github.com/VSCodeVim/Vim/pull/4657) ([renovate[bot]](https://github.com/apps/renovate))
+- added escaped search string in global search state [\#4656](https://github.com/VSCodeVim/Vim/pull/4656) ([vikashgaya916](https://github.com/vikashgaya916))
+- Update dependency minimist to v1.2.5 [\#4651](https://github.com/VSCodeVim/Vim/pull/4651) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency minimist to v1.2.4 [\#4646](https://github.com/VSCodeVim/Vim/pull/4646) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency tslint to v6 [\#4645](https://github.com/VSCodeVim/Vim/pull/4645) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency minimist to v1.2.3 [\#4642](https://github.com/VSCodeVim/Vim/pull/4642) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency sinon to v9.0.1 [\#4639](https://github.com/VSCodeVim/Vim/pull/4639) ([renovate[bot]](https://github.com/apps/renovate))
+- Implement "\[count\]D" [\#4633](https://github.com/VSCodeVim/Vim/pull/4633) ([lusingander](https://github.com/lusingander))
+- add setxkbmap escape caps remapping not working to FAQ [\#4620](https://github.com/VSCodeVim/Vim/pull/4620) ([andrewharvey](https://github.com/andrewharvey))
+- readme: remove sneak from quick example [\#4619](https://github.com/VSCodeVim/Vim/pull/4619) ([rethab](https://github.com/rethab))
+- Update dependency @types/mocha to v7.0.2 [\#4617](https://github.com/VSCodeVim/Vim/pull/4617) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.8.3 [\#4609](https://github.com/VSCodeVim/Vim/pull/4609) ([renovate[bot]](https://github.com/apps/renovate))
+- Add support for \<C-m\> in insert, search in progress and commandline in progress modes [\#4526](https://github.com/VSCodeVim/Vim/pull/4526) ([can3p](https://github.com/can3p))
+
+## [v1.13.0](https://github.com/vscodevim/vim/tree/v1.13.0) (2020-02-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.12.4...v1.13.0)
+
+**Enhancements:**
+
+- Throw VimError when a search has no matches [\#4578](https://github.com/VSCodeVim/Vim/issues/4578)
+- Consider ignoring vimrc lines with \<Plug\> [\#4446](https://github.com/VSCodeVim/Vim/issues/4446)
+- Implement ={motion} operator [\#4328](https://github.com/VSCodeVim/Vim/issues/4328)
+- When `nowrapscan`, hitting top or bottom should show an error message [\#4306](https://github.com/VSCodeVim/Vim/issues/4306)
+- Adopt TypeScript 3.7 [\#4254](https://github.com/VSCodeVim/Vim/issues/4254)
+- Detailed hover keybinding [\#4253](https://github.com/VSCodeVim/Vim/issues/4253)
+- Implement \<Del\> as vim insert command \( like \<c-h\> \) [\#4219](https://github.com/VSCodeVim/Vim/issues/4219)
+- saving registers per workspace. [\#4193](https://github.com/VSCodeVim/Vim/issues/4193)
+
+**Fixed Bugs:**
+
+- Cursor should stay where it is after two `V` [\#4593](https://github.com/VSCodeVim/Vim/issues/4593)
+- Error after using '\)' navigation at the end of the file. [\#4591](https://github.com/VSCodeVim/Vim/issues/4591)
+- \<C-v\> in insert mode does not overwrite selected text [\#4589](https://github.com/VSCodeVim/Vim/issues/4589)
+- Multicursor issues on split window [\#4553](https://github.com/VSCodeVim/Vim/issues/4553)
+- Invalid neovimPath [\#4529](https://github.com/VSCodeVim/Vim/issues/4529)
+- `d2}` deletes only one paragraph. [\#4488](https://github.com/VSCodeVim/Vim/issues/4488)
+- Ctrl-T doesn't get back to the original location [\#4482](https://github.com/VSCodeVim/Vim/issues/4482)
+- Visual selection and Shift+X does not delete the selection. [\#4474](https://github.com/VSCodeVim/Vim/issues/4474)
+- Activating extension 'vscodevim.vim' failed: fs.existsSync is not a function. [\#4466](https://github.com/VSCodeVim/Vim/issues/4466)
+- Bad behavior when using C-o in insert mode [\#4453](https://github.com/VSCodeVim/Vim/issues/4453)
+- Deleting a single quote with \<BS\> in insert mode fails [\#4450](https://github.com/VSCodeVim/Vim/issues/4450)
+- \<C-e\> and \<C-y\> place the cursor on the wrong column [\#4438](https://github.com/VSCodeVim/Vim/issues/4438)
+- The plugin VIM inputs ClosePair\('\)'\) if I type \) by myself [\#4411](https://github.com/VSCodeVim/Vim/issues/4411)
+- keymap not works anymore in version 1.12.2 [\#4396](https://github.com/VSCodeVim/Vim/issues/4396)
+- Inserting a Hash/Number/Pound sign writes out "X\x08\#" instead [\#4387](https://github.com/VSCodeVim/Vim/issues/4387)
+- .vimrc keybindings not loaded though settings are in place [\#4384](https://github.com/VSCodeVim/Vim/issues/4384)
+- Yank doesn't work on 1.12.x on Ubuntu [\#4377](https://github.com/VSCodeVim/Vim/issues/4377)
+- C+o not work [\#4376](https://github.com/VSCodeVim/Vim/issues/4376)
+- Unexpected behaviour when press '\)' [\#4366](https://github.com/VSCodeVim/Vim/issues/4366)
+- Normal mode 's' key is broken in 1.12 [\#4359](https://github.com/VSCodeVim/Vim/issues/4359)
+- vim.cursorStylePerMode is being ignored [\#4355](https://github.com/VSCodeVim/Vim/issues/4355)
+- zz doesn't maintain horizontal cursor position [\#4296](https://github.com/VSCodeVim/Vim/issues/4296)
+- Selecting a register using \["\] in visual block mode not working [\#4192](https://github.com/VSCodeVim/Vim/issues/4192)
+- Cannot map \<C-d\> to \<Del\> in insert mode [\#4082](https://github.com/VSCodeVim/Vim/issues/4082)
+- Cursor style does not change properly when cursor mode has been changed [\#4061](https://github.com/VSCodeVim/Vim/issues/4061)
+- In visual block mode register selection \("\) doesn't work [\#4038](https://github.com/VSCodeVim/Vim/issues/4038)
+- Exit from Visual-Line mode moves cursor [\#3975](https://github.com/VSCodeVim/Vim/issues/3975)
+- Add Cursor to Line Ends Errors From Visual Line Mode [\#4270](https://github.com/VSCodeVim/Vim/issues/4270)
+
+**Closed issues:**
+
+- Howto: call snippets with vscodevim keybindings? [\#4565](https://github.com/VSCodeVim/Vim/issues/4565)
+- Plugin does not work on VSCode 1.42.0 [\#4555](https://github.com/VSCodeVim/Vim/issues/4555)
+- Extension issue [\#4554](https://github.com/VSCodeVim/Vim/issues/4554)
+- CamelCaseMotion is not compatible with dot command [\#4552](https://github.com/VSCodeVim/Vim/issues/4552)
+- FEATURE REQUEST:Second navigation: A setting option for remapping 'hjkl'\(←↓↑→\) to 'jkil'\(←↓↑→\) [\#4551](https://github.com/VSCodeVim/Vim/issues/4551)
+- Files shouldn't be treated as modified when all changes are undone. [\#4550](https://github.com/VSCodeVim/Vim/issues/4550)
+- vim esc [\#4547](https://github.com/VSCodeVim/Vim/issues/4547)
+- nnoremap [\#4542](https://github.com/VSCodeVim/Vim/issues/4542)
+- Insert mode cursor uses editor.cursorStyle instead of vim.cursorStylePerMode.insert [\#4521](https://github.com/VSCodeVim/Vim/issues/4521)
+- try to configure keybinding -\> told key combination doesn't exist [\#4520](https://github.com/VSCodeVim/Vim/issues/4520)
+- ci{ deletes all indentation [\#4514](https://github.com/VSCodeVim/Vim/issues/4514)
+- Allow delay when remapping esc [\#4496](https://github.com/VSCodeVim/Vim/issues/4496)
+- Multi cursor triggered unexpectedly when using vim to edit html files [\#4494](https://github.com/VSCodeVim/Vim/issues/4494)
+- Default vscode extensions are not working at all. [\#4490](https://github.com/VSCodeVim/Vim/issues/4490)
+- "Shift” Key does't work in insert or normal mode. [\#4475](https://github.com/VSCodeVim/Vim/issues/4475)
+- Vim mode is installed, but doesn't seem to do anything [\#4473](https://github.com/VSCodeVim/Vim/issues/4473)
+- Consider using os.homedir\(\) instead of process.env.HOME [\#4472](https://github.com/VSCodeVim/Vim/issues/4472)
+- `go to defined` works fine but error when jumping back（ctrl + o） [\#4470](https://github.com/VSCodeVim/Vim/issues/4470)
+- Mouse scrolls editor when Cursor Surrounding Lines is set [\#4465](https://github.com/VSCodeVim/Vim/issues/4465)
+- VSCodeVim disables 'Open Folder' shortcut \(Ctrl+K Ctrl+O\) [\#4431](https://github.com/VSCodeVim/Vim/issues/4431)
+- Edit vimrc command is unresponsive [\#4427](https://github.com/VSCodeVim/Vim/issues/4427)
+- Does not work in VSCode 1.41.1 [\#4418](https://github.com/VSCodeVim/Vim/issues/4418)
+- vimrc \<space\> does not remap [\#4412](https://github.com/VSCodeVim/Vim/issues/4412)
+- `extensionKind` as a string is now deprecated [\#4379](https://github.com/VSCodeVim/Vim/issues/4379)
+- Extension host terminated unexpectedly. [\#4371](https://github.com/VSCodeVim/Vim/issues/4371)
+- When key 'p' typed, the cursor would blink many times and the pane would be frozen [\#4368](https://github.com/VSCodeVim/Vim/issues/4368)
+- Scrolling with \<C-e\> and \<C-y\> is very laggy [\#4309](https://github.com/VSCodeVim/Vim/issues/4309)
+- Insert mode's \<C-o\> doesn't work properly [\#4186](https://github.com/VSCodeVim/Vim/issues/4186)
+- \<c-o\>/\<c-t\> jump back to wrong location after 'gd' [\#4479](https://github.com/VSCodeVim/Vim/issues/4479)
+
+**Merged pull requests:**
+
+- Code shrinking [\#4596](https://github.com/VSCodeVim/Vim/pull/4596) ([ldm0](https://github.com/ldm0))
+- Update dependency mocha to v7.1.0 [\#4595](https://github.com/VSCodeVim/Vim/pull/4595) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix misplaced cursor after `VV` [\#4594](https://github.com/VSCodeVim/Vim/pull/4594) ([ldm0](https://github.com/ldm0))
+- Update dependency @types/sinon to v7.5.2 [\#4587](https://github.com/VSCodeVim/Vim/pull/4587) ([renovate[bot]](https://github.com/apps/renovate))
+- Make VisualLine and VisualBlock modes work with multiple cursors [\#4584](https://github.com/VSCodeVim/Vim/pull/4584) ([J-Fields](https://github.com/J-Fields))
+- Fix wrong return in ModeHandlerMap.get [\#4581](https://github.com/VSCodeVim/Vim/pull/4581) ([fatanugraha](https://github.com/fatanugraha))
+- Update dependency typescript to v3.8.2 [\#4571](https://github.com/VSCodeVim/Vim/pull/4571) ([renovate[bot]](https://github.com/apps/renovate))
+- syncCursors\(\) will update all internal cursors [\#4569](https://github.com/VSCodeVim/Vim/pull/4569) ([cvaldev](https://github.com/cvaldev))
+- Update dependency sinon to v9 [\#4564](https://github.com/VSCodeVim/Vim/pull/4564) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix surround cursor placement bug \(\#3461\) [\#4558](https://github.com/VSCodeVim/Vim/pull/4558) ([TransientError](https://github.com/TransientError))
+- Fix '}'\(MoveParagraphEnd\) behaviour to accurately emulate Vim's [\#4527](https://github.com/VSCodeVim/Vim/pull/4527) ([cvaldev](https://github.com/cvaldev))
+- Update dependency @types/mocha to v7 [\#4525](https://github.com/VSCodeVim/Vim/pull/4525) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v7.0.1 [\#4516](https://github.com/VSCodeVim/Vim/pull/4516) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency sinon to v8.1.1 [\#4510](https://github.com/VSCodeVim/Vim/pull/4510) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.7.5 [\#4504](https://github.com/VSCodeVim/Vim/pull/4504) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency sinon to v8.1.0 [\#4500](https://github.com/VSCodeVim/Vim/pull/4500) ([renovate[bot]](https://github.com/apps/renovate))
+- Add documentation details about contributions page [\#4497](https://github.com/VSCodeVim/Vim/pull/4497) ([rusnac](https://github.com/rusnac))
+- Implement \<Del\> handler for insert mode [\#4492](https://github.com/VSCodeVim/Vim/pull/4492) ([ldm0](https://github.com/ldm0))
+- Update dependency neovim to v4.8.0 [\#4491](https://github.com/VSCodeVim/Vim/pull/4491) ([renovate[bot]](https://github.com/apps/renovate))
+- Respect default behaviour of cursorSurroundingLines [\#4481](https://github.com/VSCodeVim/Vim/pull/4481) ([cvaldev](https://github.com/cvaldev))
+- Fix `X` in visual block mode [\#4477](https://github.com/VSCodeVim/Vim/pull/4477) ([J-Fields](https://github.com/J-Fields))
+- Update dependency sinon to v8.0.4 [\#4476](https://github.com/VSCodeVim/Vim/pull/4476) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v7 [\#4471](https://github.com/VSCodeVim/Vim/pull/4471) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix getCursorStyleForMode\(\) always returned undefined [\#4468](https://github.com/VSCodeVim/Vim/pull/4468) ([cvaldev](https://github.com/cvaldev))
+- Fix returnToInsertAfterCommand not false after switching to Insert Mode [\#4461](https://github.com/VSCodeVim/Vim/pull/4461) ([cvaldev](https://github.com/cvaldev))
+- Update statusbar with result of ex command from neovim [\#4456](https://github.com/VSCodeVim/Vim/pull/4456) ([rsslldnphy](https://github.com/rsslldnphy))
+- Ignore vimrc lines that attempt to remap \<Plug\> [\#4452](https://github.com/VSCodeVim/Vim/pull/4452) ([cvaldev](https://github.com/cvaldev))
+- Improve performance on large files by not checking for changes after commands which never change the document [\#4451](https://github.com/VSCodeVim/Vim/pull/4451) ([J-Fields](https://github.com/J-Fields))
+- Fix expandHome\(\) not expanding \$HOME [\#4449](https://github.com/VSCodeVim/Vim/pull/4449) ([cvaldev](https://github.com/cvaldev))
+- A whole bunch of small refactors [\#4447](https://github.com/VSCodeVim/Vim/pull/4447) ([J-Fields](https://github.com/J-Fields))
+- Refactor `Position` and `PositionDiff` [\#4445](https://github.com/VSCodeVim/Vim/pull/4445) ([J-Fields](https://github.com/J-Fields))
+- Fix tests [\#4442](https://github.com/VSCodeVim/Vim/pull/4442) ([J-Fields](https://github.com/J-Fields))
+- Update dependency sinon to v8.0.2 [\#4437](https://github.com/VSCodeVim/Vim/pull/4437) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency neovim to v4.7.0 [\#4436](https://github.com/VSCodeVim/Vim/pull/4436) ([renovate[bot]](https://github.com/apps/renovate))
+- Update extensionKind [\#4435](https://github.com/VSCodeVim/Vim/pull/4435) ([cvaldev](https://github.com/cvaldev))
+- Center the viewport around the cursor if the previous action moved the cursor at least 15 lines off screen [\#4434](https://github.com/VSCodeVim/Vim/pull/4434) ([J-Fields](https://github.com/J-Fields))
+- Stop using timeout in `getCursorsAfterSync\(\)` [\#4433](https://github.com/VSCodeVim/Vim/pull/4433) ([J-Fields](https://github.com/J-Fields))
+- Fix zz updating desired column [\#4424](https://github.com/VSCodeVim/Vim/pull/4424) ([schu34](https://github.com/schu34))
+- Implement \_isDocumentTextNeeded\(\) [\#4386](https://github.com/VSCodeVim/Vim/pull/4386) ([cvaldev](https://github.com/cvaldev))
+- Fix cursor off after leaving multi-cursor mode [\#4237](https://github.com/VSCodeVim/Vim/pull/4237) ([trkoch](https://github.com/trkoch))
+- Fix selecting register using " not working in visual block mode [\#4549](https://github.com/VSCodeVim/Vim/pull/4549) ([lusingander](https://github.com/lusingander))
+
 ## [v1.12.4](https://github.com/vscodevim/vim/tree/v1.12.4) (2019-12-27)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.12.3...v1.12.4)
@@ -41,7 +212,6 @@
 - Normal mode key binding for '0' make 0 not usable in command count [\#4339](https://github.com/VSCodeVim/Vim/issues/4339)
 - CTRL-\* commands for page scrolling are not working correctly in 1.11.3 \(latest\) [\#4338](https://github.com/VSCodeVim/Vim/issues/4338)
 - Can't use control characters in %s replace [\#4334](https://github.com/VSCodeVim/Vim/issues/4334)
-- Deleting a line intermittently screws up the cursor position. [\#3694](https://github.com/VSCodeVim/Vim/issues/3694)
 
 **Closed issues:**
 
@@ -69,8 +239,6 @@
 - Insert mode not working [\#4332](https://github.com/VSCodeVim/Vim/issues/4332)
 - :w does not trigger "format on save" in ruby [\#4329](https://github.com/VSCodeVim/Vim/issues/4329)
 - Not able to use "j" motion when Cursor Smooth Caret Animation set [\#4321](https://github.com/VSCodeVim/Vim/issues/4321)
-- -- VIM DISABLE -- is is being overidden [\#3806](https://github.com/VSCodeVim/Vim/issues/3806)
-- "ii" Insert Mode Mapping Unexpected Behavior [\#3786](https://github.com/VSCodeVim/Vim/issues/3786)
 
 **Merged pull requests:**
 
@@ -82,13 +250,13 @@
 - Update dependency @types/node to v12.12.20 [\#4398](https://github.com/VSCodeVim/Vim/pull/4398) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency @types/node to v12.12.19 [\#4397](https://github.com/VSCodeVim/Vim/pull/4397) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency @types/node to v12.12.18 [\#4391](https://github.com/VSCodeVim/Vim/pull/4391) ([renovate[bot]](https://github.com/apps/renovate))
-- Added test to check can handle 'u' after :s/abc/def [\#4385](https://github.com/VSCodeVim/Vim/pull/4385) ([CVVPK](https://github.com/CVVPK))
+- Added test to check can handle 'u' after :s/abc/def [\#4385](https://github.com/VSCodeVim/Vim/pull/4385) ([cvaldev](https://github.com/cvaldev))
 - Update dependency @types/node to v12.12.17 [\#4361](https://github.com/VSCodeVim/Vim/pull/4361) ([renovate[bot]](https://github.com/apps/renovate))
 - Make sure DocumentChange.timestamp is always set [\#4360](https://github.com/VSCodeVim/Vim/pull/4360) ([J-Fields](https://github.com/J-Fields))
 - Update dependency @types/node to v12.12.16 [\#4349](https://github.com/VSCodeVim/Vim/pull/4349) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency @types/node to v12.12.15 [\#4347](https://github.com/VSCodeVim/Vim/pull/4347) ([renovate[bot]](https://github.com/apps/renovate))
-- Fix fs.readFileSync\(\) receiving a possibly undefined path [\#4337](https://github.com/VSCodeVim/Vim/pull/4337) ([CVVPK](https://github.com/CVVPK))
-- Fixed modeHandler being recreated on every key stroke [\#4335](https://github.com/VSCodeVim/Vim/pull/4335) ([CVVPK](https://github.com/CVVPK))
+- Fix fs.readFileSync\(\) receiving a possibly undefined path [\#4337](https://github.com/VSCodeVim/Vim/pull/4337) ([cvaldev](https://github.com/cvaldev))
+- Fixed modeHandler being recreated on every key stroke [\#4335](https://github.com/VSCodeVim/Vim/pull/4335) ([cvaldev](https://github.com/cvaldev))
 - Update dependency gulp-git to v2.10.0 [\#4327](https://github.com/VSCodeVim/Vim/pull/4327) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency typescript to v3.7.3 [\#4326](https://github.com/VSCodeVim/Vim/pull/4326) ([renovate[bot]](https://github.com/apps/renovate))
 - Refactor ModeHandlerMap to use EditorIdentity in its interface. Add some documentation [\#4322](https://github.com/VSCodeVim/Vim/pull/4322) ([J-Fields](https://github.com/J-Fields))
@@ -106,7 +274,6 @@
 - VSCodeVim uses the default node debugging port [\#4264](https://github.com/VSCodeVim/Vim/issues/4264)
 - ed style copy, move [\#4240](https://github.com/VSCodeVim/Vim/issues/4240)
 - Support pulling word under the cursor into a search [\#4102](https://github.com/VSCodeVim/Vim/issues/4102)
-- Filename completion does not work when using :edit. [\#3839](https://github.com/VSCodeVim/Vim/issues/3839)
 
 **Fixed Bugs:**
 
@@ -116,7 +283,6 @@
 - `gp` incorrectly places cursor when pasting more than three lines [\#4246](https://github.com/VSCodeVim/Vim/issues/4246)
 - Copy command broke in 1.11.0 release [\#4126](https://github.com/VSCodeVim/Vim/issues/4126)
 - v. 1.11.0 broke \<shift+space\> [\#4110](https://github.com/VSCodeVim/Vim/issues/4110)
-- Macro 'Recording @a' in status bar disappears after delete command [\#3838](https://github.com/VSCodeVim/Vim/issues/3838)
 
 **Closed issues:**
 
@@ -130,8 +296,6 @@
 - Version 1.11.3 not work. [\#4220](https://github.com/VSCodeVim/Vim/issues/4220)
 - Changing prefix in easy-motion [\#4218](https://github.com/VSCodeVim/Vim/issues/4218)
 - Use `ExtensionContext.globalStoragePath` instead of `appdirectory` library [\#4055](https://github.com/VSCodeVim/Vim/issues/4055)
-- Make saving errors more obvious [\#3793](https://github.com/VSCodeVim/Vim/issues/3793)
-- Remapped Escape key \(in Gnome desktop\) not working in VS Code, vim mode [\#3674](https://github.com/VSCodeVim/Vim/issues/3674)
 
 **Merged pull requests:**
 
@@ -236,7 +400,6 @@
 
 - `:vspl` [\#4078](https://github.com/VSCodeVim/Vim/issues/4078)
 - Add support for relative :tabm\[ove\] [\#3959](https://github.com/VSCodeVim/Vim/issues/3959)
-- make ctrl+q into visual block on Windows [\#3743](https://github.com/VSCodeVim/Vim/issues/3743)
 
 **Fixed Bugs:**
 
