@@ -34,10 +34,10 @@ export class MarksCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     const quickPickItems: MarkQuickPickItem[] = vimState.historyTracker
       .getMarks()
-      .filter(mark => {
+      .filter((mark) => {
         return !this.marksFilter || this.marksFilter.includes(mark.name);
       })
-      .map(mark => new MarkQuickPickItem(mark));
+      .map((mark) => new MarkQuickPickItem(mark));
 
     if (quickPickItems.length > 0) {
       const item = await window.showQuickPick(quickPickItems, {

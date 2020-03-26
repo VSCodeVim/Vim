@@ -72,7 +72,7 @@ export class BaseAction {
     }
 
     const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
-    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }

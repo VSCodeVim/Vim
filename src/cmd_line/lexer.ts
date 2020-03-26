@@ -128,7 +128,7 @@ namespace LexerFunctions {
    * so it's lexRange's job to specify which token to emit.
    */
   function lexDigits(tokenType: TokenType) {
-    return function(state: Scanner, tokens: Token[]): ILexFunction | null {
+    return function (state: Scanner, tokens: Token[]): ILexFunction | null {
       // The first digit has already been lexed.
       while (true) {
         if (state.isAtEof) {

@@ -16,7 +16,7 @@ export class NeovimValidator implements IConfigurationValidator {
         if (config.neovimPath === '') {
           const pathVar = process.env.PATH;
           if (pathVar) {
-            pathVar.split(';').forEach(element => {
+            pathVar.split(';').forEach((element) => {
               let neovimExecutable = 'nvim';
               if (process.platform === 'win32') {
                 neovimExecutable += '.exe';

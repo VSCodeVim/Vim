@@ -87,7 +87,7 @@ export class WriteCommand extends node.CommandBase {
             'C written';
           StatusBar.setText(vimState, text);
         },
-        e => StatusBar.setText(vimState, e)
+        (e) => StatusBar.setText(vimState, e)
       )
     );
   }

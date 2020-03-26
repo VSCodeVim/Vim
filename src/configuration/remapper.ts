@@ -37,7 +37,7 @@ export class Remappers implements IRemapper {
   }
 
   get isPotentialRemap(): boolean {
-    return this.remappers.some(r => r.isPotentialRemap);
+    return this.remappers.some((r) => r.isPotentialRemap);
   }
 
   public async sendKey(
@@ -138,7 +138,9 @@ export class Remapper implements IRemapper {
       await vimState.historyTracker.undoAndRemoveChanges(
         Math.max(0, numCharsToRemove * vimState.cursors.length)
       );
-      vimState.cursors = vimState.cursors.map(c => c.withNewStop(c.stop.getLeft(numCharsToRemove)));
+      vimState.cursors = vimState.cursors.map((c) =>
+        c.withNewStop(c.stop.getLeft(numCharsToRemove))
+      );
     }
     // We need to remove the keys that were remapped into different keys from the state.
     vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
@@ -231,7 +233,7 @@ export class Remapper implements IRemapper {
     if (remappings.size === 0) {
       return [0, 0];
     }
-    const keyLengths = Array.from(remappings.keys()).map(k => k.length);
+    const keyLengths = Array.from(remappings.keys()).map((k) => k.length);
     return [Math.min(...keyLengths), Math.max(...keyLengths)];
   }
 }

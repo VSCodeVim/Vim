@@ -43,7 +43,7 @@ export class TextEditor {
     if (!letVSCodeHandleKeystrokes) {
       // const selections = vscode.window.activeTextEditor!.selections.slice(0);
 
-      await vscode.window.activeTextEditor!.edit(editBuilder => {
+      await vscode.window.activeTextEditor!.edit((editBuilder) => {
         if (!at) {
           at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
         }
@@ -62,7 +62,7 @@ export class TextEditor {
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
   static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(position, text);
     });
   }
@@ -71,7 +71,7 @@ export class TextEditor {
    * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
    */
   static async delete(range: vscode.Range): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.delete(range);
     });
   }
@@ -88,7 +88,7 @@ export class TextEditor {
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.replace(range, text);
     });
   }

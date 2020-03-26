@@ -35,12 +35,12 @@ suite('package.json', () => {
 
     // configuration
     let handlers = Object.keys(srcConfiguration.configuration);
-    let unhandled = keys.filter(k => handlers.includes(k));
+    let unhandled = keys.filter((k) => handlers.includes(k));
     assert.strictEqual(unhandled.length, 0, 'Missing src handlers for ' + unhandled.join(','));
 
     // test configuration
     handlers = Object.keys(new testConfiguration.Configuration());
-    unhandled = keys.filter(k => handlers.includes(k));
+    unhandled = keys.filter((k) => handlers.includes(k));
     assert.strictEqual(unhandled.length, 0, 'Missing test handlers for ' + unhandled.join(','));
   });
 });
