@@ -71,7 +71,7 @@ export class BaseOperator extends BaseAction {
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
     const nonCountActions = vimState.recordedState.actionsRun.filter(
-      x => !(x instanceof CommandNumber)
+      (x) => !(x instanceof CommandNumber)
     );
     const prevAction = nonCountActions[nonCountActions.length - 1];
     return (

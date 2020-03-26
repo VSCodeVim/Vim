@@ -158,7 +158,7 @@ export class Scanner {
   }
 
   expectOneOf(values: string[]): void {
-    let match = values.filter(s => this.input.substr(this.pos).startsWith(s));
+    let match = values.filter((s) => this.input.substr(this.pos).startsWith(s));
     if (match.length !== 1) {
       if (match.length > 1) {
         throw new Error('Too many matches.');

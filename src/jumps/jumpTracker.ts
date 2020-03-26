@@ -130,7 +130,7 @@ export class JumpTracker {
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        e => e.document.fileName === jump.fileName
+        (e) => e.document.fileName === jump.fileName
       )[0];
 
       if (editor) {
@@ -250,7 +250,7 @@ export class JumpTracker {
     // Get distance from newlines in the text added.
     // Unlike handleTextDeleted, the range parameter distance between start/end is generally zero,
     // just showing where the text was added.
-    const distance = text.split('').filter(c => c === '\n').length;
+    const distance = text.split('').filter((c) => c === '\n').length;
 
     this._jumps.forEach((jump, i) => {
       const jumpIsAfterAddedText =
@@ -346,7 +346,7 @@ export class JumpTracker {
   }
 
   private clearJumpsOnSamePosition(jump: Jump): void {
-    this._jumps = this._jumps.filter(j => j === jump || !j.isSamePosition(jump));
+    this._jumps = this._jumps.filter((j) => j === jump || !j.isSamePosition(jump));
   }
 
   private removeDuplicateJumps() {

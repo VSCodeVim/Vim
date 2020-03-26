@@ -214,7 +214,7 @@ export abstract class BaseCommand extends BaseAction {
     let resultingCursors: Range[] = [];
 
     const cursorsToIterateOver = vimState.cursors
-      .map(x => new Range(x.start, x.stop))
+      .map((x) => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -861,7 +861,7 @@ class CommandOverrideCopy extends BaseCommand {
 
     if (vimState.currentMode === Mode.Visual) {
       text = vimState.cursors
-        .map(range => {
+        .map((range) => {
           const start = Position.EarlierOf(range.start, range.stop);
           const stop = Position.LaterOf(range.start, range.stop);
           return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
@@ -869,7 +869,7 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     } else if (vimState.currentMode === Mode.VisualLine) {
       text = vimState.cursors
-        .map(range => {
+        .map((range) => {
           return vimState.editor.document.getText(
             new vscode.Range(
               Position.EarlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
@@ -884,7 +884,7 @@ class CommandOverrideCopy extends BaseCommand {
       }
     } else if (vimState.currentMode === Mode.Insert || vimState.currentMode === Mode.Normal) {
       text = vimState.editor.selections
-        .map(selection => {
+        .map((selection) => {
           return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
         })
         .join('\n');
@@ -1257,7 +1257,7 @@ export class PutCommand extends BaseCommand {
 
         text = text
           .split('\n')
-          .map(line => {
+          .map((line) => {
             let currentIdentationWidth = TextEditor.getIndentationLevel(line);
             let newIndentationWidth =
               currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
@@ -1308,7 +1308,7 @@ export class PutCommand extends BaseCommand {
       vimState.currentMode === Mode.VisualLine &&
       register.registerMode === RegisterMode.LineWise
     ) {
-      const numNewline = [...text].filter(c => c === '\n').length;
+      const numNewline = [...text].filter((c) => c === '\n').length;
       diff = PositionDiff.newBOLDiff(-numNewline - (noNextLine ? 0 : 1));
     } else if (register.registerMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
@@ -2061,7 +2061,7 @@ class CommandUndo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      vimState.cursors = newPositions.map(x => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Range(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -2083,7 +2083,7 @@ class CommandUndoOnLine extends BaseCommand {
     const newPositions = await vimState.historyTracker.goBackHistoryStepsOnLine();
 
     if (newPositions !== undefined) {
-      vimState.cursors = newPositions.map(x => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Range(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -2105,7 +2105,7 @@ class CommandRedo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      vimState.cursors = newPositions.map(x => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Range(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -2129,10 +2129,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
 
     const linesDown = (vimState.recordedState.count || 1) - 1;
     const start = position;
-    const end = position
-      .getDownByCount(linesDown)
-      .getLineEnd()
-      .getLeftThroughLineBreaks();
+    const end = position.getDownByCount(linesDown).getLineEnd().getLeftThroughLineBreaks();
 
     return new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
@@ -3188,7 +3185,7 @@ class ActionJoin extends BaseCommand {
     let i = 0;
 
     const cursorsToIterateOver = vimState.cursors
-      .map(x => new Range(x.start, x.stop))
+      .map((x) => new Range(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -3285,10 +3282,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
       vimState,
       position.getLineBegin(),
       lineTwo.length > 0
-        ? position
-            .getNextLineBegin()
-            .getLineEnd()
-            .getLeft()
+        ? position.getNextLineBegin().getLineEnd().getLeft()
         : position.getLineEnd()
     );
 
@@ -4070,7 +4064,7 @@ class ActionOverrideCmdD extends BaseCommand {
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
-    vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
+    vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
 
     await vimState.setCurrentMode(Mode.Visual);
 
@@ -4097,10 +4091,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
         if (idx === 0) {
           return new vscode.Selection(
             curPos.getWordLeft(false),
-            curPos
-              .getLeft()
-              .getCurrentWordEnd(true)
-              .getRight()
+            curPos.getLeft().getCurrentWordEnd(true).getRight()
           );
         } else {
           // Since we're adding the selections ourselves, we need to make sure
@@ -4109,10 +4100,8 @@ class ActionOverrideCmdDInsert extends BaseCommand {
             vscode.window.activeTextEditor!.selections[0].active
           );
           const matchWordLength =
-            matchWordPos
-              .getLeft()
-              .getCurrentWordEnd(true)
-              .getRight().character - matchWordPos.getWordLeft(false).character;
+            matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
+            matchWordPos.getWordLeft(false).character;
           const wordBegin = curPos.getLeftByCount(matchWordLength);
           return new vscode.Selection(wordBegin, curPos);
         }

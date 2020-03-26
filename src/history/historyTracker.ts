@@ -196,14 +196,8 @@ class HistoryStep {
       return `1 second ago`;
     } else if (timeDiffSeconds >= 100) {
       const hours = this.timestamp.getHours();
-      const minutes = this.timestamp
-        .getMinutes()
-        .toString()
-        .padStart(2, '0');
-      const seconds = this.timestamp
-        .getSeconds()
-        .toString()
-        .padStart(2, '0');
+      const minutes = this.timestamp.getMinutes().toString().padStart(2, '0');
+      const seconds = this.timestamp.getSeconds().toString().padStart(2, '0');
       return `${hours}:${minutes}:${seconds}`;
     } else {
       return `${timeDiffSeconds} seconds ago`;
@@ -412,9 +406,9 @@ export class HistoryTracker {
    */
   private updateMarks(): void {
     const newMarks = this.updateAndReturnMarks();
-    this.currentHistoryStep.marks = newMarks.filter(mark => !mark.isUppercaseMark);
+    this.currentHistoryStep.marks = newMarks.filter((mark) => !mark.isUppercaseMark);
 
-    newMarks.filter(mark => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
+    newMarks.filter((mark) => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
   }
 
   /**
@@ -430,7 +424,7 @@ export class HistoryTracker {
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
-      mark => mark.editor === vscode.window.activeTextEditor
+      (mark) => mark.editor === vscode.window.activeTextEditor
     );
     return [...this.currentHistoryStep.marks, ...globalMarks];
   }
@@ -455,7 +449,7 @@ export class HistoryTracker {
    */
   private putMarkInList(mark: IMark): void {
     const marks = this.getMarkList(mark.isUppercaseMark);
-    const previousIndex = marks.findIndex(existingMark => existingMark.name === mark.name);
+    const previousIndex = marks.findIndex((existingMark) => existingMark.name === mark.name);
     if (previousIndex !== -1) {
       marks[previousIndex] = mark;
     } else {
@@ -469,7 +463,7 @@ export class HistoryTracker {
    */
   public getMark(markName: string): IMark {
     const marks = this.getMarkList(markName.toUpperCase() === markName);
-    return <IMark>marks.find(mark => mark.name === markName);
+    return <IMark>marks.find((mark) => mark.name === markName);
   }
 
   /**
@@ -892,7 +886,7 @@ export class HistoryTracker {
     for (let i = 0; i < this.historySteps.length; i++) {
       const step = this.historySteps[i];
 
-      result += step.changes.map(x => x.text.replace(/\n/g, '\\n')).join('');
+      result += step.changes.map((x) => x.text.replace(/\n/g, '\\n')).join('');
       if (this.currentHistoryStepIndex === i) {
         result += '+';
       }

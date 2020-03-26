@@ -187,7 +187,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       vimState.cursorStartPosition = cursorStartPos;
     }
 
-    ranges = ranges.filter(range => {
+    ranges = ranges.filter((range) => {
       return !range.failed;
     });
 

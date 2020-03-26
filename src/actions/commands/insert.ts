@@ -32,9 +32,9 @@ class CommandEscInsertMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
+    vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
-      vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getRight()));
+      vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
     }
 
     // only remove leading spaces inserted by vscode.
@@ -339,10 +339,7 @@ class CommandInsertDigraph extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const digraph = this.keysPressed.slice(1, 3).join('');
-    const reverseDigraph = digraph
-      .split('')
-      .reverse()
-      .join('');
+    const reverseDigraph = digraph.split('').reverse().join('');
     let charCodes = (DefaultDigraphs[digraph] ||
       DefaultDigraphs[reverseDigraph] ||
       configuration.digraphs[digraph] ||
@@ -364,10 +361,7 @@ class CommandInsertDigraph extends BaseCommand {
       return false;
     }
     const chars = keysPressed.slice(1, 3).join('');
-    const reverseChars = chars
-      .split('')
-      .reverse()
-      .join('');
+    const reverseChars = chars.split('').reverse().join('');
     return (
       chars in configuration.digraphs ||
       reverseChars in configuration.digraphs ||
@@ -381,10 +375,7 @@ class CommandInsertDigraph extends BaseCommand {
       return false;
     }
     const chars = keysPressed.slice(1, keysPressed.length).join('');
-    const reverseChars = chars
-      .split('')
-      .reverse()
-      .join('');
+    const reverseChars = chars.split('').reverse().join('');
     if (chars.length > 0) {
       const predicate = (digraph: string) => {
         const digraphChars = digraph.substring(0, chars.length);

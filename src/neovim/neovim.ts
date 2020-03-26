@@ -89,7 +89,7 @@ export class NeovimWrapper implements vscode.Disposable {
       cwd: dir,
     });
 
-    this.process.on('error', err => {
+    this.process.on('error', (err) => {
       this.logger.error(`Error spawning neovim. ${err.message}.`);
       configuration.enableNeovim = false;
     });

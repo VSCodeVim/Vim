@@ -61,7 +61,7 @@ class CommandTabInCommandline extends BaseCommand {
 
     if (
       commandLine.autoCompleteItems.length !== 0 &&
-      this.keys.some(k => commandLine.lastKeyPressed === k[0])
+      this.keys.some((k) => commandLine.lastKeyPressed === k[0])
     ) {
       this.cycleCompletion(vimState, isTabForward);
       commandLine.lastKeyPressed = key;
@@ -82,9 +82,9 @@ class CommandTabInCommandline extends BaseCommand {
     if (cmdRegex.test(evalCmd)) {
       // Command completion
       newCompletionItems = Object.keys(commandParsers)
-        .filter(cmd => cmd.startsWith(evalCmd))
+        .filter((cmd) => cmd.startsWith(evalCmd))
         // Remove the already typed portion in the array
-        .map(cmd => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
+        .map((cmd) => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
         .sort();
     } else if (fileRegex.exec(evalCmd)) {
       // File completion by searching if there is a space after the first word/command
@@ -111,8 +111,8 @@ class CommandTabInCommandline extends BaseCommand {
         shouldAddDotItems
       );
       newCompletionItems = dirItems
-        .filter(name => name.startsWith(baseName))
-        .map(name => name.slice(name.search(baseName) + baseName.length))
+        .filter((name) => name.startsWith(baseName))
+        .map((name) => name.slice(name.search(baseName) + baseName.length))
         .sort();
     }
 
