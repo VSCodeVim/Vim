@@ -190,7 +190,15 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
-    title: "Can handle 'J'",
+    title: "Can handle 'J' when the entire visual block is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lJ',
+    end: ['one', 'two| three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'J' when the visual block spans multiple lines",
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: '<C-v>jjlJ',
     end: ['one| two three', 'four'],

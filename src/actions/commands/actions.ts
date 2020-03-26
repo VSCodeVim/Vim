@@ -3282,13 +3282,11 @@ class ActionJoinVisualBlockMode extends BaseCommand {
   mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actionJoin = new ActionJoin();
-    const range = vimState.cursors[0];
-    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
-    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
+    const start = vimState.cursorStartPosition;
+    const end = vimState.cursorStopPosition;
 
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    vimState = await actionJoin.execJoinLines(topLeft, bottomRight, vimState, 1);
+    vimState = await new ActionJoin().execJoinLines(start, end, vimState, 1);
     return vimState;
   }
 }
