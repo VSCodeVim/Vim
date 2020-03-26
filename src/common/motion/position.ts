@@ -421,7 +421,7 @@ export class Position extends vscode.Position {
    * Get the position of the line directly below the current line.
    */
   public getDown(desiredColumn: number): Position {
-    if (this.getDocumentEnd().line !== this.line) {
+    if (TextEditor.getDocumentEnd().line !== this.line) {
       let nextLine = this.line + 1;
       let nextLineLength = TextEditor.getLineLength(nextLine);
 
@@ -435,7 +435,7 @@ export class Position extends vscode.Position {
    * Get the position of the line directly above the current line.
    */
   public getUp(desiredColumn: number): Position {
-    if (this.getDocumentBegin().line !== this.line) {
+    if (TextEditor.getDocumentBegin().line !== this.line) {
       let prevLine = this.line - 1;
       let prevLineLength = TextEditor.getLineLength(prevLine);
 
@@ -723,10 +723,6 @@ export class Position extends vscode.Position {
     return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
   }
 
-  public getDocumentBegin(): Position {
-    return new Position(0, 0);
-  }
-
   /**
    * Returns a new Position one to the left if this position is on the EOL. Otherwise,
    * returns this position.
@@ -752,14 +748,6 @@ export class Position extends vscode.Position {
         ? this.character + text.length
         : text.length - (text.lastIndexOf('\n') + 1)
     );
-  }
-
-  public getDocumentEnd(textEditor?: vscode.TextEditor): Position {
-    const lineCount = TextEditor.getLineCount(textEditor);
-    const line = lineCount > 0 ? lineCount - 1 : 0;
-    const char = TextEditor.getLineLength(line);
-
-    return new Position(line, char);
   }
 
   /**

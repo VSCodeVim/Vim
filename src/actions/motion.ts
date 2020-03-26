@@ -1108,7 +1108,7 @@ class MoveNonBlankFirst extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentBegin().obeyStartOfLine();
+      return TextEditor.getDocumentBegin().obeyStartOfLine();
     } else if (count > TextEditor.getLineCount()) {
       count = TextEditor.getLineCount();
     }

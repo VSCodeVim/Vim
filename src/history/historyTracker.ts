@@ -389,8 +389,8 @@ export class HistoryTracker {
     // Ensure the position of every mark is within the range of the document.
 
     for (const mark of newMarks) {
-      if (mark.position.isAfter(mark.position.getDocumentEnd())) {
-        mark.position = mark.position.getDocumentEnd();
+      if (mark.position.isAfter(TextEditor.getDocumentEnd())) {
+        mark.position = TextEditor.getDocumentEnd();
       }
     }
 

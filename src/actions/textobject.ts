@@ -518,8 +518,8 @@ export class SelectEntire extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
-      start: position.getDocumentBegin(),
-      stop: position.getDocumentEnd(),
+      start: TextEditor.getDocumentBegin(),
+      stop: TextEditor.getDocumentEnd(),
     };
   }
 }
@@ -529,8 +529,8 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
   keys = ['i', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position = position.getDocumentBegin();
-    let stop: Position = position.getDocumentEnd();
+    let start: Position = TextEditor.getDocumentBegin();
+    let stop: Position = TextEditor.getDocumentEnd();
 
     while (start.line < stop.line && TextEditor.getLineAt(start).isEmptyOrWhitespace) {
       start = start.getDown(0);
