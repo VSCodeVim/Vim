@@ -13,7 +13,7 @@ class ModeHandlerMapImpl {
 
     if (!modeHandler) {
       isNew = true;
-      modeHandler = await ModeHandler.Create();
+      modeHandler = await ModeHandler.create();
       this.modeHandlerMap.set(editorId, modeHandler);
     }
     return [modeHandler, isNew];

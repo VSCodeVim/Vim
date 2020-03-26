@@ -53,3 +53,18 @@ export function scrollView(vimState: VimState, offset: number) {
     });
   }
 }
+
+/**
+ * Partitions an array into two according to a given predicate
+ * @param array Objects to partition
+ * @param predicate Function according to which objects will be partitioned
+ * @returns Array which contains all elements of `array` for which `predicate` is true, and one which contains the rest
+ */
+export function partition<T>(array: T[], predicate: (x: T) => boolean): [T[], T[]] {
+  return array.reduce(
+    ([pass, fail], elem) => {
+      return predicate(elem) ? [[...pass, elem], fail] : [pass, [...fail, elem]];
+    },
+    [[], []]
+  );
+}
