@@ -606,21 +606,11 @@ export class ModeHandler implements vscode.Disposable {
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      const mightChangeDocument =
-        recordedState.hasRunOperator && recordedState.operator
-          ? recordedState.operator.mightChangeDocument
-          : action.mightChangeDocument;
-
       if (this.vimState.alteredHistory) {
         this.vimState.alteredHistory = false;
         vimState.historyTracker.ignoreChange();
-      } else if (!configuration.experimentalOptimizations || mightChangeDocument) {
-        const addedChange = vimState.historyTracker.addChange(
-          this.vimState.cursorsInitialState.map(c => c.stop)
-        );
-        if (addedChange && !mightChangeDocument) {
-          throw new Error(`Action '${action.toString()}' changed the document unexpectedly!`);
-        }
+      } else {
+        vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map(c => c.stop));
       }
     }
 

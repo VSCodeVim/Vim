@@ -19,7 +19,6 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
-import { configuration } from '../configuration/configuration';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -233,9 +232,13 @@ export class HistoryTracker {
   private currentHistoryStepIndex = 0;
 
   /**
-   * The text of the document the last time we diffed against it.
+   * The state of the document the last time HistoryTracker.addChange() or HistoryTracker.ignoreChange() was called.
+   * This is used to avoid retrieiving the document text and doing a full diff when it isn't necessary.
    */
-  private oldText: string;
+  private previousDocumentState: {
+    text: string;
+    versionNumber: number;
+  };
 
   private vimState: VimState;
 
@@ -277,18 +280,22 @@ export class HistoryTracker {
 
     this.finishCurrentStep();
 
-    this.oldText = this._getDocumentText();
+    this.previousDocumentState = {
+      text: this._getDocumentText(),
+      versionNumber: this._getDocumentVersion(),
+    };
     this.currentContentChanges = [];
     this.lastContentChanges = [];
   }
 
   private _getDocumentText(): string {
-    return (
-      (this.vimState.editor &&
-        this.vimState.editor.document &&
-        this.vimState.editor.document.getText()) ||
-      ''
-    );
+    // vimState.editor can be undefined in some unit tests
+    return this.vimState.editor?.document.getText() ?? '';
+  }
+
+  private _getDocumentVersion(): number {
+    // vimState.editor can be undefined in some unit tests
+    return this.vimState.editor?.document.version ?? -1;
   }
 
   private _addNewHistoryStep(): void {
@@ -489,6 +496,10 @@ export class HistoryTracker {
    * to process an individual change
    */
   private _isDocumentTextNeeded(): boolean {
+    if (this._getDocumentVersion() === this.previousDocumentState.versionNumber) {
+      return false;
+    }
+
     // Determine if we just switched modes.
     // This prevents recording steps in between start-end of a historyStep.
     const isModeDiff = this.currentMode !== this.vimState.currentMode;
@@ -509,20 +520,16 @@ export class HistoryTracker {
   /**
    * Adds an individual Change to the current Step.
    *
-   * Determines what changed by diffing the document against what it
-   * used to look like.
-   *
-   * @returns true if a change was added
+   * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(cursorPosition = [new Position(0, 0)]): boolean {
-    if (configuration.experimentalOptimizations && !this._isDocumentTextNeeded()) {
-      return false;
+  public addChange(cursorPosition = [new Position(0, 0)]): void {
+    if (!this._isDocumentTextNeeded()) {
+      return;
     }
 
     const newText = this._getDocumentText();
-
-    if (newText === this.oldText) {
-      return false;
+    if (newText === this.previousDocumentState.text) {
+      return;
     }
 
     // Determine if we should add a new Step.
@@ -546,7 +553,7 @@ export class HistoryTracker {
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
 
-    const diffs = diffEngine.diff_main(this.oldText, newText);
+    const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
 
     /*
     this.historySteps.push(new HistoryStep({
@@ -583,12 +590,13 @@ export class HistoryTracker {
     }
 
     this.currentHistoryStep.cursorEnd = cursorPosition;
-    this.oldText = newText;
+    this.previousDocumentState = {
+      text: newText,
+      versionNumber: this._getDocumentVersion(),
+    };
 
     // A change has been made, reset the changelist navigation index to the end
     this.changelistIndex = this.historySteps.length - 1;
-
-    return true;
   }
 
   /**
@@ -613,7 +621,10 @@ export class HistoryTracker {
    * the HistoryTracker.
    */
   public ignoreChange(): void {
-    this.oldText = this._getDocumentText();
+    this.previousDocumentState = {
+      text: this._getDocumentText(),
+      versionNumber: this._getDocumentVersion(),
+    };
   }
 
   /**

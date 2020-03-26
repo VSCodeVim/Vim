@@ -7,7 +7,6 @@ import {
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
-  experimentalOptimizations = false;
   useSystemClipboard = false;
   useCtrlKeys = false;
   overrideCopy = true;
