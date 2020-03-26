@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -219,6 +219,11 @@
         "key": "ctrl+l",
         "command": "extension.vim_navigateCtrlL",
         "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+m",
+        "command": "extension.vim_ctrl+m",
+        "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl"
       },
       {
         "key": "ctrl+n",
@@ -958,7 +963,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.2",
-    "@types/node": "12.12.21",
+    "@types/node": "12.12.31",
     "@types/sinon": "7.5.2",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
@@ -968,11 +973,11 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.5",
-    "mocha": "7.1.0",
+    "mocha": "7.1.1",
     "plugin-error": "1.0.1",
     "prettier": "1.19.1",
     "sinon": "9.0.1",
-    "ts-loader": "6.2.1",
+    "ts-loader": "6.2.2",
     "tslint": "6.1.0",
     "typescript": "3.8.3",
     "vscode": "1.1.36"

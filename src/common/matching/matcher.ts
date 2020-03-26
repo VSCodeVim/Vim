@@ -57,7 +57,7 @@ export class PairMatcher {
     }
 
     while (PairMatcher.keepSearching(lineNumber, lineCount, isNextMatchForward)) {
-      let lineText = TextEditor.getLineAt(new Position(lineNumber, 0)).text.split('');
+      let lineText = TextEditor.getLine(lineNumber).text.split('');
       const originalLineLength = lineText.length;
       if (lineNumber === position.line) {
         if (isNextMatchForward) {

@@ -377,9 +377,7 @@ export class FormatOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // = operates on complete lines
-    start = new Position(start.line, 0);
-    end = end.getLineEnd();
-    vimState.editor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand('editor.action.formatSelection');
     let line = vimState.cursorStartPosition.line;
 

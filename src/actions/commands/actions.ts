@@ -451,7 +451,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
+    const { lastInvokedMacro } = vimState.historyTracker;
 
     if (lastInvokedMacro) {
       vimState.recordedState.transformations.push({
@@ -461,6 +461,23 @@ class CommandExecuteLastMacro extends BaseCommand {
       });
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CtrlM extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [['<C-m>']];
+  mightChangeDocument = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: '\n',
+      position: position,
+      diff: new PositionDiff({ character: -1 }),
+    });
     return vimState;
   }
 }
@@ -510,10 +527,12 @@ class CommandEsc extends BaseCommand {
       vimState.surround = undefined;
     }
 
-    if (vimState.currentMode === Mode.VisualLine && vimState.visualLineStartColumn !== undefined) {
-      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
-        vimState.visualLineStartColumn
-      );
+    if (vimState.currentMode === Mode.VisualLine) {
+      // TODO: need a visualLineStartColumn for each cursor
+      vimState.cursors = vimState.cursors.map((cursor: Range) => {
+        const pos = cursor.stop.withColumn(vimState.visualLineStartColumn!);
+        return new Range(pos, pos);
+      });
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -1388,7 +1407,7 @@ export class PutCommand extends BaseCommand {
         Array(linesToAdd).join('\n'),
         new Position(
           TextEditor.getLineCount() - 1,
-          TextEditor.getLineAt(new Position(TextEditor.getLineCount() - 1, 0)).text.length
+          TextEditor.getLineLength(TextEditor.getLineCount() - 1)
         )
       );
     }
@@ -1398,7 +1417,7 @@ export class PutCommand extends BaseCommand {
       const line = block[lineIndex - position.line];
       const insertPos = new Position(
         lineIndex,
-        Math.min(position.character, TextEditor.getLineAt(new Position(lineIndex, 0)).text.length)
+        Math.min(position.character, TextEditor.getLineLength(lineIndex))
       );
 
       await TextEditor.insertAt(line, insertPos);
@@ -3114,7 +3133,7 @@ class ActionJoin extends BaseCommand {
     let trimmedLinesContent = TextEditor.getLineAt(startPosition).text;
 
     for (let i = startLineNumber + 1; i <= endLineNumber; i++) {
-      let lineText = TextEditor.getLineAt(new Position(i, 0)).text;
+      const lineText = TextEditor.getLine(i).text;
 
       let firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
 
@@ -3436,7 +3455,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     // Iterate over every line in the current selection
     for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
       // Get line of text
-      const lineText = TextEditor.getLineAt(new Position(lineNum, 0)).text;
+      const lineText = TextEditor.getLine(lineNum).text;
 
       if (start.line === end.line) {
         // This is a visual section all on one line, only replace the part within the selection
@@ -3697,21 +3716,25 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
-
     vimState.cursors = [];
-    for (let i = start.line; i <= end.line; i++) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
 
-      if (line.text.trim() !== '') {
-        vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+    for (const selection of vimState.editor.selections) {
+      let start = Position.FromVSCodePosition(selection.start);
+      let end = Position.FromVSCodePosition(selection.end);
+
+      if (start.isAfter(end)) {
+        [start, end] = [end, start];
+      }
+
+      for (let i = start.line; i <= end.line; i++) {
+        const line = TextEditor.getLine(i);
+
+        if (!line.isEmptyOrWhitespace) {
+          vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+        }
       }
     }
+
     return vimState;
   }
 }
