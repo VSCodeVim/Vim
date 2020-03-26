@@ -221,9 +221,16 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'd/' with count",
+    title: "Can handle 'd/' with count ([count]d/[word])",
     start: ['one |two two two two'],
     keysPressed: '3d/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count (d[count]/[word])",
+    start: ['one |two two two two'],
+    keysPressed: 'd3/two\n',
     end: ['one |two'],
   });
 
