@@ -351,9 +351,8 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  getCursorStyleForMode(mode: Mode): vscode.TextEditorCursorStyle | undefined {
-    const modeName = Mode[mode].toLowerCase();
-    const cursorStyle = this.cursorStylePerMode[modeName];
+  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    const cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
     }
