@@ -188,4 +188,20 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
     end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
   });
+
+  newTest({
+    title: "Can handle 'J' when the entire visual block is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lJ',
+    end: ['one', 'two| three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'J' when the visual block spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '<C-v>jjlJ',
+    end: ['one| two three', 'four'],
+    endMode: Mode.Normal,
+  });
 });
