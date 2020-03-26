@@ -512,6 +512,41 @@ export class SelectInnerParagraph extends TextObjectMovement {
   }
 }
 
+@RegisterAction
+export class SelectEntire extends TextObjectMovement {
+  keys = ['a', 'e'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start: TextEditor.getDocumentBegin(),
+      stop: TextEditor.getDocumentEnd(),
+    };
+  }
+}
+
+@RegisterAction
+export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
+  keys = ['i', 'e'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position = TextEditor.getDocumentBegin();
+    let stop: Position = TextEditor.getDocumentEnd();
+
+    while (start.line < stop.line && TextEditor.getLineAt(start).isEmptyOrWhitespace) {
+      start = start.getDown(0);
+    }
+
+    while (stop.line > start.line && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
+      stop = stop.getUp(0).getLineEnd();
+    }
+
+    return {
+      start: start,
+      stop: stop,
+    };
+  }
+}
+
 abstract class IndentObjectMatch extends TextObjectMovement {
   setsDesiredColumnToEOL = true;
 
