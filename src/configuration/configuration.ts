@@ -163,8 +163,6 @@ class Configuration implements IConfiguration {
     return this.cursorTypeMap[cursorStyle];
   }
 
-  experimentalOptimizations = false;
-
   handleKeys: IHandleKeys[] = [];
 
   useSystemClipboard = false;

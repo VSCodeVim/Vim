@@ -56,7 +56,6 @@ class CommandSurroundAddTarget extends BaseCommand {
     ['a'],
   ];
   isCompleteAction = false;
-  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -276,7 +275,6 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 export class CommandSurroundAddToReplacement extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   keys = ['<any>'];
-  mightChangeDocument = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (!vimState.surround) {

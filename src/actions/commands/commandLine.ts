@@ -136,7 +136,6 @@ class CommandTabInCommandline extends BaseCommand {
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['\n'], ['<C-m>']];
-  mightChangeDocument = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
