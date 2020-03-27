@@ -47,21 +47,6 @@ export class BaseAction {
   private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
   /**
-   * True if this action has the potential to change the document's text, and therefore trigger an
-   * undo step. This is for optimization purposes - we skip the expensive process of figuring out
-   * what changed to create that undo step if this returns false.
-   *
-   * Most commands do not modify the document, so this is false by default. This means if you add a
-   * command that can modify the document or switch modes, you MUST set mightChangeDocument = true. Otherwise undo
-   * will not work properly.
-   *
-   *
-   * TODO: if all actions were pure, I think this would be unnecessary, as we could deduce it from
-   * vimState.transformations being empty or not.
-   */
-  public mightChangeDocument: boolean = false;
-
-  /**
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -87,7 +72,7 @@ export class BaseAction {
     }
 
     const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
-    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }

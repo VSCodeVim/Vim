@@ -12,7 +12,7 @@ import { VimState } from '../state/vimState';
  */
 export function getCursorsAfterSync(): Range[] {
   return vscode.window.activeTextEditor!.selections.map(
-    x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
+    (x) => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
 }
 

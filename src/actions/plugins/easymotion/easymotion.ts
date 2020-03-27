@@ -107,7 +107,7 @@ export class EasyMotion {
    */
   public findMarkers(nail: string, onlyVisible: boolean): EasyMotion.Marker[] {
     const markers = onlyVisible ? this.visibleMarkers : this._markers;
-    return markers.filter(marker => marker.name.startsWith(nail));
+    return markers.filter((marker) => marker.name.startsWith(nail));
   }
 
   /**
@@ -225,7 +225,7 @@ export class EasyMotion {
     this.decorations = [];
 
     // Ignore markers that do not start with the accumulated depth level
-    for (const marker of this._markers.filter(m => m.name.startsWith(this.accumulation))) {
+    for (const marker of this._markers.filter((m) => m.name.startsWith(this.accumulation))) {
       const pos = marker.position;
       // Get keys after the depth we're at
       const keystroke = marker.name.substr(this.accumulation.length);

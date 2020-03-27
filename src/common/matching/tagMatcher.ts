@@ -78,7 +78,7 @@ export class TagMatcher {
 
     const startPos = TextEditor.getOffsetAt(vimState.cursorStartPosition);
     const endPos = position;
-    const tagsSurrounding = matchedTags.filter(n => {
+    const tagsSurrounding = matchedTags.filter((n) => {
       return startPos > n.openingTagStart && endPos < n.closingTagEnd;
     });
 

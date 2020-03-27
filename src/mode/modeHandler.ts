@@ -127,7 +127,7 @@ export class ModeHandler implements vscode.Disposable {
     ) {
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
-        sel =>
+        (sel) =>
           new Range(
             // Adjust the cursor positions because cursors & selections don't match exactly
             sel.anchor.isAfter(sel.active)
@@ -349,7 +349,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Catch any text change not triggered by us (example: tab completion).
-    vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map(c => c.stop));
+    vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map((c) => c.stop));
 
     vimState.keyHistory.push(key);
 
@@ -388,7 +388,7 @@ export class ModeHandler implements vscode.Disposable {
         } else {
           // Push document content change to the stack
           lastAction.contentChanges = lastAction.contentChanges.concat(
-            vimState.historyTracker.currentContentChanges.map(diff => ({
+            vimState.historyTracker.currentContentChanges.map((diff) => ({
               textDiff: diff,
               positionDiff: new PositionDiff(),
             }))
@@ -472,7 +472,7 @@ export class ModeHandler implements vscode.Disposable {
     */
 
     if (vimState.currentMode === Mode.Visual) {
-      vimState.cursors = vimState.cursors.map(c =>
+      vimState.cursors = vimState.cursors.map((c) =>
         c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c
       );
     }
@@ -534,7 +534,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (vimState.currentMode === Mode.Visual) {
-      vimState.cursors = vimState.cursors.map(c =>
+      vimState.cursors = vimState.cursors.map((c) =>
         c.start.isBefore(c.stop)
           ? c.withNewStop(
               c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
@@ -606,21 +606,11 @@ export class ModeHandler implements vscode.Disposable {
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      const mightChangeDocument =
-        recordedState.hasRunOperator && recordedState.operator
-          ? recordedState.operator.mightChangeDocument
-          : action.mightChangeDocument;
-
       if (this.vimState.alteredHistory) {
         this.vimState.alteredHistory = false;
         vimState.historyTracker.ignoreChange();
-      } else if (!configuration.experimentalOptimizations || mightChangeDocument) {
-        const addedChange = vimState.historyTracker.addChange(
-          this.vimState.cursorsInitialState.map(c => c.stop)
-        );
-        if (addedChange && !mightChangeDocument) {
-          throw new Error(`Action '${action.toString()}' changed the document unexpectedly!`);
-        }
+      } else {
+        vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map((c) => c.stop));
       }
     }
 
@@ -641,7 +631,7 @@ export class ModeHandler implements vscode.Disposable {
       const cursors = new Array<Range>();
       for (let { range } of Range.IterateRanges(vimState.cursors)) {
         // adjust start/stop
-        const documentEndPosition = vimState.cursorStopPosition.getDocumentEnd(vimState.editor);
+        const documentEndPosition = TextEditor.getDocumentEnd(vimState.editor);
         const documentLineCount = TextEditor.getLineCount(vimState.editor);
         if (range.start.line >= documentLineCount) {
           range = range.withNewStart(documentEndPosition);
@@ -670,7 +660,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Update the current history step to have the latest cursor position
-    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursors.map(c => c.stop));
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursors.map((c) => c.stop));
 
     if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv
@@ -810,7 +800,7 @@ export class ModeHandler implements vscode.Disposable {
       // Keep track of all cursors (in the case of multi-cursor).
       vimState.cursors = resultingCursors;
       vimState.editor.selections = vimState.cursors.map(
-        cursor => new vscode.Selection(cursor.start, cursor.stop)
+        (cursor) => new vscode.Selection(cursor.start, cursor.stop)
       );
     }
 
@@ -882,7 +872,7 @@ export class ModeHandler implements vscode.Disposable {
         // TODO: Select one transformation for every cursor and run them all
         // in parallel. Repeat till there are no more transformations.
         for (const transformation of textTransformations) {
-          await this.vimState.editor.edit(edit => doTextEditorEdit(transformation, edit));
+          await this.vimState.editor.edit((edit) => doTextEditorEdit(transformation, edit));
         }
       } else {
         // This is the common case!
@@ -892,7 +882,7 @@ export class ModeHandler implements vscode.Disposable {
          * (this is primarily necessary for multi-cursor mode, since most
          * actions will trigger at most one text operation).
          */
-        await this.vimState.editor.edit(edit => {
+        await this.vimState.editor.edit((edit) => {
           for (const command of textTransformations) {
             doTextEditorEdit(command, edit);
           }
@@ -1021,7 +1011,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    const selections = this.vimState.editor.selections.map(sel => {
+    const selections = this.vimState.editor.selections.map((sel) => {
       let range = Range.FromVSCodeSelection(sel);
       if (range.start.isBefore(range.stop)) {
         range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
@@ -1161,7 +1151,7 @@ export class ModeHandler implements vscode.Disposable {
     if (
       args.drawSelection &&
       !vimState.recordedState.actionsRun.some(
-        action => action instanceof DocumentContentChangeAction
+        (action) => action instanceof DocumentContentChangeAction
       )
     ) {
       let selectionMode: Mode = vimState.currentMode;
@@ -1242,7 +1232,7 @@ export class ModeHandler implements vscode.Disposable {
     // Scroll to position of cursor
     if (
       vimState.editor.visibleRanges.length > 0 &&
-      !vimState.postponedCodeViewChanges.some(change => change.command === 'editorScroll')
+      !vimState.postponedCodeViewChanges.some((change) => change.command === 'editorScroll')
     ) {
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
         visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
@@ -1348,7 +1338,7 @@ export class ModeHandler implements vscode.Disposable {
       this.currentMode === Mode.EasyMotionInputMode
         ? vimState.easyMotion.searchAction
             .getMatches(vimState.cursorStopPosition, vimState)
-            .map(match => match.toRange())
+            .map((match) => match.toRange())
         : [];
     this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
 
@@ -1405,6 +1395,6 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   dispose() {
-    this._disposables.map(d => d.dispose());
+    this._disposables.map((d) => d.dispose());
   }
 }

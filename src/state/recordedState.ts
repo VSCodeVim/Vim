@@ -117,14 +117,14 @@ export class RecordedState {
   }
 
   public get operators(): BaseOperator[] {
-    return this.actionsRun.filter(a => a instanceof BaseOperator).reverse() as BaseOperator[];
+    return this.actionsRun.filter((a) => a instanceof BaseOperator).reverse() as BaseOperator[];
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): BaseCommand {
-    const list = this.actionsRun.filter(a => a instanceof BaseCommand).reverse();
+    const list = this.actionsRun.filter((a) => a instanceof BaseCommand).reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -132,7 +132,7 @@ export class RecordedState {
   }
 
   public get hasRunAMovement(): boolean {
-    return this.actionsRun.some(a => a.isMotion);
+    return this.actionsRun.some((a) => a.isMotion);
   }
 
   /**

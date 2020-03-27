@@ -19,7 +19,6 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
-import { configuration } from '../configuration/configuration';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -197,14 +196,8 @@ class HistoryStep {
       return `1 second ago`;
     } else if (timeDiffSeconds >= 100) {
       const hours = this.timestamp.getHours();
-      const minutes = this.timestamp
-        .getMinutes()
-        .toString()
-        .padStart(2, '0');
-      const seconds = this.timestamp
-        .getSeconds()
-        .toString()
-        .padStart(2, '0');
+      const minutes = this.timestamp.getMinutes().toString().padStart(2, '0');
+      const seconds = this.timestamp.getSeconds().toString().padStart(2, '0');
       return `${hours}:${minutes}:${seconds}`;
     } else {
       return `${timeDiffSeconds} seconds ago`;
@@ -233,9 +226,13 @@ export class HistoryTracker {
   private currentHistoryStepIndex = 0;
 
   /**
-   * The text of the document the last time we diffed against it.
+   * The state of the document the last time HistoryTracker.addChange() or HistoryTracker.ignoreChange() was called.
+   * This is used to avoid retrieiving the document text and doing a full diff when it isn't necessary.
    */
-  private oldText: string;
+  private previousDocumentState: {
+    text: string;
+    versionNumber: number;
+  };
 
   private vimState: VimState;
 
@@ -277,18 +274,22 @@ export class HistoryTracker {
 
     this.finishCurrentStep();
 
-    this.oldText = this._getDocumentText();
+    this.previousDocumentState = {
+      text: this._getDocumentText(),
+      versionNumber: this._getDocumentVersion(),
+    };
     this.currentContentChanges = [];
     this.lastContentChanges = [];
   }
 
   private _getDocumentText(): string {
-    return (
-      (this.vimState.editor &&
-        this.vimState.editor.document &&
-        this.vimState.editor.document.getText()) ||
-      ''
-    );
+    // vimState.editor can be undefined in some unit tests
+    return this.vimState.editor?.document.getText() ?? '';
+  }
+
+  private _getDocumentVersion(): number {
+    // vimState.editor can be undefined in some unit tests
+    return this.vimState.editor?.document.version ?? -1;
   }
 
   private _addNewHistoryStep(): void {
@@ -389,8 +390,8 @@ export class HistoryTracker {
     // Ensure the position of every mark is within the range of the document.
 
     for (const mark of newMarks) {
-      if (mark.position.isAfter(mark.position.getDocumentEnd())) {
-        mark.position = mark.position.getDocumentEnd();
+      if (mark.position.isAfter(TextEditor.getDocumentEnd())) {
+        mark.position = TextEditor.getDocumentEnd();
       }
     }
 
@@ -405,9 +406,9 @@ export class HistoryTracker {
    */
   private updateMarks(): void {
     const newMarks = this.updateAndReturnMarks();
-    this.currentHistoryStep.marks = newMarks.filter(mark => !mark.isUppercaseMark);
+    this.currentHistoryStep.marks = newMarks.filter((mark) => !mark.isUppercaseMark);
 
-    newMarks.filter(mark => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
+    newMarks.filter((mark) => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
   }
 
   /**
@@ -423,7 +424,7 @@ export class HistoryTracker {
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
-      mark => mark.editor === vscode.window.activeTextEditor
+      (mark) => mark.editor === vscode.window.activeTextEditor
     );
     return [...this.currentHistoryStep.marks, ...globalMarks];
   }
@@ -448,7 +449,7 @@ export class HistoryTracker {
    */
   private putMarkInList(mark: IMark): void {
     const marks = this.getMarkList(mark.isUppercaseMark);
-    const previousIndex = marks.findIndex(existingMark => existingMark.name === mark.name);
+    const previousIndex = marks.findIndex((existingMark) => existingMark.name === mark.name);
     if (previousIndex !== -1) {
       marks[previousIndex] = mark;
     } else {
@@ -462,7 +463,7 @@ export class HistoryTracker {
    */
   public getMark(markName: string): IMark {
     const marks = this.getMarkList(markName.toUpperCase() === markName);
-    return <IMark>marks.find(mark => mark.name === markName);
+    return <IMark>marks.find((mark) => mark.name === markName);
   }
 
   /**
@@ -489,6 +490,10 @@ export class HistoryTracker {
    * to process an individual change
    */
   private _isDocumentTextNeeded(): boolean {
+    if (this._getDocumentVersion() === this.previousDocumentState.versionNumber) {
+      return false;
+    }
+
     // Determine if we just switched modes.
     // This prevents recording steps in between start-end of a historyStep.
     const isModeDiff = this.currentMode !== this.vimState.currentMode;
@@ -509,20 +514,16 @@ export class HistoryTracker {
   /**
    * Adds an individual Change to the current Step.
    *
-   * Determines what changed by diffing the document against what it
-   * used to look like.
-   *
-   * @returns true if a change was added
+   * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(cursorPosition = [new Position(0, 0)]): boolean {
-    if (configuration.experimentalOptimizations && !this._isDocumentTextNeeded()) {
-      return false;
+  public addChange(cursorPosition = [new Position(0, 0)]): void {
+    if (!this._isDocumentTextNeeded()) {
+      return;
     }
 
     const newText = this._getDocumentText();
-
-    if (newText === this.oldText) {
-      return false;
+    if (newText === this.previousDocumentState.text) {
+      return;
     }
 
     // Determine if we should add a new Step.
@@ -546,7 +547,7 @@ export class HistoryTracker {
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
 
-    const diffs = diffEngine.diff_main(this.oldText, newText);
+    const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
 
     /*
     this.historySteps.push(new HistoryStep({
@@ -583,12 +584,13 @@ export class HistoryTracker {
     }
 
     this.currentHistoryStep.cursorEnd = cursorPosition;
-    this.oldText = newText;
+    this.previousDocumentState = {
+      text: newText,
+      versionNumber: this._getDocumentVersion(),
+    };
 
     // A change has been made, reset the changelist navigation index to the end
     this.changelistIndex = this.historySteps.length - 1;
-
-    return true;
   }
 
   /**
@@ -613,7 +615,10 @@ export class HistoryTracker {
    * the HistoryTracker.
    */
   public ignoreChange(): void {
-    this.oldText = this._getDocumentText();
+    this.previousDocumentState = {
+      text: this._getDocumentText(),
+      versionNumber: this._getDocumentVersion(),
+    };
   }
 
   /**
@@ -881,7 +886,7 @@ export class HistoryTracker {
     for (let i = 0; i < this.historySteps.length; i++) {
       const step = this.historySteps[i];
 
-      result += step.changes.map(x => x.text.replace(/\n/g, '\\n')).join('');
+      result += step.changes.map((x) => x.text.replace(/\n/g, '\\n')).join('');
       if (this.currentHistoryStepIndex === i) {
         result += '+';
       }

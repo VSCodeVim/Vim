@@ -125,7 +125,7 @@ export class RemappingValidator implements IConfigurationValidator {
   private async getCommandMap(): Promise<Map<string, boolean>> {
     if (this._commandMap == null) {
       this._commandMap = new Map(
-        (await vscode.commands.getCommands(true)).map(x => [x, true] as [string, boolean])
+        (await vscode.commands.getCommands(true)).map((x) => [x, true] as [string, boolean])
       );
     }
     return this._commandMap;

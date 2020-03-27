@@ -12,7 +12,6 @@ import { RegisterAction } from './../base';
 export class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  mightChangeDocument = true;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);

@@ -214,6 +214,27 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'd/'",
+    start: ['one |two three four'],
+    keysPressed: 'd/four\n',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count ([count]d/[word])",
+    start: ['one |two two two two'],
+    keysPressed: '3d/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count (d[count]/[word])",
+    start: ['one |two two two two'],
+    keysPressed: 'd3/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
     title: "Can handle 'cw'",
     start: ['text text tex|t'],
     keysPressed: '^lllllllcw',
@@ -322,6 +343,87 @@ suite('Mode Normal', () => {
     start: ['text |   text text'],
     keysPressed: 'caw',
     end: ['text| text'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae'",
+    start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae' with caret at document's top",
+    start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae' with caret at document's end",
+    start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' on blank content",
+    start: ['|'],
+    keysPressed: 'cie',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with leading space",
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
+    keysPressed: 'cie',
+    end: ['     ', '    ', '|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with trailing space",
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'cie',
+    end: ['|', '    ', '   '],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with both leading and trailing space",
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'cie',
+    end: ['  ', ' ', '|', '    ', '   '],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' on blank content",
+    start: ['|'],
+    keysPressed: 'cie',
+    end: ['|'],
     endMode: Mode.Insert,
   });
 
@@ -1003,6 +1105,87 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'dae'",
+    start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'dae' with caret at document's top",
+    start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'dae' with caret at document's end",
+    start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' on blank content",
+    start: ['|'],
+    keysPressed: 'die',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with leading space",
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
+    keysPressed: 'die',
+    end: ['     ', '    ', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with trailing space",
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'die',
+    end: ['|', '    ', '   '],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with both leading and trailing space",
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'die',
+    end: ['  ', ' ', '|', '    ', '   '],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' on blank content",
+    start: ['|'],
+    keysPressed: 'die',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can handle d} at beginning of line',
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
@@ -1581,10 +1764,38 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle guae',
+    start: ['|ABC', 'DEF', 'GHI'],
+    keysPressed: 'guae',
+    end: ['|abc', 'def', 'ghi'],
+  });
+
+  newTest({
+    title: 'Can handle guie',
+    start: [' ', ' ', '|ABC', 'DEF', 'GHI'],
+    keysPressed: 'guie',
+    end: [' ', ' ', '|abc', 'def', 'ghi'],
+  });
+
+  newTest({
     title: 'Can handle gUw',
     start: ['|abc def'],
     keysPressed: 'gUw',
     end: ['|ABC def'],
+  });
+
+  newTest({
+    title: 'Can handle gUae',
+    start: ['|Abc', 'def', 'GhI'],
+    keysPressed: 'gUae',
+    end: ['|ABC', 'DEF', 'GHI'],
+  });
+
+  newTest({
+    title: 'Can handle gUie',
+    start: [' ', ' ', '|abc', 'def', 'ghi'],
+    keysPressed: 'gUie',
+    end: [' ', ' ', '|ABC', 'DEF', 'GHI'],
   });
 
   newTest({

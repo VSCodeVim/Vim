@@ -21,7 +21,7 @@ export class ValidatorResults {
   }
 
   public get numErrors(): number {
-    return this.errors.filter(e => e.level === 'error').length;
+    return this.errors.filter((e) => e.level === 'error').length;
   }
 
   public get hasError(): boolean {
@@ -29,7 +29,7 @@ export class ValidatorResults {
   }
 
   public get numWarnings(): number {
-    return this.errors.filter(e => e.level === 'warning').length;
+    return this.errors.filter((e) => e.level === 'warning').length;
   }
 
   public get hasWarning(): boolean {

@@ -174,7 +174,7 @@ export async function waitForTabChange(): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 500);
 
-    const disposer = vscode.window.onDidChangeActiveTextEditor(textEditor => {
+    const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
       disposer.dispose();
 
       resolve(textEditor);
