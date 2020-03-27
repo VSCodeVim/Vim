@@ -237,7 +237,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const line = TextEditor.getLineAt(position).text;
-    const selection = vimState.editor.selections.find(s => s.contains(position));
+    const selection = vimState.editor.selections.find((s) => s.contains(position));
 
     if (selection && !selection.isEmpty) {
       // If a selection is active, delete it

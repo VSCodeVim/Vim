@@ -342,7 +342,7 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
 export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
   const firstTransformation = transformations[0];
 
-  return transformations.every(t => {
+  return transformations.every((t) => {
     return Object.entries(t).every(([key, value]) => {
       return firstTransformation[key] === value;
     });

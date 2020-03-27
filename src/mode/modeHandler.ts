@@ -27,7 +27,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync, scrollView, partition } from '../util/util';
+import { getCursorsAfterSync, scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -816,18 +816,16 @@ export class ModeHandler implements vscode.Disposable {
       return vimState;
     }
 
-
-    const textTransformations: TextTransformations[] = transformations.filter(x =>
+    const textTransformations: TextTransformations[] = transformations.filter((x) =>
       isTextTransformation(x)
     ) as any;
     const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
-      x => isMultiCursorTextTransformation(x)
+      (x) => isMultiCursorTextTransformation(x)
     ) as any;
 
     const otherTransformations = transformations.filter(
-      x => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
+      (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
     );
-
 
     let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
@@ -922,7 +920,6 @@ export class ModeHandler implements vscode.Disposable {
 
     for (const transformation of otherTransformations) {
       switch (transformation.type) {
-
         case 'insertTextVSCode':
           await TextEditor.insert(transformation.text);
           vimState.cursors[0] = Range.FromVSCodeSelection(this.vimState.editor.selection);
