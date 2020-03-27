@@ -57,7 +57,7 @@ class GlobalState {
     await this._searchHistory.load();
     this._searchHistory
       .get()
-      .forEach(val =>
+      .forEach((val) =>
         this.searchStatePrevious.push(
           new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined, Mode.Normal)
         )
@@ -110,7 +110,7 @@ class GlobalState {
     const items = this._searchStatePrevious
       .slice()
       .reverse()
-      .map(searchState => {
+      .map((searchState) => {
         return {
           label: searchState.searchString,
           searchState: searchState,

@@ -163,8 +163,6 @@ class Configuration implements IConfiguration {
     return this.cursorTypeMap[cursorStyle];
   }
 
-  experimentalOptimizations = false;
-
   handleKeys: IHandleKeys[] = [];
 
   useSystemClipboard = false;
@@ -397,9 +395,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function(target: any, propertyKey: string) {
+  return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function() {
+      get: function () {
         // retrieve value from vim configuration
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
@@ -416,7 +414,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function(value) {
+      set: function (value) {
         // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 

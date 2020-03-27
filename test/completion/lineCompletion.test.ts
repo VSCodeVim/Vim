@@ -19,11 +19,11 @@ suite('Provide line completions', () => {
 
   teardown(cleanUpWorkspace);
 
-  const setupTestWithLines = async lines => {
+  const setupTestWithLines = async (lines) => {
     vimState.cursorStopPosition = new Position(0, 0);
 
     await modeHandler.handleKeyEvent('<Esc>');
-    await vimState.editor.edit(builder => {
+    await vimState.editor.edit((builder) => {
       builder.insert(new Position(0, 0), lines.join('\n'));
     });
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'j', 'j', 'A']);

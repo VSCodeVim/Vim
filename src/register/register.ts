@@ -324,7 +324,7 @@ export class Register {
 
     if (baseOperator instanceof YankOperator || baseOperator instanceof CommandYankFullLine) {
       // 'yank' to 0 only if no register was specified
-      const registerCommand = vimState.recordedState.actionsRun.find(value => {
+      const registerCommand = vimState.recordedState.actionsRun.find((value) => {
         return value instanceof CommandRegister;
       });
 

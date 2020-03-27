@@ -6,11 +6,7 @@ import { testIt } from '../testSimplifier';
 import { KeypressState } from '../../src/actions/base';
 
 function createRandomEditorIdentity(): EditorIdentity {
-  return new EditorIdentity(
-    Math.random()
-      .toString(36)
-      .substring(7)
-  );
+  return new EditorIdentity(Math.random().toString(36).substring(7));
 }
 
 suite('Mode Handler Map', () => {

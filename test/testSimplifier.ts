@@ -12,12 +12,7 @@ import { globalState } from '../src/state/globalState';
 
 export function getTestingFunctions() {
   const getNiceStack = (stack: string | undefined): string => {
-    return stack
-      ? stack
-          .split('\n')
-          .splice(2, 1)
-          .join('\n')
-      : 'no stack available :(';
+    return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
   };
 
   const newTest = (testObj: ITestObject): void => {
@@ -247,7 +242,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   await modeHandler.handleKeyEvent('<Esc>');
 
   // Insert all the text as a single action.
-  await modeHandler.vimState.editor.edit(builder => {
+  await modeHandler.vimState.editor.edit((builder) => {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
 
@@ -300,15 +295,15 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   // jumps: check jumps are correct if given
   if (testObj.jumps !== undefined) {
     assert.deepEqual(
-      jumpTracker.jumps.map(j => lines[j.position.line] || '<MISSING>'),
-      testObj.jumps.map(t => t.replace('|', '')),
+      jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
+      testObj.jumps.map((t) => t.replace('|', '')),
       'Incorrect jumps found'
     );
 
     const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
     const actualJumpPosition =
       (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
-    const expectedJumpPosition = stripBar(testObj.jumps.find(t => t.includes('|'))) || '<FRONT>';
+    const expectedJumpPosition = stripBar(testObj.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
     assert.deepEqual(
       actualJumpPosition.toString(),

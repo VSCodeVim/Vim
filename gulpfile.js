@@ -19,7 +19,7 @@ const releaseOptions = {
 
 // prettier
 function runPrettier(command, done) {
-  exec(command, function(err, stdout) {
+  exec(command, function (err, stdout) {
     if (err) {
       return done(new PluginError('runPrettier', { message: err }));
     }
@@ -30,7 +30,7 @@ function runPrettier(command, done) {
 
     var files = stdout
       .split(/\r?\n/)
-      .filter(f => {
+      .filter((f) => {
         return f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.md');
       })
       .join(' ');
@@ -40,7 +40,7 @@ function runPrettier(command, done) {
     }
 
     const prettierPath = path.normalize('./node_modules/.bin/prettier');
-    exec(`${prettierPath} --write ${files}`, function(err) {
+    exec(`${prettierPath} --write ${files}`, function (err) {
       if (err) {
         return done(new PluginError('runPrettier', { message: err }));
       }
@@ -106,7 +106,7 @@ function createChangelog(done) {
     }
   );
 
-  dockerRunCmd.on('exit', function(exitCode) {
+  dockerRunCmd.on('exit', function (exitCode) {
     done(exitCode);
   });
 }
@@ -133,7 +133,7 @@ function updateVersion(done) {
     });
 }
 
-gulp.task('tsc', function() {
+gulp.task('tsc', function () {
   var isError = false;
 
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
@@ -153,7 +153,7 @@ gulp.task('tsc', function() {
     .pipe(gulp.dest('out'));
 });
 
-gulp.task('tslint', function() {
+gulp.task('tslint', function () {
   const program = require('tslint').Linter.createProgram('./tsconfig.json');
   return gulp
     .src(['**/*.ts', '!node_modules/**', '!typings/**'])
@@ -166,25 +166,25 @@ gulp.task('tslint', function() {
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
-gulp.task('prettier', function(done) {
+gulp.task('prettier', function (done) {
   // files changed
   runPrettier('git diff --name-only HEAD', done);
 });
 
-gulp.task('forceprettier', function(done) {
+gulp.task('forceprettier', function (done) {
   // files managed by git
   runPrettier('git ls-files', done);
 });
 
-gulp.task('commit-hash', function(done) {
-  git.revParse({ args: 'HEAD', quiet: true }, function(err, hash) {
+gulp.task('commit-hash', function (done) {
+  git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
     require('fs').writeFileSync('out/version', hash);
     done();
   });
 });
 
 // test
-gulp.task('test', function(done) {
+gulp.task('test', function (done) {
   // the flag --grep takes js regex as a string and filters by test and test suite names
   var knownOptions = {
     string: 'grep',
@@ -205,7 +205,7 @@ gulp.task('test', function(done) {
     }
   );
 
-  dockerBuildCmd.on('exit', function(exitCode) {
+  dockerBuildCmd.on('exit', function (exitCode) {
     if (exitCode !== 0) {
       return done(
         new PluginError('test', {
@@ -229,7 +229,7 @@ gulp.task('test', function(done) {
       stdio: 'inherit',
     });
 
-    dockerRunCmd.on('exit', function(exitCode) {
+    dockerRunCmd.on('exit', function (exitCode) {
       done(exitCode);
     });
   });

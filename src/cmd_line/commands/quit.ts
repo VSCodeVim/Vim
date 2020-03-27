@@ -29,7 +29,7 @@ export class QuitCommand extends node.CommandBase {
     // NOTE: We can't currently get all open text editors, so this isn't perfect. See #3809
     const duplicatedInSplit =
       vscode.window.visibleTextEditors.filter(
-        editor => editor.document === this.activeTextEditor!.document
+        (editor) => editor.document === this.activeTextEditor!.document
       ).length > 1;
     if (
       this.activeTextEditor!.document.isDirty &&
