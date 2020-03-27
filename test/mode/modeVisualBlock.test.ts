@@ -206,6 +206,14 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: "Can handle 'J' when start position of the visual block is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: '<C-v>kkJ',
+    end: ['one| two three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can handle ~/g~ in visual block mode',
     start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
     keysPressed: '<C-v>jl~jjl<C-v>jlg~',
