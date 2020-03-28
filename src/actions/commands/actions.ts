@@ -2635,15 +2635,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Insert);
     let count = vimState.recordedState.count || 1;
-    // Why do we do this? Who fucking knows??? If the cursor is at the
-    // beginning of the line, then editor.action.insertLineBefore does some
-    // weird things with following paste command. Refer to
-    // https://github.com/VSCodeVim/Vim/pull/1663#issuecomment-300573129 for
-    // more details.
-    const tPos = Position.FromVSCodePosition(
-      vscode.window.activeTextEditor!.selection.active
-    ).getRight();
-    vscode.window.activeTextEditor!.selection = new vscode.Selection(tPos, tPos);
+
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
