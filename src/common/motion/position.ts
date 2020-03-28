@@ -37,20 +37,6 @@ export class PositionDiff {
     this.type = type;
   }
 
-  /**
-   * Add this PositionDiff to another PositionDiff.
-   */
-  public addDiff(other: PositionDiff) {
-    if (this.type !== PositionDiffType.Offset || other.type !== PositionDiffType.Offset) {
-      throw new Error("johnfn hasn't done this case yet and doesnt want to");
-    }
-
-    return new PositionDiff({
-      line: this.line + other.line,
-      character: this.character + other.character,
-    });
-  }
-
   public static newBOLDiff(lineOffset: number = 0) {
     return new PositionDiff({
       line: lineOffset,
@@ -117,43 +103,6 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Iterates over every position in the document starting at start, returning
-   * at every position the current line text, character text, and a position object.
-   */
-  public static *IterateDocument(
-    start: Position,
-    forward = true
-  ): Iterable<{ line: string; char: string; pos: Position }> {
-    if (forward) {
-      for (let lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
-        const line = TextEditor.getLine(lineIndex).text;
-
-        let charIndex = lineIndex === start.line ? start.character : 0;
-        for (; charIndex < line.length; charIndex++) {
-          yield {
-            line: line,
-            char: line[charIndex],
-            pos: new Position(lineIndex, charIndex),
-          };
-        }
-      }
-    } else {
-      for (let lineIndex = start.line; lineIndex >= 0; lineIndex--) {
-        const line = TextEditor.getLine(lineIndex).text;
-
-        let charIndex = lineIndex === start.line ? start.character : line.length - 1;
-        for (; charIndex >= 0; charIndex--) {
-          yield {
-            line: line,
-            char: line[charIndex],
-            pos: new Position(lineIndex, charIndex),
-          };
-        }
-      }
-    }
-  }
-
-  /**
    * Iterate over every position in the block defined by the two positions passed in.
    */
   public static *IterateBlock(
@@ -169,44 +118,6 @@ export class Position extends vscode.Position {
           char: line[charIndex],
           pos: new Position(lineIndex, charIndex),
         };
-      }
-    }
-  }
-
-  /**
-   * Iterate over every position in the selection defined by the two positions passed in.
-   */
-  public static *IterateSelection(
-    topLeft: Position,
-    bottomRight: Position
-  ): Iterable<{ line: string; char: string; pos: Position }> {
-    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
-      const line = TextEditor.getLine(lineIndex).text;
-
-      if (lineIndex === topLeft.line) {
-        for (let charIndex = topLeft.character; charIndex < line.length + 1; charIndex++) {
-          yield {
-            line: line,
-            char: line[charIndex],
-            pos: new Position(lineIndex, charIndex),
-          };
-        }
-      } else if (lineIndex === bottomRight.line) {
-        for (let charIndex = 0; charIndex < bottomRight.character + 1; charIndex++) {
-          yield {
-            line: line,
-            char: line[charIndex],
-            pos: new Position(lineIndex, charIndex),
-          };
-        }
-      } else {
-        for (let charIndex = 0; charIndex < line.length + 1; charIndex++) {
-          yield {
-            line: line,
-            char: line[charIndex],
-            pos: new Position(lineIndex, charIndex),
-          };
-        }
       }
     }
   }
@@ -524,11 +435,11 @@ export class Position extends vscode.Position {
     return this.getWordRightWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordRight(inclusive: boolean = false): Position {
+  public getBigWordRight(): Position {
     return this.getWordRightWithRegex(Position._nonBigWordCharRegex);
   }
 
-  public getCamelCaseWordRight(inclusive: boolean = false): Position {
+  public getCamelCaseWordRight(): Position {
     return this.getWordRightWithRegex(Position._nonCamelCaseWordCharRegex);
   }
 
@@ -718,6 +629,7 @@ export class Position extends vscode.Position {
    * invisible newline character.
    */
   public getLineEndIncludingEOL(): Position {
+    // TODO: isn't this one too far?
     return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
   }
 
@@ -832,9 +744,7 @@ export class Position extends vscode.Position {
     segments.push(`([^\\s${escaped}]+)`);
     segments.push(`[${escaped}]+`);
     segments.push(`$^`);
-    let result = new RegExp(segments.join('|'), 'g');
-
-    return result;
+    return new RegExp(segments.join('|'), 'g');
   }
 
   private static makeCamelCaseWordRegex(characterSet: string): RegExp {
@@ -875,9 +785,7 @@ export class Position extends vscode.Position {
 
     // it can be difficult to grok the behavior of the above regex
     // feel free to check out https://regex101.com/r/mkVeiH/1 as a live example
-    const result = new RegExp(segments.join('|'), 'g');
-
-    return result;
+    return new RegExp(segments.join('|'), 'g');
   }
 
   private static makeUnicodeWordRegex(keywordChars: string): RegExp {
@@ -995,8 +903,7 @@ export class Position extends vscode.Position {
 
     // https://regex101.com/r/X1agK6/2
     const segments = symbolSegments.concat(wordSegment, '$^');
-    const regexp = new RegExp(segments.join('|'), 'ug');
-    return regexp;
+    return new RegExp(segments.join('|'), 'ug');
   }
 
   private static getAllPositions(line: string, regex: RegExp): number[] {
@@ -1044,8 +951,7 @@ export class Position extends vscode.Position {
     forceFirst: boolean = false,
     inclusive: boolean = false
   ): number | undefined {
-    const positions = Position.getAllPositions(text, regex);
-    return positions
+    return Position.getAllPositions(text, regex)
       .reverse()
       .find((index) => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
   }
@@ -1068,7 +974,7 @@ export class Position extends vscode.Position {
       }
     }
 
-    return new Position(0, 0).getLineBegin();
+    return new Position(0, 0);
   }
 
   /**
@@ -1117,7 +1023,7 @@ export class Position extends vscode.Position {
       }
     }
 
-    return new Position(0, 0).getLineBegin();
+    return new Position(0, 0);
   }
 
   /**
@@ -1230,65 +1136,5 @@ export class Position extends vscode.Position {
 
     // Only happens at end of document
     return this;
-  }
-
-  private findHelper(
-    char: string,
-    count: number,
-    direction: 'forward' | 'backward'
-  ): Position | undefined {
-    const line = TextEditor.getLineAt(this);
-    let index = this.character;
-
-    while (count && index !== -1) {
-      if (direction === 'forward') {
-        index = line.text.indexOf(char, index + 1);
-      } else {
-        index = line.text.lastIndexOf(char, index - 1);
-      }
-      count--;
-    }
-
-    if (index > -1) {
-      return new Position(this.line, index);
-    }
-
-    return undefined;
-  }
-
-  public tilForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, 'forward');
-    if (!position) {
-      return null;
-    }
-
-    return new Position(this.line, position.character - 1);
-  }
-
-  public tilBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, 'backward');
-    if (!position) {
-      return null;
-    }
-
-    return new Position(this.line, position.character + 1);
-  }
-
-  public findForwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, 'forward');
-    if (!position) {
-      return null;
-    }
-
-    return new Position(this.line, position.character);
-  }
-
-  public findBackwards(char: string, count: number = 1): Position | null {
-    const position = this.findHelper(char, count, 'backward');
-    if (!position) {
-      return null;
-    }
-
-    return position;
   }
 }

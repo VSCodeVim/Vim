@@ -202,7 +202,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         continue;
       }
 
-      const range = Range.FromIMovement(iMotion);
+      const range = new Range(iMotion.start, iMotion.stop);
       let contender: Range | undefined = undefined;
 
       if (

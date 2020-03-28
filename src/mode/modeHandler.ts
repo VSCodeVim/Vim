@@ -628,37 +628,35 @@ export class ModeHandler implements vscode.Disposable {
       vimState.cursorStartPosition = vimState.cursorStopPosition;
     }
 
-    // Ensure cursor is within bounds
+    // Ensure cursors are within bounds
     if (!vimState.editor.document.isClosed && vimState.editor === vscode.window.activeTextEditor) {
-      const cursors = new Array<Range>();
-      for (let { range } of Range.IterateRanges(vimState.cursors)) {
+      vimState.cursors = vimState.cursors.map((cursor: Range) => {
         // adjust start/stop
         const documentEndPosition = TextEditor.getDocumentEnd(vimState.editor);
         const documentLineCount = TextEditor.getLineCount(vimState.editor);
-        if (range.start.line >= documentLineCount) {
-          range = range.withNewStart(documentEndPosition);
+        if (cursor.start.line >= documentLineCount) {
+          cursor = cursor.withNewStart(documentEndPosition);
         }
-        if (range.stop.line >= documentLineCount) {
-          range = range.withNewStop(documentEndPosition);
+        if (cursor.stop.line >= documentLineCount) {
+          cursor = cursor.withNewStop(documentEndPosition);
         }
 
         // adjust column
         if (vimState.currentMode === Mode.Normal) {
-          const currentLineLength = TextEditor.getLineAt(range.stop).text.length;
+          const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
           if (currentLineLength > 0) {
-            const lineEndPosition = range.start.getLineEnd().getLeftThroughLineBreaks(true);
-            if (range.start.character >= currentLineLength) {
-              range = range.withNewStart(lineEndPosition);
+            const lineEndPosition = cursor.start.getLineEnd().getLeftThroughLineBreaks(true);
+            if (cursor.start.character >= currentLineLength) {
+              cursor = cursor.withNewStart(lineEndPosition);
             }
 
-            if (range.stop.character >= currentLineLength) {
-              range = range.withNewStop(lineEndPosition);
+            if (cursor.stop.character >= currentLineLength) {
+              cursor = cursor.withNewStop(lineEndPosition);
             }
           }
         }
-        cursors.push(range);
-      }
-      vimState.cursors = cursors;
+        return cursor;
+      });
     }
 
     // Update the current history step to have the latest cursor position
@@ -719,7 +717,7 @@ export class ModeHandler implements vscode.Disposable {
           vimState.lastMovementFailed = true;
         }
 
-        vimState.cursors[i] = Range.FromIMovement(result);
+        vimState.cursors[i] = new Range(result.start, result.stop);
 
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
@@ -1062,7 +1060,10 @@ export class ModeHandler implements vscode.Disposable {
           diffs.push(vimState.recordedState.operatorPositionDiff);
         }
 
-        return diffs.reduce((cursor, diff) => cursor.add(diff), Range.FromVSCodeSelection(sel));
+        return diffs.reduce(
+          (cursor, diff) => new Range(cursor.start.add(diff), cursor.stop.add(diff)),
+          Range.FromVSCodeSelection(sel)
+        );
       });
 
       vimState.recordedState.operatorPositionDiff = undefined;
