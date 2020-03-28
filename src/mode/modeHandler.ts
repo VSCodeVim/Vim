@@ -1214,16 +1214,12 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case Mode.VisualLine:
-            selections.push(
-              new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd()
-              )
-            );
+            [start, stop] = Position.sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
-            for (const line of Position.IterateLinesInBlock(vimState, cursor)) {
+            for (const line of TextEditor.iterateLinesInBlock(vimState, cursor)) {
               selections.push(new vscode.Selection(line.start, line.end));
             }
             break;
@@ -1414,7 +1410,7 @@ export class ModeHandler implements vscode.Disposable {
 
       result = PairMatcher.nextPairedChar(vimState.cursorStopPosition.getLeft(), key);
       if (result !== undefined) {
-        if (vimState.cursorStopPosition.getLeftByCount(2).isEqual(result)) {
+        if (vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
           return true;
         }
       }

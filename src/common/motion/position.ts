@@ -1,12 +1,9 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
-import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from '../../mode/mode';
 import { clamp } from '../../util/util';
-import { Range } from './range';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
@@ -89,104 +86,24 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Returns which of the 2 provided Positions comes earlier in the document.
+   * @returns the Position of the 2 provided which comes earlier in the document.
    */
-  public static EarlierOf(p1: Position, p2: Position): Position {
+  public static earlierOf(p1: Position, p2: Position): Position {
     return p1.isBefore(p2) ? p1 : p2;
   }
 
   /**
-   * Returns which of the 2 provided Positions comes later in the document.
+   * @returns the Position of the 2 provided which comes later in the document.
    */
-  public static LaterOf(p1: Position, p2: Position): Position {
+  public static laterOf(p1: Position, p2: Position): Position {
     return p1.isBefore(p2) ? p2 : p1;
   }
 
   /**
-   * Iterate over every position in the block defined by the two positions passed in.
+   * @returns the given Positions in the order they appear in the document.
    */
-  public static *IterateBlock(
-    topLeft: Position,
-    bottomRight: Position
-  ): Iterable<{ line: string; char: string; pos: Position }> {
-    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
-      const line = TextEditor.getLine(lineIndex).text;
-
-      for (let charIndex = topLeft.character; charIndex < bottomRight.character + 1; charIndex++) {
-        yield {
-          line: line,
-          char: line[charIndex],
-          pos: new Position(lineIndex, charIndex),
-        };
-      }
-    }
-  }
-
-  /**
-   * Iterate over every line in the block defined by the two positions (Range) passed in.
-   * If no range is given, the primary cursor will be used as the block.
-   *
-   * This is intended for visual block mode.
-   */
-  public static *IterateLinesInBlock(
-    vimState: VimState,
-    range?: Range,
-    options: { reverse?: boolean } = { reverse: false }
-  ): Iterable<{ line: string; start: Position; end: Position }> {
-    const { reverse } = options;
-
-    if (range === undefined) {
-      range = vimState.cursors[0];
-    }
-
-    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
-    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
-
-    const itrStart = reverse ? bottomRight.line : topLeft.line;
-    const itrEnd = reverse ? topLeft.line : bottomRight.line;
-
-    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
-
-    for (
-      let lineIndex = itrStart;
-      reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd;
-      reverse ? lineIndex-- : lineIndex++
-    ) {
-      const line = TextEditor.getLine(lineIndex).text;
-      const endCharacter = runToLineEnd
-        ? line.length + 1
-        : Math.min(line.length, bottomRight.character + 1);
-
-      yield {
-        line: line.substring(topLeft.character, endCharacter),
-        start: new Position(lineIndex, topLeft.character),
-        end: new Position(lineIndex, endCharacter),
-      };
-    }
-  }
-
-  /**
-   * Iterates through words on the same line, starting from the current position.
-   */
-  public static *IterateWords(
-    start: Position
-  ): Iterable<{ start: Position; end: Position; word: string }> {
-    const text = TextEditor.getLineAt(start).text;
-    let wordEnd = start.getCurrentWordEnd(true);
-    do {
-      const word = text.substring(start.character, wordEnd.character + 1);
-      yield {
-        start: start,
-        end: wordEnd,
-        word: word,
-      };
-
-      if (wordEnd.getRight().isLineEnd()) {
-        return;
-      }
-      start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd(true);
-    } while (true);
+  public static sorted(p1: Position, p2: Position): [Position, Position] {
+    return p1.isBefore(p2) ? [p1, p2] : [p2, p1];
   }
 
   /**
@@ -224,11 +141,19 @@ export class Position extends vscode.Position {
     return new Position(resultLine, resultChar);
   }
 
+  /**
+   * @returns a new Position with the same character and the given line.
+   * Does bounds-checking to make sure the result is valid.
+   */
   public withLine(line: number): Position {
     line = clamp(line, 0, TextEditor.getLineCount() - 1);
     return new Position(line, this.character);
   }
 
+  /**
+   * @returns a new Position with the same line and the given character.
+   * Does bounds-checking to make sure the result is valid.
+   */
   public withColumn(column: number): Position {
     column = clamp(column, 0, TextEditor.getLineLength(this.line));
     return new Position(this.line, column);
@@ -250,22 +175,40 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Gets the position one or more to the left of this position. Does not go up line
-   * breaks.
+   * @returns the Position `count` characters to the left of this Position. Does not go over line breaks.
    */
-  public getLeft(count: number = 1): Position {
-    let newCharacter = Math.max(this.character - count, 0);
-    if (newCharacter !== this.character) {
-      return new Position(this.line, newCharacter);
-    }
-
-    return this;
+  public getLeft(count = 1): Position {
+    return new Position(this.line, Math.max(this.character - count, 0));
   }
 
   /**
-   * Same as getLeft, but goes up to the previous line on line
-   * breaks.
-   *
+   * @returns the Position `count` characters to the right of this Position. Does not go over line breaks.
+   */
+  public getRight(count = 1): Position {
+    return new Position(
+      this.line,
+      Math.min(this.character + count, TextEditor.getLineLength(this.line))
+    );
+  }
+
+  /**
+   * @returns the Position `count` lines down from this Position
+   */
+  public getDown(count = 1): Position {
+    const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
+    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  }
+
+  /**
+   * @returns the Position `count` lines up from this Position
+   */
+  public getUp(count = 1): Position {
+    const line = Math.max(this.line - count, 0);
+    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  }
+
+  /**
+   * Same as getLeft, but goes up to the previous line on line breaks.
    * Equivalent to left arrow (in a non-vim editor!)
    */
   public getLeftThroughLineBreaks(includeEol = true): Position {
@@ -279,9 +222,9 @@ export class Position extends vscode.Position {
     }
 
     if (includeEol) {
-      return this.getUp(0).getLineEnd();
+      return this.getUpWithDesiredColumn(0).getLineEnd();
     } else {
-      return this.getUp(0).getLineEnd().getLeft();
+      return this.getUpWithDesiredColumn(0).getLineEnd().getLeft();
     }
   }
 
@@ -292,11 +235,11 @@ export class Position extends vscode.Position {
     }
 
     if (this.isLineEnd()) {
-      return this.getDown(0);
+      return this.getDownWithDesiredColumn(0);
     }
 
     if (!includeEol && this.getRight().isLineEnd()) {
-      return this.getDown(0);
+      return this.getDownWithDesiredColumn(0);
     }
 
     return this.getRight();
@@ -318,18 +261,10 @@ export class Position extends vscode.Position {
     return pos;
   }
 
-  public getRight(count: number = 1): Position {
-    if (!this.isLineEnd()) {
-      return new Position(this.line, this.character + count);
-    }
-
-    return this;
-  }
-
   /**
    * Get the position of the line directly below the current line.
    */
-  public getDown(desiredColumn: number): Position {
+  public getDownWithDesiredColumn(desiredColumn: number): Position {
     if (TextEditor.getDocumentEnd().line !== this.line) {
       let nextLine = this.line + 1;
       let nextLineLength = TextEditor.getLineLength(nextLine);
@@ -343,7 +278,7 @@ export class Position extends vscode.Position {
   /**
    * Get the position of the line directly above the current line.
    */
-  public getUp(desiredColumn: number): Position {
+  public getUpWithDesiredColumn(desiredColumn: number): Position {
     if (TextEditor.getDocumentBegin().line !== this.line) {
       let prevLine = this.line - 1;
       let prevLineLength = TextEditor.getLineLength(prevLine);
@@ -352,45 +287,6 @@ export class Position extends vscode.Position {
     }
 
     return this;
-  }
-
-  /**
-   * Get the position *count* lines down from this position, but not lower
-   * than the end of the document.
-   */
-  public getDownByCount(count = 0, { boundsCheck = true } = {}): Position {
-    const line = boundsCheck
-      ? Math.min(TextEditor.getLineCount() - 1, this.line + count)
-      : this.line + count;
-
-    return new Position(line, this.character);
-  }
-
-  /**
-   * Get the position *count* lines up from this position, but not higher
-   * than the end of the document.
-   */
-  public getUpByCount(count = 0): Position {
-    return new Position(Math.max(0, this.line - count), this.character);
-  }
-
-  /**
-   * Get the position *count* lines left from this position, but not farther
-   * than the beginning of the line
-   */
-  public getLeftByCount(count = 0): Position {
-    return new Position(this.line, Math.max(0, this.character - count));
-  }
-
-  /**
-   * Get the position *count* lines right from this position, but not farther
-   * than the end of the line
-   */
-  public getRightByCount(count = 0): Position {
-    return new Position(
-      this.line,
-      Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count)
-    );
   }
 
   /**
@@ -480,38 +376,9 @@ export class Position extends vscode.Position {
     return this.getCurrentWordEndWithRegex(Position._nonCamelCaseWordCharRegex, inclusive);
   }
 
-  /**
-   * Get the boundary position of the section.
-   */
-  public getSectionBoundary(args: { forward: boolean; boundary: string }): Position {
-    let pos: Position = this;
-
-    if (
-      (args.forward && pos.line === TextEditor.getLineCount() - 1) ||
-      (!args.forward && pos.line === 0)
-    ) {
-      return pos.getFirstLineNonBlankChar();
-    }
-
-    pos = args.forward ? pos.getDown(0) : pos.getUp(0);
-
-    while (!TextEditor.getLineAt(pos).text.startsWith(args.boundary)) {
-      if (args.forward) {
-        if (pos.line === TextEditor.getLineCount() - 1) {
-          break;
-        }
-
-        pos = pos.getDown(0);
-      } else {
-        if (pos.line === 0) {
-          break;
-        }
-
-        pos = pos.getUp(0);
-      }
-    }
-
-    return pos.getFirstLineNonBlankChar();
+  private isLineBlank(trimWhite: boolean = false): boolean {
+    let text = TextEditor.getLineAt(this).text;
+    return (trimWhite ? text.trim() : text) === '';
   }
 
   /**
@@ -522,12 +389,12 @@ export class Position extends vscode.Position {
 
     // If we're not in a paragraph yet, go down until we are.
     while (pos.isLineBlank(trimWhite) && !TextEditor.isLastLine(pos)) {
-      pos = pos.getDown(0);
+      pos = pos.getDownWithDesiredColumn(0);
     }
 
     // Go until we're outside of the paragraph, or at the end of the document.
     while (!pos.isLineBlank(trimWhite) && pos.line < TextEditor.getLineCount() - 1) {
-      pos = pos.getDown(0);
+      pos = pos.getDownWithDesiredColumn(0);
     }
 
     return pos.getLineEnd();
@@ -541,27 +408,15 @@ export class Position extends vscode.Position {
 
     // If we're not in a paragraph yet, go up until we are.
     while (pos.isLineBlank(trimWhite) && !TextEditor.isFirstLine(pos)) {
-      pos = pos.getUp(0);
+      pos = pos.getUpWithDesiredColumn(0);
     }
 
     // Go until we're outside of the paragraph, or at the beginning of the document.
     while (pos.line > 0 && !pos.isLineBlank(trimWhite)) {
-      pos = pos.getUp(0);
+      pos = pos.getUpWithDesiredColumn(0);
     }
 
     return pos.getLineBegin();
-  }
-
-  public isLineBlank(trimWhite: boolean = false): boolean {
-    let text = TextEditor.getLineAt(this).text;
-    return (trimWhite ? text.trim() : text) === '';
-  }
-
-  /**
-   * Returns true if the line this Position is on consists of only whitespace.
-   */
-  public isLineWhite(): boolean {
-    return this.isLineBlank(true);
   }
 
   public getSentenceBegin(args: { forward: boolean }): Position {
@@ -577,26 +432,26 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Get the beginning of the current line.
+   * @returns a new Position at the beginning of the current line.
    */
   public getLineBegin(): Position {
     return new Position(this.line, 0);
   }
 
   /**
-   * Get the beginning of the line, excluding preceeding whitespace.
-   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent
-   * is disabled.
+   * @returns the beginning of the line, excluding preceeding whitespace.
+   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
     if (!configuration.autoindent) {
       return this.getLineBegin();
     }
-    return this.getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(this.line);
   }
 
   /**
-   * Get the beginning of the next line.
+   * @return the beginning of the previous line.
+   * If already on the first line, return the beginning of this line.
    */
   public getPreviousLineBegin(): Position {
     if (this.line === 0) {
@@ -607,7 +462,8 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Get the beginning of the next line.
+   * @return the beginning of the next line.
+   * If already on the last line, return the *end* of this line.
    */
   public getNextLineBegin(): Position {
     if (this.line >= TextEditor.getLineCount() - 1) {
@@ -618,15 +474,14 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Returns a new position at the end of this position's line.
+   * @returns a new Position at the end of this position's line.
    */
   public getLineEnd(): Position {
     return new Position(this.line, TextEditor.getLineLength(this.line));
   }
 
   /**
-   * Returns a new position at the end of this position's line, including the
-   * invisible newline character.
+   * @returns a new Position at the end of this Position's line, including the invisible newline character.
    */
   public getLineEndIncludingEOL(): Position {
     // TODO: isn't this one too far?
@@ -634,20 +489,14 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Returns a new Position one to the left if this position is on the EOL. Otherwise,
-   * returns this position.
+   * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
    */
   public getLeftIfEOL(): Position {
-    if (this.character === TextEditor.getLineLength(this.line)) {
-      return this.getLeft();
-    } else {
-      return this;
-    }
+    return this.character === TextEditor.getLineLength(this.line) ? this.getLeft() : this;
   }
 
   /**
-   * Get the position that the cursor would be at if you
-   * pasted *text* at the current position.
+   * @returns the position that the cursor would be at if you pasted *text* at the current position.
    */
   public advancePositionByText(text: string): Position {
     const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
@@ -675,7 +524,7 @@ export class Position extends vscode.Position {
   }
 
   public isFirstWordOfLine(): boolean {
-    return Position.getFirstNonBlankCharAtLine(this.line) === this.character;
+    return TextEditor.getFirstNonWhitespaceCharOnLine(this.line).character === this.character;
   }
 
   public isAtDocumentBegin(): boolean {
@@ -698,22 +547,11 @@ export class Position extends vscode.Position {
     }
   }
 
-  public static getFirstNonBlankCharAtLine(line: number): number {
-    return TextEditor.readLineAt(line).match(/^\s*/)![0].length;
-  }
-
-  /**
-   * The position of the first character on this line which is not whitespace.
-   */
-  public getFirstLineNonBlankChar(): Position {
-    return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
-  }
-
   /**
    * If `vim.startofline` is set, get first non-blank character's position.
    */
   public obeyStartOfLine(): Position {
-    return configuration.startofline ? this.getFirstLineNonBlankChar() : this;
+    return configuration.startofline ? TextEditor.getFirstNonWhitespaceCharOnLine(this.line) : this;
   }
 
   public isValid(textEditor: vscode.TextEditor): boolean {

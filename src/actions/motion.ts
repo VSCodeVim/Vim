@@ -226,12 +226,12 @@ class MoveDown extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
-    return position.getDown(vimState.desiredColumn);
+    return position.getDownWithDesiredColumn(vimState.desiredColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
+    return position.getDownWithDesiredColumn(position.getLineEnd().character);
   }
 }
 
@@ -251,12 +251,12 @@ class MoveUp extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
-    return position.getUp(vimState.desiredColumn);
+    return position.getUpWithDesiredColumn(vimState.desiredColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUp(position.getLineEnd().character);
+    return position.getUpWithDesiredColumn(position.getLineEnd().character);
   }
 }
 
@@ -455,7 +455,7 @@ export class MarkMovementBOL extends BaseMovement {
       await ensureEditorIsActive(mark.editor);
     }
 
-    return mark.position.getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
   }
 }
 
@@ -564,7 +564,7 @@ class MoveDownNonBlank extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownByCount(Math.max(count, 1)).getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown(Math.max(count, 1)).line);
   }
 }
 
@@ -578,7 +578,7 @@ class MoveUpNonBlank extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpByCount(Math.max(count, 1)).getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getUp(Math.max(count, 1)).line);
   }
 }
 
@@ -591,7 +591,9 @@ class MoveDownUnderscore extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return position.getDownByCount(Math.max(count - 1, 0)).getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(
+      position.getDown(Math.max(count - 1, 0)).line
+    );
   }
 }
 
@@ -835,7 +837,7 @@ class MoveLineEnd extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return position.getDownByCount(Math.max(count - 1, 0)).getLineEnd();
+    return position.getDown(Math.max(count - 1, 0)).getLineEnd();
   }
 }
 
@@ -890,12 +892,12 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
 
     // If in visual, return a selection
     if (pos instanceof Position) {
-      return pos.getDownByCount(count - 1);
+      return pos.getDown(count - 1);
     } else if (isIMovement(pos)) {
-      return { start: pos.start, stop: pos.stop.getDownByCount(count - 1).getLeft() };
+      return { start: pos.start, stop: pos.stop.getDown(count - 1).getLeft() };
     }
 
-    return newPos.getDownByCount(count - 1);
+    return newPos.getDown(count - 1);
   }
 }
 
@@ -970,12 +972,12 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getUp(vimState.desiredColumn);
+    return position.getUpWithDesiredColumn(vimState.desiredColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUp(position.getLineEnd().character);
+    return position.getUpWithDesiredColumn(position.getLineEnd().character);
   }
 }
 
@@ -991,12 +993,12 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getDown(vimState.desiredColumn);
+    return position.getDownWithDesiredColumn(vimState.desiredColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
+    return position.getDownWithDesiredColumn(position.getLineEnd().character);
   }
 }
 
@@ -1114,7 +1116,7 @@ class MoveNonBlank extends BaseMovement {
   keys = ['^'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
   }
 }
 
@@ -1134,7 +1136,7 @@ class MoveNextLineNonBlank extends BaseMovement {
       count++;
     }
 
-    return position.getDownByCount(count).getFirstLineNonBlankChar();
+    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown(count).line);
   }
 }
 
@@ -1427,10 +1429,34 @@ abstract class MoveSectionBoundary extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getSectionBoundary({
-      forward: this.forward,
-      boundary: this.boundary,
-    });
+    if (
+      (this.forward && position.line === TextEditor.getLineCount() - 1) ||
+      (!this.forward && position.line === 0)
+    ) {
+      return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+    }
+
+    position = this.forward
+      ? position.getDownWithDesiredColumn(0)
+      : position.getUpWithDesiredColumn(0);
+
+    while (!TextEditor.getLineAt(position).text.startsWith(this.boundary)) {
+      if (this.forward) {
+        if (position.line === TextEditor.getLineCount() - 1) {
+          break;
+        }
+
+        position = position.getDownWithDesiredColumn(0);
+      } else {
+        if (position.line === 0) {
+          break;
+        }
+
+        position = position.getUpWithDesiredColumn(0);
+      }
+    }
+
+    return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
   }
 }
 
@@ -1533,7 +1559,8 @@ class MoveToMatchingBracket extends BaseMovement {
       }
 
       const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
-      return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+
+      return TextEditor.getFirstNonWhitespaceCharOnLine(targetLine - 1);
     } else {
       return super.execActionWithCount(position, vimState, count);
     }

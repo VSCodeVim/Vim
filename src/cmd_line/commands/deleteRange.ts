@@ -35,7 +35,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
 
     if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-      end = end.getDown(0);
+      end = end.getDownWithDesiredColumn(0);
     }
 
     if (isOnLastLine && start.line !== 0) {
@@ -46,7 +46,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     text = text.endsWith('\r\n') ? text.slice(0, -2) : text.slice(0, -1);
     await TextEditor.delete(new vscode.Range(start, end));
 
-    let resultPosition = Position.EarlierOf(start, end);
+    let resultPosition = Position.earlierOf(start, end);
     if (start.character > TextEditor.getLineAt(start).text.length) {
       resultPosition = start.getLeft();
     } else {

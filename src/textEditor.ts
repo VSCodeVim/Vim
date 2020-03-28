@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
+import { VimState } from './state/vimState';
+import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
+import { Range } from './common/motion/range';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -185,11 +188,8 @@ export class TextEditor {
   static getIndentationLevel(line: string): number {
     let tabSize = configuration.tabstop;
 
-    let firstNonWhiteSpace = 0;
-    let checkLine = line.match(/^\s*/);
-    if (checkLine) {
-      firstNonWhiteSpace = checkLine[0].length;
-    }
+    const lineCheck = line.match(/^\s*/);
+    const firstNonWhiteSpace = lineCheck ? lineCheck[0].length : 0;
 
     let visibleColumn: number = 0;
 
@@ -215,15 +215,13 @@ export class TextEditor {
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
     let tabSize = configuration.tabstop;
-    let insertTabAsSpaces = configuration.expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;
     }
 
     let indentString = '';
-
-    if (insertTabAsSpaces) {
+    if (configuration.expandtab) {
       indentString += new Array(screenCharacters + 1).join(' ');
     } else {
       if (screenCharacters / tabSize > 0) {
@@ -233,11 +231,8 @@ export class TextEditor {
       indentString += new Array((screenCharacters % tabSize) + 1).join(' ');
     }
 
-    let firstNonWhiteSpace = 0;
-    let lineCheck = line.match(/^\s*/);
-    if (lineCheck) {
-      firstNonWhiteSpace = lineCheck[0].length;
-    }
+    const lineCheck = line.match(/^\s*/);
+    const firstNonWhiteSpace = lineCheck ? lineCheck[0].length : 0;
 
     return indentString + line.substring(firstNonWhiteSpace, line.length);
   }
@@ -261,6 +256,81 @@ export class TextEditor {
     const char = TextEditor.getLineLength(line);
 
     return new Position(line, char);
+  }
+
+  /**
+   * @returns the Position of the first character on the given line which is not whitespace.
+   */
+  public static getFirstNonWhitespaceCharOnLine(line: number): Position {
+    return new Position(line, TextEditor.readLineAt(line).match(/^\s*/)![0].length);
+  }
+
+  /**
+   * Iterate over every line in the block defined by the two positions (Range) passed in.
+   * If no range is given, the primary cursor will be used as the block.
+   *
+   * This is intended for visual block mode.
+   */
+  public static *iterateLinesInBlock(
+    vimState: VimState,
+    range?: Range,
+    options: { reverse?: boolean } = { reverse: false }
+  ): Iterable<{ line: string; start: Position; end: Position }> {
+    const { reverse } = options;
+
+    if (range === undefined) {
+      range = vimState.cursors[0];
+    }
+
+    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
+    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
+
+    const [itrStart, itrEnd] = reverse
+      ? [bottomRight.line, topLeft.line]
+      : [topLeft.line, bottomRight.line];
+
+    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
+
+    for (
+      let lineIndex = itrStart;
+      reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd;
+      reverse ? lineIndex-- : lineIndex++
+    ) {
+      const line = TextEditor.getLine(lineIndex).text;
+      const endCharacter = runToLineEnd
+        ? line.length + 1
+        : Math.min(line.length, bottomRight.character + 1);
+
+      yield {
+        line: line.substring(topLeft.character, endCharacter),
+        start: new Position(lineIndex, topLeft.character),
+        end: new Position(lineIndex, endCharacter),
+      };
+    }
+  }
+
+  /**
+   * Iterates through words on the same line, starting from the current position.
+   */
+  public static *iterateWords(
+    start: Position
+  ): Iterable<{ start: Position; end: Position; word: string }> {
+    const text = TextEditor.getLineAt(start).text;
+    let wordEnd = start.getCurrentWordEnd(true);
+    do {
+      const word = text.substring(start.character, wordEnd.character + 1);
+      yield {
+        start: start,
+        end: wordEnd,
+        word: word,
+      };
+
+      if (wordEnd.getRight().isLineEnd()) {
+        return;
+      }
+      start = start.getWordRight();
+      wordEnd = start.getCurrentWordEnd(true);
+    } while (true);
   }
 }
 

@@ -11,6 +11,7 @@ import {
   EasyMotionWordMoveOpions,
 } from './types';
 import { globalState } from '../../../state/globalState';
+import { TextEditor } from '../../../textEditor';
 
 export interface EasymotionTrigger {
   key: string;
@@ -337,7 +338,7 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
     // Search for the beginning of all non whitespace chars on each line before the cursor
     const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
     for (const match of matches) {
-      match.position = match.position.getFirstLineNonBlankChar();
+      match.position = TextEditor.getFirstNonWhitespaceCharOnLine(match.position.line);
     }
     return matches;
   }
