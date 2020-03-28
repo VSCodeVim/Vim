@@ -714,14 +714,8 @@ abstract class SelectArgument extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
-    let leftSearchStartPosition = new Position(
-      vimState.cursorStartPosition.line,
-      vimState.cursorStartPosition.character
-    );
-    let rightSearchStartPosition = new Position(
-      vimState.cursorStartPosition.line,
-      vimState.cursorStartPosition.character
-    );
+    let leftSearchStartPosition = position;
+    let rightSearchStartPosition = position;
 
     // When the cursor is on a delimiter already, pre-advance the cursor,
     // so that our search actually spans a range. We will advance to the next argument,
