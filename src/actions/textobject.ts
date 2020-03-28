@@ -739,7 +739,7 @@ abstract class SelectArgument extends TextObjectMovement {
     const leftDelimiterPosition = SelectInnerArgument.getLeftDelimiter(leftSearchStartPosition);
     const rightDelimiterPosition = SelectInnerArgument.getRightDelimiter(rightSearchStartPosition);
 
-    if (leftDelimiterPosition === null || rightDelimiterPosition === null) {
+    if (leftDelimiterPosition === undefined || rightDelimiterPosition === undefined) {
       return failure;
     }
 
@@ -766,7 +766,7 @@ abstract class SelectArgument extends TextObjectMovement {
       //
       // In any other case we delete the right delimiter.
       if (cursorIsInLastArgument) {
-        let thereIsOnlyOneArgument = SelectArgument.openingDelimiters.includes(
+        const thereIsOnlyOneArgument = SelectArgument.openingDelimiters.includes(
           TextEditor.getCharAt(leftDelimiterPosition)
         );
 
@@ -803,17 +803,18 @@ abstract class SelectArgument extends TextObjectMovement {
     vimState.cursorStartPosition = start;
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 
-  public static getLeftDelimiter(position: Position): Position | null {
-    let leftDelimiterPosition: Position | null = null;
-    let leftWalkPos = position;
+  private static getLeftDelimiter(position: Position): Position | undefined {
+    let delimiterPosition: Position | undefined;
+    let walkingPosition = position;
     let closedParensCount = 0;
+
     while (true) {
-      let char = TextEditor.getCharAt(leftWalkPos);
+      const char = TextEditor.getCharAt(walkingPosition);
       if (closedParensCount === 0) {
         if (
           SelectArgument.openingDelimiters.includes(char) ||
@@ -821,7 +822,7 @@ abstract class SelectArgument extends TextObjectMovement {
         ) {
           // We have found the left most delimiter or the first proper delimiter
           // in our cursor's list 'depth' and thus can abort.
-          leftDelimiterPosition = leftWalkPos;
+          delimiterPosition = walkingPosition;
           break;
         }
       }
@@ -832,29 +833,29 @@ abstract class SelectArgument extends TextObjectMovement {
         closedParensCount--;
       }
 
-      if (leftWalkPos.isAtDocumentBegin()) {
+      if (walkingPosition.isAtDocumentBegin()) {
         break;
       }
 
-      leftWalkPos = leftWalkPos.getLeftThroughLineBreaks(true);
+      walkingPosition = walkingPosition.getLeftThroughLineBreaks(true);
     }
 
-    return leftDelimiterPosition;
+    return delimiterPosition;
   }
 
-  public static getRightDelimiter(position: Position): Position | null {
-    let rightDelimiterPosition: Position | null = null;
-    let rightWalkPos = position;
+  private static getRightDelimiter(position: Position): Position | undefined {
+    let delimiterPosition: Position | undefined;
+    let walkingPosition = position;
     let openedParensCount = 0;
 
     while (true) {
-      let char = TextEditor.getCharAt(rightWalkPos);
+      const char = TextEditor.getCharAt(walkingPosition);
       if (openedParensCount === 0) {
         if (
           SelectArgument.closingDelimiters.includes(char) ||
           SelectArgument.delimiters.includes(char)
         ) {
-          rightDelimiterPosition = rightWalkPos;
+          delimiterPosition = walkingPosition;
           break;
         }
       }
@@ -865,16 +866,16 @@ abstract class SelectArgument extends TextObjectMovement {
         openedParensCount--;
       }
 
-      if (rightWalkPos.isAtDocumentEnd()) {
+      if (walkingPosition.isAtDocumentEnd()) {
         break;
       }
 
       // We need to include the EOL so that isAtDocumentEnd actually
       // becomes true.
-      rightWalkPos = rightWalkPos.getRightThroughLineBreaks(true);
+      walkingPosition = walkingPosition.getRightThroughLineBreaks(true);
     }
 
-    return rightDelimiterPosition;
+    return delimiterPosition;
   }
 }
 
