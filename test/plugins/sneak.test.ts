@@ -131,6 +131,34 @@ suite('sneak plugin', () => {
     keysPressed: '3sa\n',
     end: ['abc', 'aac', '|abc'],
   });
+
+  newTest({
+    title: 'Can go back using <C-o> once when going forward',
+    start: ['|abc abc'],
+    keysPressed: 'sab<C-o>',
+    end: ['|abc abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> once when going backward',
+    start: ['abc |abc'],
+    keysPressed: 'Sab<C-o>',
+    end: ['abc |abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> when repeting forward movement',
+    start: ['|abc abc abc'],
+    keysPressed: 'sab;<C-o>',
+    end: ['|abc abc abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> when repeting backward movement',
+    start: ['abc abc |abc'],
+    keysPressed: 'sab;<C-o>',
+    end: ['abc abc |abc'],
+  });
 });
 
 suite('sneakReplacesF', () => {
