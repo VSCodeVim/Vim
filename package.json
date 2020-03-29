@@ -618,6 +618,38 @@
           "markdownDescription": "Enable the [Surround](https://github.com/tpope/vim-surround) plugin for Vim.",
           "default": true
         },
+        "vim.argumentObjectSeparators": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Set separators for the argument text object.",
+          "default": [
+            ","
+          ]
+        },
+        "vim.argumentObjectOpeningDelimiters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Set opening delimiters for the argument text object.",
+          "default": [
+            "(",
+            "["
+          ]
+        },
+        "vim.argumentObjectClosingDelimiters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Set closing delimiters for the argument text object.",
+          "default": [
+            ")",
+            "]"
+          ]
+        },
         "vim.hlsearch": {
           "type": "boolean",
           "description": "Show all matches of the most recent search pattern.",

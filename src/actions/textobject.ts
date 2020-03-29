@@ -17,6 +17,7 @@ import {
   ExpandingSelection,
 } from './motion';
 import { ChangeOperator } from './operator';
+import { configuration } from './../configuration/configuration';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -686,13 +687,15 @@ class InsideIndentObjectBoth extends IndentObjectMatch {
 abstract class SelectArgument extends TextObjectMovement {
   modes = [Mode.Normal, Mode.Visual];
 
-  // Depending on the language or context, it may be useful to have
-  // custom delimiters, such as ';' or '{}'.
-  // Warning: For now, mismatched opening and closing delimiters, e.g.
-  // in (foo] will still be matched by this movement.
-  static openingDelimiters = ['(', '['];
-  static closingDelimiters = [')', ']'];
-  static delimiters = [','];
+  private static openingDelimiterCharacters(): string[] {
+    return configuration.argumentObjectOpeningDelimiters;
+  }
+  private static closingDelimiterCharacters(): string[] {
+    return configuration.argumentObjectClosingDelimiters;
+  }
+  private static separatorCharacters(): string[] {
+    return configuration.argumentObjectSeparators;
+  }
 
   protected selectAround = false;
 
@@ -701,9 +704,12 @@ abstract class SelectArgument extends TextObjectMovement {
   //
   //        ( a, b, (void*) | c(void*, void*), a)
   //
+  // Warning: For now, mismatched opening and closing delimiters, e.g.
+  // in (foo] will still be matched by this movement.
+  //
   // Procedure:
   //
-  // 1   Find delimiters left and right
+  // 1   Find boundaries left/right (i.e. where the argument starts/ends)
   // 1.1 Walk left until we find a comma or an opening paren, that does not
   //     have a matching closed one. This way we can ignore pairs
   //     of parentheses which are part of the current argument.
@@ -719,21 +725,23 @@ abstract class SelectArgument extends TextObjectMovement {
 
     // When the cursor is on a delimiter already, pre-advance the cursor,
     // so that our search actually spans a range. We will advance to the next argument,
-    // in case of opening delimiters or regular delimiters, and advance to the
+    // in case of opening delimiters or separators, and advance to the
     // previous on closing delimiters.
     if (
-      SelectArgument.delimiters.includes(TextEditor.getCharAt(position)) ||
-      SelectArgument.openingDelimiters.includes(TextEditor.getCharAt(position))
+      SelectArgument.separatorCharacters().includes(TextEditor.getCharAt(position)) ||
+      SelectArgument.openingDelimiterCharacters().includes(TextEditor.getCharAt(position))
     ) {
       rightSearchStartPosition = position.getRightThroughLineBreaks(true);
-    } else if (SelectArgument.closingDelimiters.includes(TextEditor.getCharAt(position))) {
+    } else if (
+      SelectArgument.closingDelimiterCharacters().includes(TextEditor.getCharAt(position))
+    ) {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
-    const leftDelimiterPosition = SelectInnerArgument.getLeftDelimiter(leftSearchStartPosition);
-    const rightDelimiterPosition = SelectInnerArgument.getRightDelimiter(rightSearchStartPosition);
+    const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition);
+    const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition);
 
-    if (leftDelimiterPosition === undefined || rightDelimiterPosition === undefined) {
+    if (leftArgumentBoundary === undefined || rightArgumentBoundary === undefined) {
       return failure;
     }
 
@@ -743,16 +751,20 @@ abstract class SelectArgument extends TextObjectMovement {
     if (this.selectAround) {
       // Edge-case:
       // Ensure we do not delete anything if we have an empty argument list, e.g. "()"
-      let isEmptyArgumentList =
-        leftDelimiterPosition.getRight().isEqual(rightDelimiterPosition) &&
-        SelectArgument.openingDelimiters.includes(TextEditor.getCharAt(leftDelimiterPosition)) &&
-        SelectArgument.closingDelimiters.includes(TextEditor.getCharAt(rightDelimiterPosition));
+      const isEmptyArgumentList =
+        leftArgumentBoundary.getRight().isEqual(rightArgumentBoundary) &&
+        SelectArgument.openingDelimiterCharacters().includes(
+          TextEditor.getCharAt(leftArgumentBoundary)
+        ) &&
+        SelectArgument.closingDelimiterCharacters().includes(
+          TextEditor.getCharAt(rightArgumentBoundary)
+        );
       if (isEmptyArgumentList) {
         return failure;
       }
 
-      let cursorIsInLastArgument = SelectArgument.closingDelimiters.includes(
-        TextEditor.getCharAt(rightDelimiterPosition)
+      const cursorIsInLastArgument = SelectArgument.closingDelimiterCharacters().includes(
+        TextEditor.getCharAt(rightArgumentBoundary)
       );
 
       // If we are on the right most argument, we delete the left delimiter
@@ -760,34 +772,34 @@ abstract class SelectArgument extends TextObjectMovement {
       //
       // In any other case we delete the right delimiter.
       if (cursorIsInLastArgument) {
-        const thereIsOnlyOneArgument = SelectArgument.openingDelimiters.includes(
-          TextEditor.getCharAt(leftDelimiterPosition)
+        const thereIsOnlyOneArgument = SelectArgument.openingDelimiterCharacters().includes(
+          TextEditor.getCharAt(leftArgumentBoundary)
         );
 
         // It may be that there is only a single argument.
         // In that case we need to inset the left position as well.
         if (thereIsOnlyOneArgument) {
-          start = leftDelimiterPosition.getRightThroughLineBreaks(true);
+          start = leftArgumentBoundary.getRightThroughLineBreaks(true);
         } else {
-          start = leftDelimiterPosition;
+          start = leftArgumentBoundary;
         }
 
-        stop = rightDelimiterPosition.getLeftThroughLineBreaks(true);
+        stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
       } else {
-        start = leftDelimiterPosition.getRightThroughLineBreaks(true);
-        stop = rightDelimiterPosition;
+        start = leftArgumentBoundary.getRightThroughLineBreaks(true);
+        stop = rightArgumentBoundary;
       }
     } else {
       // Multi-line UX-boost:
       // When the left delimiter is at the end of the line, we can skip over
       // to the next line. This pre-advance prevents the cursor staying
       // right behind the delimiter on the line above.
-      start = leftDelimiterPosition;
-      if (leftDelimiterPosition.getRight().isLineEnd()) {
+      start = leftArgumentBoundary;
+      if (leftArgumentBoundary.getRight().isLineEnd()) {
         start = start.getRightThroughLineBreaks(true);
       }
       start = start.getRightThroughLineBreaks(true);
-      stop = rightDelimiterPosition.getLeftThroughLineBreaks(true);
+      stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
     }
 
     // Handle case when cursor is not inside the anticipated movement range
@@ -802,7 +814,7 @@ abstract class SelectArgument extends TextObjectMovement {
     };
   }
 
-  private static getLeftDelimiter(position: Position): Position | undefined {
+  private static findLeftArgumentBoundary(position: Position): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let closedParensCount = 0;
@@ -811,8 +823,8 @@ abstract class SelectArgument extends TextObjectMovement {
       const char = TextEditor.getCharAt(walkingPosition);
       if (closedParensCount === 0) {
         if (
-          SelectArgument.openingDelimiters.includes(char) ||
-          SelectArgument.delimiters.includes(char)
+          SelectArgument.openingDelimiterCharacters().includes(char) ||
+          SelectArgument.separatorCharacters().includes(char)
         ) {
           // We have found the left most delimiter or the first proper delimiter
           // in our cursor's list 'depth' and thus can abort.
@@ -820,10 +832,10 @@ abstract class SelectArgument extends TextObjectMovement {
           break;
         }
       }
-      if (SelectArgument.closingDelimiters.includes(char)) {
+      if (SelectArgument.closingDelimiterCharacters().includes(char)) {
         closedParensCount++;
       }
-      if (SelectArgument.openingDelimiters.includes(char)) {
+      if (SelectArgument.openingDelimiterCharacters().includes(char)) {
         closedParensCount--;
       }
 
@@ -837,7 +849,7 @@ abstract class SelectArgument extends TextObjectMovement {
     return delimiterPosition;
   }
 
-  private static getRightDelimiter(position: Position): Position | undefined {
+  private static findRightArgumentBoundary(position: Position): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let openedParensCount = 0;
@@ -846,17 +858,17 @@ abstract class SelectArgument extends TextObjectMovement {
       const char = TextEditor.getCharAt(walkingPosition);
       if (openedParensCount === 0) {
         if (
-          SelectArgument.closingDelimiters.includes(char) ||
-          SelectArgument.delimiters.includes(char)
+          SelectArgument.closingDelimiterCharacters().includes(char) ||
+          SelectArgument.separatorCharacters().includes(char)
         ) {
           delimiterPosition = walkingPosition;
           break;
         }
       }
-      if (SelectArgument.openingDelimiters.includes(char)) {
+      if (SelectArgument.openingDelimiterCharacters().includes(char)) {
         openedParensCount++;
       }
-      if (SelectArgument.closingDelimiters.includes(char)) {
+      if (SelectArgument.closingDelimiterCharacters().includes(char)) {
         openedParensCount--;
       }
 
