@@ -2140,7 +2140,7 @@ export class CommandYankFullLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const linesDown = (vimState.recordedState.count || 1) - 1;
     const start = position.getLineBegin();
-    const end = new Position(position.line + linesDown, 0).getLineEnd().getLeft();
+    const end = position.getDown(linesDown).getLeft();
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
@@ -3075,7 +3075,7 @@ class ActionJoin extends BaseCommand {
       if (position.line + 1 < TextEditor.getLineCount()) {
         startLineNumber = position.line;
         startColumn = 0;
-        endLineNumber = startLineNumber + count;
+        endLineNumber = position.getDown(count).line;
         endColumn = TextEditor.getLineLength(endLineNumber);
       } else {
         startLineNumber = position.line;
