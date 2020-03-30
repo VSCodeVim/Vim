@@ -13,7 +13,6 @@ import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
-import { TextEditor } from '../textEditor';
 
 /**
  * The VimState class holds permanent state that carries over from action

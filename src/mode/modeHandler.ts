@@ -27,7 +27,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync, scrollView, partition } from '../util/util';
+import { getCursorsAfterSync, scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -37,7 +37,9 @@ import {
   areAnyTransformationsOverlapping,
   isTextTransformation,
   TextTransformations,
-  Transformation,
+  areAllSameTransformation,
+  isMultiCursorTextTransformation,
+  InsertTextVSCodeTransformation,
 } from './../transformations/transformations';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
@@ -626,37 +628,35 @@ export class ModeHandler implements vscode.Disposable {
       vimState.cursorStartPosition = vimState.cursorStopPosition;
     }
 
-    // Ensure cursor is within bounds
+    // Ensure cursors are within bounds
     if (!vimState.editor.document.isClosed && vimState.editor === vscode.window.activeTextEditor) {
-      const cursors = new Array<Range>();
-      for (let { range } of Range.IterateRanges(vimState.cursors)) {
+      vimState.cursors = vimState.cursors.map((cursor: Range) => {
         // adjust start/stop
         const documentEndPosition = TextEditor.getDocumentEnd(vimState.editor);
         const documentLineCount = TextEditor.getLineCount(vimState.editor);
-        if (range.start.line >= documentLineCount) {
-          range = range.withNewStart(documentEndPosition);
+        if (cursor.start.line >= documentLineCount) {
+          cursor = cursor.withNewStart(documentEndPosition);
         }
-        if (range.stop.line >= documentLineCount) {
-          range = range.withNewStop(documentEndPosition);
+        if (cursor.stop.line >= documentLineCount) {
+          cursor = cursor.withNewStop(documentEndPosition);
         }
 
         // adjust column
         if (vimState.currentMode === Mode.Normal) {
-          const currentLineLength = TextEditor.getLineAt(range.stop).text.length;
+          const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
           if (currentLineLength > 0) {
-            const lineEndPosition = range.start.getLineEnd().getLeftThroughLineBreaks(true);
-            if (range.start.character >= currentLineLength) {
-              range = range.withNewStart(lineEndPosition);
+            const lineEndPosition = cursor.start.getLineEnd().getLeftThroughLineBreaks(true);
+            if (cursor.start.character >= currentLineLength) {
+              cursor = cursor.withNewStart(lineEndPosition);
             }
 
-            if (range.stop.character >= currentLineLength) {
-              range = range.withNewStop(lineEndPosition);
+            if (cursor.stop.character >= currentLineLength) {
+              cursor = cursor.withNewStop(lineEndPosition);
             }
           }
         }
-        cursors.push(range);
-      }
-      vimState.cursors = cursors;
+        return cursor;
+      });
     }
 
     // Update the current history step to have the latest cursor position
@@ -717,7 +717,7 @@ export class ModeHandler implements vscode.Disposable {
           vimState.lastMovementFailed = true;
         }
 
-        vimState.cursors[i] = Range.FromIMovement(result);
+        vimState.cursors[i] = new Range(result.start, result.stop);
 
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
@@ -814,10 +814,16 @@ export class ModeHandler implements vscode.Disposable {
       return vimState;
     }
 
-    const [textTransformations, otherTransformations] = partition(
-      transformations,
-      isTextTransformation
-    ) as [TextTransformations[], Transformation[]];
+    const textTransformations: TextTransformations[] = transformations.filter((x) =>
+      isTextTransformation(x)
+    ) as any;
+    const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
+      (x) => isMultiCursorTextTransformation(x)
+    ) as any;
+
+    const otherTransformations = transformations.filter(
+      (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
+    );
 
     let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
@@ -887,6 +893,26 @@ export class ModeHandler implements vscode.Disposable {
             doTextEditorEdit(command, edit);
           }
         });
+      }
+    }
+
+    if (multicursorTextTransformations.length > 0) {
+      if (areAllSameTransformation(multicursorTextTransformations)) {
+        /**
+         * Apply the transformation only once instead of to each cursor
+         * if they are all the same.
+         *
+         * This lets VSCode do multicursor snippets, auto braces and
+         * all the usual jazz VSCode does on text insertion.
+         */
+        const { text } = multicursorTextTransformations[0];
+
+        // await vscode.commands.executeCommand('default:type', { text });
+        await TextEditor.insert(text);
+      } else {
+        this._logger.warn(
+          `Unhandled multicursor transformations. Not all transformations are the same!`
+        );
       }
     }
 
@@ -1034,7 +1060,10 @@ export class ModeHandler implements vscode.Disposable {
           diffs.push(vimState.recordedState.operatorPositionDiff);
         }
 
-        return diffs.reduce((cursor, diff) => cursor.add(diff), Range.FromVSCodeSelection(sel));
+        return diffs.reduce(
+          (cursor, diff) => new Range(cursor.start.add(diff), cursor.stop.add(diff)),
+          Range.FromVSCodeSelection(sel)
+        );
       });
 
       vimState.recordedState.operatorPositionDiff = undefined;
@@ -1185,16 +1214,12 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case Mode.VisualLine:
-            selections.push(
-              new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd()
-              )
-            );
+            [start, stop] = Position.sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
-            for (const line of Position.IterateLinesInBlock(vimState, cursor)) {
+            for (const line of TextEditor.iterateLinesInBlock(vimState, cursor)) {
               selections.push(new vscode.Selection(line.start, line.end));
             }
             break;
@@ -1385,7 +1410,7 @@ export class ModeHandler implements vscode.Disposable {
 
       result = PairMatcher.nextPairedChar(vimState.cursorStopPosition.getLeft(), key);
       if (result !== undefined) {
-        if (vimState.cursorStopPosition.getLeftByCount(2).isEqual(result)) {
+        if (vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
           return true;
         }
       }
