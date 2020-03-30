@@ -2017,6 +2017,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can do [count]Y',
+    start: ['|one', 'two', 'three'],
+    keysPressed: '2Yp',
+    end: ['one', '|one', 'two', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'can do [count]Y if count is larger than EOF',
+    start: ['|one', 'two', 'three'],
+    keysPressed: '100Yp',
+    end: ['one', '|one', 'two', 'three', 'two', 'three'],
+  });
+
+  newTest({
     title: 'Can do S',
     start: ['    one', '    tw|o', '    three'],
     keysPressed: '2S',
