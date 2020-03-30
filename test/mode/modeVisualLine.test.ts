@@ -502,4 +502,12 @@ suite('Mode Visual Line', () => {
     keysPressed: 'VjV',
     end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
   });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
+  });
 });

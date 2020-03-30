@@ -1428,4 +1428,12 @@ suite('Mode Visual', () => {
       endMode: Mode.Normal,
     });
   });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'vjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
+  });
 });
