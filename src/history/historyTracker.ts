@@ -11,6 +11,7 @@
  */
 import DiffMatchPatch = require('diff-match-patch');
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
@@ -82,6 +83,7 @@ export interface IMark {
   position: Position;
   isUppercaseMark: boolean;
   editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
+  decorationType?: vscode.TextEditorDecorationType;
 }
 
 class HistoryStep {
@@ -433,12 +435,25 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(position: Position, markName: string): void {
+    this.getMark(markName)?.decorationType?.dispose();
+
+    const decorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(
+      <vscode.DecorationRenderOptions>{
+        isWholeLine: false,
+        gutterIconPath: path.join(__filename, '..', '..', '..', '..', 'images', 'mark.svg'),
+        gutterIconSize: 'cover',
+      }
+    );
+    const decorator: vscode.Range = new vscode.Range(position, position);
+    vscode.window.activeTextEditor?.setDecorations(decorationType, [decorator]);
+
     const isUppercaseMark = markName.toUpperCase() === markName;
     const newMark: IMark = {
       position,
       name: markName,
       isUppercaseMark: isUppercaseMark,
       editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
+      decorationType,
     };
     this.putMarkInList(newMark);
   }
