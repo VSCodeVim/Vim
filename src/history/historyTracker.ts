@@ -11,13 +11,13 @@
  */
 import DiffMatchPatch = require('diff-match-patch');
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
+import { decoration } from './../configuration/decoration';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
 
@@ -435,27 +435,27 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(position: Position, markName: string): void {
-    this.getMark(markName)?.decorationType?.dispose();
-
-    const decorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(
-      <vscode.DecorationRenderOptions>{
-        isWholeLine: false,
-        gutterIconPath: path.join(__filename, '..', '..', '..', '..', 'images', 'mark.svg'),
-        gutterIconSize: 'cover',
-      }
-    );
-    const decorator: vscode.Range = new vscode.Range(position, position);
-    vscode.window.activeTextEditor?.setDecorations(decorationType, [decorator]);
-
     const isUppercaseMark = markName.toUpperCase() === markName;
     const newMark: IMark = {
       position,
       name: markName,
       isUppercaseMark: isUppercaseMark,
       editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
-      decorationType,
     };
     this.putMarkInList(newMark);
+    this.updateMarksDecorators();
+  }
+
+  /**
+   * Update marks decorations in the gutter
+   */
+  private updateMarksDecorators(): void {
+    let decorators: vscode.Range[] = [];
+    for (const mark of this.getMarks()) {
+      const position = mark.position.getLineBegin();
+      decorators.push(new vscode.Range(position, position));
+    }
+    this.vimState.editor.setDecorations(decoration.Mark, decorators);
   }
 
   /**

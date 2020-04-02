@@ -1,10 +1,20 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { IConfiguration } from './iconfiguration';
 
 class DecorationImpl {
+  private _mark: vscode.TextEditorDecorationType;
   private _default: vscode.TextEditorDecorationType;
   private _searchHighlight: vscode.TextEditorDecorationType;
   private _easyMotion: vscode.TextEditorDecorationType;
+
+  public set Mark(value: vscode.TextEditorDecorationType) {
+    this._mark = value;
+  }
+
+  public get Mark() {
+    return this._mark;
+  }
 
   public set Default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -52,6 +62,12 @@ class DecorationImpl {
       },
       borderStyle: 'solid',
       borderWidth: '1px',
+    });
+
+    this.Mark = vscode.window.createTextEditorDecorationType(<vscode.DecorationRenderOptions>{
+      isWholeLine: false,
+      gutterIconPath: path.join(__filename, '..', '..', '..', '..', 'images', 'mark.svg'),
+      gutterIconSize: 'cover',
     });
 
     const searchHighlightColor = configuration.searchHighlightColor
