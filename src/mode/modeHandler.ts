@@ -668,6 +668,7 @@ export class ModeHandler implements vscode.Disposable {
         mode: this.vimState.currentMode,
         start: this.vimState.cursorStartPosition,
         end: this.vimState.cursorStopPosition,
+        visualLineStartColumn: this.vimState.visualLineStartColumn,
       };
     }
 

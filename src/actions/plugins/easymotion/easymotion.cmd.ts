@@ -79,6 +79,17 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       // Search all occurences of the character pressed
       const matches = this.getMatches(position, vimState);
 
+      // If previous mode was visual, restore visual selection
+      if (
+        vimState.easyMotion.previousMode === Mode.Visual ||
+        vimState.easyMotion.previousMode === Mode.VisualLine ||
+        vimState.easyMotion.previousMode === Mode.VisualBlock
+      ) {
+        vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
+        vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
+        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
+      }
+
       // Stop if there are no matches
       if (matches.length === 0) {
         return vimState;
@@ -402,6 +413,7 @@ class MoveEasyMotion extends BaseCommand {
       ) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
+        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
       }
 
       if (markers.length === 1) {
