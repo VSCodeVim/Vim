@@ -2239,6 +2239,27 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'yat yanks the correct tag when inside one',
+    start: ['<foo>', '  <b|ar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is on the opening angle bracket',
+    start: ['<foo>', '  |<bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is between the beginning of the line and the tag',
+    start: ['<foo>', ' | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
     title: 'Respects indentation with cc',
     start: ['{', '  int| a;'],
     keysPressed: 'cc',
