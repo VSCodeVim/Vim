@@ -59,7 +59,7 @@ const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
   new Position(range.start.line, Math.max(0, range.start.character + replacement.length - 1));
 
 const cursorAtFirstNonBlankCharOfLine = (range: vscode.Range) =>
-  new Position(range.start.line, 0).getFirstLineNonBlankChar();
+  TextEditor.getFirstNonWhitespaceCharOnLine(range.start.line);
 
 const vimStateWithCursorPosition = (vimState: VimState, cursorPosition: Position): VimState => {
   vimState.cursorStopPosition = cursorPosition;

@@ -100,6 +100,11 @@ export interface InsertTextVSCodeTransformation {
   text: string;
 
   /**
+   * Whether this transformation was created in multicursor mode.
+   */
+  isMultiCursor?: boolean;
+
+  /**
    * The index of the cursor that this transformation applies to.
    */
   cursorIndex?: number;
@@ -291,6 +296,9 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
     x.type === 'moveCursor'
   );
 };
+export const isMultiCursorTextTransformation = (x: Transformation): Boolean => {
+  return (x.type === 'insertTextVSCode' && x.isMultiCursor) ?? false;
+};
 
 const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
   switch (transformation.type) {
@@ -329,4 +337,14 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
   }
 
   return false;
+};
+
+export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
+  const firstTransformation = transformations[0];
+
+  return transformations.every((t) => {
+    return Object.entries(t).every(([key, value]) => {
+      return firstTransformation[key] === value;
+    });
+  });
 };

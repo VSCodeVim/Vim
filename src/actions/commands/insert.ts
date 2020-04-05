@@ -76,20 +76,16 @@ class CommandEscInsertMode extends BaseCommand {
       const changeAction = vimState.recordedState.actionsRun[
         vimState.recordedState.actionsRun.length - 2
       ] as DocumentContentChangeAction;
-      const changesArray = changeAction.contentChanges;
-      let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-      for (const change of changesArray) {
-        docChanges.push(change.textDiff);
-      }
+      const docChanges = changeAction.contentChanges.map((change) => change.textDiff);
 
-      let positionDiff = new PositionDiff();
       // Add count amount of inserts in the case of 4i=<esc>
       for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         // If this is the last transform, move cursor back one character
-        if (i === vimState.recordedState.count - 2) {
-          positionDiff = new PositionDiff({ character: -1 });
-        }
+        const positionDiff =
+          i === vimState.recordedState.count - 2
+            ? new PositionDiff({ character: -1 })
+            : new PositionDiff();
 
         // Add a transform containing the change
         vimState.recordedState.transformations.push({
@@ -171,7 +167,7 @@ class CommandInsertBelowChar extends BaseCommand {
       return vimState;
     }
 
-    const charBelowCursorPosition = position.getDownByCount(1);
+    const charBelowCursorPosition = position.getDown();
 
     if (charBelowCursorPosition.isLineEnd()) {
       return vimState;
@@ -237,9 +233,9 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const line = TextEditor.getLineAt(position).text;
-    const selection = TextEditor.getSelection();
+    const selection = vimState.editor.selections.find((s) => s.contains(position));
 
-    if (!selection.isEmpty) {
+    if (selection && !selection.isEmpty) {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
@@ -310,18 +306,11 @@ export class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
-    if (vimState.isMultiCursor) {
-      vimState.recordedState.transformations.push({
-        type: 'insertText',
-        text: char,
-        position: vimState.cursorStopPosition,
-      });
-    } else {
-      vimState.recordedState.transformations.push({
-        type: 'insertTextVSCode',
-        text: char,
-      });
-    }
+    vimState.recordedState.transformations.push({
+      type: 'insertTextVSCode',
+      text: char,
+      isMultiCursor: vimState.isMultiCursor,
+    });
 
     return vimState;
   }
@@ -457,7 +446,7 @@ class CommandCtrlW extends BaseCommand {
   keys = ['<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let wordBegin;
+    let wordBegin: Position;
     if (position.isInLeadingWhitespace()) {
       wordBegin = position.getLineBegin();
     } else if (position.isLineBeginning()) {
@@ -521,7 +510,7 @@ class CommandInsertAboveChar extends BaseCommand {
       return vimState;
     }
 
-    const charAboveCursorPosition = position.getUpByCount(1);
+    const charAboveCursorPosition = position.getUp(1);
 
     if (charAboveCursorPosition.isLineEnd()) {
       return vimState;
