@@ -2260,6 +2260,21 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title:
+      'dat deletes the outer tag when there are other characters (not just WS) before the opening tag',
+    start: ['<foo>', 'a | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
+  });
+
+  newTest({
+    title: 'dat deletes the outer tag when the cursor is after the inner tag',
+    start: ['<foo>', '  <bar>asd</bar> |', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
+  });
+
+  newTest({
     title: 'Respects indentation with cc',
     start: ['{', '  int| a;'],
     keysPressed: 'cc',
