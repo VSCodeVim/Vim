@@ -738,8 +738,12 @@ abstract class SelectArgument extends TextObjectMovement {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
-    const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition);
-    const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition);
+    const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
+      leftSearchStartPosition
+    );
+    const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(
+      rightSearchStartPosition
+    );
 
     if (leftArgumentBoundary === undefined || rightArgumentBoundary === undefined) {
       return failure;
@@ -749,45 +753,43 @@ abstract class SelectArgument extends TextObjectMovement {
     let stop: Position;
 
     if (this.selectAround) {
+      const isLeftOnOpening: boolean = SelectArgument.openingDelimiterCharacters().includes(
+        TextEditor.getCharAt(leftArgumentBoundary)
+      );
+      const isRightOnClosing: boolean = SelectArgument.closingDelimiterCharacters().includes(
+        TextEditor.getCharAt(rightArgumentBoundary)
+      );
+
       // Edge-case:
-      // Ensure we do not delete anything if we have an empty argument list, e.g. "()"
+      // Ensure we do not select anything if we have an empty argument list, e.g. "()"
       const isEmptyArgumentList =
         leftArgumentBoundary.getRight().isEqual(rightArgumentBoundary) &&
-        SelectArgument.openingDelimiterCharacters().includes(
-          TextEditor.getCharAt(leftArgumentBoundary)
-        ) &&
-        SelectArgument.closingDelimiterCharacters().includes(
-          TextEditor.getCharAt(rightArgumentBoundary)
-        );
+        isLeftOnOpening &&
+        isRightOnClosing;
       if (isEmptyArgumentList) {
         return failure;
       }
 
-      const cursorIsInLastArgument = SelectArgument.closingDelimiterCharacters().includes(
-        TextEditor.getCharAt(rightArgumentBoundary)
-      );
-
-      // If we are on the right most argument, we delete the left delimiter
-      // along with the argument.
-      //
-      // In any other case we delete the right delimiter.
-      if (cursorIsInLastArgument) {
-        const thereIsOnlyOneArgument = SelectArgument.openingDelimiterCharacters().includes(
-          TextEditor.getCharAt(leftArgumentBoundary)
-        );
-
-        // It may be that there is only a single argument.
-        // In that case we need to inset the left position as well.
-        if (thereIsOnlyOneArgument) {
-          start = leftArgumentBoundary.getRightThroughLineBreaks(true);
-        } else {
-          start = leftArgumentBoundary;
+      // Only when we are in the first argument we outset the right boundary
+      // until the first non-whitespace, so we do not end up with whitespace
+      // at the beginning of the parens.
+      const isInFirstArgument = isLeftOnOpening && !isRightOnClosing;
+      if (isInFirstArgument) {
+        stop = rightArgumentBoundary.getRight();
+        // Walk right until non-whitespace
+        while (/\s/.test(TextEditor.getCharAt(stop.getRight()))) {
+          stop = stop.getRight();
         }
-
-        stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
       } else {
+        // In any other case, we inset
+        stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+      }
+
+      // In case the left boundary is on a opening delimiter, move that position inwards
+      if (isLeftOnOpening) {
         start = leftArgumentBoundary.getRightThroughLineBreaks(true);
-        stop = rightArgumentBoundary;
+      } else {
+        start = leftArgumentBoundary;
       }
     } else {
       // Multi-line UX-boost:

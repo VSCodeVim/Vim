@@ -2697,7 +2697,7 @@ suite('Mode Normal', () => {
     title: "Can do 'daa' in a single-line comma seperated list with cursor in first argument",
     start: ['(f|oo, bar, baz)'],
     keysPressed: 'daa',
-    end: ['(| bar, baz)'],
+    end: ['(|bar, baz)'],
     endMode: Mode.Normal,
   });
 
@@ -2705,7 +2705,7 @@ suite('Mode Normal', () => {
     title: "Can do 'daa' in a single-line comma seperated list with cursor in middle argument",
     start: ['(foo, b|ar, baz)'],
     keysPressed: 'daa',
-    end: ['(foo,| baz)'],
+    end: ['(foo|, baz)'],
     endMode: Mode.Normal,
   });
 
