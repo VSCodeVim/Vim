@@ -83,7 +83,6 @@ export interface IMark {
   position: Position;
   isUppercaseMark: boolean;
   editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
-  decorationType?: vscode.TextEditorDecorationType;
 }
 
 class HistoryStep {
