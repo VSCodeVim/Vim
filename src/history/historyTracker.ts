@@ -450,11 +450,16 @@ export class HistoryTracker {
    * Update marks decorations in the gutter
    */
   private updateMarksDecorators(): void {
+    if (!this.vimState.editor) {
+      return;
+    }
+
     let decorators: vscode.Range[] = [];
     for (const mark of this.getMarks()) {
-      const position = mark.position.getLineBegin();
+      const position: vscode.Position = mark.position.getLineBegin();
       decorators.push(new vscode.Range(position, position));
     }
+
     this.vimState.editor.setDecorations(decoration.Mark, decorators);
   }
 
