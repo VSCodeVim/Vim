@@ -250,8 +250,21 @@ export class ModeHandler implements vscode.Disposable {
   public async handleKeyEvent(key: string): Promise<void> {
     const now = Number(new Date());
     const printableKey = Notation.printableKey(key);
+    let hadBufferedKeys = false;
 
     this._logger.debug(`handling key=${printableKey}.`);
+
+    if (
+      (key === '<BufferedKeys>' || this.vimState.recordedState.bufferedKeys.length > 0) &&
+      this.vimState.recordedState.bufferedKeysTimeoutObj
+    ) {
+      // Handle the bufferedKeys or append the new key to the previously bufferedKeys
+      clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+      this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
+      this.vimState.recordedState.commandList = this.vimState.recordedState.bufferedKeys.slice(0);
+      this.vimState.recordedState.bufferedKeys = [];
+      hadBufferedKeys = true;
+    }
 
     // rewrite copy
     if (configuration.overrideCopy) {
@@ -288,7 +301,7 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
-      if (!isWithinTimeout) {
+      if (!isWithinTimeout && key !== '<BufferedKeys>') {
         // sufficient time has elapsed since the prior keypress,
         // only consider the last keypress for remapping
         this.vimState.recordedState.commandList = [
@@ -306,10 +319,7 @@ export class ModeHandler implements vscode.Disposable {
       // 2. We are not in normal mode performing on an operator
       //    Example: ciwjj should be remapped if jj -> <Esc> in insert mode
       //             dd should not remap the second "d", if d -> "_d in normal mode
-      if (
-        !this.vimState.isCurrentlyPerformingRemapping &&
-        (!isOperatorCombination || this.vimState.currentMode !== Mode.Normal)
-      ) {
+      if (!this.vimState.isCurrentlyPerformingRemapping) {
         handled = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
           this,
@@ -320,7 +330,23 @@ export class ModeHandler implements vscode.Disposable {
       if (handled) {
         this.vimState.recordedState.resetCommandList();
       } else {
-        this.vimState = await this.handleKeyEventHelper(key, this.vimState);
+        if (key === '<BufferedKeys>') {
+          this.vimState.recordedState.commandList = this.vimState.recordedState.commandList.slice(
+            0,
+            -1
+          );
+          key = this.vimState.recordedState.commandList[
+            this.vimState.recordedState.commandList.length - 1
+          ];
+        }
+        if (hadBufferedKeys) {
+          for (let k of this.vimState.recordedState.commandList) {
+            key = k;
+            this.vimState = await this.handleKeyEventHelper(key, this.vimState);
+          }
+        } else {
+          this.vimState = await this.handleKeyEventHelper(key, this.vimState);
+        }
       }
     } catch (e) {
       if (e instanceof VimError) {
@@ -555,9 +581,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (ranAction && vimState.currentMode !== Mode.Insert) {
-      vimState.recordedState.resetCommandList();
-    }
+    vimState.recordedState.resetCommandList();
 
     ranRepeatableAction =
       (ranRepeatableAction && vimState.currentMode === Mode.Normal) ||

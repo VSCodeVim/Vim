@@ -82,6 +82,13 @@ export class RecordedState {
    */
   public actionsRun: BaseAction[] = [];
 
+  /**
+   * Every key that was buffered to wait for a new key or the timeout to finish
+   * in order to get another potential remap or to solve an ambiguous remap.
+   */
+  public bufferedKeys: string[] = [];
+  public bufferedKeysTimeoutObj: NodeJS.Timeout | undefined = undefined;
+
   public hasRunOperator = false;
 
   public hasRunSurround = false;
