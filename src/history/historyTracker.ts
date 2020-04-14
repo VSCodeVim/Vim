@@ -467,6 +467,30 @@ export class HistoryTracker {
   }
 
   /**
+   * Removes all local marks.
+   */
+  public removeLocalMarks(): void {
+    this.currentHistoryStep.marks = [];
+  }
+
+  /**
+   * Removes all marks matching from either the global or local array.
+   */
+  public removeMarks(markNames?: string[]): void {
+    if (!markNames) {
+      return;
+    }
+
+    this.currentHistoryStep.marks = this.currentHistoryStep.marks.filter(
+      (mark) => !markNames.includes(mark.name)
+    );
+
+    HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
+      (mark) => mark.name === '' || !markNames.includes(mark.name)
+    );
+  }
+
+  /**
    * Gets all local marks.  I.e., marks that are specific for the current
    * editor.
    */
