@@ -101,7 +101,7 @@ suite('historyTracker unit tests', () => {
       historyTracker.addMark(position, 'a');
       historyTracker.addMark(position, 'A');
       const mark = historyTracker.getMark('A');
-      
+
       historyTracker.removeLocalMarks();
 
       assert.strictEqual(historyTracker.getMark('a'), undefined);
@@ -150,8 +150,8 @@ suite('historyTracker unit tests', () => {
 
       assert.strictEqual(mark, historyTracker.getMark('a'));
     });
-
   });
+});
 
 // tslint:disable: no-empty
 class TextEditorStub implements vscode.TextEditor {
@@ -187,4 +187,4 @@ class TextEditorStub implements vscode.TextEditor {
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {}
   show(column?: vscode.ViewColumn) {}
   hide() {}
-}
+ }

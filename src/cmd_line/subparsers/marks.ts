@@ -1,4 +1,4 @@
-import { MarksCommand, DeleteMarksCommand } from '../commands/marks';
+import { MarksCommand, MarksRemoveCommand } from '../commands/marks';
 
 export function parseMarksCommandArgs(args: string): MarksCommand {
   if (!args) {
@@ -7,9 +7,9 @@ export function parseMarksCommandArgs(args: string): MarksCommand {
   return new MarksCommand(args.split(''));
 }
 
-export function parseDelMarksCommandArgs(args: string): DeleteMarksCommand {
+export function parseMarksRemoveCommandArgs(args: string): MarksRemoveCommand {
   if (!args) {
-    return new DeleteMarksCommand();
+    return new MarksRemoveCommand();
   }
-  return new DeleteMarksCommand(args.trimStart());
+  return new MarksRemoveCommand(args.trimStart());
 }

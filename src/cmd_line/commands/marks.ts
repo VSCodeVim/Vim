@@ -52,7 +52,7 @@ export class MarksCommand extends node.CommandBase {
   }
 }
 
-export class DeleteMarksCommand extends node.CommandBase {
+export class MarksRemoveCommand extends node.CommandBase {
   private numbers = '0123456789';
   private numberRange = /([0-9])-([0-9])/;
   private letterRange = /([a-zA-Z])-([a-zA-Z])/;
