@@ -89,7 +89,69 @@ suite('historyTracker unit tests', () => {
       assert.strictEqual(mark, undefined);
     });
   });
-});
+
+  suite('removeLocalMarks', () => {
+    setup(() => {
+      setupVSCode();
+      historyTracker = setupHistoryTracker();
+    });
+
+    test('removes only local marks', () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, 'a');
+      historyTracker.addMark(position, 'A');
+      const mark = historyTracker.getMark('A');
+      
+      historyTracker.removeLocalMarks();
+
+      assert.strictEqual(historyTracker.getMark('a'), undefined);
+      assert.strictEqual(historyTracker.getMark('A'), mark);
+    });
+  });
+
+  suite('removeMarks', () => {
+    setup(() => {
+      setupVSCode();
+      historyTracker = setupHistoryTracker();
+    });
+
+    test('removes multiple local and global', () => {
+      const position = buildMockPosition();
+      const markTargets = 'AHZced'.split('');
+
+      markTargets.forEach(m => 
+      historyTracker.addMark(position, m));
+
+      historyTracker.removeMarks(markTargets);
+
+      markTargets.forEach(m =>
+        assert.strictEqual(historyTracker.getMark(m), undefined)
+      );
+    });
+
+    test('does not remove \'\'', () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, '');
+      const mark = historyTracker.getMark('');
+      
+      historyTracker.removeMarks(['']);
+
+      assert.strictEqual(mark, historyTracker.getMark(''));
+    });
+
+    test('does nothing on empty or undefined', () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, 'a');
+      const mark = historyTracker.getMark('a');
+
+      historyTracker.removeMarks();
+      historyTracker.removeMarks(undefined);
+      historyTracker.removeMarks([]);
+
+      assert.strictEqual(mark, historyTracker.getMark('a'));
+    });
+
+  });
 
 // tslint:disable: no-empty
 class TextEditorStub implements vscode.TextEditor {
