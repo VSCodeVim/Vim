@@ -3880,6 +3880,7 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
+  mustBeFirstKey = true;
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
 
