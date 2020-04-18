@@ -956,7 +956,7 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.149",
+    "@types/lodash": "4.14.150",
     "@types/mocha": "7.0.2",
     "@types/node": "12.12.31",
     "@types/sinon": "9.0.0",
@@ -970,9 +970,9 @@
     "minimist": "1.2.5",
     "mocha": "7.1.1",
     "plugin-error": "1.0.1",
-    "prettier": "2.0.2",
-    "sinon": "9.0.1",
-    "ts-loader": "6.2.2",
+    "prettier": "2.0.4",
+    "sinon": "9.0.2",
+    "ts-loader": "7.0.0",
     "tslint": "6.1.1",
     "typescript": "3.8.3",
     "vscode": "1.1.36"

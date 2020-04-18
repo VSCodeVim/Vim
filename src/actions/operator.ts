@@ -706,7 +706,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
 @RegisterAction
 export class ToggleCaseOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -741,7 +741,7 @@ export class ToggleCaseOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
@@ -761,7 +761,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
-  public keys = ['g', '~'];
+  public keys = [['g', '~']];
   public modes = [Mode.Normal];
 }
 
