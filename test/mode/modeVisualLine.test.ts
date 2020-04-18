@@ -502,4 +502,22 @@ suite('Mode Visual Line', () => {
     keysPressed: 'VjV',
     end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
   });
+
+  suite('Can handle ~/g~ in visual line mode', () => {
+    newTest({
+      title: '~/g~ on single line',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'jV~jjVg~',
+      end: ['OnE', 'TwO', 'ThReE', '|FoUr'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '~/g~ on multiple lines',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'Vj~jjVjg~',
+      end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
+      endMode: Mode.Normal,
+    });
+  });
 });
