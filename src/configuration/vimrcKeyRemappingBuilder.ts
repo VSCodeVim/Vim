@@ -23,7 +23,7 @@ class VimrcKeyRemappingBuilderImpl {
     const before = matches[2];
     const after = matches[3];
 
-    const vscodeCommands = await vscode.commands.getCommands();
+    const vscodeCommands = await this.getBuiltinAndExtensionCommands();
     const vimCommand = after.match(VimrcKeyRemappingBuilderImpl.VIM_COMMAND_REG_EX);
 
     let command: {
@@ -46,6 +46,21 @@ class VimrcKeyRemappingBuilderImpl {
       },
       keyRemappingType: type,
     };
+  }
+
+  private async getBuiltinAndExtensionCommands(): Promise<string[]> {
+    const builtinCommands = await vscode.commands.getCommands();
+    const extensionCommands = vscode.extensions.all.flatMap((extension) =>
+      this.getContibutedCommands(extension).map((command) => command.command)
+    );
+
+    return builtinCommands.concat(extensionCommands);
+  }
+
+  private getContibutedCommands(extension: vscode.Extension<any>): vscode.Command[] {
+    const { contributes } = extension.packageJSON;
+
+    return contributes != null && Array.isArray(contributes.commands) ? contributes.commands : [];
   }
 
   private static buildKeyList(keyString: string): string[] {

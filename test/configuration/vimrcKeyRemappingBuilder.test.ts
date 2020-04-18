@@ -1,6 +1,7 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { IKeyRemapping, IVimrcKeyRemapping } from '../../src/configuration/iconfiguration';
 import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder';
+import sinon = require('sinon');
 
 suite('VimrcKeyRemappingBuilder', () => {
   test('Build IKeyRemapping objects from .vimrc lines', async () => {
@@ -58,6 +59,17 @@ suite('VimrcKeyRemappingBuilder', () => {
         expectNull: false,
       },
       {
+        // Mapping with an extension command
+        vimrcLine: 'nnoremap <C-t> vim.showQuickpickCmdLine',
+        keyRemapping: {
+          before: ['<C-t>'],
+          commands: ['vim.showQuickpickCmdLine'],
+          source: 'vimrc',
+        },
+        keyRemappingType: 'nnoremap',
+        expectNull: false,
+      },
+      {
         // Ignore non-mapping lines
         vimrcLine: 'set scrolloff=8',
         expectNull: true,
@@ -79,5 +91,29 @@ suite('VimrcKeyRemappingBuilder', () => {
         assert.strictEqual(vimrcKeyRemapping!.keyRemappingType, testCase.keyRemappingType);
       }
     }
+  });
+
+  suite('VimrcKeyRemappingBuilder - command mapping', () => {
+    test('properly handles "contributes" section of extensions', async () => {
+      sinon.replaceGetter(vscode.extensions, 'all', () => [
+        {
+          packageJSON: {}, // empty packageJSON
+        } as vscode.Extension<any>,
+        {
+          packageJSON: { contributes: {} }, // empty contributes section
+        } as vscode.Extension<any>,
+        {
+          packageJSON: { contributes: { commands: [{ command: 'extension.mockNoopAction' }] } },
+        } as vscode.Extension<any>,
+      ]);
+
+      const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.build(
+        'nnoremap <C-t> extension.mockNoopAction'
+      );
+      assert.deepStrictEqual(vimrcKeyRemapping!.keyRemapping.commands, [
+        'extension.mockNoopAction',
+      ]);
+      assert.strictEqual(vimrcKeyRemapping!.keyRemappingType, 'nnoremap');
+    });
   });
 });
