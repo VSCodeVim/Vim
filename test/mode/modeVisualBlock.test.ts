@@ -212,4 +212,11 @@ suite('Mode Visual Block', () => {
     end: ['one| two three', 'four'],
     endMode: Mode.Normal,
   });
+
+  newTest({
+    title: 'Can handle ~/g~ in visual block mode',
+    start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+    keysPressed: '<C-v>jl~jjl<C-v>jlg~',
+    end: ['oNE', 'Two', 'T|HreE', 'foUR'],
+  });
 });
