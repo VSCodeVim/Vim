@@ -209,6 +209,11 @@ export interface IConfiguration {
   statusBarColorControl: boolean;
 
   /**
+   * Syncronize current line color based on mode.
+   */
+  lineHighlightColorControl: boolean;
+
+  /**
    * Status bar colors to change to based on mode
    */
   statusBarColors: IModeSpecificStrings<string | string[]>;

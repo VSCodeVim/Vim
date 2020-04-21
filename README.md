@@ -407,6 +407,8 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.surroundinputmode": "#007ACC",
 ```
 
+Setting `"vim.lineHighlightColorControl": true` the current line in the editor will have same color than status bar. Only if `"vim.statusBarColorControl": true`.
+
 ### vim-easymotion
 
 Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and configured through the following settings:

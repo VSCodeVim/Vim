@@ -651,6 +651,11 @@
           "markdownDescription": "Allow VSCodeVim to change status bar color based on mode. **NOTE:** Using this feature will have a negative impact on performance.",
           "default": false
         },
+        "vim.lineHighlightColorControl": {
+          "type": "boolean",
+          "markdownDescription": "Allow VSCodeVim to syncronize current line color based on mode. **NOTE:** vim.statusBarColorControl must be true.",
+          "default": false
+        },
         "vim.statusBarColors.normal": {
           "type": [
             "string",

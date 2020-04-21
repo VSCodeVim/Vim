@@ -48,6 +48,7 @@ export class Configuration implements IConfiguration {
   incsearch = true;
   startInInsertMode = false;
   statusBarColorControl = false;
+  lineHighlightColorControl = false;
   statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: ['#8FBCBB', '#434C5E'],
     insert: '#BF616A',

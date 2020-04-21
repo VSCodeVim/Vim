@@ -128,6 +128,10 @@ class StatusBarImpl implements vscode.Disposable {
       'statusBar.foreground': `${foreground}`,
     });
 
+    if (configuration.lineHighlightColorControl) {
+      colorCustomizations['editor.lineHighlightBackground'] = `${background}`;
+    }
+
     // If colors are undefined, return to VSCode defaults
     if (background === undefined) {
       delete colorCustomizations['statusBar.background'];
