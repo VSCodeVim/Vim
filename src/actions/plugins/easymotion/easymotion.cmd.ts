@@ -1,7 +1,7 @@
 import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
-import { Mode } from './../../../mode/mode';
+import { Mode, isVisualMode } from './../../../mode/mode';
 import { RegisterAction } from './../../base';
 import { BaseCommand } from './../../commands/actions';
 import { EasyMotion } from './easymotion';
@@ -406,11 +406,7 @@ class MoveEasyMotion extends BaseCommand {
       const markers = vimState.easyMotion.findMarkers(nail, true);
 
       // If previous mode was visual, restore visual selection
-      if (
-        vimState.easyMotion.previousMode === Mode.Visual ||
-        vimState.easyMotion.previousMode === Mode.VisualLine ||
-        vimState.easyMotion.previousMode === Mode.VisualBlock
-      ) {
+      if (isVisualMode(vimState.easyMotion.previousMode)) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
         vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
