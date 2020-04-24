@@ -147,14 +147,14 @@ suite('sneak plugin', () => {
   });
 
   newTest({
-    title: 'Can go back using <C-o> when repeting forward movement',
+    title: 'Can go back using <C-o> when repeating forward movement',
     start: ['|abc abc abc'],
     keysPressed: 'sab;<C-o>',
     end: ['|abc abc abc'],
   });
 
   newTest({
-    title: 'Can go back using <C-o> when repeting backward movement',
+    title: 'Can go back using <C-o> when repeating backward movement',
     start: ['abc abc |abc'],
     keysPressed: 'sab;<C-o>',
     end: ['abc abc |abc'],
