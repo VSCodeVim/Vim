@@ -80,11 +80,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       const matches = this.getMatches(position, vimState);
 
       // If previous mode was visual, restore visual selection
-      if (
-        vimState.easyMotion.previousMode === Mode.Visual ||
-        vimState.easyMotion.previousMode === Mode.VisualLine ||
-        vimState.easyMotion.previousMode === Mode.VisualBlock
-      ) {
+      if (isVisualMode(vimState.easyMotion.previousMode)) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
         vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
