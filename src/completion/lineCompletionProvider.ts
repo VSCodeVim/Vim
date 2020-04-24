@@ -119,7 +119,7 @@ export const getCompletionsForCurrentLine = (
   document: vscode.TextDocument
 ): string[] | null => {
   const currentLineText = TextEditor.getText(
-    new vscode.Range(position.getFirstLineNonBlankChar(), position)
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -163,7 +163,10 @@ export const lineCompletionProvider = {
 
     vimState.recordedState.transformations.push({
       type: 'deleteRange',
-      range: new Range(position.getFirstLineNonBlankChar(), position.getLineEnd()),
+      range: new Range(
+        TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
+        position.getLineEnd()
+      ),
     });
 
     vimState.recordedState.transformations.push({

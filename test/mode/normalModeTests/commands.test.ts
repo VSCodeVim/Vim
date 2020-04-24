@@ -277,6 +277,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'J' with count",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '3J',
+    end: ['one two| three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'J' with count if count is larger than EOF",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '100J',
+    end: ['one two three| four'],
+  });
+
+  newTest({
     title: "Can handle 'J' in Visual Line mode",
     start: ['on|e', 'two'],
     keysPressed: 'VJ',
@@ -309,6 +323,13 @@ suite('Mode Normal', () => {
     start: ['|one two'],
     keysPressed: 'g~w',
     end: ['|ONE two'],
+  });
+
+  newTest({
+    title: "Can handle 'g~~'",
+    start: ['oNe', 'Tw|O', 'tHrEe'],
+    keysPressed: 'g~~',
+    end: ['oNe', '|tWo', 'tHrEe'],
   });
 
   newTest({

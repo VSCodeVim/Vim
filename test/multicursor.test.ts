@@ -44,4 +44,82 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
     assertEqualLines(['44', '44', '44']);
   });
+
+  test('viwd with multicursors deletes the words and keeps the cursors', async () => {
+    await modeHandler.handleMultipleKeyEvents('ifoo dont delete\nbar\ndont foo'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', 'k', '0']);
+    assertEqualLines(['foo dont delete', 'bar', 'dont foo']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
+    }
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['v', 'i', 'w', 'd']);
+    assertEqualLines([' dont delete', 'bar', 'dont ']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  });
+
+  test('vibd with multicursors deletes the content between brackets and keeps the cursors', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split('')
+    );
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
+    assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
+    }
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['v', 'i', 'b', 'd']);
+    assertEqualLines(['[() asd ]', '[(bar) asd ]', '[() asd ]']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  });
+
+  test('vi[d with multicursors deletes the content between brackets and keeps the cursors', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split('')
+    );
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
+    assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
+    }
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['v', 'i', '[', 'd']);
+    assertEqualLines(['[]', '[(bar) asd ]', '[]']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  });
+
+  test('vitd with multicursors deletes the content between tags and keeps the cursors', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'i<div> foo bar</div> asd\n<div>foo asd</div>'.split('')
+    );
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', '0', 'W']);
+    assertEqualLines(['<div> foo bar</div> asd', '<div>foo asd</div>']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
+    }
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['v', 'i', 't', 'd']);
+    assertEqualLines(['<div></div> asd', '<div></div>']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  });
 });

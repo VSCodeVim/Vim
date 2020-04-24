@@ -98,7 +98,7 @@ export class BaseOperator extends BaseAction {
     return this.run(
       vimState,
       position.getLineBegin(),
-      position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
+      position.getDown(Math.max(0, count - 1)).getLineEnd()
     );
   }
 
@@ -148,7 +148,7 @@ export class DeleteOperator extends BaseOperator {
     // as selecting the newline character. Don't allow this in visual block mode
     if (vimState.currentMode !== Mode.VisualBlock) {
       if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-        end = end.getDown(0);
+        end = end.getDownWithDesiredColumn(0);
       }
     }
 
@@ -187,7 +187,7 @@ export class DeleteOperator extends BaseOperator {
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
-      resultingPosition = Position.EarlierOf(start, end);
+      resultingPosition = Position.earlierOf(start, end);
     }
 
     if (start.character > TextEditor.getLineAt(start).text.length) {
@@ -274,9 +274,7 @@ export class YankOperator extends BaseOperator {
 
     const originalMode = vimState.currentMode;
 
-    if (end.isBefore(start)) {
-      [start, end] = [end, start];
-    }
+    [start, end] = Position.sorted(start, end);
     let extendedEnd = new Position(end.line, end.character + 1);
 
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -380,7 +378,7 @@ export class FormatOperator extends BaseOperator {
       line = vimState.cursorStopPosition.line;
     }
 
-    let newCursorPosition = new Position(line, 0).getFirstLineNonBlankChar();
+    let newCursorPosition = TextEditor.getFirstNonWhitespaceCharOnLine(line);
     vimState.cursorStopPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -418,13 +416,13 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
+    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toUpperCase());
     }
 
-    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
+    const cursorPosition = Position.earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -463,13 +461,13 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
+    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.editor.document.getText(range);
       await TextEditor.replace(range, text.toLowerCase());
     }
 
-    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
+    const cursorPosition = Position.earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -518,7 +516,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
           vimState.dotCommandPreviousVisualSelection.start.line;
 
         start = vimState.cursorStartPosition;
-        const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
+        const newEnd = vimState.cursorStartPosition.getDown(shiftSelectionByNum);
 
         vimState.editor.selection = new vscode.Selection(start, newEnd);
       }
@@ -545,7 +543,7 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
 
     return vimState;
   }
@@ -568,7 +566,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
           vimState.dotCommandPreviousVisualSelection.start.line;
 
         start = vimState.cursorStartPosition;
-        const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
+        const newEnd = vimState.cursorStartPosition.getDown(shiftSelectionByNum);
 
         vimState.editor.selection = new vscode.Selection(start, newEnd);
       }
@@ -579,7 +577,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.getFirstLineNonBlankChar();
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
 
     return vimState;
   }
@@ -640,7 +638,7 @@ export class ChangeOperator extends BaseOperator {
     vimState = await this.run(
       vimState,
       position.getLineBegin(),
-      position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
+      position.getDown(Math.max(0, count - 1)).getLineEnd()
     );
 
     if (configuration.autoindent) {
@@ -679,7 +677,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
     const isMultiline = startPos.line !== endPos.line;
 
-    for (const { line, start, end } of Position.IterateLinesInBlock(vimState)) {
+    for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       ranges.push(new vscode.Range(start, end));
       if (isMultiline) {
         toCopy += line + '\n';
@@ -708,7 +706,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
 @RegisterAction
 export class ToggleCaseOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -716,7 +714,7 @@ export class ToggleCaseOperator extends BaseOperator {
 
     await ToggleCaseOperator.toggleCase(range);
 
-    const cursorPosition = start.isBefore(end) ? start : end;
+    const cursorPosition = Position.earlierOf(start, end);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -743,16 +741,16 @@ export class ToggleCaseOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
-    for (const { start, end } of Position.IterateLinesInBlock(vimState)) {
+    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       await ToggleCaseOperator.toggleCase(range);
     }
 
-    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
+    const cursorPosition = Position.earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -763,7 +761,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
-  public keys = ['g', '~'];
+  public keys = [['g', '~']];
   public modes = [Mode.Normal];
 }
 
@@ -1086,8 +1084,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    start = Position.EarlierOf(start, end);
-    end = Position.LaterOf(start, end);
+    [start, end] = Position.sorted(start, end);
 
     let textToReflow = TextEditor.getText(new vscode.Range(start, end));
     let indent = this.getIndentation(textToReflow);

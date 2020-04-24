@@ -668,6 +668,7 @@ export class ModeHandler implements vscode.Disposable {
         mode: this.vimState.currentMode,
         start: this.vimState.cursorStartPosition,
         end: this.vimState.cursorStopPosition,
+        visualLineStartColumn: this.vimState.visualLineStartColumn,
       };
     }
 
@@ -694,16 +695,25 @@ export class ModeHandler implements vscode.Disposable {
        * Action definitions without having to think about multiple
        * cursors in almost all cases.
        */
-      let cursorPosition = vimState.cursors[i].stop;
-      const oldCursorPosition = vimState.cursorStopPosition;
+      const oldCursorPositionStart = vimState.cursorStartPosition;
+      const oldCursorPositionStop = vimState.cursorStopPosition;
 
+      vimState.cursorStartPosition = vimState.cursors[i].start;
+      let cursorPosition = vimState.cursors[i].stop;
       vimState.cursorStopPosition = cursorPosition;
+
       const result = await movement.execActionWithCount(
         cursorPosition,
         vimState,
         recordedState.count
       );
-      vimState.cursorStopPosition = oldCursorPosition;
+
+      // We also need to update the specific cursor, in case the cursor position was modified inside
+      // the handling functions (e.g. 'it')
+      vimState.cursors[i] = new Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
+
+      vimState.cursorStartPosition = oldCursorPositionStart;
+      vimState.cursorStopPosition = oldCursorPositionStop;
 
       if (result instanceof Position) {
         vimState.cursors[i] = vimState.cursors[i].withNewStop(result);
@@ -1214,16 +1224,12 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case Mode.VisualLine:
-            selections.push(
-              new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd()
-              )
-            );
+            [start, stop] = Position.sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
-            for (const line of Position.IterateLinesInBlock(vimState, cursor)) {
+            for (const line of TextEditor.iterateLinesInBlock(vimState, cursor)) {
               selections.push(new vscode.Selection(line.start, line.end));
             }
             break;
@@ -1414,7 +1420,7 @@ export class ModeHandler implements vscode.Disposable {
 
       result = PairMatcher.nextPairedChar(vimState.cursorStopPosition.getLeft(), key);
       if (result !== undefined) {
-        if (vimState.cursorStopPosition.getLeftByCount(2).isEqual(result)) {
+        if (vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
           return true;
         }
       }
