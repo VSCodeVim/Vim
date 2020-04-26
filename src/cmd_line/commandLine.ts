@@ -56,7 +56,7 @@ class CommandLine {
       return;
     }
 
-    if (command && command[0] === ':') {
+    if (command.startsWith(':')) {
       command = command.slice(1);
     }
 

@@ -201,6 +201,7 @@ export class VimState implements vscode.Disposable {
         mode: Mode;
         start: Position;
         end: Position;
+        visualLineStartColumn: number | undefined;
       }
     | undefined = undefined;
 
