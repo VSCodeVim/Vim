@@ -1288,6 +1288,7 @@ export class PutCommand extends BaseCommand {
         mode: vimState.currentMode,
         start: whereToAddText,
         end: whereToAddText.advancePositionByText(textToEnd),
+        visualLineStartColumn: vimState.visualLineStartColumn,
       };
     }
 
@@ -2229,6 +2230,7 @@ class CommandReselectVisual extends BaseCommand {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
+        vimState.visualLineStartColumn = vimState.lastVisualSelection.visualLineStartColumn;
       }
     }
     return vimState;
