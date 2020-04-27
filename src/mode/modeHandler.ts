@@ -1344,7 +1344,13 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.editor.setDecorations(decoration.Default, cursorRange);
 
-    // TODO: draw marks (#3963)
+    let decorators: vscode.Range[] = [];
+    this.vimState.historyTracker.getMarks().map((mark) => {
+      const position: vscode.Position = mark.position.getLineBegin();
+      decorators.push(new vscode.Range(position, position));
+    });
+
+    this.vimState.editor.setDecorations(decoration.mark, decorators);
 
     // Draw search highlight
     let searchRanges: vscode.Range[] = [];

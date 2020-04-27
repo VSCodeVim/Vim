@@ -8,11 +8,11 @@ class DecorationImpl {
   private _searchHighlight: vscode.TextEditorDecorationType;
   private _easyMotion: vscode.TextEditorDecorationType;
 
-  public set Mark(value: vscode.TextEditorDecorationType) {
+  public set mark(value: vscode.TextEditorDecorationType) {
     this._mark = value;
   }
 
-  public get Mark() {
+  public get mark() {
     return this._mark;
   }
 
@@ -64,7 +64,7 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
-    this.Mark = vscode.window.createTextEditorDecorationType(<vscode.DecorationRenderOptions>{
+    this.mark = vscode.window.createTextEditorDecorationType(<vscode.DecorationRenderOptions>{
       isWholeLine: false,
       gutterIconPath: path.join(__filename, '..', '..', '..', '..', 'images', 'mark.svg'),
       gutterIconSize: 'cover',

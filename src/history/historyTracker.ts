@@ -442,24 +442,6 @@ export class HistoryTracker {
       editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
     };
     this.putMarkInList(newMark);
-    this.updateMarksDecorators();
-  }
-
-  /**
-   * Update marks decorations in the gutter
-   */
-  private updateMarksDecorators(): void {
-    if (!this.vimState.editor) {
-      return;
-    }
-
-    let decorators: vscode.Range[] = [];
-    for (const mark of this.getMarks()) {
-      const position: vscode.Position = mark.position.getLineBegin();
-      decorators.push(new vscode.Range(position, position));
-    }
-
-    this.vimState.editor.setDecorations(decoration.Mark, decorators);
   }
 
   /**
