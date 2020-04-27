@@ -973,7 +973,7 @@
     "prettier": "2.0.5",
     "sinon": "9.0.2",
     "ts-loader": "7.0.1",
-    "tslint": "6.1.1",
+    "tslint": "6.1.2",
     "typescript": "3.8.3",
     "vscode": "1.1.37"
   }
