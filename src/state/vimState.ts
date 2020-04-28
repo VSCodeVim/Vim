@@ -103,7 +103,7 @@ export class VimState implements vscode.Disposable {
         operator: 'change' | 'delete' | 'yank';
         target: string | undefined;
         replacement: string | undefined;
-        range: Range | undefined;
+        ranges: Range[] | undefined;
         isVisualLine: boolean;
       } = undefined;
 

@@ -264,7 +264,11 @@ export class YankOperator extends BaseOperator {
     // Hack to make Surround with y (which takes a motion) work.
 
     if (vimState.surround) {
-      vimState.surround.range = new Range(start, end);
+      if (vimState.surround.ranges) {
+        vimState.surround.ranges.push(new Range(start, end));
+      } else {
+        vimState.surround.ranges = [new Range(start, end)];
+      }
       await vimState.setCurrentMode(Mode.SurroundInputMode);
       vimState.cursorStopPosition = start;
       vimState.cursorStartPosition = start;

@@ -98,7 +98,7 @@ class CommandSurroundAddTarget extends BaseCommand {
         vimState.surround &&
         vimState.surround.active &&
         !vimState.surround.target &&
-        !vimState.surround.range
+        !vimState.surround.ranges
       )
     );
   }
@@ -110,7 +110,7 @@ class CommandSurroundAddTarget extends BaseCommand {
         vimState.surround &&
         vimState.surround.active &&
         !vimState.surround.target &&
-        !vimState.surround.range
+        !vimState.surround.ranges
       )
     );
   }
@@ -185,7 +185,7 @@ class CommandSurroundModeStart extends BaseCommand {
       target: undefined,
       operator: operatorString,
       replacement: undefined,
-      range: undefined,
+      ranges: undefined,
       isVisualLine: false,
     };
 
@@ -253,7 +253,8 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       target: undefined,
       operator: 'yank',
       replacement: undefined,
-      range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
+      // TODO: this only works for one cursor
+      ranges: [new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)],
       isVisualLine: false,
     };
 
@@ -460,35 +461,37 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       if (!vimState.surround) {
         return false;
       }
-      if (!vimState.surround.range) {
+      if (!vimState.surround.ranges) {
         return false;
       }
 
-      let start = vimState.surround.range.start;
-      let stop = vimState.surround.range.stop;
+      for (const range of vimState.surround.ranges) {
+        let start = range.start;
+        let stop = range.stop;
 
-      if (TextEditor.getCharAt(stop) !== ' ') {
-        stop = stop.getRight();
+        if (TextEditor.getCharAt(stop) !== ' ') {
+          stop = stop.getRight();
+        }
+
+        if (vimState.surround.isVisualLine) {
+          startReplace = startReplace + '\n';
+          endReplace = '\n' + endReplace;
+        }
+
+        vimState.recordedState.transformations.push({
+          type: 'insertText',
+          text: startReplace,
+          position: start,
+          // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
+          // which matches vim-surround better
+          diff: new PositionDiff({ character: -startReplace.length }),
+        });
+        vimState.recordedState.transformations.push({
+          type: 'insertText',
+          text: endReplace,
+          position: stop,
+        });
       }
-
-      if (vimState.surround.isVisualLine) {
-        startReplace = startReplace + '\n';
-        endReplace = '\n' + endReplace;
-      }
-
-      vimState.recordedState.transformations.push({
-        type: 'insertText',
-        text: startReplace,
-        position: start,
-        // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
-        // which matches vim-surround better
-        diff: new PositionDiff({ character: -startReplace.length }),
-      });
-      vimState.recordedState.transformations.push({
-        type: 'insertText',
-        text: endReplace,
-        position: stop,
-      });
 
       return CommandSurroundAddToReplacement.Finish(vimState);
     }
