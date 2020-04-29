@@ -1741,6 +1741,9 @@ export class CommandShowSearchHistory extends BaseCommand {
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.transformations.push({
