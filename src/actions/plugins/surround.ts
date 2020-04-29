@@ -214,19 +214,12 @@ class CommandSurroundModeStartVisual extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['S'];
   isCompleteAction = false;
-  runsOnceForEveryCursor() {
-    return false;
-  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
     if (!configuration.surround) {
       return vimState;
     }
-
-    // Start to record the keys to store for playback of surround using dot
-    vimState.recordedState.surroundKeys.push('S');
-    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
     // Make sure cursor positions are ordered correctly for top->down or down->top selection
     if (vimState.cursorStartPosition.line > vimState.cursorStopPosition.line) {
@@ -248,15 +241,24 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       ];
     }
 
-    vimState.surround = {
-      active: true,
-      target: undefined,
-      operator: 'yank',
-      replacement: undefined,
-      // TODO: this only works for one cursor
-      ranges: [new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)],
-      isVisualLine: false,
-    };
+    if (vimState.surround) {
+      vimState.surround.ranges?.push(
+        new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)
+      );
+    } else {
+      // Start to record the keys to store for playback of surround using dot
+      vimState.recordedState.surroundKeys.push('S');
+      vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
+
+      vimState.surround = {
+        active: true,
+        target: undefined,
+        operator: 'yank',
+        replacement: undefined,
+        ranges: [new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)],
+        isVisualLine: false,
+      };
+    }
 
     if (vimState.currentMode === Mode.VisualLine) {
       vimState.surround.isVisualLine = true;
@@ -465,17 +467,19 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         return false;
       }
 
-      for (const range of vimState.surround.ranges) {
+      if (vimState.surround.isVisualLine) {
+        startReplace = startReplace + '\n';
+        endReplace = '\n' + endReplace;
+      }
+
+      for (let rangeIndex = 0; rangeIndex < vimState.surround.ranges.length; rangeIndex++) {
+        const range = vimState.surround.ranges[rangeIndex];
+
         let start = range.start;
         let stop = range.stop;
 
         if (TextEditor.getCharAt(stop) !== ' ') {
           stop = stop.getRight();
-        }
-
-        if (vimState.surround.isVisualLine) {
-          startReplace = startReplace + '\n';
-          endReplace = '\n' + endReplace;
         }
 
         vimState.recordedState.transformations.push({
@@ -485,11 +489,13 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
           // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
           // which matches vim-surround better
           diff: new PositionDiff({ character: -startReplace.length }),
+          cursorIndex: rangeIndex,
         });
         vimState.recordedState.transformations.push({
           type: 'insertText',
           text: endReplace,
           position: stop,
+          cursorIndex: rangeIndex,
         });
       }
 
