@@ -515,6 +515,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
 
     let allFinished: boolean = true;
     let replaceAndDeleteRanges: ReplaceAndDeleteRange[] = [];
+    let wordMatchingPerformed: boolean = false;
+
     for (const cursor of vimState.cursors) {
       const replaceAndDeleteRange = await this.getReplaceAndDeleteRanges(
         cursor,
@@ -559,11 +561,13 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
             continue;
           }
 
-          if (addNewline === 'end-only' || addNewline === 'both') {
-            endReplace = '\n' + endReplace;
-          }
-          if (addNewline === 'both') {
-            startReplace += '\n';
+          if (!wordMatchingPerformed) {
+            if (addNewline === 'end-only' || addNewline === 'both') {
+              endReplace = '\n' + endReplace;
+            }
+            if (addNewline === 'both') {
+              startReplace += '\n';
+            }
           }
 
           vimState.recordedState.transformations.push({
@@ -577,14 +581,14 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
             position: stop,
           });
 
-          continue;
+          wordMatchingPerformed = true;
         }
       }
 
       allFinished = false;
     }
 
-    if (allFinished) {
+    if (allFinished || wordMatchingPerformed) {
       return CommandSurroundAddToReplacement.Finish(vimState);
     }
 
