@@ -271,6 +271,13 @@ class CommandSurroundModeStartVisual extends BaseCommand {
   }
 }
 
+type ReplaceAndDeleteRange = {
+  startReplaceRange?: Range;
+  endReplaceRange?: Range;
+  startDeleteRange?: Range;
+  endDeleteRange?: Range;
+};
+
 @RegisterAction
 export class CommandSurroundAddToReplacement extends BaseCommand {
   modes = [Mode.SurroundInputMode];
@@ -475,6 +482,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         endReplace = '\n' + endReplace;
       }
 
+      // We perform the ys operation for every cursor (represented as the ranges we gathered from the YankOperator).
       for (let rangeIndex = 0; rangeIndex < vimState.surround.ranges.length; rangeIndex++) {
         const range = vimState.surround.ranges[rangeIndex];
 
@@ -506,13 +514,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     }
 
     let allFinished: boolean = true;
-    // TODO: ugly
-    let replaceAndDeleteRanges = new Array<{
-      startReplaceRange: Range | undefined;
-      endReplaceRange: Range | undefined;
-      startDeleteRange: Range | undefined;
-      endDeleteRange: Range | undefined;
-    }>();
+    let replaceAndDeleteRanges: ReplaceAndDeleteRange[] = [];
     for (const cursor of vimState.cursors) {
       const replaceAndDeleteRange = await this.getReplaceAndDeleteRanges(
         cursor,
@@ -522,6 +524,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       );
 
       if (!replaceAndDeleteRange) {
+        // We continue instead of rejecting the whole operation because there might be cursors
+        // for which the operation may still be applied.
         continue;
       }
 
@@ -587,11 +591,11 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     // We've got our ranges. Run the surround command with the appropriate operator.
 
     let allFailed = true;
-    for (const ranges of replaceAndDeleteRanges) {
-      let startReplaceRange = ranges.startReplaceRange;
-      let endReplaceRange = ranges.endReplaceRange;
-      let startDeleteRange = ranges.startDeleteRange;
-      let endDeleteRange = ranges.endDeleteRange;
+    for (const modificationRanges of replaceAndDeleteRanges) {
+      let startReplaceRange = modificationRanges.startReplaceRange;
+      let endReplaceRange = modificationRanges.endReplaceRange;
+      let startDeleteRange = modificationRanges.startDeleteRange;
+      let endDeleteRange = modificationRanges.endDeleteRange;
 
       if (!startReplaceRange && !endReplaceRange && !startDeleteRange && !endDeleteRange) {
         continue;
@@ -672,24 +676,16 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     }
   }
 
+  /**
+   * Finds the Document transformation ranges for the given cursor.
+   */
   static async getReplaceAndDeleteRanges(
     cursor: Range,
     target: string | undefined,
     vimState: VimState,
     retainAttributes: boolean
-  ): Promise<
-    | {
-        startReplaceRange: Range | undefined;
-        endReplaceRange: Range | undefined;
-        startDeleteRange: Range | undefined;
-        endDeleteRange: Range | undefined;
-      }
-    | undefined
-  > {
-    let startReplaceRange: Range | undefined;
-    let endReplaceRange: Range | undefined;
-    let startDeleteRange: Range | undefined;
-    let endDeleteRange: Range | undefined;
+  ): Promise<ReplaceAndDeleteRange | undefined> {
+    let result: ReplaceAndDeleteRange = {};
 
     const quoteMatches: { char: string; movement: () => MoveQuoteMatch }[] = [
       { char: "'", movement: () => new MoveASingleQuotes() },
@@ -708,8 +704,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         return undefined;
       }
 
-      startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(stop, stop.getRight());
+      result.startReplaceRange = new Range(start, start.getRight());
+      result.endReplaceRange = new Range(stop, stop.getRight());
     }
 
     const pairedMatchings: {
@@ -736,8 +732,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
 
       stop = stop.getLeft();
 
-      startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(stop, stop.getRight());
+      result.startReplaceRange = new Range(start, start.getRight());
+      result.endReplaceRange = new Range(stop, stop.getRight());
 
       if (target === open) {
         CommandSurroundAddToReplacement.RemoveWhitespace(vimState, start, stop);
@@ -769,29 +765,25 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         return undefined;
       }
 
-      startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(innerTagContent.stop, innerTagContent.stop.getRight());
+      result.startReplaceRange = new Range(start, start.getRight());
+      result.endReplaceRange = new Range(innerTagContent.stop, innerTagContent.stop.getRight());
 
       if (retainAttributes) {
         // Don't remove the attributes, just the tag name (one WORD)
         const tagNameEnd = start.getCurrentBigWordEnd().getRight();
-        startDeleteRange = new Range(start.getRight(), tagNameEnd);
+        result.startDeleteRange = new Range(start.getRight(), tagNameEnd);
       } else {
-        startDeleteRange = new Range(start.getRight(), innerTagContent.start);
+        result.startDeleteRange = new Range(start.getRight(), innerTagContent.start);
       }
 
-      endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
+      result.endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
     }
 
-    return {
-      startReplaceRange,
-      endReplaceRange,
-      startDeleteRange,
-      endDeleteRange,
-    };
+    return result;
   }
 
   /**
+   * Executes the given movement to find the start and stop positions of the targets for the given cursor.
    * We need this because some movements make use of vimState.cursorStartPosition as well.
    */
   static async execMovementAction(
