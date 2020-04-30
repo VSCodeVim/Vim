@@ -502,6 +502,187 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       return CommandSurroundAddToReplacement.Finish(vimState);
     }
 
+    let allFinished: boolean = true;
+    // TODO: ugly
+    let replaceAndDeleteRanges = new Array<{
+      startReplaceRange: Range | undefined;
+      endReplaceRange: Range | undefined;
+      startDeleteRange: Range | undefined;
+      endDeleteRange: Range | undefined;
+    }>();
+    for (const cursor of vimState.cursors) {
+      const replaceAndDeleteRange = await this.getReplaceAndDeleteRanges(
+        cursor,
+        target,
+        vimState,
+        retainAttributes
+      );
+
+      if (!replaceAndDeleteRange) {
+        continue;
+      }
+
+      replaceAndDeleteRanges.push(replaceAndDeleteRange);
+
+      if (operator === 'change') {
+        if (!replacement) {
+          return false;
+        }
+        const wordMatchings: {
+          char: string;
+          movement: () => TextObjectMovement;
+          addNewline: 'no' | 'end-only' | 'both';
+        }[] = [
+          { char: 'w', movement: () => new SelectInnerWord(), addNewline: 'no' },
+          { char: 'p', movement: () => new SelectInnerParagraph(), addNewline: 'both' },
+          { char: 's', movement: () => new SelectInnerSentence(), addNewline: 'end-only' },
+          { char: 'W', movement: () => new SelectInnerBigWord(), addNewline: 'no' },
+        ];
+
+        for (const { char, movement, addNewline } of wordMatchings) {
+          if (target !== char) {
+            continue;
+          }
+
+          let { stop, start, failed } = await this.execMovementAction(movement, cursor, vimState);
+
+          stop = stop.getRight();
+
+          if (failed) {
+            continue;
+          }
+
+          if (addNewline === 'end-only' || addNewline === 'both') {
+            endReplace = '\n' + endReplace;
+          }
+          if (addNewline === 'both') {
+            startReplace += '\n';
+          }
+
+          vimState.recordedState.transformations.push({
+            type: 'insertText',
+            text: startReplace,
+            position: start,
+          });
+          vimState.recordedState.transformations.push({
+            type: 'insertText',
+            text: endReplace,
+            position: stop,
+          });
+
+          continue;
+        }
+      }
+
+      allFinished = false;
+    }
+
+    if (allFinished) {
+      return CommandSurroundAddToReplacement.Finish(vimState);
+    }
+
+    // We've got our ranges. Run the surround command with the appropriate operator.
+
+    let allFailed = true;
+    for (const ranges of replaceAndDeleteRanges) {
+      let startReplaceRange = ranges.startReplaceRange;
+      let endReplaceRange = ranges.endReplaceRange;
+      let startDeleteRange = ranges.startDeleteRange;
+      let endDeleteRange = ranges.endDeleteRange;
+
+      if (!startReplaceRange && !endReplaceRange && !startDeleteRange && !endDeleteRange) {
+        continue;
+      }
+
+      if (operator === 'change') {
+        if (!replacement) {
+          continue;
+        }
+
+        if (startReplaceRange) {
+          vimState.recordedState.transformations.push({
+            type: 'replaceText',
+            text: startReplace,
+            start: startReplaceRange.start,
+            end: startReplaceRange.stop,
+          });
+        }
+        if (endReplaceRange) {
+          vimState.recordedState.transformations.push({
+            type: 'replaceText',
+            text: endReplace,
+            start: endReplaceRange.start,
+            end: endReplaceRange.stop,
+          });
+        }
+        if (startDeleteRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: startDeleteRange,
+          });
+        }
+        if (endDeleteRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: endDeleteRange,
+          });
+        }
+
+        allFailed = false;
+      }
+
+      if (operator === 'delete') {
+        if (startReplaceRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: startReplaceRange,
+          });
+        }
+        if (endReplaceRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: endReplaceRange,
+          });
+        }
+
+        if (startDeleteRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: startDeleteRange,
+          });
+        }
+        if (endDeleteRange) {
+          vimState.recordedState.transformations.push({
+            type: 'deleteRange',
+            range: endDeleteRange,
+          });
+        }
+
+        allFailed = false;
+      }
+    }
+
+    if (allFailed) {
+      return false;
+    } else {
+      return CommandSurroundAddToReplacement.Finish(vimState);
+    }
+  }
+
+  static async getReplaceAndDeleteRanges(
+    cursor: Range,
+    target: string | undefined,
+    vimState: VimState,
+    retainAttributes: boolean
+  ): Promise<
+    | {
+        startReplaceRange: Range | undefined;
+        endReplaceRange: Range | undefined;
+        startDeleteRange: Range | undefined;
+        endDeleteRange: Range | undefined;
+      }
+    | undefined
+  > {
     let startReplaceRange: Range | undefined;
     let endReplaceRange: Range | undefined;
     let startDeleteRange: Range | undefined;
@@ -518,10 +699,10 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         continue;
       }
 
-      const { start, stop, failed } = await movement().execAction(position, vimState);
+      const { start, stop, failed } = await this.execMovementAction(movement, cursor, vimState);
 
       if (failed) {
-        return CommandSurroundAddToReplacement.Finish(vimState);
+        return undefined;
       }
 
       startReplaceRange = new Range(start, start.getRight());
@@ -544,10 +725,10 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
         continue;
       }
 
-      let { start, stop, failed } = await movement().execAction(position, vimState);
+      let { start, stop, failed } = await this.execMovementAction(movement, cursor, vimState);
 
       if (failed) {
-        return CommandSurroundAddToReplacement.Finish(vimState);
+        return undefined;
       }
 
       stop = stop.getLeft();
@@ -563,18 +744,26 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     if (target === 't') {
       // `MoveInsideTag` must be run first as otherwise the search will
       // look for the next enclosing tag after having selected the first
-      let innerTagContent = await new MoveInsideTag().execAction(position, vimState);
-      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
+      let innerTagContent = await this.execMovementAction(
+        () => new MoveInsideTag(),
+        cursor,
+        vimState
+      );
+      let { start, stop, failed } = await this.execMovementAction(
+        () => new MoveAroundTag(),
+        cursor,
+        vimState
+      );
 
       if (failed || innerTagContent.failed) {
-        return CommandSurroundAddToReplacement.Finish(vimState);
+        return undefined;
       }
 
       stop = stop.getRight();
       innerTagContent.stop = innerTagContent.stop.getRight();
 
       if (failed) {
-        return CommandSurroundAddToReplacement.Finish(vimState);
+        return undefined;
       }
 
       startReplaceRange = new Range(start, start.getRight());
@@ -591,126 +780,33 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
     }
 
-    if (operator === 'change') {
-      if (!replacement) {
-        return false;
-      }
-      const wordMatchings: {
-        char: string;
-        movement: () => TextObjectMovement;
-        addNewline: 'no' | 'end-only' | 'both';
-      }[] = [
-        { char: 'w', movement: () => new SelectInnerWord(), addNewline: 'no' },
-        { char: 'p', movement: () => new SelectInnerParagraph(), addNewline: 'both' },
-        { char: 's', movement: () => new SelectInnerSentence(), addNewline: 'end-only' },
-        { char: 'W', movement: () => new SelectInnerBigWord(), addNewline: 'no' },
-      ];
+    return {
+      startReplaceRange,
+      endReplaceRange,
+      startDeleteRange,
+      endDeleteRange,
+    };
+  }
 
-      for (const { char, movement, addNewline } of wordMatchings) {
-        if (target !== char) {
-          continue;
-        }
+  /**
+   * We need this because some movements make use of vimState.cursorStartPosition as well.
+   */
+  static async execMovementAction(
+    movement: () => BaseMovement,
+    cursor: Range,
+    vimState: VimState
+  ): Promise<IMovement> {
+    const mainCursorStart = vimState.cursorStartPosition;
+    const mainCursorStop = vimState.cursorStopPosition;
 
-        let { stop, start, failed } = (await movement().execAction(
-          position,
-          vimState
-        )) as IMovement;
+    vimState.cursorStartPosition = cursor.start;
+    vimState.cursorStopPosition = cursor.stop;
 
-        stop = stop.getRight();
+    const result = (await movement().execAction(cursor.stop, vimState)) as IMovement;
 
-        if (failed) {
-          return CommandSurroundAddToReplacement.Finish(vimState);
-        }
+    vimState.cursorStartPosition = mainCursorStart;
+    vimState.cursorStopPosition = mainCursorStop;
 
-        if (addNewline === 'end-only' || addNewline === 'both') {
-          endReplace = '\n' + endReplace;
-        }
-        if (addNewline === 'both') {
-          startReplace += '\n';
-        }
-
-        vimState.recordedState.transformations.push({
-          type: 'insertText',
-          text: startReplace,
-          position: start,
-        });
-        vimState.recordedState.transformations.push({
-          type: 'insertText',
-          text: endReplace,
-          position: stop,
-        });
-
-        return CommandSurroundAddToReplacement.Finish(vimState);
-      }
-    }
-
-    // We've got our ranges. Run the surround command with the appropriate operator.
-
-    if (!startReplaceRange && !endReplaceRange && !startDeleteRange && !endDeleteRange) {
-      return false;
-    }
-
-    if (operator === 'change') {
-      if (!replacement) {
-        return false;
-      }
-
-      if (startReplaceRange) {
-        vimState.recordedState.transformations.push({
-          type: 'replaceText',
-          text: startReplace,
-          start: startReplaceRange.start,
-          end: startReplaceRange.stop,
-        });
-      }
-      if (endReplaceRange) {
-        vimState.recordedState.transformations.push({
-          type: 'replaceText',
-          text: endReplace,
-          start: endReplaceRange.start,
-          end: endReplaceRange.stop,
-        });
-      }
-      if (startDeleteRange) {
-        vimState.recordedState.transformations.push({
-          type: 'deleteRange',
-          range: startDeleteRange,
-        });
-      }
-      if (endDeleteRange) {
-        vimState.recordedState.transformations.push({ type: 'deleteRange', range: endDeleteRange });
-      }
-
-      return CommandSurroundAddToReplacement.Finish(vimState);
-    }
-
-    if (operator === 'delete') {
-      if (startReplaceRange) {
-        vimState.recordedState.transformations.push({
-          type: 'deleteRange',
-          range: startReplaceRange,
-        });
-      }
-      if (endReplaceRange) {
-        vimState.recordedState.transformations.push({
-          type: 'deleteRange',
-          range: endReplaceRange,
-        });
-      }
-
-      if (startDeleteRange) {
-        vimState.recordedState.transformations.push({
-          type: 'deleteRange',
-          range: startDeleteRange,
-        });
-      }
-      if (endDeleteRange) {
-        vimState.recordedState.transformations.push({ type: 'deleteRange', range: endDeleteRange });
-      }
-
-      return CommandSurroundAddToReplacement.Finish(vimState);
-    }
-
-    return false;
+    return result;
   }
 }
