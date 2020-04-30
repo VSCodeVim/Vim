@@ -513,8 +513,14 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       return CommandSurroundAddToReplacement.Finish(vimState);
     }
 
-    let allFinished: boolean = true;
+    /**
+     * Tracks if the operations for all cursors have finished and we can end the surround action.
+     */
+    let allCursorsFinished: boolean = true;
     let replaceAndDeleteRanges: ReplaceAndDeleteRange[] = [];
+    /**
+     * Tracks if the at least one of the cursors performed a csw, csp, css, csW operation.
+     */
     let wordMatchingPerformed: boolean = false;
 
     for (const cursor of vimState.cursors) {
@@ -561,6 +567,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
             continue;
           }
 
+          // We only need to modify the replacements once, so if we ran the operation for a cursor already,
+          // we can skip this step.
           if (!wordMatchingPerformed) {
             if (addNewline === 'end-only' || addNewline === 'both') {
               endReplace = '\n' + endReplace;
@@ -581,20 +589,28 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
             position: stop,
           });
 
+          // We are sure the requested operation is a word matching one and we set the flag to indicate
+          // that we have performed it for at least one of the cursors.
           wordMatchingPerformed = true;
         }
       }
 
-      allFinished = false;
+      // At least one cursor requires a document transformation.
+      allCursorsFinished = false;
     }
 
-    if (allFinished || wordMatchingPerformed) {
+    if (allCursorsFinished || wordMatchingPerformed) {
       return CommandSurroundAddToReplacement.Finish(vimState);
     }
 
     // We've got our ranges. Run the surround command with the appropriate operator.
 
+    /**
+     * If true, the operation can't be carried out for any of the cursors.
+     * If false, we changed or deleted a surround for at least one cursor.
+     */
     let allFailed = true;
+
     for (const modificationRanges of replaceAndDeleteRanges) {
       let startReplaceRange = modificationRanges.startReplaceRange;
       let endReplaceRange = modificationRanges.endReplaceRange;
