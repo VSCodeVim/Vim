@@ -2593,20 +2593,12 @@ export class CommandInsertAfterCursor extends BaseCommand {
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Only allow this command to be prefixed with a count or nothing, no other
-    // actions or operators before
-    let previousActionsNumbers = true;
-    for (const prevAction of vimState.recordedState.actionsRun) {
-      if (!(prevAction instanceof CommandNumber)) {
-        previousActionsNumbers = false;
-        break;
-      }
+    // Only allow this command to be prefixed with a count or nothing, no other actions or operators before
+    if (!vimState.recordedState.actionsRun.every((action) => action instanceof CommandNumber)) {
+      return false;
     }
 
-    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
-      return super.couldActionApply(vimState, keysPressed);
-    }
-    return false;
+    return super.couldActionApply(vimState, keysPressed);
   }
 }
 
