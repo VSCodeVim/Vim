@@ -600,6 +600,8 @@ export class HistoryTracker {
     if (this.currentContentChanges.length < n) {
       this._logger.warn('Something bad happened in removeChange');
       return;
+    } else if (n === 0) {
+      return;
     }
 
     // Remove the last N elements from the currentContentChanges array.
