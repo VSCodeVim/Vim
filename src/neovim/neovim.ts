@@ -9,7 +9,8 @@ import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
 import { exists } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
-import { attach, Neovim } from 'neovim';
+import { attach } from 'neovim/lib/attach';
+import { Neovim } from 'neovim/lib/api/Neovim';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;

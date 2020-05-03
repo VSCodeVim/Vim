@@ -4,7 +4,6 @@ import * as token from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
 import { getParser } from './subparser';
-import { CommandNumber } from '../actions/commands/actions';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;

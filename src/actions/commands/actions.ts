@@ -1288,6 +1288,7 @@ export class PutCommand extends BaseCommand {
         mode: vimState.currentMode,
         start: whereToAddText,
         end: whereToAddText.advancePositionByText(textToEnd),
+        visualLineStartColumn: vimState.visualLineStartColumn,
       };
     }
 
@@ -2229,6 +2230,7 @@ class CommandReselectVisual extends BaseCommand {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
+        vimState.visualLineStartColumn = vimState.lastVisualSelection.visualLineStartColumn;
       }
     }
     return vimState;
@@ -2591,20 +2593,12 @@ export class CommandInsertAfterCursor extends BaseCommand {
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Only allow this command to be prefixed with a count or nothing, no other
-    // actions or operators before
-    let previousActionsNumbers = true;
-    for (const prevAction of vimState.recordedState.actionsRun) {
-      if (!(prevAction instanceof CommandNumber)) {
-        previousActionsNumbers = false;
-        break;
-      }
+    // Only allow this command to be prefixed with a count or nothing, no other actions or operators before
+    if (!vimState.recordedState.actionsRun.every((action) => action instanceof CommandNumber)) {
+      return false;
     }
 
-    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
-      return super.couldActionApply(vimState, keysPressed);
-    }
-    return false;
+    return super.couldActionApply(vimState, keysPressed);
   }
 }
 
@@ -3158,7 +3152,8 @@ class ActionJoin extends BaseCommand {
           manuallySetCursorPositions: true,
         });
 
-        vimState.cursorStartPosition = vimState.cursorStopPosition = startPosition.withColumn(
+        vimState.cursorStartPosition = vimState.cursorStopPosition = new Position(
+          startPosition.line,
           trimmedLinesContent.length - columnDeltaOffset
         );
         await vimState.setCurrentMode(Mode.Normal);
@@ -3880,6 +3875,7 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
+  mustBeFirstKey = true;
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
 
