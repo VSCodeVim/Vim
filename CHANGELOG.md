@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.14.1](https://github.com/vscodevim/vim/tree/v1.14.1) (2020-05-03)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.0...v1.14.1)
+
+**Fixed Bugs:**
+
+- Remap of \["j", "j"\] to "\<Esc\>" is no longer working [\#4787](https://github.com/VSCodeVim/Vim/issues/4787)
+
+**Closed issues:**
+
+- Wrong keyboard layout being used when holding Ctrl [\#4792](https://github.com/VSCodeVim/Vim/issues/4792)
+- On switching to normal mode "d", "f" or "j", "j" keybindings [\#4790](https://github.com/VSCodeVim/Vim/issues/4790)
+- Insert mode mapped jk to \<esc\> always leaves the j before escaping [\#4789](https://github.com/VSCodeVim/Vim/issues/4789)
+
+**Merged pull requests:**
+
+- Fix insert mode remaps leaving behind a character [\#4791](https://github.com/VSCodeVim/Vim/pull/4791) ([gergelyth](https://github.com/gergelyth))
+
 ## [v1.14.0](https://github.com/vscodevim/vim/tree/v1.14.0) (2020-05-02)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.13.1...v1.14.0)
