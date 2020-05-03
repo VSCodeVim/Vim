@@ -5,7 +5,7 @@ import { Remappers, Remapper } from '../../src/configuration/remapper';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
@@ -467,6 +467,62 @@ suite('Remapper', () => {
     // assert
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
+
+  test('jj -> <Esc> does not leave behind character a j', async () => {
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: [
+        {
+          before: ['j', 'j'],
+          after: ['<Esc>'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
+    assertEqualLines(['foobar']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('jj -> <Esc> does not modify undo stack', async () => {
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: [
+        {
+          before: ['j', 'j'],
+          after: ['<Esc>'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
+    assertEqualLines(['foobar']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    await modeHandler.handleMultipleKeyEvents(['u']);
+    assertEqualLines(['foo']);
+  });
+
 });
 
 /* tslint:enable:no-string-literal */

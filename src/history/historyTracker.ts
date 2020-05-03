@@ -597,16 +597,34 @@ export class HistoryTracker {
    * Both undoes and completely removes the last n changes applied.
    */
   public async undoAndRemoveChanges(n: number): Promise<void> {
-    if (this.currentHistoryStep.changes.length < n) {
+    if (this.currentContentChanges.length < n) {
       this._logger.warn('Something bad happened in removeChange');
       return;
     }
 
-    for (let i = 0; i < n; i++) {
-      await this.currentHistoryStep.changes.pop()!.undo();
-    }
+    // Remove the last N elements from the currentContentChanges array.
+    const removedChanges = this.currentContentChanges.splice(
+      this.currentContentChanges.length - n,
+      this.currentContentChanges.length
+    );
+    const firstRemovedChange = removedChanges[0];
 
-    this.ignoreChange();
+    // Remove the characters from the editor.
+    await vscode.window.activeTextEditor?.edit((edit) =>
+      edit.delete(
+        new vscode.Range(
+          firstRemovedChange!.range.start,
+          firstRemovedChange!.range.end.translate(0, n)
+        )
+      )
+    );
+
+    // We can't ignore the change, because that would mean that addChange() doesn't run.
+    // In the event of "jj" -> <Esc> remap, that would mean that the second part of the modification
+    // does not get added to currentHistoryStep.changes (only the first character).
+    // This messes with the undo stack, i.e. if we were to call Undo, only that first character would be erased.
+
+    // this.ignoreChange();
   }
 
   /**
