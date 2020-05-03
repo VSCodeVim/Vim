@@ -522,7 +522,6 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['u']);
     assertEqualLines(['foo']);
   });
-
 });
 
 /* tslint:enable:no-string-literal */
