@@ -3769,22 +3769,28 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const newCursors: Range[] = [];
+    for (const cursor of vimState.cursors) {
+      const [start, end] = Position.sorted(cursor.start, cursor.stop);
+      for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
+        const line = TextEditor.getLine(lineNum);
+        const insertionColumn =
+          vimState.desiredColumn === Number.POSITIVE_INFINITY
+            ? line.text.length
+            : Math.max(cursor.start.character, cursor.stop.character) + 1;
+        if (line.text.length < insertionColumn) {
+          await TextEditor.insertAt(' '.repeat(insertionColumn - line.text.length), line.range.end);
+        }
+        const newCursor = new Position(lineNum, insertionColumn);
+        newCursors.push(new Range(newCursor, newCursor));
+      }
+    }
+
+    vimState.cursors = newCursors;
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    for (const { line, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      if (line.trim() === '') {
-        vimState.recordedState.transformations.push({
-          type: 'replaceText',
-          text: TextEditor.setIndentationLevel(line, end.character),
-          start: new Position(end.line, 0),
-          end: new Position(end.line, end.character),
-        });
-      }
-      vimState.cursors.push(new Range(end, end));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
     return vimState;
   }
 }
