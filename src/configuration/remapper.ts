@@ -60,8 +60,9 @@ export class Remapper implements IRemapper {
   private readonly _logger = Logger.get('Remapper');
 
   private _isPotentialRemap = false;
-  private _allowAmbiguousRemapOnFirstKey = true;
+  private _allowPotentialRemapOnFirstKey = true;
   private _hasAmbiguousRemap = false;
+  private _hasPotentialRemap = false;
   get isPotentialRemap(): boolean {
     return this._isPotentialRemap;
   }
@@ -78,7 +79,7 @@ export class Remapper implements IRemapper {
     vimState: VimState
   ): Promise<boolean> {
     this._isPotentialRemap = false;
-    let allowAmbiguousRemap = true;
+    let allowBufferingKeys = true;
     let remainingKeys: string[] = [];
 
     if (!this._remappedModes.includes(vimState.currentMode)) {
@@ -87,17 +88,21 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
+    if (keys[keys.length - 1] === '<BufferedKeys>') {
+      // Timeout finished. Don't let an ambiguous remap start another timeout again
+      keys = keys.slice(0, keys.length - 1);
+      allowBufferingKeys = false;
+    }
+
+    if (keys.length === 0) {
+      return true;
+    }
+
     this._logger.debug(
       `trying to find matching remap. keys=${keys}. mode=${
         Mode[vimState.currentMode]
       }. keybindings=${this._configKey}.`
     );
-
-    if (keys[keys.length - 1] === '<BufferedKeys>') {
-      // Timeout finished. Don't let an ambiguous remap start another timeout again
-      keys = keys.slice(0, keys.length - 1);
-      allowAmbiguousRemap = false;
-    }
 
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(
       userDefinedRemappings,
@@ -107,7 +112,6 @@ export class Remapper implements IRemapper {
 
     let isPotentialRemap = false;
     // Check to see if a remapping could potentially be applied when more keys are received
-    // const keysAsString = keys.join('');
     const keysAsString = vimState.recordedState.commandWithoutCountPrefix.replace(
       '<BufferedKeys>',
       ''
@@ -122,74 +126,119 @@ export class Remapper implements IRemapper {
     }
 
     this._isPotentialRemap =
-      isPotentialRemap && allowAmbiguousRemap && this._allowAmbiguousRemapOnFirstKey;
+      isPotentialRemap && allowBufferingKeys && this._allowPotentialRemapOnFirstKey;
 
     if (
       !remapping &&
-      this._hasAmbiguousRemap &&
-      (!isPotentialRemap || !allowAmbiguousRemap) &&
+      (this._hasAmbiguousRemap || this._hasPotentialRemap) &&
+      (!isPotentialRemap || !allowBufferingKeys) &&
       keys.length > 1
     ) {
-      // Check if the last key broke a previous ambiguous remap
-      const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
-      for (let sliceLength = keys.length - 1; sliceLength >= range[0]; sliceLength--) {
-        const keysSlice = keys.slice(0, sliceLength);
-        let possibleBrokenRemap: IKeyRemapping | undefined = this.findMatchingRemap(
-          userDefinedRemappings,
-          keysSlice,
-          vimState.currentMode
-        );
-        if (possibleBrokenRemap) {
-          remapping = possibleBrokenRemap;
-          isPotentialRemap = false;
-          this._isPotentialRemap = false;
-          remainingKeys = keys.slice(remapping.before.length);
-          break;
+      if (this._hasAmbiguousRemap) {
+        // Check what was the previous ambiguous remap
+        const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
+        for (let sliceLength = keys.length - 1; sliceLength >= range[0]; sliceLength--) {
+          const keysSlice = keys.slice(0, sliceLength);
+          let possibleBrokenRemap: IKeyRemapping | undefined = this.findMatchingRemap(
+            userDefinedRemappings,
+            keysSlice,
+            vimState.currentMode
+          );
+          if (possibleBrokenRemap) {
+            remapping = possibleBrokenRemap;
+            isPotentialRemap = false;
+            this._isPotentialRemap = false;
+            remainingKeys = keys.slice(remapping.before.length);
+            break;
+          }
         }
+        this._hasAmbiguousRemap = false;
       }
-      this._hasAmbiguousRemap = false;
       if (!remapping) {
         // if there is still no remapping, handle all the keys without allowing
-        // an ambiguous remap on the first key so that we don't repeat everything
+        // a potential remap on the first key so that we don't repeat everything
         // again, but still allow for other ambiguous remaps after the first key.
         //
-        // Example: if 'ii' and 'iiii' are mapped in normal and 'ii' is mapped in
-        // insert mode, and the user presses 'iiia' in normal mode or presses 'iii'
-        // and waits for the timeout to finish, we want the first 'i' to be handled
-        // without allowing ambiguous remaps, which means it will go into insert mode,
+        // Example: if 'iiii' is mapped in normal and 'ii' is mapped in insert mode,
+        // and the user presses 'iiia' in normal mode or presses 'iii' and waits
+        // for the timeout to finish, we want the first 'i' to be handled without
+        // allowing potential remaps, which means it will go into insert mode,
         // but then the next 'ii' should be remapped in insert mode and after the
         // remap the 'a' should be handled.
-        this._allowAmbiguousRemapOnFirstKey = false;
-        vimState.recordedState.commandList = vimState.recordedState.commandList.slice(
-          0,
-          -keys.length
+        if (!allowBufferingKeys) {
+          // Timeout finished and there is no remapping, so handle the buffered
+          // keys but resend the '<BufferedKeys>' key as well so we don't wait
+          // for the timeout again but can still handle potential remaps.
+          //
+          // Example 1: if 'ccc' is mapped in normal mode and user presses 'cc' and
+          // waits for the timeout to finish, this will resend the 'cc<BufferedKeys>'
+          // keys without allowing a potential remap on first key, which makes the
+          // first 'c' be handled as a 'ChangeOperator' and the second 'c' which has
+          // potential remaps (the 'ccc' remap) is buffered and the timeout started
+          // but then the '<BufferedKeys>' key comes straight away that clears the
+          // timeout without waiting again, and makes the second 'c' be handled normally
+          // as another 'ChangeOperator'.
+          //
+          // Example 2: if 'iiii' is mapped in normal and 'ii' is mapped in insert
+          // mode, and the user presses 'iii' in normal mode and waits for the timeout
+          // to finish, this will resend the 'iii<BufferedKeys>' keys without allowing
+          // a potential remap on first key, which makes the first 'i' be handled as
+          // an 'CommandInsertAtCursor' and goes to insert mode, next the second 'i'
+          // is buffered, then the third 'i' finds the insert mode remapping of 'ii'
+          // and handles that remap, after the remapping being handled the '<BufferedKeys>'
+          // key comes that clears the timeout and since the commandList will be empty
+          // we return true as we finished handling this sequence of keys.
+
+          keys = vimState.recordedState.commandList; // includes the '<BufferedKeys>' key
+
+          this._logger.debug(
+            `${this._configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
+          );
+        }
+        this._logger.debug(
+          `${this._configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
         );
+        this._hasPotentialRemap = false;
+        this._allowPotentialRemapOnFirstKey = false;
+        vimState.recordedState.resetCommandList();
         await modeHandler.handleMultipleKeyEvents(keys);
         return true;
       }
     }
 
-    if (isPotentialRemap && allowAmbiguousRemap && this._allowAmbiguousRemapOnFirstKey) {
-      // There are other potential remaps (ambiguous remaps), wait for other
-      // key or for the timeout to finish.
-      this._hasAmbiguousRemap = true;
+    if (isPotentialRemap && allowBufferingKeys && this._allowPotentialRemapOnFirstKey) {
+      if (remapping) {
+        // There are other potential remaps (ambiguous remaps), wait for other
+        // key or for the timeout to finish.
+        this._hasAmbiguousRemap = true;
+
+        this._logger.debug(
+          `${this._configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
+        );
+      } else {
+        this._hasPotentialRemap = true;
+        this._logger.debug(
+          `${this._configKey}. potential remap found. waiting for other key or timeout to finish.`
+        );
+      }
       vimState.recordedState.bufferedKeys = keys.slice(0);
       vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
         modeHandler.handleKeyEvent('<BufferedKeys>');
       }, configuration.timeout);
       return true;
-    } else if (!this._allowAmbiguousRemapOnFirstKey) {
+    } else if (!this._allowPotentialRemapOnFirstKey) {
       // First key was already prevented from buffering to wait for other remaps
       // so we can allow for ambiguous remaps again.
-      this._allowAmbiguousRemapOnFirstKey = true;
+      this._allowPotentialRemapOnFirstKey = true;
     }
 
     if (remapping) {
       this._logger.debug(
-        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}.`
+        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}`
       );
 
       this._hasAmbiguousRemap = false;
+      this._hasPotentialRemap = false;
 
       if (!this._recursive) {
         vimState.isCurrentlyPerformingRemapping = true;
@@ -212,6 +261,7 @@ export class Remapper implements IRemapper {
       return true;
     }
 
+    this._hasPotentialRemap = false;
     return false;
   }
 

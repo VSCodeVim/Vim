@@ -313,7 +313,6 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       let handled = false;
-      const isOperatorCombination = this.vimState.recordedState.operator;
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
