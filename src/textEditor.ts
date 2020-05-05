@@ -185,56 +185,42 @@ export class TextEditor {
     return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
   }
 
+  /**
+   * @returns the number of visible columns that the given line begins with
+   */
   static getIndentationLevel(line: string): number {
-    let tabSize = configuration.tabstop;
-
-    const lineCheck = line.match(/^\s*/);
-    const firstNonWhiteSpace = lineCheck ? lineCheck[0].length : 0;
-
-    let visibleColumn: number = 0;
-
-    if (firstNonWhiteSpace >= 0) {
-      for (const char of line.substring(0, firstNonWhiteSpace)) {
-        switch (char) {
-          case '\t':
-            visibleColumn += tabSize;
-            break;
-          case ' ':
-            visibleColumn += 1;
-            break;
-          default:
-            break;
-        }
+    let visibleColumn = 0;
+    for (const char of line) {
+      switch (char) {
+        case '\t':
+          visibleColumn += configuration.tabstop;
+          break;
+        case ' ':
+          visibleColumn += 1;
+          break;
+        default:
+          return visibleColumn;
       }
-    } else {
-      return -1;
     }
 
     return visibleColumn;
   }
 
+  /**
+   * @returns `line` with its indentation replaced with `screenCharacters` visible columns of whitespace
+   */
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = configuration.tabstop;
+    const tabSize = configuration.tabstop;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;
     }
 
-    let indentString = '';
-    if (configuration.expandtab) {
-      indentString += new Array(screenCharacters + 1).join(' ');
-    } else {
-      if (screenCharacters / tabSize > 0) {
-        indentString += new Array(Math.floor(screenCharacters / tabSize) + 1).join('\t');
-      }
+    const indentString = configuration.expandtab
+      ? ' '.repeat(screenCharacters)
+      : '\t'.repeat(screenCharacters / tabSize) + ' '.repeat(screenCharacters % tabSize);
 
-      indentString += new Array((screenCharacters % tabSize) + 1).join(' ');
-    }
-
-    const lineCheck = line.match(/^\s*/);
-    const firstNonWhiteSpace = lineCheck ? lineCheck[0].length : 0;
-
-    return indentString + line.substring(firstNonWhiteSpace, line.length);
+    return line.replace(/^\s*/, indentString);
   }
 
   static getPositionAt(offset: number): Position {
@@ -260,9 +246,10 @@ export class TextEditor {
 
   /**
    * @returns the Position of the first character on the given line which is not whitespace.
+   * If it's all whitespace, will return the Position of the EOL character.
    */
   public static getFirstNonWhitespaceCharOnLine(line: number): Position {
-    return new Position(line, TextEditor.readLineAt(line).match(/^\s*/)![0].length);
+    return new Position(line, TextEditor.getLine(line).firstNonWhitespaceCharacterIndex);
   }
 
   /**

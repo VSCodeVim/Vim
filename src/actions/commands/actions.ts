@@ -1672,7 +1672,7 @@ class CommandShowCommandLine extends BaseCommand {
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
 
     // Reset history navigation index
-    commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
 
     return vimState;
   }
