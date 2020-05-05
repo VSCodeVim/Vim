@@ -26,6 +26,7 @@ import { Jump } from '../../jumps/jump';
 import { StatusBar } from '../../statusBar';
 import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
+import { VimError, ErrorCode } from '../../error';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -985,15 +986,26 @@ async function createSearchStateAndMoveToMatch(args: {
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
   globalState.addSearchStateToHistory(globalState.searchState);
 
+  // Turn one of the highlighting flags back on (turned off with :nohl)
+  globalState.hl = true;
+
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
     args.searchStartCursorPosition
   );
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    globalState.hl = true;
     reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+  } else {
+    StatusBar.displayError(
+      vimState,
+      VimError.fromCode(
+        args.direction === SearchDirection.Forward
+          ? ErrorCode.SearchHitBottom
+          : ErrorCode.SearchHitTop,
+        globalState.searchState.searchString
+      )
+    );
   }
 
   return vimState;

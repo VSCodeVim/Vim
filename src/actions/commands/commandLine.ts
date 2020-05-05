@@ -345,7 +345,8 @@ class CommandInsertInSearchMode extends BaseCommand {
           VimError.fromCode(
             searchState.searchDirection === SearchDirection.Backward
               ? ErrorCode.SearchHitTop
-              : ErrorCode.SearchHitBottom
+              : ErrorCode.SearchHitBottom,
+            searchState.searchString
           )
         );
         return vimState;
