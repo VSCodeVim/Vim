@@ -44,6 +44,7 @@ import {
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
+import { BaseOperator } from '../actions/operator';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -581,7 +582,9 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    vimState.recordedState.resetCommandList();
+    if ((ranAction && vimState.currentMode !== Mode.Insert) || action instanceof BaseOperator) {
+      vimState.recordedState.resetCommandList();
+    }
 
     ranRepeatableAction =
       (ranRepeatableAction && vimState.currentMode === Mode.Normal) ||
