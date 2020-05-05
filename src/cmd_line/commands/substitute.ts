@@ -311,7 +311,7 @@ export class SubstituteCommand extends node.CommandBase {
       if (this._abort) {
         break;
       }
-      foundPattern = foundPattern || (await this.replaceTextAtLine(currentLine, regex, vimState));
+      foundPattern = (await this.replaceTextAtLine(currentLine, regex, vimState)) || foundPattern;
     }
     if (!foundPattern) {
       throw VimError.fromCode(ErrorCode.PatternNotFound);
