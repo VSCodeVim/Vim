@@ -1536,31 +1536,39 @@ export class PutCommandVisual extends BaseCommand {
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
+      const replaceRegisterName = vimState.recordedState.registerName;
+      const replaceRegister = await Register.getByKey(replaceRegisterName);
+      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         true
       );
-      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
-      Register.putByKey(
-        replaceRegister.text,
-        vimState.recordedState.registerName,
-        replaceRegister.registerMode
-      );
+      const deletedRegisterName = vimState.recordedState.registerName;
+      const deletedRegister = await Register.getByKey(deletedRegisterName);
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          replaceRegister.text,
+          replaceRegisterName,
+          replaceRegister.registerMode
+        );
+      }
       // To ensure that the put command knows this is
       // a linewise register insertion in visual mode of
       // characterwise, linewise
       let resultMode = deleteResult.currentMode;
       await deleteResult.setCurrentMode(oldMode);
+      vimState.recordedState.registerName = replaceRegisterName;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       await deleteResult.setCurrentMode(resultMode);
-      Register.putByKey(
-        deletedRegister.text,
-        vimState.recordedState.registerName,
-        deletedRegister.registerMode
-      );
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          deletedRegister.text,
+          deletedRegisterName,
+          deletedRegister.registerMode
+        );
+      }
       return deleteResult;
     }
 

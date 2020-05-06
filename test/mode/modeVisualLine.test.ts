@@ -323,6 +323,13 @@ suite('Mode Visual Line', () => {
   });
 
   newTest({
+    title: '"xVp only updates default register content',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'V"ayjVj"ap"app',
+    end: ['abc', 'abc', 'abc', '|def', 'ghi'],
+  });
+
+  newTest({
     title: 'Vp does not append unnecessary newlines (first line)',
     start: ['|begin', 'middle', 'end'],
     keysPressed: 'yyVp',
