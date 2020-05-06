@@ -501,18 +501,20 @@ class CommandEsc extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode === Mode.Normal && !vimState.isMultiCursor) {
-      // If there's nothing to do on the vim side, we might as well call some
-      // of vscode's default "close notification" actions. I think we should
-      // just add to this list as needed.
-      await vscode.commands.executeCommand('closeReferenceSearchEditor');
-      await vscode.commands.executeCommand('closeMarkersNavigation');
+    if (vimState.currentMode === Mode.Normal) {
+      vimState.surround = undefined;
 
-      return vimState;
-    }
+      if (!vimState.isMultiCursor) {
+        // If there's nothing to do on the vim side, we might as well call some
+        // of vscode's default "close notification" actions. I think we should
+        // just add to this list as needed.
+        await vscode.commands.executeCommand('closeReferenceSearchEditor');
+        await vscode.commands.executeCommand('closeMarkersNavigation');
 
-    if (vimState.currentMode === Mode.Normal && vimState.isMultiCursor) {
-      vimState.isMultiCursor = false;
+        return vimState;
+      } else {
+        vimState.isMultiCursor = false;
+      }
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
