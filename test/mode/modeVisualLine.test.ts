@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
@@ -20,11 +20,21 @@ suite('Mode Visual Line', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    await modeHandler.handleKeyEvent('V');
+    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
 
-    await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    await modeHandler.handleKeyEvent('V');
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('<count>V selects <count> lines', async () => {
+    await modeHandler.handleMultipleKeyEvents('iLine 1\nLine 2\nLine 3\nLine 4\nLine 5'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+
+    await modeHandler.handleMultipleKeyEvents(['j', '3', 'V']);
+    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+    assert.strictEqual(modeHandler.vimState.cursorStartPosition.line, 1);
+    assert.strictEqual(modeHandler.vimState.cursorStopPosition.line, 3);
   });
 
   test('Can handle w', async () => {
@@ -55,7 +65,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['ne two three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -64,7 +74,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['wo three']);
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -131,7 +141,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -234,7 +244,7 @@ suite('Mode Visual Line', () => {
       start: ['foo', 'b|ar', 'fun'],
       keysPressed: 'Vc',
       end: ['foo', '|', 'fun'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -244,7 +254,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vr1',
       end: ['|11111111111111111111111', 'one two three four five'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -252,7 +262,7 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vjr1',
       end: ['|11111111111111111111111', '11111111111111111111111'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -260,7 +270,7 @@ suite('Mode Visual Line', () => {
       start: ['test', 'test', 'test', '|test', 'test'],
       keysPressed: 'Vkkr1',
       end: ['test', '|1111', '1111', '1111', 'test'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -294,7 +304,7 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
 
       // ensuring we're back in normal
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
       // test copy by pasting back from clipboard
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
@@ -368,16 +378,16 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'with me' at the first line
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 'with me'.length);
-      assertEqual(selection.end.line, 0);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 'with me'.length);
+      assert.strictEqual(selection.end.line, 0);
     });
 
     test('gv selects the last pasted text (which is longer than original)', async () => {
@@ -393,7 +403,7 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -403,10 +413,10 @@ suite('Mode Visual Line', () => {
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'or with me longer than the target' at the first line
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 'or with me longer than the target'.length);
-      assertEqual(selection.end.line, 0);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 'or with me longer than the target'.length);
+      assert.strictEqual(selection.end.line, 0);
     });
 
     test('gv selects the last pasted text (multiline)', async () => {
@@ -420,16 +430,16 @@ suite('Mode Visual Line', () => {
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
       const selection = TextEditor.getSelection();
 
       // ensuring selecting 'foo\nbar\n'
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 0);
-      assertEqual(selection.end.character, 3);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 0);
+      assert.strictEqual(selection.end.character, 3);
+      assert.strictEqual(selection.end.line, 1);
     });
   });
 
@@ -477,5 +487,52 @@ suite('Mode Visual Line', () => {
       keysPressed: 'VjjA_',
       end: ['111', '222_|', ' ', '444_', '555'],
     });
+
+    newTest({
+      title: 'updates desired column correctly',
+      start: ['|111111', '222', '333'],
+      keysPressed: 'VjjA<Esc>jk',
+      end: ['11111|1', '222', '333'],
+    });
+  });
+
+  newTest({
+    title: 'Exiting via <Esc> returns cursor to original column',
+    start: ['rocinante', 'nau|voo', 'anubis', 'canterbury'],
+    keysPressed: 'Vj<Esc>',
+    end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
+  });
+
+  newTest({
+    title: 'Exiting via `VV` returns cursor to original column',
+    start: ['rocinante', 'nau|voo', 'anubis', 'canterbury'],
+    keysPressed: 'VjV',
+    end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
+  });
+
+  suite('Can handle ~/g~ in visual line mode', () => {
+    newTest({
+      title: '~/g~ on single line',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'jV~jjVg~',
+      end: ['OnE', 'TwO', 'ThReE', '|FoUr'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '~/g~ on multiple lines',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'Vj~jjVjg~',
+      end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
+      endMode: Mode.Normal,
+    });
+  });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
   });
 });

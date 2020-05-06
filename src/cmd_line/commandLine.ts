@@ -1,7 +1,7 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { Logger } from '../util/logger';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -17,7 +17,7 @@ class CommandLine {
   /**
    *  Index used for navigating commandline history with <up> and <down>
    */
-  private _commandLineHistoryIndex: number = 0;
+  public commandLineHistoryIndex: number = 0;
 
   /**
    * for checking the last pressed key in command mode
@@ -29,19 +29,11 @@ class CommandLine {
   public preCompleteCharacterPos = 0;
   public preCompleteCommand = '';
 
-  public get commandlineHistoryIndex(): number {
-    return this._commandLineHistoryIndex;
-  }
-
-  public set commandlineHistoryIndex(index: number) {
-    this._commandLineHistoryIndex = index;
-  }
-
   public get historyEntries() {
     return this._history.get();
   }
 
-  public previousMode = ModeName.Normal;
+  public previousMode = Mode.Normal;
 
   constructor() {
     this._history = new CommandLineHistory();
@@ -56,17 +48,17 @@ class CommandLine {
       return;
     }
 
-    if (command && command[0] === ':') {
+    if (command.startsWith(':')) {
       command = command.slice(1);
     }
 
     if ('help'.startsWith(command.split(/\s/)[0])) {
-      StatusBar.Set(`:help Not supported.`, vimState, true);
+      StatusBar.setText(vimState, `:help Not supported.`, true);
       return;
     }
 
     this._history.add(command);
-    this._commandLineHistoryIndex = this._history.get().length;
+    this.commandLineHistoryIndex = this._history.get().length;
 
     if (!command.startsWith('reg')) {
       let recState = new RecordedState();
@@ -81,16 +73,17 @@ class CommandLine {
 
       if (useNeovim) {
         const statusBarText = await vimState.nvim.run(vimState, command);
-        StatusBar.Set(statusBarText, vimState, true);
+        StatusBar.setText(vimState, statusBarText);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
-          await vimState.nvim.run(vimState, command);
+        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+          const statusBarText = await vimState.nvim.run(vimState, command);
+          StatusBar.setText(vimState, statusBarText, true);
         } else {
-          StatusBar.Set(`${e.toString()}. ${command}`, vimState, true);
+          StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);
@@ -98,6 +91,9 @@ class CommandLine {
     }
   }
 
+  /**
+   * Prompts the user for a command using an InputBox, and runs the provided command
+   */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
       this._logger.debug('No active document');
@@ -116,7 +112,7 @@ class CommandLine {
     };
   }
 
-  public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
+  public async showHistory(initialText: string): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
       this._logger.debug('No active document.');
       return '';
@@ -124,16 +120,10 @@ class CommandLine {
 
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(
-      this._history
-        .get()
-        .slice()
-        .reverse(),
-      {
-        placeHolder: 'Vim command history',
-        ignoreFocusOut: false,
-      }
-    );
+    let cmd = await vscode.window.showQuickPick(this._history.get().slice().reverse(), {
+      placeHolder: 'Vim command history',
+      ignoreFocusOut: false,
+    });
 
     return cmd;
   }

@@ -355,8 +355,8 @@ moving around:
 | :white_check_mark: | g~{motion}              | switch case for the text that is moved over with {motion}                                       |
 | :white_check_mark: | gu{motion}              | make the text that is moved over with {motion} lowercase                                        |
 | :white_check_mark: | gU{motion}              | make the text that is moved over with {motion} uppercase                                        |
-| :arrow_down:       | {visual}g?              | perform rot13 encoding on highlighted text                                                      |
-| :arrow_down:       | g?{motion}              | perform rot13 encoding on the text that is moved over with {motion}                             |
+| :white_check_mark: | {visual}g?              | perform rot13 encoding on highlighted text                                                      |
+| :white_check_mark: | g?{motion}              | perform rot13 encoding on the text that is moved over with {motion}                             |
 | :white_check_mark: | :1234: CTRL-A           | add N to the number at or after the cursor                                                      |
 | :white_check_mark: | :1234: CTRL-X           | subtract N from the number at or after the cursor                                               |
 | :white_check_mark: | :1234: <{motion}        | move the lines that are moved over with {motion} one shiftwidth left                            |
@@ -524,6 +524,7 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark: :star: | :vsp {file}       | Split vertically current window in two.                                 |                                                                                                                        |
 | :white_check_mark:        | &lt;ctrl-w&gt; s  | Split current window in two.                                            |                                                                                                                        |
 | :white_check_mark: :star: | &lt;ctrl-w&gt; v  | Split vertically current window in two.                                 |                                                                                                                        |
+| :white_check_mark: :star: | &lt;ctrl-w&gt; o  | Close other editor groups.                                              |                                                                                                                        |
 | :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. |                                                                                                                        |
 | :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   |                                                                                                                        |
 

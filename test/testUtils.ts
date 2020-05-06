@@ -12,6 +12,7 @@ import { IConfiguration } from '../src/configuration/iconfiguration';
 import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
+import { StatusBar } from '../src/statusBar';
 
 export function rndName(): string {
   return Math.random()
@@ -26,7 +27,7 @@ export async function createRandomFile(contents: string, fileExtension: string):
   return tmpFile;
 }
 
-export function createRandomDir() {
+export async function createRandomDir() {
   const dirPath = join(os.tmpdir(), rndName());
   return createDir(dirPath);
 }
@@ -41,11 +42,11 @@ export async function createDir(path: string) {
   return path;
 }
 
-export function removeFile(path: string) {
+export async function removeFile(path: string) {
   return promisify(fs.unlink)(path);
 }
 
-export function removeDir(path: string) {
+export async function removeDir(path: string) {
   return promisify(fs.rmdir)(path);
 }
 
@@ -89,14 +90,11 @@ export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
 }
 
-/**
- * Assert that the first two arguments are equal, and fail a test otherwise.
- *
- * The only difference between this and assert.strictEqual is that here we
- * check to ensure the types of the variables are correct.
- */
-export function assertEqual<T>(one: T, two: T, message: string = ''): void {
-  assert.strictEqual(one, two, message);
+export function assertStatusBarEqual(
+  expectedText: string,
+  message: string = 'Status bar text does not match'
+) {
+  assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
 export async function setupWorkspace(
@@ -176,7 +174,7 @@ export async function waitForTabChange(): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 500);
 
-    const disposer = vscode.window.onDidChangeActiveTextEditor(textEditor => {
+    const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
       disposer.dispose();
 
       resolve(textEditor);

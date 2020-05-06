@@ -1,10 +1,11 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
@@ -28,13 +29,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key!);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -213,11 +214,32 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'd/'",
+    start: ['one |two three four'],
+    keysPressed: 'd/four\n',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count ([count]d/[word])",
+    start: ['one |two two two two'],
+    keysPressed: '3d/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
+    title: "Can handle 'd/' with count (d[count]/[word])",
+    start: ['one |two two two two'],
+    keysPressed: 'd3/two\n',
+    end: ['one |two'],
+  });
+
+  newTest({
     title: "Can handle 'cw'",
     start: ['text text tex|t'],
     keysPressed: '^lllllllcw',
     end: ['text te| text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -225,7 +247,7 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'cw',
     end: ['| a = 1;'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -233,7 +255,7 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'c2w',
     end: ['| = 1;'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -241,7 +263,7 @@ suite('Mode Normal', () => {
     start: ['|text;', 'text'],
     keysPressed: 'llllcw',
     end: ['text|', 'text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -249,7 +271,7 @@ suite('Mode Normal', () => {
     start: ['(hello, |world)'],
     keysPressed: 'c])',
     end: ['(hello, |)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -257,7 +279,7 @@ suite('Mode Normal', () => {
     start: ['{hello, |world}'],
     keysPressed: 'c]}',
     end: ['{hello, |}'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -265,7 +287,7 @@ suite('Mode Normal', () => {
     start: ['tex|t'],
     keysPressed: '^sk',
     end: ['k|ext'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -273,7 +295,7 @@ suite('Mode Normal', () => {
     start: ['tes|t'],
     keysPressed: 'yiwp',
     end: ['ttes|test'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -281,7 +303,7 @@ suite('Mode Normal', () => {
     start: ['text text tex|t'],
     keysPressed: '^lllllllciw',
     end: ['text | text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -289,7 +311,7 @@ suite('Mode Normal', () => {
     start: ['text   text tex|t'],
     keysPressed: '^lllllciw',
     end: ['text|text text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -297,7 +319,7 @@ suite('Mode Normal', () => {
     start: ['text text tex|t'],
     keysPressed: '^llllllcaw',
     end: ['text |text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -305,7 +327,7 @@ suite('Mode Normal', () => {
     start: ['text text tex|t'],
     keysPressed: '^lllllcaw',
     end: ['text |text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -313,7 +335,7 @@ suite('Mode Normal', () => {
     start: ['text   tex|t'],
     keysPressed: '^lllllcaw',
     end: ['text|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -321,7 +343,88 @@ suite('Mode Normal', () => {
     start: ['text |   text text'],
     keysPressed: 'caw',
     end: ['text| text'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae'",
+    start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae' with caret at document's top",
+    start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cae' with caret at document's end",
+    start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
+    keysPressed: 'cae',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' on blank content",
+    start: ['|'],
+    keysPressed: 'cie',
+    end: ['|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with leading space",
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
+    keysPressed: 'cie',
+    end: ['     ', '    ', '|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with trailing space",
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'cie',
+    end: ['|', '    ', '   '],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' with both leading and trailing space",
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'cie',
+    end: ['  ', ' ', '|', '    ', '   '],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cie' on blank content",
+    start: ['|'],
+    keysPressed: 'cie',
+    end: ['|'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -329,7 +432,7 @@ suite('Mode Normal', () => {
     start: ['print(|"hello")'],
     keysPressed: 'ci(',
     end: ['print(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -337,7 +440,7 @@ suite('Mode Normal', () => {
     start: ['call|(() => 5)'],
     keysPressed: 'ci(',
     end: ['call(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -345,7 +448,7 @@ suite('Mode Normal', () => {
     start: ['call(() => |5)'],
     keysPressed: 'ci(',
     end: ['call(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -353,7 +456,7 @@ suite('Mode Normal', () => {
     start: ['print(|"hello")'],
     keysPressed: 'cib',
     end: ['print(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -361,7 +464,7 @@ suite('Mode Normal', () => {
     start: ['(|a', 'b)'],
     keysPressed: 'ci)',
     end: ['(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -369,7 +472,7 @@ suite('Mode Normal', () => {
     start: [' b(l(baz(f|oo)baz)a)h '],
     keysPressed: 'c3i)',
     end: [' b(|)h '],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -377,7 +480,7 @@ suite('Mode Normal', () => {
     start: [' b(l(baz(f|oo)baz)a)h '],
     keysPressed: 'c3a)',
     end: [' b|h '],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -385,7 +488,7 @@ suite('Mode Normal', () => {
     start: ['call(', '  |arg1)'],
     keysPressed: 'ca(',
     end: ['call|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -393,7 +496,7 @@ suite('Mode Normal', () => {
     start: ['call(', '  |arg1)'],
     keysPressed: 'cab',
     end: ['call|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -401,7 +504,7 @@ suite('Mode Normal', () => {
     start: ['one {', '|', '}'],
     keysPressed: 'ci{',
     end: ['one {', '|', '}'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -409,7 +512,7 @@ suite('Mode Normal', () => {
     start: ['one {  ', '|', '}'],
     keysPressed: 'ci{',
     end: ['one {|', '}'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -417,7 +520,7 @@ suite('Mode Normal', () => {
     start: ['one {', '|', '  }'],
     keysPressed: 'ci{',
     end: ['one {', '|', '  }'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -425,7 +528,7 @@ suite('Mode Normal', () => {
     start: ['(one|)'],
     keysPressed: 'ci(',
     end: ['(|)'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -433,7 +536,7 @@ suite('Mode Normal', () => {
     start: ['one {', '|', '}'],
     keysPressed: 'ciB',
     end: ['one {', '|', '}'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -441,7 +544,7 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca(',
     end: ['|blaaah'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -449,7 +552,7 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca{',
     end: ['|blaaah'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -457,7 +560,7 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'caB',
     end: ['|blaaah'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -465,7 +568,7 @@ suite('Mode Normal', () => {
     start: ['one [', '|', ']'],
     keysPressed: 'ci[',
     end: ['one [', '|', ']'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -473,7 +576,7 @@ suite('Mode Normal', () => {
     start: ['one[|"two"]'],
     keysPressed: 'ci]',
     end: ['one[|]'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -481,7 +584,7 @@ suite('Mode Normal', () => {
     start: ['one[|"two"]'],
     keysPressed: 'ca[',
     end: ['one|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -489,7 +592,7 @@ suite('Mode Normal', () => {
     start: ['one[|"two"]'],
     keysPressed: 'ca]',
     end: ['one|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -497,7 +600,7 @@ suite('Mode Normal', () => {
     start: ["|'one'"],
     keysPressed: "ci'",
     end: ["'|'"],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -505,7 +608,7 @@ suite('Mode Normal', () => {
     start: ["'o|ne'"],
     keysPressed: "ci'",
     end: ["'|'"],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -513,7 +616,7 @@ suite('Mode Normal', () => {
     start: ["'one|'"],
     keysPressed: "ci'",
     end: ["'|'"],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -521,7 +624,7 @@ suite('Mode Normal', () => {
     start: ["on|e 'two'"],
     keysPressed: "ci'",
     end: ["one '|'"],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -529,7 +632,7 @@ suite('Mode Normal', () => {
     start: ['|"one"'],
     keysPressed: 'ci"',
     end: ['"|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -537,7 +640,7 @@ suite('Mode Normal', () => {
     start: ['|one "two"'],
     keysPressed: 'ci"',
     end: ['one "|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -545,7 +648,7 @@ suite('Mode Normal', () => {
     start: ['|one "two"'],
     keysPressed: 'ca"',
     end: ['one |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -553,7 +656,7 @@ suite('Mode Normal', () => {
     start: ['one |"two"'],
     keysPressed: 'ca"',
     end: ['one |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -561,7 +664,7 @@ suite('Mode Normal', () => {
     start: ['"one \\"tw|o\\""'],
     keysPressed: 'ci"',
     end: ['"|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -569,7 +672,7 @@ suite('Mode Normal', () => {
     start: ['|"one \\" two"'],
     keysPressed: 'ci"',
     end: ['"|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -577,7 +680,7 @@ suite('Mode Normal', () => {
     start: ['one "two \\" |three"'],
     keysPressed: 'ci"',
     end: ['one "|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -585,7 +688,7 @@ suite('Mode Normal', () => {
     start: ['one "tw|o \\\\three"'],
     keysPressed: 'ci"',
     end: ['one "|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -593,7 +696,7 @@ suite('Mode Normal', () => {
     start: ['"\\\\|"'],
     keysPressed: 'ci"',
     end: ['"|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -601,7 +704,7 @@ suite('Mode Normal', () => {
     start: ['one "two|"'],
     keysPressed: 'ca"',
     end: ['one |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -609,7 +712,7 @@ suite('Mode Normal', () => {
     start: ['"two|\\\\\\""'],
     keysPressed: 'ci"',
     end: ['"|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -617,7 +720,7 @@ suite('Mode Normal', () => {
     start: ['"one" |"two"'],
     keysPressed: 'ci"',
     end: ['"one" "|"'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -625,7 +728,7 @@ suite('Mode Normal', () => {
     start: ['"one" |two'],
     keysPressed: 'ca"',
     end: ['"one" |two'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -633,7 +736,7 @@ suite('Mode Normal', () => {
     start: ['one `t|wo`'],
     keysPressed: 'ca`',
     end: ['one |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -697,7 +800,7 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -705,7 +808,7 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daw',
     end: ['one   |three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -713,7 +816,7 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -721,7 +824,7 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aw',
     end: ['|,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -729,7 +832,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -737,7 +840,7 @@ suite('Mode Normal', () => {
     start: ['one two fo|ur', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one two |six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -746,7 +849,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |.  six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -754,7 +857,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three   fou|r'],
     keysPressed: 'daw',
     end: ['one   two   thre|e'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -804,7 +907,7 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daW',
     end: ['one   two|   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -819,7 +922,7 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daW',
     end: ['one   |three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -827,7 +930,7 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daW',
     end: ['one   two   |four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -835,7 +938,7 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aW',
     end: ['|four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -843,7 +946,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aW',
     end: ['one   two   three,   |six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -851,7 +954,7 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'daW',
     end: ['one |three'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -859,7 +962,7 @@ suite('Mode Normal', () => {
     start: ['one |two'],
     keysPressed: 'daW',
     end: ['on|e'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -909,7 +1012,7 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diw',
     end: ['one   two|three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -917,7 +1020,7 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'diw',
     end: ['one   |   three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -925,7 +1028,7 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iw',
     end: ['|   three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -933,7 +1036,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three  | ', 'five  six'],
     keysPressed: 'diw',
     end: ['one   two   thre|e', 'five  six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -941,7 +1044,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |  six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -950,7 +1053,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |.  six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -958,7 +1061,7 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diW',
     end: ['one   two|three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -966,7 +1069,7 @@ suite('Mode Normal', () => {
     start: ['one   tw|o,   three,   four  '],
     keysPressed: 'diW',
     end: ['one   |   three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -974,7 +1077,7 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'diW',
     end: ['one   two   |   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -982,7 +1085,7 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iW',
     end: ['|   three,   four  '],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -990,7 +1093,7 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iW',
     end: ['one   two   three,   |  six'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -998,15 +1101,96 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'diW',
     end: ['one | three'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
-    title: 'Can handle d}',
+    title: "Can handle 'dae'",
+    start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'dae' with caret at document's top",
+    start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'dae' with caret at document's end",
+    start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
+    keysPressed: 'dae',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' on blank content",
+    start: ['|'],
+    keysPressed: 'die',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with leading space",
+    start: [
+      '     ',
+      '    ',
+      '|Two roads diverged in a wood, and I',
+      'I took the one less traveled by',
+    ],
+    keysPressed: 'die',
+    end: ['     ', '    ', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with trailing space",
+    start: [
+      'Two roads |diverged in a wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'die',
+    end: ['|', '    ', '   '],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' with both leading and trailing space",
+    start: [
+      '  ',
+      ' ',
+      'Two roads diverged in a |wood, and I',
+      'I took the one less traveled by',
+      '    ',
+      '   ',
+    ],
+    keysPressed: 'die',
+    end: ['  ', ' ', '|', '    ', '   '],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'die' on blank content",
+    start: ['|'],
+    keysPressed: 'die',
+    end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle d} at beginning of line',
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|', 'fun'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1014,7 +1198,31 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'y}p',
     end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle d} when not at beginning of line',
+    start: ['f|oo', 'bar', '', 'fun'],
+    keysPressed: 'd}',
+    end: ['|f', '', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, at beginning of line',
+    start: ['|foo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle } with operator and count, and not at beginning of line',
+    start: ['f|oo', '', 'bar', '', 'fun'],
+    keysPressed: 'd2}',
+    end: ['|f', '', 'fun'],
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1022,7 +1230,7 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'das',
     end: ["|I'm always angry."],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1030,7 +1238,7 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'das',
     end: ["That's my secret, Captain|."],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1038,7 +1246,7 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'dis',
     end: ["| I'm always angry."],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1046,7 +1254,7 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'dis',
     end: ["That's my secret, Captain.| "],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1054,7 +1262,7 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain.  |  I'm always angry."],
     keysPressed: 'visd',
     end: ["That's my secret, Captain.|I'm always angry."],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1090,6 +1298,34 @@ suite('Mode Normal', () => {
     start: ['|text text'],
     keysPressed: 'A<BS><Esc>',
     end: ['text te|x'],
+  });
+
+  newTest({
+    title: 'A should update desiredColumn',
+    start: ['|longer line', 'short'],
+    keysPressed: 'A<Esc>jk',
+    end: ['longer lin|e', 'short'],
+  });
+
+  newTest({
+    title: 'I should updated desiredColumn',
+    start: ['     hell|o', 'a'],
+    keysPressed: 'I<Esc>jk',
+    end: ['    | hello', 'a'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with a',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'amore<Esc>kj',
+    end: ['a long line of text', 'shortmor|e'],
+  });
+
+  newTest({
+    title: 'leaving insert mode should update desired column when entered with i',
+    start: ['a long line of text', 'shor|t'],
+    keysPressed: 'imore<Esc>kj',
+    end: ['a long line of text', 'shormor|et'],
   });
 
   newTest({
@@ -1381,6 +1617,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gq work correctly with cursor in the middle of a line',
+    start: [
+      '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
+      '// We choose to write a vim extension, not because it is easy, but because it is hard.',
+    ],
+    keysPressed: 'gqj',
+    end: [
+      '|// We choose to write a vim extension, not because it is easy, but because it is',
+      '// hard. We choose to write a vim extension, not because it is easy, but because',
+      '// it is hard.',
+    ],
+  });
+
+  newTest({
     title: 'Can handle space',
     start: ['|abc', 'def'],
     keysPressed: '  ',
@@ -1486,6 +1736,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'u' after :s/abc/def",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>:s/abc/def/\nu',
+    end: ['ab|c'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
@@ -1521,10 +1778,38 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle guae',
+    start: ['|ABC', 'DEF', 'GHI'],
+    keysPressed: 'guae',
+    end: ['|abc', 'def', 'ghi'],
+  });
+
+  newTest({
+    title: 'Can handle guie',
+    start: [' ', ' ', '|ABC', 'DEF', 'GHI'],
+    keysPressed: 'guie',
+    end: [' ', ' ', '|abc', 'def', 'ghi'],
+  });
+
+  newTest({
     title: 'Can handle gUw',
     start: ['|abc def'],
     keysPressed: 'gUw',
     end: ['|ABC def'],
+  });
+
+  newTest({
+    title: 'Can handle gUae',
+    start: ['|Abc', 'def', 'GhI'],
+    keysPressed: 'gUae',
+    end: ['|ABC', 'DEF', 'GHI'],
+  });
+
+  newTest({
+    title: 'Can handle gUie',
+    start: [' ', ' ', '|abc', 'def', 'ghi'],
+    keysPressed: 'gUie',
+    end: [' ', ' ', '|ABC', 'DEF', 'GHI'],
   });
 
   newTest({
@@ -1746,6 +2031,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can do [count]Y',
+    start: ['|one', 'two', 'three'],
+    keysPressed: '2Yp',
+    end: ['one', '|one', 'two', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'can do [count]Y if count is larger than EOF',
+    start: ['|one', 'two', 'three'],
+    keysPressed: '100Yp',
+    end: ['one', '|one', 'two', 'three', 'two', 'three'],
+  });
+
+  newTest({
     title: 'Can do S',
     start: ['    one', '    tw|o', '    three'],
     keysPressed: '2S',
@@ -1830,7 +2129,7 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', 'abd'],
     keysPressed: '/abc<BS>d\n',
     end: ['foo', 'bar', '|abd'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1838,7 +2137,7 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', 'abd'],
     keysPressed: '/abc<shift+BS>d\n',
     end: ['foo', 'bar', '|abd'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1846,7 +2145,7 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', 'abd'],
     keysPressed: '/abc<C-h>d\n',
     end: ['foo', 'bar', '|abd'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1854,7 +2153,7 @@ suite('Mode Normal', () => {
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
     end: ['export const options = {', '|', '};'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1862,7 +2161,7 @@ suite('Mode Normal', () => {
     start: ['<blink>he|llo</blink>'],
     keysPressed: 'cit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1870,7 +2169,7 @@ suite('Mode Normal', () => {
     start: ['<blink>he|llo</unblink>'],
     keysPressed: 'cit',
     end: ['<blink>he|llo</unblink>'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1878,7 +2177,7 @@ suite('Mode Normal', () => {
     start: ['<blink>he|llo<hello></blink>'],
     keysPressed: 'cit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1886,7 +2185,7 @@ suite('Mode Normal', () => {
     start: ['<blink |level="extreme">hello</blink>'],
     keysPressed: 'cit',
     end: ['<blink level="extreme">|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1894,7 +2193,7 @@ suite('Mode Normal', () => {
     start: ['one <blink>he|llo</blink> two'],
     keysPressed: 'cat',
     end: ['one | two'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1902,7 +2201,7 @@ suite('Mode Normal', () => {
     start: [' <blink>\nhe|llo\ntext</blink>'],
     keysPressed: 'cit',
     end: [' <blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1910,7 +2209,7 @@ suite('Mode Normal', () => {
     start: [' <blink>\n<h1>hello</h1>\nh<br>e|llo\nte</h1>xt</blink>'],
     keysPressed: 'cit',
     end: [' <blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1918,7 +2217,7 @@ suite('Mode Normal', () => {
     start: ['<blink>hello<br>wo|rld</blink>'],
     keysPressed: 'cit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1926,7 +2225,7 @@ suite('Mode Normal', () => {
     start: ['<blink>hel|lo</h1>world</blink>'],
     keysPressed: 'cit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1934,7 +2233,7 @@ suite('Mode Normal', () => {
     start: ['<bli|nk></blink>'],
     keysPressed: 'dit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1942,7 +2241,7 @@ suite('Mode Normal', () => {
     start: ['<bli|nk></blink>'],
     keysPressed: 'cit',
     end: ['<blink>|</blink>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1950,7 +2249,7 @@ suite('Mode Normal', () => {
     start: ['<div><div a=1/>{{c|ursor here}}</div>'],
     keysPressed: 'cit',
     end: ['<div>|</div>'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1958,7 +2257,7 @@ suite('Mode Normal', () => {
     start: ['{', '  int| a;'],
     keysPressed: 'cc',
     end: ['{', '  |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1966,7 +2265,7 @@ suite('Mode Normal', () => {
     start: ['{', ' | int a;'],
     keysPressed: 'cc',
     end: ['{', '  |'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1974,7 +2273,7 @@ suite('Mode Normal', () => {
     start: ['foo', '|', 'bar'],
     keysPressed: 'cc',
     end: ['foo', '|', 'bar'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1989,7 +2288,7 @@ suite('Mode Normal', () => {
     start: ['|one', 'two'],
     keysPressed: '>>',
     end: ['\t|one', 'two'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2027,7 +2326,7 @@ suite('Mode Normal', () => {
       'test aaa test aaa test aaa test aaa test',
     ],
     keysPressed: '<C-alt+down>D<Esc>',
-    end: ['test aaa test aaa test aaa tes|t ', 'test aaa test aaa test aaa test '],
+    end: ['test aaa test aaa test aaa test| ', 'test aaa test aaa test aaa test '],
   });
 
   newTest({
@@ -2042,7 +2341,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'cai',
     end: ['|', 'do_something_else()'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2050,7 +2349,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '\tlog("foo is big")', '\tfoo = 3', '|', 'do_something_else()'],
     keysPressed: 'cii',
     end: ['if foo > 3:', '\t|', 'do_something_else()'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2058,7 +2357,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'caI',
     end: ['|'],
-    endMode: ModeName.Insert,
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2066,7 +2365,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'dai',
     end: ['|do_something_else()'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2074,7 +2373,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")', '    foo = 3', '|', 'do_something_else()'],
     keysPressed: 'dii',
     end: ['if foo > 3:', '|do_something_else()'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2082,7 +2381,7 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'daI',
     end: ['|'],
-    endMode: ModeName.Normal,
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2120,14 +2419,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     });
 
     const gnSelectsCurrentWord = async (jumpCmd: string) => {
@@ -2136,14 +2435,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     };
 
     test(`gn selects the current word at |hello`, async () => {
@@ -2168,14 +2467,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     });
   });
 
@@ -2185,7 +2484,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nggdgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2193,7 +2492,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\ndgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2201,7 +2500,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nldgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2209,7 +2508,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\n3ldgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2217,7 +2516,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nedgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2225,7 +2524,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\neldgn',
       end: ['foo', 'hello world', '|', 'hello'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -2235,7 +2534,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nggcgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2243,7 +2542,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\ncgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2251,7 +2550,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nlcgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2259,7 +2558,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\n3lcgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2267,7 +2566,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\necgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2275,7 +2574,7 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nelcgn',
       end: ['foo', 'hello world', '|', 'hello'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -2286,14 +2585,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(['G']);
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 'hi '.length);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hi hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 'hi '.length);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hi hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     });
 
     const gnSelectsCurrentWord = async (jumpCmd: string) => {
@@ -2302,14 +2601,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 'hi '.length);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 'hi hello'.length);
-      assertEqual(selection.end.line, 2);
+      assert.strictEqual(selection.start.character, 'hi '.length);
+      assert.strictEqual(selection.start.line, 2);
+      assert.strictEqual(selection.end.character, 'hi hello'.length);
+      assert.strictEqual(selection.end.line, 2);
     };
 
     test(`gN selects the current word at hell|o`, async () => {
@@ -2334,14 +2633,14 @@ suite('Mode Normal', () => {
       await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
       const selection = TextEditor.getSelection();
 
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 'hello'.length);
-      assertEqual(selection.end.line, 1);
+      assert.strictEqual(selection.start.character, 0);
+      assert.strictEqual(selection.start.line, 1);
+      assert.strictEqual(selection.end.character, 'hello'.length);
+      assert.strictEqual(selection.end.line, 1);
     });
   });
 
@@ -2351,7 +2650,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\nGdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2359,7 +2658,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$dgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2367,7 +2666,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$hdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2375,7 +2674,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwldgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2383,7 +2682,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2391,7 +2690,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwhdgN',
       end: ['hello world', '|', 'hi hello', 'foo'],
-      endMode: ModeName.Normal,
+      endMode: Mode.Normal,
     });
   });
 
@@ -2401,7 +2700,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\nGcgN',
       end: ['hello world', 'hello', 'hi |', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2409,7 +2708,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$cgN',
       end: ['hello world', 'hello', 'hi |', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2417,7 +2716,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$hcgN',
       end: ['hello world', 'hello', 'hi |', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2425,7 +2724,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwlcgN',
       end: ['hello world', 'hello', 'hi |', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2433,7 +2732,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwcgN',
       end: ['hello world', 'hello', 'hi |', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -2441,7 +2740,7 @@ suite('Mode Normal', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwhcgN',
       end: ['hello world', '|', 'hi hello', 'foo'],
-      endMode: ModeName.Insert,
+      endMode: Mode.Insert,
     });
   });
 
@@ -2464,5 +2763,35 @@ suite('Mode Normal', () => {
     start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
     keysPressed: '<C-u>',
     end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+  });
+
+  suite('marks', async () => {
+    const jumpToNewFile = async () => {
+      let configuration = new Configuration();
+      configuration.tabstop = 4;
+      configuration.expandtab = false;
+      await setupWorkspace(configuration);
+      return getAndUpdateModeHandler();
+    };
+
+    test('capital marks can change the editors active document', async () => {
+      const firstDocumentName = TextEditor.getDocumentName();
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+
+      const otherModeHandler = await jumpToNewFile();
+      const otherDocumentName = TextEditor.getDocumentName();
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+
+      await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
+      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+    });
+
+    newTest({
+      title: `can jump to lowercase mark`,
+      start: ['|hello world and mars'],
+      keysPressed: 'wma2w`a',
+      end: ['hello |world and mars'],
+      endMode: Mode.Normal,
+    });
   });
 });

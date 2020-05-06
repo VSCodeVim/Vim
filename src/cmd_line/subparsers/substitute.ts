@@ -189,6 +189,6 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
       count: count,
     });
   } catch (e) {
-    throw error.VimError.fromCode(error.ErrorCode.E486);
+    throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
   }
 }

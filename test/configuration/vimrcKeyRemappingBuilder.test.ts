@@ -37,7 +37,7 @@ suite('VimrcKeyRemappingBuilder', () => {
       },
       {
         // Mapping with a vim command
-        vimrcLine: 'nnoremap <C-s> :w',
+        vimrcLine: 'nnoremap <C-s> :w<CR>',
         keyRemapping: {
           before: ['<C-s>'],
           commands: [':w'],
@@ -60,6 +60,11 @@ suite('VimrcKeyRemappingBuilder', () => {
       {
         // Ignore non-mapping lines
         vimrcLine: 'set scrolloff=8',
+        expectNull: true,
+      },
+      {
+        // Ignore lines attempting to remap a plug in using <Plug>
+        vimrcLine: 'nmap s <Plug>(easymotion-s2)',
         expectNull: true,
       },
     ];

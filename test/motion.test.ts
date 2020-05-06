@@ -24,10 +24,10 @@ suite('basic motion', () => {
   });
 
   test('char right', () => {
-    const motion = new Position(0, 9).getRight();
+    const motion = new Position(0, 8).getRight();
 
     assert.strictEqual(motion.line, 0);
-    assert.strictEqual(motion.character, 9);
+    assert.strictEqual(motion.character, 8);
   });
 
   test('char left: should move cursor one column left', () => {
@@ -55,7 +55,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 1);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDown(0);
+    motion = motion.getDownWithDesiredColumn(0);
     assert.strictEqual(motion.line, 2);
     assert.strictEqual(motion.character, 0);
   });
@@ -65,7 +65,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDown(3);
+    motion = motion.getDownWithDesiredColumn(3);
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
   });
@@ -76,7 +76,7 @@ suite('basic motion', () => {
       assert.strictEqual(position.line, 1);
       assert.strictEqual(position.character, 0);
 
-      position = position.getUp(0);
+      position = position.getUpWithDesiredColumn(0);
       assert.strictEqual(position.line, 0);
       assert.strictEqual(position.character, 0);
     });
@@ -86,7 +86,7 @@ suite('basic motion', () => {
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
 
-      motion = motion.getUp(0);
+      motion = motion.getUpWithDesiredColumn(0);
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
     });
@@ -109,25 +109,25 @@ suite('basic motion', () => {
   });
 
   test('document begin', () => {
-    const motion = new Position(1, 0).getDocumentBegin();
+    const motion = TextEditor.getDocumentBegin();
     assert.strictEqual(motion.line, 0);
     assert.strictEqual(motion.character, 0);
   });
 
   test('document end', () => {
-    const motion = new Position(0, 0).getDocumentEnd();
+    const motion = TextEditor.getDocumentEnd();
     assert.strictEqual(motion.line, text.length - 1);
     assert.strictEqual(motion.character, text[text.length - 1].length);
   });
 
   test('line begin cursor on first non-blank character', () => {
-    const motion = new Position(0, 3).getFirstLineNonBlankChar();
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(0);
     assert.strictEqual(motion.line, 0);
     assert.strictEqual(motion.character, 0);
   });
 
   test('last line begin cursor on first non-blank character', () => {
-    const motion = new Position(3, 0).getFirstLineNonBlankChar();
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(3);
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 1);
   });
@@ -339,13 +339,13 @@ suite('word motion', () => {
   });
 
   test('line begin cursor on first non-blank character', () => {
-    const motion = new Position(4, 3).getFirstLineNonBlankChar();
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(4);
     assert.strictEqual(motion.line, 4);
     assert.strictEqual(motion.character, 2);
   });
 
   test('last line begin cursor on first non-blank character', () => {
-    const motion = new Position(6, 0).getFirstLineNonBlankChar();
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(6);
     assert.strictEqual(motion.line, 6);
     assert.strictEqual(motion.character, 0);
   });

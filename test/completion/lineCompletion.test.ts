@@ -6,7 +6,6 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { Position } from '../../src/common/motion/position';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { VimState } from '../../src/state/vimState';
-import { waitForCursorSync } from '../../src/util/util';
 
 suite('Provide line completions', () => {
   let modeHandler: ModeHandler;
@@ -20,16 +19,14 @@ suite('Provide line completions', () => {
 
   teardown(cleanUpWorkspace);
 
-  const setupTestWithLines = async lines => {
+  const setupTestWithLines = async (lines) => {
     vimState.cursorStopPosition = new Position(0, 0);
 
     await modeHandler.handleKeyEvent('<Esc>');
-    await vimState.editor.edit(builder => {
+    await vimState.editor.edit((builder) => {
       builder.insert(new Position(0, 0), lines.join('\n'));
     });
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'j', 'j', 'A']);
-
-    await waitForCursorSync();
   };
 
   suite('Line Completion Provider unit tests', () => {

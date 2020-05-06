@@ -114,7 +114,7 @@ export class JumpTracker {
     this.pushJump(from, to);
   }
 
-  async performFileJump(jump: Jump, vimState: VimState) {
+  private async performFileJump(jump: Jump, vimState: VimState) {
     this.isJumpingThroughHistory = true;
 
     if (jump.editor) {
@@ -130,7 +130,7 @@ export class JumpTracker {
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        e => e.document.fileName === jump.fileName
+        (e) => e.document.fileName === jump.fileName
       )[0];
 
       if (editor) {
@@ -155,7 +155,7 @@ export class JumpTracker {
     return this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
   }
 
-  async jumpThroughHistory(
+  private async jumpThroughHistory(
     getJump: (Jump) => Jump,
     position: Position,
     vimState?: VimState
@@ -184,7 +184,7 @@ export class JumpTracker {
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);
-      vimState.cursors = await getCursorsAfterSync();
+      vimState.cursors = getCursorsAfterSync();
     } else {
       vimState.cursorStopPosition = jump.position;
     }
@@ -198,7 +198,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  recordJumpBack(from: Jump): Jump {
+  public recordJumpBack(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -225,7 +225,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  recordJumpForward(from: Jump): Jump {
+  public recordJumpForward(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -250,7 +250,7 @@ export class JumpTracker {
     // Get distance from newlines in the text added.
     // Unlike handleTextDeleted, the range parameter distance between start/end is generally zero,
     // just showing where the text was added.
-    const distance = text.split('').filter(c => c === '\n').length;
+    const distance = text.split('').filter((c) => c === '\n').length;
 
     this._jumps.forEach((jump, i) => {
       const jumpIsAfterAddedText =
@@ -313,7 +313,7 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  pushJump(from: Jump | null, to?: Jump | null) {
+  private pushJump(from: Jump | null, to?: Jump | null) {
     if (from) {
       this.clearJumpsOnSamePosition(from);
     }
@@ -327,11 +327,7 @@ export class JumpTracker {
     this.clearOldJumps();
   }
 
-  removeJump(index: number) {
-    this._jumps.splice(index, 1);
-  }
-
-  changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
+  private changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
     this._jumps.splice(
       index,
       1,
@@ -343,17 +339,17 @@ export class JumpTracker {
     );
   }
 
-  clearOldJumps(): void {
+  private clearOldJumps(): void {
     if (this._jumps.length > 100) {
       this._jumps.splice(0, this._jumps.length - 100);
     }
   }
 
-  clearJumpsOnSamePosition(jump: Jump): void {
-    this._jumps = this._jumps.filter(j => j === jump || !j.isSamePosition(jump));
+  private clearJumpsOnSamePosition(jump: Jump): void {
+    this._jumps = this._jumps.filter((j) => j === jump || !j.isSamePosition(jump));
   }
 
-  removeDuplicateJumps() {
+  private removeDuplicateJumps() {
     const linesSeenPerFile = {};
     for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];

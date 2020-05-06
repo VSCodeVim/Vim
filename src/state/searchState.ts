@@ -2,9 +2,8 @@ import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
 import { Position, PositionDiff } from './../common/motion/position';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { TextEditor } from './../textEditor';
-import { setFlagsFromString } from 'v8';
 
 export enum SearchDirection {
   Forward = 1,
@@ -20,7 +19,7 @@ export class SearchState {
   private static caseOverrideRegex: RegExp = /\\[Cc]/g;
   private static notEscapedSlashRegex: RegExp = /(?<=[^\\])\//g;
   private static notEscapedQuestionMarkRegex: RegExp = /(?<=[^\\])\?/g;
-  public previousMode = ModeName.Normal;
+  public previousMode = Mode.Normal;
 
   private _matchRanges: vscode.Range[] = [];
 
@@ -165,7 +164,7 @@ export class SearchState {
       // through it in order to find the current line and character.
       const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
       const text = TextEditor.getText(new vscode.Range(new Position(0, 0), finalPos));
-      const lineLengths = text.split('\n').map(x => x.length + 1);
+      const lineLengths = text.split('\n').map((x) => x.length + 1);
       let sumLineLengths: number[] = [];
       let curLength = 0;
       for (const length of lineLengths) {
@@ -252,13 +251,17 @@ export class SearchState {
   public getNextSearchMatchPosition(
     startPosition: Position,
     direction = 1
-  ): { pos: Position; match: boolean; index: number } {
-    const { start, end, match, index } = this.getNextSearchMatchRange(startPosition, direction);
+  ): { pos: Position; match: boolean; index: number } | undefined {
+    const nextMatch = this.getNextSearchMatchRange(startPosition, direction);
+    if (nextMatch === undefined) {
+      return undefined;
+    }
+    const { start, end, match, index } = nextMatch;
 
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.NewBOLDiff(this.offset.num));
+        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {
@@ -280,7 +283,7 @@ export class SearchState {
   public getNextSearchMatchRange(
     startPosition: Position,
     direction: number = 1
-  ): { start: Position; end: Position; match: boolean; index: number } {
+  ): { start: Position; end: Position; match: boolean; index: number } | undefined {
     this._recalculateSearchRanges();
 
     if (this._matchRanges.length === 0) {
@@ -292,7 +295,7 @@ export class SearchState {
 
     if (effectiveDirection === SearchDirection.Forward) {
       for (let [index, matchRange] of this._matchRanges.entries()) {
-        if (matchRange.start.compareTo(startPosition) > 0) {
+        if (matchRange.start.isAfter(startPosition)) {
           return {
             start: Position.FromVSCodePosition(matchRange.start),
             end: Position.FromVSCodePosition(matchRange.end),
@@ -301,8 +304,7 @@ export class SearchState {
           };
         }
       }
-
-      // Wrap around
+      // We've hit the bottom of the file. Wrap around if configured to do so, or return undefined.
       // TODO(bell)
       if (configuration.wrapscan) {
         const range = this._matchRanges[0];
@@ -313,19 +315,11 @@ export class SearchState {
           index: 0,
         };
       } else {
-        return {
-          start: startPosition,
-          end: startPosition,
-          match: true,
-          index: this._matchRanges.length - 1,
-        };
+        return undefined;
       }
     } else {
-      for (let [index, matchRange] of this._matchRanges
-        .slice(0)
-        .reverse()
-        .entries()) {
-        if (matchRange.end.compareTo(startPosition) <= 0) {
+      for (let [index, matchRange] of this._matchRanges.slice(0).reverse().entries()) {
+        if (matchRange.end.isBeforeOrEqual(startPosition)) {
           return {
             start: Position.FromVSCodePosition(matchRange.start),
             end: Position.FromVSCodePosition(matchRange.end),
@@ -335,7 +329,7 @@ export class SearchState {
         }
       }
 
-      // Wrap around
+      // We've hit the top of the file. Wrap around if configured to do so, or return undefined.
       // TODO(bell)
       if (configuration.wrapscan) {
         const range = this._matchRanges[this._matchRanges.length - 1];
@@ -346,12 +340,7 @@ export class SearchState {
           index: this._matchRanges.length - 1,
         };
       } else {
-        return {
-          start: startPosition,
-          end: startPosition,
-          match: true,
-          index: 0,
-        };
+        return undefined;
       }
     }
   }
@@ -367,7 +356,7 @@ export class SearchState {
     }
 
     for (let [index, matchRange] of this._matchRanges.entries()) {
-      if (matchRange.start.compareTo(pos) <= 0 && matchRange.end.compareTo(pos) > 0) {
+      if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
         return {
           start: Position.FromVSCodePosition(matchRange.start),
           end: Position.FromVSCodePosition(matchRange.end),
@@ -386,7 +375,7 @@ export class SearchState {
     startPosition: Position,
     searchString = '',
     { isRegex = false } = {},
-    currentMode: ModeName
+    currentMode: Mode
   ) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;

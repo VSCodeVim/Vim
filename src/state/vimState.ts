@@ -6,14 +6,13 @@ import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
-import { globalState } from './../state/globalState';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -21,6 +20,8 @@ import { globalState } from './../state/globalState';
  *
  * Actions defined in actions.ts are only allowed to mutate a VimState in order to
  * indicate what they want to do.
+ *
+ * Each ModeHandler holds a VimState, so there is one for each open editor.
  */
 export class VimState implements vscode.Disposable {
   private readonly logger = Logger.get('VimState');
@@ -52,6 +53,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Are multiple cursors currently present?
    */
+  // TODO: why isn't this a function?
   public isMultiCursor = false;
 
   /**
@@ -82,6 +84,16 @@ export class VimState implements vscode.Disposable {
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
+  /**
+   * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
+   */
+  public visualLineStartColumn: number | undefined = undefined;
+
+  /**
+   * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
+   */
+  public firstVisibleLineBeforeSearch: number | undefined = undefined;
+
   public focusChanged = false;
 
   public surround:
@@ -96,7 +108,8 @@ export class VimState implements vscode.Disposable {
       } = undefined;
 
   /**
-   * Used for command like <C-o> which allows you to return to insert after a command
+   * Used for `<C-o>` in insert mode, which allows you run one normal mode
+   * command, then go back to insert mode.
    */
   public returnToInsertAfterCommand = false;
   public actionCount = 0;
@@ -181,15 +194,16 @@ export class VimState implements vscode.Disposable {
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
-   * Stores last visual mode for gv
+   * Stores last visual mode as well as what was selected for `gv`
    */
-  public lastVisualMode: ModeName;
-
-  /**
-   * Last selection that was active
-   */
-  public lastVisualSelectionStart: Position;
-  public lastVisualSelectionEnd: Position;
+  public lastVisualSelection:
+    | {
+        mode: Mode;
+        start: Position;
+        end: Position;
+        visualLineStartColumn: number | undefined;
+      }
+    | undefined = undefined;
 
   /**
    * Was the previous mouse click past EOL
@@ -199,16 +213,29 @@ export class VimState implements vscode.Disposable {
   /**
    * The mode Vim will be in once this action finishes.
    */
-  private _currentMode: ModeName = ModeName.Normal;
+  private _currentMode: Mode = Mode.Normal;
 
-  public get currentMode(): ModeName {
+  public get currentMode(): Mode {
     return this._currentMode;
   }
 
   private _inputMethodSwitcher: InputMethodSwitcher;
-  public async setCurrentMode(value: ModeName): Promise<void> {
-    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
-    this._currentMode = value;
+  public async setCurrentMode(mode: Mode): Promise<void> {
+    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, mode);
+    if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
+      this.returnToInsertAfterCommand = false;
+    }
+    this._currentMode = mode;
+
+    if (mode !== Mode.VisualLine) {
+      this.visualLineStartColumn = undefined;
+    }
+
+    if (mode === Mode.SearchInProgressMode) {
+      this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
+    } else {
+      this.firstVisibleLineBeforeSearch = undefined;
+    }
   }
 
   public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
@@ -218,9 +245,9 @@ export class VimState implements vscode.Disposable {
       return this.currentRegisterMode;
     }
     switch (this.currentMode) {
-      case ModeName.VisualLine:
+      case Mode.VisualLine:
         return RegisterMode.LineWise;
-      case ModeName.VisualBlock:
+      case Mode.VisualBlock:
         return RegisterMode.BlockWise;
       default:
         return RegisterMode.CharacterWise;
@@ -240,7 +267,7 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
-    this.identity = new EditorIdentity(editor);
+    this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
     this.nvim = new NeovimWrapper();

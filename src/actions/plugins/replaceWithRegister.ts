@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Position } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
-import { ModeName } from '../../mode/mode';
+import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
@@ -11,7 +11,7 @@ import { RegisterAction } from './../base';
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
-  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
@@ -30,7 +30,7 @@ export class ReplaceOperator extends BaseOperator {
     const replaceWith = register.text as string;
 
     await TextEditor.replace(range, replaceWith);
-    await vimState.setCurrentMode(ModeName.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
     return updateCursorPosition(vimState, range, replaceWith);
   }
 }
@@ -59,7 +59,7 @@ const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
   new Position(range.start.line, Math.max(0, range.start.character + replacement.length - 1));
 
 const cursorAtFirstNonBlankCharOfLine = (range: vscode.Range) =>
-  new Position(range.start.line, 0).getFirstLineNonBlankChar();
+  TextEditor.getFirstNonWhitespaceCharOnLine(range.start.line);
 
 const vimStateWithCursorPosition = (vimState: VimState, cursorPosition: Position): VimState => {
   vimState.cursorStopPosition = cursorPosition;

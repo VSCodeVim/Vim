@@ -1,3 +1,5 @@
+import { configuration } from './configuration';
+
 export class Notation {
   // Mapping from the normalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
@@ -13,7 +15,9 @@ export class Notation {
     '\n': ['<cr>', '<enter>'],
   };
 
-  // Converts keystroke like <tab> to a single control character like \t
+  /**
+   * Converts keystroke like <tab> to a single control character like \t
+   */
   public static ToControlCharacter(key: string) {
     if (key === '<tab>') {
       return '\t';
@@ -66,6 +70,14 @@ export class Notation {
     }
 
     return key;
+  }
+
+  /**
+   * Converts a key to a form which will look nice when logged, etc.
+   */
+  public static printableKey(key: string) {
+    const normalized = this.NormalizeKey(key, configuration.leader);
+    return normalized === ' ' ? '<space>' : normalized === '\n' ? '<enter>' : normalized;
   }
 
   private static isSurroundedByAngleBrackets(key: string): boolean {

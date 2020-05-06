@@ -298,6 +298,9 @@ export interface IConfiguration {
    */
   vimrc: {
     enable: boolean;
+    /**
+     * Do not use this directly - VimrcImpl.path resolves this to a path that's guaranteed to exist.
+     */
     path: string;
   };
 
@@ -321,13 +324,20 @@ export interface IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
+  commandLineModeKeyBindings: IKeyRemapping[];
+  commandLineModeKeyBindingsNonRecursive: IKeyRemapping[];
 
+  /**
+   * These are constructed by the RemappingValidator
+   */
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   /**
    * Comma-separated list of motion keys that should wrap to next/previous line.

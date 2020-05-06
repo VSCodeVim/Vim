@@ -1,10 +1,10 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 import {
-  assertEqual,
   assertEqualLines,
   cleanUpWorkspace,
   setupWorkspace,
@@ -29,10 +29,10 @@ suite('Mode Insert', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
     }
   });
 
@@ -45,7 +45,11 @@ suite('Mode Insert', () => {
   test('<Esc> should change cursor position', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o', '<Esc>']);
 
-    assertEqual(TextEditor.getSelection().start.character, 4, '<Esc> moved cursor position.');
+    assert.strictEqual(
+      TextEditor.getSelection().start.character,
+      4,
+      '<Esc> moved cursor position.'
+    );
   });
 
   test('<C-c> can exit insert', async () => {
@@ -64,7 +68,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
+      assert.strictEqual(modeHandler.currentMode === Mode.Insert, true);
     }
   });
 
@@ -74,95 +78,44 @@ suite('Mode Insert', () => {
     return assertEqualLines(['', 'text']);
   });
 
-  test("Can handle 'i'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      't',
-      'e',
-      'x',
-      't', // insert 'texttext'
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l', // move to the 4th character
-      'i',
-      '!', // insert a !
-    ]);
-
-    assertEqualLines(['text!text']);
+  newTest({
+    title: "'i' puts you in insert mode before the cursor",
+    start: ['text|text'],
+    keysPressed: 'i!',
+    end: ['text!|text'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'I'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'I',
-      '!',
-    ]);
-
-    assertEqualLines(['!text']);
+  newTest({
+    title: "'I' puts you in insert mode at start of line",
+    start: ['text|text'],
+    keysPressed: 'I!',
+    end: ['!|texttext'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'a'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      't',
-      'e',
-      'x',
-      't', // insert 'texttext'
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l', // move to the 4th character
-      'a',
-      '!', // append a !
-    ]);
-
-    assertEqualLines(['textt!ext']);
+  newTest({
+    title: "'a' puts you in insert mode after the cursor",
+    start: ['text|text'],
+    keysPressed: 'a!',
+    end: ['textt!|ext'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle 'A'", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'x', 't', '<Esc>', '^', 'A', '!']);
-
-    assertEqualLines(['text!']);
+  newTest({
+    title: "'A' appends to end of line",
+    start: ['t|ext'],
+    keysPressed: 'A!',
+    end: ['text!|'],
+    endMode: Mode.Insert,
   });
 
-  test("Can handle '<C-w>'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      ' ',
-      't',
-      'e',
-      'x',
-      't',
-      '<C-w>',
-    ]);
-
-    assertEqualLines(['text ']);
+  newTest({
+    title: "'<C-w>' deletes a word",
+    start: ['text text| text'],
+    keysPressed: 'i<C-w>',
+    end: ['text | text'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -180,7 +133,7 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: 'Can handle <C-u>',
+    title: '<C-u> deletes to start of line',
     start: ['text |text'],
     keysPressed: 'i<C-u>',
     end: ['|text'],
@@ -218,7 +171,7 @@ suite('Mode Insert', () => {
 
     assertEqualLines(['onetwo']);
 
-    assertEqual(
+    assert.strictEqual(
       TextEditor.getSelection().start.character,
       3,
       '<BS> moved cursor to correct position'
@@ -260,6 +213,42 @@ suite('Mode Insert', () => {
     start: ['|bcd'],
     keysPressed: 'i<BS>a<Esc>',
     end: ['|abcd'],
+  });
+
+  newTest({
+    title: 'Delete works in insert mode',
+    start: ['leather ma|an'],
+    keysPressed: 'i<Del><Esc>',
+    end: ['leather m|an'],
+  });
+
+  newTest({
+    title: 'Delete works at line end',
+    start: ['boy next| ', 'door'],
+    keysPressed: 'a<Del><Esc>',
+    end: ['boy next| door'],
+  });
+
+  newTest({
+    title: 'Delete works at end of file',
+    start: ['yes si|r'],
+    keysPressed: 'a<Del><Esc>',
+    end: ['yes si|r'],
+  });
+
+  newTest({
+    title: 'Delete works with repeat',
+    start: ['This is| not good'],
+    keysPressed: 'a<Del><Del><Del><Del><Esc>.aawesome!<Esc>',
+    end: ['This is awesome|!'],
+  });
+
+  newTest({
+    title: 'Can <Esc> after entering insert mode from <ctrl+o>',
+    start: ['|'],
+    keysPressed: 'i<C-o>i<Esc>',
+    end: ['|'],
+    endMode: Mode.Normal,
   });
 
   newTest({

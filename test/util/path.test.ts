@@ -127,6 +127,7 @@ suite('util path', () => {
         assert.strictEqual(resultUri.path, '/abc/123');
       }
     });
+
     test('win32', () => {
       let testUri = vscode.Uri.file('C:\\123');
       let resultUri = resolveUri('/', path.win32.sep, testUri, false);

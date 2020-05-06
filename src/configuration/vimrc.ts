@@ -1,11 +1,19 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
+import { window } from 'vscode';
+import { configuration } from './configuration';
 
 class VimrcImpl {
   private _vimrcPath: string;
+
+  /**
+   * Fully resolved path to the user's .vimrc
+   */
   public get vimrcPath(): string {
     return this._vimrcPath;
   }
@@ -14,21 +22,40 @@ class VimrcImpl {
     const _path = config.vimrc.path
       ? VimrcImpl.expandHome(config.vimrc.path)
       : VimrcImpl.findDefaultVimrc();
-    if (!_path || !fs.existsSync(_path)) {
-      // TODO: we may want to offer to create the file for them
-      throw new Error(`Unable to find .vimrc file`);
+    if (!_path) {
+      await window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
+      return;
     }
-    this._vimrcPath = _path;
+    if (!fs.existsSync(_path)) {
+      window
+        .showWarningMessage(`No .vimrc found at ${_path}.`, 'Create it')
+        .then(async (choice: string | undefined) => {
+          if (choice === 'Create it') {
+            const newVimrc = await vscode.window.showSaveDialog({
+              defaultUri: vscode.Uri.file(_path),
+            });
+            if (newVimrc) {
+              fs.writeFileSync(newVimrc.fsPath, '');
+              configuration.getConfiguration('vim').update('vimrc.path', newVimrc.fsPath, true);
+              await vscode.workspace.openTextDocument(newVimrc);
+              // TODO: add some sample remaps/settings in here?
+              await vscode.window.showTextDocument(newVimrc);
+            }
+          }
+        });
+    } else {
+      this._vimrcPath = _path;
 
-    // Remove all the old remappings from the .vimrc file
-    VimrcImpl.removeAllRemapsFromConfig(config);
+      // Remove all the old remappings from the .vimrc file
+      VimrcImpl.removeAllRemapsFromConfig(config);
 
-    // Add the new remappings
-    const lines = fs.readFileSync(config.vimrc.path, { encoding: 'utf8' }).split(/\r?\n/);
-    for (const line of lines) {
-      const remap = await vimrcKeyRemappingBuilder.build(line);
-      if (remap) {
-        VimrcImpl.addRemapToConfig(config, remap);
+      // Add the new remappings
+      const lines = fs.readFileSync(this.vimrcPath, { encoding: 'utf8' }).split(/\r?\n/);
+      for (const line of lines) {
+        const remap = await vimrcKeyRemappingBuilder.build(line);
+        if (remap) {
+          VimrcImpl.addRemapToConfig(config, remap);
+        }
       }
     }
   }
@@ -37,29 +64,43 @@ class VimrcImpl {
    * Adds a remapping from .vimrc to the given configuration
    */
   private static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
-    const remaps = (() => {
+    const mappings = (() => {
       switch (remap.keyRemappingType) {
+        case 'map':
+          return [config.normalModeKeyBindings, config.visualModeKeyBindings];
         case 'nmap':
-          return config.normalModeKeyBindings;
+          return [config.normalModeKeyBindings];
         case 'vmap':
-          return config.visualModeKeyBindings;
+          return [config.visualModeKeyBindings];
         case 'imap':
-          return config.insertModeKeyBindings;
+          return [config.insertModeKeyBindings];
+        case 'cmap':
+          return [config.commandLineModeKeyBindings];
+        case 'noremap':
+          return [
+            config.normalModeKeyBindingsNonRecursive,
+            config.visualModeKeyBindingsNonRecursive,
+          ];
         case 'nnoremap':
-          return config.normalModeKeyBindingsNonRecursive;
+          return [config.normalModeKeyBindingsNonRecursive];
         case 'vnoremap':
-          return config.visualModeKeyBindingsNonRecursive;
+          return [config.visualModeKeyBindingsNonRecursive];
         case 'inoremap':
-          return config.insertModeKeyBindingsNonRecursive;
+          return [config.insertModeKeyBindingsNonRecursive];
+        case 'cnoremap':
+          return [config.commandLineModeKeyBindingsNonRecursive];
         default:
+          console.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();
 
-    // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-    if (remaps && !remaps.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
-      remaps.push(remap.keyRemapping);
-    }
+    mappings?.forEach((remaps) => {
+      // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
+      if (!remaps.some((r) => _.isEqual(r.before, remap!.keyRemapping.before))) {
+        remaps.push(remap.keyRemapping);
+      }
+    });
   }
 
   private static removeAllRemapsFromConfig(config: IConfiguration): void {
@@ -67,41 +108,44 @@ class VimrcImpl {
       config.normalModeKeyBindings,
       config.visualModeKeyBindings,
       config.insertModeKeyBindings,
+      config.commandLineModeKeyBindings,
       config.normalModeKeyBindingsNonRecursive,
       config.visualModeKeyBindingsNonRecursive,
       config.insertModeKeyBindingsNonRecursive,
+      config.commandLineModeKeyBindingsNonRecursive,
     ];
     for (const remaps of remapCollections) {
-      _.remove(remaps, remap => remap.source === 'vimrc');
+      _.remove(remaps, (remap) => remap.source === 'vimrc');
     }
   }
 
   private static findDefaultVimrc(): string | undefined {
-    if (process.env.HOME) {
-      let vimrcPath = path.join(process.env.HOME, '.vimrc');
-      if (fs.existsSync(vimrcPath)) {
-        return vimrcPath;
-      }
+    let vimrcPath = path.join(os.homedir(), '.vimrc');
+    if (fs.existsSync(vimrcPath)) {
+      return vimrcPath;
+    }
 
-      vimrcPath = path.join(process.env.HOME, '_vimrc');
-      if (fs.existsSync(vimrcPath)) {
-        return vimrcPath;
-      }
+    vimrcPath = path.join(os.homedir(), '_vimrc');
+    if (fs.existsSync(vimrcPath)) {
+      return vimrcPath;
     }
 
     return undefined;
   }
 
   private static expandHome(filePath: string): string {
-    if (!process.env.HOME) {
+    // regex = Anything preceded by beginning of line
+    // and immediately followed by '~' or '$HOME'
+    const regex = /(?<=^(?:~|\$HOME)).*/;
+
+    // Matches /pathToVimrc in $HOME/pathToVimrc or ~/pathToVimrc
+    const matches = filePath.match(regex);
+
+    if (!matches || matches.length > 1) {
       return filePath;
     }
 
-    if (!filePath.startsWith('~')) {
-      return filePath;
-    }
-
-    return path.join(process.env.HOME, filePath.slice(1));
+    return path.join(os.homedir(), matches[0]);
   }
 }
 

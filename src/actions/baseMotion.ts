@@ -1,7 +1,7 @@
 import { PositionDiff, Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
@@ -29,14 +29,12 @@ export interface IMovement {
    */
   failed?: boolean;
 
-  diff?: PositionDiff;
-
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }
 
 export abstract class BaseMovement extends BaseAction {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   isMotion = true;
 
@@ -52,11 +50,6 @@ export abstract class BaseMovement extends BaseAction {
    * running the repetition.
    */
   isRepeat = false;
-
-  /**
-   * Whether we should change desiredColumn in VimState.
-   */
-  public doesntChangeDesiredColumn = false;
 
   /**
    * This is for commands like $ which force the desired column to be at
@@ -126,6 +119,10 @@ export abstract class BaseMovement extends BaseAction {
       result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
 
       if (result instanceof Position) {
+        /**
+         * This position will be passed to the `motion` on the next iteration,
+         * it may cause some issues when count > 1.
+         */
         position = result;
       } else if (isIMovement(result)) {
         if (prevResult && result.failed) {

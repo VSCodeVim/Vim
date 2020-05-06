@@ -6,10 +6,7 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
     return new node.DeleteRangeCommand({});
   }
 
-  let scanner = new Scanner(args);
-  let register = scanner.nextWord();
-
   return new node.DeleteRangeCommand({
-    register: register,
+    register: new Scanner(args).nextWord(),
   });
 }

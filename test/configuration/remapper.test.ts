@@ -2,10 +2,10 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { Remappers, Remapper } from '../../src/configuration/remapper';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
@@ -73,13 +73,13 @@ suite('Remapper', () => {
 
   class TestRemapper extends Remapper {
     constructor() {
-      super('configKey', [ModeName.Insert], false);
+      super('configKey', [Mode.Insert], false);
     }
 
     public findMatchingRemap(
       userDefinedRemappings: Map<string, IKeyRemapping>,
       inputtedKeys: string[],
-      currentMode: ModeName
+      currentMode: Mode
     ) {
       return super.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
     }
@@ -149,7 +149,7 @@ suite('Remapper', () => {
         before: '0',
         after: ':wq',
         input: '0',
-        mode: ModeName.Normal,
+        mode: Mode.Normal,
         expectedAfter: ':wq',
       },
       {
@@ -157,7 +157,7 @@ suite('Remapper', () => {
         before: 'abc',
         after: ':wq',
         input: 'abc',
-        mode: ModeName.Normal,
+        mode: Mode.Normal,
         expectedAfter: ':wq',
       },
       {
@@ -165,7 +165,7 @@ suite('Remapper', () => {
         before: 'abc',
         after: ':wq',
         input: '0abc',
-        mode: ModeName.Normal,
+        mode: Mode.Normal,
         expectedAfter: ':wq',
       },
       {
@@ -173,34 +173,34 @@ suite('Remapper', () => {
         before: 'abc',
         after: ':wq',
         input: 'defabc',
-        mode: ModeName.Normal,
+        mode: Mode.Normal,
       },
       {
         // able to match in insert mode
         before: 'jj',
         after: '<Esc>',
         input: 'jj',
-        mode: ModeName.Insert,
+        mode: Mode.Insert,
         expectedAfter: '<Esc>',
-        expectedAfterMode: ModeName.Normal,
+        expectedAfterMode: Mode.Normal,
       },
       {
         // able to match with preceding keystrokes in insert mode
         before: 'jj',
         after: '<Esc>',
         input: 'hello world jj',
-        mode: ModeName.Insert,
+        mode: Mode.Insert,
         expectedAfter: '<Esc>',
-        expectedAfterMode: ModeName.Normal,
+        expectedAfterMode: Mode.Normal,
       },
       {
         // able to match with preceding keystrokes in insert mode
         before: 'jj',
         after: '<Esc>',
         input: 'ifoo<Esc>ciwjj',
-        mode: ModeName.Insert,
+        mode: Mode.Insert,
         expectedAfter: '<Esc>',
-        expectedAfterMode: ModeName.Normal,
+        expectedAfterMode: Mode.Normal,
       },
     ];
 
@@ -225,7 +225,7 @@ suite('Remapper', () => {
         assert(
           actual,
           `Expected remap for before=${testCase.before}. input=${testCase.input}. mode=${
-            ModeName[testCase.mode]
+            Mode[testCase.mode]
           }.`
         );
         assert.deepStrictEqual(actual!.after, testCase.expectedAfter.split(''));
@@ -234,8 +234,8 @@ suite('Remapper', () => {
       }
 
       if (testCase.expectedAfterMode) {
-        assertEqual(modeHandler.currentMode.name, testCase.expectedAfterMode);
-        assertEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
+        assert.strictEqual(modeHandler.currentMode, testCase.expectedAfterMode);
+        assert.strictEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
       }
     }
   });
@@ -258,10 +258,10 @@ suite('Remapper', () => {
       new vscode.Position(0, 0),
       expectedDocumentContent
     );
-    vscode.workspace.applyEdit(edit);
+    await vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
 
     // act
     let actual = false;
@@ -273,7 +273,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -286,7 +286,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     // act
     let actual = false;
@@ -322,7 +322,7 @@ suite('Remapper', () => {
     vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
 
     // act
     let actual = false;
@@ -334,7 +334,7 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(actual, true);
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -347,7 +347,7 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     // act
     let actual = false;
@@ -371,10 +371,10 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     await modeHandler.handleKeyEvent('v');
-    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
     // act
     let actual = false;
@@ -397,7 +397,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
@@ -424,7 +424,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
@@ -454,18 +454,73 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['c', 'i', 'w']);
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Insert);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('jj -> <Esc> does not leave behind character a j', async () => {
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: [
+        {
+          before: ['j', 'j'],
+          after: ['<Esc>'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
+    assertEqualLines(['foobar']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('jj -> <Esc> does not modify undo stack', async () => {
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: [
+        {
+          before: ['j', 'j'],
+          after: ['<Esc>'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
+    assertEqualLines(['foobar']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    await modeHandler.handleMultipleKeyEvents(['u']);
+    assertEqualLines(['foo']);
   });
 });
 

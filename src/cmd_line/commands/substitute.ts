@@ -124,12 +124,12 @@ export class SubstituteCommand extends node.CommandBase {
     if (args.pattern === undefined) {
       // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
       // i.e. :s
-      const prevSubstiteState = globalState.substituteState;
-      if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
-        throw VimError.fromCode(ErrorCode.E35);
+      const prevSubstituteState = globalState.substituteState;
+      if (prevSubstituteState === undefined || prevSubstituteState.searchPattern === '') {
+        throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
       } else {
-        args.pattern = prevSubstiteState.searchPattern;
-        args.replace = prevSubstiteState.replaceString;
+        args.pattern = prevSubstituteState.searchPattern;
+        args.replace = prevSubstituteState.replaceString;
       }
     } else {
       if (args.pattern === '') {
@@ -137,7 +137,7 @@ export class SubstituteCommand extends node.CommandBase {
         // e.g :s/ or :s///
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
-          throw VimError.fromCode(ErrorCode.E35);
+          throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
         } else {
           args.pattern = prevSearchState.searchString;
         }
@@ -154,11 +154,14 @@ export class SubstituteCommand extends node.CommandBase {
     return new RegExp(args.pattern, jsRegexFlags);
   }
 
-  async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState) {
+  /**
+   * @returns whether the search pattern existed on the line
+   */
+  async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState): Promise<boolean> {
     const originalContent = TextEditor.readLineAt(line);
 
     if (!regex.test(originalContent)) {
-      return;
+      return false;
     }
 
     if (this._arguments.flags & SubstituteFlags.ConfirmEach) {
@@ -212,6 +215,8 @@ export class SubstituteCommand extends node.CommandBase {
         Jump.fromStateNow(vimState)
       );
     }
+
+    return true;
   }
 
   async confirmReplacement(
@@ -266,7 +271,10 @@ export class SubstituteCommand extends node.CommandBase {
       : selection.end.line;
 
     if (!this._abort) {
-      await this.replaceTextAtLine(line, regex, vimState);
+      const foundPattern = await this.replaceTextAtLine(line, regex, vimState);
+      if (!foundPattern) {
+        throw VimError.fromCode(ErrorCode.PatternNotFound);
+      }
     }
   }
 
@@ -294,6 +302,7 @@ export class SubstituteCommand extends node.CommandBase {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
     let regex = this.getRegex(this._arguments, vimState);
+    let foundPattern = false;
     for (
       let currentLine = startLine.line;
       currentLine <= endLine.line && currentLine < TextEditor.getLineCount();
@@ -302,7 +311,10 @@ export class SubstituteCommand extends node.CommandBase {
       if (this._abort) {
         break;
       }
-      await this.replaceTextAtLine(currentLine, regex, vimState);
+      foundPattern = (await this.replaceTextAtLine(currentLine, regex, vimState)) || foundPattern;
+    }
+    if (!foundPattern) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound);
     }
   }
 }

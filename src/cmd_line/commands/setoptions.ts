@@ -67,7 +67,7 @@ export class SetOptionsCommand extends node.CommandBase {
     }
 
     if (configuration[this._arguments.name] == null) {
-      throw VimError.fromCode(ErrorCode.E518);
+      throw VimError.fromCode(ErrorCode.UnknownOption);
     }
 
     switch (this._arguments.operator) {
@@ -99,9 +99,9 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         let value = configuration[this._arguments.name];
         if (value === undefined) {
-          throw VimError.fromCode(ErrorCode.E518);
+          throw VimError.fromCode(ErrorCode.UnknownOption);
         } else {
-          StatusBar.Set(`${this._arguments.name}=${value}`, vimState, true);
+          StatusBar.setText(vimState, `${this._arguments.name}=${value}`);
         }
         break;
       default:

@@ -1,10 +1,8 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { StatusBar } from '../../src/statusBar';
 
 suite('cursor location', () => {
@@ -30,10 +28,10 @@ suite('cursor location', () => {
       '<left>',
     ]);
 
-    const statusBarAfterCursorMovement = StatusBar.Get();
+    const statusBarAfterCursorMovement = StatusBar.getText();
     await modeHandler.handleKeyEvent('<Esc>');
 
-    const statusBarAfterEsc = StatusBar.Get();
+    const statusBarAfterEsc = StatusBar.getText();
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       ':tes|t',
@@ -54,10 +52,10 @@ suite('cursor location', () => {
       '<left>',
     ]);
 
-    const statusBarAfterCursorMovement = StatusBar.Get();
+    const statusBarAfterCursorMovement = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    const statusBarAfterEsc = StatusBar.Get();
+    const statusBarAfterEsc = StatusBar.getText();
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       '/tes|t',

@@ -4,16 +4,19 @@ import * as vscode from 'vscode';
 import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
+import { Mode } from '../../src/mode/mode';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
-  modes = [ModeName.Normal];
+  modes = [Mode.Normal];
 }
 
 class TestAction2D extends BaseAction {
-  keys = [['a', 'b'], ['c', 'd']];
-  modes = [ModeName.Normal];
+  keys = [
+    ['a', 'b'],
+    ['c', 'd'],
+  ];
+  modes = [Mode.Normal];
 }
 
 suite('base action', () => {
@@ -36,16 +39,21 @@ suite('base action', () => {
       [[['a'], ['b']], ['c'], false],
       [['a', 'b'], ['a', 'b'], true],
       [['a', 'b'], ['a', 'c'], false],
-      [[['a', 'b'], ['c', 'd']], ['c', 'd'], true],
+      [
+        [
+          ['a', 'b'],
+          ['c', 'd'],
+        ],
+        ['c', 'd'],
+        true,
+      ],
       [[''], ['a'], false],
       [['<Esc>'], ['<Esc>'], true],
     ];
 
     for (const test in testCases) {
       if (testCases.hasOwnProperty(test)) {
-        const left = testCases[test][0];
-        const right = testCases[test][1];
-        const expected = testCases[test][2];
+        const [left, right, expected] = testCases[test];
 
         const actual = BaseAction.CompareKeypressSequence(left, right);
         assert.strictEqual(actual, expected, `${left}. ${right}.`);
@@ -54,42 +62,34 @@ suite('base action', () => {
   });
 
   test('couldActionApply 1D keys positive', () => {
-    const result = action1D.couldActionApply(vimState, ['a']);
-    assert.strictEqual(result, true);
+    assert.strictEqual(action1D.couldActionApply(vimState, ['a']), true);
   });
 
   test('couldActionApply 1D keys negative', () => {
-    const result = action1D.couldActionApply(vimState, ['b']);
-    assert.strictEqual(result, false);
+    assert.strictEqual(action1D.couldActionApply(vimState, ['b']), false);
   });
 
   test('couldActionApply 2D keys positive', () => {
-    const result = action2D.couldActionApply(vimState, ['c']);
-    assert.strictEqual(result, true);
+    assert.strictEqual(action2D.couldActionApply(vimState, ['c']), true);
   });
 
   test('couldActionApply 2D keys negative', () => {
-    const result = action2D.couldActionApply(vimState, ['b']);
-    assert.strictEqual(result, false);
+    assert.strictEqual(action2D.couldActionApply(vimState, ['b']), false);
   });
 
   test('doesActionApply 1D keys positive', () => {
-    const result = action1D.doesActionApply(vimState, ['a', 'b']);
-    assert.strictEqual(result, true);
+    assert.strictEqual(action1D.doesActionApply(vimState, ['a', 'b']), true);
   });
 
   test('doesActionApply 1D keys negative', () => {
-    const result = action1D.doesActionApply(vimState, ['a', 'a']);
-    assert.strictEqual(result, false);
+    assert.strictEqual(action1D.doesActionApply(vimState, ['a', 'a']), false);
   });
 
   test('doesActionApply 2D keys positive', () => {
-    const result = action2D.doesActionApply(vimState, ['c', 'd']);
-    assert.strictEqual(result, true);
+    assert.strictEqual(action2D.doesActionApply(vimState, ['c', 'd']), true);
   });
 
   test('doesActionApply 2D keys negative', () => {
-    const result = action2D.doesActionApply(vimState, ['a', 'a']);
-    assert.strictEqual(result, false);
+    assert.strictEqual(action2D.doesActionApply(vimState, ['a', 'a']), false);
   });
 });

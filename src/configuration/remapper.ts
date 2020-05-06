@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
-import { ModeName } from '../mode/mode';
+import { Mode } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
@@ -28,14 +28,16 @@ export class Remappers implements IRemapper {
       new InsertModeRemapper(true),
       new NormalModeRemapper(true),
       new VisualModeRemapper(true),
+      new CommandLineModeRemapper(true),
       new InsertModeRemapper(false),
       new NormalModeRemapper(false),
       new VisualModeRemapper(false),
+      new CommandLineModeRemapper(false),
     ];
   }
 
   get isPotentialRemap(): boolean {
-    return this.remappers.some(r => r.isPotentialRemap);
+    return this.remappers.some((r) => r.isPotentialRemap);
   }
 
   public async sendKey(
@@ -53,7 +55,7 @@ export class Remappers implements IRemapper {
 
 export class Remapper implements IRemapper {
   private readonly _configKey: string;
-  private readonly _remappedModes: ModeName[];
+  private readonly _remappedModes: Mode[];
   private readonly _recursive: boolean;
   private readonly _logger = Logger.get('Remapper');
 
@@ -62,7 +64,7 @@ export class Remapper implements IRemapper {
     return this._isPotentialRemap;
   }
 
-  constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
+  constructor(configKey: string, remappedModes: Mode[], recursive: boolean) {
     this._configKey = configKey;
     this._recursive = recursive;
     this._remappedModes = remappedModes;
@@ -83,7 +85,7 @@ export class Remapper implements IRemapper {
 
     this._logger.debug(
       `trying to find matching remap. keys=${keys}. mode=${
-        ModeName[vimState.currentMode]
+        Mode[vimState.currentMode]
       }. keybindings=${this._configKey}.`
     );
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(
@@ -130,13 +132,15 @@ export class Remapper implements IRemapper {
     const numCharsToRemove = remapping.before.length - 1;
     // Revert previously inserted characters
     // (e.g. jj remapped to esc, we have to revert the inserted "jj")
-    if (vimState.currentMode === ModeName.Insert) {
+    if (vimState.currentMode === Mode.Insert) {
       // Revert every single inserted character.
       // We subtract 1 because we haven't actually applied the last key.
       await vimState.historyTracker.undoAndRemoveChanges(
         Math.max(0, numCharsToRemove * vimState.cursors.length)
       );
-      vimState.cursors = vimState.cursors.map(c => c.withNewStop(c.stop.getLeft(numCharsToRemove)));
+      vimState.cursors = vimState.cursors.map((c) =>
+        c.withNewStop(c.stop.getLeft(numCharsToRemove))
+      );
     }
     // We need to remove the keys that were remapped into different keys from the state.
     vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
@@ -175,7 +179,7 @@ export class Remapper implements IRemapper {
           await vscode.commands.executeCommand(commandString);
         }
 
-        StatusBar.Set(commandString + ' ' + commandArgs, vimState, true);
+        StatusBar.setText(vimState, `${commandString} ${commandArgs}`);
       }
     }
   }
@@ -183,12 +187,10 @@ export class Remapper implements IRemapper {
   protected findMatchingRemap(
     userDefinedRemappings: Map<string, IKeyRemapping>,
     inputtedKeys: string[],
-    currentMode: ModeName
+    currentMode: Mode
   ): IKeyRemapping | undefined {
-    let remapping: IKeyRemapping | undefined;
-
     if (userDefinedRemappings.size === 0) {
-      return remapping;
+      return undefined;
     }
 
     const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
@@ -202,7 +204,7 @@ export class Remapper implements IRemapper {
         // with extraneous keystrokes (eg. "hello world jj")
         // In other modes, we have to precisely match the keysequence
         // unless the preceding keys are numbers
-        if (currentMode !== ModeName.Insert) {
+        if (currentMode !== Mode.Insert) {
           const precedingKeys = inputtedKeys
             .slice(0, inputtedKeys.length - keySlice.length)
             .join('');
@@ -214,12 +216,11 @@ export class Remapper implements IRemapper {
           }
         }
 
-        remapping = userDefinedRemappings.get(keySlice);
-        break;
+        return userDefinedRemappings.get(keySlice);
       }
     }
 
-    return remapping;
+    return undefined;
   }
 
   /**
@@ -232,36 +233,42 @@ export class Remapper implements IRemapper {
     if (remappings.size === 0) {
       return [0, 0];
     }
-    const keyLengths = Array.from(remappings.keys()).map(k => k.length);
+    const keyLengths = Array.from(remappings.keys()).map((k) => k.length);
     return [Math.min(...keyLengths), Math.max(...keyLengths)];
   }
 }
 
+function keyBindingsConfigKey(mode: string, recursive: boolean): string {
+  return `${mode}ModeKeyBindings${recursive ? '' : 'NonRecursive'}Map`;
+}
+
 class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
-    super(
-      'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Insert, ModeName.Replace],
-      recursive
-    );
+    super(keyBindingsConfigKey('insert', recursive), [Mode.Insert, Mode.Replace], recursive);
   }
 }
 
 class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
-    super(
-      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Normal],
-      recursive
-    );
+    super(keyBindingsConfigKey('normal', recursive), [Mode.Normal], recursive);
   }
 }
 
 class VisualModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
+      keyBindingsConfigKey('visual', recursive),
+      [Mode.Visual, Mode.VisualLine, Mode.VisualBlock],
+      recursive
+    );
+  }
+}
+
+class CommandLineModeRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(
+      keyBindingsConfigKey('commandLine', recursive),
+      [Mode.CommandlineInProgress, Mode.SearchInProgressMode],
       recursive
     );
   }

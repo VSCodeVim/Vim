@@ -1,5 +1,5 @@
 import { configuration } from './../configuration/configuration';
-import { ModeName } from './../mode/mode';
+import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 import { Notation } from '../configuration/notation';
 
@@ -18,9 +18,16 @@ export class BaseAction {
   public canBeRepeatedWithDot = false;
 
   /**
+   * Whether we should change `vimState.desiredColumn`
+   */
+  public preservesDesiredColumn(): boolean {
+    return false;
+  }
+
+  /**
    * Modes that this action can be run in.
    */
-  public modes: ModeName[];
+  public modes: Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
@@ -35,6 +42,9 @@ export class BaseAction {
    * The keys pressed at the time that this action was triggered.
    */
   public keysPressed: string[] = [];
+
+  private static readonly isSingleNumber: RegExp = /^[0-9]$/;
+  private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
   /**
    * Is this action valid in the current Vim state?
@@ -62,14 +72,14 @@ export class BaseAction {
     }
 
     const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
-    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }
 
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
+      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
     ) {
       return false;
     }
@@ -92,31 +102,25 @@ export class BaseAction {
       return false;
     }
 
-    const isSingleNumber: RegExp = /^[0-9]$/;
-    const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
-
     for (let i = 0, j = 0; i < one.length; i++, j++) {
       const left = one[i],
         right = two[j];
 
-      if (left === '<any>') {
-        continue;
-      }
-      if (right === '<any>') {
+      if (left === '<any>' || right === '<any>') {
         continue;
       }
 
-      if (left === '<number>' && isSingleNumber.test(right)) {
+      if (left === '<number>' && this.isSingleNumber.test(right)) {
         continue;
       }
-      if (right === '<number>' && isSingleNumber.test(left)) {
+      if (right === '<number>' && this.isSingleNumber.test(left)) {
         continue;
       }
 
-      if (left === '<alpha>' && isSingleAlpha.test(right)) {
+      if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
       }
-      if (right === '<alpha>' && isSingleAlpha.test(left)) {
+      if (right === '<alpha>' && this.isSingleAlpha.test(left)) {
         continue;
       }
 
@@ -134,10 +138,7 @@ export class BaseAction {
         continue;
       }
 
-      if (left === configuration.leader) {
-        return false;
-      }
-      if (right === configuration.leader) {
+      if (left === configuration.leader || right === configuration.leader) {
         return false;
       }
 
@@ -163,22 +164,22 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
-export class Actions {
+// TODO: this should not be a class (#4429)
+export abstract class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static actionMap = new Map<ModeName, typeof BaseAction[]>();
+  public static actionMap = new Map<Mode, typeof BaseAction[]>();
 
   /**
-   * Gets the action that should be triggered given a key
-   * sequence.
+   * Gets the action that should be triggered given a key sequence.
    *
    * If there is a definitive action that matched, returns that action.
    *
-   * If an action could potentially match if more keys were to be pressed, returns true. (e.g.
-   * you pressed "g" and are about to press "g" action to make the full action "gg".)
+   * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
+   * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
    *
-   * If no action could ever match, returns false.
+   * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
    */
   public static getRelevantAction(
     keysPressed: string[],
