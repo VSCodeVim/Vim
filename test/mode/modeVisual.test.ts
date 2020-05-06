@@ -1428,4 +1428,30 @@ suite('Mode Visual', () => {
       endMode: Mode.Normal,
     });
   });
+
+  suite('Can handle ~/g~', () => {
+    newTest({
+      title: '~/g~ on single character',
+      start: ['|one TWO three FOUR'],
+      keysPressed: 'v~wvg~wv~wvg~',
+      end: ['One tWO Three |fOUR'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '~/g~ across a selection',
+      start: ['|OnE TwO tHrEe'],
+      keysPressed: 'vllll~wwvlg~',
+      end: ['oNe twO |ThrEe'],
+      endMode: Mode.Normal,
+    });
+  });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'vjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
+  });
 });
