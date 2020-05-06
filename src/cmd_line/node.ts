@@ -244,7 +244,8 @@ export abstract class CommandBase {
 
   abstract execute(vimState: VimState): Promise<void>;
 
-  executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    throw new Error('Not implemented!');
+  async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    // By default, ignore the given range.
+    await this.execute(vimState);
   }
 }

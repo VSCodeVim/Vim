@@ -382,7 +382,8 @@ class CommandNextSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitTop,
+          searchState.searchString
         )
       );
       return position;
@@ -425,7 +426,8 @@ class CommandPreviousSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitBottom,
+          searchState.searchString
         )
       );
       return position;
