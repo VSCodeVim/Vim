@@ -200,35 +200,35 @@ class CommandInsertInCommandline extends BaseCommand {
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '<up>' || key === '<C-p>') {
-      commandLine.commandlineHistoryIndex -= 1;
+      commandLine.commandLineHistoryIndex -= 1;
 
       // Clamp the history index to stay within bounds of command history length
-      commandLine.commandlineHistoryIndex = Math.max(commandLine.commandlineHistoryIndex, 0);
+      commandLine.commandLineHistoryIndex = Math.max(commandLine.commandLineHistoryIndex, 0);
 
-      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+      if (commandLine.historyEntries[commandLine.commandLineHistoryIndex] !== undefined) {
         vimState.currentCommandlineText =
-          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+          commandLine.historyEntries[commandLine.commandLineHistoryIndex];
       }
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '<down>' || key === '<C-n>') {
-      commandLine.commandlineHistoryIndex += 1;
+      commandLine.commandLineHistoryIndex += 1;
 
       // If past the first history item, allow user to enter their own new command string (not using history)
-      if (commandLine.commandlineHistoryIndex > commandLine.historyEntries.length - 1) {
+      if (commandLine.commandLineHistoryIndex > commandLine.historyEntries.length - 1) {
         if (commandLine.previousMode === Mode.Normal) {
           vimState.currentCommandlineText = '';
         } else {
           vimState.currentCommandlineText = "'<,'>";
         }
 
-        commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+        commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
         vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
         return vimState;
       }
 
-      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+      if (commandLine.historyEntries[commandLine.commandLineHistoryIndex] !== undefined) {
         vimState.currentCommandlineText =
-          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+          commandLine.historyEntries[commandLine.commandLineHistoryIndex];
       }
 
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
@@ -345,7 +345,8 @@ class CommandInsertInSearchMode extends BaseCommand {
           VimError.fromCode(
             searchState.searchDirection === SearchDirection.Backward
               ? ErrorCode.SearchHitTop
-              : ErrorCode.SearchHitBottom
+              : ErrorCode.SearchHitBottom,
+            searchState.searchString
           )
         );
         return vimState;

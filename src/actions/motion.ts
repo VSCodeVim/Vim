@@ -21,6 +21,7 @@ import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
+import { clamp } from '../util/util';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -381,7 +382,8 @@ class CommandNextSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitTop,
+          searchState.searchString
         )
       );
       return position;
@@ -424,7 +426,8 @@ class CommandPreviousSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitBottom,
+          searchState.searchString
         )
       );
       return position;
@@ -1150,12 +1153,8 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (count === 0) {
-      return TextEditor.getDocumentBegin().obeyStartOfLine();
-    } else if (count > TextEditor.getLineCount()) {
-      count = TextEditor.getLineCount();
-    }
-    return new Position(count - 1, 0).obeyStartOfLine();
+    const lineNumber = clamp(count, 1, TextEditor.getLineCount()) - 1;
+    return position.withLine(lineNumber).obeyStartOfLine();
   }
 }
 

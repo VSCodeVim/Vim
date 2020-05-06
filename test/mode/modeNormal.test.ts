@@ -1617,6 +1617,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gq work correctly with cursor in the middle of a line',
+    start: [
+      '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
+      '// We choose to write a vim extension, not because it is easy, but because it is hard.',
+    ],
+    keysPressed: 'gqj',
+    end: [
+      '|// We choose to write a vim extension, not because it is easy, but because it is',
+      '// hard. We choose to write a vim extension, not because it is easy, but because',
+      '// it is hard.',
+    ],
+  });
+
+  newTest({
     title: 'Can handle space',
     start: ['|abc', 'def'],
     keysPressed: '  ',

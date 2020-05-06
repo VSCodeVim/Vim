@@ -44,6 +44,13 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: '`A` over shorter line adds necessary spaces',
+    start: ['te|st', 'te', 't'],
+    keysPressed: '<C-v>jjA123',
+    end: ['tes123|t', 'te 123', 't  123'],
+  });
+
+  newTest({
     title: 'Can handle I forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
