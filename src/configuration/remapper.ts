@@ -146,9 +146,15 @@ export class Remapper implements IRemapper {
           );
           if (possibleBrokenRemap) {
             remapping = possibleBrokenRemap;
+            if (!allowBufferingKeys) {
+              // If the user already waited for the timeout to finish, prevent the
+              // remapping from waiting for the timeout again by sending the
+              // '<BufferedKeys>' key at the end of 'after'.
+              remapping.after?.push('<BufferedKeys>');
+            }
             isPotentialRemap = false;
             this._isPotentialRemap = false;
-            remainingKeys = keys.slice(remapping.before.length);
+            remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length); // includes the '<BufferedKeys>' key
             break;
           }
         }
