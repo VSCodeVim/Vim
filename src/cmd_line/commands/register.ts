@@ -25,7 +25,7 @@ export class RegisterCommand extends node.CommandBase {
     if (result instanceof Array) {
       result = result.join('\n').substr(0, 100);
     } else if (result instanceof RecordedState) {
-      result = result.actionsRun.map(x => x.keysPressed.join('')).join('');
+      result = result.actionsRun.map((x) => x.keysPressed.join('')).join('');
     }
 
     return result;
@@ -42,7 +42,7 @@ export class RegisterCommand extends node.CommandBase {
       await this.displayRegisterValue(this.arguments.registers[0]);
     } else {
       const currentRegisterKeys = Register.getKeys().filter(
-        reg =>
+        (reg) =>
           reg !== '_' &&
           (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
       );
@@ -55,7 +55,7 @@ export class RegisterCommand extends node.CommandBase {
         });
       }
 
-      vscode.window.showQuickPick(registerKeyAndContent).then(async val => {
+      vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
         if (val) {
           let result = val.description;
           vscode.window.showInformationMessage(`${val.label} ${result}`);

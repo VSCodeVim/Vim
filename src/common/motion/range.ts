@@ -1,92 +1,43 @@
 import * as vscode from 'vscode';
 
-import { IMovement } from '../../actions/baseMotion';
-import { Position, PositionDiff } from './position';
+import { Position } from './position';
 
 export class Range {
-  private _start: Position;
-  private _stop: Position;
-
-  public get start(): Position {
-    return this._start;
-  }
-
-  public get stop(): Position {
-    return this._stop;
-  }
+  public readonly start: Position;
+  public readonly stop: Position;
 
   constructor(start: Position, stop: Position) {
-    this._start = start;
-    this._stop = stop;
+    this.start = start;
+    this.stop = stop;
   }
 
   public isValid(textEditor: vscode.TextEditor) {
-    return this._start.isValid(textEditor) && this._stop.isValid(textEditor);
+    return this.start.isValid(textEditor) && this.stop.isValid(textEditor);
   }
 
   /**
    * Create a range from a VSCode selection.
    */
-  public static FromVSCodeSelection(e: vscode.Selection): Range {
-    return new Range(Position.FromVSCodePosition(e.start), Position.FromVSCodePosition(e.end));
-  }
-
-  public static *IterateRanges(
-    list: Range[]
-  ): Iterable<{ start: Position; stop: Position; range: Range; i: number }> {
-    for (let i = 0; i < list.length; i++) {
-      yield {
-        i,
-        range: list[i],
-        start: list[i]._start,
-        stop: list[i]._stop,
-      };
-    }
-  }
-
-  /**
-   * Create a range from an IMovement.
-   */
-  public static FromIMovement(i: IMovement): Range {
-    // TODO: This shows a very clear need for refactoring after multi-cursor is merged!
-
-    return new Range(i.start, i.stop);
-  }
-
-  public getRight(count = 1): Range {
-    return new Range(this._start.getRight(count), this._stop.getRight(count));
-  }
-
-  public getLeft(count = 1): Range {
-    return this.getRight(-count);
-  }
-
-  public getDown(count = 1): Range {
-    return new Range(this._start.getDownByCount(count), this._stop.getDownByCount(count));
-  }
-
-  public getUp(count = 1): Range {
-    return this.getDown(-count);
+  public static FromVSCodeSelection(sel: vscode.Selection): Range {
+    return new Range(Position.FromVSCodePosition(sel.start), Position.FromVSCodePosition(sel.end));
   }
 
   public equals(other: Range): boolean {
-    return this._start.isEqual(other._start) && this._stop.isEqual(other._stop);
+    return this.start.isEqual(other.start) && this.stop.isEqual(other.stop);
   }
 
   /**
-   * Returns a new Range which is the same as this Range, but with the provided
-   * stop value.
+   * Returns a new Range which is the same as this Range, but with the provided stop value.
    */
   public withNewStop(stop: Position): Range {
-    return new Range(this._start, stop);
+    return new Range(this.start, stop);
   }
 
   /**
-   * Returns a new Range which is the same as this Range, but with the provided
-   * start value.
+   * Returns a new Range which is the same as this Range, but with the provided start value.
    */
   public withNewStart(start: Position): Range {
-    return new Range(start, this._stop);
+    return new Range(start, this.stop);
   }
 
   public toString(): string {
@@ -95,9 +46,5 @@ export class Range {
 
   public overlaps(other: Range): boolean {
     return this.start.isBefore(other.stop) && other.start.isBefore(this.stop);
-  }
-
-  public add(diff: PositionDiff): Range {
-    return new Range(this.start.add(diff), this.stop.add(diff));
   }
 }

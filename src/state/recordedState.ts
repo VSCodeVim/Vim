@@ -12,7 +12,7 @@ import { Transformation } from './../transformations/transformations';
  *
  * 5"qdw
  *
- * Then the relevent state would be
+ * Then the relevant state would be
  *   * count of 5
  *   * copy into q register
  *   * delete operator
@@ -111,20 +111,20 @@ export class RecordedState {
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
-  public get operator(): BaseOperator {
-    let list = this.actionsRun.filter(a => a instanceof BaseOperator).reverse();
-    return list[0] as BaseOperator;
+  public get operator(): BaseOperator | undefined {
+    const operators = this.operators;
+    return operators.length > 0 ? operators[0] : undefined;
   }
 
   public get operators(): BaseOperator[] {
-    return this.actionsRun.filter(a => a instanceof BaseOperator).reverse() as BaseOperator[];
+    return this.actionsRun.filter((a) => a instanceof BaseOperator).reverse() as BaseOperator[];
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): BaseCommand {
-    const list = this.actionsRun.filter(a => a instanceof BaseCommand).reverse();
+    const list = this.actionsRun.filter((a) => a instanceof BaseCommand).reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -132,7 +132,7 @@ export class RecordedState {
   }
 
   public get hasRunAMovement(): boolean {
-    return this.actionsRun.filter(a => a.isMotion).length > 0;
+    return this.actionsRun.some((a) => a.isMotion);
   }
 
   /**
@@ -162,7 +162,7 @@ export class RecordedState {
   public operatorReadyToExecute(mode: Mode): boolean {
     // Visual modes do not require a motion -- they ARE the motion.
     return (
-      this.operator &&
+      this.operator !== undefined &&
       !this.hasRunOperator &&
       mode !== Mode.SearchInProgressMode &&
       mode !== Mode.CommandlineInProgress &&

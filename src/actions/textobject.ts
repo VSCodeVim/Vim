@@ -50,7 +50,7 @@ export class SelectWord extends TextObjectMovement {
       // This is because 'aw' has two fundamentally different behaviors distinguished by whether
       // the next word is directly after the current word, as described in the following comment.
       // The only case that's not true is in cases like #1350.
-      if (stop.isEqual(stop.getFirstLineNonBlankChar())) {
+      if (stop.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line))) {
         stop = stop.getLineBegin();
       }
       stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
@@ -59,7 +59,9 @@ export class SelectWord extends TextObjectMovement {
       // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
       if (
         stop.isEqual(position.getCurrentWordEnd(true)) &&
-        !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar()) &&
+        !position
+          .getWordLeft(true)
+          .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line)) &&
         vimState.recordedState.count === 0
       ) {
         start = position.getLastWordEnd().getRight();
@@ -118,7 +120,8 @@ export class SelectABigWord extends TextObjectMovement {
         }
         stop = position.getLineEnd();
       } else if (
-        (nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
+        (nextWord.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(nextWord.line)) ||
+          nextWord.isLineEnd()) &&
         vimState.recordedState.count === 0
       ) {
         start = position.getLastWordEnd().getRight();
@@ -187,7 +190,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       vimState.cursorStartPosition = cursorStartPos;
     }
 
-    ranges = ranges.filter(range => {
+    ranges = ranges.filter((range) => {
       return !range.failed;
     });
 
@@ -202,7 +205,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         continue;
       }
 
-      const range = Range.FromIMovement(iMotion);
+      const range = new Range(iMotion.start, iMotion.stop);
       let contender: Range | undefined = undefined;
 
       if (
@@ -446,7 +449,7 @@ export class SelectParagraph extends TextObjectMovement {
     let start: Position;
     const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
 
-    if (position.isLineWhite()) {
+    if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
       start = position.getCurrentParagraphBeginning(true).getCurrentParagraphEnd(true);
     } else {
@@ -459,8 +462,11 @@ export class SelectParagraph extends TextObjectMovement {
 
     // Include additional blank lines.
     let stop = position.getCurrentParagraphEnd(true);
-    while (stop.line < TextEditor.getLineCount() - 1 && stop.getDown(0).isLineWhite()) {
-      stop = stop.getDown(0);
+    while (
+      stop.line < TextEditor.getLineCount() - 1 &&
+      TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
+    ) {
+      stop = stop.getDownWithDesiredColumn(0);
     }
 
     return {
@@ -480,34 +486,73 @@ export class SelectInnerParagraph extends TextObjectMovement {
     let start: Position;
     let stop: Position;
 
-    if (position.isLineWhite()) {
+    if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, so white lines are the paragraph.
       start = position.getLineBegin();
       stop = position.getLineEnd();
-      while (start.line > 0 && start.getUp(0).isLineWhite()) {
-        start = start.getUp(0);
+      while (start.line > 0 && TextEditor.getLineAt(start.getUp()).isEmptyOrWhitespace) {
+        start = start.getUpWithDesiredColumn(0);
       }
-      while (stop.line < TextEditor.getLineCount() - 1 && stop.getDown(0).isLineWhite()) {
-        stop = stop.getDown(0);
+      while (
+        stop.line < TextEditor.getLineCount() - 1 &&
+        TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
+      ) {
+        stop = stop.getDownWithDesiredColumn(0);
       }
     } else {
       const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
       stop = position.getCurrentParagraphEnd(true);
-      if (currentParagraphBegin.isLineWhite()) {
+      if (TextEditor.getLineAt(currentParagraphBegin).isEmptyOrWhitespace) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {
         start = currentParagraphBegin;
       }
 
       // Exclude additional blank lines.
-      while (stop.line > 0 && stop.isLineWhite()) {
-        stop = stop.getUp(0).getLineEnd();
+      while (stop.line > 0 && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
+        stop = stop.getUpWithDesiredColumn(0).getLineEnd();
       }
     }
 
     return {
       start: start,
       stop: stop,
+    };
+  }
+}
+
+@RegisterAction
+export class SelectEntire extends TextObjectMovement {
+  keys = ['a', 'e'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start: TextEditor.getDocumentBegin(),
+      stop: TextEditor.getDocumentEnd(),
+    };
+  }
+}
+
+@RegisterAction
+export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
+  keys = ['i', 'e'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position = TextEditor.getDocumentBegin();
+    let stop: Position = TextEditor.getDocumentEnd();
+
+    while (start.line < stop.line && TextEditor.getLineAt(start).isEmptyOrWhitespace) {
+      start = start.getDown();
+    }
+
+    while (stop.line > start.line && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
+      stop = stop.getUp();
+    }
+    stop = stop.getLineEnd();
+
+    return {
+      start,
+      stop,
     };
   }
 }
@@ -521,10 +566,9 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
     const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
-    const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
+    const firstValidLine = TextEditor.getLine(firstValidLineNumber);
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
-    // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
       firstValidLineNumber,
       cursorIndent,
@@ -558,8 +602,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // of the block.
     let startCharacter = 0;
     if (isChangeOperator) {
-      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0))
-        .firstNonWhitespaceCharacterIndex;
+      startCharacter = TextEditor.getLine(startLineNumber).firstNonWhitespaceCharacterIndex;
     }
     // TextEditor.getLineMaxColumn throws when given line 0, which we don't
     // care about here since it just means this text object wouldn't work on a
@@ -586,9 +629,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
    */
   public static findFirstValidLine(cursorPosition: Position): number {
     for (let i = cursorPosition.line; i >= 0; i--) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
-
-      if (!line.isEmptyOrWhitespace) {
+      if (!TextEditor.getLine(i).isEmptyOrWhitespace) {
         return i;
       }
     }
@@ -609,7 +650,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     const end = step === 1 ? TextEditor.getLineCount() : -1;
 
     for (; i !== end; i += step) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
+      const line = TextEditor.getLine(i);
       const isLineEmpty = line.isEmptyOrWhitespace;
       const lineIndent = line.firstNonWhitespaceCharacterIndex;
 

@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
-import { window, workspace } from 'vscode';
+import { window } from 'vscode';
 import { configuration } from './configuration';
 
 class VimrcImpl {
@@ -94,9 +95,9 @@ class VimrcImpl {
       }
     })();
 
-    mappings?.forEach(remaps => {
+    mappings?.forEach((remaps) => {
       // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-      if (!remaps.some(r => _.isEqual(r.before, remap!.keyRemapping.before))) {
+      if (!remaps.some((r) => _.isEqual(r.before, remap!.keyRemapping.before))) {
         remaps.push(remap.keyRemapping);
       }
     });
@@ -114,31 +115,25 @@ class VimrcImpl {
       config.commandLineModeKeyBindingsNonRecursive,
     ];
     for (const remaps of remapCollections) {
-      _.remove(remaps, remap => remap.source === 'vimrc');
+      _.remove(remaps, (remap) => remap.source === 'vimrc');
     }
   }
 
   private static findDefaultVimrc(): string | undefined {
-    if (process.env.HOME) {
-      let vimrcPath = path.join(process.env.HOME, '.vimrc');
-      if (fs.existsSync(vimrcPath)) {
-        return vimrcPath;
-      }
+    let vimrcPath = path.join(os.homedir(), '.vimrc');
+    if (fs.existsSync(vimrcPath)) {
+      return vimrcPath;
+    }
 
-      vimrcPath = path.join(process.env.HOME, '_vimrc');
-      if (fs.existsSync(vimrcPath)) {
-        return vimrcPath;
-      }
+    vimrcPath = path.join(os.homedir(), '_vimrc');
+    if (fs.existsSync(vimrcPath)) {
+      return vimrcPath;
     }
 
     return undefined;
   }
 
   private static expandHome(filePath: string): string {
-    if (!process.env.HOME) {
-      return filePath;
-    }
-
     // regex = Anything preceded by beginning of line
     // and immediately followed by '~' or '$HOME'
     const regex = /(?<=^(?:~|\$HOME)).*/;
@@ -150,7 +145,7 @@ class VimrcImpl {
       return filePath;
     }
 
-    return path.join(process.env.HOME, matches[0]);
+    return path.join(os.homedir(), matches[0]);
   }
 }
 

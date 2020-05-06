@@ -16,17 +16,14 @@ class TaskQueue {
   } = {};
 
   private isRunning(queueName: string): boolean {
-    return (
-      this._taskQueue[queueName] &&
-      this._taskQueue[queueName].tasks.filter(x => x.isRunning).length > 0
-    );
+    return this._taskQueue[queueName] && this._taskQueue[queueName].tasks.some((x) => x.isRunning);
   }
 
   private numHighPriority(queueName: string): number {
     if (!this._taskQueue[queueName]) {
       return 0;
     }
-    return this._taskQueue[queueName].tasks.filter(x => x.isHighPriority).length;
+    return this._taskQueue[queueName].tasks.filter((x) => x.isHighPriority).length;
   }
 
   private async runTasks(queueName: string): Promise<void> {
@@ -52,7 +49,7 @@ class TaskQueue {
    *       promises don't allow you to stop it.
    */
   private dequeueTask(task: IEnqueuedTask): void {
-    this._taskQueue[task.queue].tasks = this._taskQueue[task.queue].tasks.filter(t => t !== task);
+    this._taskQueue[task.queue].tasks = this._taskQueue[task.queue].tasks.filter((t) => t !== task);
   }
 
   /**

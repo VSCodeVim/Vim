@@ -1,7 +1,7 @@
 import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
-import { Mode } from './../../../mode/mode';
+import { Mode, isVisualMode } from './../../../mode/mode';
 import { RegisterAction } from './../../base';
 import { BaseCommand } from './../../commands/actions';
 import { EasyMotion } from './easymotion';
@@ -11,6 +11,7 @@ import {
   EasyMotionWordMoveOpions,
 } from './types';
 import { globalState } from '../../../state/globalState';
+import { TextEditor } from '../../../textEditor';
 
 export interface EasymotionTrigger {
   key: string;
@@ -77,6 +78,13 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     } else {
       // Search all occurences of the character pressed
       const matches = this.getMatches(position, vimState);
+
+      // If previous mode was visual, restore visual selection
+      if (isVisualMode(vimState.easyMotion.previousMode)) {
+        vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
+        vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
+        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
@@ -337,7 +345,7 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
     // Search for the beginning of all non whitespace chars on each line before the cursor
     const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
     for (const match of matches) {
-      match.position = match.position.getFirstLineNonBlankChar();
+      match.position = TextEditor.getFirstNonWhitespaceCharOnLine(match.position.line);
     }
     return matches;
   }
@@ -394,13 +402,10 @@ class MoveEasyMotion extends BaseCommand {
       const markers = vimState.easyMotion.findMarkers(nail, true);
 
       // If previous mode was visual, restore visual selection
-      if (
-        vimState.easyMotion.previousMode === Mode.Visual ||
-        vimState.easyMotion.previousMode === Mode.VisualLine ||
-        vimState.easyMotion.previousMode === Mode.VisualBlock
-      ) {
+      if (isVisualMode(vimState.easyMotion.previousMode)) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
+        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
       }
 
       if (markers.length === 1) {

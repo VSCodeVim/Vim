@@ -27,11 +27,11 @@ export class CloseCommand extends node.CommandBase {
 
   async execute(): Promise<void> {
     if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
-      throw error.VimError.fromCode(error.ErrorCode.E37);
+      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 
     if (vscode.window.visibleTextEditors.length === 1) {
-      throw error.VimError.fromCode(error.ErrorCode.E444);
+      throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
     }
 
     let oldViewColumn = this.activeTextEditor!.viewColumn;

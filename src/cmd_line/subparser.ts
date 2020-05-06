@@ -2,8 +2,6 @@ import { parseCloseCommandArgs } from './subparsers/close';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 import { parseDigraphCommandArgs } from './subparsers/digraph';
 import * as fileCmd from './subparsers/file';
-import { parseNohlCommandArgs } from './subparsers/nohl';
-import { parseOnlyCommandArgs } from './subparsers/only';
 import { parseQuitAllCommandArgs, parseQuitCommandArgs } from './subparsers/quit';
 import { parseReadCommandArgs } from './subparsers/read';
 import { parseRegisterCommandArgs } from './subparsers/register';
@@ -17,10 +15,12 @@ import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
 import { parseMarksCommandArgs } from './subparsers/marks';
-import { parseSmileCommandArgs } from './subparsers/smile';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
 import { parseBufferDeleteCommandArgs } from './subparsers/bufferDelete';
+import { NohlCommand } from './commands/nohl';
+import { OnlyCommand } from './commands/only';
+import { SmileCommand } from './commands/smile';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -44,7 +44,7 @@ export const commandParsers = {
 
   nohlsearch: {
     abbrev: 'noh',
-    parser: parseNohlCommandArgs,
+    parser: () => new NohlCommand({}),
   },
 
   close: {
@@ -140,7 +140,7 @@ export const commandParsers = {
   },
 
   smile: {
-    parser: parseSmileCommandArgs,
+    parser: () => new SmileCommand(),
   },
 
   edit: {
@@ -174,7 +174,7 @@ export const commandParsers = {
 
   only: {
     abbrev: 'on',
-    parser: parseOnlyCommandArgs,
+    parser: () => new OnlyCommand({}),
   },
 
   set: {

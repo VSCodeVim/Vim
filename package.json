@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.12.4",
+  "version": "1.14.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -88,7 +88,7 @@
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "tab",
@@ -221,6 +221,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl"
       },
       {
+        "key": "ctrl+m",
+        "command": "extension.vim_ctrl+m",
+        "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
         "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
@@ -318,7 +323,7 @@
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "cmd+left",
@@ -942,7 +947,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.4",
     "lodash": "^4.17.15",
-    "neovim": "4.7.0",
+    "neovim": "4.8.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6",
@@ -951,25 +956,28 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.149",
-    "@types/mocha": "5.2.7",
-    "@types/node": "12.12.21",
-    "@types/sinon": "7.5.1",
+    "@types/lodash": "4.14.150",
+    "@types/mocha": "7.0.2",
+    "@types/node": "12.12.31",
+    "@types/sinon": "9.0.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
-    "gulp-git": "2.10.0",
+    "gulp-git": "2.10.1",
     "gulp-sourcemaps": "2.6.5",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "minimist": "1.2.0",
-    "mocha": "7.0.0",
+    "minimist": "1.2.5",
+    "mocha": "7.1.2",
     "plugin-error": "1.0.1",
-    "prettier": "1.19.1",
-    "sinon": "8.0.4",
-    "ts-loader": "6.2.1",
-    "tslint": "5.20.1",
-    "typescript": "3.7.4",
-    "vscode": "1.1.36"
+    "prettier": "2.0.5",
+    "sinon": "9.0.2",
+    "ts-loader": "7.0.2",
+    "tslint": "6.1.2",
+    "typescript": "3.8.3",
+    "vscode": "1.1.37",
+    "webpack": "4.43.0",
+    "webpack-cli": "3.3.11",
+    "webpack-stream": "5.2.1"
   }
 }

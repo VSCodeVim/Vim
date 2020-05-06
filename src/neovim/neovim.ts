@@ -9,7 +9,8 @@ import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
 import { exists } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
-import { attach, Neovim } from 'neovim';
+import { attach } from 'neovim/lib/attach';
+import { Neovim } from 'neovim/lib/api/Neovim';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
@@ -89,7 +90,7 @@ export class NeovimWrapper implements vscode.Disposable {
       cwd: dir,
     });
 
-    this.process.on('error', err => {
+    this.process.on('error', (err) => {
       this.logger.error(`Error spawning neovim. ${err.message}.`);
       configuration.enableNeovim = false;
     });
@@ -111,10 +112,10 @@ export class NeovimWrapper implements vscode.Disposable {
       strictIndexing: true,
     });
 
-    const [rangeStart, rangeEnd] = [
-      Position.EarlierOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
-      Position.LaterOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
-    ];
+    const [rangeStart, rangeEnd] = Position.sorted(
+      vimState.cursorStartPosition,
+      vimState.cursorStopPosition
+    );
     await this.nvim.callFunction('setpos', [
       '.',
       [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
@@ -127,7 +128,7 @@ export class NeovimWrapper implements vscode.Disposable {
       "'>",
       [0, rangeEnd.line + 1, rangeEnd.character, false],
     ]);
-    for (const mark of vimState.historyTracker.getMarks()) {
+    for (const mark of vimState.historyTracker.getLocalMarks()) {
       await this.nvim.callFunction('setpos', [
         `'${mark.name}`,
         [0, mark.position.line + 1, mark.position.character, false],
