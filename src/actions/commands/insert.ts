@@ -86,11 +86,7 @@ class CommandEscInsertMode extends BaseCommand {
             : new PositionDiff();
 
         // Add a transform containing the change
-        vimState.recordedState.transformations.push({
-          type: 'contentChange',
-          changes: changeAction.contentChanges,
-          diff: positionDiff,
-        });
+        vimState.recordedState.transformations.push(changeAction.getTransformation(positionDiff));
       }
     }
 

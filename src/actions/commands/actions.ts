@@ -17,7 +17,7 @@ import { Mode, visualBlockGetTopLeftPosition, isVisualMode } from './../../mode/
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
-import { isTextTransformation } from './../../transformations/transformations';
+import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
@@ -29,7 +29,20 @@ import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 
 export class DocumentContentChangeAction extends BaseAction {
-  contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+  private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+
+  public addChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
+    this.contentChanges = [...this.contentChanges, ...changes];
+    this.compressChanges();
+  }
+
+  public getTransformation(positionDiff: PositionDiff): Transformation {
+    return {
+      type: 'contentChange',
+      changes: this.contentChanges,
+      diff: positionDiff,
+    };
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
@@ -45,10 +58,6 @@ export class DocumentContentChangeAction extends BaseAction {
     let rightBoundary: Position = position;
     let replaceRange: Range | undefined;
     for (const change of this.contentChanges) {
-      vscode.window.showErrorMessage(
-        `change: [${change.range.start.line}, ${change.range.start.character}] [${change.range.end.line}, ${change.range.end.character}] '${change.text}'`
-      );
-
       if (change.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
         const linesAffected = change.range.end.line - change.range.start.line + 1;
@@ -108,6 +117,48 @@ export class DocumentContentChangeAction extends BaseAction {
 
     await vimState.setCurrentMode(Mode.Insert);
     return vimState;
+  }
+
+  private compressChanges(): void {
+    function merge(
+      first: vscode.TextDocumentContentChangeEvent,
+      second: vscode.TextDocumentContentChangeEvent
+    ): vscode.TextDocumentContentChangeEvent | undefined {
+      if (
+        first.rangeOffset + first.text.length !== second.rangeOffset ||
+        second.rangeLength !== 0
+      ) {
+        // TODO: We should be able to do better, but I'm not sure if this is actually relevant.
+        return undefined;
+      }
+
+      return {
+        text: first.text + second.text,
+        range: first.range,
+        rangeOffset: first.rangeOffset,
+        rangeLength: first.rangeLength,
+      };
+    }
+
+    let compressed: vscode.TextDocumentContentChangeEvent[] = [];
+    let prev: vscode.TextDocumentContentChangeEvent | undefined;
+    for (const change of this.contentChanges) {
+      if (prev === undefined) {
+        prev = change;
+      } else {
+        const merged = merge(prev, change);
+        if (merged) {
+          prev = merged;
+        } else {
+          compressed.push(prev);
+          prev = change;
+        }
+      }
+    }
+    if (prev !== undefined) {
+      compressed.push(prev);
+    }
+    this.contentChanges = compressed;
   }
 }
 
