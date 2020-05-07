@@ -26,6 +26,7 @@ import { Jump } from '../../jumps/jump';
 import { StatusBar } from '../../statusBar';
 import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
+import { VimError, ErrorCode } from '../../error';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -500,18 +501,20 @@ class CommandEsc extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode === Mode.Normal && !vimState.isMultiCursor) {
-      // If there's nothing to do on the vim side, we might as well call some
-      // of vscode's default "close notification" actions. I think we should
-      // just add to this list as needed.
-      await vscode.commands.executeCommand('closeReferenceSearchEditor');
-      await vscode.commands.executeCommand('closeMarkersNavigation');
+    if (vimState.currentMode === Mode.Normal) {
+      vimState.surround = undefined;
 
-      return vimState;
-    }
+      if (!vimState.isMultiCursor) {
+        // If there's nothing to do on the vim side, we might as well call some
+        // of vscode's default "close notification" actions. I think we should
+        // just add to this list as needed.
+        await vscode.commands.executeCommand('closeReferenceSearchEditor');
+        await vscode.commands.executeCommand('closeMarkersNavigation');
 
-    if (vimState.currentMode === Mode.Normal && vimState.isMultiCursor) {
-      vimState.isMultiCursor = false;
+        return vimState;
+      } else {
+        vimState.isMultiCursor = false;
+      }
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
@@ -985,15 +988,26 @@ async function createSearchStateAndMoveToMatch(args: {
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
   globalState.addSearchStateToHistory(globalState.searchState);
 
+  // Turn one of the highlighting flags back on (turned off with :nohl)
+  globalState.hl = true;
+
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
     args.searchStartCursorPosition
   );
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    globalState.hl = true;
     reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+  } else {
+    StatusBar.displayError(
+      vimState,
+      VimError.fromCode(
+        args.direction === SearchDirection.Forward
+          ? ErrorCode.SearchHitBottom
+          : ErrorCode.SearchHitTop,
+        globalState.searchState.searchString
+      )
+    );
   }
 
   return vimState;
@@ -1524,31 +1538,39 @@ export class PutCommandVisual extends BaseCommand {
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
+      const replaceRegisterName = vimState.recordedState.registerName;
+      const replaceRegister = await Register.getByKey(replaceRegisterName);
+      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         true
       );
-      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
-      Register.putByKey(
-        replaceRegister.text,
-        vimState.recordedState.registerName,
-        replaceRegister.registerMode
-      );
+      const deletedRegisterName = vimState.recordedState.registerName;
+      const deletedRegister = await Register.getByKey(deletedRegisterName);
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          replaceRegister.text,
+          replaceRegisterName,
+          replaceRegister.registerMode
+        );
+      }
       // To ensure that the put command knows this is
       // a linewise register insertion in visual mode of
       // characterwise, linewise
       let resultMode = deleteResult.currentMode;
       await deleteResult.setCurrentMode(oldMode);
+      vimState.recordedState.registerName = replaceRegisterName;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       await deleteResult.setCurrentMode(resultMode);
-      Register.putByKey(
-        deletedRegister.text,
-        vimState.recordedState.registerName,
-        deletedRegister.registerMode
-      );
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(
+          deletedRegister.text,
+          deletedRegisterName,
+          deletedRegister.registerMode
+        );
+      }
       return deleteResult;
     }
 
@@ -1672,7 +1694,7 @@ class CommandShowCommandLine extends BaseCommand {
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
 
     // Reset history navigation index
-    commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
 
     return vimState;
   }

@@ -366,30 +366,26 @@ export class Remapper implements IRemapper {
   }
 }
 
+function keyBindingsConfigKey(mode: string, recursive: boolean): string {
+  return `${mode}ModeKeyBindings${recursive ? '' : 'NonRecursive'}Map`;
+}
+
 class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
-    super(
-      'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [Mode.Insert, Mode.Replace],
-      recursive
-    );
+    super(keyBindingsConfigKey('insert', recursive), [Mode.Insert, Mode.Replace], recursive);
   }
 }
 
 class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
-    super(
-      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
-      [Mode.Normal],
-      recursive
-    );
+    super(keyBindingsConfigKey('normal', recursive), [Mode.Normal], recursive);
   }
 }
 
 class VisualModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
+      keyBindingsConfigKey('visual', recursive),
       [Mode.Visual, Mode.VisualLine, Mode.VisualBlock],
       recursive
     );
@@ -399,7 +395,7 @@ class VisualModeRemapper extends Remapper {
 class CommandLineModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'commandLineModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
+      keyBindingsConfigKey('commandLine', recursive),
       [Mode.CommandlineInProgress, Mode.SearchInProgressMode],
       recursive
     );

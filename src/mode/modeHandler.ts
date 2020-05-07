@@ -976,7 +976,8 @@ export class ModeHandler implements vscode.Disposable {
 
             if (!nextMatch) {
               throw VimError.fromCode(
-                transformation.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop
+                transformation.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop,
+                searchState.searchString
               );
             }
 

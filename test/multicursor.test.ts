@@ -24,7 +24,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+down>']);
     }
 
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '3', '3', '<Esc>']);
     assertEqualLines(['33', '33']);
   });
@@ -40,7 +40,7 @@ suite('Multicursor', () => {
       await modeHandler.handleMultipleKeyEvents(['<C-alt+up>', '<C-alt+up>']);
     }
 
-    assert.strictEqual(modeHandler.vimState.cursors.length, 3, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 3, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
     assertEqualLines(['44', '44', '44']);
   });
@@ -50,14 +50,9 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', 'k', '0']);
     assertEqualLines(['foo dont delete', 'bar', 'dont foo']);
 
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
-    }
+    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['v', 'i', 'w', 'd']);
     assertEqualLines([' dont delete', 'bar', 'dont ']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
@@ -70,14 +65,9 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
     assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
 
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
-    }
+    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['v', 'i', 'b', 'd']);
     assertEqualLines(['[() asd ]', '[(bar) asd ]', '[() asd ]']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
@@ -90,14 +80,9 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
     assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
 
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
-    }
+    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['v', 'i', '[', 'd']);
     assertEqualLines(['[]', '[(bar) asd ]', '[]']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
@@ -110,14 +95,9 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', '0', 'W']);
     assertEqualLines(['<div> foo bar</div> asd', '<div>foo asd</div>']);
 
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-d>', '<D-d>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-d>', '<C-d>']);
-    }
+    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'h']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor succesfully created.');
+    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
     await modeHandler.handleMultipleKeyEvents(['v', 'i', 't', 'd']);
     assertEqualLines(['<div></div> asd', '<div></div>']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
