@@ -389,12 +389,10 @@ export class ModeHandler implements vscode.Disposable {
           actionToRecord = undefined;
         } else {
           // Push document content change to the stack
-          lastAction.contentChanges = lastAction.contentChanges.concat(
-            vimState.historyTracker.currentContentChanges.map((diff) => ({
-              textDiff: diff,
-              positionDiff: new PositionDiff(),
-            }))
-          );
+          lastAction.contentChanges = [
+            ...lastAction.contentChanges,
+            ...vimState.historyTracker.currentContentChanges,
+          ];
           vimState.historyTracker.currentContentChanges = [];
           recordedState.actionsRun.push(action);
         }
