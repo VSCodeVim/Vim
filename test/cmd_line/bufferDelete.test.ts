@@ -21,7 +21,7 @@ suite('Buffer delete', () => {
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
       await commandLine.Run(cmd, modeHandler.vimState);
-      await t.WaitForEditorsToClose(1);
+      await t.WaitForEditorsToClose();
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
     });
