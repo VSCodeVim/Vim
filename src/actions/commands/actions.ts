@@ -111,8 +111,9 @@ export class DocumentContentChangeAction extends BaseAction {
     if (replaceRange) {
       const lastChange = this.contentChanges[this.contentChanges.length - 1];
 
-      vimState.cursorStartPosition = replaceRange.start.advancePositionByText(lastChange.text);
-      vimState.cursorStopPosition = replaceRange.stop.advancePositionByText(lastChange.text);
+      vimState.cursorStartPosition = vimState.cursorStopPosition = replaceRange.start.advancePositionByText(
+        lastChange.text
+      );
     }
 
     await vimState.setCurrentMode(Mode.Insert);
