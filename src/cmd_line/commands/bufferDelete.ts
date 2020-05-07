@@ -25,7 +25,9 @@ export class BufferDeleteCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-    const previousEditorPath = vscode.window.activeTextEditor!.document.uri.fsPath;
+    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
+      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+    }
 
     if (this.arguments.tabPosition !== undefined) {
       try {
@@ -33,13 +35,8 @@ export class BufferDeleteCommand extends node.CommandBase {
           `workbench.action.openEditorAtIndex${this.arguments.tabPosition}`
         );
       } catch (e) {
-        throw error.VimError.fromCode(error.ErrorCode.E516);
+        throw error.VimError.fromCode(error.ErrorCode.NoBuffersDeleted);
       }
-    }
-
-    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
-      await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(previousEditorPath));
-      throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');

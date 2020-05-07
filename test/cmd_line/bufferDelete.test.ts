@@ -6,22 +6,22 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
-import { ErrorCode, ErrorMessage } from '../../src/error';
+import * as error from '../../src/error';
 
 suite('Buffer delete', () => {
   let modeHandler: ModeHandler;
 
-  suiteSetup(async () => {
+  setup(async () => {
     await t.setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
   });
 
-  suiteTeardown(t.cleanUpWorkspace);
+  teardown(t.cleanUpWorkspace);
 
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
-    test(`:${cmd} deletes the current buffer`, async () => {
+    test(`${cmd} deletes the current buffer`, async () => {
       await commandLine.Run(cmd, modeHandler.vimState);
-      await t.WaitForEditorsToClose();
+      await t.WaitForEditorsToClose(1);
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
     });
@@ -29,10 +29,11 @@ suite('Buffer delete', () => {
 
   test('bd does not delete buffer when there are unsaved changes', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
-
-    await commandLine.Run('bd', modeHandler.vimState);
-
-    assert.fail(ErrorMessage[ErrorCode.E37]);
+    try {
+      await commandLine.Run('bd', modeHandler.vimState);
+    } catch (e) {
+      assert.equal(e.message, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
+    }
   });
 
   test('bd! deletes the current buffer regardless of unsaved changes', async () => {

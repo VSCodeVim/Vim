@@ -234,7 +234,8 @@ suite('surround plugin', () => {
   });
 
   newTest({
-    title: 'performing surround after cancelling surround action with <Esc> does not move the cursor',
+    title:
+      'performing surround after cancelling surround action with <Esc> does not move the cursor',
     start: ['foo b|ar'],
     keysPressed: 'ys<Esc>ys',
     end: ['foo b|ar'],
