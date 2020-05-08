@@ -89,7 +89,7 @@ export class Remapper implements IRemapper {
     const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
     if (keys[keys.length - 1] === '<BufferedKeys>') {
-      // Timeout finished. Don't let an ambiguous remap start another timeout again
+      // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
       keys = keys.slice(0, keys.length - 1);
       allowBufferingKeys = false;
     }
@@ -146,12 +146,6 @@ export class Remapper implements IRemapper {
           );
           if (possibleBrokenRemap) {
             remapping = possibleBrokenRemap;
-            if (!allowBufferingKeys) {
-              // If the user already waited for the timeout to finish, prevent the
-              // remapping from waiting for the timeout again by sending the
-              // '<BufferedKeys>' key at the end of 'after'.
-              remapping.after?.push('<BufferedKeys>');
-            }
             isPotentialRemap = false;
             this._isPotentialRemap = false;
             remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length); // includes the '<BufferedKeys>' key
@@ -239,6 +233,17 @@ export class Remapper implements IRemapper {
     }
 
     if (remapping) {
+      if (!allowBufferingKeys) {
+        // If the user already waited for the timeout to finish, prevent the
+        // remapping from waiting for the timeout again by making a clone of
+        // remapping and change 'after' to send the '<BufferedKeys>' key at
+        // the end.
+        let newRemapping = { ...remapping };
+        newRemapping.after = remapping.after?.slice(0);
+        newRemapping.after?.push('<BufferedKeys>');
+        remapping = newRemapping;
+      }
+
       this._logger.debug(
         `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}`
       );
