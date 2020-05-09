@@ -2307,7 +2307,7 @@ async function selectLastSearchWord(
 
   if (!result.match) {
     // Try to search for the next word
-    result = newSearchState.getNextSearchMatchRange(vimState.cursorStopPosition, 1);
+    result = newSearchState.getNextSearchMatchRange(vimState.cursorStopPosition);
     if (!result?.match) {
       return vimState; // no match...
     }
