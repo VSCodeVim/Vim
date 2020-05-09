@@ -418,7 +418,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+    const prevMatch = searchState.getNextSearchMatchPosition(position, SearchDirection.Backward);
 
     if (!prevMatch) {
       StatusBar.displayError(
