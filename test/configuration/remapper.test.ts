@@ -522,6 +522,241 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['u']);
     assertEqualLines(['foo']);
   });
+
+  test('ambiguous and potential remaps and timeouts', async () => {
+    // setup
+    await setupWithBindings({
+      normalModeKeyBindings: [
+        {
+          before: ['w', 'w'],
+          after: ['d', 'w'],
+        },
+        {
+          before: ['w', 'w', 'w', 'w'],
+          after: ['d', 'd'],
+        },
+        {
+          before: ['b', 'b'],
+          after: ['d', 'b'],
+        },
+      ],
+    });
+
+    // Offset because the timeout might not finish exactly on time.
+    const timeoutOffset = 100;
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      'foo',
+      '<space>',
+      'bar',
+      '<space>',
+      'biz',
+      '<Esc>',
+      '0',
+    ]);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assertEqualLines(['foo bar biz']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      0,
+      'Cursor is not on the right position, should be at the start of line'
+    );
+
+    // act and assert
+
+    // check that 'ww' -> 'dw' waits for timeout to finish and timeout isn't run twice
+    let result1 = await new Promise((r1Resolve, r1Reject) => {
+      let p1 = new Promise((p1Resolve, p1Reject) => {
+        setTimeout(() => {
+          // Before the timeout finishes it shouldn't have changed anything yet,
+          // because it is still waiting for a key or timeout to finish.
+          assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+          assertEqualLines(['foo bar biz']);
+          p1Resolve('Half Timeout Finished');
+        }, Configuration.prototype.timeout / 2);
+      });
+      let p2 = new Promise((p2Resolve, p2Reject) => {
+        setTimeout(() => {
+          // After the timeout finishes (plus an offset to be sure it finished)
+          // it should have handled the remapping, if it wrongly ran the timeout
+          // twice this should fail too.
+          assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+          assertEqualLines(['bar biz']);
+          p2Resolve('Timeout plus offset Finished');
+        }, Configuration.prototype.timeout + timeoutOffset);
+      });
+      let handleKeysPromise = modeHandler.handleMultipleKeyEvents(['w', 'w']);
+      Promise.all([p1, p2, handleKeysPromise]).then((results) => {
+        assert.strictEqual(results[0], 'Half Timeout Finished');
+        assert.strictEqual(results[1], 'Timeout plus offset Finished');
+        r1Resolve('ww -> dw waits for timeout to finish');
+      });
+    });
+
+    assert.strictEqual(result1, 'ww -> dw waits for timeout to finish');
+
+    // check that 'www' -> 'dw' and then 'w' waits for timeout to finish
+    let result2 = await new Promise((r2Resolve, r2Reject) => {
+      let p1 = new Promise((p1Resolve, p1Reject) => {
+        setTimeout(() => {
+          // Before the timeout finishes it shouldn't have changed anything yet,
+          // because it is still waiting for a key or timeout to finish.
+          assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+          assertEqualLines(['bar biz']);
+          assert.strictEqual(
+            modeHandler.vimState.cursorStopPosition.character,
+            0,
+            'Cursor is not on the right position, should be at the start of line'
+          );
+          p1Resolve('Half Timeout Finished');
+        }, Configuration.prototype.timeout / 2);
+      });
+      let p2 = new Promise((p2Resolve, p2Reject) => {
+        setTimeout(() => {
+          // After the timeout finishes (plus an offset to be sure it finished)
+          // it should have handled the remapping, if it wrongly ran the timeout
+          // twice this should fail too.
+          assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+          assertEqualLines(['biz']);
+          assert.strictEqual(
+            modeHandler.vimState.cursorStopPosition.character,
+            2,
+            'Cursor is not on the right position, should be at the end of line'
+          );
+          p2Resolve('Timeout plus offset Finished');
+        }, Configuration.prototype.timeout + timeoutOffset);
+      });
+      let handleKeysPromise = modeHandler.handleMultipleKeyEvents(['w', 'w', 'w']);
+      Promise.all([p1, p2, handleKeysPromise]).then((results) => {
+        assert.strictEqual(results[0], 'Half Timeout Finished');
+        assert.strictEqual(results[1], 'Timeout plus offset Finished');
+        r2Resolve('www -> [dw, w] waits for timeout to finish');
+      });
+    });
+
+    assert.strictEqual(result2, 'www -> [dw, w] waits for timeout to finish');
+
+    // add new line
+    await modeHandler.handleMultipleKeyEvents(['a', '\n', 'foo', '<Esc>']);
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // check that 'wwww' -> 'dd' doesn't wait for timeout
+    let result3 = await new Promise((r3Resolve, r3Reject) => {
+      const start = Number(new Date());
+
+      modeHandler.handleMultipleKeyEvents(['w', 'w', 'w', 'w']).then(() => {
+        const now = Number(new Date());
+        const elapsed = now - start;
+
+        assertEqualLines(['biz']);
+        assert.strictEqual(
+          modeHandler.vimState.cursorStopPosition.character,
+          0,
+          'Cursor is not on the right position, shoul be at the start of line'
+        );
+        assert.strictEqual(
+          modeHandler.vimState.cursorStopPosition.line,
+          0,
+          'Cursor is not on the right position, should be on first line'
+        );
+
+        // We check if the elapsed time is less than half the timeout instead of
+        // just a few miliseconds to prevent any performance issue marking the
+        // test as failed when it would've succeeded. If it is less than half the
+        // timeout we can be sure the setTimeout was never ran.
+        assert.strictEqual(elapsed < Configuration.prototype.timeout / 2, true);
+        r3Resolve("wwww -> dd doesn't wait for timeout to finish");
+      });
+    });
+
+    assert.strictEqual(result3, "wwww -> dd doesn't wait for timeout to finish");
+
+    // add new line again
+    await modeHandler.handleMultipleKeyEvents(['a', '\n', 'foo', '<Esc>']);
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // check 'bb' -> 'dd' sending each 'b' one by one checking between them to see
+    // that the remapping hasn't been handled yet and that the whole process
+    // doesn't take the timeout to finish
+
+    const startTime = Number(new Date());
+
+    // send first 'b'
+    await modeHandler.handleKeyEvent('b');
+
+    // should be the same
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // wait for 500 miliseconds (half of timeout) to simulate the time the user takes
+    // between presses. Not using a fixed value here in case the default configuration
+    // gets changed to use a lower value for timeout.
+    await new Promise((wResolve, wReject) => {
+      setTimeout(() => {
+        wResolve(true);
+      }, Configuration.prototype.timeout / 2);
+    });
+
+    // send second 'b'
+    await modeHandler.handleKeyEvent('b');
+
+    // check result and time elapsed
+    const elapsedTime = Number(new Date()) - startTime;
+
+    assertEqualLines(['biz']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      0,
+      'Cursor is not on the right position, shoul be at the start of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      0,
+      'Cursor is not on the right position, should be on first line'
+    );
+
+    // We check if the elapsedTime is less than the timeout minus an offset just
+    // to be sure that some performance issue doesn't make the test fail when it
+    // would succeed but this might not be foolproof, since we are dealing with
+    // times here.
+    //
+    // Note: I didn't want to use a Promise here again like previously, because I
+    // wanted to have both methods of testing (with and without promises) and this
+    // method should simulate better the real use from the user.
+    assert.strictEqual(elapsedTime < Configuration.prototype.timeout - timeoutOffset, true);
+  });
 });
 
 /* tslint:enable:no-string-literal */
