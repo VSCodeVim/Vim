@@ -559,7 +559,7 @@ suite('Remapper', () => {
     // act and assert
 
     // check that 'ww' -> 'dw' waits for timeout to finish and timeout isn't run twice
-    let result1 = await new Promise((r1Resolve, r1Reject) => {
+    let result1 = await new Promise(async (r1Resolve, r1Reject) => {
       let p1 = new Promise((p1Resolve, p1Reject) => {
         setTimeout(() => {
           // Before the timeout finishes it shouldn't have changed anything yet,
@@ -580,7 +580,7 @@ suite('Remapper', () => {
         }, Configuration.prototype.timeout + timeoutOffset);
       });
       let handleKeysPromise = modeHandler.handleMultipleKeyEvents(['w', 'w']);
-      Promise.all([p1, p2, handleKeysPromise]).then((results) => {
+      await Promise.all([p1, p2, handleKeysPromise]).then((results) => {
         assert.strictEqual(results[0], 'Half Timeout Finished');
         assert.strictEqual(results[1], 'Timeout plus offset Finished');
         r1Resolve('ww -> dw waits for timeout to finish');
@@ -590,7 +590,7 @@ suite('Remapper', () => {
     assert.strictEqual(result1, 'ww -> dw waits for timeout to finish');
 
     // check that 'www' -> 'dw' and then 'w' waits for timeout to finish
-    let result2 = await new Promise((r2Resolve, r2Reject) => {
+    let result2 = await new Promise(async (r2Resolve, r2Reject) => {
       let p1 = new Promise((p1Resolve, p1Reject) => {
         setTimeout(() => {
           // Before the timeout finishes it shouldn't have changed anything yet,
@@ -621,7 +621,7 @@ suite('Remapper', () => {
         }, Configuration.prototype.timeout + timeoutOffset);
       });
       let handleKeysPromise = modeHandler.handleMultipleKeyEvents(['w', 'w', 'w']);
-      Promise.all([p1, p2, handleKeysPromise]).then((results) => {
+      await Promise.all([p1, p2, handleKeysPromise]).then((results) => {
         assert.strictEqual(results[0], 'Half Timeout Finished');
         assert.strictEqual(results[1], 'Timeout plus offset Finished');
         r2Resolve('www -> [dw, w] waits for timeout to finish');
@@ -645,10 +645,10 @@ suite('Remapper', () => {
     );
 
     // check that 'wwww' -> 'dd' doesn't wait for timeout
-    let result3 = await new Promise((r3Resolve, r3Reject) => {
+    let result3 = await new Promise(async (r3Resolve, r3Reject) => {
       const start = Number(new Date());
 
-      modeHandler.handleMultipleKeyEvents(['w', 'w', 'w', 'w']).then(() => {
+      await modeHandler.handleMultipleKeyEvents(['w', 'w', 'w', 'w']).then(() => {
         const now = Number(new Date());
         const elapsed = now - start;
 
