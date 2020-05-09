@@ -543,7 +543,7 @@ suite('Remapper', () => {
     });
 
     // Offset because the timeout might not finish exactly on time.
-    const timeoutOffset = 100;
+    const timeoutOffset = 250;
 
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
