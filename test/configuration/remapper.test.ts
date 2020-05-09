@@ -547,16 +547,7 @@ suite('Remapper', () => {
 
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'foo',
-      '<space>',
-      'bar',
-      '<space>',
-      'biz',
-      '<Esc>',
-      '0',
-    ]);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', ' ', 'bar', ' ', 'biz', '<Esc>', '0']);
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     assertEqualLines(['foo bar biz']);
     assert.strictEqual(
