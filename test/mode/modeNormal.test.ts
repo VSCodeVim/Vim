@@ -2024,6 +2024,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can <C-a> on word with zero in front of it, without removed zero',
+    start: ['|A01'],
+    keysPressed: '<C-a>',
+    end: ['A0|2'],
+  });
+
+  newTest({
     title: 'can do Y',
     start: ['|blah blah'],
     keysPressed: 'Yp',
