@@ -56,7 +56,7 @@ export class NumericString {
 
       let numLength = String(newNum).length;
       if (newNum[0] !== '0') {
-        numLength--;
+        numLength = 0;
       }
 
       return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix, numLength);
