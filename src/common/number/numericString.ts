@@ -3,6 +3,7 @@ export class NumericString {
   value: number;
   prefix: string;
   suffix: string;
+  number_length: number;
 
   private static matchings: { regex: RegExp; base: number; prefix: string }[] = [
     { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: '0' },
@@ -53,17 +54,30 @@ export class NumericString {
         newNum = newNum.slice(newPrefix.length, newNum.length - newSuffix.length);
       }
 
-      return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix);
+      return new NumericString(
+        parseInt(newNum, base),
+        base,
+        newPrefix,
+        newSuffix,
+        String(newNum).length
+      );
     }
 
     return undefined;
   }
 
-  private constructor(value: number, radix: number, prefix: string, suffix: string) {
+  private constructor(
+    value: number,
+    radix: number,
+    prefix: string,
+    suffix: string,
+    number_length: number
+  ) {
     this.value = value;
     this.radix = radix;
     this.prefix = prefix;
     this.suffix = suffix;
+    this.number_length = number_length || String(value).length;
   }
 
   public toString(): string {
@@ -74,6 +88,8 @@ export class NumericString {
       }
     }
 
-    return this.prefix + this.value.toString(this.radix) + this.suffix;
+    return (
+      this.prefix + this.value.toString(this.radix).padStart(this.number_length, '0') + this.suffix
+    );
   }
 }
