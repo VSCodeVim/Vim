@@ -17,7 +17,7 @@ import { Mode, visualBlockGetTopLeftPosition, isVisualMode } from './../../mode/
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
-import { isTextTransformation } from './../../transformations/transformations';
+import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
@@ -29,100 +29,78 @@ import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 
 export class DocumentContentChangeAction extends BaseAction {
-  contentChanges: {
-    positionDiff: PositionDiff;
-    textDiff: vscode.TextDocumentContentChangeEvent;
-  }[] = [];
+  private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+
+  public addChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
+    this.contentChanges = [...this.contentChanges, ...changes];
+    this.compressChanges();
+  }
+
+  public getTransformation(positionDiff: PositionDiff): Transformation {
+    return {
+      type: 'contentChange',
+      changes: this.contentChanges,
+      diff: positionDiff,
+    };
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
       return vimState;
     }
 
-    let originalLeftBoundary: vscode.Position;
+    const firstTextDiff = this.contentChanges[0];
+    let originalLeftBoundary =
+      firstTextDiff.text === '' && firstTextDiff.rangeLength === 1
+        ? firstTextDiff.range.end
+        : firstTextDiff.range.start;
 
-    if (
-      this.contentChanges[0].textDiff.text === '' &&
-      this.contentChanges[0].textDiff.rangeLength === 1
-    ) {
-      originalLeftBoundary = this.contentChanges[0].textDiff.range.end;
-    } else {
-      originalLeftBoundary = this.contentChanges[0].textDiff.range.start;
-    }
-
-    let rightBoundary: vscode.Position = position;
-    let newStart: vscode.Position | undefined;
-    let newEnd: vscode.Position | undefined;
-
-    for (const contentChange of this.contentChanges) {
-      const textDiff = contentChange.textDiff;
-
-      if (textDiff.range.start.line < originalLeftBoundary.line) {
+    let rightBoundary: Position = position;
+    let replaceRange: Range | undefined;
+    for (const change of this.contentChanges) {
+      if (change.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
-        let linesAffected = textDiff.range.end.line - textDiff.range.start.line + 1;
-        let resultLines = textDiff.text.split('\n').length;
+        const linesAffected = change.range.end.line - change.range.start.line + 1;
+        const resultLines = change.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
           originalLeftBoundary.line + resultLines - linesAffected
         );
         continue;
       }
 
-      if (textDiff.range.start.line === originalLeftBoundary.line) {
-        newStart = position.with(
-          position.line,
-          position.character + textDiff.range.start.character - originalLeftBoundary.character
-        );
+      // Translates diffPos from a position relative to originalLeftBoundary to one relative to position
+      const translate = (diffPos: vscode.Position): Position => {
+        const lineOffset = diffPos.line - originalLeftBoundary.line;
+        const char =
+          lineOffset === 0
+            ? position.character + diffPos.character - originalLeftBoundary.character
+            : diffPos.character;
+        return new Position(position.line + lineOffset, char);
+      };
 
-        if (textDiff.range.end.line === originalLeftBoundary.line) {
-          newEnd = position.with(
-            position.line,
-            position.character + textDiff.range.end.character - originalLeftBoundary.character
-          );
-        } else {
-          newEnd = position.with(
-            position.line + textDiff.range.end.line - originalLeftBoundary.line,
-            textDiff.range.end.character
-          );
-        }
-      } else {
-        newStart = position.with(
-          position.line + textDiff.range.start.line - originalLeftBoundary.line,
-          textDiff.range.start.character
-        );
-        newEnd = position.with(
-          position.line + textDiff.range.end.line - originalLeftBoundary.line,
-          textDiff.range.end.character
-        );
-      }
+      replaceRange = new Range(translate(change.range.start), translate(change.range.end));
 
-      if (newStart.isAfter(rightBoundary)) {
+      if (replaceRange.start.isAfter(rightBoundary)) {
         // This change should be ignored as it's out of boundary
         continue;
       }
 
       // Calculate new right boundary
-      let newLineCount = textDiff.text.split('\n').length;
-      let newRightBoundary: vscode.Position;
+      const textDiffLines = change.text.split('\n');
+      const numLinesAdded = textDiffLines.length - 1;
+      const newRightBoundary =
+        numLinesAdded === 0
+          ? new Position(replaceRange.start.line, replaceRange.start.character + change.text.length)
+          : new Position(replaceRange.start.line + numLinesAdded, textDiffLines.pop()!.length);
 
-      if (newLineCount === 1) {
-        newRightBoundary = newStart.with(newStart.line, newStart.character + textDiff.text.length);
+      rightBoundary = Position.laterOf(rightBoundary, newRightBoundary);
+
+      vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
+
+      if (replaceRange.start.isEqual(replaceRange.stop)) {
+        await TextEditor.insert(change.text, Position.FromVSCodePosition(replaceRange.start));
       } else {
-        newRightBoundary = new vscode.Position(
-          newStart.line + newLineCount - 1,
-          textDiff.text.split('\n').pop()!.length
-        );
-      }
-
-      if (newRightBoundary.isAfter(rightBoundary)) {
-        rightBoundary = newRightBoundary;
-      }
-
-      vimState.editor.selection = new vscode.Selection(newStart, newEnd);
-
-      if (newStart.isEqual(newEnd)) {
-        await TextEditor.insert(textDiff.text, Position.FromVSCodePosition(newStart));
-      } else {
-        await TextEditor.replace(vimState.editor.selection, textDiff.text);
+        await TextEditor.replace(vimState.editor.selection, change.text);
       }
     }
 
@@ -130,19 +108,58 @@ export class DocumentContentChangeAction extends BaseAction {
      * We're making an assumption here that content changes are always in order, and I'm not sure
      * we're guaranteed that, but it seems to work well enough in practice.
      */
-    if (newStart && newEnd) {
-      const last = this.contentChanges[this.contentChanges.length - 1];
+    if (replaceRange) {
+      const lastChange = this.contentChanges[this.contentChanges.length - 1];
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart)
-        .advancePositionByText(last.textDiff.text)
-        .add(last.positionDiff);
-      vimState.cursorStopPosition = Position.FromVSCodePosition(newEnd)
-        .advancePositionByText(last.textDiff.text)
-        .add(last.positionDiff);
+      vimState.cursorStartPosition = vimState.cursorStopPosition = replaceRange.start.advancePositionByText(
+        lastChange.text
+      );
     }
 
     await vimState.setCurrentMode(Mode.Insert);
     return vimState;
+  }
+
+  private compressChanges(): void {
+    function merge(
+      first: vscode.TextDocumentContentChangeEvent,
+      second: vscode.TextDocumentContentChangeEvent
+    ): vscode.TextDocumentContentChangeEvent | undefined {
+      if (
+        first.rangeOffset + first.text.length !== second.rangeOffset ||
+        second.rangeLength !== 0
+      ) {
+        // TODO: We should be able to do better, but I'm not sure if this is actually relevant.
+        return undefined;
+      }
+
+      return {
+        text: first.text + second.text,
+        range: first.range,
+        rangeOffset: first.rangeOffset,
+        rangeLength: first.rangeLength,
+      };
+    }
+
+    let compressed: vscode.TextDocumentContentChangeEvent[] = [];
+    let prev: vscode.TextDocumentContentChangeEvent | undefined;
+    for (const change of this.contentChanges) {
+      if (prev === undefined) {
+        prev = change;
+      } else {
+        const merged = merge(prev, change);
+        if (merged) {
+          prev = merged;
+        } else {
+          compressed.push(prev);
+          prev = change;
+        }
+      }
+    }
+    if (prev !== undefined) {
+      compressed.push(prev);
+    }
+    this.contentChanges = compressed;
   }
 }
 
@@ -501,18 +518,20 @@ class CommandEsc extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode === Mode.Normal && !vimState.isMultiCursor) {
-      // If there's nothing to do on the vim side, we might as well call some
-      // of vscode's default "close notification" actions. I think we should
-      // just add to this list as needed.
-      await vscode.commands.executeCommand('closeReferenceSearchEditor');
-      await vscode.commands.executeCommand('closeMarkersNavigation');
+    if (vimState.currentMode === Mode.Normal) {
+      vimState.surround = undefined;
 
-      return vimState;
-    }
+      if (!vimState.isMultiCursor) {
+        // If there's nothing to do on the vim side, we might as well call some
+        // of vscode's default "close notification" actions. I think we should
+        // just add to this list as needed.
+        await vscode.commands.executeCommand('closeReferenceSearchEditor');
+        await vscode.commands.executeCommand('closeMarkersNavigation');
 
-    if (vimState.currentMode === Mode.Normal && vimState.isMultiCursor) {
-      vimState.isMultiCursor = false;
+        return vimState;
+      } else {
+        vimState.isMultiCursor = false;
+      }
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
@@ -1536,31 +1555,31 @@ export class PutCommandVisual extends BaseCommand {
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
+      const replaceRegisterName = vimState.recordedState.registerName;
+      const replaceRegister = await Register.getByKey(replaceRegisterName);
+      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         true
       );
-      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
-      Register.putByKey(
-        replaceRegister.text,
-        vimState.recordedState.registerName,
-        replaceRegister.registerMode
-      );
+      const deletedRegisterName = vimState.recordedState.registerName;
+      const deletedRegister = await Register.getByKey(deletedRegisterName);
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(replaceRegister.text, replaceRegisterName, replaceRegister.registerMode);
+      }
       // To ensure that the put command knows this is
       // a linewise register insertion in visual mode of
       // characterwise, linewise
       let resultMode = deleteResult.currentMode;
       await deleteResult.setCurrentMode(oldMode);
+      vimState.recordedState.registerName = replaceRegisterName;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       await deleteResult.setCurrentMode(resultMode);
-      Register.putByKey(
-        deletedRegister.text,
-        vimState.recordedState.registerName,
-        deletedRegister.registerMode
-      );
+      if (replaceRegisterName === deletedRegisterName) {
+        Register.putByKey(deletedRegister.text, deletedRegisterName, deletedRegister.registerMode);
+      }
       return deleteResult;
     }
 
@@ -2288,7 +2307,7 @@ async function selectLastSearchWord(
 
   if (!result.match) {
     // Try to search for the next word
-    result = newSearchState.getNextSearchMatchRange(vimState.cursorStopPosition, 1);
+    result = newSearchState.getNextSearchMatchRange(vimState.cursorStopPosition);
     if (!result?.match) {
       return vimState; // no match...
     }

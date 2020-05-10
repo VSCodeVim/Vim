@@ -422,7 +422,7 @@ class CommandEscInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = globalState.searchState!;
 
-    vimState.cursorStopPosition = searchState.searchCursorStartPosition;
+    vimState.cursorStopPosition = searchState.cursorStartPosition;
 
     const prevSearchList = globalState.searchStatePrevious;
     globalState.searchState = prevSearchList
