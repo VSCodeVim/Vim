@@ -3,7 +3,7 @@ export class NumericString {
   value: number;
   prefix: string;
   suffix: string;
-  number_length: number;
+  number_length?: number;
 
   private static matchings: { regex: RegExp; base: number; prefix: string }[] = [
     { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: '0' },
@@ -71,16 +71,17 @@ export class NumericString {
     radix: number,
     prefix: string,
     suffix: string,
-    number_length: number
+    number_length?: number
   ) {
     this.value = value;
     this.radix = radix;
     this.prefix = prefix;
     this.suffix = suffix;
-    this.number_length = number_length || String(value).length;
+    this.number_length = number_length;
   }
 
   public toString(): string {
+    let result: string | number;
     // Allow signed hex represented as twos complement
     if (this.radix === 16) {
       if (this.value < 0) {
@@ -88,8 +89,12 @@ export class NumericString {
       }
     }
 
-    return (
-      this.prefix + this.value.toString(this.radix).padStart(this.number_length, '0') + this.suffix
-    );
+    result = this.value.toString(this.radix);
+
+    if (this.radix === 10 && this.number_length) {
+      result = result.padStart(this.number_length, '0');
+    }
+
+    return this.prefix + result + this.suffix;
   }
 }
