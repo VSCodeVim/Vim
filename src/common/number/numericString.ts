@@ -54,13 +54,12 @@ export class NumericString {
         newNum = newNum.slice(newPrefix.length, newNum.length - newSuffix.length);
       }
 
-      return new NumericString(
-        parseInt(newNum, base),
-        base,
-        newPrefix,
-        newSuffix,
-        String(newNum).length
-      );
+      let numLength = String(newNum).length;
+      if (newNum[0] !== '0') {
+        numLength--;
+      }
+
+      return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix, numLength);
     }
 
     return undefined;
