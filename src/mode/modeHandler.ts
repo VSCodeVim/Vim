@@ -1147,6 +1147,8 @@ export class ModeHandler implements vscode.Disposable {
     for (let action of recordedMacro.actionsRun) {
       let originalLocation = Jump.fromStateNow(vimState);
 
+      vimState.cursorsInitialState = vimState.cursors;
+
       recordedState.actionsRun.push(action);
       vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
 
