@@ -85,19 +85,19 @@ suite('put cmd_line', () => {
     assertEqualLines(['123', 'abc', '456']);
   });
 
-  test('put leaves cursor on last line of pasted content', async () => {
-    Register.putByKey('abc\ndef');
+  test('put leaves cursor on last line, first non-whitespace character of pasted content', async () => {
+    Register.putByKey('abc\n    def');
     await modeHandler.handleMultipleKeyEvents(':put\n'.split(''));
-    assertEqualLines(['', 'abc', 'def']);
+    assertEqualLines(['', 'abc', '    def']);
     assert.equal(modeHandler.vimState.cursorStopPosition.line, 2);
-    assert.equal(modeHandler.vimState.cursorStopPosition.character, 0);
+    assert.equal(modeHandler.vimState.cursorStopPosition.character, 4);
   });
 
-  test('put! leaves cursor on last line of pasted content', async () => {
-    Register.putByKey('abc\ndef');
+  test('put! leaves cursor on last line, first non-whitespace character of pasted content', async () => {
+    Register.putByKey('abc\n    def');
     await modeHandler.handleMultipleKeyEvents(':put!\n'.split(''));
-    assertEqualLines(['abc', 'def', '']);
+    assertEqualLines(['abc', '    def', '']);
     assert.equal(modeHandler.vimState.cursorStopPosition.line, 1);
-    assert.equal(modeHandler.vimState.cursorStopPosition.character, 0);
+    assert.equal(modeHandler.vimState.cursorStopPosition.character, 4);
   });
 });

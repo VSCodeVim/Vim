@@ -1362,7 +1362,14 @@ export class PutCommand extends BaseCommand {
       const numNewline = [...text].filter((c) => c === '\n').length;
       diff = PositionDiff.newBOLDiff(-numNewline - (noNextLine ? 0 : 1));
     } else if (registerMode === RegisterMode.LineWise && options.forceCursorLastLine) {
-      // Move to cursor to last line of what you pasted
+      // Move to cursor to last line, first non-whitespace character of what you pasted
+      let lastLine = text.split('\n')[numNewlines];
+      const check = lastLine.match(/^\s*/);
+      let numWhitespace = 0;
+
+      if (check) {
+        numWhitespace = check[0].length;
+      }
       let lineDiff;
 
       if (options.after) {
@@ -1373,7 +1380,7 @@ export class PutCommand extends BaseCommand {
 
       diff = new PositionDiff({
         line: lineDiff,
-        character: 0,
+        character: numWhitespace,
         type: PositionDiffType.ExactCharacter,
       });
     } else if (registerMode === RegisterMode.LineWise) {
