@@ -609,16 +609,21 @@ export class HistoryTracker {
       this.currentContentChanges.length - n,
       this.currentContentChanges.length
     );
-    const firstRemovedChange = removedChanges[0];
 
     // Remove the characters from the editor.
-    await vscode.window.activeTextEditor?.edit((edit) =>
-      edit.delete(
-        new vscode.Range(
-          firstRemovedChange!.range.start,
-          firstRemovedChange!.range.end.translate(0, n)
+    for (const removedChange of removedChanges) {
+      await vscode.window.activeTextEditor?.edit((edit) =>
+        edit.delete(
+          new vscode.Range(removedChange!.range.start, removedChange!.range.end.translate(0, n))
         )
-      )
+      );
+    }
+
+    // Remove the previous deletions from currentContentChanges otherwise the DotCommand
+    // or a recorded macro will be deleting a character that wasn't typed.
+    this.currentContentChanges.splice(
+      this.currentContentChanges.length - removedChanges.length,
+      removedChanges.length
     );
 
     // We can't ignore the change, because that would mean that addChange() doesn't run.
