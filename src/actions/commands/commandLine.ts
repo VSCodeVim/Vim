@@ -319,6 +319,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
       globalState.addSearchStateToHistory(searchState);
+      globalState.hl = true;
 
       if (searchState.getMatchRanges().length === 0) {
         StatusBar.displayError(
@@ -353,7 +354,6 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
-      globalState.hl = true;
 
       reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
 
