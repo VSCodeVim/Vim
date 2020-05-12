@@ -2,6 +2,8 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { getTestingFunctions } from './testSimplifier';
+import { Configuration } from './testConfiguration';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
@@ -101,5 +103,30 @@ suite('Multicursor', () => {
     await modeHandler.handleMultipleKeyEvents(['v', 'i', 't', 'd']);
     assertEqualLines(['<div></div> asd', '<div></div>']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  });
+});
+
+suite('Multicursor with remaps', () => {
+  const { newTest, newTestOnly } = getTestingFunctions();
+
+  setup(async () => {
+    const configuration = new Configuration();
+    configuration.insertModeKeyBindings = [
+      {
+        before: ['j', 'j', 'k'],
+        after: ['<esc>'],
+      },
+    ];
+
+    await setupWorkspace(configuration);
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title: "Using 'jjk' mapped to '<Esc>' doesn't leave trailing characters",
+    start: ['o|ne', 'two'],
+    keysPressed: '<C-v>jAfoojjk<Esc>',
+    end: ['onfo|oe', 'twfooo'],
   });
 });
