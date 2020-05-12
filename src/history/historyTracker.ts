@@ -612,13 +612,16 @@ export class HistoryTracker {
 
     // Remove the characters from the editor in reverse order otherwise the characters
     // position would change.
-    for (const removedChange of removedChanges.reverse()) {
-      await vscode.window.activeTextEditor?.edit((edit) =>
+    await vscode.window.activeTextEditor?.edit((edit) => {
+      for (const removedChange of removedChanges.reverse()) {
         edit.delete(
-          new vscode.Range(removedChange!.range.start, removedChange!.range.end.translate(0, 1))
-        )
-      );
-    }
+          new vscode.Range(
+            removedChange.range.start,
+            removedChange.range.end.translate({ characterDelta: 1 })
+          )
+        );
+      }
+    });
 
     // Remove the previous deletions from currentContentChanges otherwise the DotCommand
     // or a recorded macro will be deleting a character that wasn't typed.
