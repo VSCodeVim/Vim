@@ -954,7 +954,7 @@ export class ModeHandler implements vscode.Disposable {
 
             vimState.cursorStopPosition = nextMatch.pos;
             this.updateView(this.vimState);
-            reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+            reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
           }
           break;
 
@@ -1351,7 +1351,7 @@ export class ModeHandler implements vscode.Disposable {
       ((configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
         (configuration.hlsearch && globalState.hl))
     ) {
-      searchRanges.push.apply(searchRanges, globalState.searchState.matchRanges);
+      searchRanges.push.apply(searchRanges, globalState.searchState.getMatchRanges());
 
       const nextMatch = globalState.searchState.getNextSearchMatchRange(
         vimState.cursorStopPosition

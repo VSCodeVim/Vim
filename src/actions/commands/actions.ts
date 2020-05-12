@@ -1014,7 +1014,7 @@ async function createSearchStateAndMoveToMatch(args: {
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, globalState.searchState.getMatchRanges().length, vimState);
   } else {
     StatusBar.displayError(
       vimState,
@@ -2323,7 +2323,7 @@ async function selectLastSearchWord(
     vimState.cursorStopPosition
   );
 
-  reportSearch(result.index, searchState.matchRanges.length, vimState);
+  reportSearch(result.index, searchState.getMatchRanges().length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 
