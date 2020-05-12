@@ -610,11 +610,12 @@ export class HistoryTracker {
       this.currentContentChanges.length
     );
 
-    // Remove the characters from the editor.
-    for (const removedChange of removedChanges) {
+    // Remove the characters from the editor in reverse order otherwise the characters
+    // position would change.
+    for (const removedChange of removedChanges.reverse()) {
       await vscode.window.activeTextEditor?.edit((edit) =>
         edit.delete(
-          new vscode.Range(removedChange!.range.start, removedChange!.range.end.translate(0, n))
+          new vscode.Range(removedChange!.range.start, removedChange!.range.end.translate(0, 1))
         )
       );
     }
