@@ -665,7 +665,6 @@ export class ModeHandler implements vscode.Disposable {
         mode: this.vimState.currentMode,
         start: this.vimState.cursorStartPosition,
         end: this.vimState.cursorStopPosition,
-        visualLineStartColumn: this.vimState.visualLineStartColumn,
       };
     }
 
@@ -1246,26 +1245,6 @@ export class ModeHandler implements vscode.Disposable {
             // Note that this collapses the selection onto one position
             selections.push(new vscode.Selection(stop, stop));
             break;
-        }
-      }
-
-      if (selectionMode === Mode.VisualLine) {
-        for (let i = 0; i < vimState.cursors.length; i++) {
-          // Maintain cursor position based on which direction the selection is going
-          const { start, stop } = vimState.cursors[i];
-          const selectionStart = Position.FromVSCodePosition(selections[i].start);
-          const selectionEnd = Position.FromVSCodePosition(selections[i].end);
-          if (start.line <= stop.line) {
-            vimState.cursors[i] = new Range(selectionStart, selectionEnd);
-          } else {
-            vimState.cursors[i] = new Range(selectionEnd, selectionStart);
-          }
-
-          // Adjust the selection so that active and anchor are correct; this
-          // makes relative line numbers display correctly
-          if (selectionStart.line <= selectionEnd.line && stop.line <= start.line) {
-            selections[i] = new vscode.Selection(selectionEnd, selectionStart);
-          }
         }
       }
 

@@ -85,11 +85,6 @@ export class VimState implements vscode.Disposable {
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
   /**
-   * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
-   */
-  public visualLineStartColumn: number | undefined = undefined;
-
-  /**
    * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
@@ -201,7 +196,6 @@ export class VimState implements vscode.Disposable {
         mode: Mode;
         start: Position;
         end: Position;
-        visualLineStartColumn: number | undefined;
       }
     | undefined = undefined;
 
@@ -226,10 +220,6 @@ export class VimState implements vscode.Disposable {
       this.returnToInsertAfterCommand = false;
     }
     this._currentMode = mode;
-
-    if (mode !== Mode.VisualLine) {
-      this.visualLineStartColumn = undefined;
-    }
 
     if (mode === Mode.SearchInProgressMode) {
       this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
