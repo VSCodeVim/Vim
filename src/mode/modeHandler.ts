@@ -5,14 +5,7 @@ import { BaseMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
-import {
-  Mode,
-  VSCodeVimCursorType,
-  isVisualMode,
-  getCursorStyle,
-  getCursorType,
-  isStatusBarMode,
-} from './mode';
+import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
@@ -1402,5 +1395,35 @@ export class ModeHandler implements vscode.Disposable {
 
   dispose() {
     this._disposables.map((d) => d.dispose());
+  }
+}
+
+function getCursorType(mode: Mode): VSCodeVimCursorType {
+  switch (mode) {
+    case Mode.Normal:
+      return VSCodeVimCursorType.Block;
+    case Mode.Insert:
+      return VSCodeVimCursorType.Native;
+    case Mode.Visual:
+      return VSCodeVimCursorType.TextDecoration;
+    case Mode.VisualBlock:
+      return VSCodeVimCursorType.TextDecoration;
+    case Mode.VisualLine:
+      return VSCodeVimCursorType.TextDecoration;
+    case Mode.SearchInProgressMode:
+      return getCursorType(globalState.searchState!.previousMode);
+    case Mode.CommandlineInProgress:
+      return getCursorType(commandLine.previousMode);
+    case Mode.Replace:
+      return VSCodeVimCursorType.Underline;
+    case Mode.EasyMotionMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.EasyMotionInputMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.SurroundInputMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.Disabled:
+    default:
+      return VSCodeVimCursorType.Line;
   }
 }
