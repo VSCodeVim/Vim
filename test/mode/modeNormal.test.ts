@@ -2253,6 +2253,42 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'yat yanks the correct tag when inside one',
+    start: ['<foo>', '  <b|ar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is on the opening angle bracket',
+    start: ['<foo>', '  |<bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is between the beginning of the line and the tag',
+    start: ['<foo>', ' | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title:
+      'dat deletes the outer tag when there are other characters (not just WS) before the opening tag',
+    start: ['<foo>', 'a | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
+  });
+
+  newTest({
+    title: 'dat deletes the outer tag when the cursor is after the inner tag',
+    start: ['<foo>', '  <bar>asd</bar> |', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
+  });
+
+  newTest({
     title: 'Respects indentation with cc',
     start: ['{', '  int| a;'],
     keysPressed: 'cc',

@@ -543,14 +543,6 @@ class CommandEsc extends BaseCommand {
       vimState.surround = undefined;
     }
 
-    if (vimState.currentMode === Mode.VisualLine) {
-      // TODO: need a visualLineStartColumn for each cursor
-      vimState.cursors = vimState.cursors.map((cursor: Range) => {
-        const pos = cursor.stop.withColumn(vimState.visualLineStartColumn!);
-        return new Range(pos, pos);
-      });
-    }
-
     await vimState.setCurrentMode(Mode.Normal);
 
     if (!vimState.isMultiCursor) {
@@ -1014,7 +1006,7 @@ async function createSearchStateAndMoveToMatch(args: {
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    reportSearch(nextMatch.index, globalState.searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, globalState.searchState.getMatchRanges().length, vimState);
   } else {
     StatusBar.displayError(
       vimState,
@@ -1275,8 +1267,8 @@ export class PutCommand extends BaseCommand {
     let textToAdd: string;
     let whereToAddText: Position;
 
-    const noPrevLine = vimState.cursorStartPosition.isAtDocumentBegin();
-    const noNextLine = vimState.cursorStopPosition.isAtDocumentEnd();
+    const noPrevLine = vimState.cursorStartPosition.line === 0;
+    const noNextLine = vimState.cursorStopPosition.line === TextEditor.getLineCount() - 1;
 
     if (registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
@@ -1344,7 +1336,6 @@ export class PutCommand extends BaseCommand {
         mode: vimState.currentMode,
         start: whereToAddText,
         end: whereToAddText.advancePositionByText(textToEnd),
-        visualLineStartColumn: vimState.visualLineStartColumn,
       };
     }
 
@@ -1355,12 +1346,18 @@ export class PutCommand extends BaseCommand {
     const currentLineLength = TextEditor.getLineAt(position).text.length;
 
     let diff = new PositionDiff();
-    if (
-      vimState.currentMode === Mode.VisualLine &&
-      registerMode === RegisterMode.LineWise
-    ) {
-      const numNewline = [...text].filter((c) => c === '\n').length;
-      diff = PositionDiff.newBOLDiff(-numNewline - (noNextLine ? 0 : 1));
+    if (vimState.currentMode === Mode.VisualLine) {
+      const lines = text.split('\n');
+      const whitespaceOnFirstLine = /^\s*/.exec(lines[0])?.[0].length ?? 0;
+      let lineDiff = lines.length - 1;
+      if (register.registerMode === RegisterMode.LineWise && !noNextLine) {
+        lineDiff++;
+      }
+      diff = {
+        type: PositionDiffType.ExactCharacter,
+        line: -lineDiff,
+        character: whitespaceOnFirstLine,
+      };
     } else if (registerMode === RegisterMode.LineWise && options.forceCursorLastLine) {
       // Move to cursor to last line, first non-whitespace character of what you pasted
       let lastLine = text.split('\n')[numNewlines];
@@ -1590,12 +1587,11 @@ export class PutCommandVisual extends BaseCommand {
     vimState: VimState,
     after: boolean = false
   ): Promise<VimState> {
-    let start = vimState.cursorStartPosition;
-    let end = vimState.cursorStopPosition;
-    const isLineWise = vimState.currentMode === Mode.VisualLine;
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
+    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    if (vimState.currentMode === Mode.VisualLine) {
+      [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
+    const isLineWise = vimState.currentMode === Mode.VisualLine;
 
     // If the to-be-inserted text is linewise, we have separate logic:
     // first delete the selection, then insert
@@ -2308,7 +2304,6 @@ class CommandReselectVisual extends BaseCommand {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
-        vimState.visualLineStartColumn = vimState.lastVisualSelection.visualLineStartColumn;
       }
     }
     return vimState;
@@ -2370,7 +2365,7 @@ async function selectLastSearchWord(
     vimState.cursorStopPosition
   );
 
-  reportSearch(result.index, searchState.matchRanges.length, vimState);
+  reportSearch(result.index, searchState.getMatchRanges().length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 
@@ -2427,7 +2422,6 @@ class CommandVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.visualLineStartColumn = position.character;
     await vimState.setCurrentMode(Mode.VisualLine);
 
     if (vimState.recordedState.count > 1) {
@@ -2446,12 +2440,6 @@ class CommandExitVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.visualLineStartColumn !== undefined) {
-      vimState.cursorStopPosition = vimState.cursorStopPosition.withColumn(
-        vimState.visualLineStartColumn
-      );
-    }
-
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
@@ -2465,19 +2453,15 @@ class CommandOpenFile extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let fullFilePath: string = '';
-
+    let fullFilePath: string;
     if (vimState.currentMode === Mode.Visual) {
-      const selection = TextEditor.getSelection();
-      const end = new Position(selection.end.line, selection.end.character + 1);
-      fullFilePath = TextEditor.getText(selection.with(selection.start, end));
+      fullFilePath = TextEditor.getText(TextEditor.getSelection());
     } else {
-      const start = position.getFilePathLeft(true);
-      const end = position.getFilePathRight();
-      const range = new vscode.Range(start, end);
+      const range = new vscode.Range(position.getFilePathLeft(true), position.getFilePathRight());
 
       fullFilePath = TextEditor.getText(range).trim();
     }
+
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
@@ -3482,11 +3466,12 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     }
 
     let visualSelectionOffset = 1;
-    let start = vimState.cursorStartPosition;
-    let end = vimState.cursorStopPosition;
 
     // If selection is reversed, reorganize it so that the text replace logic always works
-    [start, end] = Position.sorted(start, end);
+    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    if (vimState.currentMode === Mode.VisualLine) {
+      [start, end] = [start.getLineBegin(), end.getLineEnd()];
+    }
 
     // Limit to not replace EOL
     const textLength = TextEditor.getLineAt(end).text.length;

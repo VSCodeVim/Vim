@@ -44,6 +44,8 @@ import {
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
+import { ModeHandlerMap } from './modeHandlerMap';
+import { EditorIdentity } from '../editorIdentity';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -663,7 +665,6 @@ export class ModeHandler implements vscode.Disposable {
         mode: this.vimState.currentMode,
         start: this.vimState.cursorStartPosition,
         end: this.vimState.cursorStopPosition,
-        visualLineStartColumn: this.vimState.visualLineStartColumn,
       };
     }
 
@@ -954,7 +955,7 @@ export class ModeHandler implements vscode.Disposable {
 
             vimState.cursorStopPosition = nextMatch.pos;
             this.updateView(this.vimState);
-            reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+            reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
           }
           break;
 
@@ -1147,6 +1148,8 @@ export class ModeHandler implements vscode.Disposable {
     for (let action of recordedMacro.actionsRun) {
       let originalLocation = Jump.fromStateNow(vimState);
 
+      vimState.cursorsInitialState = vimState.cursors;
+
       recordedState.actionsRun.push(action);
       vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
 
@@ -1172,6 +1175,14 @@ export class ModeHandler implements vscode.Disposable {
     vimState.isRunningDotCommand = false;
     vimState.cursorsInitialState = vimState.cursors;
     return vimState;
+  }
+
+  public updateSearchHighlights(showHighlights: boolean) {
+    let searchRanges: vscode.Range[] = [];
+    if (showHighlights) {
+      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor.document) ?? [];
+    }
+    this.vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
   }
 
   public async updateView(
@@ -1234,26 +1245,6 @@ export class ModeHandler implements vscode.Disposable {
             // Note that this collapses the selection onto one position
             selections.push(new vscode.Selection(stop, stop));
             break;
-        }
-      }
-
-      if (selectionMode === Mode.VisualLine) {
-        for (let i = 0; i < vimState.cursors.length; i++) {
-          // Maintain cursor position based on which direction the selection is going
-          const { start, stop } = vimState.cursors[i];
-          const selectionStart = Position.FromVSCodePosition(selections[i].start);
-          const selectionEnd = Position.FromVSCodePosition(selections[i].end);
-          if (start.line <= stop.line) {
-            vimState.cursors[i] = new Range(selectionStart, selectionEnd);
-          } else {
-            vimState.cursors[i] = new Range(selectionEnd, selectionStart);
-          }
-
-          // Adjust the selection so that active and anchor are correct; this
-          // makes relative line numbers display correctly
-          if (selectionStart.line <= selectionEnd.line && stop.line <= start.line) {
-            selections[i] = new vscode.Selection(selectionEnd, selectionStart);
-          }
         }
       }
 
@@ -1342,28 +1333,12 @@ export class ModeHandler implements vscode.Disposable {
 
     // TODO: draw marks (#3963)
 
-    // Draw search highlight
-    let searchRanges: vscode.Range[] = [];
-    if (
-      globalState.searchState &&
-      ((configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
-        (configuration.hlsearch && globalState.hl))
-    ) {
-      searchRanges.push.apply(searchRanges, globalState.searchState.matchRanges);
-
-      const nextMatch = globalState.searchState.getNextSearchMatchRange(
-        vimState.cursorStopPosition
-      );
-
-      // TODO: why are we putting the next match in separately; isn't this redundant?
-      if (nextMatch) {
-        const { start, end, match } = nextMatch;
-        if (match) {
-          searchRanges.push(new vscode.Range(start, end));
-        }
-      }
+    const showHighlights =
+      (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
+      (configuration.hlsearch && globalState.hl);
+    for (const editor of vscode.window.visibleTextEditors) {
+      ModeHandlerMap.get(EditorIdentity.fromEditor(editor))?.updateSearchHighlights(showHighlights);
     }
-    this.vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
 
     const easyMotionHighlightRanges =
       this.currentMode === Mode.EasyMotionInputMode
