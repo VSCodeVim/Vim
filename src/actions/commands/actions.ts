@@ -1321,12 +1321,18 @@ export class PutCommand extends BaseCommand {
     const currentLineLength = TextEditor.getLineAt(position).text.length;
 
     let diff = new PositionDiff();
-    if (
-      vimState.currentMode === Mode.VisualLine &&
-      register.registerMode === RegisterMode.LineWise
-    ) {
-      const numNewline = [...text].filter((c) => c === '\n').length;
-      diff = PositionDiff.newBOLDiff(-numNewline - (noNextLine ? 0 : 1));
+    if (vimState.currentMode === Mode.VisualLine) {
+      const lines = text.split('\n');
+      const whitespaceOnFirstLine = /^\s*/.exec(lines[0])?.[0].length ?? 0;
+      let lineDiff = lines.length - 1;
+      if (register.registerMode === RegisterMode.LineWise && !noNextLine) {
+        lineDiff++;
+      }
+      diff = {
+        type: PositionDiffType.ExactCharacter,
+        line: -lineDiff,
+        character: whitespaceOnFirstLine,
+      };
     } else if (register.registerMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
       let numWhitespace = 0;
