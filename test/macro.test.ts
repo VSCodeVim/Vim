@@ -72,4 +72,11 @@ suite('Record and execute a macro', () => {
     keysPressed: ':s/old/new\nj@:j@@',
     end: ['new', 'new', '|new'],
   });
+
+  newTest({
+    title: 'Can record and execute macro that handles multiple lines',
+    start: ['|Countdown:', '1', 'LAUNCH!!!'],
+    keysPressed: 'qajyyP<C-a>kq8@a',
+    end: ['C|ountdown:', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'LAUNCH!!!'],
+  });
 });
