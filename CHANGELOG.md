@@ -1,5 +1,55 @@
 # Change Log
 
+## [v1.14.2](https://github.com/vscodevim/vim/tree/v1.14.2) (2020-05-13)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.1...v1.14.2)
+
+**Enhancements:**
+
+- Cursor does not move horizontally after hitting shift+v [\#4803](https://github.com/VSCodeVim/Vim/issues/4803)
+- :{line}y E492:Not an editor command [\#4786](https://github.com/VSCodeVim/Vim/issues/4786)
+
+**Fixed Bugs:**
+
+- Failed search due to `nowrapscan` does not enable search highlighting [\#4838](https://github.com/VSCodeVim/Vim/issues/4838)
+- Using the repeat command \(.\) removes next character [\#4833](https://github.com/VSCodeVim/Vim/issues/4833)
+- gf on visual selection incorrectly includes first trailing character after selection in file name [\#4823](https://github.com/VSCodeVim/Vim/issues/4823)
+- Repeating c-i-w with dot causes it to make an extra character disappear [\#4817](https://github.com/VSCodeVim/Vim/issues/4817)
+- Remap of \['j', 'j'\] to \['\<Esc\>'\] deletes character if insertion is repeated with dot '.' [\#4814](https://github.com/VSCodeVim/Vim/issues/4814)
+- Remap of \['j', 'k'\] to \['\<Esc\>'\] in visual block mode leaves a trailing 'j' [\#4811](https://github.com/VSCodeVim/Vim/issues/4811)
+- `:nohl` should immediately apply to all visible splits [\#4807](https://github.com/VSCodeVim/Vim/issues/4807)
+- :substitute should throw E486 if the search pattern is not found [\#4799](https://github.com/VSCodeVim/Vim/issues/4799)
+- Append in Visual Block mode clears text to the left when performed on whitespace [\#4796](https://github.com/VSCodeVim/Vim/issues/4796)
+- Visual Block Append puts cursor left of right most column if any rows are short. [\#4795](https://github.com/VSCodeVim/Vim/issues/4795)
+- Cancelling & repeating a surround action moves the cursor to the beginning of the line [\#4699](https://github.com/VSCodeVim/Vim/issues/4699)
+- Copy the current line tag and its children with the command yat [\#4685](https://github.com/VSCodeVim/Vim/issues/4685)
+- With `nowrapscan`, `\*` on last instance of word does not re-activate `hlsearch` [\#4680](https://github.com/VSCodeVim/Vim/issues/4680)
+- Escape not returning to normal mode from insert mode [\#4616](https://github.com/VSCodeVim/Vim/issues/4616)
+- can't select text [\#4572](https://github.com/VSCodeVim/Vim/issues/4572)
+- Repeating backspace on empty line causes error [\#4073](https://github.com/VSCodeVim/Vim/issues/4073)
+
+**Closed issues:**
+
+- macros behave strange [\#4827](https://github.com/VSCodeVim/Vim/issues/4827)
+- Vim easymotion - not using leader key at all [\#4824](https://github.com/VSCodeVim/Vim/issues/4824)
+- \[BUG\] VSCodeVim update seems to have overwritten ctrl-shift-p [\#4802](https://github.com/VSCodeVim/Vim/issues/4802)
+- Flaky tests [\#4801](https://github.com/VSCodeVim/Vim/issues/4801)
+- Key binding bug in 1.14.0 [\#4793](https://github.com/VSCodeVim/Vim/issues/4793)
+- Redo \<C-r\> is not working [\#4763](https://github.com/VSCodeVim/Vim/issues/4763)
+- bug substitution with parenthesis [\#4754](https://github.com/VSCodeVim/Vim/issues/4754)
+- Using `:w` when text has been selected cause error [\#4501](https://github.com/VSCodeVim/Vim/issues/4501)
+
+**Merged pull requests:**
+
+- Update dependency typescript to v3.9.2 [\#4839](https://github.com/VSCodeVim/Vim/pull/4839) ([renovate[bot]](https://github.com/apps/renovate))
+- Add test to macros to prevent issues like \#4827 [\#4836](https://github.com/VSCodeVim/Vim/pull/4836) ([berknam](https://github.com/berknam))
+- Update dependency ts-loader to v7.0.4 [\#4831](https://github.com/VSCodeVim/Vim/pull/4831) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix macros not updating cursorsInitialState before each action [\#4830](https://github.com/VSCodeVim/Vim/pull/4830) ([berknam](https://github.com/berknam))
+- Fix bugs with a remapped \<Esc\> in insert mode [\#4829](https://github.com/VSCodeVim/Vim/pull/4829) ([berknam](https://github.com/berknam))
+- Update dependency ts-loader to v7.0.3 [\#4813](https://github.com/VSCodeVim/Vim/pull/4813) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix surround action moving the cursor after canceling the previous one [\#4780](https://github.com/VSCodeVim/Vim/pull/4780) ([gergelyth](https://github.com/gergelyth))
+- Tag motion now considers the tag starting on the cursor line [\#4721](https://github.com/VSCodeVim/Vim/pull/4721) ([gergelyth](https://github.com/gergelyth))
+
 ## [v1.14.1](https://github.com/vscodevim/vim/tree/v1.14.1) (2020-05-03)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.0...v1.14.1)
@@ -381,7 +431,6 @@
 - Searching backwards with offset is unaware of current word under cursor [\#4266](https://github.com/VSCodeVim/Vim/issues/4266)
 - `gp` incorrectly places cursor when pasting more than three lines [\#4246](https://github.com/VSCodeVim/Vim/issues/4246)
 - Copy command broke in 1.11.0 release [\#4126](https://github.com/VSCodeVim/Vim/issues/4126)
-- v. 1.11.0 broke \<shift+space\> [\#4110](https://github.com/VSCodeVim/Vim/issues/4110)
 
 **Closed issues:**
 
@@ -449,7 +498,6 @@
 - \<C-d\>, etc. not working at beginning or end of buffer in 1.11.2 [\#4179](https://github.com/VSCodeVim/Vim/issues/4179)
 - `grj` is not linewise [\#4138](https://github.com/VSCodeVim/Vim/issues/4138)
 - A failed `f`/`F` cannot be retried with `;` or `,` [\#4047](https://github.com/VSCodeVim/Vim/issues/4047)
-- Ctrl+R in command line or search mode should show a quote \("\) [\#4000](https://github.com/VSCodeVim/Vim/issues/4000)
 
 **Closed issues:**
 
