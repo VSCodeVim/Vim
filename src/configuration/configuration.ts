@@ -21,7 +21,7 @@ const packagejson: {
   contributes: {
     keybindings: VSCodeKeybinding[];
   };
-} = require('../../../package.json');
+} = require('../../package.json');
 
 type OptionValue = number | string | boolean;
 

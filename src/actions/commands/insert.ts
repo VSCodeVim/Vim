@@ -77,8 +77,6 @@ class CommandEscInsertMode extends BaseCommand {
         vimState.recordedState.actionsRun.length - 2
       ] as DocumentContentChangeAction;
 
-      const docChanges = changeAction.contentChanges.map((change) => change.textDiff);
-
       // Add count amount of inserts in the case of 4i=<esc>
       for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         // If this is the last transform, move cursor back one character
@@ -88,11 +86,7 @@ class CommandEscInsertMode extends BaseCommand {
             : new PositionDiff();
 
         // Add a transform containing the change
-        vimState.recordedState.transformations.push({
-          type: 'contentChange',
-          changes: docChanges,
-          diff: positionDiff,
-        });
+        vimState.recordedState.transformations.push(changeAction.getTransformation(positionDiff));
       }
     }
 

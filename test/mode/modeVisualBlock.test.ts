@@ -44,6 +44,13 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: '`A` over shorter line adds necessary spaces',
+    start: ['te|st', 'te', 't'],
+    keysPressed: '<C-v>jjA123',
+    end: ['tes123|t', 'te 123', 't  123'],
+  });
+
+  newTest({
     title: 'Can handle I forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
@@ -201,7 +208,7 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when the visual block spans multiple lines",
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: '<C-v>jjlJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
   });
 
@@ -209,7 +216,7 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when start position of the visual block is below the stop",
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: '<C-v>kkJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
   });
 

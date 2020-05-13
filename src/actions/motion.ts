@@ -21,6 +21,7 @@ import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
+import { clamp } from '../util/util';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -355,7 +356,7 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.matchRanges.length === 0) {
+    if (searchState.getMatchRanges().length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -381,13 +382,14 @@ class CommandNextSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitTop,
+          searchState.searchString
         )
       );
       return position;
     }
 
-    reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
 
     return nextMatch.pos;
   }
@@ -408,7 +410,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.matchRanges.length === 0) {
+    if (searchState.getMatchRanges().length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -416,7 +418,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+    const prevMatch = searchState.getNextSearchMatchPosition(position, SearchDirection.Backward);
 
     if (!prevMatch) {
       StatusBar.displayError(
@@ -424,13 +426,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitBottom,
+          searchState.searchString
         )
       );
       return position;
     }
 
-    reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(prevMatch.index, searchState.getMatchRanges().length, vimState);
 
     return prevMatch.pos;
   }
@@ -1150,12 +1153,8 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (count === 0) {
-      return TextEditor.getDocumentBegin().obeyStartOfLine();
-    } else if (count > TextEditor.getLineCount()) {
-      count = TextEditor.getLineCount();
-    }
-    return new Position(count - 1, 0).obeyStartOfLine();
+    const lineNumber = clamp(count, 1, TextEditor.getLineCount()) - 1;
+    return position.withLine(lineNumber).obeyStartOfLine();
   }
 }
 

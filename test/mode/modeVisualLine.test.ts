@@ -323,6 +323,13 @@ suite('Mode Visual Line', () => {
   });
 
   newTest({
+    title: '"xVp only updates default register content',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'V"ayjVj"ap"app',
+    end: ['abc', 'abc', 'abc', '|def', 'ghi'],
+  });
+
+  newTest({
     title: 'Vp does not append unnecessary newlines (first line)',
     start: ['|begin', 'middle', 'end'],
     keysPressed: 'yyVp',
@@ -341,6 +348,13 @@ suite('Mode Visual Line', () => {
     start: ['begin', 'middle', '|end'],
     keysPressed: 'yyVp',
     end: ['begin', 'middle', '|end'],
+  });
+
+  newTest({
+    title: 'Vp places the cursor on first non-whitespace character on line',
+    start: ['begin', '|    middle', 'end'],
+    keysPressed: 'yyjVp',
+    end: ['begin', '    middle', '    |middle'],
   });
 
   suite('replace text in linewise visual-mode with linewise register content', () => {
@@ -519,5 +533,13 @@ suite('Mode Visual Line', () => {
       end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
       endMode: Mode.Normal,
     });
+  });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
   });
 });
