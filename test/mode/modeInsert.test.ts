@@ -259,6 +259,14 @@ suite('Mode Insert', () => {
   });
 
   newTest({
+    title: 'Can <ctrl-o> after entering insert mode from <ctrl-o>',
+    start: ['|'],
+    keysPressed: 'i<C-o>i<C-o>',
+    end: ['|'],
+    endMode: Mode.Normal
+  });
+
+  newTest({
     title:
       'Can perform <ctrl+o> to exit and perform one command in normal at the beginning of a row',
     start: ['|testtest'],
