@@ -1,5 +1,33 @@
 # Change Log
 
+## [v1.14.3](https://github.com/vscodevim/vim/tree/v1.14.3) (2020-05-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.2...v1.14.3)
+
+**Fixed Bugs:**
+
+- Fold fix all of a sudden breaking visual line [\#4848](https://github.com/VSCodeVim/Vim/issues/4848)
+- \<C-a\> in insert mode before any text has been inserted should throw E29 [\#4846](https://github.com/VSCodeVim/Vim/issues/4846)
+- Pasting over visual line selection should place the cursor at the first non-whitespace character on the first replaced line [\#4843](https://github.com/VSCodeVim/Vim/issues/4843)
+- ctrl+o behaves strangely in insert mode [\#4841](https://github.com/VSCodeVim/Vim/issues/4841)
+- Repeating an insertion with `.` \(dot\) does not work with multiple cursors [\#4816](https://github.com/VSCodeVim/Vim/issues/4816)
+- Some errors from neovim command are not shown in red [\#4798](https://github.com/VSCodeVim/Vim/issues/4798)
+- On put register is overwritten by selected text if register contains lines [\#4238](https://github.com/VSCodeVim/Vim/issues/4238)
+
+**Closed issues:**
+
+- Regression: Unable to move up more than one line in visual mode [\#4853](https://github.com/VSCodeVim/Vim/issues/4853)
+- Motion up with 'k' in visual mode not working as expected [\#4850](https://github.com/VSCodeVim/Vim/issues/4850)
+- Select all \(ctrl+a\) causing an error in insert mode [\#4845](https://github.com/VSCodeVim/Vim/issues/4845)
+- Call up the hover menu when you sit on erroneous code [\#4842](https://github.com/VSCodeVim/Vim/issues/4842)
+- Search and replace problem [\#4540](https://github.com/VSCodeVim/Vim/issues/4540)
+
+**Merged pull requests:**
+
+- Throw E29 on empty `.` register [\#4851](https://github.com/VSCodeVim/Vim/pull/4851) ([fatanugraha](https://github.com/fatanugraha))
+- Reset vimState.actionsCount when \<C-o\> pressed in insert mode [\#4849](https://github.com/VSCodeVim/Vim/pull/4849) ([fatanugraha](https://github.com/fatanugraha))
+- Minor documentation improvement [\#4847](https://github.com/VSCodeVim/Vim/pull/4847) ([cortexx](https://github.com/cortexx))
+
 ## [v1.14.2](https://github.com/vscodevim/vim/tree/v1.14.2) (2020-05-13)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.1...v1.14.2)
@@ -242,7 +270,6 @@
 - Selecting a register using \["\] in visual block mode not working [\#4192](https://github.com/VSCodeVim/Vim/issues/4192)
 - Cannot map \<C-d\> to \<Del\> in insert mode [\#4082](https://github.com/VSCodeVim/Vim/issues/4082)
 - Cursor style does not change properly when cursor mode has been changed [\#4061](https://github.com/VSCodeVim/Vim/issues/4061)
-- In visual block mode register selection \("\) doesn't work [\#4038](https://github.com/VSCodeVim/Vim/issues/4038)
 - Add Cursor to Line Ends Errors From Visual Line Mode [\#4270](https://github.com/VSCodeVim/Vim/issues/4270)
 
 **Closed issues:**
@@ -443,7 +470,6 @@
 - VSCodeVim stopped working with 1.11.3 [\#4225](https://github.com/VSCodeVim/Vim/issues/4225)
 - Version 1.11.3 not work. [\#4220](https://github.com/VSCodeVim/Vim/issues/4220)
 - Changing prefix in easy-motion [\#4218](https://github.com/VSCodeVim/Vim/issues/4218)
-- Use `ExtensionContext.globalStoragePath` instead of `appdirectory` library [\#4055](https://github.com/VSCodeVim/Vim/issues/4055)
 
 **Merged pull requests:**
 
@@ -497,7 +523,6 @@
 
 - \<C-d\>, etc. not working at beginning or end of buffer in 1.11.2 [\#4179](https://github.com/VSCodeVim/Vim/issues/4179)
 - `grj` is not linewise [\#4138](https://github.com/VSCodeVim/Vim/issues/4138)
-- A failed `f`/`F` cannot be retried with `;` or `,` [\#4047](https://github.com/VSCodeVim/Vim/issues/4047)
 
 **Closed issues:**
 
@@ -551,7 +576,6 @@
 - Cannot paste with Cmd+v in command mode on OSX. Works with Ctrl+v [\#4149](https://github.com/VSCodeVim/Vim/issues/4149)
 - Implement `startofline` [\#4137](https://github.com/VSCodeVim/Vim/issues/4137)
 - Cursor movement in wrapped lines changed from 1.10.2 to 1.11.0 [\#4120](https://github.com/VSCodeVim/Vim/issues/4120)
-- New editor.cursorSurroundingLines setting breaks \<C-e\> and \<C-y\> [\#4041](https://github.com/VSCodeVim/Vim/issues/4041)
 
 **Closed issues:**
 
