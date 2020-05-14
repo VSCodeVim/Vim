@@ -4,6 +4,7 @@ interface IErrorMessage {
 
 export enum ErrorCode {
   MarkNotSet = 20,
+  NoInsertedTextYet = 29,
   NoFileName = 32,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
@@ -21,6 +22,7 @@ export enum ErrorCode {
 
 export const ErrorMessage: IErrorMessage = {
   20: 'Mark not set',
+  29: 'No inserted text yet',
   32: 'No file name',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
