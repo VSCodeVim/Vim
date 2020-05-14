@@ -1223,8 +1223,11 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case Mode.VisualLine:
-            [start, stop] = Position.sorted(start, stop);
-            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
+            if (start.isBeforeOrEqual(stop)) {
+              selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
+            } else {
+              selections.push(new vscode.Selection(start.getLineEnd(), stop.getLineBegin()));
+            }
             break;
 
           case Mode.VisualBlock:

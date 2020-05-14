@@ -1,4 +1,7 @@
 import * as assert from 'assert';
+
+import * as error from '../../src/error';
+
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
@@ -6,6 +9,7 @@ import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 import {
   assertEqualLines,
+  assertStatusBarEqual,
   cleanUpWorkspace,
   setupWorkspace,
   reloadConfiguration,
@@ -366,5 +370,20 @@ suite('Mode Insert', () => {
     await reloadConfiguration();
     await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
     assertEqualLines(['🚀🚀']);
+  });
+
+  newTest({
+    title: 'Can insert last inserted text',
+    start: ['test|'],
+    keysPressed: 'ahello<Esc>a<C-a>',
+    end: ['testhellohello|'],
+  });
+
+  test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
+    try {
+      await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
+    } catch (e) {
+      assert(false);
+    }
   });
 });
