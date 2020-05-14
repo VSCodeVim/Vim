@@ -267,7 +267,7 @@ suite('Mode Insert', () => {
     start: ['|'],
     keysPressed: 'i<C-o>i<C-o>',
     end: ['|'],
-    endMode: Mode.Normal
+    endMode: Mode.Normal,
   });
 
   newTest({

@@ -66,7 +66,7 @@ class CommandEscInsertMode extends BaseCommand {
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
     const typeOfInsert =
-    vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
+      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
     const isTypeToRepeatInsert =
       typeOfInsert instanceof CommandInsertAtCursor ||
       typeOfInsert instanceof CommandInsertAfterCursor ||
