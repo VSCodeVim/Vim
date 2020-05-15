@@ -527,6 +527,7 @@ class CommandEsc extends BaseCommand {
         // just add to this list as needed.
         await vscode.commands.executeCommand('closeReferenceSearchEditor');
         await vscode.commands.executeCommand('closeMarkersNavigation');
+        await vscode.commands.executeCommand('closeDirtyDiff');
 
         return vimState;
       } else {
