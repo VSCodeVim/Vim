@@ -1362,7 +1362,7 @@ export class ModeHandler implements vscode.Disposable {
     // `editor.occurrencesHighlight`.
     const range = new vscode.Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (!/\s+/.test(vimState.editor.document.getText(range))) {
-      await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+      vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
   }
 
