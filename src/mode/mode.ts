@@ -3,6 +3,7 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
+import { configuration } from '../configuration/configuration';
 
 export enum Mode {
   Normal,
@@ -132,7 +133,18 @@ export function statusBarCommandText(vimState: VimState) {
     case Mode.VisualLine:
     case Mode.Replace:
     case Mode.Disabled:
-      return vimState.recordedState.commandString;
+      let text: string = '';
+      if (vimState.recordedState.actionKeys.length > 0) {
+        text = vimState.recordedState.actionKeys.join('');
+        text += vimState.recordedState.bufferedKeys.join('');
+      } else {
+        text = vimState.recordedState.commandString;
+      }
+      const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
+      const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
+      const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
+      text = text.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
+      return text;
     default:
       return '';
   }

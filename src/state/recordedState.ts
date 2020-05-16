@@ -34,14 +34,13 @@ export class RecordedState {
   }
 
   /**
-   * The keys the user has pressed that have not caused an action to be
-   * executed yet. Used for showcmd and command remapping.
+   * The keys the user has pressed that have not caused an action to be executed
+   * yet and have not been stored on action keys. Used for command remapping.
    */
   public commandList: string[] = [];
 
   /**
-   * String representation of the exact keys that the user entered. Used for
-   * showcmd.
+   * String representation of the exact keys that the user entered.
    */
   public get commandString(): string {
     let result = '';
@@ -88,6 +87,8 @@ export class RecordedState {
    */
   public bufferedKeys: string[] = [];
   public bufferedKeysTimeoutObj: NodeJS.Timeout | undefined = undefined;
+
+  public allowPotentialRemapOnFirstKey = true;
 
   public hasRunOperator = false;
 

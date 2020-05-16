@@ -79,6 +79,7 @@ export class Remapper implements IRemapper {
     vimState: VimState
   ): Promise<boolean> {
     this._isPotentialRemap = false;
+    this._allowPotentialRemapOnFirstKey = vimState.recordedState.allowPotentialRemapOnFirstKey;
     let allowBufferingKeys = true;
     let remainingKeys: string[] = [];
 
@@ -111,16 +112,35 @@ export class Remapper implements IRemapper {
     );
 
     let isPotentialRemap = false;
+    let isPotentialRemapOnOtherRemappings = false;
     // Check to see if a remapping could potentially be applied when more keys are received
-    const keysAsString = vimState.recordedState.commandWithoutCountPrefix.replace(
-      '<BufferedKeys>',
-      ''
-    );
+    const keysAsString = keys.join('');
     if (keysAsString !== '') {
       for (let remap of userDefinedRemappings.keys()) {
         if (remap.startsWith(keysAsString) && remap !== keysAsString) {
           isPotentialRemap = true;
           break;
+        }
+      }
+    }
+    if (!isPotentialRemap) {
+      // Check the other remappings for this mode
+      let otherConfigKey: string;
+      if (this._recursive) {
+        otherConfigKey = `${this._configKey.slice(
+          0,
+          this._configKey.indexOf('Map')
+        )}NonRecursiveMap`;
+      } else {
+        otherConfigKey = `${this._configKey.slice(0, this._configKey.indexOf('NonRecursive'))}Map`;
+      }
+      const otherDefinedRemappings = configuration[otherConfigKey] as Map<string, IKeyRemapping>;
+      if (keysAsString !== '') {
+        for (let remap of otherDefinedRemappings.keys()) {
+          if (remap.startsWith(keysAsString)) {
+            isPotentialRemapOnOtherRemappings = true;
+            break;
+          }
         }
       }
     }
@@ -131,7 +151,7 @@ export class Remapper implements IRemapper {
     if (
       !remapping &&
       (this._hasAmbiguousRemap || this._hasPotentialRemap) &&
-      (!isPotentialRemap || !allowBufferingKeys) &&
+      (!(isPotentialRemap || isPotentialRemapOnOtherRemappings) || !allowBufferingKeys) &&
       keys.length > 1
     ) {
       if (this._hasAmbiguousRemap) {
@@ -189,7 +209,7 @@ export class Remapper implements IRemapper {
           // key comes that clears the timeout and since the commandList will be empty
           // we return true as we finished handling this sequence of keys.
 
-          keys = vimState.recordedState.commandList; // includes the '<BufferedKeys>' key
+          keys.push('<BufferedKeys>'); // include the '<BufferedKeys>' key
 
           this._logger.debug(
             `${this._configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
@@ -199,7 +219,7 @@ export class Remapper implements IRemapper {
           `${this._configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
         );
         this._hasPotentialRemap = false;
-        this._allowPotentialRemapOnFirstKey = false;
+        vimState.recordedState.allowPotentialRemapOnFirstKey = false;
         vimState.recordedState.resetCommandList();
         await modeHandler.handleMultipleKeyEvents(keys);
         return true;
@@ -226,10 +246,6 @@ export class Remapper implements IRemapper {
         modeHandler.handleKeyEvent('<BufferedKeys>');
       }, configuration.timeout);
       return true;
-    } else if (!this._allowPotentialRemapOnFirstKey) {
-      // First key was already prevented from buffering to wait for other remaps
-      // so we can allow for ambiguous remaps again.
-      this._allowPotentialRemapOnFirstKey = true;
     }
 
     if (remapping) {
@@ -260,10 +276,6 @@ export class Remapper implements IRemapper {
       } finally {
         vimState.isCurrentlyPerformingRemapping = false;
         if (remainingKeys.length > 0) {
-          vimState.recordedState.commandList = vimState.recordedState.commandList.slice(
-            0,
-            -remainingKeys.length
-          );
           await modeHandler.handleMultipleKeyEvents(remainingKeys);
           return true;
         }

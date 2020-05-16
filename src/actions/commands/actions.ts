@@ -1754,7 +1754,7 @@ export class CommandShowSearchHistory extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.recordedState.commandList.includes('?')) {
+    if (this.keysPressed.includes('?')) {
       this.direction = SearchDirection.Backward;
     }
     vimState.recordedState.transformations.push({
@@ -3034,7 +3034,7 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
     if (vimState.recordedState.count !== 0) {
       vimState.recordedState.count = Math.floor(vimState.recordedState.count / 10);
       vimState.recordedState.actionKeys = vimState.recordedState.count.toString().split('');
-      vimState.recordedState.commandList = vimState.recordedState.count.toString().split('');
+      // vimState.recordedState.commandList = vimState.recordedState.count.toString().split('');
       this.isCompleteAction = false;
       return vimState;
     }

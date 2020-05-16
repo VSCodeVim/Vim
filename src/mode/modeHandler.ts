@@ -299,6 +299,8 @@ export class ModeHandler implements vscode.Disposable {
     const oldMode = this.vimState.currentMode;
     const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
+    const oldActionKeysLength = this.vimState.recordedState.actionKeys.length;
+    const oldBufferedKeysLength = this.vimState.recordedState.bufferedKeys.length;
 
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
@@ -327,9 +329,9 @@ export class ModeHandler implements vscode.Disposable {
         );
       }
 
-      if (handled) {
-        this.vimState.recordedState.resetCommandList();
-      } else {
+      this.vimState.recordedState.allowPotentialRemapOnFirstKey = true;
+
+      if (!handled) {
         if (key === '<BufferedKeys>') {
           this.vimState.recordedState.commandList = this.vimState.recordedState.commandList.slice(
             0,
@@ -363,9 +365,20 @@ export class ModeHandler implements vscode.Disposable {
       // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
+        this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
+        this.vimState.recordedState.actionKeys.length !== oldActionKeysLength ||
+        this.vimState.recordedState.bufferedKeys.length !== oldBufferedKeysLength;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
+
+    // We either already ran an action or we have a potential action to run but
+    // the key is already stored on 'actionKeys' in that case so we don't need
+    // it anymore on commandList that is only used for the remapper and 'showCmd'
+    // and both had already been handled at this point.
+    // If we got here it means that there is no potential remap for the key
+    // either so we need to clear it from commandList so that it doesn't interfere
+    // with the next remapper check.
+    this.vimState.recordedState.resetCommandList();
 
     this._logger.debug(`handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`);
   }
@@ -575,8 +588,6 @@ export class ModeHandler implements vscode.Disposable {
         ranRepeatableAction = true;
       }
     }
-
-    vimState.recordedState.resetCommandList();
 
     ranRepeatableAction =
       (ranRepeatableAction && vimState.currentMode === Mode.Normal) ||
