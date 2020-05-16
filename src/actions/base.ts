@@ -80,7 +80,8 @@ export class BaseAction {
 
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
+      (vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length ||
+        vimState.recordedState.operator)
     ) {
       return false;
     }
