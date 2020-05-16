@@ -319,8 +319,9 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
       globalState.addSearchStateToHistory(searchState);
+      globalState.hl = true;
 
-      if (searchState.matchRanges.length === 0) {
+      if (searchState.getMatchRanges().length === 0) {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -353,9 +354,8 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
-      globalState.hl = true;
 
-      reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+      reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
 
       return vimState;
     } else if (key === '<up>' || key === '<C-p>') {

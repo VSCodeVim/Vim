@@ -4,6 +4,7 @@ import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
 import { configuration } from '../configuration/configuration';
+import { commandLine } from '../cmd_line/commandLine';
 
 export enum Mode {
   Normal,
@@ -165,36 +166,6 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
     case VSCodeVimCursorType.Native:
     default:
       return vscode.TextEditorCursorStyle.Block;
-  }
-}
-
-export function getCursorType(mode: Mode): VSCodeVimCursorType {
-  switch (mode) {
-    case Mode.Normal:
-      return VSCodeVimCursorType.Block;
-    case Mode.Insert:
-      return VSCodeVimCursorType.Native;
-    case Mode.Visual:
-      return VSCodeVimCursorType.TextDecoration;
-    case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
-    case Mode.VisualLine:
-      return VSCodeVimCursorType.Block;
-    case Mode.SearchInProgressMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.CommandlineInProgress:
-      return VSCodeVimCursorType.Block;
-    case Mode.Replace:
-      return VSCodeVimCursorType.Underline;
-    case Mode.EasyMotionMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.EasyMotionInputMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.SurroundInputMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.Disabled:
-    default:
-      return VSCodeVimCursorType.Line;
   }
 }
 
