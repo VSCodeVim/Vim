@@ -177,8 +177,27 @@ export class RecordedState {
       (this.hasRunAMovement ||
         mode === Mode.Visual ||
         mode === Mode.VisualLine ||
+        mode === Mode.VisualBlock ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
+    );
+  }
+
+  public isOperatorPending(mode: Mode): boolean {
+    // Visual modes do not require a motion -- they ARE the motion.
+    return (
+      this.operator !== undefined &&
+      !this.hasRunOperator &&
+      mode !== Mode.SearchInProgressMode &&
+      mode !== Mode.CommandlineInProgress &&
+      !(
+        this.hasRunAMovement ||
+        mode === Mode.Visual ||
+        mode === Mode.VisualLine ||
+        mode === Mode.VisualBlock ||
+        (this.operators.length > 1 &&
+          this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor)
+      )
     );
   }
 }

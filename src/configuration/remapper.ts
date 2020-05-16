@@ -22,6 +22,7 @@ interface IRemapper {
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
+  private operatorPendingRemappers: IRemapper[];
 
   constructor() {
     this.remappers = [
@@ -33,6 +34,10 @@ export class Remappers implements IRemapper {
       new NormalModeRemapper(false),
       new VisualModeRemapper(false),
       new CommandLineModeRemapper(false),
+    ];
+    this.operatorPendingRemappers = [
+      new OperatorPendingModeRemapper(true),
+      new OperatorPendingModeRemapper(false),
     ];
   }
 
@@ -46,7 +51,11 @@ export class Remappers implements IRemapper {
     vimState: VimState
   ): Promise<boolean> {
     let handled = false;
-    for (let remapper of this.remappers) {
+    const remappersToLookup = vimState.recordedState.isOperatorPending(vimState.currentMode)
+      ? this.operatorPendingRemappers
+      : this.remappers;
+
+    for (let remapper of remappersToLookup) {
       handled = handled || (await remapper.sendKey(keys, modeHandler, vimState));
     }
     return handled;
@@ -396,6 +405,12 @@ class InsertModeRemapper extends Remapper {
 class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(keyBindingsConfigKey('normal', recursive), [Mode.Normal], recursive);
+  }
+}
+
+class OperatorPendingModeRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(keyBindingsConfigKey('operatorPending', recursive), [Mode.Normal], recursive);
   }
 }
 

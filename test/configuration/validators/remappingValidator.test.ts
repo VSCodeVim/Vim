@@ -10,6 +10,8 @@ suite('Remapping Validator', () => {
     configuration.insertModeKeyBindingsNonRecursive = [];
     configuration.normalModeKeyBindings = [];
     configuration.normalModeKeyBindingsNonRecursive = [];
+    configuration.operatorPendingModeKeyBindings = [];
+    configuration.operatorPendingModeKeyBindingsNonRecursive = [];
     configuration.visualModeKeyBindings = [];
     configuration.visualModeKeyBindingsNonRecursive = [];
 
@@ -27,6 +29,8 @@ suite('Remapping Validator', () => {
     assert.strictEqual(configuration.insertModeKeyBindingsNonRecursiveMap.size, 0);
     assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 0);
     assert.strictEqual(configuration.normalModeKeyBindingsNonRecursiveMap.size, 0);
+    assert.strictEqual(configuration.operatorPendingModeKeyBindingsMap.size, 0);
+    assert.strictEqual(configuration.operatorPendingModeKeyBindingsNonRecursiveMap.size, 0);
     assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
     assert.strictEqual(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
   });

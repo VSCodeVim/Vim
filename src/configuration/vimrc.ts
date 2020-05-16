@@ -67,28 +67,64 @@ class VimrcImpl {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'map':
-          return [config.normalModeKeyBindings, config.visualModeKeyBindings];
+          return [
+            config.normalModeKeyBindings,
+            config.visualModeKeyBindings,
+            config.operatorPendingModeKeyBindings,
+          ];
         case 'nmap':
+        case 'nm':
           return [config.normalModeKeyBindings];
         case 'vmap':
+        case 'vm':
+        case 'xmap':
+        case 'xm':
           return [config.visualModeKeyBindings];
         case 'imap':
+        case 'im':
           return [config.insertModeKeyBindings];
         case 'cmap':
+        case 'cm':
           return [config.commandLineModeKeyBindings];
+        case 'omap':
+        case 'om':
+          return [config.operatorPendingModeKeyBindings];
+        case 'lmap':
+        case 'lm':
+        case 'map!':
+          return [config.insertModeKeyBindings, config.commandLineModeKeyBindings];
         case 'noremap':
+        case 'no':
           return [
             config.normalModeKeyBindingsNonRecursive,
             config.visualModeKeyBindingsNonRecursive,
+            config.operatorPendingModeKeyBindingsNonRecursive,
           ];
         case 'nnoremap':
+        case 'nn':
           return [config.normalModeKeyBindingsNonRecursive];
         case 'vnoremap':
+        case 'vn':
+        case 'xnoremap':
+        case 'xn':
           return [config.visualModeKeyBindingsNonRecursive];
         case 'inoremap':
+        case 'ino':
           return [config.insertModeKeyBindingsNonRecursive];
         case 'cnoremap':
+        case 'cno':
           return [config.commandLineModeKeyBindingsNonRecursive];
+        case 'onoremap':
+        case 'ono':
+          return [config.operatorPendingModeKeyBindingsNonRecursive];
+        case 'lnoremap':
+        case 'ln':
+        case 'noremap!':
+        case 'no!':
+          return [
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
         default:
           console.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
           return undefined;
@@ -106,10 +142,12 @@ class VimrcImpl {
   private static removeAllRemapsFromConfig(config: IConfiguration): void {
     const remapCollections = [
       config.normalModeKeyBindings,
+      config.operatorPendingModeKeyBindings,
       config.visualModeKeyBindings,
       config.insertModeKeyBindings,
       config.commandLineModeKeyBindings,
       config.normalModeKeyBindingsNonRecursive,
+      config.operatorPendingModeKeyBindingsNonRecursive,
       config.visualModeKeyBindingsNonRecursive,
       config.insertModeKeyBindingsNonRecursive,
       config.commandLineModeKeyBindingsNonRecursive,

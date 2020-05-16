@@ -150,9 +150,9 @@ Here's some ideas on what you can do with neovim integration:
 
 Custom remappings are defined on a per-mode basis.
 
-#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
+#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`
 
-- Keybinding overrides to use for insert, normal, and visual modes.
+- Keybinding overrides to use for insert, normal, operatorPending and visual modes.
 - Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -178,7 +178,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `:` to show the command palette:
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": [":"],
             "commands": [
@@ -191,7 +191,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://marketplace.visualstudio.com/items?itemName=alefragnani.Bookmarks) extension):
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": ["<leader>", "m"],
             "commands": [
@@ -210,7 +210,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": ["Z", "Z"],
             "commands": [
@@ -223,7 +223,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before":["<C-n>"],
             "commands": [
@@ -239,28 +239,36 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `p` in visual mode to paste without overriding the current register
+- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively.
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.operatorPendingModeKeyBindings": [
         {
-            "before": [
-                "p",
-            ],
-            "after": [
-                "p",
-                "g",
-                "v",
-                "y"
-            ]
+            "before": ["{"],
+            "after": ["w"]
         }
-    ],
+    ]
+```
+
+- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `yL` and `d^` respectively.
+
+```json
+    "vim.operatorPendingModeKeyBindings": [
+        {
+            "before": ["L"],
+            "after": ["$"]
+        },
+        {
+            "before": ["H"],
+            "after": ["^"]
+        }
+    ]
 ```
 
 - Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindings": [
         {
             "before": [
                 ">"
@@ -283,7 +291,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `<leader>vim` to clone this repository to the selected location.
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindings": [
         {
             "before": [
                 "<leader>", "v", "i", "m"
@@ -298,7 +306,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`
 
 - Non-recursive keybinding overrides to use for insert, normal, and visual modes
 - _Example:_ Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or normalModeKeyBindingNonRecursive.
@@ -310,6 +318,35 @@ Custom remappings are defined on a per-mode basis.
             "after": ["g", "j"]
         }
     ]
+```
+
+- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively.
+
+```json
+    "vim.operatorPendingModeKeyBindingsNonRecursive": [
+        {
+            "before": ["("],
+            "after": ["i("]
+        }
+    ]
+```
+
+- Bind `p` in visual mode to paste without overriding the current register
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "p",
+            ],
+            "after": [
+                "p",
+                "g",
+                "v",
+                "y"
+            ]
+        }
+    ],
 ```
 
 #### Debugging Remappings

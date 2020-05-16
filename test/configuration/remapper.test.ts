@@ -48,16 +48,18 @@ suite('Remapper', () => {
       ],
     },
     {
-      before: ['d'],
-      after: ['"', '_', 'd'],
-    },
-    {
       before: ['y', 'y'],
       after: ['y', 'l'],
     },
     {
       before: ['e'],
       after: ['$'],
+    },
+  ];
+  const defaultNormalModeKeyBindingsNonRecursive: IKeyRemapping[] = [
+    {
+      before: ['d'],
+      after: ['"', '_', 'd'],
     },
   ];
   const defaultVisualModeKeyBindings: IKeyRemapping[] = [
@@ -95,16 +97,19 @@ suite('Remapper', () => {
   const setupWithBindings = async ({
     insertModeKeyBindings,
     normalModeKeyBindings,
+    normalModeKeyBindingsNonRecursive,
     visualModeKeyBindings,
   }: {
     insertModeKeyBindings?: IKeyRemapping[];
     normalModeKeyBindings?: IKeyRemapping[];
+    normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
   }) => {
     const configuration = new Configuration();
     configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings || [];
     configuration.normalModeKeyBindings = normalModeKeyBindings || [];
+    configuration.normalModeKeyBindingsNonRecursive = normalModeKeyBindingsNonRecursive || [];
     configuration.visualModeKeyBindings = visualModeKeyBindings || [];
 
     await setupWorkspace(configuration);
@@ -119,6 +124,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -141,6 +147,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -248,6 +255,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -283,6 +291,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -309,6 +318,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -344,6 +354,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -368,6 +379,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -395,6 +407,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -422,6 +435,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 

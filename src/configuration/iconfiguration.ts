@@ -322,6 +322,8 @@ export interface IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[];
   normalModeKeyBindings: IKeyRemapping[];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[];
+  operatorPendingModeKeyBindings: IKeyRemapping[];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
   commandLineModeKeyBindings: IKeyRemapping[];
@@ -334,6 +336,8 @@ export interface IConfiguration {
   insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
