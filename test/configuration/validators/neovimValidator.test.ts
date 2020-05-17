@@ -9,10 +9,15 @@ suite('Neovim Validator', () => {
     configuration.enableNeovim = true;
     configuration.neovimPath = '';
 
+    const oldPath = process.env.PATH?.slice();
+    process.env.PATH = "";
+
     // test
     const validator = new NeovimValidator();
     const actual = await validator.validate(configuration);
     validator.disable(configuration);
+
+    process.env.PATH = oldPath;
 
     // assert
     assert.strictEqual(actual.numErrors, 1);

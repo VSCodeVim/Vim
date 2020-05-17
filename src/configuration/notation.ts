@@ -1,18 +1,18 @@
 import { configuration } from './configuration';
 
 export class Notation {
-  // Mapping from the normalized string to regex strings that could match it.
-  private static _notationMap: { [key: string]: string[] } = {
-    'C-': ['ctrl\\+', 'c\\-'],
-    'D-': ['cmd\\+', 'd\\-'],
-    Esc: ['escape', 'esc'],
-    BS: ['backspace', 'bs'],
-    Del: ['delete', 'del'],
-    Home: ['home'],
-    End: ['end'],
-    Insert: ['insert'],
-    ' ': ['<space>'],
-    '\n': ['<cr>', '<enter>'],
+  // Mapping from the normalized string to a regex that could match it.
+  private static readonly _notationMap: { [key: string]: RegExp } = {
+    'C-': /ctrl\+|c\-/gi,
+    'D-': /cmd\+|d\-/gi,
+    Esc: /escape|esc/gi,
+    BS: /backspace|bs/gi,
+    Del: /delete|del/gi,
+    Home: /home/gi,
+    End: /end/gi,
+    Insert: /insert/gi,
+    ' ': /<space>/gi,
+    '\n': /<cr>|<enter>/gi,
   };
 
   /**
@@ -61,7 +61,7 @@ export class Notation {
 
     for (const notationMapKey in this._notationMap) {
       if (this._notationMap.hasOwnProperty(notationMapKey)) {
-        const regex = new RegExp(this._notationMap[notationMapKey].join('|'), 'gi');
+        const regex = this._notationMap[notationMapKey];
         if (regex.test(key)) {
           key = key.replace(regex, notationMapKey);
           break;

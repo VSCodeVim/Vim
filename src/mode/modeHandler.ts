@@ -1232,6 +1232,8 @@ export class ModeHandler implements vscode.Disposable {
         selectionMode = globalState.searchState!.previousMode;
       } else if (vimState.currentMode === Mode.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
+      } else if (vimState.currentMode === Mode.SurroundInputMode) {
+        selectionMode = vimState.surround!.previousMode;
       }
 
       const selections = [] as vscode.Selection[];
@@ -1325,7 +1327,7 @@ export class ModeHandler implements vscode.Disposable {
     // cursor style
     let cursorStyle = configuration.getCursorStyleForMode(Mode[this.currentMode]);
     if (!cursorStyle) {
-      const cursorType = getCursorType(this.currentMode);
+      const cursorType = getCursorType(this.vimState, this.currentMode);
       cursorStyle = getCursorStyle(cursorType);
       if (
         cursorType === VSCodeVimCursorType.Native &&
@@ -1339,7 +1341,7 @@ export class ModeHandler implements vscode.Disposable {
     // cursor block
     let cursorRange: vscode.Range[] = [];
     if (
-      getCursorType(this.currentMode) === VSCodeVimCursorType.TextDecoration &&
+      getCursorType(this.vimState, this.currentMode) === VSCodeVimCursorType.TextDecoration &&
       this.currentMode !== Mode.Insert
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
@@ -1435,7 +1437,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 }
 
-function getCursorType(mode: Mode): VSCodeVimCursorType {
+function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
       return VSCodeVimCursorType.Block;
@@ -1448,9 +1450,9 @@ function getCursorType(mode: Mode): VSCodeVimCursorType {
     case Mode.VisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return getCursorType(globalState.searchState!.previousMode);
+      return getCursorType(vimState, globalState.searchState!.previousMode);
     case Mode.CommandlineInProgress:
-      return getCursorType(commandLine.previousMode);
+      return getCursorType(vimState, commandLine.previousMode);
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
     case Mode.EasyMotionMode:
@@ -1458,7 +1460,7 @@ function getCursorType(mode: Mode): VSCodeVimCursorType {
     case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
-      return VSCodeVimCursorType.Block;
+      return getCursorType(vimState, vimState.surround!.previousMode);
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;
