@@ -266,7 +266,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<tab>');
       statusBarAfterTab = StatusBar.getText().trim();
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.strictEqual(statusBarAfterTab, `:e ././${baseName}|`, `${failMsg} (w ././)`);
+      assert.strictEqual(statusBarAfterTab, `:e .${sep}.${sep}${baseName}|`, `${failMsg} (w ././)`);
 
       // With full path excluding the last space portion
       cmd = `:e ${fullPathExcludeSpace}`.split('');
