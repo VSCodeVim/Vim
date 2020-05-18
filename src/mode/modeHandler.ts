@@ -1266,7 +1266,7 @@ export class ModeHandler implements vscode.Disposable {
       if (isLastCursorTracked) {
         cursorToTrack = vimState.cursors[vimState.cursors.length - 1];
       } else {
-        cursorToTrack = new Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
+        cursorToTrack = vimState.cursors[0];
       }
 
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
