@@ -328,21 +328,21 @@ export class ModeHandler implements vscode.Disposable {
 
       if (!handled) {
         if (key === '<BufferedKeys>') {
-          this.vimState.recordedState.commandList = this.vimState.recordedState.commandList.slice(
-            0,
-            -1
-          );
+          // Remove the <BufferedKeys> key and get the key before that
+          this.vimState.recordedState.commandList.pop();
           key = this.vimState.recordedState.commandList[
             this.vimState.recordedState.commandList.length - 1
           ];
         }
         if (hadBufferedKeys) {
+          // If we had buffered keys, none of them had been sent to action handler yet
+          // so we need to send them one by one
           for (let k of this.vimState.recordedState.commandList) {
             key = k;
-            this.vimState = await this.handleKeyEventHelper(key, this.vimState);
+            this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
           }
         } else {
-          this.vimState = await this.handleKeyEventHelper(key, this.vimState);
+          this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
         }
       }
     } catch (e) {
@@ -378,7 +378,7 @@ export class ModeHandler implements vscode.Disposable {
     this._logger.debug(`handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`);
   }
 
-  private async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
+  private async handleKeyAsAnAction(key: string, vimState: VimState): Promise<VimState> {
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
       this._logger.warn('Current window is not active');
       return this.vimState;

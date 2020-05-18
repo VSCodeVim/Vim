@@ -1,5 +1,5 @@
 import { configuration } from '../configuration/configuration';
-import { Mode } from '../mode/mode';
+import { Mode, isVisualMode } from '../mode/mode';
 import { BaseAction } from './../actions/base';
 import { BaseCommand } from './../actions/commands/actions';
 import { BaseOperator } from './../actions/operator';
@@ -88,6 +88,20 @@ export class RecordedState {
   public bufferedKeys: string[] = [];
   public bufferedKeysTimeoutObj: NodeJS.Timeout | undefined = undefined;
 
+  /**
+   * This is used when the remappers are resending the keys after a potential
+   * remap without an ambiguous remap is broken, either by a new key or by the
+   * timeout finishing.
+   *
+   * It will make it so the first key sent will not be considered as a potential
+   * remap by any of the remappers, even though it is, to prevent the remappers
+   * of doing the same thing again. This way the first key will be handled as an
+   * action but the next keys can still be remapped.
+   *
+   * Example: if you map `iiii -> i<C-A><Esc>` in normal mode and map `ii -> <Esc>`
+   * in insert mode, after pressing `iii` you want the first `i` to put you in
+   * insert mode and the next `ii` to escape to normal mode.
+   */
   public allowPotentialRemapOnFirstKey = true;
 
   public hasRunOperator = false;
@@ -175,9 +189,7 @@ export class RecordedState {
       mode !== Mode.SearchInProgressMode &&
       mode !== Mode.CommandlineInProgress &&
       (this.hasRunAMovement ||
-        mode === Mode.Visual ||
-        mode === Mode.VisualLine ||
-        mode === Mode.VisualBlock ||
+        isVisualMode(mode) ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
     );
@@ -192,9 +204,7 @@ export class RecordedState {
       mode !== Mode.CommandlineInProgress &&
       !(
         this.hasRunAMovement ||
-        mode === Mode.Visual ||
-        mode === Mode.VisualLine ||
-        mode === Mode.VisualBlock ||
+        isVisualMode(mode) ||
         (this.operators.length > 1 &&
           this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor)
       )
