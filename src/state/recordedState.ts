@@ -82,6 +82,14 @@ export class RecordedState {
    */
   public actionsRun: BaseAction[] = [];
 
+  public getLastActionRun(): BaseAction | undefined {
+    if (this.actionsRun.length === 0) {
+      return;
+    }
+
+    return this.actionsRun[this.actionsRun.length - 1];
+  }
+
   public hasRunOperator = false;
 
   public hasRunSurround = false;

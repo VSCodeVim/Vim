@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.14.4](https://github.com/vscodevim/vim/tree/v1.14.4) (2020-05-17)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.3...v1.14.4)
+
+**Fixed Bugs:**
+
+- Match count is inaccurate. [\#4863](https://github.com/VSCodeVim/Vim/issues/4863)
+- Surround when in visual modes using `S` working incorrectly. [\#4862](https://github.com/VSCodeVim/Vim/issues/4862)
+
+**Closed issues:**
+
+- Vim Surround is not working as it should [\#4867](https://github.com/VSCodeVim/Vim/issues/4867)
+
+**Merged pull requests:**
+
+- Update dependency @types/sinon to v9.0.1 [\#4861](https://github.com/VSCodeVim/Vim/pull/4861) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.151 [\#4860](https://github.com/VSCodeVim/Vim/pull/4860) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v1.14.3](https://github.com/vscodevim/vim/tree/v1.14.3) (2020-05-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.2...v1.14.3)
@@ -269,7 +287,6 @@
 - zz doesn't maintain horizontal cursor position [\#4296](https://github.com/VSCodeVim/Vim/issues/4296)
 - Selecting a register using \["\] in visual block mode not working [\#4192](https://github.com/VSCodeVim/Vim/issues/4192)
 - Cannot map \<C-d\> to \<Del\> in insert mode [\#4082](https://github.com/VSCodeVim/Vim/issues/4082)
-- Cursor style does not change properly when cursor mode has been changed [\#4061](https://github.com/VSCodeVim/Vim/issues/4061)
 - Add Cursor to Line Ends Errors From Visual Line Mode [\#4270](https://github.com/VSCodeVim/Vim/issues/4270)
 
 **Closed issues:**

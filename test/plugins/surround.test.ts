@@ -240,4 +240,7 @@ suite('surround plugin', () => {
     keysPressed: 'ys<Esc>ys',
     end: ['foo b|ar'],
   });
+
+  // TODO: visual mode tests
+  // TODO: visual line mode tests
 });

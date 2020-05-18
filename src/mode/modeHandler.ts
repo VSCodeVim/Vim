@@ -25,6 +25,7 @@ import {
   BaseCommand,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
+  ActionOverrideCmdD,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -1202,6 +1203,8 @@ export class ModeHandler implements vscode.Disposable {
         selectionMode = globalState.searchState!.previousMode;
       } else if (vimState.currentMode === Mode.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
+      } else if (vimState.currentMode === Mode.SurroundInputMode) {
+        selectionMode = vimState.surround!.previousMode;
       }
 
       const selections = [] as vscode.Selection[];
@@ -1256,10 +1259,25 @@ export class ModeHandler implements vscode.Disposable {
       vimState.editor.visibleRanges.length > 0 &&
       !vimState.postponedCodeViewChanges.some((change) => change.command === 'editorScroll')
     ) {
+      /**
+       * This variable decides to which cursor we scroll the view.
+       * It is meant as a patch to #880.
+       * Extend this condition if it is the desired behaviour for other actions as well.
+       */
+      const isLastCursorTracked =
+        vimState.recordedState.getLastActionRun() instanceof ActionOverrideCmdD;
+
+      let cursorToTrack: Range;
+      if (isLastCursorTracked) {
+        cursorToTrack = vimState.cursors[vimState.cursors.length - 1];
+      } else {
+        cursorToTrack = vimState.cursors[0];
+      }
+
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
-        visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
+        visibleRange.start.line - cursorToTrack.stop.line >= 15;
       const isCursorBelowRange = (visibleRange: vscode.Range): boolean =>
-        vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+        cursorToTrack.stop.line - visibleRange.end.line >= 15;
 
       const { visibleRanges } = vimState.editor;
       const centerViewportAroundCursor =
@@ -1285,17 +1303,29 @@ export class ModeHandler implements vscode.Disposable {
           scrollView(vimState, offset);
         }
       } else if (args.revealRange) {
-        this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
-          revealType
-        );
+        if (
+          !isLastCursorTracked ||
+          this.vimState.cursorsInitialState.length !== this.vimState.cursors.length
+        ) {
+          /**
+           * We scroll the view if either:
+           * 1. the cursor we want to keep in view is the main one (this is the "standard"
+           * (before this commit) situation)
+           * 2. if we track the last cursor, but no additional cursor was created in this step
+           * (in the Cmd+D situation this means that no other matches were found)
+           */
+          this.vimState.editor.revealRange(
+            new vscode.Range(cursorToTrack.stop, cursorToTrack.stop),
+            revealType
+          );
+        }
       }
     }
 
     // cursor style
     let cursorStyle = configuration.getCursorStyleForMode(Mode[this.currentMode]);
     if (!cursorStyle) {
-      const cursorType = getCursorType(this.currentMode);
+      const cursorType = getCursorType(this.vimState, this.currentMode);
       cursorStyle = getCursorStyle(cursorType);
       if (
         cursorType === VSCodeVimCursorType.Native &&
@@ -1309,7 +1339,7 @@ export class ModeHandler implements vscode.Disposable {
     // cursor block
     let cursorRange: vscode.Range[] = [];
     if (
-      getCursorType(this.currentMode) === VSCodeVimCursorType.TextDecoration &&
+      getCursorType(this.vimState, this.currentMode) === VSCodeVimCursorType.TextDecoration &&
       this.currentMode !== Mode.Insert
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
@@ -1365,6 +1395,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Tell VSCode that the cursor position changed, so it updates its highlights for
     // `editor.occurrencesHighlight`.
+
     const range = new vscode.Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (!/\s+/.test(vimState.editor.document.getText(range))) {
       vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
@@ -1405,7 +1436,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 }
 
-function getCursorType(mode: Mode): VSCodeVimCursorType {
+function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
       return VSCodeVimCursorType.Block;
@@ -1418,9 +1449,9 @@ function getCursorType(mode: Mode): VSCodeVimCursorType {
     case Mode.VisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return getCursorType(globalState.searchState!.previousMode);
+      return getCursorType(vimState, globalState.searchState!.previousMode);
     case Mode.CommandlineInProgress:
-      return getCursorType(commandLine.previousMode);
+      return getCursorType(vimState, commandLine.previousMode);
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
     case Mode.EasyMotionMode:
@@ -1428,7 +1459,7 @@ function getCursorType(mode: Mode): VSCodeVimCursorType {
     case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
-      return VSCodeVimCursorType.Block;
+      return getCursorType(vimState, vimState.surround!.previousMode);
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;

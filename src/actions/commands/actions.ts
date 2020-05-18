@@ -4080,7 +4080,7 @@ class ActionTriggerHover extends BaseCommand {
  */
 
 @RegisterAction
-class ActionOverrideCmdD extends BaseCommand {
+export class ActionOverrideCmdD extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual];
   keys = [['<D-d>'], ['g', 'b']];
   runsOnceForEveryCursor() {
