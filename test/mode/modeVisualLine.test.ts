@@ -323,6 +323,13 @@ suite('Mode Visual Line', () => {
   });
 
   newTest({
+    title: '"xVp only updates default register content',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'V"ayjVj"ap"app',
+    end: ['abc', 'abc', 'abc', '|def', 'ghi'],
+  });
+
+  newTest({
     title: 'Vp does not append unnecessary newlines (first line)',
     start: ['|begin', 'middle', 'end'],
     keysPressed: 'yyVp',
@@ -341,6 +348,13 @@ suite('Mode Visual Line', () => {
     start: ['begin', 'middle', '|end'],
     keysPressed: 'yyVp',
     end: ['begin', 'middle', '|end'],
+  });
+
+  newTest({
+    title: 'Vp places the cursor on first non-whitespace character on line',
+    start: ['begin', '|    middle', 'end'],
+    keysPressed: 'yyjVp',
+    end: ['begin', '    middle', '    |middle'],
   });
 
   suite('replace text in linewise visual-mode with linewise register content', () => {
@@ -501,5 +515,31 @@ suite('Mode Visual Line', () => {
     start: ['rocinante', 'nau|voo', 'anubis', 'canterbury'],
     keysPressed: 'VjV',
     end: ['rocinante', 'nauvoo', 'anu|bis', 'canterbury'],
+  });
+
+  suite('Can handle ~/g~ in visual line mode', () => {
+    newTest({
+      title: '~/g~ on single line',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'jV~jjVg~',
+      end: ['OnE', 'TwO', 'ThReE', '|FoUr'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '~/g~ on multiple lines',
+      start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+      keysPressed: 'Vj~jjVjg~',
+      end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
+      endMode: Mode.Normal,
+    });
+  });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
   });
 });

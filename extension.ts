@@ -252,10 +252,6 @@ export async function activate(context: vscode.ExtensionContext) {
         if (vscode.window.activeTextEditor !== undefined) {
           const mh: ModeHandler = await getAndUpdateModeHandler(true);
 
-          await VsCodeContext.Set('vim.mode', Mode[mh.vimState.currentMode]);
-
-          await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
-
           globalState.jumpTracker.handleFileJump(
             lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
             Jump.fromStateNow(mh.vimState)

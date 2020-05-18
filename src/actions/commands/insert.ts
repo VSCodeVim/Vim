@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+import * as error from '../../error';
+
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -77,8 +79,6 @@ class CommandEscInsertMode extends BaseCommand {
         vimState.recordedState.actionsRun.length - 2
       ] as DocumentContentChangeAction;
 
-      const docChanges = changeAction.contentChanges.map((change) => change.textDiff);
-
       // Add count amount of inserts in the case of 4i=<esc>
       for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         // If this is the last transform, move cursor back one character
@@ -88,11 +88,7 @@ class CommandEscInsertMode extends BaseCommand {
             : new PositionDiff();
 
         // Add a transform containing the change
-        vimState.recordedState.transformations.push({
-          type: 'contentChange',
-          changes: docChanges,
-          diff: positionDiff,
-        });
+        vimState.recordedState.transformations.push(changeAction.getTransformation(positionDiff));
       }
     }
 
@@ -116,7 +112,12 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actions = ((await Register.getByKey('.')).text as RecordedState).actionsRun.slice(0);
+    let lastInserted = (await Register.getByKey('.')).text as RecordedState;
+    if (!lastInserted.actionsRun) {
+      throw error.VimError.fromCode(error.ErrorCode.NoInsertedTextYet);
+    }
+
+    let actions = lastInserted.actionsRun.slice(0);
     // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
@@ -436,6 +437,7 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.returnToInsertAfterCommand = true;
+    vimState.actionCount = 0;
     return new CommandEscInsertMode().exec(position, vimState);
   }
 }

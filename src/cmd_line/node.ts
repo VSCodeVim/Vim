@@ -62,7 +62,9 @@ export class LineRange {
     }
     const lineRef = this.right.length === 0 ? this.left : this.right;
     const pos = this.lineRefToPosition(document, lineRef, vimState);
-    vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos);
+    vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos)
+      .withColumn(vimState.cursorStopPosition.character)
+      .obeyStartOfLine();
   }
 
   lineRefToPosition(
@@ -242,7 +244,8 @@ export abstract class CommandBase {
 
   abstract execute(vimState: VimState): Promise<void>;
 
-  executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    throw new Error('Not implemented!');
+  async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    // By default, ignore the given range.
+    await this.execute(vimState);
   }
 }
