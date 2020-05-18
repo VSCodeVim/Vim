@@ -1884,6 +1884,17 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can delete with count before and after operator, 2d12w deletes 24 words',
+    start: [
+      '|one two three four five six seven eight nine ten',
+      'one two three four five six seven eight nine ten',
+      'one two three four five six seven eight nine ten',
+    ],
+    keysPressed: '2d12w',
+    end: ['|five six seven eight nine ten'],
+  });
+
+  newTest({
     title: 'can dE correctly',
     start: ['|one two three'],
     keysPressed: 'dE',

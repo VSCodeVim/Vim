@@ -308,8 +308,31 @@ export class CommandNumber extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const number = parseInt(this.keysPressed[0], 10);
+    const operatorCount = vimState.recordedState.operatorCount;
 
-    vimState.recordedState.count = vimState.recordedState.count * 10 + number;
+    if (operatorCount > 0) {
+      const lastAction =
+        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2];
+      if (!(lastAction instanceof CommandNumber)) {
+        // We have set an operatorCount !== 0 after an operator, but now we got another count
+        // number so we need to multiply them.
+        vimState.recordedState.count = operatorCount * number;
+      } else {
+        // We are now getting another digit which means we need to multiply by 10 and add
+        // the new digit multiplied by operatorCount.
+        //
+        // Example: user presses '2d31w':
+        // - After '2' the number 2 is stored in 'count'
+        // - After 'd' the count (2) is stored in 'operatorCount'
+        // - After '3' the number 3 multiplied by 'operatorCount' (3 x 2 = 6) is stored in 'count'
+        // - After '1' the count is multiplied by 10 and added by number 1 multiplied by 'operatorCount'
+        //   (6 * 10 + 1 * 2 = 62)
+        // The final result will be the deletion of 62 words.
+        vimState.recordedState.count = vimState.recordedState.count * 10 + number * operatorCount;
+      }
+    } else {
+      vimState.recordedState.count = vimState.recordedState.count * 10 + number;
+    }
 
     return vimState;
   }
