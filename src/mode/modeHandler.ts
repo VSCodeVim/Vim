@@ -1402,7 +1402,7 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  // Return true if a new undo point should be created based on brackets and parenthesis
+  // Return true if a new undo point should be created based on brackets and parentheses
   private createUndoPointForBrackets(vimState: VimState): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];

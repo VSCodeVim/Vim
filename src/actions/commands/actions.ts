@@ -2904,11 +2904,6 @@ class CycleThroughPanes extends BaseCommand {
   }
 }
 
-class BaseTabCommand extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  runsOnceForEachCountPrefix = true;
-}
-
 @RegisterAction
 class VerticalSplit extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
@@ -2961,7 +2956,8 @@ class EvenPaneWidths extends BaseCommand {
 }
 
 @RegisterAction
-class CommandTabNext extends BaseTabCommand {
+class CommandTabNext extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 't'], ['<C-pagedown>']];
   runsOnceForEachCountPrefix = false;
 
@@ -2985,7 +2981,8 @@ class CommandTabNext extends BaseTabCommand {
 }
 
 @RegisterAction
-class CommandTabPrevious extends BaseTabCommand {
+class CommandTabPrevious extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 'T'], ['<C-pageup>']];
   runsOnceForEachCountPrefix = true;
 
@@ -3151,17 +3148,15 @@ class ActionJoin extends BaseCommand {
         } else {
           columnDeltaOffset = lineTextWithoutIndent.length;
         }
+      } else if (
+        trimmedLinesContent === '' ||
+        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
+        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
+      ) {
+        columnDeltaOffset += 0;
       } else {
-        if (
-          trimmedLinesContent === '' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
-        ) {
-          columnDeltaOffset += 0;
-        } else {
-          trimmedLinesContent += ' ';
-          columnDeltaOffset += 1;
-        }
+        trimmedLinesContent += ' ';
+        columnDeltaOffset += 1;
       }
     }
 
@@ -3200,10 +3195,6 @@ class ActionJoin extends BaseCommand {
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    let resultingCursors: Range[] = [];
-    let i = 0;
-
     const cursorsToIterateOver = vimState.cursors
       .map((x) => new Range(x.start, x.stop))
       .sort((a, b) =>
@@ -3213,13 +3204,14 @@ class ActionJoin extends BaseCommand {
           : -1
       );
 
-    for (const { start, stop } of cursorsToIterateOver) {
-      this.multicursorIndex = i++;
+    let resultingCursors: Range[] = [];
+    for (const [idx, { start, stop }] of cursorsToIterateOver.entries()) {
+      this.multicursorIndex = idx;
 
       vimState.cursorStopPosition = stop;
       vimState.cursorStartPosition = start;
 
-      vimState = await this.execJoinLines(start, stop, vimState, timesToRepeat);
+      vimState = await this.execJoinLines(start, stop, vimState, vimState.recordedState.count || 1);
 
       resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
@@ -3242,19 +3234,16 @@ class ActionJoinVisualMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actionJoin = new ActionJoin();
-    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
+    const [start, end] = Position.sorted(
+      Position.FromVSCodePosition(vimState.editor.selection.start),
+      Position.FromVSCodePosition(vimState.editor.selection.end)
+    );
 
     /**
      * For joining lines, Visual Line behaves the same as Visual so we align the register mode here.
      */
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    vimState = await actionJoin.execJoinLines(start, end, vimState, 1);
+    vimState = await new ActionJoin().execJoinLines(start, end, vimState, 1);
 
     return vimState;
   }
@@ -3266,12 +3255,7 @@ class ActionJoinVisualBlockMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let start = vimState.cursorStartPosition;
-    let end = vimState.cursorStopPosition;
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
+    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
 
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     return new ActionJoin().execJoinLines(start, end, vimState, 1);
@@ -3704,8 +3688,8 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
   abstract getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: Position,
-    selectionEnd: Position
+    selectionStart: vscode.Position,
+    selectionEnd: vscode.Position
   ): Range;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3716,12 +3700,7 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     vimState.cursors = [];
 
     for (const selection of vimState.editor.selections) {
-      let start = Position.FromVSCodePosition(selection.start);
-      let end = Position.FromVSCodePosition(selection.end);
-
-      if (start.isAfter(end)) {
-        [start, end] = [end, start];
-      }
+      let { start, end } = selection;
 
       for (let i = start.line; i <= end.line; i++) {
         const line = TextEditor.getLine(i);
@@ -3768,12 +3747,12 @@ export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCo
 
   getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: Position,
-    selectionEnd: Position
+    selectionStart: vscode.Position,
+    selectionEnd: vscode.Position
   ): Range {
     const startCharacterPosition =
       line.lineNumber === selectionStart.line
-        ? selectionStart
+        ? Position.FromVSCodePosition(selectionStart)
         : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
     return new Range(startCharacterPosition, startCharacterPosition);
   }
@@ -3786,12 +3765,12 @@ export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLine
 
   getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: Position,
-    selectionEnd: Position
+    selectionStart: vscode.Position,
+    selectionEnd: vscode.Position
   ): Range {
     const endCharacterPosition =
       line.lineNumber === selectionEnd.line
-        ? selectionEnd
+        ? Position.FromVSCodePosition(selectionEnd)
         : new Position(line.lineNumber, line.range.end.character);
     return new Range(endCharacterPosition, endCharacterPosition);
   }

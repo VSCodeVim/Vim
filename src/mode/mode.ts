@@ -3,7 +3,6 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
-import { commandLine } from '../cmd_line/commandLine';
 
 export enum Mode {
   Normal,
@@ -27,18 +26,6 @@ export enum VSCodeVimCursorType {
   Underline,
   TextDecoration,
   Native,
-}
-
-export enum VisualBlockInsertionType {
-  /**
-   * Triggered with I
-   */
-  Insert,
-
-  /**
-   * Triggered with A
-   */
-  Append,
 }
 
 /**
