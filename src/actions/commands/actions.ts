@@ -3656,7 +3656,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [Mode.VisualBlock];
-  keys = [['C'], ['S']];
+  keys = ['C'];
   runsOnceForEveryCursor() {
     return false;
   }
@@ -3837,29 +3837,27 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 
 @RegisterAction
 class ActionChangeLineVisualMode extends BaseCommand {
-  modes = [Mode.Visual];
-  keys = ['C'];
+  modes = [Mode.Visual, Mode.VisualLine];
+  keys = [['C'], ['R'], ['S']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new operator.DeleteOperator(this.multicursorIndex).run(
+    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
-      vimState.cursorStartPosition.getLineBegin(),
-      vimState.cursorStopPosition.getLineEndIncludingEOL()
+      start.getLineBegin(),
+      end.getLineEndIncludingEOL()
     );
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionRemoveLineVisualMode extends BaseCommand {
-  modes = [Mode.Visual];
-  keys = ['R'];
+class ActionChangeLineVisualBlockMode extends BaseCommand {
+  modes = [Mode.VisualBlock];
+  keys = [['R'], ['S']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new operator.DeleteOperator(this.multicursorIndex).run(
-      vimState,
-      vimState.cursorStartPosition.getLineBegin(),
-      vimState.cursorStopPosition.getLineEndIncludingEOL()
-    );
+    return new ActionChangeLineVisualMode().exec(position, vimState);
   }
 }
 
