@@ -959,7 +959,7 @@
     "@types/lodash": "4.14.151",
     "@types/mocha": "7.0.2",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.1",
+    "@types/sinon": "9.0.3",
     "@types/vscode": "1.37.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
