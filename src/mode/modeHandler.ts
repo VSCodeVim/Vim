@@ -356,14 +356,14 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.lastKeyPressedTimestamp = now;
 
+    StatusBar.updateShowCmd(this.vimState);
+
     // We don't want to immediately erase any message that resulted from the action just performed
     if (StatusBar.getText() === oldStatusBarText) {
       // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
-        this.vimState.recordedState.actionKeys.length !== oldActionKeysLength ||
-        this.vimState.recordedState.bufferedKeys.length !== oldBufferedKeysLength;
+        this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
 
