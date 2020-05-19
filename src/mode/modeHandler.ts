@@ -1385,6 +1385,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     StatusBar.clear(this.vimState, false);
+    StatusBar.updateShowCmd(this.vimState);
 
     await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
 
