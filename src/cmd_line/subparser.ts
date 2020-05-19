@@ -30,116 +30,26 @@ export type CommandParserMapping = {
   parser: (args: string) => CommandBase;
 };
 
+// Keep this sorted, please :)
 export const commandParsers = {
-  write: {
-    abbrev: 'w',
-    parser: parseWriteCommandArgs,
-  },
-
-  wall: {
-    abbrev: 'wa',
-    parser: parseWallCommandArgs,
-  },
-
-  nohlsearch: {
-    abbrev: 'noh',
-    parser: () => new NohlCommand({}),
-  },
-
   close: {
     abbrev: 'clo',
     parser: parseCloseCommandArgs,
   },
 
-  quit: {
-    abbrev: 'q',
-    parser: parseQuitCommandArgs,
+  delete: {
+    abbrev: 'd',
+    parser: parseDeleteRangeLinesCommandArgs,
   },
 
-  qall: {
-    abbrev: 'qa',
-    parser: parseQuitAllCommandArgs,
+  digraphs: {
+    abbrev: 'dig',
+    parser: parseDigraphCommandArgs,
   },
 
-  quitall: {
-    abbrev: 'quita',
-    parser: parseQuitAllCommandArgs,
-  },
-
-  wq: {
-    parser: parseWriteQuitCommandArgs,
-  },
-
-  x: {
-    parser: parseWriteQuitCommandArgs,
-  },
-
-  wqall: {
-    abbrev: 'wqa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  xall: {
-    abbrev: 'xa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  tabnext: {
-    abbrev: 'tabn',
-    parser: tabCmd.parseTabNCommandArgs,
-  },
-
-  tabprevious: {
-    abbrev: 'tabp',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  tabNext: {
-    abbrev: 'tabN',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  tabfirst: {
-    abbrev: 'tabfir',
-    parser: tabCmd.parseTabFirstCommandArgs,
-  },
-
-  tablast: {
-    abbrev: 'tabl',
-    parser: tabCmd.parseTabLastCommandArgs,
-  },
-
-  tabedit: {
-    abbrev: 'tabe',
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabnew: {
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabclose: {
-    abbrev: 'tabc',
-    parser: tabCmd.parseTabCloseCommandArgs,
-  },
-
-  tabonly: {
-    abbrev: 'tabo',
-    parser: tabCmd.parseTabOnlyCommandArgs,
-  },
-
-  tabmove: {
-    abbrev: 'tabm',
-    parser: tabCmd.parseTabMovementCommandArgs,
-  },
-
-  substitute: {
-    abbrev: 's',
-    parser: parseSubstituteCommandArgs,
-  },
-
-  smile: {
-    parser: () => new SmileCommand(),
+  display: {
+    abbrev: 'reg',
+    parser: parseRegisterCommandArgs,
   },
 
   edit: {
@@ -152,23 +62,27 @@ export const commandParsers = {
     parser: fileCmd.parseEditNewFileCommandArgs,
   },
 
-  split: {
-    abbrev: 'sp',
-    parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
+  file: {
+    abbrev: 'f',
+    parser: parseFileInfoCommandArgs,
   },
 
-  vsplit: {
-    abbrev: 'vs',
-    parser: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  history: {
+    abbrev: 'his',
+    parser: parseHistoryCommandArgs,
+  },
+
+  marks: {
+    parser: parseMarksCommandArgs,
   },
 
   new: {
     parser: fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs,
   },
 
-  vnew: {
-    abbrev: 'vne',
-    parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  nohlsearch: {
+    abbrev: 'noh',
+    parser: () => new NohlCommand({}),
   },
 
   only: {
@@ -176,9 +90,19 @@ export const commandParsers = {
     parser: () => new OnlyCommand({}),
   },
 
-  set: {
-    abbrev: 'se',
-    parser: parseOptionsCommandArgs,
+  qall: {
+    abbrev: 'qa',
+    parser: parseQuitAllCommandArgs,
+  },
+
+  quit: {
+    abbrev: 'q',
+    parser: parseQuitCommandArgs,
+  },
+
+  quitall: {
+    abbrev: 'quita',
+    parser: parseQuitAllCommandArgs,
   },
 
   read: {
@@ -191,19 +115,13 @@ export const commandParsers = {
     parser: parseRegisterCommandArgs,
   },
 
-  display: {
-    abbrev: 'reg',
-    parser: parseRegisterCommandArgs,
+  set: {
+    abbrev: 'se',
+    parser: parseOptionsCommandArgs,
   },
 
-  digraphs: {
-    abbrev: 'dig',
-    parser: parseDigraphCommandArgs,
-  },
-
-  delete: {
-    abbrev: 'd',
-    parser: parseDeleteRangeLinesCommandArgs,
+  smile: {
+    parser: () => new SmileCommand(),
   },
 
   sort: {
@@ -211,18 +129,101 @@ export const commandParsers = {
     parser: parseSortCommandArgs,
   },
 
-  file: {
-    abbrev: 'f',
-    parser: parseFileInfoCommandArgs,
+  split: {
+    abbrev: 'sp',
+    parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
   },
 
-  marks: {
-    parser: parseMarksCommandArgs,
+  substitute: {
+    abbrev: 's',
+    parser: parseSubstituteCommandArgs,
   },
 
-  history: {
-    abbrev: 'his',
-    parser: parseHistoryCommandArgs,
+  tabclose: {
+    abbrev: 'tabc',
+    parser: tabCmd.parseTabCloseCommandArgs,
+  },
+
+  tabedit: {
+    abbrev: 'tabe',
+    parser: tabCmd.parseTabNewCommandArgs,
+  },
+
+  tabfirst: {
+    abbrev: 'tabfir',
+    parser: tabCmd.parseTabFirstCommandArgs,
+  },
+
+  tablast: {
+    abbrev: 'tabl',
+    parser: tabCmd.parseTabLastCommandArgs,
+  },
+
+  tabmove: {
+    abbrev: 'tabm',
+    parser: tabCmd.parseTabMovementCommandArgs,
+  },
+
+  tabnew: {
+    parser: tabCmd.parseTabNewCommandArgs,
+  },
+
+  tabnext: {
+    abbrev: 'tabn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  tabNext: {
+    abbrev: 'tabN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  tabonly: {
+    abbrev: 'tabo',
+    parser: tabCmd.parseTabOnlyCommandArgs,
+  },
+
+  tabprevious: {
+    abbrev: 'tabp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  vnew: {
+    abbrev: 'vne',
+    parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  },
+
+  vsplit: {
+    abbrev: 'vs',
+    parser: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  },
+
+  wall: {
+    abbrev: 'wa',
+    parser: parseWallCommandArgs,
+  },
+
+  wq: {
+    parser: parseWriteQuitCommandArgs,
+  },
+
+  wqall: {
+    abbrev: 'wqa',
+    parser: parseWriteQuitAllCommandArgs,
+  },
+
+  write: {
+    abbrev: 'w',
+    parser: parseWriteCommandArgs,
+  },
+
+  x: {
+    parser: parseWriteQuitCommandArgs,
+  },
+
+  xall: {
+    abbrev: 'xa',
+    parser: parseWriteQuitAllCommandArgs,
   },
 };
 

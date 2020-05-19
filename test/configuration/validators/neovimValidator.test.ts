@@ -10,7 +10,7 @@ suite('Neovim Validator', () => {
     configuration.neovimPath = '';
 
     const oldPath = process.env.PATH?.slice();
-    process.env.PATH = "";
+    process.env.PATH = '';
 
     // test
     const validator = new NeovimValidator();

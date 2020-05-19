@@ -948,9 +948,8 @@
   "scripts": {
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
-    "test": "node ./node_modules/vscode/bin/test",
-    "forceprettier": "gulp forceprettier",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "test": "node ./out/test/runTest.js",
+    "forceprettier": "gulp forceprettier"
   },
   "dependencies": {
     "diff-match-patch": "1.0.4",
@@ -964,10 +963,12 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
+    "@types/glob": "7.1.1",
     "@types/lodash": "4.14.151",
     "@types/mocha": "7.0.2",
     "@types/node": "12.12.31",
     "@types/sinon": "9.0.1",
+    "@types/vscode": "1.37.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.10.1",
@@ -983,7 +984,7 @@
     "ts-loader": "7.0.4",
     "tslint": "6.1.2",
     "typescript": "3.9.2",
-    "vscode": "1.1.37",
+    "vscode-test": "1.3.0",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.11",
     "webpack-merge": "4.2.2",

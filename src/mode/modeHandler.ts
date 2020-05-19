@@ -25,6 +25,7 @@ import {
   BaseCommand,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
+  ActionOverrideCmdD,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -1288,10 +1289,25 @@ export class ModeHandler implements vscode.Disposable {
       vimState.editor.visibleRanges.length > 0 &&
       !vimState.postponedCodeViewChanges.some((change) => change.command === 'editorScroll')
     ) {
+      /**
+       * This variable decides to which cursor we scroll the view.
+       * It is meant as a patch to #880.
+       * Extend this condition if it is the desired behaviour for other actions as well.
+       */
+      const isLastCursorTracked =
+        vimState.recordedState.getLastActionRun() instanceof ActionOverrideCmdD;
+
+      let cursorToTrack: Range;
+      if (isLastCursorTracked) {
+        cursorToTrack = vimState.cursors[vimState.cursors.length - 1];
+      } else {
+        cursorToTrack = vimState.cursors[0];
+      }
+
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
-        visibleRange.start.line - vimState.cursorStopPosition.line >= 15;
+        visibleRange.start.line - cursorToTrack.stop.line >= 15;
       const isCursorBelowRange = (visibleRange: vscode.Range): boolean =>
-        vimState.cursorStopPosition.line - visibleRange.end.line >= 15;
+        cursorToTrack.stop.line - visibleRange.end.line >= 15;
 
       const { visibleRanges } = vimState.editor;
       const centerViewportAroundCursor =
@@ -1317,10 +1333,22 @@ export class ModeHandler implements vscode.Disposable {
           scrollView(vimState, offset);
         }
       } else if (args.revealRange) {
-        this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
-          revealType
-        );
+        if (
+          !isLastCursorTracked ||
+          this.vimState.cursorsInitialState.length !== this.vimState.cursors.length
+        ) {
+          /**
+           * We scroll the view if either:
+           * 1. the cursor we want to keep in view is the main one (this is the "standard"
+           * (before this commit) situation)
+           * 2. if we track the last cursor, but no additional cursor was created in this step
+           * (in the Cmd+D situation this means that no other matches were found)
+           */
+          this.vimState.editor.revealRange(
+            new vscode.Range(cursorToTrack.stop, cursorToTrack.stop),
+            revealType
+          );
+        }
       }
     }
 
@@ -1392,11 +1420,13 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     StatusBar.clear(this.vimState, false);
+    StatusBar.updateShowCmd(this.vimState);
 
     await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
 
     // Tell VSCode that the cursor position changed, so it updates its highlights for
     // `editor.occurrencesHighlight`.
+
     const range = new vscode.Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (!/\s+/.test(vimState.editor.document.getText(range))) {
       vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
