@@ -668,19 +668,31 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   protected abstract getNumLines(vimState: VimState): number;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const { visibleRanges } = vimState.editor;
     const smoothScrolling = configuration.getConfiguration('editor').smoothScrolling;
-    const scrollLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
+    const moveLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
-    await vscode.commands.executeCommand('editorScroll', {
-      to: this.to,
-      by: 'line',
-      value: scrollLines,
-      revealCursor: smoothScrolling,
-      select: isVisualMode(vimState.currentMode),
-    });
+    let scrollLines = moveLines;
+    if (this.to === 'down') {
+      // This makes <C-d> less wonky when `editor.scrollBeyondLastLine` is enabled
+      scrollLines = Math.min(
+        moveLines,
+        TextEditor.getLineCount() - 1 - visibleRanges[visibleRanges.length - 1].end.line
+      );
+    }
+
+    if (scrollLines > 0) {
+      await vscode.commands.executeCommand('editorScroll', {
+        to: this.to,
+        by: 'line',
+        value: scrollLines,
+        revealCursor: smoothScrolling,
+        select: isVisualMode(vimState.currentMode),
+      });
+    }
 
     const newPositionLine = clamp(
-      position.line + (this.to === 'down' ? scrollLines : -scrollLines),
+      position.line + (this.to === 'down' ? moveLines : -moveLines),
       0,
       vimState.editor.document.lineCount - 1
     );
