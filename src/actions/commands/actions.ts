@@ -386,12 +386,6 @@ export class CommandRegister extends BaseCommand {
 
     return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
-  }
 }
 
 @RegisterAction
@@ -418,22 +412,6 @@ class CommandRecordMacro extends BaseCommand {
 
     vimState.isRecordingMacro = true;
     return vimState;
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = this.keysPressed[1];
-
-    return (
-      super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register)
-    );
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = this.keysPressed[1];
-
-    return (
-      super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register)
-    );
   }
 }
 
@@ -489,14 +467,6 @@ class CommandExecuteMacro extends BaseCommand {
 
     return (
       super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register)
-    );
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return (
-      super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register)
     );
   }
 }
