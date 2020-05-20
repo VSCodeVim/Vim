@@ -316,12 +316,25 @@ export class Remapper implements IRemapper {
       this._hasAmbiguousRemap = false;
       this._hasPotentialRemap = false;
 
+      let skipFirstCharacter = false;
+
       if (!this._recursive) {
         vimState.isCurrentlyPerformingRemapping = true;
+      } else {
+        // As per the Vim documentation: (:help recursive)
+        // If the {rhs} starts with {lhs}, the first character is not mapped
+        // again (this is Vi compatible).
+        // For example:
+        // map ab abcd
+        // will execute the "a" command and insert "bcd" in the text. The "ab"
+        // in the {rhs} will not be mapped again.
+        if (remapping.after?.join('').startsWith(remapping.before.join(''))) {
+          skipFirstCharacter = true;
+        }
       }
 
       try {
-        await this.handleRemapping(remapping, vimState, modeHandler);
+        await this.handleRemapping(remapping, vimState, modeHandler, skipFirstCharacter);
       } finally {
         vimState.isCurrentlyPerformingRemapping = false;
         if (remainingKeys.length > 0) {
@@ -340,14 +353,22 @@ export class Remapper implements IRemapper {
   private async handleRemapping(
     remapping: IKeyRemapping,
     vimState: VimState,
-    modeHandler: ModeHandler
+    modeHandler: ModeHandler,
+    skipFirstCharacter: boolean
   ) {
     vimState.recordedState.resetCommandList();
     if (remapping.after) {
       const count = vimState.recordedState.count || 1;
       vimState.recordedState.count = 0;
       for (let i = 0; i < count; i++) {
-        await modeHandler.handleMultipleKeyEvents(remapping.after);
+        if (skipFirstCharacter) {
+          vimState.isCurrentlyPerformingRemapping = true;
+          await modeHandler.handleKeyEvent(remapping.after[0]);
+          vimState.isCurrentlyPerformingRemapping = false;
+          await modeHandler.handleMultipleKeyEvents(remapping.after.slice(1));
+        } else {
+          await modeHandler.handleMultipleKeyEvents(remapping.after);
+        }
       }
     }
 
