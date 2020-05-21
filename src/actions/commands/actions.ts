@@ -3008,7 +3008,7 @@ export class ActionDeleteChar extends BaseCommand {
     const state = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position,
-      position.getRight(timesToRepeat - 1)
+      position.getRight(timesToRepeat - 1).getLeftIfEOL()
     );
 
     await state.setCurrentMode(Mode.Normal);
