@@ -26,6 +26,7 @@ import {
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
   ActionOverrideCmdD,
+  CommandRegister,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -363,8 +364,10 @@ export class ModeHandler implements vscode.Disposable {
           vimState.recordedState = new RecordedState();
         }
 
+        StatusBar.updateShowCmd(this.vimState);
         return vimState;
       case KeypressState.WaitingOnKeys:
+        StatusBar.updateShowCmd(this.vimState);
         return vimState;
     }
 
@@ -547,8 +550,7 @@ export class ModeHandler implements vscode.Disposable {
         ranRepeatableAction = true;
       }
     }
-
-    if (ranAction && vimState.currentMode !== Mode.Insert) {
+    if (ranAction && !(action instanceof CommandRegister) && vimState.currentMode !== Mode.Insert) {
       vimState.recordedState.resetCommandList();
     }
 
