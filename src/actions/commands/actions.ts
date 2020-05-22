@@ -682,13 +682,21 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     }
 
     if (scrollLines > 0) {
-      await vscode.commands.executeCommand('editorScroll', {
+      const args = {
         to: this.to,
         by: 'line',
         value: scrollLines,
         revealCursor: smoothScrolling,
         select: isVisualMode(vimState.currentMode),
-      });
+      };
+      if (smoothScrolling) {
+        await vscode.commands.executeCommand('editorScroll', args);
+      } else {
+        vimState.postponedCodeViewChanges.push({
+          command: 'editorScroll',
+          args,
+        });
+      }
     }
 
     const newPositionLine = clamp(
