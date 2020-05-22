@@ -81,24 +81,29 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
-   * Syncs cursors between VSCode representation and vim representation
+   * Updates VSCodeVim's internal representation of cursors to match VSCode's selections.
+   * This loses some information, so it should only be done when necessary.
    */
   public syncCursors() {
+    // TODO: getCursorsAfterSync() is basically this, but stupider
     setImmediate(() => {
       if (this.vimState.editor) {
-        this.vimState.cursors = this.vimState.editor.selections.map(
-          ({ start, end }) =>
-            new Range(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end))
-        );
+        const { selections } = this.vimState.editor;
+        if (
+          !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
+          !this.vimState.cursorStopPosition.isEqual(selections[0].active)
+        ) {
+          this.vimState.desiredColumn = selections[0].active.character;
+        }
 
-        this.vimState.cursorStartPosition = Position.FromVSCodePosition(
-          this.vimState.editor.selection.start
+        this.vimState.cursors = selections.map(({ active, anchor }) =>
+          active.isBefore(anchor)
+            ? new Range(
+                Position.FromVSCodePosition(anchor).getLeft(),
+                Position.FromVSCodePosition(active)
+              )
+            : new Range(Position.FromVSCodePosition(anchor), Position.FromVSCodePosition(active))
         );
-        this.vimState.cursorStopPosition = Position.FromVSCodePosition(
-          // TODO: why are we doing this? If this should be stop, it's redundant; if it shouldn't be, it needs to be explained
-          this.vimState.editor.selection.start
-        );
-        this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
       }
     }, 0);
   }
