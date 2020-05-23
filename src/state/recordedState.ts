@@ -77,6 +77,30 @@ export class RecordedState {
   public actionKeys: string[] = [];
 
   /**
+   * Waiting for another key for a potential action.
+   *
+   * Used to prevent the remapping of keys after a potential action key
+   * like @zZtTfF[]rm'`"gq<C-r><C-w>. This is done to be able to use all
+   * the named registers and marks, even when the command with the same
+   * name has been mapped.
+   *
+   * Vim Documentation:
+   * "Note that the second character (argument) of the commands @zZtTfF[]rm'`"v
+   * and CTRL-X is not mapped. This was done to be able to use all the named
+   * registers and marks, even when the command with the same name has been
+   * mapped."
+   *
+   * The documentation only specifies some keys, but from testing pretty much
+   * every key has this condition (keys like 'g', 'q', '<C-r>' and '<C-w>' all
+   * behave the same) so here we use 'waitingForAnotherActionKey' to prevent
+   * remapping on next keys. In the case of the 'v' key specified in the vim
+   * documentation, I don't really understand what they mean with that because
+   * it doesn't make much sense. The 'v' key puts you in Visual mode, it doesn't
+   * accept any character argument.
+   */
+  public waitingForAnotherActionKey: boolean = false;
+
+  /**
    * Every action that has been run.
    */
   public actionsRun: BaseAction[] = [];

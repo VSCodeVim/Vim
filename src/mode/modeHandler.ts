@@ -325,11 +325,15 @@ export class ModeHandler implements vscode.Disposable {
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
       // 2. We are not typing '0' after starting to type a count
+      // 3. We are not waiting for another action key
       //    Example: jj should not remap the second 'j', if jj -> <Esc> in insert mode
       //             0 should not be remapped if typed after another number, like 10
+      //             for actions with multiple keys like 'gg' or 'fx' the second character
+      //           shouldn't be mapped
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
-        !preventZeroRemap
+        !preventZeroRemap &&
+        !this.vimState.recordedState.waitingForAnotherActionKey
       ) {
         handled = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
@@ -412,11 +416,18 @@ export class ModeHandler implements vscode.Disposable {
         if (!this._remappers.isPotentialRemap) {
           vimState.recordedState = new RecordedState();
         }
+        // Since there is no possible action we are no longer waiting any action keys
+        vimState.recordedState.waitingForAnotherActionKey = false;
 
         return vimState;
       case KeypressState.WaitingOnKeys:
+        vimState.recordedState.waitingForAnotherActionKey = true;
+
         return vimState;
     }
+
+    // Since we got an action we are no longer waiting any action keys
+    vimState.recordedState.waitingForAnotherActionKey = false;
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
