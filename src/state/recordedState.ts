@@ -45,13 +45,51 @@ export class RecordedState {
   public get commandString(): string {
     let result = '';
 
-    for (const key of this.commandList) {
-      if (key === configuration.leader) {
-        result += '<leader>';
-      } else {
-        result += key;
-      }
+    if (this.actionsRun.length > 0) {
+      result = this.actionsRun
+        .map((a, i): string => {
+          // get the keys pressed of each action run
+          return a.keysPressed.join('');
+        })
+        .reduce((accumulator, actionKeys) => {
+          // combine all actions keys pressed
+          return accumulator + actionKeys;
+        }, result);
     }
+    if (this.actionKeys.length > 0) {
+      // if there are any actionKeys waiting for other key append them
+      result += this.actionKeys.join('');
+    }
+    if (this.bufferedKeys.length > 0) {
+      // if there are any bufferedKeys waiting for other key append them
+      result += this.bufferedKeys.join('');
+    }
+    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
+    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
+    const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
+    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
+
+    return result;
+  }
+
+  /**
+   * String representation of the pending keys that the user entered.
+   */
+  public get pendingCommandString(): string {
+    let result = '';
+
+    if (this.actionKeys.length > 0) {
+      // if there are any actionKeys waiting for other key append them
+      result += this.actionKeys.join('');
+    }
+    if (this.bufferedKeys.length > 0) {
+      // if there are any bufferedKeys waiting for other key append them
+      result += this.bufferedKeys.join('');
+    }
+    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
+    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
+    const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
+    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
 
     return result;
   }

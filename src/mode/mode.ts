@@ -3,8 +3,6 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
-import { configuration } from '../configuration/configuration';
-import { commandLine } from '../cmd_line/commandLine';
 
 export enum Mode {
   Normal,
@@ -126,39 +124,30 @@ export function statusBarCommandText(vimState: VimState): string {
       }
       const lines = end.line - start.line + 1;
       if (lines > 1) {
-        return `${lines}`;
+        return `${lines} ${vimState.recordedState.pendingCommandString}`;
       } else {
         const chars = Math.max(end.character - start.character, 1) + (wentOverEOL ? 1 : 0);
-        return `${chars}`;
+        return `${chars} ${vimState.recordedState.pendingCommandString}`;
       }
     }
     case Mode.VisualLine:
       return `${
         Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1
-      }`;
+      } ${vimState.recordedState.pendingCommandString}`;
     case Mode.VisualBlock: {
       const lines =
         Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1;
       const chars =
         Math.abs(vimState.cursorStopPosition.character - vimState.cursorStartPosition.character) +
         1;
-      return `${lines}x${chars}`;
+      return `${lines}x${chars} ${vimState.recordedState.pendingCommandString}`;
     }
+    case Mode.Insert:
+      return vimState.recordedState.pendingCommandString;
     case Mode.Normal:
     case Mode.Replace:
     case Mode.Disabled:
-      let text: string = '';
-      if (vimState.recordedState.actionKeys.length > 0) {
-        text = vimState.recordedState.actionKeys.join('');
-        text += vimState.recordedState.bufferedKeys.join('');
-      } else {
-        text = vimState.recordedState.commandString;
-      }
-      const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
-      const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-      const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
-      text = text.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
-      return text;
+      return vimState.recordedState.commandString;
     default:
       return '';
   }
