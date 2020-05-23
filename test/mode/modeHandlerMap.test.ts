@@ -2,8 +2,6 @@ import * as assert from 'assert';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../../src/editorIdentity';
-import { testIt } from '../testSimplifier';
-import { KeypressState } from '../../src/actions/base';
 
 function createRandomEditorIdentity(): EditorIdentity {
   return new EditorIdentity(Math.random().toString(36).substring(7));

@@ -330,7 +330,7 @@ suite('Remapper', () => {
       new vscode.Position(0, 0),
       expectedDocumentContent
     );
-    vscode.workspace.applyEdit(edit);
+    await vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
     assert.strictEqual(modeHandler.currentMode, Mode.Insert);

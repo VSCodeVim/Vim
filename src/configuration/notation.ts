@@ -1,19 +1,19 @@
 import { configuration } from './configuration';
 
 export class Notation {
-  // Mapping from the normalized string to a regex that could match it.
-  private static readonly _notationMap: { [key: string]: RegExp } = {
-    'C-': /ctrl\+|c\-/gi,
-    'D-': /cmd\+|d\-/gi,
-    Esc: /escape|esc/gi,
-    BS: /backspace|bs/gi,
-    Del: /delete|del/gi,
-    Home: /home/gi,
-    End: /end/gi,
-    Insert: /insert/gi,
-    ' ': /<space>/gi,
-    '\n': /<cr>|<enter>/gi,
-  };
+  // Mapping from a regex to the normalized string that it should be converted to.
+  private static readonly _notationMap: Array<[RegExp, string]> = [
+    [/ctrl\+|c\-/gi, 'C-'],
+    [/cmd\+|d\-/gi, 'D-'],
+    [/escape|esc/gi, 'Esc'],
+    [/backspace|bs/gi, 'BS'],
+    [/delete|del/gi, 'Del'],
+    [/home/gi, 'Home'],
+    [/end/gi, 'End'],
+    [/insert/gi, 'Insert'],
+    [/<space>/gi, ' '],
+    [/<cr>|<enter>/gi, '\n'],
+  ];
 
   /**
    * Converts keystroke like <tab> to a single control character like \t
@@ -47,26 +47,26 @@ export class Notation {
       return key;
     }
 
-    if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
-      key = `<${key.toLocaleLowerCase()}>`;
+    if (key.length === 1) {
+      return key;
     }
 
-    if (key.toLocaleLowerCase() === '<leader>') {
+    key = key.toLocaleLowerCase();
+
+    if (!this.isSurroundedByAngleBrackets(key)) {
+      key = `<${key}>`;
+    }
+
+    if (key === '<leader>') {
       return leaderKey;
     }
 
-    if (['<up>', '<down>', '<left>', '<right>'].includes(key.toLocaleLowerCase())) {
-      return key.toLocaleLowerCase();
+    if (['<up>', '<down>', '<left>', '<right>'].includes(key)) {
+      return key;
     }
 
-    for (const notationMapKey in this._notationMap) {
-      if (this._notationMap.hasOwnProperty(notationMapKey)) {
-        const regex = this._notationMap[notationMapKey];
-        if (regex.test(key)) {
-          key = key.replace(regex, notationMapKey);
-          break;
-        }
-      }
+    for (const [regex, standardNotation] of this._notationMap) {
+      key = key.replace(regex, standardNotation);
     }
 
     return key;

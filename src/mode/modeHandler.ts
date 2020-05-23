@@ -377,10 +377,12 @@ export class ModeHandler implements vscode.Disposable {
 
     // We don't want to immediately erase any message that resulted from the action just performed
     if (StatusBar.getText() === oldStatusBarText) {
-      // Clear the status bar of high priority messages if the mode has changed or the view has scrolled
+      // Clear the status bar of high priority messages if the mode has changed, the view has scrolled
+      // or it is recording a Macro
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.editor.visibleRanges[0] !== oldVisibleRange;
+        this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
+        this.vimState.isRecordingMacro;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
 
@@ -419,10 +421,12 @@ export class ModeHandler implements vscode.Disposable {
         // Since there is no possible action we are no longer waiting any action keys
         vimState.recordedState.waitingForAnotherActionKey = false;
 
+        StatusBar.updateShowCmd(this.vimState);
         return vimState;
       case KeypressState.WaitingOnKeys:
         vimState.recordedState.waitingForAnotherActionKey = true;
 
+        StatusBar.updateShowCmd(this.vimState);
         return vimState;
     }
 
@@ -1457,7 +1461,7 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  // Return true if a new undo point should be created based on brackets and parenthesis
+  // Return true if a new undo point should be created based on brackets and parentheses
   private createUndoPointForBrackets(vimState: VimState): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];

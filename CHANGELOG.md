@@ -1,5 +1,42 @@
 # Change Log
 
+## [v1.14.5](https://github.com/vscodevim/vim/tree/v1.14.5) (2020-05-22)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.4...v1.14.5)
+
+**Enhancements:**
+
+- `showcmd` should show selection size when in visual-type mode [\#4876](https://github.com/VSCodeVim/Vim/issues/4876)
+- Search and replace using capture group does not work [\#4502](https://github.com/VSCodeVim/Vim/issues/4502)
+
+**Fixed Bugs:**
+
+- {count}x deletes newline when {count}\>1 [\#4887](https://github.com/VSCodeVim/Vim/issues/4887)
+- \<C-d\> acts strangely when `editor.scrollBeyondLastLine` is enabled [\#4877](https://github.com/VSCodeVim/Vim/issues/4877)
+- Ctrl+Backspace in Search/Command entry deletes document [\#4538](https://github.com/VSCodeVim/Vim/issues/4538)
+- Incorrect behavior of\<C-a\> [\#4457](https://github.com/VSCodeVim/Vim/issues/4457)
+- Leading 0 Confuses \<C-a\>/\<C-x\> [\#4308](https://github.com/VSCodeVim/Vim/issues/4308)
+
+**Closed issues:**
+
+- Unlike vim, `l` motion takes the cursor beyond the end of the line instead of stopping at last character of the line [\#4870](https://github.com/VSCodeVim/Vim/issues/4870)
+- confusing macro recording [\#4753](https://github.com/VSCodeVim/Vim/issues/4753)
+- TaskQueue: Error running task. Failed to handle key=\<Esc\>. . [\#4495](https://github.com/VSCodeVim/Vim/issues/4495)
+- Migrate from `vscode` dependency to `@types/vscode` and `vscode-test` dependencies [\#4448](https://github.com/VSCodeVim/Vim/issues/4448)
+- Extension issue [\#4354](https://github.com/VSCodeVim/Vim/issues/4354)
+- j mapped with gj is slow [\#4162](https://github.com/VSCodeVim/Vim/issues/4162)
+
+**Merged pull requests:**
+
+- Update dependency @types/sinon to v9.0.4 [\#4886](https://github.com/VSCodeVim/Vim/pull/4886) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency diff-match-patch to v1.0.5 [\#4884](https://github.com/VSCodeVim/Vim/pull/4884) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.9.3 [\#4881](https://github.com/VSCodeVim/Vim/pull/4881) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.152 [\#4880](https://github.com/VSCodeVim/Vim/pull/4880) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/sinon to v9.0.3 [\#4879](https://github.com/VSCodeVim/Vim/pull/4879) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix recording macro not showing after 'setText' [\#4878](https://github.com/VSCodeVim/Vim/pull/4878) ([berknam](https://github.com/berknam))
+- Fix: cmd+D now jumps and scrolls window to the last selected word [\#4725](https://github.com/VSCodeVim/Vim/pull/4725) ([gergelyth](https://github.com/gergelyth))
+- Refactor \<C-a\> logic [\#4469](https://github.com/VSCodeVim/Vim/pull/4469) ([ldm0](https://github.com/ldm0))
+
 ## [v1.14.4](https://github.com/vscodevim/vim/tree/v1.14.4) (2020-05-17)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.3...v1.14.4)
@@ -72,7 +109,6 @@
 - With `nowrapscan`, `\*` on last instance of word does not re-activate `hlsearch` [\#4680](https://github.com/VSCodeVim/Vim/issues/4680)
 - Escape not returning to normal mode from insert mode [\#4616](https://github.com/VSCodeVim/Vim/issues/4616)
 - can't select text [\#4572](https://github.com/VSCodeVim/Vim/issues/4572)
-- Repeating backspace on empty line causes error [\#4073](https://github.com/VSCodeVim/Vim/issues/4073)
 
 **Closed issues:**
 
@@ -286,7 +322,6 @@
 - vim.cursorStylePerMode is being ignored [\#4355](https://github.com/VSCodeVim/Vim/issues/4355)
 - zz doesn't maintain horizontal cursor position [\#4296](https://github.com/VSCodeVim/Vim/issues/4296)
 - Selecting a register using \["\] in visual block mode not working [\#4192](https://github.com/VSCodeVim/Vim/issues/4192)
-- Cannot map \<C-d\> to \<Del\> in insert mode [\#4082](https://github.com/VSCodeVim/Vim/issues/4082)
 - Add Cursor to Line Ends Errors From Visual Line Mode [\#4270](https://github.com/VSCodeVim/Vim/issues/4270)
 
 **Closed issues:**
@@ -524,7 +559,6 @@
 - Update neovim path to be machine-overridable for remote use [\#4152](https://github.com/VSCodeVim/Vim/pull/4152) ([xconverge](https://github.com/xconverge))
 - Simplify storage directory to use supplied extension directory [\#4151](https://github.com/VSCodeVim/Vim/pull/4151) ([xconverge](https://github.com/xconverge))
 - \<C-r\> \<C-w\> \(insert word under cursor\) in search/commmand line [\#4143](https://github.com/VSCodeVim/Vim/pull/4143) ([fraenkel](https://github.com/fraenkel))
-- fix insertion mappings [\#4063](https://github.com/VSCodeVim/Vim/pull/4063) ([kyazdani42](https://github.com/kyazdani42))
 
 ## [v1.11.3](https://github.com/vscodevim/vim/tree/v1.11.3) (2019-10-26)
 
@@ -550,7 +584,6 @@
 - Extension Version 1.11.1 not Working for me [\#4174](https://github.com/VSCodeVim/Vim/issues/4174)
 - Activating extension 'vscodevim.vim' failed: Cannot find module 'neovim'. [\#4173](https://github.com/VSCodeVim/Vim/issues/4173)
 - S deletes the whole line  [\#4168](https://github.com/VSCodeVim/Vim/issues/4168)
-- Extension activation is slow [\#4083](https://github.com/VSCodeVim/Vim/issues/4083)
 
 **Merged pull requests:**
 
@@ -583,10 +616,6 @@
 ## [v1.11.1](https://github.com/vscodevim/vim/tree/v1.11.1) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.0...v1.11.1)
-
-**Enhancements:**
-
-- `:vspl` [\#4078](https://github.com/VSCodeVim/Vim/issues/4078)
 
 **Fixed Bugs:**
 

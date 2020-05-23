@@ -30,18 +30,6 @@ export enum VSCodeVimCursorType {
   Native,
 }
 
-export enum VisualBlockInsertionType {
-  /**
-   * Triggered with I
-   */
-  Insert,
-
-  /**
-   * Triggered with A
-   */
-  Append,
-}
-
 /**
  * Is the given mode visual, visual line, or visual block?
  */

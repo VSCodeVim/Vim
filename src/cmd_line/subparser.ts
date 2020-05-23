@@ -48,7 +48,7 @@ export const commandParsers = {
   },
 
   display: {
-    abbrev: 'reg',
+    abbrev: 'di',
     parser: parseRegisterCommandArgs,
   },
 
