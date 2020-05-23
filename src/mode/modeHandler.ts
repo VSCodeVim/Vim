@@ -26,6 +26,7 @@ import {
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
   ActionOverrideCmdD,
+  CommandNumber,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -311,13 +312,25 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       let handled = false;
+      let preventZeroRemap = false;
+
+      // Handling special case for '0'. From Vim documentation (:help :map-modes)
+      // Special case: While typing a count for a command in Normal mode, mapping zero
+      // is disabled. This makes it possible to map zero without making it impossible
+      // to type a count with a zero.
+      if (key === '0' && this.vimState.recordedState.getLastActionRun() instanceof CommandNumber) {
+        preventZeroRemap = true;
+      }
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
-      // 2. We are not in normal mode performing on an operator
-      //    Example: ciwjj should be remapped if jj -> <Esc> in insert mode
-      //             dd should not remap the second "d", if d -> "_d in normal mode
-      if (!this.vimState.isCurrentlyPerformingRemapping) {
+      // 2. We are not typing '0' after starting to type a count
+      //    Example: jj should not remap the second 'j', if jj -> <Esc> in insert mode
+      //             0 should not be remapped if typed after another number, like 10
+      if (
+        !this.vimState.isCurrentlyPerformingRemapping &&
+        !preventZeroRemap
+      ) {
         handled = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
           this,
