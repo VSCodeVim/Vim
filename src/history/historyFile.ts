@@ -1,20 +1,17 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as vscode from 'vscode';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
-import { promisify } from 'util';
-import { Globals } from './../globals';
 
 export class HistoryFile {
   private readonly _logger = Logger.get('HistoryFile');
   private _historyFileName: string;
   private _history: string[] = [];
 
-  public get historyFilePath(): string {
-    return path.join(Globals.extensionStoragePath, this._historyFileName);
+  private get historyKey(): string {
+    return `vim.${this._historyFileName}`;
   }
 
-  constructor(historyFileName: string) {
+  constructor(private _context: vscode.ExtensionContext, historyFileName: string) {
     this._historyFileName = historyFileName;
   }
 
@@ -49,29 +46,13 @@ export class HistoryFile {
     return this._history;
   }
 
-  public clear() {
-    try {
-      this._history = [];
-      fs.unlinkSync(this.historyFilePath);
-    } catch (err) {
-      this._logger.warn(`Unable to delete ${this.historyFilePath}. err=${err}.`);
-    }
+  public async clear() {
+    this._context.workspaceState.update(this.historyKey, undefined);
+    this._history = [];
   }
 
   public async load(): Promise<void> {
-    let data = '';
-
-    try {
-      data = await promisify(fs.readFile)(this.historyFilePath, 'utf-8');
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        this._logger.debug(`History does not exist. path=${this.historyFilePath}`);
-      } else {
-        this._logger.warn(`Failed to load history. path=${this.historyFilePath} err=${err}.`);
-      }
-      return;
-    }
-
+    let data = this._context.workspaceState.get<string>(this.historyKey) || '';
     if (data.length === 0) {
       return;
     }
@@ -79,43 +60,28 @@ export class HistoryFile {
     try {
       let parsedData = JSON.parse(data);
       if (!Array.isArray(parsedData)) {
-        throw Error('Unexpected format in history file. Expected JSON.');
+        throw Error('Unexpected format in history. Expected JSON.');
       }
       this._history = parsedData;
     } catch (e) {
-      this._logger.warn(`Deleting corrupted history file. path=${this.historyFilePath} err=${e}.`);
-      this.clear();
+      this._logger.warn(`Deleting corrupted history. key=${this.historyKey} err=${e}.`);
+      await this.clear();
     }
   }
 
   private async save(): Promise<void> {
-    try {
-      // create supplied directory. if directory already exists, do nothing and move on
-      try {
-        await promisify(fs.mkdir)(Globals.extensionStoragePath, { recursive: true });
-      } catch (createDirectoryErr) {
-        if (createDirectoryErr.code !== 'EEXIST') {
-          throw createDirectoryErr;
-        }
-      }
-
-      // create file
-      await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
-    } catch (err) {
-      this._logger.error(`Failed to save history. filepath=${this.historyFilePath}. err=${err}.`);
-      throw err;
-    }
+    this._context.workspaceState.update(this.historyKey, JSON.stringify(this._history));
   }
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor() {
-    super('.search_history');
+  constructor(context: vscode.ExtensionContext) {
+    super(context, 'search_history');
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor() {
-    super('.cmdline_history');
+  constructor(context: vscode.ExtensionContext) {
+    super(context, 'cmdline_history');
   }
 }

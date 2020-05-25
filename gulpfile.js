@@ -10,6 +10,7 @@ var gulp = require('gulp'),
   path = require('path'),
   webpack_stream = require('webpack-stream'),
   webpack_config = require('./webpack.config.js');
+webpack_web_config = require('./webpack.web.js');
 webpack_dev_config = require('./webpack.dev.js');
 
 const exec = require('child_process').exec;
@@ -162,6 +163,10 @@ gulp.task('tsc', function () {
 
 gulp.task('webpack', function () {
   return gulp.src('./extension.ts').pipe(webpack_stream(webpack_config)).pipe(gulp.dest('out'));
+});
+
+gulp.task('webpack-web', function () {
+  return gulp.src('./extension.ts').pipe(webpack_stream(webpack_web_config)).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack-dev', function () {

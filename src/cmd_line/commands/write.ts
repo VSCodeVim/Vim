@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from '../../util/fs';
 import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -56,21 +56,23 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    try {
-      await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
-      return this.save(vimState);
-    } catch (accessErr) {
-      if (this.arguments.bang) {
-        try {
-          await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
-          return this.save(vimState);
-        } catch (e) {
-          StatusBar.setText(vimState, e.message);
-        }
-      } else {
-        StatusBar.setText(vimState, accessErr.message);
-      }
-    }
+    //TODO, use vscode.fs.
+
+    // try {
+    //   await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
+    //   return this.save(vimState);
+    // } catch (accessErr) {
+    //   if (this.arguments.bang) {
+    //     try {
+    //       await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
+    //       return this.save(vimState);
+    //     } catch (e) {
+    //       StatusBar.setText(vimState, e.message);
+    //     }
+    //   } else {
+    //     StatusBar.setText(vimState, accessErr.message);
+    //   }
+    // }
   }
 
   private async save(vimState: VimState): Promise<void> {

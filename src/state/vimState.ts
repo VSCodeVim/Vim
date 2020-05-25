@@ -7,7 +7,7 @@ import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { NeovimWrapper } from '../neovim/neovim';
+// import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
@@ -253,19 +253,19 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  public nvim: NeovimWrapper;
+  // public nvim: NeovimWrapper;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this.nvim = new NeovimWrapper();
+    // this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   dispose() {
-    this.nvim.dispose();
+    // this.nvim.dispose();
   }
 }
 

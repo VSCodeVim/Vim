@@ -239,7 +239,7 @@ class Configuration implements IConfiguration {
   };
 
   debug: IDebugConfiguration = {
-    silent: false,
+    silent: true,
     loggingLevelForAlert: 'error',
     loggingLevelForConsole: 'error',
   };

@@ -36,10 +36,10 @@ class CommandLine {
   public previousMode = Mode.Normal;
 
   constructor() {
-    this._history = new CommandLineHistory();
   }
 
-  public async load(): Promise<void> {
+  public async load(context: vscode.ExtensionContext): Promise<void> {
+    this._history = new CommandLineHistory(context);
     return this._history.load();
   }
 
@@ -69,22 +69,22 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
+      // const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
-      if (useNeovim) {
-        const { statusBarText, error } = await vimState.nvim.run(vimState, command);
-        StatusBar.setText(vimState, statusBarText, error);
-      } else {
-        await cmd.execute(vimState.editor, vimState);
-      }
+      // if (useNeovim) {
+      //   const { statusBarText, error } = await vimState.nvim.run(vimState, command);
+      //   StatusBar.setText(vimState, statusBarText, error);
+      // } else {
+      await cmd.execute(vimState.editor, vimState);
+      // }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
-          const { statusBarText } = await vimState.nvim.run(vimState, command);
-          StatusBar.setText(vimState, statusBarText, true);
-        } else {
-          StatusBar.setText(vimState, e.toString(), true);
-        }
+        // if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+        //   const { statusBarText } = await vimState.nvim.run(vimState, command);
+        //   StatusBar.setText(vimState, statusBarText, true);
+        // } else {
+        StatusBar.setText(vimState, e.toString(), true);
+        // }
       } else {
         this._logger.error(`Error executing cmd=${command}. err=${e}.`);
       }

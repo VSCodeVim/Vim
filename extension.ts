@@ -106,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext.subscriptions.push(StatusBar);
 
   // Set the storage path to be used by history files
-  Globals.extensionStoragePath = context.globalStoragePath;
+  // Globals.extensionStoragePath = context.globalStoragePath;
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
@@ -114,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // load state
-  await Promise.all([commandLine.load(), globalState.load()]);
+  await Promise.all([commandLine.load(context), globalState.load(context)]);
 
   // workspace events
   registerEventListener(
@@ -131,14 +131,14 @@ export async function activate(context: vscode.ExtensionContext) {
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
-        changeEvent.contentChanges[0].range.end.line;
+      changeEvent.contentChanges[0].range.end.line;
 
     const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
       changeEvent.contentChanges[0].range.start.line ===
-        changeEvent.contentChanges[0].range.end.line;
+      changeEvent.contentChanges[0].range.end.line;
 
     if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
@@ -175,11 +175,11 @@ export async function activate(context: vscode.ExtensionContext) {
         });
     }
 
-    setTimeout(() => {
-      if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
-        handleContentChangedFromDisk(event.document);
-      }
-    }, 0);
+    // setTimeout(() => {
+    //   if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
+    //     handleContentChangedFromDisk(event.document);
+    //   }
+    // }, 0);
   });
 
   registerEventListener(

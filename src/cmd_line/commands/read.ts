@@ -1,5 +1,5 @@
-import { exec } from 'child_process';
-import { readFile } from 'fs';
+// import { exec } from 'child_process';
+import { readFile } from '../../util/fs';
 
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
@@ -49,31 +49,25 @@ export class ReadCommand extends node.CommandBase {
 
   async getTextToInsertFromFile(): Promise<string> {
     // TODO: Read encoding from ++opt argument.
-    return new Promise<string>((resolve, reject) => {
-      try {
-        readFile(this.arguments.file as string, 'utf8', (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      } catch (e) {
-        reject(e);
-      }
-    });
+    try {
+      const data = await readFile(this.arguments.file as string, 'utf8');
+      return data;
+    } catch (e) {
+      throw (e);
+    }
   }
 
   async getTextToInsertFromCmd(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
-        exec(this.arguments.cmd as string, (err, stdout, stderr) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(stdout);
-          }
-        });
+        console.log('getTextToInsertFromCmd');
+        // exec(this.arguments.cmd as string, (err, stdout, stderr) => {
+        //   if (err) {
+        //     reject(err);
+        //   } else {
+        //     resolve(stdout);
+        //   }
+        // });
       } catch (e) {
         reject(e);
       }
