@@ -1,6 +1,5 @@
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { IConfiguration } from '../iconfiguration';
-import { promisify } from 'util';
 import { exists } from '../../util/fs';
 import { Globals } from '../../globals';
 
