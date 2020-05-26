@@ -1,10 +1,3 @@
-/**
- * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
- * events to their string names and passes them on to ModeHandler via
- * handleKeyEvent().
- */
-import './src/actions/include-all';
-
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -95,7 +88,7 @@ async function loadConfiguration() {
 /**
  * The extension's entry point
  */
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext, handleLocalDiskChangeEvent: boolean = true) {
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
@@ -105,9 +98,12 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+<<<<<<< HEAD
   // Set the storage path to be used by history files
   // Globals.extensionStoragePath = context.globalStoragePath;
 
+=======
+>>>>>>> optional nvim module import by webpack.
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
@@ -175,11 +171,21 @@ export async function activate(context: vscode.ExtensionContext) {
         });
     }
 
+<<<<<<< HEAD
     // setTimeout(() => {
     //   if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
     //     handleContentChangedFromDisk(event.document);
     //   }
     // }, 0);
+=======
+    if (handleLocalDiskChangeEvent) {
+      setTimeout(() => {
+        if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
+          handleContentChangedFromDisk(event.document);
+        }
+      }, 0);
+    }
+>>>>>>> optional nvim module import by webpack.
   });
 
   registerEventListener(

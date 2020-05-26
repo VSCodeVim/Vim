@@ -11,7 +11,11 @@ const nodelessConfig = {
 
   mode: 'development',
 
+<<<<<<< HEAD
   entry: './extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+=======
+  entry: './extensionWebEntry.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+>>>>>>> optional nvim module import by webpack.
   output: {
     // the bundle is stored in the 'out' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'out-web'),

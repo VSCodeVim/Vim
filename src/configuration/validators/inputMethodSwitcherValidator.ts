@@ -2,6 +2,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { IConfiguration } from '../iconfiguration';
 import { exists } from '../../util/fs';
 import { Globals } from '../../globals';
+import { configurationValidator } from '../configurationValidator';
 
 export class InputMethodSwitcherConfigurationValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -56,3 +57,5 @@ export class InputMethodSwitcherConfigurationValidator implements IConfiguration
     return cmd.split(' ')[0];
   }
 }
+
+configurationValidator.registerValidator(new InputMethodSwitcherConfigurationValidator());

@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
+import { configurationValidator } from '../configurationValidator';
 
 export class NeovimValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -50,3 +51,5 @@ export class NeovimValidator implements IConfigurationValidator {
     config.enableNeovim = false;
   }
 }
+
+configurationValidator.registerValidator(new NeovimValidator());
