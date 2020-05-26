@@ -64,6 +64,15 @@ export class RecordedState {
       // if there are any bufferedKeys waiting for other key append them
       result += this.bufferedKeys.join('');
     }
+    if (
+      this.actionsRun.length === 0 &&
+      this.actionKeys.length === 0 &&
+      this.bufferedKeys.length === 0 &&
+      this.commandList.length > 0
+    ) {
+      // Used for the registers and macros that only record on commandList
+      result = this.commandList.join('');
+    }
     const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
     const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
     const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
