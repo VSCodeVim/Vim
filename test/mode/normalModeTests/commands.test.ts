@@ -39,7 +39,7 @@ suite('Mode Normal', () => {
     end: ['|'],
   });
 
-  newTestOnly({
+  newTest({
     title: "'x' with count does not go over EOL",
     start: ['one t|wo', 'three four'],
     keysPressed: '1000x',

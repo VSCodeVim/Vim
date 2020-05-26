@@ -20,7 +20,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync, scrollView } from '../util/util';
+import { scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -1438,7 +1438,6 @@ export class ModeHandler implements vscode.Disposable {
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.cursors = getCursorsAfterSync();
     }
     this.vimState.postponedCodeViewChanges = [];
 
