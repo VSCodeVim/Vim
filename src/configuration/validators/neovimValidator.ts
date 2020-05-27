@@ -5,7 +5,7 @@ import * as path from 'path';
 import { existsSync } from 'fs';
 
 export class NeovimValidator implements IConfigurationValidator {
-  async validate(config: IConfiguration): Promise<ValidatorResults> {
+  validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
 
     if (config.enableNeovim) {
