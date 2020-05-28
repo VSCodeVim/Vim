@@ -208,14 +208,17 @@ class VimrcImpl {
         case 'unm':
           return [
             config.normalModeKeyBindings,
+            config.normalModeKeyBindingsNonRecursive,
             config.visualModeKeyBindings,
+            config.visualModeKeyBindingsNonRecursive,
             config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
           ];
         case 'nunmap':
         case 'nunma':
         case 'nunm':
         case 'nun':
-          return [config.normalModeKeyBindings];
+          return [config.normalModeKeyBindings, config.normalModeKeyBindingsNonRecursive];
         case 'vunmap':
         case 'vunma':
         case 'vunm':
@@ -226,25 +229,25 @@ class VimrcImpl {
         case 'xunm':
         case 'xun':
         case 'xu':
-          return [config.visualModeKeyBindings];
+          return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
         case 'iunmap':
         case 'iunma':
         case 'iunm':
         case 'iun':
         case 'iu':
-          return [config.insertModeKeyBindings];
+          return [config.insertModeKeyBindings, config.insertModeKeyBindingsNonRecursive];
         case 'cunmap':
         case 'cunma':
         case 'cunm':
         case 'cun':
         case 'cu':
-          return [config.commandLineModeKeyBindings];
+          return [config.commandLineModeKeyBindings, config.commandLineModeKeyBindingsNonRecursive];
         case 'ounmap':
         case 'ounma':
         case 'ounm':
         case 'oun':
         case 'ou':
-          return [config.operatorPendingModeKeyBindings];
+          return [config.operatorPendingModeKeyBindings, config.operatorPendingModeKeyBindingsNonRecursive];
         case 'lunmap':
         case 'lunma':
         case 'lunm':
@@ -253,7 +256,12 @@ class VimrcImpl {
         case 'unmap!':
         case 'unma!':
         case 'unm!':
-          return [config.insertModeKeyBindings, config.commandLineModeKeyBindings];
+          return [
+            config.insertModeKeyBindings,
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindings,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
         default:
           console.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
           return undefined;
@@ -286,15 +294,18 @@ class VimrcImpl {
         case 'mapc':
           return [
             config.normalModeKeyBindings,
+            config.normalModeKeyBindingsNonRecursive,
             config.visualModeKeyBindings,
+            config.visualModeKeyBindingsNonRecursive,
             config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
           ];
         case 'nmapclear':
         case 'nmapclea':
         case 'nmapcle':
         case 'nmapcl':
         case 'nmapc':
-          return [config.normalModeKeyBindings];
+          return [config.normalModeKeyBindings, config.normalModeKeyBindingsNonRecursive];
         case 'vmapclear':
         case 'vmapclea':
         case 'vmapcle':
@@ -305,25 +316,25 @@ class VimrcImpl {
         case 'xmapcle':
         case 'xmapcl':
         case 'xmapc':
-          return [config.visualModeKeyBindings];
+          return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
         case 'imapclear':
         case 'imapclea':
         case 'imapcle':
         case 'imapcl':
         case 'imapc':
-          return [config.insertModeKeyBindings];
+          return [config.insertModeKeyBindings, config.insertModeKeyBindingsNonRecursive];
         case 'cmapclear':
         case 'cmapclea':
         case 'cmapcle':
         case 'cmapcl':
         case 'cmapc':
-          return [config.commandLineModeKeyBindings];
+          return [config.commandLineModeKeyBindings, config.commandLineModeKeyBindingsNonRecursive];
         case 'omapclear':
         case 'omapclea':
         case 'omapcle':
         case 'omapcl':
         case 'omapc':
-          return [config.operatorPendingModeKeyBindings];
+          return [config.operatorPendingModeKeyBindings, config.operatorPendingModeKeyBindingsNonRecursive];
         case 'lmapclear':
         case 'lmapclea':
         case 'lmapcle':
@@ -334,7 +345,12 @@ class VimrcImpl {
         case 'mapcle!':
         case 'mapcl!':
         case 'mapc!':
-          return [config.insertModeKeyBindings, config.commandLineModeKeyBindings];
+          return [
+            config.insertModeKeyBindings,
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindings,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
         default:
           console.warn(
             `Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`
