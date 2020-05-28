@@ -157,6 +157,27 @@ suite('Mode Insert', () => {
     end: ['{', '|true', '}'],
   });
 
+  newTest({
+    title: '<C-u> deletes to cursor start position after inserting text',
+    start: ['{', 'foo: |true', '}'],
+    keysPressed: 'ifalse<C-u>',
+    end: ['{', 'foo: |true', '}'],
+  });
+
+  newTest({
+    title: '<C-u> deletes to cursor start position after moving to the right',
+    start: ['{', 'foo: |bar', '}'],
+    keysPressed: 'i<right><right><right><C-u>',
+    end: ['{', 'foo: |', '}'],
+  });
+
+  newTest({
+    title: '<C-u> follows default behavior after moving to the left',
+    start: ['{', 'foo: |bar', '}'],
+    keysPressed: 'i<left><C-u>',
+    end: ['{', '| bar', '}'],
+  });
+
   test('Correctly places the cursor after deleting the previous line break', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
