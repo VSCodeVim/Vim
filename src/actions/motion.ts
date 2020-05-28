@@ -2038,9 +2038,11 @@ export abstract class ArrowsInInsertMode extends BaseMovement {
     switch (this.keys[0]) {
       case '<up>':
         newPosition = <Position>await new MoveUpArrow().execAction(position, vimState);
+        vimState.insertModeCursorCtrlUStopPosition = newPosition;
         break;
       case '<down>':
         newPosition = <Position>await new MoveDownArrow().execAction(position, vimState);
+        vimState.insertModeCursorCtrlUStopPosition = newPosition;
         break;
       case '<left>':
         newPosition = await new MoveLeftArrow(this.keysPressed).execAction(position, vimState);

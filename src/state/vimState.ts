@@ -80,6 +80,11 @@ export class VimState implements vscode.Disposable {
   public isRunningDotCommand = false;
 
   /**
+   * Cursor position to stop at when deleting backwards with Ctrl+U.
+   */
+  public insertModeCursorCtrlUStopPosition: Position | undefined = undefined;
+
+  /**
    * The last visual selection before running the dot command
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
@@ -226,6 +231,9 @@ export class VimState implements vscode.Disposable {
     } else {
       this.firstVisibleLineBeforeSearch = undefined;
     }
+
+    this.insertModeCursorCtrlUStopPosition =
+      mode === Mode.Insert ? this.cursorStartPosition : undefined;
   }
 
   public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
