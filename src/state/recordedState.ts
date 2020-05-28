@@ -46,15 +46,7 @@ export class RecordedState {
     let result = '';
 
     if (this.actionsRun.length > 0) {
-      result = this.actionsRun
-        .map((a, i): string => {
-          // get the keys pressed of each action run
-          return a.keysPressed.join('');
-        })
-        .reduce((accumulator, actionKeys) => {
-          // combine all actions keys pressed
-          return accumulator + actionKeys;
-        }, result);
+      result = this.actionsRunPressedKeys.join('');
     }
     if (this.actionKeys.length > 0) {
       // if there are any actionKeys waiting for other key append them
@@ -151,6 +143,13 @@ export class RecordedState {
    * Every action that has been run.
    */
   public actionsRun: BaseAction[] = [];
+
+  /**
+   * Keeps track of keys pressed by the actionsRun. Used for the showCmd. If an action
+   * changes previous actions pressed keys it should change this list, like the <Del>
+   * key after a number key.
+   */
+  public actionsRunPressedKeys: string[] = [];
 
   public getLastActionRun(): BaseAction | undefined {
     if (this.actionsRun.length === 0) {

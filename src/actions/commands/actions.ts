@@ -3035,8 +3035,10 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
     // http://vimdoc.sourceforge.net/htmldoc/change.html#<Del>
     if (vimState.recordedState.count !== 0) {
       vimState.recordedState.count = Math.floor(vimState.recordedState.count / 10);
-      vimState.recordedState.actionKeys = vimState.recordedState.count.toString().split('');
-      // vimState.recordedState.commandList = vimState.recordedState.count.toString().split('');
+
+      // Change actionsRunPressedKeys so that showCmd updates correctly
+      vimState.recordedState.actionsRunPressedKeys =
+        vimState.recordedState.count > 0 ? vimState.recordedState.count.toString().split('') : [];
       this.isCompleteAction = false;
       return vimState;
     }

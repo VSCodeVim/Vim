@@ -39,7 +39,6 @@ import {
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
-import { BaseOperator } from '../actions/operator';
 import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
 
@@ -296,8 +295,6 @@ export class ModeHandler implements vscode.Disposable {
     const oldMode = this.vimState.currentMode;
     const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
-    const oldActionKeysLength = this.vimState.recordedState.actionKeys.length;
-    const oldBufferedKeysLength = this.vimState.recordedState.bufferedKeys.length;
 
     try {
       const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
@@ -421,12 +418,10 @@ export class ModeHandler implements vscode.Disposable {
         // Since there is no possible action we are no longer waiting any action keys
         vimState.recordedState.waitingForAnotherActionKey = false;
 
-        StatusBar.updateShowCmd(this.vimState);
         return vimState;
       case KeypressState.WaitingOnKeys:
         vimState.recordedState.waitingForAnotherActionKey = true;
 
-        StatusBar.updateShowCmd(this.vimState);
         return vimState;
     }
 
@@ -435,6 +430,9 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
+
+    // Store action pressed keys for showCmd
+    recordedState.actionsRunPressedKeys.push(...recordedState.actionKeys);
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -495,10 +493,6 @@ export class ModeHandler implements vscode.Disposable {
         Jump.fromStateBefore(vimState),
         Jump.fromStateNow(vimState)
       );
-    }
-
-    if (!this._remappers.isPotentialRemap && recordedState.isInsertion) {
-      vimState.recordedState.resetCommandList();
     }
 
     return vimState;
@@ -1447,7 +1441,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     StatusBar.clear(this.vimState, false);
-    StatusBar.updateShowCmd(this.vimState);
 
     await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
 
