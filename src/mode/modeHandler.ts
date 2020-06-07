@@ -14,7 +14,7 @@ import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
 import { TextEditor } from './../textEditor';
-import { VimError, ErrorCode } from './../error';
+import { VimError, ErrorCode, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
@@ -249,6 +249,12 @@ export class ModeHandler implements vscode.Disposable {
     const printableKey = Notation.printableKey(key);
     let hadBufferedKeys = false;
 
+    // Check forceStopRemapping
+    if (this.vimState.forceStopRecursiveRemapping) {
+      this.vimState.forceStopRecursiveRemapping = false;
+      throw new ForceStopRemappingError('Forced by user');
+    }
+
     this._logger.debug(`handling key=${printableKey}.`);
 
     if (
@@ -297,17 +303,6 @@ export class ModeHandler implements vscode.Disposable {
     const oldStatusBarText = StatusBar.getText();
 
     try {
-      const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
-      if (!isWithinTimeout && key !== '<BufferedKeys>') {
-        // sufficient time has elapsed since the prior keypress,
-        // only consider the last keypress for remapping
-        this.vimState.recordedState.commandList = [
-          this.vimState.recordedState.commandList[
-            this.vimState.recordedState.commandList.length - 1
-          ],
-        ];
-      }
-
       let handled = false;
       let preventZeroRemap = false;
 
@@ -328,7 +323,7 @@ export class ModeHandler implements vscode.Disposable {
       //             for actions with multiple keys like 'gg' or 'fx' the second character
       //           shouldn't be mapped
       if (
-        !this.vimState.isCurrentlyPerformingRemapping &&
+        !this.vimState.isCurrentlyPerformingNonRecursiveRemapping &&
         !preventZeroRemap &&
         !this.vimState.recordedState.waitingForAnotherActionKey
       ) {
@@ -363,6 +358,16 @@ export class ModeHandler implements vscode.Disposable {
     } catch (e) {
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
+        this.vimState.recordedState = new RecordedState();
+        if (this.vimState.isCurrentlyPerformingRemapping) {
+          // If we are handling a remap and we got a VimError stop handling the remap
+          // and discard the rest of the keys. We throw an Exception here to stop any other
+          // remapping handling steps and go straight to the 'finally' step of the remapper.
+          throw ForceStopRemappingError.fromVimError(e);
+        }
+      } else if (e instanceof ForceStopRemappingError) {
+        // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
+        throw e;
       } else {
         throw new Error(`Failed to handle key=${key}. ${e.message}`);
       }
@@ -393,6 +398,14 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState.resetCommandList();
 
     this._logger.debug(`handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`);
+
+    // If we are handling a remap and the last movement failed stop handling the remap
+    // and discard the rest of the keys. We throw an Exception here to stop any other
+    // remapping handling steps and go straight to the 'finally' step of the remapper.
+    if (this.vimState.isCurrentlyPerformingRemapping && this.vimState.lastMovementFailed) {
+      this.vimState.lastMovementFailed = false;
+      throw new ForceStopRemappingError('Last movement failed');
+    }
   }
 
   private async handleKeyAsAnAction(key: string, vimState: VimState): Promise<VimState> {
@@ -423,6 +436,12 @@ export class ModeHandler implements vscode.Disposable {
         vimState.recordedState.waitingForAnotherActionKey = true;
 
         return vimState;
+    }
+
+    if (!vimState.remapUsedACharacter && vimState.isCurrentlyPerformingRecursiveRemapping) {
+      // Used a character inside a recursive remapping so we reset the mapDepth.
+      vimState.remapUsedACharacter = true;
+      vimState.mapDepth = 0;
     }
 
     // Since we got an action we are no longer waiting any action keys

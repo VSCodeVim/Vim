@@ -508,6 +508,12 @@
           "default": 1000,
           "minimum": 0
         },
+        "vim.maxmapdepth": {
+          "type": "number",
+          "description": "Maximum number of times a mapping is done without resulting in a character to be used.",
+          "default": 1000,
+          "minimum": 0
+        },
         "vim.scroll": {
           "type": "number",
           "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",

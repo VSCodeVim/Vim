@@ -174,6 +174,14 @@ export interface IConfiguration {
   timeout: number;
 
   /**
+   * Maximum number of times a mapping is done without resulting in a
+   * character to be used. This normally catches endless mappings, like
+   * ":map x y" with ":map y x". It still does not catch ":map g wg",
+   * because the 'w' is used before the next mapping is done.
+   */
+  maxmapdepth: number;
+
+  /**
    * Display partial commands on status bar?
    */
   showcmd: boolean;

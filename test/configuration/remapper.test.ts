@@ -11,6 +11,7 @@ import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
 import { VimState } from '../../src/state/vimState';
 import { TextEditor } from '../../src/textEditor';
+import { StatusBar } from '../../src/statusBar';
 
 /* tslint:disable:no-string-literal */
 
@@ -538,6 +539,35 @@ suite('Remapper', () => {
     assertEqualLines(['foo']);
   });
 
+  test('Recursive remap throws E223', async () => {
+    // setup
+    await setupWithBindings({
+      normalModeKeyBindings: [
+        {
+          before: ['x'],
+          after: ['y'],
+        },
+        {
+          before: ['y'],
+          after: ['x'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['x']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(StatusBar.getText(), 'E223: Recursive mapping');
+    assertEqualLines(['foo']);
+  });
+
   test('ambiguous and potential remaps and timeouts', async () => {
     // setup
     await setupWithBindings({
@@ -602,8 +632,6 @@ suite('Remapper', () => {
 
     // Before the timeout finishes it shouldn't have changed anything yet,
     // because it is still waiting for a key or timeout to finish.
-    // assert.strictEqual(modeHandler.currentMode, Mode.Normal);
-    // assertEqualLines(['foo bar biz']);
     assert.strictEqual(result1[0], 'foo bar biz');
 
     // After the timeout finishes (plus an offset to be sure it finished)
@@ -700,11 +728,11 @@ suite('Remapper', () => {
         // test as failed when it would've succeeded. If it is less than half the
         // timeout we can be sure the setTimeout was never ran.
         assert.strictEqual(elapsed < timeout / 2, true);
-        r3Resolve('wwww -> dd doesn\'t wait for timeout to finish');
+        r3Resolve("wwww -> dd doesn't wait for timeout to finish");
       });
     });
 
-    assert.strictEqual(result3, 'wwww -> dd doesn\'t wait for timeout to finish');
+    assert.strictEqual(result3, "wwww -> dd doesn't wait for timeout to finish");
 
     // add new line again
     await modeHandler.handleMultipleKeyEvents(['$', 'a', '\n', 'foo', '<Esc>']);

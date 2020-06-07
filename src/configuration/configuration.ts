@@ -215,6 +215,8 @@ class Configuration implements IConfiguration {
 
   timeout = 1000;
 
+  maxmapdepth = 1000;
+
   showcmd = true;
 
   showmodename = true;

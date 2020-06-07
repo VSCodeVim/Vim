@@ -409,7 +409,13 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
+    registerCommand(context, boundKey.command, () => {
+      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
+        checkIfRecursiveRemapping(`${boundKey.key}`);
+      } else {
+        handleKeyEvent(`${boundKey.key}`);
+      }
+    });
   }
 
   // Initialize mode handler for current active Text Editor at startup.
@@ -519,6 +525,15 @@ async function handleKeyEvent(key: string): Promise<void> {
   taskQueue.enqueueTask(async () => {
     await mh.handleKeyEvent(key);
   });
+}
+
+async function checkIfRecursiveRemapping(key: string): Promise<void> {
+  const mh = await getAndUpdateModeHandler();
+  if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+  } else {
+    handleKeyEvent(key);
+  }
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {

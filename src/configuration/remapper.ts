@@ -7,6 +7,7 @@ import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
+import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
 
 interface IRemapper {
   /**
@@ -197,6 +198,9 @@ export class Remapper implements IRemapper {
     this._isPotentialRemap =
       isPotentialRemap && allowBufferingKeys && allowPotentialRemapOnFirstKey;
 
+    /**
+     * Handle a broken potential or ambiguous remap
+     */
     if (
       !remapping &&
       (this._hasAmbiguousRemap || this._hasPotentialRemap) &&
@@ -270,11 +274,38 @@ export class Remapper implements IRemapper {
         this._hasPotentialRemap = false;
         vimState.recordedState.allowPotentialRemapOnFirstKey = false;
         vimState.recordedState.resetCommandList();
-        await modeHandler.handleMultipleKeyEvents(keys);
+
+        if (vimState.wasPerformingRemapThatFinishedWaitingForTimeout) {
+          // Some keys that broke the possible remap were typed by the user so handle them seperatly
+          const lastRemapLength = vimState.wasPerformingRemapThatFinishedWaitingForTimeout.after!
+            .length;
+          const keysPressedByUser = keys.slice(lastRemapLength);
+          keys = keys.slice(0, lastRemapLength);
+
+          try {
+            vimState.isCurrentlyPerformingRecursiveRemapping = true;
+            await modeHandler.handleMultipleKeyEvents(keys);
+          } catch (e) {
+            if (e instanceof ForceStopRemappingError) {
+              this._logger.debug(
+                `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+              );
+            }
+          } finally {
+            vimState.isCurrentlyPerformingRecursiveRemapping = false;
+            vimState.wasPerformingRemapThatFinishedWaitingForTimeout = false;
+            await modeHandler.handleMultipleKeyEvents(keysPressedByUser!);
+          }
+        } else {
+          await modeHandler.handleMultipleKeyEvents(keys);
+        }
         return true;
       }
     }
 
+    /**
+     * Buffer keys and create timeout
+     */
     if (isPotentialRemap && allowBufferingKeys && allowPotentialRemapOnFirstKey) {
       if (remapping) {
         // There are other potential remaps (ambiguous remaps), wait for other
@@ -290,13 +321,20 @@ export class Remapper implements IRemapper {
           `${this._configKey}. potential remap found. waiting for other key or timeout to finish.`
         );
       }
+
+      // Store BufferedKeys
       vimState.recordedState.bufferedKeys = [...keys];
+
+      // Create Timeout
       vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
         modeHandler.handleKeyEvent('<BufferedKeys>');
       }, configuration.timeout);
       return true;
     }
 
+    /**
+     * Handle Remapping and any remaining keys
+     */
     if (remapping) {
       if (!allowBufferingKeys) {
         // If the user already waited for the timeout to finish, prevent the
@@ -309,18 +347,22 @@ export class Remapper implements IRemapper {
         remapping = newRemapping;
       }
 
-      this._logger.debug(
-        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}`
-      );
-
       this._hasAmbiguousRemap = false;
       this._hasPotentialRemap = false;
 
       let skipFirstCharacter = false;
 
+      // If we were performing a remapping already, it means this remapping has a parent remapping
+      const hasParentRemapping = vimState.isCurrentlyPerformingRemapping;
+      if (!hasParentRemapping) {
+        vimState.mapDepth = 0;
+      }
+
       if (!this._recursive) {
-        vimState.isCurrentlyPerformingRemapping = true;
+        vimState.isCurrentlyPerformingNonRecursiveRemapping = true;
       } else {
+        vimState.isCurrentlyPerformingRecursiveRemapping = true;
+
         // As per the Vim documentation: (:help recursive)
         // If the {rhs} starts with {lhs}, the first character is not mapped
         // again (this is Vi compatible).
@@ -333,13 +375,111 @@ export class Remapper implements IRemapper {
         }
       }
 
+      // Increase mapDepth if performing a recursive remapping
+      if (vimState.isCurrentlyPerformingRecursiveRemapping) {
+        vimState.mapDepth++;
+      }
+
+      this._logger.debug(
+        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${vimState.mapDepth}.`
+      );
+
+      let remapFailed = false;
+
       try {
+        // Check maxMapDepth
+        if (vimState.mapDepth >= configuration.maxmapdepth) {
+          const vimError = VimError.fromCode(ErrorCode.RecursiveMapping);
+          StatusBar.displayError(vimState, vimError);
+          throw ForceStopRemappingError.fromVimError(vimError);
+        }
+
+        vimState.remapUsedACharacter = false;
+
         await this.handleRemapping(remapping, vimState, modeHandler, skipFirstCharacter);
+      } catch (e) {
+        if (e instanceof ForceStopRemappingError) {
+          // If a motion fails or a VimError happens during any kind of remapping or if the user presses the
+          // force stop remapping key (<C-c> or <Esc>) during a recursive remapping it should stop handling
+          // the remap and all its parent remaps if we are on a chain of recursive remaps.
+          // (Vim documentation :help map-error)
+          remapFailed = true;
+
+          // keep throwing until we reach the first parent
+          if (hasParentRemapping) {
+            throw e;
+          }
+
+          this._logger.debug(
+            `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+          );
+        } else {
+          // If some other error happens during the remapping handling it should stop the remap and rethrow
+          this._logger.debug(
+            `${this._configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
+          );
+          throw e;
+        }
       } finally {
-        vimState.isCurrentlyPerformingRemapping = false;
-        if (remainingKeys.length > 0) {
-          await modeHandler.handleMultipleKeyEvents(remainingKeys);
-          return true;
+        // Check if we are still inside a recursive remap
+        if (!hasParentRemapping && vimState.isCurrentlyPerformingRecursiveRemapping) {
+          // no more recursive remappings being handled
+          if (vimState.recordedState.bufferedKeysTimeoutObj !== undefined) {
+            // In order to be able to receive other keys and at the same time wait for timeout, we need
+            // to create a timeout and return from the remapper so that modeHandler can be free to receive
+            // more keys. This means that if we are inside a recursive remapping, when we return on the
+            // last key of that remapping it will think that it is finished and set the currently
+            // performing recursive remapping flag to false, which would result in the current bufferedKeys
+            // not knowing they had a parent remapping. So we store that remapping here.
+            vimState.wasPerformingRemapThatFinishedWaitingForTimeout = { ...remapping };
+          }
+          vimState.isCurrentlyPerformingRecursiveRemapping = false;
+        }
+
+        // NonRecursive remappings can't have nested remaps so after a finished remap we always set this to
+        // false, because either we were performing a non recursive remap and now we finish or we weren't
+        // performing a non recursive remapping and this was false anyway.
+        vimState.isCurrentlyPerformingNonRecursiveRemapping = false;
+
+        // if there were other remaining keys on the buffered keys that weren't part of the remapping
+        // handle them now, except if the remap failed and the remaining keys weren't typed by the user.
+        // (we know that if this remapping has a parent remapping then the remaining keys weren't typed
+        // by the user, but instead were sent by the parent remapping handler)
+        if (remainingKeys.length > 0 && !(remapFailed && hasParentRemapping)) {
+          if (vimState.wasPerformingRemapThatFinishedWaitingForTimeout) {
+            // If there was a performing remap that finished waiting for timeout then only the remaining keys
+            // that are not part of that remap were typed by the user.
+            let specialKey: string | undefined = '';
+            if (remainingKeys[remainingKeys.length - 1] === '<BufferedKeys>') {
+              specialKey = remainingKeys.pop();
+            }
+            const lastRemap = vimState.wasPerformingRemapThatFinishedWaitingForTimeout.after!;
+            const lastRemapWithoutAmbiguousRemap = lastRemap.slice(remapping.before.length);
+            const keysPressedByUser = remainingKeys.slice(lastRemapWithoutAmbiguousRemap.length);
+            remainingKeys = remainingKeys.slice(0, remainingKeys.length - keysPressedByUser.length);
+            if (specialKey) {
+              remainingKeys.push(specialKey);
+              if (keysPressedByUser.length !== 0) {
+                keysPressedByUser.push(specialKey);
+              }
+            }
+            try {
+              vimState.isCurrentlyPerformingRecursiveRemapping = true;
+              await modeHandler.handleMultipleKeyEvents(remainingKeys);
+            } catch (e) {
+              this._logger.debug(
+                `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+              );
+            } finally {
+              vimState.isCurrentlyPerformingRecursiveRemapping = false;
+              vimState.wasPerformingRemapThatFinishedWaitingForTimeout = false;
+              if (keysPressedByUser.length > 0) {
+                await modeHandler.handleMultipleKeyEvents(keysPressedByUser);
+              }
+            }
+          } else {
+            await modeHandler.handleMultipleKeyEvents(remainingKeys);
+          }
         }
       }
 
@@ -362,9 +502,9 @@ export class Remapper implements IRemapper {
       vimState.recordedState.count = 0;
       for (let i = 0; i < count; i++) {
         if (skipFirstCharacter) {
-          vimState.isCurrentlyPerformingRemapping = true;
+          vimState.isCurrentlyPerformingNonRecursiveRemapping = true;
           await modeHandler.handleKeyEvent(remapping.after[0]);
-          vimState.isCurrentlyPerformingRemapping = false;
+          vimState.isCurrentlyPerformingNonRecursiveRemapping = false;
           await modeHandler.handleMultipleKeyEvents(remapping.after.slice(1));
         } else {
           await modeHandler.handleMultipleKeyEvents(remapping.after);
