@@ -549,7 +549,7 @@ export class Remapper implements IRemapper {
     }
 
     const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
-    const startingSliceLength = Math.max(range[1], inputtedKeys.length);
+    const startingSliceLength = inputtedKeys.length;
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
@@ -588,7 +588,7 @@ export class Remapper implements IRemapper {
     if (remappings.size === 0) {
       return [0, 0];
     }
-    const keyLengths = Array.from(remappings.keys()).map((k) => k.length);
+    const keyLengths = Array.from(remappings.values()).map((remap) => remap.before.length);
     return [Math.min(...keyLengths), Math.max(...keyLengths)];
   }
 }
