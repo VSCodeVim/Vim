@@ -548,6 +548,7 @@ export class HistoryTracker {
     // them to call addChange manually, I guess...
 
     const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
+    diffEngine.diff_cleanupEfficiency(diffs);
 
     /*
     this.historySteps.push(new HistoryStep({
@@ -609,16 +610,25 @@ export class HistoryTracker {
       this.currentContentChanges.length - n,
       this.currentContentChanges.length
     );
-    const firstRemovedChange = removedChanges[0];
 
-    // Remove the characters from the editor.
-    await vscode.window.activeTextEditor?.edit((edit) =>
-      edit.delete(
-        new vscode.Range(
-          firstRemovedChange!.range.start,
-          firstRemovedChange!.range.end.translate(0, n)
-        )
-      )
+    // Remove the characters from the editor in reverse order otherwise the characters
+    // position would change.
+    await vscode.window.activeTextEditor?.edit((edit) => {
+      for (const removedChange of removedChanges.reverse()) {
+        edit.delete(
+          new vscode.Range(
+            removedChange.range.start,
+            removedChange.range.end.translate({ characterDelta: 1 })
+          )
+        );
+      }
+    });
+
+    // Remove the previous deletions from currentContentChanges otherwise the DotCommand
+    // or a recorded macro will be deleting a character that wasn't typed.
+    this.currentContentChanges.splice(
+      this.currentContentChanges.length - removedChanges.length,
+      removedChanges.length
     );
 
     // We can't ignore the change, because that would mean that addChange() doesn't run.

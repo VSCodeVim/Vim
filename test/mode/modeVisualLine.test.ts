@@ -350,6 +350,13 @@ suite('Mode Visual Line', () => {
     end: ['begin', 'middle', '|end'],
   });
 
+  newTest({
+    title: 'Vp places the cursor on first non-whitespace character on line',
+    start: ['begin', '|    middle', 'end'],
+    keysPressed: 'yyjVp',
+    end: ['begin', '    middle', '    |middle'],
+  });
+
   suite('replace text in linewise visual-mode with linewise register content', () => {
     newTest({
       title: 'yyVp does not change the content but changes cursor position',

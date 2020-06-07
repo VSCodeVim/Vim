@@ -15,7 +15,7 @@
       "outFiles": [
         "${workspaceRoot}/{out, node_modules}/**/*.js"
       ],
-      "preLaunchTask": "gulp: build",
+      "preLaunchTask": "gulp: build-dev",
       "internalConsoleOptions": "openOnSessionStart",
     },
     {
@@ -46,7 +46,7 @@
       "outFiles": [
         "${workspaceRoot}/{out, node_modules}/**/*.js"
       ],
-      "preLaunchTask": "gulp: build",
+      "preLaunchTask": "gulp: prepare-test",
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]
