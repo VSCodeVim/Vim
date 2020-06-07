@@ -123,7 +123,7 @@ export class RecordedState {
    * the named registers and marks, even when the command with the same
    * name has been mapped.
    *
-   * Vim Documentation:
+   * Vim Documentation: (:help map-error)
    * "Note that the second character (argument) of the commands @zZtTfF[]rm'`"v
    * and CTRL-X is not mapped. This was done to be able to use all the named
    * registers and marks, even when the command with the same name has been

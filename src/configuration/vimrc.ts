@@ -8,7 +8,7 @@ import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
 import { configuration } from './configuration';
 
-class VimrcImpl {
+export class VimrcImpl {
   private _vimrcPath: string;
 
   /**
@@ -74,7 +74,7 @@ class VimrcImpl {
   /**
    * Adds a remapping from .vimrc to the given configuration
    */
-  private static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
+  public static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'map':
@@ -200,7 +200,7 @@ class VimrcImpl {
   /**
    * Removes a remapping from .vimrc from the given configuration
    */
-  private static removeRemapFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
+  public static removeRemapFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'unmap':
@@ -247,7 +247,10 @@ class VimrcImpl {
         case 'ounm':
         case 'oun':
         case 'ou':
-          return [config.operatorPendingModeKeyBindings, config.operatorPendingModeKeyBindingsNonRecursive];
+          return [
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
         case 'lunmap':
         case 'lunma':
         case 'lunm':
@@ -284,7 +287,7 @@ class VimrcImpl {
   /**
    * Clears all remappings from .vimrc from the given configuration for specific mode
    */
-  private static clearRemapsFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
+  public static clearRemapsFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'mapclear':
@@ -334,7 +337,10 @@ class VimrcImpl {
         case 'omapcle':
         case 'omapcl':
         case 'omapc':
-          return [config.operatorPendingModeKeyBindings, config.operatorPendingModeKeyBindingsNonRecursive];
+          return [
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
         case 'lmapclear':
         case 'lmapclea':
         case 'lmapcle':
@@ -369,7 +375,7 @@ class VimrcImpl {
     return false;
   }
 
-  private static removeAllRemapsFromConfig(config: IConfiguration): void {
+  public static removeAllRemapsFromConfig(config: IConfiguration): void {
     const remapCollections = [
       config.normalModeKeyBindings,
       config.operatorPendingModeKeyBindings,
