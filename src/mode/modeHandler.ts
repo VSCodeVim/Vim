@@ -247,7 +247,6 @@ export class ModeHandler implements vscode.Disposable {
   public async handleKeyEvent(key: string): Promise<void> {
     const now = Number(new Date());
     const printableKey = Notation.printableKey(key);
-    let hadBufferedKeys = false;
 
     // Check forceStopRemapping
     if (this.vimState.forceStopRecursiveRemapping) {
@@ -266,7 +265,6 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
       this.vimState.recordedState.commandList = this.vimState.recordedState.bufferedKeys.slice(0);
       this.vimState.recordedState.bufferedKeys = [];
-      hadBufferedKeys = true;
     }
 
     // rewrite copy
@@ -344,16 +342,7 @@ export class ModeHandler implements vscode.Disposable {
             this.vimState.recordedState.commandList.length - 1
           ];
         }
-        if (hadBufferedKeys) {
-          // If we had buffered keys, none of them had been sent to action handler yet
-          // so we need to send them one by one
-          for (let k of this.vimState.recordedState.commandList) {
-            key = k;
-            this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
-          }
-        } else {
-          this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
-        }
+        this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {
