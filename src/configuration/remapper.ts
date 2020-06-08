@@ -394,6 +394,19 @@ export class Remapper implements IRemapper {
           throw ForceStopRemappingError.fromVimError(vimError);
         }
 
+        if (vimState.mapDepth % 10 === 0) {
+          // Allow the user to press <C-c> or <Esc> key when inside an infinite looping remap.
+          // When inside an infinite looping recursive mapping it would block the editor until it reached
+          // the maxmapdepth. This 0ms wait allows the extension to handle any key typed by the user which
+          // means it allows the user to press <C-c> or <Esc> to force stop the looping remap.
+          // This shouldn't impact the normal use case because we're only running this every 10 nested
+          // remaps. Also when the logs are set to Error only, a looping recursive remap takes around 1.5s
+          // to reach 1000 mapDepth and give back control to the user, but when logs are set to debug it
+          // can take as long as 7 seconds.
+          const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+          await wait(0);
+        }
+
         vimState.remapUsedACharacter = false;
 
         await this.handleRemapping(remapping, vimState, modeHandler, skipFirstCharacter);
