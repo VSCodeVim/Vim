@@ -5,6 +5,7 @@ import { BaseCommand } from './../actions/commands/actions';
 import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
 import { Transformation } from './../transformations/transformations';
+import { SpecialKeys } from '../util/specialKeys';
 
 /**
  * The RecordedState class holds the current action that the user is
@@ -67,7 +68,7 @@ export class RecordedState {
     }
     const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
     const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
+    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
     result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
 
     return result;
@@ -89,7 +90,7 @@ export class RecordedState {
     }
     const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
     const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp('<BufferedKeys>', 'g');
+    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
     result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
 
     return result;

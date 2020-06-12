@@ -25,6 +25,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { SpecialKeys } from './src/util/specialKeys';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -449,11 +450,11 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
   }
   let mh = await getAndUpdateModeHandler();
   if (isDisabled) {
-    await mh.handleKeyEvent('<ExtensionDisable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
     compositionState.reset();
     ModeHandlerMap.clear();
   } else {
-    await mh.handleKeyEvent('<ExtensionEnable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
   }
 }
 

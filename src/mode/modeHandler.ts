@@ -41,6 +41,7 @@ import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
 import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
+import { SpecialKeys } from '../util/specialKeys';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -257,7 +258,8 @@ export class ModeHandler implements vscode.Disposable {
     this._logger.debug(`handling key=${printableKey}.`);
 
     if (
-      (key === '<BufferedKeys>' || this.vimState.recordedState.bufferedKeys.length > 0) &&
+      (key === SpecialKeys.TimeoutFinished ||
+        this.vimState.recordedState.bufferedKeys.length > 0) &&
       this.vimState.recordedState.bufferedKeysTimeoutObj
     ) {
       // Handle the bufferedKeys or append the new key to the previously bufferedKeys
@@ -335,8 +337,8 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.recordedState.allowPotentialRemapOnFirstKey = true;
 
       if (!handled) {
-        if (key === '<BufferedKeys>') {
-          // Remove the <BufferedKeys> key and get the key before that
+        if (key === SpecialKeys.TimeoutFinished) {
+          // Remove the <TimeoutFinished> key and get the key before that
           this.vimState.recordedState.commandList.pop();
           key = this.vimState.recordedState.commandList[
             this.vimState.recordedState.commandList.length - 1

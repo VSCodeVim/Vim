@@ -164,7 +164,7 @@ export class VimState implements vscode.Disposable {
    * To prevent this, we stored the remapping that finished waiting for timeout so that, if the
    * timeout finishes or the user presses some keys that brake the potential remap, we will know
    * what was the remapping waiting for timeout. So in case the timeout finishes we set the
-   * currently performing recursive remapping flag to true manually, send the <BufferedKeys> key
+   * currently performing recursive remapping flag to true manually, send the <TimeoutFinished> key
    * and in the end we set the flag back to false again and clear the stored remapping. In case
    * the user presses one or more keys that brake the potential timeout we set the flag to true
    * manually, handle the keys from the remapping and then set the flag back to false, clear the

@@ -8,6 +8,7 @@ import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
+import { SpecialKeys } from '../util/specialKeys';
 
 interface IRemapper {
   /**
@@ -145,7 +146,7 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
-    if (keys[keys.length - 1] === '<BufferedKeys>') {
+    if (keys[keys.length - 1] === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
       keys = keys.slice(0, keys.length - 1);
       allowBufferingKeys = false;
@@ -221,7 +222,7 @@ export class Remapper implements IRemapper {
             remapping = possibleBrokenRemap;
             isPotentialRemap = false;
             this._isPotentialRemap = false;
-            remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length); // includes the '<BufferedKeys>' key
+            remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length); // includes the '<TimeoutFinished>' key
             break;
           }
         }
@@ -240,29 +241,29 @@ export class Remapper implements IRemapper {
         // remap the 'a' should be handled.
         if (!allowBufferingKeys) {
           // Timeout finished and there is no remapping, so handle the buffered
-          // keys but resend the '<BufferedKeys>' key as well so we don't wait
+          // keys but resend the '<TimeoutFinished>' key as well so we don't wait
           // for the timeout again but can still handle potential remaps.
           //
           // Example 1: if 'ccc' is mapped in normal mode and user presses 'cc' and
-          // waits for the timeout to finish, this will resend the 'cc<BufferedKeys>'
+          // waits for the timeout to finish, this will resend the 'cc<TimeoutFinished>'
           // keys without allowing a potential remap on first key, which makes the
           // first 'c' be handled as a 'ChangeOperator' and the second 'c' which has
           // potential remaps (the 'ccc' remap) is buffered and the timeout started
-          // but then the '<BufferedKeys>' key comes straight away that clears the
+          // but then the '<TimeoutFinished>' key comes straight away that clears the
           // timeout without waiting again, and makes the second 'c' be handled normally
           // as another 'ChangeOperator'.
           //
           // Example 2: if 'iiii' is mapped in normal and 'ii' is mapped in insert
           // mode, and the user presses 'iii' in normal mode and waits for the timeout
-          // to finish, this will resend the 'iii<BufferedKeys>' keys without allowing
+          // to finish, this will resend the 'iii<TimeoutFinished>' keys without allowing
           // a potential remap on first key, which makes the first 'i' be handled as
           // an 'CommandInsertAtCursor' and goes to insert mode, next the second 'i'
           // is buffered, then the third 'i' finds the insert mode remapping of 'ii'
-          // and handles that remap, after the remapping being handled the '<BufferedKeys>'
+          // and handles that remap, after the remapping being handled the '<TimeoutFinished>'
           // key comes that clears the timeout and since the commandList will be empty
           // we return true as we finished handling this sequence of keys.
 
-          keys.push('<BufferedKeys>'); // include the '<BufferedKeys>' key
+          keys.push(SpecialKeys.TimeoutFinished); // include the '<TimeoutFinished>' key
 
           this._logger.debug(
             `${this._configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
@@ -327,7 +328,7 @@ export class Remapper implements IRemapper {
 
       // Create Timeout
       vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
-        modeHandler.handleKeyEvent('<BufferedKeys>');
+        modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
       }, configuration.timeout);
       return true;
     }
@@ -339,11 +340,11 @@ export class Remapper implements IRemapper {
       if (!allowBufferingKeys) {
         // If the user already waited for the timeout to finish, prevent the
         // remapping from waiting for the timeout again by making a clone of
-        // remapping and change 'after' to send the '<BufferedKeys>' key at
+        // remapping and change 'after' to send the '<TimeoutFinished>' key at
         // the end.
         let newRemapping = { ...remapping };
         newRemapping.after = remapping.after?.slice(0);
-        newRemapping.after?.push('<BufferedKeys>');
+        newRemapping.after?.push(SpecialKeys.TimeoutFinished);
         remapping = newRemapping;
       }
 
@@ -463,7 +464,7 @@ export class Remapper implements IRemapper {
             // If there was a performing remap that finished waiting for timeout then only the remaining keys
             // that are not part of that remap were typed by the user.
             let specialKey: string | undefined = '';
-            if (remainingKeys[remainingKeys.length - 1] === '<BufferedKeys>') {
+            if (remainingKeys[remainingKeys.length - 1] === SpecialKeys.TimeoutFinished) {
               specialKey = remainingKeys.pop();
             }
             const lastRemap = vimState.wasPerformingRemapThatFinishedWaitingForTimeout.after!;

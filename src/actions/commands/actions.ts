@@ -27,6 +27,7 @@ import { StatusBar } from '../../statusBar';
 import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
+import { SpecialKeys } from '../../util/specialKeys';
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -278,7 +279,7 @@ class DisableExtension extends BaseCommand {
     Mode.EasyMotionInputMode,
     Mode.SurroundInputMode,
   ];
-  keys = ['<ExtensionDisable>'];
+  keys = [SpecialKeys.ExtensionDisable];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Disabled);
@@ -289,7 +290,7 @@ class DisableExtension extends BaseCommand {
 @RegisterAction
 class EnableExtension extends BaseCommand {
   modes = [Mode.Disabled];
-  keys = ['<ExtensionEnable>'];
+  keys = [SpecialKeys.ExtensionEnable];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Normal);
