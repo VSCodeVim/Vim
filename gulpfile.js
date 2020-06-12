@@ -213,7 +213,7 @@ gulp.task('run-test', function (done) {
   console.log('Building container...');
   var dockerBuildCmd = spawn(
     'docker',
-    ['build', '-f', './build/Dockerfile', '.', '-t', dockerTag],
+    ['build', '-f', './build/Dockerfile', './build/', '-t', dockerTag],
     {
       cwd: process.cwd(),
       stdio: 'inherit',
@@ -232,6 +232,7 @@ gulp.task('run-test', function (done) {
     const dockerRunArgs = [
       'run',
       '-it',
+      '--rm',
       '--env',
       `MOCHA_GREP=${options.grep}`,
       '-v',
