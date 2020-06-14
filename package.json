@@ -31,8 +31,8 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "ui",
-    "workspace"
+    "workspace",
+    "ui"
   ],
   "activationEvents": [
     "*",
