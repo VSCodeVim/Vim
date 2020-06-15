@@ -226,4 +226,24 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>jl~jjl<C-v>jlg~',
     end: ['oNE', 'Two', 'T|HreE', 'foUR'],
   });
+
+  suite('R and S', () => {
+    for (const command of ['R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `<C-v>jjh${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `<C-v>kkl${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
+  });
 });

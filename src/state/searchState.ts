@@ -104,14 +104,16 @@ export class SearchState {
       if (this.needle !== oldNeedle) {
         // Invalidate all cached results
         this.matchRanges.clear();
+
+        this._needleRegex = undefined;
       }
     }
   }
 
-  private recalculateSearchRanges(document: vscode.TextDocument): vscode.Range[] {
-    const cached = this.matchRanges.get(document.fileName);
-    if (cached?.version === document.version) {
-      return cached.ranges;
+  private _needleRegex: RegExp | undefined;
+  private get needleRegex(): RegExp {
+    if (this._needleRegex) {
+      return this._needleRegex;
     }
 
     /*
@@ -139,19 +141,33 @@ export class SearchState {
 
     const regexFlags = ignorecase ? 'gim' : 'gm';
 
-    let regex: RegExp;
     try {
-      regex = new RegExp(searchRE, regexFlags);
+      this._needleRegex = new RegExp(searchRE, regexFlags);
     } catch (err) {
       // Couldn't compile the regexp, try again with special characters escaped
       searchRE = this.needle.replace(SearchState.specialCharactersRegex, '\\$&');
-      regex = new RegExp(searchRE, regexFlags);
+      this._needleRegex = new RegExp(searchRE, regexFlags);
     }
+
+    return this._needleRegex;
+  }
+
+  private recalculateSearchRanges(document: vscode.TextDocument): vscode.Range[] {
+    if (this.needle === '') {
+      return [];
+    }
+
+    const cached = this.matchRanges.get(document.fileName);
+    if (cached?.version === document.version) {
+      return cached.ranges;
+    }
+
     // We store the entire text file as a string inside text, and run the
     // regex against it many times to find all of our matches.
     const text = document.getText();
     const selection = vscode.window.activeTextEditor!.selection;
     const startOffset = document.offsetAt(selection.active);
+    const regex = this.needleRegex;
     regex.lastIndex = startOffset;
 
     let result: RegExpExecArray | null;
@@ -160,8 +176,12 @@ export class SearchState {
     while (true) {
       result = regex.exec(text);
 
-      // We need to wrap around to the back if we reach the end.
       if (result) {
+        if (wrappedOver && result.index >= startOffset) {
+          // We've found our first match again
+          break;
+        }
+
         matchRanges.push(
           new vscode.Range(
             document.positionAt(result.index),
@@ -173,10 +193,12 @@ export class SearchState {
           break;
         }
 
+        // This happens when you find a zero-length match
         if (result.index === regex.lastIndex) {
           regex.lastIndex++;
         }
       } else if (!wrappedOver) {
+        // We need to wrap around to the back if we reach the end.
         regex.lastIndex = 0;
         wrappedOver = true;
       } else {
@@ -184,6 +206,7 @@ export class SearchState {
       }
     }
 
+    // TODO: we know the order of matches; this sort is lazy and could become a bottleneck if we increase the max # of matches
     matchRanges.sort((x, y) => (x.start.isBefore(y.start) ? -1 : 1));
     this.matchRanges.set(document.fileName, {
       version: document.version,

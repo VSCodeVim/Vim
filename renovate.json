@@ -3,5 +3,6 @@
     "config:base",
     "default:pinDigestsDisabled"
   ],
-  "automerge": true
+  "automerge": true,
+  "ignoreDeps": ["@types/vscode"]
 }

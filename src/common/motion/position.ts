@@ -576,12 +576,9 @@ export class Position extends vscode.Position {
   }
 
   private static makeWordRegex(characterSet: string): RegExp {
-    let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
-    let segments: string[] = [];
+    const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
+    const segments = [`([^\\s${escaped}]+)`, `[${escaped}]+`, `$^`];
 
-    segments.push(`([^\\s${escaped}]+)`);
-    segments.push(`[${escaped}]+`);
-    segments.push(`$^`);
     return new RegExp(segments.join('|'), 'g');
   }
 

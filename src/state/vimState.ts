@@ -99,7 +99,7 @@ export class VimState implements vscode.Disposable {
         target: string | undefined;
         replacement: string | undefined;
         range: Range | undefined;
-        isVisualLine: boolean;
+        previousMode: Mode;
       } = undefined;
 
   /**
@@ -168,7 +168,7 @@ export class VimState implements vscode.Disposable {
       map.set(cursor.toString(), cursor);
     }
 
-    this._cursors = Array.from(map.values());
+    this._cursors = [...map.values()];
     this.isMultiCursor = this._cursors.length > 1;
   }
 
@@ -179,8 +179,8 @@ export class VimState implements vscode.Disposable {
   public get cursorsInitialState(): Range[] {
     return this._cursorsInitialState;
   }
-  public set cursorsInitialState(value: Range[]) {
-    this._cursorsInitialState = Object.assign([], value);
+  public set cursorsInitialState(cursors: Range[]) {
+    this._cursorsInitialState = [...cursors];
   }
 
   public isRecordingMacro: boolean = false;

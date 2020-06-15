@@ -548,6 +548,7 @@ export class HistoryTracker {
     // them to call addChange manually, I guess...
 
     const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
+    diffEngine.diff_cleanupEfficiency(diffs);
 
     /*
     this.historySteps.push(new HistoryStep({
