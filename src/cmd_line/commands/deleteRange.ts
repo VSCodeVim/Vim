@@ -5,7 +5,6 @@ import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
-import * as token from '../token';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
@@ -27,10 +26,9 @@ export class DeleteRangeCommand extends node.CommandBase {
     return true;
   }
 
-  async deleteRange(start: Position, end: Position, vimState: VimState): Promise<string> {
-    start = start.getLineBegin();
-    end = end.getLineEnd();
-    end = Position.FromVSCodePosition(end.with(end.line, end.character + 1));
+  async deleteRange(startLine: number, endLine: number, vimState: VimState): Promise<string> {
+    let start = new Position(startLine, 0);
+    let end = new Position(endLine, 0).getLineEndIncludingEOL();
 
     const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
 
@@ -64,27 +62,14 @@ export class DeleteRangeCommand extends node.CommandBase {
     }
 
     let cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active);
-    let text = await this.deleteRange(cursorPosition, cursorPosition, vimState);
+    let text = await this.deleteRange(cursorPosition.line, cursorPosition.line, vimState);
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let start: vscode.Position;
-    let end: vscode.Position;
+    const [start, end] = range.resolve(vimState);
 
-    if (range.left[0].type === token.TokenType.Percent) {
-      start = new vscode.Position(0, 0);
-      end = new vscode.Position(TextEditor.getLineCount() - 1, 0);
-    } else {
-      start = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      end = range.lineRefToPosition(vimState.editor, range.right, vimState);
-    }
-
-    let text = await this.deleteRange(
-      Position.FromVSCodePosition(start),
-      Position.FromVSCodePosition(end),
-      vimState
-    );
+    let text = await this.deleteRange(start, end, vimState);
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 }
