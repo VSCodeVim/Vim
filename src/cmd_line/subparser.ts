@@ -91,6 +91,11 @@ export const commandParsers = {
     parser: () => new OnlyCommand({}),
   },
 
+  put: {
+    abbrev: 'pu',
+    parser: parsePutExCommandArgs,
+  },
+
   qall: {
     abbrev: 'qa',
     parser: parseQuitAllCommandArgs,
@@ -225,11 +230,6 @@ export const commandParsers = {
   xall: {
     abbrev: 'xa',
     parser: parseWriteQuitAllCommandArgs,
-  },
-
-  put: {
-    abbrev: 'pu',
-    parser: parsePutExCommandArgs,
   },
 };
 
