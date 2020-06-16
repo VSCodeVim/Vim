@@ -35,10 +35,10 @@ export class PutExCommand extends node.CommandBase {
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
     vimState.recordedState.registerName = registerName;
 
-    let options: IPutCommandOptions  = {
+    let options: IPutCommandOptions = {
       forceLinewise: true,
       forceCursorLastLine: true,
-      after: this.arguments.bang
+      after: this.arguments.bang,
     };
 
     await new PutCommand().exec(position, vimState, options);
@@ -57,7 +57,11 @@ export class PutExCommand extends node.CommandBase {
       end = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
       start = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      end = range.lineRefToPosition(vimState.editor, range.right, vimState);
+      if (range.right.length === 0) {
+        end = start;
+      } else {
+        end = range.lineRefToPosition(vimState.editor, range.right, vimState);
+      }
     }
     await this.doPut(vimState, Position.FromVSCodePosition(end));
   }

@@ -100,4 +100,25 @@ suite('put cmd_line', () => {
     assert.equal(modeHandler.vimState.cursorStopPosition.line, 1);
     assert.equal(modeHandler.vimState.cursorStopPosition.character, 4);
   });
+
+  test('put with specified line', async () => {
+    Register.putByKey('abc');
+    await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(':2put\n'.split(''));
+    assertEqualLines(['123', '456', 'abc', '789']);
+  });
+
+  test('put! with specified line', async () => {
+    Register.putByKey('abc');
+    await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(':2put!\n'.split(''));
+    assertEqualLines(['123', 'abc', '456', '789']);
+  });
+
+  test('put with line range should insert at ending line', async () => {
+    Register.putByKey('abc');
+    await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(':1,2put\n'.split(''));
+    assertEqualLines(['123', '456', 'abc', '789']);
+  });
 });
