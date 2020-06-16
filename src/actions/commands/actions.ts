@@ -526,6 +526,7 @@ class CommandEsc extends BaseCommand {
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
         await Promise.all([
+          vscode.commands.executeCommand('closeParameterHints'),
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
