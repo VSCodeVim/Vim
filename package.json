@@ -787,7 +787,7 @@
         },
         "vim.vimrc.path": {
           "type": "string",
-          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc or $HOME/_vimrc."
+          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc, $HOME/_vimrc, and $HOME/.config/nvim/init.vim, in that order."
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
