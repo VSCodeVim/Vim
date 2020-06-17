@@ -149,6 +149,14 @@ export class RecordedState {
   public count: number = 0;
 
   /**
+   * The number of times the user wants to repeat the operator. If after the operator the user
+   * uses a motion with count that count will be multiplied by this count.
+   *
+   * Example: if user presses 2d3w it deletes 6 words.
+   */
+  public operatorCount: number = 0;
+
+  /**
    * The register name for this action.
    */
   public registerName: string;

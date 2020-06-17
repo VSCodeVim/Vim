@@ -41,6 +41,7 @@ import { reportSearch } from '../util/statusBarTextUtils';
 import { Notation } from '../configuration/notation';
 import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
+import { BaseOperator } from '../actions/operator';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -501,6 +502,10 @@ export class ModeHandler implements vscode.Disposable {
 
     if (action instanceof DocumentContentChangeAction) {
       vimState = await action.exec(vimState.cursorStopPosition, vimState);
+    }
+
+    if (action instanceof BaseOperator) {
+      recordedState.operatorCount = recordedState.count;
     }
 
     // Update mode (note the ordering allows you to go into search mode,
