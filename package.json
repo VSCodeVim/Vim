@@ -31,8 +31,8 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "ui",
-    "workspace"
+    "workspace",
+    "ui"
   ],
   "activationEvents": [
     "*",
@@ -785,7 +785,7 @@
         },
         "vim.enableNeovim": {
           "type": "boolean",
-          "markdownDescription": "Use Neovim on backend. (only works for Ex commands right now). You should restart VSCode after enable/disabling this for the changes to take effect. **NOTE:** Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, VSCodeVim will crash.",
+          "markdownDescription": "Use Neovim on backend. (only works for Ex commands right now). You should restart VSCode after enable/disabling this for the changes to take effect. **NOTE:** Neovim must be installed (v0.2.0) and neovimPath must be set to executable, or the nvim/nvim.exe executable must be in your PATH, in order for this setting to work.",
           "default": false
         },
         "vim.neovimPath": {
@@ -801,7 +801,7 @@
         },
         "vim.vimrc.path": {
           "type": "string",
-          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc or $HOME/_vimrc."
+          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc, $HOME/_vimrc, and $HOME/.config/nvim/init.vim, in that order."
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
