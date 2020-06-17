@@ -33,6 +33,12 @@ class StatusBarImpl implements vscode.Disposable {
     this._recordedStateStatusBarItem.dispose();
   }
 
+  public updateShowCmd(vimState: VimState) {
+    this._recordedStateStatusBarItem.text = configuration.showcmd
+      ? statusBarCommandText(vimState)
+      : '';
+  }
+
   /**
    * Updates the status bar text
    * @param isError If true, text rendered in red
@@ -83,10 +89,6 @@ class StatusBarImpl implements vscode.Disposable {
       if (vimState.isMultiCursor) {
         text.push(' MULTI CURSOR ');
       }
-    }
-
-    if (configuration.showcmd) {
-      this._recordedStateStatusBarItem.text = statusBarCommandText(vimState);
     }
 
     if (vimState.isRecordingMacro) {

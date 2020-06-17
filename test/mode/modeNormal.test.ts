@@ -1979,6 +1979,76 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can ctrl-a on a hex number behind a word',
+    start: ['|test0xf'],
+    keysPressed: '<C-a>',
+    end: ['test0x1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a distinguish fake hex number',
+    start: ['|00xf'],
+    keysPressed: '<C-a>',
+    end: ['0|1xf'],
+  });
+
+  newTest({
+    title: 'can ctrl-a preserve leading zeros of octal',
+    start: ['|000007'],
+    keysPressed: '<C-a>',
+    end: ['00001|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a trim leading zeros of decimal',
+    start: ['|000009'],
+    keysPressed: '<C-a>',
+    end: ['1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a process `-0x0` correctly',
+    start: ['|-0x0'],
+    keysPressed: '<C-a>',
+    end: ['-0x|1'],
+  });
+
+  newTest({
+    title: 'can ctrl-a regard `0` as decimal',
+    start: ['|0'],
+    keysPressed: '10<C-a>',
+    end: ['1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on octal ignore negative sign',
+    start: ['|test-0116'],
+    keysPressed: '<C-a>',
+    end: ['test-011|7'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on octal ignore positive sign',
+    start: ['|test+0116'],
+    keysPressed: '<C-a>',
+    end: ['test+011|7'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on hex number ignore negative sign',
+    start: ['|test-0xf'],
+    keysPressed: '<C-a>',
+    end: ['test-0x1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on hex number ignore positive sign',
+    start: ['|test+0xf'],
+    keysPressed: '<C-a>',
+    end: ['test+0x1|0'],
+  });
+
+  newTest({
     title: 'can ctrl-x correctly behind a word',
     start: ['|one 10'],
     keysPressed: '<C-x>',
@@ -2002,8 +2072,8 @@ suite('Mode Normal', () => {
   newTest({
     title: 'can ctrl-x on a negative number with word before and after ',
     start: ['|test-2abc'],
-    keysPressed: '<C-a><C-a><C-a>',
-    end: ['test|1abc'],
+    keysPressed: '<C-x><C-x><C-x>',
+    end: ['test-|5abc'],
   });
 
   newTest({

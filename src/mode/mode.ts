@@ -3,7 +3,6 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from '../common/motion/position';
-import { commandLine } from '../cmd_line/commandLine';
 
 export enum Mode {
   Normal,
@@ -27,18 +26,6 @@ export enum VSCodeVimCursorType {
   Underline,
   TextDecoration,
   Native,
-}
-
-export enum VisualBlockInsertionType {
-  /**
-   * Triggered with I
-   */
-  Insert,
-
-  /**
-   * Triggered with A
-   */
-  Append,
 }
 
 /**
@@ -104,7 +91,7 @@ export function statusBarText(vimState: VimState) {
   }
 }
 
-export function statusBarCommandText(vimState: VimState) {
+export function statusBarCommandText(vimState: VimState): string {
   switch (vimState.currentMode) {
     case Mode.SurroundInputMode:
       return vimState.surround && vimState.surround.replacement
@@ -123,14 +110,39 @@ export function statusBarCommandText(vimState: VimState) {
           ? `Search for ${searchCharCount} character(s): `
           : 'Search for characters: ';
       return message + vimState.easyMotion.searchAction.getSearchString();
-    case Mode.Visual:
-      const cmd = vimState.recordedState.commandString;
-
-      // Don't show the `v` that brings you into visual mode
-      return cmd.length === 0 || cmd[0] === 'v' ? cmd.slice(1) : cmd;
-    case Mode.Normal:
-    case Mode.VisualBlock:
+    case Mode.Visual: {
+      // TODO: holy shit, this is SO much more complicated than it should be because
+      // our representation of a visual selection is so weird and inconsistent
+      let [start, end] = [vimState.cursorStartPosition, vimState.cursorStopPosition];
+      let wentOverEOL = false;
+      if (start.isAfter(end)) {
+        start = start.getRightThroughLineBreaks();
+        [start, end] = [end, start];
+      } else if (end.isAfter(start) && end.character === 0) {
+        end = end.getLeftThroughLineBreaks(true);
+        wentOverEOL = true;
+      }
+      const lines = end.line - start.line + 1;
+      if (lines > 1) {
+        return `${lines}`;
+      } else {
+        const chars = Math.max(end.character - start.character, 1) + (wentOverEOL ? 1 : 0);
+        return `${chars}`;
+      }
+    }
     case Mode.VisualLine:
+      return `${
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1
+      }`;
+    case Mode.VisualBlock: {
+      const lines =
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1;
+      const chars =
+        Math.abs(vimState.cursorStopPosition.character - vimState.cursorStartPosition.character) +
+        1;
+      return `${lines}x${chars}`;
+    }
+    case Mode.Normal:
     case Mode.Replace:
     case Mode.Disabled:
       return vimState.recordedState.commandString;
