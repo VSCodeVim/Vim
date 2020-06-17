@@ -301,6 +301,7 @@ export class ModeHandler implements vscode.Disposable {
     const oldMode = this.vimState.currentMode;
     const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
+    const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
     try {
       let handled = false;
@@ -396,6 +397,21 @@ export class ModeHandler implements vscode.Disposable {
     if (this.vimState.isCurrentlyPerformingRemapping && this.vimState.lastMovementFailed) {
       this.vimState.lastMovementFailed = false;
       throw new ForceStopRemappingError('Last movement failed');
+    }
+
+    // There was no action run yet but we still want to update the view to be able
+    // to show the potential remapping keys being pressed, the `"` character when
+    // waiting on a register key or the `?` character and any following character
+    // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
+    // to call the updateView after we are no longer waiting keys so that any
+    // existing overlapped key is removed.
+    if (
+      this.currentMode === Mode.Insert &&
+      (this.vimState.recordedState.bufferedKeys.length > 0 ||
+        this.vimState.recordedState.waitingForAnotherActionKey ||
+        oldWaitingForAnotherActionKey !== this.vimState.recordedState.waitingForAnotherActionKey)
+    ) {
+      await this.updateView(this.vimState);
     }
   }
 
@@ -1422,6 +1438,91 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this.vimState.editor.setDecorations(decoration.Default, cursorRange);
+
+    // Insert Mode virtual characters: used to temporarily show the remapping pressed keys on
+    // insert mode, to show the `"` character after pressing `<C-r>`, and to show `?` and the
+    // first character when inserting digraphs with `<C-k>`.
+    let decorationOptions: vscode.DecorationOptions[] = [];
+    if (
+      this.currentMode === Mode.Insert &&
+      (vimState.recordedState.bufferedKeys.length > 0 ||
+        vimState.recordedState.waitingForAnotherActionKey)
+    ) {
+      let virtualKey: string | undefined = '';
+      if (vimState.recordedState.bufferedKeys.length > 0) {
+        virtualKey =
+          vimState.recordedState.bufferedKeys[vimState.recordedState.bufferedKeys.length - 1];
+      } else {
+        virtualKey =
+          vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
+        if (virtualKey === '<C-r>') {
+          virtualKey = '"';
+        } else if (virtualKey === '<C-k>') {
+          virtualKey = '?';
+        } else {
+          // Don't show keys with `<` like `<C-x>` but show everything else
+          virtualKey = virtualKey.indexOf('<') >= 0 ? undefined : virtualKey;
+        }
+      }
+
+      if (virtualKey) {
+        // Normal Render Options with the key to overlap on the next character
+        const renderOptions: vscode.ThemableDecorationRenderOptions = {
+          before: {
+            contentText: virtualKey,
+          },
+        };
+
+        let width = vscode.workspace.getConfiguration().get<number>('editor.fontSize');
+        width = width ? width * 0.625 : 8;
+        /**
+         * EOL Render Options:
+         * When at the line end the decorator doesn't have a character so we can't use the
+         * existent character background with the `::before` element overlapped, so we need
+         * to create the background on the `::before` element and give it a width. So we get
+         * the width from the fontSize.
+         * The formula bellow I got from trial and error (basically for a fontSize of 14 the
+         * width is aroung 8px, for a fontSize of 16 it is around 10) so it might lead to some
+         * graphical issues in some systems specially if not using a monospaced font. But since
+         * it is at the end of the line it shouldn't be a problem (worst that can happen is the
+         * background only filling half the character when using font sizes of 30 or higher)
+         * I did it this way because it allows to have a block cursor when on the EOL as well,
+         * while the other option would show only the character but not the color of the background
+         * which with some themes might end up with the character no being visible.
+         */
+        const eolRenderOptions: vscode.ThemableDecorationRenderOptions = {
+          backgroundColor: 'transparent',
+          before: {
+            contentText: virtualKey,
+            backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+            margin: `0 -${width}px 0 0`,
+            width: `${width}px`,
+          },
+        };
+
+        for (const { stop: cursorStop } of vimState.cursors) {
+          if (cursorStop.isLineEnd()) {
+            decorationOptions.push({
+              range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
+              renderOptions: {
+                dark: eolRenderOptions,
+                light: eolRenderOptions,
+              },
+            });
+          } else {
+            decorationOptions.push({
+              range: new vscode.Range(cursorStop, cursorStop.getRightThroughLineBreaks(true)),
+              renderOptions: {
+                dark: renderOptions,
+                light: renderOptions,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    this.vimState.editor.setDecorations(decoration.InsertModeVirtualCharacter, decorationOptions);
 
     // TODO: draw marks (#3963)
 

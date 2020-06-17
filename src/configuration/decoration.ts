@@ -5,6 +5,7 @@ class DecorationImpl {
   private _default: vscode.TextEditorDecorationType;
   private _searchHighlight: vscode.TextEditorDecorationType;
   private _easyMotion: vscode.TextEditorDecorationType;
+  private _insertModeVirtualCharacter: vscode.TextEditorDecorationType;
 
   public set Default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -39,6 +40,17 @@ class DecorationImpl {
     return this._easyMotion;
   }
 
+  public set InsertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
+    if (this._insertModeVirtualCharacter) {
+      this._insertModeVirtualCharacter.dispose();
+    }
+    this._insertModeVirtualCharacter = value;
+  }
+
+  public get InsertModeVirtualCharacter() {
+    return this._insertModeVirtualCharacter;
+  }
+
   public load(configuration: IConfiguration) {
     this.Default = vscode.window.createTextEditorDecorationType({
       backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
@@ -66,6 +78,27 @@ class DecorationImpl {
 
     this.EasyMotion = vscode.window.createTextEditorDecorationType({
       backgroundColor: searchHighlightColor,
+    });
+
+    this.InsertModeVirtualCharacter = vscode.window.createTextEditorDecorationType({
+      color: 'transparent', // no color to hide the existing character
+      backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+      dark: {
+        before: {
+          color: 'rgb(81,80,82)',
+        },
+      },
+      light: {
+        before: {
+          // used for light colored themes
+          color: 'rgb(255, 255, 255)',
+        },
+      },
+      before: {
+        margin: '0 -1px 0 0',
+        width: '1px',
+        textDecoration: 'none; position: absolute; z-index:99;',
+      },
     });
   }
 }
