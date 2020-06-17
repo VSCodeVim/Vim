@@ -1884,6 +1884,17 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can delete with count before and after operator, 2d12w deletes 24 words',
+    start: [
+      '|one two three four five six seven eight nine ten',
+      'one two three four five six seven eight nine ten',
+      'one two three four five six seven eight nine ten',
+    ],
+    keysPressed: '2d12w',
+    end: ['|five six seven eight nine ten'],
+  });
+
+  newTest({
     title: 'can dE correctly',
     start: ['|one two three'],
     keysPressed: 'dE',
@@ -1968,6 +1979,76 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can ctrl-a on a hex number behind a word',
+    start: ['|test0xf'],
+    keysPressed: '<C-a>',
+    end: ['test0x1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a distinguish fake hex number',
+    start: ['|00xf'],
+    keysPressed: '<C-a>',
+    end: ['0|1xf'],
+  });
+
+  newTest({
+    title: 'can ctrl-a preserve leading zeros of octal',
+    start: ['|000007'],
+    keysPressed: '<C-a>',
+    end: ['00001|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a trim leading zeros of decimal',
+    start: ['|000009'],
+    keysPressed: '<C-a>',
+    end: ['1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a process `-0x0` correctly',
+    start: ['|-0x0'],
+    keysPressed: '<C-a>',
+    end: ['-0x|1'],
+  });
+
+  newTest({
+    title: 'can ctrl-a regard `0` as decimal',
+    start: ['|0'],
+    keysPressed: '10<C-a>',
+    end: ['1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on octal ignore negative sign',
+    start: ['|test-0116'],
+    keysPressed: '<C-a>',
+    end: ['test-011|7'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on octal ignore positive sign',
+    start: ['|test+0116'],
+    keysPressed: '<C-a>',
+    end: ['test+011|7'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on hex number ignore negative sign',
+    start: ['|test-0xf'],
+    keysPressed: '<C-a>',
+    end: ['test-0x1|0'],
+  });
+
+  newTest({
+    title: 'can ctrl-a on hex number ignore positive sign',
+    start: ['|test+0xf'],
+    keysPressed: '<C-a>',
+    end: ['test+0x1|0'],
+  });
+
+  newTest({
     title: 'can ctrl-x correctly behind a word',
     start: ['|one 10'],
     keysPressed: '<C-x>',
@@ -1991,8 +2072,8 @@ suite('Mode Normal', () => {
   newTest({
     title: 'can ctrl-x on a negative number with word before and after ',
     start: ['|test-2abc'],
-    keysPressed: '<C-a><C-a><C-a>',
-    end: ['test|1abc'],
+    keysPressed: '<C-x><C-x><C-x>',
+    end: ['test-|5abc'],
   });
 
   newTest({
@@ -2250,6 +2331,42 @@ suite('Mode Normal', () => {
     keysPressed: 'cit',
     end: ['<div>|</div>'],
     endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when inside one',
+    start: ['<foo>', '  <b|ar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is on the opening angle bracket',
+    start: ['<foo>', '  |<bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title: 'yat yanks the correct tag when cursor is between the beginning of the line and the tag',
+    start: ['<foo>', ' | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'yat$p',
+    end: ['<foo>', '  <bar>asd</bar><bar>asd</bar|>', '</foo>'],
+  });
+
+  newTest({
+    title:
+      'dat deletes the outer tag when there are other characters (not just WS) before the opening tag',
+    start: ['<foo>', 'a | <bar>asd</bar>', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
+  });
+
+  newTest({
+    title: 'dat deletes the outer tag when the cursor is after the inner tag',
+    start: ['<foo>', '  <bar>asd</bar> |', '</foo>'],
+    keysPressed: 'dat',
+    end: ['|'],
   });
 
   newTest({

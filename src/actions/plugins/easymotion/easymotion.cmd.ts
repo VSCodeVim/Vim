@@ -83,7 +83,6 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       if (isVisualMode(vimState.easyMotion.previousMode)) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
-        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
       }
 
       // Stop if there are no matches
@@ -405,7 +404,6 @@ class MoveEasyMotion extends BaseCommand {
       if (isVisualMode(vimState.easyMotion.previousMode)) {
         vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
-        vimState.visualLineStartColumn = vimState.lastVisualSelection!.visualLineStartColumn;
       }
 
       if (markers.length === 1) {

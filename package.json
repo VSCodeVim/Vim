@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.14.1",
+  "version": "1.14.5",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -31,8 +31,8 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "ui",
-    "workspace"
+    "workspace",
+    "ui"
   ],
   "activationEvents": [
     "*",
@@ -319,6 +319,11 @@
         "key": "shift+G",
         "command": "list.focusLast",
         "when": "listFocus && !inputFocus"
+      },
+      {
+        "key": "ctrl+backspace",
+        "command": "extension.vim_ctrl+backspace",
+        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
@@ -766,7 +771,7 @@
         },
         "vim.enableNeovim": {
           "type": "boolean",
-          "markdownDescription": "Use Neovim on backend. (only works for Ex commands right now). You should restart VSCode after enable/disabling this for the changes to take effect. **NOTE:** Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, VSCodeVim will crash.",
+          "markdownDescription": "Use Neovim on backend. (only works for Ex commands right now). You should restart VSCode after enable/disabling this for the changes to take effect. **NOTE:** Neovim must be installed (v0.2.0) and neovimPath must be set to executable, or the nvim/nvim.exe executable must be in your PATH, in order for this setting to work.",
           "default": false
         },
         "vim.neovimPath": {
@@ -782,7 +787,7 @@
         },
         "vim.vimrc.path": {
           "type": "string",
-          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc or $HOME/_vimrc."
+          "description": "Path to a Vim configuration file. If unset, it will check for $HOME/.vimrc, $HOME/_vimrc, and $HOME/.config/nvim/init.vim, in that order."
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
@@ -940,14 +945,13 @@
   "scripts": {
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
-    "test": "node ./node_modules/vscode/bin/test",
-    "forceprettier": "gulp forceprettier",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "test": "node ./out/test/runTest.js",
+    "forceprettier": "gulp forceprettier"
   },
   "dependencies": {
-    "diff-match-patch": "1.0.4",
+    "diff-match-patch": "1.0.5",
     "lodash": "^4.17.15",
-    "neovim": "4.8.0",
+    "neovim": "4.9.0",
     "untildify": "4.0.0",
     "winston": "3.2.1",
     "winston-console-for-electron": "0.0.6",
@@ -956,10 +960,12 @@
   "devDependencies": {
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.150",
+    "@types/glob": "7.1.2",
+    "@types/lodash": "4.14.155",
     "@types/mocha": "7.0.2",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.0",
+    "@types/sinon": "9.0.4",
+    "@types/vscode": "1.37.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.10.1",
@@ -968,16 +974,17 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.5",
-    "mocha": "7.1.2",
+    "mocha": "8.0.1",
     "plugin-error": "1.0.1",
     "prettier": "2.0.5",
     "sinon": "9.0.2",
-    "ts-loader": "7.0.2",
+    "ts-loader": "7.0.5",
     "tslint": "6.1.2",
-    "typescript": "3.8.3",
-    "vscode": "1.1.37",
+    "typescript": "3.9.5",
+    "vscode-test": "1.4.0",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.11",
+    "webpack-merge": "4.2.2",
     "webpack-stream": "5.2.1"
   }
 }

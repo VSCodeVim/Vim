@@ -76,31 +76,78 @@ export class TagMatcher {
       }
     }
 
-    const startPos = TextEditor.getOffsetAt(vimState.cursorStartPosition);
-    const endPos = position;
+    const firstNonWhitespacePositionOnLine = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.cursorStartPosition.line
+    );
+
+    /**
+     * This adjustment fixes the following situation:
+     * <foo>
+     * |  <bar>
+     *    test
+     *    </bar>
+     * </foo>
+     * Now in tag matching situations, the tag opening on the cursor line is considered as well
+     * (if there is only whitespace before the tag and the cursor is standing on these whitespaces)
+     */
+    const startPos =
+      vimState.cursorStartPosition.character < firstNonWhitespacePositionOnLine.character
+        ? firstNonWhitespacePositionOnLine
+        : vimState.cursorStartPosition;
+
+    const startPosOffset = TextEditor.getOffsetAt(startPos);
+    const endPosOffset = position;
     const tagsSurrounding = matchedTags.filter((n) => {
-      return startPos > n.openingTagStart && endPos < n.closingTagEnd;
+      return startPosOffset >= n.openingTagStart && endPosOffset < n.closingTagEnd;
     });
 
     if (!tagsSurrounding.length) {
       return;
     }
 
-    // The first one should be the most relevant tag.
-    const nodeSurrounding = tagsSurrounding[0];
+    const nodeSurrounding = this.determineRelevantTag(
+      tagsSurrounding,
+      startPosOffset,
+      vimState.cursorStartPosition.compareTo(vimState.cursorStopPosition) !== 0
+    );
+
+    if (!nodeSurrounding) {
+      return;
+    }
 
     this.openStart = nodeSurrounding.openingTagStart;
     this.closeEnd = nodeSurrounding.closingTagEnd;
     // if the inner tag content is already selected, expand to enclose tags with 'it' as in vim
     if (
-      startPos === nodeSurrounding.openingTagEnd &&
-      endPos + 1 === nodeSurrounding.closingTagStart
+      startPosOffset === nodeSurrounding.openingTagEnd &&
+      endPosOffset + 1 === nodeSurrounding.closingTagStart
     ) {
       this.openEnd = this.openStart;
       this.closeStart = this.closeEnd;
     } else {
       this.openEnd = nodeSurrounding.openingTagEnd;
       this.closeStart = nodeSurrounding.closingTagStart;
+    }
+  }
+
+  /**
+   * Most of the time the relevant tag is the innermost tag, but when Visual mode is active,
+   * the rules are different.
+   * When the cursorStart is standing on the < character of the inner tag, with "at" we must
+   * jump to the outer tag.
+   */
+  determineRelevantTag(
+    tagsSurrounding: MatchedTag[],
+    adjustedStartPosOffset: number,
+    selectionActive: boolean
+  ): MatchedTag | undefined {
+    const relevantTag = tagsSurrounding[0];
+
+    if (selectionActive && adjustedStartPosOffset === relevantTag.openingTagStart) {
+      // we adjusted so we have to return the outer tag
+      return tagsSurrounding[1];
+    } else {
+      return relevantTag;
     }
   }
 

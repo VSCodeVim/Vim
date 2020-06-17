@@ -323,6 +323,13 @@ suite('Mode Visual Line', () => {
   });
 
   newTest({
+    title: '"xVp only updates default register content',
+    start: ['|abc', 'def', 'ghi'],
+    keysPressed: 'V"ayjVj"ap"app',
+    end: ['abc', 'abc', 'abc', '|def', 'ghi'],
+  });
+
+  newTest({
     title: 'Vp does not append unnecessary newlines (first line)',
     start: ['|begin', 'middle', 'end'],
     keysPressed: 'yyVp',
@@ -341,6 +348,13 @@ suite('Mode Visual Line', () => {
     start: ['begin', 'middle', '|end'],
     keysPressed: 'yyVp',
     end: ['begin', 'middle', '|end'],
+  });
+
+  newTest({
+    title: 'Vp places the cursor on first non-whitespace character on line',
+    start: ['begin', '|    middle', 'end'],
+    keysPressed: 'yyjVp',
+    end: ['begin', '    middle', '    |middle'],
   });
 
   suite('replace text in linewise visual-mode with linewise register content', () => {
@@ -527,5 +541,25 @@ suite('Mode Visual Line', () => {
     keysPressed: 'VjjJ',
     end: ['one two| three', 'four'],
     endMode: Mode.Normal,
+  });
+
+  suite('C, R, and S', () => {
+    for (const command of ['C', 'R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `Vjj${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `Vkk${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
   });
 });

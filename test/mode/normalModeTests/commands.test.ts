@@ -40,6 +40,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'x' with count does not go over EOL",
+    start: ['one t|wo', 'three four'],
+    keysPressed: '1000x',
+    end: ['one |t', 'three four'],
+  });
+
+  newTest({
     title: "Can handle 'Ns'",
     start: ['|text'],
     keysPressed: '3s',

@@ -54,6 +54,7 @@ To enable key-repeating execute the following in your Terminal and restart VS Co
 ```sh
 $ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
 $ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
 $ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
 ```
 
@@ -709,7 +710,7 @@ VS Code has a lot of nifty tricks and we try to preserve some of them:
 
 - I've swapped Escape and Caps Lock with setxkbmap and VSCodeVim isn't respecting the swap
 
-  This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keycode"` and restart VS Code.
+  This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keyCode"` and restart VS Code.
 
 ## ❤️ Contributing
 

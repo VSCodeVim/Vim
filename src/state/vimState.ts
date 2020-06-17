@@ -85,11 +85,6 @@ export class VimState implements vscode.Disposable {
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
   /**
-   * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
-   */
-  public visualLineStartColumn: number | undefined = undefined;
-
-  /**
    * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
@@ -104,7 +99,7 @@ export class VimState implements vscode.Disposable {
         target: string | undefined;
         replacement: string | undefined;
         range: Range | undefined;
-        isVisualLine: boolean;
+        previousMode: Mode;
       } = undefined;
 
   /**
@@ -173,7 +168,7 @@ export class VimState implements vscode.Disposable {
       map.set(cursor.toString(), cursor);
     }
 
-    this._cursors = Array.from(map.values());
+    this._cursors = [...map.values()];
     this.isMultiCursor = this._cursors.length > 1;
   }
 
@@ -184,8 +179,8 @@ export class VimState implements vscode.Disposable {
   public get cursorsInitialState(): Range[] {
     return this._cursorsInitialState;
   }
-  public set cursorsInitialState(value: Range[]) {
-    this._cursorsInitialState = Object.assign([], value);
+  public set cursorsInitialState(cursors: Range[]) {
+    this._cursorsInitialState = [...cursors];
   }
 
   public isRecordingMacro: boolean = false;
@@ -201,7 +196,6 @@ export class VimState implements vscode.Disposable {
         mode: Mode;
         start: Position;
         end: Position;
-        visualLineStartColumn: number | undefined;
       }
     | undefined = undefined;
 
@@ -226,10 +220,6 @@ export class VimState implements vscode.Disposable {
       this.returnToInsertAfterCommand = false;
     }
     this._currentMode = mode;
-
-    if (mode !== Mode.VisualLine) {
-      this.visualLineStartColumn = undefined;
-    }
 
     if (mode === Mode.SearchInProgressMode) {
       this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;

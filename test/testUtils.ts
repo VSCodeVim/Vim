@@ -77,17 +77,11 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-  for (let i = 0; i < expectedLines.length; i++) {
-    const expected = expectedLines[i];
-    const actual = TextEditor.readLineAt(i);
-    assert.strictEqual(
-      actual,
-      expected,
-      `Content does not match; Expected=${expected}. Actual=${actual}.`
-    );
-  }
-
-  assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
+  assert.strictEqual(
+    TextEditor.getText(),
+    expectedLines.join(os.EOL),
+    'Document content does not match.'
+  );
 }
 
 export function assertStatusBarEqual(

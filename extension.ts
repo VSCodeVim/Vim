@@ -51,6 +51,9 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId ||
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
+    // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
+    // need to update our representation of the cursors when switching between editors for the same document.
+    // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
@@ -251,10 +254,6 @@ export async function activate(context: vscode.ExtensionContext) {
       taskQueue.enqueueTask(async () => {
         if (vscode.window.activeTextEditor !== undefined) {
           const mh: ModeHandler = await getAndUpdateModeHandler(true);
-
-          await VsCodeContext.Set('vim.mode', Mode[mh.vimState.currentMode]);
-
-          await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
           globalState.jumpTracker.handleFileJump(
             lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,

@@ -319,7 +319,7 @@ suite('Remapper', () => {
       new vscode.Position(0, 0),
       expectedDocumentContent
     );
-    vscode.workspace.applyEdit(edit);
+    await vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
     assert.strictEqual(modeHandler.currentMode, Mode.Insert);
@@ -466,6 +466,32 @@ suite('Remapper', () => {
 
     // assert
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test('jj -> <Esc> after using <Count>i=jj should insert ===', async () => {
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: [
+        {
+          before: ['j', 'j'],
+          after: ['<Esc>'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', 'b']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['3', 'i', '=']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assertEqualLines(['word1 ===word2']);
   });
 
   test('jj -> <Esc> does not leave behind character a j', async () => {

@@ -276,13 +276,12 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   assertEqualLines(lines);
 
   // Check final cursor position
-  const actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
+  const actualPosition = TextEditor.getSelection().start;
   const expectedPosition = helper.endPosition;
-  assert.strictEqual(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
-  assert.strictEqual(
-    actualPosition.character,
-    expectedPosition.character,
-    'Cursor CHARACTER position is wrong.'
+  assert.deepStrictEqual(
+    { line: actualPosition.line, character: actualPosition.character },
+    { line: expectedPosition.line, character: expectedPosition.character },
+    'Cursor position is wrong.'
   );
 
   // endMode: check end mode is correct if given
