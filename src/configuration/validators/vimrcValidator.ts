@@ -1,7 +1,5 @@
-import * as fs from 'fs';
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
-import { vimrc } from '../vimrc';
 
 export class VimrcValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {

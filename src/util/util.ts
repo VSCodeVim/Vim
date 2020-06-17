@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { exec } from 'child_process';
 import { VimState } from '../state/vimState';
@@ -11,9 +10,7 @@ import { VimState } from '../state/vimState';
  * this doesn't seem to be necessary any more.
  */
 export function getCursorsAfterSync(): Range[] {
-  return vscode.window.activeTextEditor!.selections.map(
-    (x) => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
-  );
+  return vscode.window.activeTextEditor!.selections.map((x) => Range.FromVSCodeSelection(x));
 }
 
 /**

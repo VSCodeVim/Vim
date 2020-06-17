@@ -17,7 +17,7 @@ class CommandLine {
   /**
    *  Index used for navigating commandline history with <up> and <down>
    */
-  private _commandLineHistoryIndex: number = 0;
+  public commandLineHistoryIndex: number = 0;
 
   /**
    * for checking the last pressed key in command mode
@@ -28,14 +28,6 @@ class CommandLine {
   public autoCompleteItems: string[] = [];
   public preCompleteCharacterPos = 0;
   public preCompleteCommand = '';
-
-  public get commandlineHistoryIndex(): number {
-    return this._commandLineHistoryIndex;
-  }
-
-  public set commandlineHistoryIndex(index: number) {
-    this._commandLineHistoryIndex = index;
-  }
 
   public get historyEntries() {
     return this._history.get();
@@ -56,7 +48,7 @@ class CommandLine {
       return;
     }
 
-    if (command && command[0] === ':') {
+    if (command.startsWith(':')) {
       command = command.slice(1);
     }
 
@@ -66,7 +58,7 @@ class CommandLine {
     }
 
     this._history.add(command);
-    this._commandLineHistoryIndex = this._history.get().length;
+    this.commandLineHistoryIndex = this._history.get().length;
 
     if (!command.startsWith('reg')) {
       let recState = new RecordedState();
@@ -80,15 +72,15 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
       if (useNeovim) {
-        const statusBarText = await vimState.nvim.run(vimState, command);
-        StatusBar.setText(vimState, statusBarText);
+        const { statusBarText, error } = await vimState.nvim.run(vimState, command);
+        StatusBar.setText(vimState, statusBarText, error);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {
         if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
-          const statusBarText = await vimState.nvim.run(vimState, command);
+          const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
           StatusBar.setText(vimState, e.toString(), true);

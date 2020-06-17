@@ -887,7 +887,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: true, start: ';' },
     { singleLine: true, start: '*' },
 
-    // Needs to come last, since everything starts with the emtpy string!
+    // Needs to come last, since everything starts with the empty string!
     { singleLine: true, start: '' },
   ];
 
@@ -906,7 +906,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
     return '';
   }
 
-  public reflowParagraph(s: string, indent: string): string {
+  public reflowParagraph(s: string): string {
+    const indent = this.getIndentation(s);
+
     let indentLevel = 0;
     for (const char of indent) {
       indentLevel += char === '\t' ? configuration.tabstop : 1;
@@ -1086,10 +1088,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     [start, end] = Position.sorted(start, end);
 
-    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
-    let indent = this.getIndentation(textToReflow);
+    start = start.getLineBegin();
+    end = end.getLineEnd();
 
-    textToReflow = this.reflowParagraph(textToReflow, indent);
+    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
+    textToReflow = this.reflowParagraph(textToReflow);
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',

@@ -21,6 +21,7 @@ import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
+import { clamp } from '../util/util';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -43,12 +44,20 @@ abstract class MoveByScreenLine extends BaseMovement {
   by: CursorMoveByUnit;
   value: number = 1;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(position: Position, vimState: VimState) {
+    return this.execActionWithCount(position, vimState, 1);
+  }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
       select: vimState.currentMode !== Mode.Normal,
       by: this.by,
-      value: this.value,
+      value: this.value * count,
     });
 
     if (vimState.currentMode === Mode.Normal) {
@@ -355,7 +364,7 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.matchRanges.length === 0) {
+    if (searchState.getMatchRanges().length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -381,13 +390,14 @@ class CommandNextSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop
+            : ErrorCode.SearchHitTop,
+          searchState.searchString
         )
       );
       return position;
     }
 
-    reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
 
     return nextMatch.pos;
   }
@@ -408,7 +418,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.matchRanges.length === 0) {
+    if (searchState.getMatchRanges().length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -416,7 +426,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
+    const prevMatch = searchState.getNextSearchMatchPosition(position, SearchDirection.Backward);
 
     if (!prevMatch) {
       StatusBar.displayError(
@@ -424,13 +434,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
         VimError.fromCode(
           searchState.searchDirection === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitBottom,
+          searchState.searchString
         )
       );
       return position;
     }
 
-    reportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
+    reportSearch(prevMatch.index, searchState.getMatchRanges().length, vimState);
 
     return prevMatch.pos;
   }
@@ -887,17 +898,14 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     count = count || 1;
-    const pos = await this.execAction(position, vimState);
-    const newPos: Position | IMovement = pos as Position;
+    const pos = await super.execActionWithCount(position, vimState, count);
 
     // If in visual, return a selection
     if (pos instanceof Position) {
       return pos.getDown(count - 1);
-    } else if (isIMovement(pos)) {
+    } else {
       return { start: pos.start, stop: pos.stop.getDown(count - 1).getLeft() };
     }
-
-    return newPos.getDown(count - 1);
   }
 }
 
@@ -1074,15 +1082,6 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
   by: CursorMoveByUnit = 'line';
   value = 1;
   isJump = true;
-
-  public async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    this.value = count < 1 ? 1 : count;
-    return this.execAction(position, vimState);
-  }
 }
 
 @RegisterAction
@@ -1092,15 +1091,6 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   by: CursorMoveByUnit = 'line';
   value = 1;
   isJump = true;
-
-  public async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    this.value = count < 1 ? 1 : count;
-    return this.execAction(position, vimState);
-  }
 }
 
 @RegisterAction
@@ -1150,12 +1140,8 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (count === 0) {
-      return TextEditor.getDocumentBegin().obeyStartOfLine();
-    } else if (count > TextEditor.getLineCount()) {
-      count = TextEditor.getLineCount();
-    }
-    return new Position(count - 1, 0).obeyStartOfLine();
+    const lineNumber = clamp(count, 1, TextEditor.getLineCount()) - 1;
+    return position.withLine(lineNumber).obeyStartOfLine();
   }
 }
 

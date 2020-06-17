@@ -232,4 +232,15 @@ suite('surround plugin', () => {
     keysPressed: 'cstth3>',
     end: ['<h3>b|ar</h3>'],
   });
+
+  newTest({
+    title:
+      'performing surround after cancelling surround action with <Esc> does not move the cursor',
+    start: ['foo b|ar'],
+    keysPressed: 'ys<Esc>ys',
+    end: ['foo b|ar'],
+  });
+
+  // TODO: visual mode tests
+  // TODO: visual line mode tests
 });

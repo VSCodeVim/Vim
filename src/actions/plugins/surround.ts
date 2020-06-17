@@ -186,7 +186,7 @@ class CommandSurroundModeStart extends BaseCommand {
       operator: operatorString,
       replacement: undefined,
       range: undefined,
-      isVisualLine: false,
+      previousMode: vimState.currentMode,
     };
 
     if (operatorString !== 'yank') {
@@ -228,24 +228,9 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     vimState.recordedState.surroundKeys.push('S');
     vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
-    // Make sure cursor positions are ordered correctly for top->down or down->top selection
-    if (vimState.cursorStartPosition.line > vimState.cursorStopPosition.line) {
-      [vimState.cursorStopPosition, vimState.cursorStartPosition] = [
-        vimState.cursorStartPosition,
-        vimState.cursorStopPosition,
-      ];
-    }
-
-    // Make sure start/end cursor positions are in order
-    if (
-      vimState.cursorStopPosition.line < vimState.cursorStopPosition.line ||
-      (vimState.cursorStopPosition.line === vimState.cursorStartPosition.line &&
-        vimState.cursorStopPosition.character < vimState.cursorStartPosition.character)
-    ) {
-      [vimState.cursorStopPosition, vimState.cursorStartPosition] = [
-        vimState.cursorStartPosition,
-        vimState.cursorStopPosition,
-      ];
+    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    if (vimState.currentMode === Mode.VisualLine) {
+      [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
 
     vimState.surround = {
@@ -253,16 +238,15 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       target: undefined,
       operator: 'yank',
       replacement: undefined,
-      range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
-      isVisualLine: false,
+      range: new Range(start, end),
+      previousMode: vimState.currentMode,
     };
 
-    if (vimState.currentMode === Mode.VisualLine) {
-      vimState.surround.isVisualLine = true;
-    }
-
     await vimState.setCurrentMode(Mode.SurroundInputMode);
-    vimState.cursorStopPosition = vimState.cursorStartPosition;
+
+    // Put the cursor at the beginning of the visual selection
+    vimState.cursorStopPosition = start;
+    vimState.cursorStartPosition = end;
 
     return vimState;
   }
@@ -457,21 +441,17 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement);
 
     if (operator === 'yank') {
-      if (!vimState.surround) {
-        return false;
-      }
-      if (!vimState.surround.range) {
+      if (!vimState.surround?.range) {
         return false;
       }
 
-      let start = vimState.surround.range.start;
-      let stop = vimState.surround.range.stop;
+      let { start, stop } = vimState.surround.range;
 
       if (TextEditor.getCharAt(stop) !== ' ') {
         stop = stop.getRight();
       }
 
-      if (vimState.surround.isVisualLine) {
+      if (vimState.surround.previousMode === Mode.VisualLine) {
         startReplace = startReplace + '\n';
         endReplace = '\n' + endReplace;
       }

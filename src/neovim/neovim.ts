@@ -9,7 +9,8 @@ import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
 import { exists } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
-import { attach, Neovim } from 'neovim';
+import { attach } from 'neovim/lib/attach';
+import { Neovim } from 'neovim/lib/api/Neovim';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
@@ -17,7 +18,10 @@ export class NeovimWrapper implements vscode.Disposable {
   private readonly logger = Logger.get('Neovim');
   private readonly processTimeoutInSeconds = 3;
 
-  async run(vimState: VimState, command: string) {
+  async run(
+    vimState: VimState,
+    command: string
+  ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
 
@@ -63,8 +67,10 @@ export class NeovimWrapper implements vscode.Disposable {
     // Check if an error occurred
     const errMsg = await this.nvim.getVvar('errmsg');
     let statusBarText = '';
+    let error = false;
     if (errMsg && errMsg.toString() !== '') {
       statusBarText = errMsg.toString();
+      error = true;
     } else {
       // Check to see if a status message was updated
       const statusMsg = await this.nvim.getVvar('statusmsg');
@@ -76,7 +82,7 @@ export class NeovimWrapper implements vscode.Disposable {
     // Sync buffer back to VSCode
     await this.syncVimToVSCode(vimState);
 
-    return statusBarText;
+    return { statusBarText, error };
   }
 
   private async startNeovim() {
