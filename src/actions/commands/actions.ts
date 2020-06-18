@@ -1320,18 +1320,12 @@ export class PutCommand extends BaseCommand {
     if (registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === Mode.Visual &&
-      registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === Mode.Visual && registerMode === RegisterMode.LineWise) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
       textToAdd = '\n' + text + '\n';
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === Mode.VisualLine &&
-      registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === Mode.VisualLine && registerMode === RegisterMode.LineWise) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
       const left = !noPrevLine && noNextLine ? '\n' : '';
@@ -1676,7 +1670,9 @@ export class PutCommandVisual extends BaseCommand {
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, { after: true });
+    let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, {
+      after: true,
+    });
     putResult.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     putResult.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
     putResult = await new operator.YankOperator(this.multicursorIndex).run(putResult, start, end);
@@ -1752,7 +1748,10 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const result = await new PutCommand().exec(position, vimState, { after: true, adjustIndent: true });
+    const result = await new PutCommand().exec(position, vimState, {
+      after: true,
+      adjustIndent: true,
+    });
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       result.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
