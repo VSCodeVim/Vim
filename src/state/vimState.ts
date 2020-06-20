@@ -315,6 +315,17 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
+  /**
+   * The mode Vim is currently including pseudo-modes like OperatorPendingMode
+   * This is to be used only by the Remappers when getting the remappings so don't
+   * use it anywhere else.
+   */
+  public get currentModeIncludingPseudoModes(): Mode {
+    return this.recordedState.isOperatorPending(this._currentMode)
+      ? Mode.OperatorPendingMode
+      : this._currentMode;
+  }
+
   private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(mode: Mode): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, mode);

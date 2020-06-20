@@ -438,9 +438,7 @@ export class ModeHandler implements vscode.Disposable {
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
     switch (result) {
       case KeypressState.NoPossibleMatch:
-        if (!this._remappers.isPotentialRemap) {
-          vimState.recordedState = new RecordedState();
-        }
+        vimState.recordedState = new RecordedState();
         // Since there is no possible action we are no longer waiting any action keys
         vimState.recordedState.waitingForAnotherActionKey = false;
 

@@ -24,7 +24,6 @@ interface IRemapper {
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
-  private operatorPendingRemappers: IRemapper[];
 
   constructor() {
     this.remappers = [
@@ -32,8 +31,6 @@ export class Remappers implements IRemapper {
       new NormalModeRemapper(),
       new VisualModeRemapper(),
       new CommandLineModeRemapper(),
-    ];
-    this.operatorPendingRemappers = [
       new OperatorPendingModeRemapper(),
     ];
   }
@@ -48,11 +45,8 @@ export class Remappers implements IRemapper {
     vimState: VimState
   ): Promise<boolean> {
     let handled = false;
-    const remappersToLookup = vimState.recordedState.isOperatorPending(vimState.currentMode)
-      ? this.operatorPendingRemappers
-      : this.remappers;
 
-    for (let remapper of remappersToLookup) {
+    for (let remapper of this.remappers) {
       handled = handled || (await remapper.sendKey(keys, modeHandler, vimState));
     }
     return handled;
@@ -106,7 +100,7 @@ export class Remapper implements IRemapper {
   constructor(configKey: string, remappedModes: Mode[]) {
     this._configKey = configKey;
     this._remappedModes = remappedModes;
-    }
+  }
 
   public async sendKey(
     keys: string[],
@@ -123,7 +117,7 @@ export class Remapper implements IRemapper {
      */
     let allowBufferingKeys = true;
 
-    if (!this._remappedModes.includes(vimState.currentMode)) {
+    if (!this._remappedModes.includes(vimState.currentModeIncludingPseudoModes)) {
       return false;
     }
 
@@ -182,8 +176,8 @@ export class Remapper implements IRemapper {
     ) {
       if (this._hasAmbiguousRemap) {
         remapping = this._hasAmbiguousRemap;
-            isPotentialRemap = false;
-            this._isPotentialRemap = false;
+        isPotentialRemap = false;
+        this._isPotentialRemap = false;
 
         // Use the commandList to get the remaining keys so that it includes any existing
         // '<TimeoutFinished>' key
@@ -351,7 +345,7 @@ export class Remapper implements IRemapper {
       }
 
       // Increase mapDepth
-        vimState.mapDepth++;
+      vimState.mapDepth++;
 
       this._logger.debug(
         `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${vimState.mapDepth}.`
@@ -624,7 +618,7 @@ class NormalModeRemapper extends Remapper {
 
 class OperatorPendingModeRemapper extends Remapper {
   constructor() {
-    super(keyBindingsConfigKey('operatorPending'), [Mode.Normal]);
+    super(keyBindingsConfigKey('operatorPending'), [Mode.OperatorPendingMode]);
   }
 }
 
