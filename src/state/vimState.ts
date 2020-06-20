@@ -145,8 +145,8 @@ export class VimState implements vscode.Disposable {
    * still waiting for timeout or another key to come we store that remapping here. This is used
    * to be able to handle those buffered keys and any other key that the user might press to brake
    * the timeout seperatly. Because if an error happens in the middle of a remap, the remaining
-   * remap keys shouldn't be handled, but if an error happens on a user typed key, the following
-   * keys will still be handled.
+   * remap keys shouldn't be handled but the user pressed ones should, but if an error happens on
+   * a user typed key, the following typed keys will still be handled.
    *
    * Example: having the following remapings:
    * * `nmap <leader>lf Lfill`

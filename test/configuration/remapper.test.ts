@@ -77,7 +77,7 @@ suite('Remapper', () => {
 
   class TestRemapper extends Remapper {
     constructor() {
-      super('configKey', [Mode.Insert], false);
+      super('configKey', [Mode.Insert]);
     }
 
     public findMatchingRemap(

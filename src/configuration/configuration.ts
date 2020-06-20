@@ -94,6 +94,8 @@ class Configuration implements IConfiguration {
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
+    this.clearKeyBindingsMaps();
+
     const validatorResults = await configurationValidator.validate(configuration);
 
     // wrap keys
@@ -161,6 +163,15 @@ class Configuration implements IConfiguration {
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     return this.cursorTypeMap[cursorStyle];
+  }
+
+  clearKeyBindingsMaps() {
+    // Clear the KeyBindingsMaps so that the previous configuration maps don't leak to this one
+    this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
   handleKeys: IHandleKeys[] = [];
@@ -373,15 +384,10 @@ class Configuration implements IConfiguration {
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  operatorPendingModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

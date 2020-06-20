@@ -31,20 +31,20 @@ suite('Remaps', () => {
     remaps: {
       normalModeKeyBindings: [
         {
-          "before": ["<leader>", "w"],
-          "after": ["w"]
+          before: ['<leader>', 'w'],
+          after: ['w'],
         },
         {
-          "before": ["w", "w"],
-          "after": ["b"]
-        }
+          before: ['w', 'w'],
+          after: ['b'],
+        },
       ],
       normalModeKeyBindingsNonRecursive: [
         {
-          "before": ["w"],
-          "after": ["w", "w"]
+          before: ['w'],
+          after: ['w', 'w'],
         },
-      ]
+      ],
     },
     steps: [
       {
@@ -56,7 +56,7 @@ suite('Remaps', () => {
         stepResult: {
           end: ['|one two three'],
           endAfterTimeout: ['one two |three'],
-        }
+        },
       },
       {
         // Step 1: Again we press the keys '<space>w' that remaps to 'w' and waits for timeout and we assert
@@ -64,7 +64,7 @@ suite('Remaps', () => {
         keysPressed: ' w',
         stepResult: {
           end: ['one two |three'],
-        }
+        },
       },
       {
         // Step 2: Since we didn't wait for timeout on the previous step it is still waiting for timeout to
@@ -72,19 +72,200 @@ suite('Remaps', () => {
         keysPressed: 'w',
         stepResult: {
           end: ['one |two three'],
-        }
+        },
       },
-    ]
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'Potential and ambiguous remaps on different recursiveness mappings with different sizes are handled by the correct Remapper',
+    start: ['|one two three'],
+    remaps: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'b', 'b'],
+          after: ['w'],
+        },
+        {
+          before: ['<leader>', 'w'],
+          after: ['$'],
+        },
+        {
+          before: ['<leader>', 'e', 'e'],
+          after: ['i', 'e', 'e', '<Esc>'],
+        },
+        {
+          before: ['<leader>', 'l', 'l', 'l'],
+          after: ['i', 'l', 'l', 'l', '<Esc>'],
+        },
+      ],
+      normalModeKeyBindingsNonRecursive: [
+        {
+          before: ['<leader>', 'b'],
+          after: ['0'],
+        },
+        {
+          before: ['<leader>', 'w', 'w'],
+          after: ['b'],
+        },
+        {
+          before: ['<leader>', 'e', 'e', 'e'],
+          after: ['i', 'e', 'e', 'e', '<Esc>'],
+        },
+        {
+          before: ['<leader>', 'l', 'l'],
+          after: ['i', 'l', 'l', '<Esc>'],
+        },
+      ],
+    },
+    steps: [
+      {
+        // Step 0: Press keys '<space>w' that remap to '$' but since there is the '<space>ww' potential
+        // remap it waits for timeout or another key to come. The recursive remap needs to know that it
+        // has a potential remap and needs to wait but after timeout finishes it also needs to know that
+        // there is a NonRecursive remap with a potential remap that needs to be checked and vice-versa.
+        // In step result with 'end' we assert the result right after the keys are handled. When we use
+        // the 'endAfterTimeout' we are telling the test to wait for timeout to end and then assert the
+        // result.
+        keysPressed: ' w',
+        stepResult: {
+          end: ['|one two three'],
+          endAfterTimeout: ['one two thre|e'],
+        },
+      },
+      {
+        // Step 1: Again we press the keys '<space>w' and we assert that nothing has changed since the
+        // last result after the keys are handled.
+        keysPressed: ' w',
+        stepResult: {
+          end: ['one two thre|e'],
+        },
+      },
+      {
+        // Step 2: Since we didn't wait for timeout on the previous step it is still waiting for timeout to
+        // finish or another key to come so when we now press the key 'w' it gets '<space>ww' and remaps it
+        // to 'b'.
+        keysPressed: 'w',
+        stepResult: {
+          end: ['one two |three'],
+        },
+      },
+      {
+        // Step 3: Press keys '<space>b' that remap to '0' but since there is the '<space>bb' potential
+        // remap it waits for timeout or another key to come. Same thing as step 0 applies but in different
+        // recursiveness.
+        keysPressed: ' b',
+        stepResult: {
+          end: ['one two |three'],
+          endAfterTimeout: ['|one two three'],
+        },
+      },
+      {
+        // Step 4: Again we press the keys '<space>b' and we assert that nothing has changed since the
+        // last result after the keys are handled.
+        keysPressed: ' b',
+        stepResult: {
+          end: ['|one two three'],
+        },
+      },
+      {
+        // Step 5: Since we didn't wait for timeout on the previous step it is still waiting for timeout to
+        // finish or another key to come so when we now press the key 'b' it gets '<space>bb' and remaps it
+        // to 'w'.
+        keysPressed: 'b',
+        stepResult: {
+          end: ['one |two three'],
+        },
+      },
+      {
+        // Step 6: '<space>ee' should be handled by the RecursiveRemapper after timeout
+        keysPressed: ' ee',
+        stepResult: {
+          end: ['one |two three'],
+          endAfterTimeout: ['one e|etwo three'],
+        },
+      },
+      {
+        // Step 7: '<space>eee' should be handled by the NonRecursiveRemapper without timeout
+        keysPressed: ' eee',
+        stepResult: {
+          end: ['one eee|eetwo three'],
+        },
+      },
+      {
+        // Step 8: '<space>ll' should be handled by the NonRecursiveRemapper after timeout
+        keysPressed: ' ll',
+        stepResult: {
+          end: ['one eee|eetwo three'],
+          endAfterTimeout: ['one eeel|leetwo three'],
+        },
+      },
+      {
+        // Step 9: '<space>lll' should be handled by the RecursiveRemapper without timeout
+        keysPressed: ' lll',
+        stepResult: {
+          end: ['one eeelll|lleetwo three'],
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'A multiple key sequence with potential remaps on both recursiveness but without a \
+    remapping, handles all its keys after timeout',
+    start: ['|one two three'],
+    remaps: {
+      normalModeKeyBindings: [
+        {
+          before: ['x', 'x', 'x', 'x'],
+          after: ['i', '4', 'x', '<Esc>'],
+        },
+        {
+          before: ['l', 'l', 'l', 'l', 'l'],
+          after: ['i', '5', 'l', '<Esc>'],
+        },
+      ],
+      normalModeKeyBindingsNonRecursive: [
+        {
+          before: ['x', 'x', 'x', 'x', 'x'],
+          after: ['i', '5', 'x', '<Esc>'],
+        },
+        {
+          before: ['l', 'l', 'l', 'l'],
+          after: ['i', '4', 'l', '<Esc>'],
+        },
+      ],
+    },
+    steps: [
+      {
+        // Step 0: 'xxx' has no remapping and not actions so it does nothing but should still
+        // wait for timeout because of the potential remaps.
+        title: '"xxx" has no remapping but still needs to wait for timeout to finish.',
+        keysPressed: 'xxx',
+        stepResult: {
+          end: ['|one two three'],
+          endAfterTimeout: ['| two three'],
+        },
+      },
+      {
+        // Step 1: 'lll' has no remapping and not actions so it does nothing but should still
+        // wait for timeout because of the potential remaps.
+        title: '"lll" has no remapping but still needs to wait for timeout to finish.',
+        keysPressed: 'lll',
+        stepResult: {
+          end: ['| two three'],
+          endAfterTimeout: [' tw|o three'],
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
     title: 'Can handle vimrc mappings',
     start: ['one |two three'],
-    remaps: [
-      'nmap <leader>w w',
-      'nmap <leader>a <leader>w',
-      'nmap <leader>ww b'
-    ],
+    remaps: ['nmap <leader>w w', 'nmap <leader>a <leader>w', 'nmap <leader>ww b'],
     steps: [
       {
         // Step 0:
@@ -92,16 +273,14 @@ suite('Remaps', () => {
         stepResult: {
           end: ['one |two three'],
           endAfterTimeout: ['one two |three'],
-        }
+        },
       },
-    ]
+    ],
   });
 
   newTestWithRemaps({
     title: "Recursive mappings where the after starts with before don't loop",
-    remaps: [
-      'nmap ab abcd'
-    ],
+    remaps: ['nmap ab abcd'],
     start: ['|'],
     steps: [
       {
@@ -110,19 +289,20 @@ suite('Remaps', () => {
         stepResult: {
           end: ['bcd|'],
           endMode: Mode.Insert,
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
-    title: "Ambiguous Mappings with a long remapping still succeed after timeout or when a key is pressed to break ambiguity",
+    title:
+      'Ambiguous Mappings with a long remapping still succeed after timeout or when a key is pressed to break ambiguity',
     remaps: [
       'nmap ab abcdefghijklmnopqrstuvwxyz',
       'nmap abc aAmbiguous<Esc>',
       'imap jj <Esc>',
       'imap jn AnotherLongAmbiguousRemap<Esc>',
-      'imap jnbn IExistJustToCreateAmbiguityWithRemainingKeys<Esc>'
+      'imap jnbn IExistJustToCreateAmbiguityWithRemainingKeys<Esc>',
     ],
     start: ['|'],
     steps: [
@@ -134,68 +314,70 @@ suite('Remaps', () => {
           end: ['|'],
           endMode: Mode.Normal,
           endAfterTimeout: ['bcdefghijklmnopqrstuvwxyz|'],
-          endModeAfterTimeout: Mode.Insert
-        }
+          endModeAfterTimeout: Mode.Insert,
+        },
       },
       {
         // Step 1:
-        title: 'Key given after the ambiguous remap that breaks ambiguity makes it run straight away',
+        title:
+          'Key given after the ambiguous remap that breaks ambiguity makes it run straight away',
         keysPressed: '<Esc>ddab<Esc>',
         stepResult: {
           end: ['bcdefghijklmnopqrstuvwxy|z'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 2:
-        title: 'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself a remap',
+        title:
+          'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself a remap',
         keysPressed: 'jjddabjj',
         stepResult: {
           end: ['bcdefghijklmnopqrstuvwxy|z'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 3:
-        title: 'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself another potential remap that waits for timeout',
+        title:
+          'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself another potential remap that waits for timeout',
         keysPressed: 'jjddabj',
         stepResult: {
           end: ['bcdefghijklmnopqrstuvwxyz|'],
           endMode: Mode.Insert,
           endAfterTimeout: ['bcdefghijklmnopqrstuvwxyzj|'],
           endModeAfterTimeout: Mode.Insert,
-        }
+        },
       },
       {
         // Step 4:
-        title: 'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself another long ambiguous remap that waits for timeout and has remaining keys to be handled',
+        title:
+          'Key given after the ambiguous remap that breaks ambiguity makes it run straight away even if that key is itself another long ambiguous remap that waits for timeout and has remaining keys to be handled',
         keysPressed: 'jjddabjnb',
         stepResult: {
           end: ['bcdefghijklmnopqrstuvwxyz|'],
           endMode: Mode.Insert,
           endAfterTimeout: ['|bcdefghijklmnopqrstuvwxyzAnotherLongAmbiguousRemap'],
           endModeAfterTimeout: Mode.Normal,
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
     title: 'Remaps that call themselves run until an error',
-    remaps: [
-      'nmap <leader>$ 0f£xA$00<Esc>',
-      'nmap <leader>$G <leader>$j<leader>$G'
-    ],
+    remaps: ['nmap <leader>$ 0f£xA$00<Esc>', 'nmap <leader>$G <leader>$j<leader>$G'],
     start: ['|10£', '15£', '350£', '2£', '5£'],
     steps: [
       {
         // Step 0:
-        title: 'Calls itself until it errors (if this test fails with wrong cursor on last character instead of first it might mean that someone made the "j" fail when on last line YAY! :) if so please update this step to change the expected cursor to be on last character of last line)',
+        title:
+          'Calls itself until it errors (if this test fails with wrong cursor on last character instead of first it might mean that someone made the "j" fail when on last line YAY! :) if so please update this step to change the expected cursor to be on last character of last line)',
         keysPressed: ' $G',
         stepResult: {
           end: ['10$00', '15$00', '350$00', '2$00', '|5$00'],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
       {
         // Step 1:
@@ -203,23 +385,25 @@ suite('Remaps', () => {
         keysPressed: 'uuuuuuuuuuG5o<Esc>gg',
         stepResult: {
           end: ['|10£', '15£', '350£', '2£', '5£', '', '', '', '', ''],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
       {
         // Step 2:
-        title: 'Calls itself until it errors and checks that the remaining keys that break ambiguity are not handled because they are not typed by the user',
+        title:
+          'Calls itself until it errors and checks that the remaining keys that break ambiguity are not handled because they are not typed by the user',
         keysPressed: ' $G',
         stepResult: {
           end: ['10$00', '15$00', '350$00', '2$00', '5$00', '|', '', '', '', ''],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
-    ]
+    ],
   });
 
   newTestWithRemaps({
-    title: 'Potential remaps that have remaining keys when broken should only handle those keys if typed by the user (test mentioned on remapper.ts)',
+    title:
+      'Potential remaps that have remaining keys when broken should only handle those keys if typed by the user (test mentioned on remapper.ts)',
     remaps: [
       'nmap <leader>lf Lfill',
       'nmap <leader>lF Lfillr',
@@ -231,14 +415,15 @@ suite('Remaps', () => {
     steps: [
       {
         // Step 0:
-        title: 'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
+        title:
+          'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'Lfill',
         stepResult: {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', 'He|llo World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 1:
@@ -248,64 +433,70 @@ suite('Remaps', () => {
           end: ['|Hello World again!', 'Helilo World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', 'Helil|o World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 2:
-        title: 'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
+        title:
+          'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'hhxk0 lf',
         stepResult: {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', '|Hello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 3:
-        title: 'Lfill typed via remap with a user pressed key after should run the corresponding remap',
+        title:
+          'Lfill typed via remap with a user pressed key after should run the corresponding remap',
         keysPressed: 'k0 lfc',
         stepResult: {
           end: ['   | Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 4:
-        title: 'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
+        title:
+          'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: 'j0 lfx',
         stepResult: {
           end: ['    Hello World again!', '|ello World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 5:
-        title: 'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
+        title:
+          'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
         keysPressed: ' lfrcl',
         stepResult: {
           end: ['    Hello World again!', 'c|llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 6:
-        title: 'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
+        title:
+          'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: ' lFdl',
         stepResult: {
           end: ['    Hello World again!', '|llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 7:
-        title: 'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap and the rest of the keys',
+        title:
+          'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap and the rest of the keys',
         keysPressed: ' lfrsl',
         stepResult: {
           end: ['    Hello World again!', '  |llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 8:
@@ -314,13 +505,14 @@ suite('Remaps', () => {
         stepResult: {
           end: ['    Hello World again!', '  d|lo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
-    ]
+    ],
   });
 
   newTestWithRemaps({
-    title: 'Ambiguous remaps that have remaining keys when broken should only handle those keys if typed by the user (test mentioned on remapper.ts)',
+    title:
+      'Ambiguous remaps that have remaining keys when broken should only handle those keys if typed by the user (test mentioned on remapper.ts)',
     remaps: [
       'nmap <leader>lf Lfill',
       'nmap <leader>lF Lfillr',
@@ -333,14 +525,15 @@ suite('Remaps', () => {
     steps: [
       {
         // Step 0:
-        title: 'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
+        title:
+          'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'Lfill',
         stepResult: {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', 'He|llo World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 1:
@@ -350,64 +543,70 @@ suite('Remaps', () => {
           end: ['|Hello World again!', 'Helilo World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', 'Helil|o World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 2:
-        title: 'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
+        title:
+          'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'hhxk0 lf',
         stepResult: {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
           endAfterTimeout: ['Hello World again!', '|Hello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 3:
-        title: 'Lfill typed via remap with a user pressed key after should run the corresponding remap',
+        title:
+          'Lfill typed via remap with a user pressed key after should run the corresponding remap',
         keysPressed: 'k0 lfc',
         stepResult: {
           end: ['   | Hello World again!', 'Hello World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 4:
-        title: 'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
+        title:
+          'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: 'j0 lfx',
         stepResult: {
           end: ['    Hello World again!', '|ello World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 5:
-        title: 'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
+        title:
+          'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
         keysPressed: ' lfrcl',
         stepResult: {
           end: ['    Hello World again!', 'c|llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 6:
-        title: 'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
+        title:
+          'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: ' lFdl',
         stepResult: {
           end: ['    Hello World again!', '|llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 7:
-        title: 'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap',
+        title:
+          'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap',
         keysPressed: ' lfrsl',
         stepResult: {
           end: ['    Hello World again!', '  |llo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
       {
         // Step 8:
@@ -416,18 +615,15 @@ suite('Remaps', () => {
         stepResult: {
           end: ['    Hello World again!', '  d|lo World!'],
           endMode: Mode.Normal,
-        }
+        },
       },
-    ]
+    ],
   });
 
   newTestWithRemaps({
-    title: 'Ambiguous remaps that have remaining keys when broken should only handle those keys if typed by the user (with changing Modes)',
-    remaps: [
-      'vmap jk <Esc>',
-      'vmap jkfila <Esc>',
-      'vmap jkff jkfil',
-    ],
+    title:
+      'Ambiguous remaps that have remaining keys when broken should only handle those keys if typed by the user (with changing Modes)',
+    remaps: ['vmap jk <Esc>', 'vmap jkfila <Esc>', 'vmap jkff jkfil'],
     start: ['|Hello World again!', 'Hello World!'],
     steps: [
       {
@@ -438,19 +634,20 @@ suite('Remaps', () => {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World agai|n!', 'Hello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 1:
-        title: 'jkfil typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
+        title:
+          'jkfil typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'j0vjkfil',
         stepResult: {
           end: ['Hello World again!', '|Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World again!', 'H|ello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 2:
@@ -460,96 +657,91 @@ suite('Remaps', () => {
           end: ['|Hello World again!', 'Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World agai|n!', 'Hello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
       {
         // Step 3:
-        title: 'jkfil typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
+        title:
+          'jkfil typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'j0vjkff',
         stepResult: {
           end: ['Hello World again!', '|Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World again!', '|Hello World!'],
-          endModeAfterTimeout: Mode.Normal
-        }
+          endModeAfterTimeout: Mode.Normal,
+        },
       },
-    ]
+    ],
   });
 
   newTestWithRemaps({
     title: 'Non recursive remaps should stop running when they encounter a failed action',
-    remaps: [
-      'nn <leader>a 0f£r€'
-    ],
+    remaps: ['nn <leader>a 0f£r€'],
     start: ['|10£', '15€'],
     steps: [
       {
         keysPressed: ' a',
         stepResult: {
           end: ['10|€', '15€'],
-        }
+        },
       },
       {
         keysPressed: 'j a',
         stepResult: {
           end: ['10€', '|15€'],
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
     title: 'Can remap 0 and still use 0 in count',
-    remaps: [
-      'nmap 0 dw',
-    ],
+    remaps: ['nmap 0 dw'],
     start: ['|one two three four five six seven eight nine ten'],
     steps: [
       {
         title: 'Here 0 should be remapped',
         keysPressed: '0',
         stepResult: {
-          end: ['|two three four five six seven eight nine ten']
-        }
+          end: ['|two three four five six seven eight nine ten'],
+        },
       },
       {
         title: 'Here 0 should not be remapped',
         keysPressed: '10l',
         stepResult: {
-          end: ['two three |four five six seven eight nine ten']
-        }
-      }
-    ]
+          end: ['two three |four five six seven eight nine ten'],
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
     title: 'Can handle operator pending mode remaps',
-    remaps: [
-      'omap L g_',
-      'ono w aw'
-    ],
+    remaps: ['omap L g_', 'ono w aw'],
     start: ['|Just another test sentence', 'Just another test sentence'],
     steps: [
       {
         keysPressed: 'dL',
         stepResult: {
           end: ['|', 'Just another test sentence'],
-        }
+        },
       },
       {
         keysPressed: 'jldw',
         stepResult: {
           end: ['', '|another test sentence'],
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
-    title: 'Can handle remaps with multiple keys other than the ones starting with <leader>, g or z',
+    title:
+      'Can handle remaps with multiple keys other than the ones starting with <leader>, g or z',
     remaps: [
-      'map ,l $' // this map creates the mapping for normal, operatorPending and visual modes
+      'map ,l $', // this map creates the mapping for normal, operatorPending and visual modes
     ],
     start: ['|Yet another test sentence'],
     steps: [
@@ -557,84 +749,124 @@ suite('Remaps', () => {
         keysPressed: ',l',
         stepResult: {
           end: ['Yet another test sentenc|e'],
-        }
+        },
       },
       {
         keysPressed: '0d,l',
         stepResult: {
           end: ['|'],
-        }
+        },
       },
       {
         keysPressed: 'u',
         stepResult: {
           end: ['|Yet another test sentence'],
-        }
+        },
       },
       {
         keysPressed: 'lv,ld',
         stepResult: {
-          end: ['|Y']
-        }
-      }
-    ]
+          end: ['|Y'],
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
     title: 'Can handle d -> "_d remaps even when doing dd',
-    remaps: [
-      'nnoremap d "_d'
-    ],
+    remaps: ['nnoremap d "_d'],
     start: ['|one two three'],
     steps: [
       {
         keysPressed: 'yww',
         stepResult: {
-          end: ['one |two three']
-        }
+          end: ['one |two three'],
+        },
       },
       {
         keysPressed: 'dw',
         stepResult: {
-          end: ['one |three']
-        }
+          end: ['one |three'],
+        },
       },
       {
         keysPressed: 'P',
         stepResult: {
-          end: ['one one| three']
-        }
+          end: ['one one| three'],
+        },
       },
       {
         keysPressed: 'dd',
         stepResult: {
-          end: ['|']
-        }
+          end: ['|'],
+        },
       },
       {
         keysPressed: 'p',
         stepResult: {
-          end: ['one| ']
-        }
-      }
-    ]
+          end: ['one| '],
+        },
+      },
+    ],
   });
 
   newTestWithRemaps({
-    title: 'Can handle multiple insert remaps even when starting one with a leading key that is the start of another possible remap',
+    title:
+      'Can handle multiple insert remaps even when starting one with a leading key that is the start of another possible remap',
     remaps: {
       insertModeKeyBindings: [
         {
-          "before": ["q", "r"],
-          "after": ["<Esc>"]
+          before: ['q', 'r'],
+          after: ['<Esc>'],
         },
         {
-          "before": ["t", "h", "r", "u", "n"],
-          "after": [
-            "t", "h", "r", "o", "w", " ",
-            "\"", "U", "n", "i", "m", "p", "l", "e", "m", "e", "n", "t", "e", "d", "\"", ";",
-            " ", "/", "/", "T", "O", "D", "O", " ", "i", "m", "p", "l", "e", "m", "e", "n", "t", "q", "r", "=", "0"]
-        }
+          before: ['t', 'h', 'r', 'u', 'n'],
+          after: [
+            't',
+            'h',
+            'r',
+            'o',
+            'w',
+            ' ',
+            '"',
+            'U',
+            'n',
+            'i',
+            'm',
+            'p',
+            'l',
+            'e',
+            'm',
+            'e',
+            'n',
+            't',
+            'e',
+            'd',
+            '"',
+            ';',
+            ' ',
+            '/',
+            '/',
+            'T',
+            'O',
+            'D',
+            'O',
+            ' ',
+            'i',
+            'm',
+            'p',
+            'l',
+            'e',
+            'm',
+            'e',
+            'n',
+            't',
+            'q',
+            'r',
+            '=',
+            '0',
+          ],
+        },
       ],
     },
     start: ['|'],
@@ -643,30 +875,208 @@ suite('Remaps', () => {
         keysPressed: 'atest\nqr',
         stepResult: {
           end: ['test', '|'],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
       {
         keysPressed: 'ithrun',
         stepResult: {
           end: ['test', '|throw "Unimplemented"; //TODO implement'],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
       {
         keysPressed: 'itqr',
         stepResult: {
           end: ['test', '|tthrow "Unimplemented"; //TODO implement'],
-          endMode: Mode.Normal
-        }
+          endMode: Mode.Normal,
+        },
       },
       {
         keysPressed: 'oqthrun',
         stepResult: {
-          end: ['test', 'tthrow "Unimplemented"; //TODO implement', '|qthrow "Unimplemented"; //TODO implement'],
-          endMode: Mode.Normal
-        }
-      }
-    ]
+          end: [
+            'test',
+            'tthrow "Unimplemented"; //TODO implement',
+            '|qthrow "Unimplemented"; //TODO implement',
+          ],
+          endMode: Mode.Normal,
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'Can handle remaps with ambiguous remaps on both types of recursiveness with longer NonRecursive remaps',
+    remaps: [
+      'nmap ab aab<Esc>',
+      'nmap abcdef aabcdef<Esc>',
+      'nmap abcdefghij aabcdefghi<Esc>',
+      'nnoremap abcd aabcd<Esc>',
+      'nnoremap abcdefg aabcdefg<Esc>',
+      'nnoremap abcdefgh aabcdefgh<Esc>',
+    ],
+    start: ['|'],
+    steps: [
+      {
+        // Step 0: there is no timeout because 'b' breaks ambiguity
+        title: 'Can handle "abb" has "ab" recursive remap + "b"',
+        keysPressed: 'abb',
+        stepResult: {
+          end: ['|ab'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 1: there will be timeout
+        title: 'Can handle "abcd" has "abcd" non recursive remap',
+        keysPressed: 'ddabcd',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abc|d'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 2: there will be timeout
+        title: 'Can handle "abcde" has "abcd" non recursive remap + "e"',
+        keysPressed: '0abcde',
+        stepResult: {
+          end: ['|abcd'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['aabcdbc|d'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 3: No timeout because 'x' breaks ambiguity
+        title: 'Can handle "abcdex" has "abcd" non recursive remap + "ex"',
+        keysPressed: '0abcdex',
+        stepResult: {
+          end: ['aabcdabcdb|c'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 4: there will be timeout
+        title: 'Can handle "abcdef" has "abcdef" recursive remap',
+        keysPressed: 'ddabcdef',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abcde|f'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 5: there will be timeout
+        title: 'Can handle "abcdefghi" has "abcdefgh" non recursive remap + "i"',
+        keysPressed: 'ddabcdefghi',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abcdefg|h'],
+          endModeAfterTimeout: Mode.Insert,
+        },
+      },
+      {
+        // Step 6: there will be no timeout because "x" breaks ambiguity
+        title: 'Can handle "abcdefghix" has "abcdefgh" non recursive remap + "ix"',
+        keysPressed: '<Esc>ddabcdefghix',
+        stepResult: {
+          end: ['abcdefgx|h'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'Can handle remaps with ambiguous remaps on both types of recursiveness with longer Recursive remaps',
+    remaps: [
+      'nnoremap ab aab<Esc>',
+      'nnoremap abcdef aabcdef<Esc>',
+      'nnoremap abcdefghij aabcdefghi<Esc>',
+      'nmap abcd aabcd<Esc>',
+      'nmap abcdefg aabcdefg<Esc>',
+      'nmap abcdefgh aabcdefgh<Esc>',
+    ],
+    start: ['|'],
+    steps: [
+      {
+        // Step 0: there is no timeout because 'b' breaks ambiguity
+        title: 'Can handle "abb" has "ab" recursive remap + "b"',
+        keysPressed: 'abb',
+        stepResult: {
+          end: ['|ab'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 1: there will be timeout
+        title: 'Can handle "abcd" has "abcd" non recursive remap',
+        keysPressed: 'ddabcd',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abc|d'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 2: there will be timeout
+        title: 'Can handle "abcde" has "abcd" non recursive remap + "e"',
+        keysPressed: '0abcde',
+        stepResult: {
+          end: ['|abcd'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['aabcdbc|d'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 3: No timeout because 'x' breaks ambiguity
+        title: 'Can handle "abcdex" has "abcd" non recursive remap + "ex"',
+        keysPressed: '0abcdex',
+        stepResult: {
+          end: ['aabcdabcdb|c'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 4: there will be timeout
+        title: 'Can handle "abcdef" has "abcdef" recursive remap',
+        keysPressed: 'ddabcdef',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abcde|f'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 5: there will be timeout
+        title: 'Can handle "abcdefghi" has "abcdefgh" non recursive remap + "i"',
+        keysPressed: 'ddabcdefghi',
+        stepResult: {
+          end: ['|'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['abcdefg|h'],
+          endModeAfterTimeout: Mode.Insert,
+        },
+      },
+      {
+        // Step 6: there will be no timeout because "x" breaks ambiguity
+        title: 'Can handle "abcdefghix" has "abcdefgh" non recursive remap + "ix"',
+        keysPressed: '<Esc>ddabcdefghix',
+        stepResult: {
+          end: ['abcdefgx|h'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
   });
 });

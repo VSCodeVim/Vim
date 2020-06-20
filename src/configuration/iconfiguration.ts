@@ -14,6 +14,8 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
+  // 'recursive' is calculated when validating, according to the config that stored the remapping
+  recursive?: boolean;
   commands?: ({ command: string; args: any[] } | string)[];
   source?: 'vscode' | 'vimrc';
 }
@@ -341,15 +343,10 @@ export interface IConfiguration {
    * These are constructed by the RemappingValidator
    */
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  operatorPendingModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   /**
    * Comma-separated list of motion keys that should wrap to next/previous line.

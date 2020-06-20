@@ -753,7 +753,7 @@ async function testItWithRemaps(
           line: expectedEndAfterTimeoutPosition.line,
           character: expectedEndAfterTimeoutPosition.character,
         },
-        `Cursor position is wrong on step ${stepTitleOrIndex}.`
+        `Cursor position is wrong on step ${stepTitleOrIndex} after Timeout.`
       );
 
       // endMode: check end mode is correct if given
