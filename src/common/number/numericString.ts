@@ -54,7 +54,7 @@ export class NumericString {
   ];
 
   // Return parse result and offset of suffix
-  public static parse(input: string): { num, suffixOffset }  | undefined {
+  public static parse(input: string): { num; suffixOffset } | undefined {
     // Find core numeric part of input
     let coreBegin = -1;
     let coreLength = -1;

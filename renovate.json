@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "config:base",
-    "default:pinDigestsDisabled"
-  ],
+  "extends": ["config:base", "default:pinDigestsDisabled"],
   "automerge": true,
   "ignoreDeps": ["@types/vscode"]
 }
