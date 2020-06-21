@@ -12,12 +12,12 @@ notifications:
 sudo: false
 
 os:
-- linux
+  - linux
 
 language: node_js
 
 node_js:
-- 12
+  - 12
 
 addons:
   apt:
@@ -25,43 +25,43 @@ addons:
       - libsecret-1-dev
 
 before_install:
-- |
-  if [ $TRAVIS_OS_NAME == "linux" ]; then
-    export DISPLAY=':99.0'
-    /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-  fi
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export DISPLAY=':99.0'
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+    fi
 
 script:
-- npm run forceprettier
-- if [[ $(git diff-index HEAD -- *.js *.ts *.md) ]]; then
+  - npm run forceprettier
+  - if [[ $(git diff-index HEAD -- *.js *.ts *.md) ]]; then
     git diff;
     echo "Prettier Failed. Run `gulp forceprettier` and commit changes to resolve.";
     exit 1;
-  fi
-- gulp build
-- gulp prepare-test
-- npm test
+    fi
+  - gulp build
+  - gulp prepare-test
+  - npm test
 
 before_deploy:
-- npm install -g vsce;
-- vsce package;
+  - npm install -g vsce;
+  - vsce package;
 
 deploy:
-- provider: releases
-  api_key:
-    secure: PmBcza43E3Y5/OxmR2V3nLJSBW9LildJCHdNQrKC0AndO6b14K+FLq3lwUBNX36q08noRX1V/nrYiDIFbZf8AQNq7j+rsR6mJOTXmu/pThrz0ugBK12f5aVoJOAdPPD2XZ/Cu7nLNvqVbLgZIqACVwWzCukSD0/3JWFv1w3yjGj/t1QNBHJoT7Wy1K6a1d3IISnDC9XROBYWvG/4IZipTAiv8yD0TMncgVaWxjEng5lhtmDE+XhBQU7Z5Ywc9IJMgajos+Ix6j+bju7Evta26+tLvonwC3dK8eeUZbIqdanrGl1zW0yft15y2SYo1YYQE6qLFO1kDsR90iY1YaW94vGyDJ3TLDAEjyZ3RMYv1OFOKOc6fhV3l5piyacCmvc30gP+AKjlukxgckYRY1soDNW5xqjcMSluaOMumNPbXpVsx7Kup+ceYkktQBSoTHtZFxt1uQmo7KY9IcNIsZuRP2hLcxV0eI6HI78THa56vTffxXWBZ2NYkKJ6gBADghQlJaz6D40yX2Qj2XsXH09aaY6oQ2Y/x3TZTLxwbyiHA2DPVY5e06GDRaEeavIyDiM9p4wlgsYuS4vDXGbNkzoBZuijpKw3fG1tf39+rUqlVw2LBN1kroAiNfHjaalTwsWS3F9y1ispCALYUuMl4lIAsgGXYgOZbfPO5sof6Wjvg4Q=
-  file_glob: true
-  file: "*.vsix"
-  skip_cleanup: true
-  on:
-    repo: VSCodeVim/Vim
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
-- provider: script
-  script: vsce publish -p $VS_TOKEN
-  skip_cleanup: true
-  on:
-    repo: VSCodeVim/Vim
-    branch: master
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
+  - provider: releases
+    api_key:
+      secure: PmBcza43E3Y5/OxmR2V3nLJSBW9LildJCHdNQrKC0AndO6b14K+FLq3lwUBNX36q08noRX1V/nrYiDIFbZf8AQNq7j+rsR6mJOTXmu/pThrz0ugBK12f5aVoJOAdPPD2XZ/Cu7nLNvqVbLgZIqACVwWzCukSD0/3JWFv1w3yjGj/t1QNBHJoT7Wy1K6a1d3IISnDC9XROBYWvG/4IZipTAiv8yD0TMncgVaWxjEng5lhtmDE+XhBQU7Z5Ywc9IJMgajos+Ix6j+bju7Evta26+tLvonwC3dK8eeUZbIqdanrGl1zW0yft15y2SYo1YYQE6qLFO1kDsR90iY1YaW94vGyDJ3TLDAEjyZ3RMYv1OFOKOc6fhV3l5piyacCmvc30gP+AKjlukxgckYRY1soDNW5xqjcMSluaOMumNPbXpVsx7Kup+ceYkktQBSoTHtZFxt1uQmo7KY9IcNIsZuRP2hLcxV0eI6HI78THa56vTffxXWBZ2NYkKJ6gBADghQlJaz6D40yX2Qj2XsXH09aaY6oQ2Y/x3TZTLxwbyiHA2DPVY5e06GDRaEeavIyDiM9p4wlgsYuS4vDXGbNkzoBZuijpKw3fG1tf39+rUqlVw2LBN1kroAiNfHjaalTwsWS3F9y1ispCALYUuMl4lIAsgGXYgOZbfPO5sof6Wjvg4Q=
+    file_glob: true
+    file: '*.vsix'
+    skip_cleanup: true
+    on:
+      repo: VSCodeVim/Vim
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux
+  - provider: script
+    script: vsce publish -p $VS_TOKEN
+    skip_cleanup: true
+    on:
+      repo: VSCodeVim/Vim
+      branch: master
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux

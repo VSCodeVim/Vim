@@ -1,5 +1,5 @@
 environment:
-  node_version: "6.11.1"
+  node_version: '6.11.1'
   PATH: c:\tools\neovim\Neovim\bin;$(PATH)
 
 install:

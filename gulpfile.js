@@ -31,11 +31,10 @@ function runPrettier(command, done) {
       return done();
     }
 
-    var files = stdout
+    const filetypes = ['.ts', '.js', '.json', '.md', '.yml'];
+    const files = stdout
       .split(/\r?\n/)
-      .filter((f) => {
-        return f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.json') || f.endsWith('.md');
-      })
+      .filter((f) => filetypes.some((filetype) => f.endsWith(filetype)))
       .join(' ');
 
     if (!files) {
