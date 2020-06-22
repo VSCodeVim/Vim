@@ -558,11 +558,10 @@
           "default": 8,
           "minimum": 1
         },
-        "vim.easymotionMarkerHeight": {
-          "type": "number",
-          "description": "Set the height of the marker.",
-          "default": 14,
-          "minimum": 1
+        "vim.easymotionDimBackground": {
+          "type": "boolean",
+          "description": "Whether to dim other text while markers are visible.",
+          "default": true
         },
         "vim.easymotionMarkerFontFamily": {
           "type": "string",
@@ -579,9 +578,9 @@
           "description": "Set the font weight of the marker text.",
           "default": "normal"
         },
-        "vim.easymotionMarkerYOffset": {
+        "vim.easymotionMarkerMargin": {
           "type": "number",
-          "description": "Set the Y offset of the marker text (the distance from the top).",
+          "description": "Set the margin around each marker, in pixels.",
           "default": 0
         },
         "vim.easymotionKeys": {
