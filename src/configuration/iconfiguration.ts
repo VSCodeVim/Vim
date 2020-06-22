@@ -161,11 +161,11 @@ export interface IConfiguration {
   easymotionMarkerForegroundColorOneChar: string;
   easymotionMarkerForegroundColorTwoChar: string;
   easymotionMarkerWidthPerChar: number;
-  easymotionMarkerHeight: number;
+  easymotionDimBackground: boolean;
   easymotionMarkerFontFamily: string;
   easymotionMarkerFontSize: string;
   easymotionMarkerFontWeight: string;
-  easymotionMarkerYOffset: number;
+  easymotionMarkerMargin: number;
   easymotionKeys: string;
 
   /**
