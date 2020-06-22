@@ -966,7 +966,7 @@
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.2",
-    "@types/lodash": "4.14.155",
+    "@types/lodash": "4.14.156",
     "@types/mocha": "7.0.2",
     "@types/node": "12.12.31",
     "@types/sinon": "9.0.4",
