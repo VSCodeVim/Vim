@@ -2543,6 +2543,24 @@ class CommandGoToDefinition extends BaseCommand {
 }
 
 @RegisterAction
+class CommandGoToDefinitionAside extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['g', 's'], ['<C-]>']];
+  isJump = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.revealDefinitionAside');
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
+      // We didn't switch to a different editor
+      vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoBackInChangelist extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', ';'];
