@@ -1233,7 +1233,7 @@ export class ModeHandler implements vscode.Disposable {
              * start of the selection when it precedes where we started visual mode.
              */
             if (start.isAfter(stop)) {
-              start = start.getRightThroughLineBreaks();
+              start = start.getRight();
             }
 
             selections.push(new vscode.Selection(start, stop));
