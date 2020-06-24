@@ -3,8 +3,9 @@ import { Range } from '../common/motion/range';
 import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
-import { Mode } from './../mode/mode';
+import { Mode, isVisualMode } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { IKeyRemapping } from '../configuration/iconfiguration';
 
 export abstract class BaseAction {
   /**
@@ -134,17 +135,6 @@ export abstract class BaseAction {
         continue;
       }
 
-      if (left === '<leader>' && right === configuration.leader) {
-        continue;
-      }
-      if (right === '<leader>' && left === configuration.leader) {
-        continue;
-      }
-
-      if (left === configuration.leader || right === configuration.leader) {
-        return false;
-      }
-
       if (left !== right) {
         return false;
       }
@@ -160,6 +150,10 @@ export abstract class BaseAction {
   private static is2DArray<T>(x: any): x is T[][] {
     return Array.isArray(x[0]);
   }
+}
+
+export class BasePluginAction extends BaseAction {
+  public pluginActionDefaultKeys: string[] | string[][];
 }
 
 /**
@@ -299,16 +293,72 @@ export function getRelevantAction(
 
 export function RegisterAction(action: { new (): BaseAction }): void {
   const actionInstance = new action();
-  for (const modeName of actionInstance.modes) {
-    let actions = actionMap.get(modeName);
+  for (const mode of actionInstance.modes) {
+    let actions = actionMap.get(mode);
     if (!actions) {
       actions = [];
-      actionMap.set(modeName, actions);
+      actionMap.set(mode, actions);
     }
 
     if (actionInstance.keys === undefined) {
       // action that can't be called directly
       continue;
+    }
+
+    actions.push(action);
+  }
+}
+
+export function RegisterPluginAction(action: typeof BasePluginAction): void {
+  const actionInstance = new action();
+  for (const mode of actionInstance.modes) {
+    let actions = actionMap.get(mode);
+    if (!actions) {
+      actions = [];
+      actionMap.set(mode, actions);
+    }
+
+    const is2DArray = function (a: any): a is string[][] {
+      return Array.isArray(a[0]);
+    };
+
+    if (
+      actionInstance.keys === undefined ||
+      is2DArray(actionInstance.keys) ||
+      actionInstance.keys.length > 1
+    ) {
+      // action that can't be called directly or invalid plugin action key
+      continue;
+    }
+
+    let remappings: IKeyRemapping[] = [];
+    if (is2DArray(actionInstance.pluginActionDefaultKeys)) {
+      for (const keyset of actionInstance.pluginActionDefaultKeys) {
+        remappings.push({
+          before: keyset,
+          after: actionInstance.keys,
+        });
+      }
+    } else {
+      remappings.push({
+        before: actionInstance.pluginActionDefaultKeys,
+        after: actionInstance.keys,
+      });
+    }
+
+    // Create default mappings for the default modes. If the plugin creates another custom
+    // mode we don't need to create mappings for that because only that plugin's actions
+    // will apply for that mode.
+    if (mode === Mode.Normal) {
+      configuration.defaultnormalModeKeyBindingsNonRecursive.push(...remappings);
+    } else if (mode === Mode.Insert || mode === Mode.Replace) {
+      configuration.defaultinsertModeKeyBindingsNonRecursive.push(...remappings);
+    } else if (isVisualMode(mode)) {
+      configuration.defaultvisualModeKeyBindingsNonRecursive.push(...remappings);
+    } else if (mode === Mode.CommandlineInProgress || mode === Mode.SearchInProgressMode) {
+      configuration.defaultcommandLineModeKeyBindingsNonRecursive.push(...remappings);
+    } else if (mode === Mode.OperatorPendingMode) {
+      configuration.defaultoperatorPendingModeKeyBindingsNonRecursive.push(...remappings);
     }
 
     actions.push(action);

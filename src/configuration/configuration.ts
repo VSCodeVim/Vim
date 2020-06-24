@@ -387,6 +387,16 @@ class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultinsertModeKeyBindings: IKeyRemapping[] = [];
+  defaultinsertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultnormalModeKeyBindings: IKeyRemapping[] = [];
+  defaultnormalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultoperatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  defaultoperatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultvisualModeKeyBindings: IKeyRemapping[] = [];
+  defaultvisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultcommandLineModeKeyBindings: IKeyRemapping[] = [];
+  defaultcommandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;

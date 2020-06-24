@@ -22,8 +22,15 @@ export class RemappingValidator implements IConfigurationValidator {
       'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = config[modeKeyBindingsKey];
+      let keybindings = config[modeKeyBindingsKey] as IKeyRemapping[];
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
+
+      const defaultKeybindings = config['default' + modeKeyBindingsKey] as IKeyRemapping[];
+      // filter the default keybindings whose 'after' already has a map to by the user
+      const filteredDefaultKeybindings = defaultKeybindings.filter(
+        (dkb) => keybindings.find((kb) => dkb.after && dkb.after === kb.after) === undefined
+      );
+      keybindings.push(...filteredDefaultKeybindings);
 
       const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
       let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;

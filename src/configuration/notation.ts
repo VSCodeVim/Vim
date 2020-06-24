@@ -51,10 +51,12 @@ export class Notation {
       return key;
     }
 
+    let originalKey: string = key.slice(0);
     key = key.toLocaleLowerCase();
 
     if (!this.isSurroundedByAngleBrackets(key)) {
       key = `<${key}>`;
+      originalKey = `<${originalKey}`;
     }
 
     if (key === '<leader>') {
@@ -69,7 +71,11 @@ export class Notation {
       key = key.replace(regex, standardNotation);
     }
 
-    return key;
+    if (originalKey.toLocaleLowerCase() === key) {
+      return originalKey;
+    } else {
+      return key;
+    }
   }
 
   /**
