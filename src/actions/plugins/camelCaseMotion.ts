@@ -1,5 +1,5 @@
 import { TextObjectMovement } from '../textobject';
-import { RegisterAction } from '../base';
+import { RegisterAction, BasePluginAction, RegisterPluginAction } from '../base';
 import { Mode } from '../../mode/mode';
 import { Position } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
@@ -29,9 +29,10 @@ abstract class CamelCaseTextObjectMovement extends TextObjectMovement {
 }
 
 // based off of `MoveWordBegin`
-@RegisterAction
+@RegisterPluginAction
 class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'w'];
+  pluginActionDefaultKeys = ['<leader>', 'w'];
+  keys = ['<CamelCaseMotion_w>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
@@ -49,9 +50,10 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
 }
 
 // based off of `MoveWordEnd`
-@RegisterAction
+@RegisterPluginAction
 class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'e'];
+  pluginActionDefaultKeys = ['<leader>', 'e'];
+  keys = ['<CamelCaseMotion_e>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentCamelCaseWordEnd();
@@ -65,9 +67,10 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
 }
 
 // based off of `MoveBeginningWord`
-@RegisterAction
+@RegisterPluginAction
 class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
-  keys = ['<leader>', 'b'];
+  pluginActionDefaultKeys = ['<leader>', 'b'];
+  keys = ['<CamelCaseMotion_b>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCamelCaseWordLeft();
@@ -75,10 +78,11 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 }
 
 // based off of `SelectInnerWord`
-@RegisterAction
+@RegisterPluginAction
 class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
-  keys = ['i', '<leader>', 'w'];
+  modes = [Mode.OperatorPendingMode, Mode.Visual];
+  pluginActionDefaultKeys = ['i', '<leader>', 'w'];
+  keys = ['<CamelCaseMotion_iw>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;

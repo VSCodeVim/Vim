@@ -61,7 +61,7 @@ export abstract class BaseAction {
     }
 
     return (
-      this.modes.includes(vimState.currentMode) &&
+      this.modes.includes(vimState.currentModeIncludingPseudoModes) &&
       BaseAction.CompareKeypressSequence(this.keys, keysPressed)
     );
   }
@@ -70,7 +70,7 @@ export abstract class BaseAction {
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (!this.modes.includes(vimState.currentMode)) {
+    if (!this.modes.includes(vimState.currentModeIncludingPseudoModes)) {
       return false;
     }
 
@@ -275,7 +275,7 @@ export function getRelevantAction(
 ): BaseAction | KeypressState {
   let isPotentialMatch = false;
 
-  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  const possibleActionsForMode = actionMap.get(vimState.currentModeIncludingPseudoModes) || [];
   for (const actionType of possibleActionsForMode) {
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {

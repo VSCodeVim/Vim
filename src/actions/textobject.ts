@@ -20,7 +20,7 @@ import { ChangeOperator } from './operator';
 import { configuration } from './../configuration/configuration';
 
 export abstract class TextObjectMovement extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  modes = [Mode.OperatorPendingMode, Mode.Visual, Mode.VisualBlock];
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
@@ -262,7 +262,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
 @RegisterAction
 export class SelectInnerWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  modes = [Mode.OperatorPendingMode, Mode.Visual];
   keys = ['i', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -303,7 +303,7 @@ export class SelectInnerWord extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerBigWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  modes = [Mode.OperatorPendingMode, Mode.Visual];
   keys = ['i', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {

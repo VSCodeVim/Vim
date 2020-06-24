@@ -123,7 +123,7 @@ export abstract class BaseOperator extends BaseAction {
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
   public keys = ['d'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
 
   /**
    * Deletes from the position of start to 1 past the position of end.
@@ -260,7 +260,7 @@ export class DeleteOperatorVisual extends BaseOperator {
 @RegisterAction
 export class YankOperator extends BaseOperator {
   public keys = ['y'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
   canBeRepeatedWithDot = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -404,7 +404,13 @@ export class ChangeOperatorSVisual extends BaseOperator {
 @RegisterAction
 export class FormatOperator extends BaseOperator {
   public keys = ['='];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  public modes = [
+    Mode.Normal,
+    Mode.OperatorPendingMode,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // = operates on complete lines
@@ -445,7 +451,7 @@ export class UpperCaseOperator extends BaseOperator {
 @RegisterAction
 export class UpperCaseWithMotion extends UpperCaseOperator {
   public keys = [['g', 'U']];
-  public modes = [Mode.Normal];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode];
 }
 
 @RegisterAction
@@ -490,7 +496,7 @@ export class LowerCaseOperator extends BaseOperator {
 @RegisterAction
 export class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = [['g', 'u']];
-  public modes = [Mode.Normal];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode];
 }
 
 @RegisterAction
@@ -516,7 +522,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 class IndentOperator extends BaseOperator {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.OperatorPendingMode];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -573,7 +579,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 
 @RegisterAction
 class OutdentOperator extends BaseOperator {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.OperatorPendingMode];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -624,7 +630,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 @RegisterAction
 export class ChangeOperator extends BaseOperator {
   public keys = ['c'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const isEndOfLine = end.character === end.getLineEnd().character;
@@ -800,13 +806,19 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
   public keys = [['g', '~']];
-  public modes = [Mode.Normal];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode];
 }
 
 @RegisterAction
 export class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  public modes = [
+    Mode.Normal,
+    Mode.OperatorPendingMode,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
@@ -822,7 +834,13 @@ export class CommentOperator extends BaseOperator {
 @RegisterAction
 export class ROT13Operator extends BaseOperator {
   public keys = ['g', '?'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  public modes = [
+    Mode.Normal,
+    Mode.OperatorPendingMode,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     let selections: vscode.Selection[];
@@ -875,7 +893,7 @@ export class ROT13Operator extends BaseOperator {
 @RegisterAction
 export class CommentBlockOperator extends BaseOperator {
   public keys = ['g', 'C'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     if (vimState.currentMode === Mode.Normal) {
@@ -911,7 +929,7 @@ type CommentType = CommentTypeSingle | CommentTypeMultiLine;
 
 @RegisterAction
 class ActionVisualReflowParagraph extends BaseOperator {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
   keys = ['g', 'q'];
 
   public static CommentTypes: CommentType[] = [
