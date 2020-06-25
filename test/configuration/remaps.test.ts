@@ -1079,4 +1079,45 @@ suite('Remaps', () => {
       },
     ],
   });
+
+  newTestWithRemaps({
+    title:
+      'Can handle timeout finished with a sequence of multiple potential remaps that end on a key that waits for other keys like `f`',
+    remaps: {
+      normalModeKeyBindings: [
+        {
+          before: ['l', 'f', 'f'],
+          after: ['A', 'l', 'f', 'f', '<Esc>'],
+        },
+        {
+          before: ['l', 't'],
+          after: ['A', 'l', 't', '<Esc>'],
+        },
+      ],
+    },
+    start: ['hello |world'],
+    steps: [
+      {
+        // Step 0:
+        title: 'Can handle sequential potential remaps that waited for timeout',
+        keysPressed: 'llf',
+        stepResult: {
+          end: ['hello w|orld'],
+          endMode: Mode.Normal,
+          endAfterTimeout: ['hello wo|rld'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 1:
+        title:
+          'After the previous step there is no undefined key left that messes up the next action',
+        keysPressed: 'd',
+        stepResult: {
+          end: ['hello worl|d'],
+          endMode: Mode.Normal,
+        },
+      },
+    ],
+  });
 });

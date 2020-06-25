@@ -345,13 +345,16 @@ export class ModeHandler implements vscode.Disposable {
 
       if (!handled) {
         if (key === SpecialKeys.TimeoutFinished) {
-          // Remove the <TimeoutFinished> key and get the key before that
+          // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
+          // key was the last key, then 'key' will be undefined and won't be sent to handle action.
           this.vimState.recordedState.commandList.pop();
           key = this.vimState.recordedState.commandList[
             this.vimState.recordedState.commandList.length - 1
           ];
         }
-        this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
+        if (key !== undefined) {
+          this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
+        }
       }
     } catch (e) {
       if (e instanceof VimError) {
