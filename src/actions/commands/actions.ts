@@ -391,11 +391,12 @@ class CommandRecordMacro extends BaseCommand {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const register = this.keysPressed[1];
+    const registerKey = this.keysPressed[1];
+    const register = registerKey.toLocaleLowerCase();
     vimState.recordedMacro = new RecordedState();
-    vimState.recordedMacro.registerName = register.toLocaleLowerCase();
+    vimState.recordedMacro.registerName = register;
 
-    if (!/^[A-Z]+$/.test(register) || !Register.has(register)) {
+    if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       let newRegister = new RecordedState();
       newRegister.registerName = register;
@@ -431,6 +432,11 @@ export class CommandQuitRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName))
       .text as RecordedState;
+
+    if (!(existingMacro instanceof RecordedState)) {
+      return vimState;
+    }
+
     existingMacro.actionsRun = existingMacro.actionsRun.concat(vimState.recordedMacro.actionsRun);
     vimState.isRecordingMacro = false;
     return vimState;
@@ -453,12 +459,14 @@ class CommandExecuteMacro extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const register = this.keysPressed[1];
-    vimState.recordedState.transformations.push({
-      type: 'macro',
-      register: register,
-      replay: 'contentChange',
-    });
+    const register = this.keysPressed[1].toLocaleLowerCase();
+    if (Register.has(register)) {
+      vimState.recordedState.transformations.push({
+        type: 'macro',
+        register: register,
+        replay: 'contentChange',
+      });
+    }
 
     return vimState;
   }
