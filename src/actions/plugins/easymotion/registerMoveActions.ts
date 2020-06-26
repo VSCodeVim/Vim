@@ -1,4 +1,4 @@
-import { RegisterAction } from './../../base';
+import { RegisterAction, RegisterPluginAction } from './../../base';
 import {
   EasyMotionCharMoveCommandBase,
   EasyMotionLineMoveCommandBase,
@@ -9,8 +9,9 @@ import {
 
 // EasyMotion n-char-move command
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionNCharSearchCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-sn)>'];
   constructor() {
     super({ key: '/' }, new SearchByNCharCommand());
   }
@@ -18,29 +19,33 @@ class EasyMotionNCharSearchCommand extends EasyMotionCharMoveCommandBase {
 
 // EasyMotion char-move commands
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharSearchCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-s2)>'];
   constructor() {
     super({ key: '2s' }, new SearchByCharCommand({ charCount: 2 }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharFindForwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-f2)>'];
   constructor() {
     super({ key: '2f' }, new SearchByCharCommand({ charCount: 2, searchOptions: 'min' }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharFindBackwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-F2)>'];
   constructor() {
     super({ key: '2F' }, new SearchByCharCommand({ charCount: 2, searchOptions: 'max' }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharTilCharacterForwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-t2)>'];
   constructor() {
     super(
       { key: '2t' },
@@ -51,8 +56,9 @@ class EasyMotionTwoCharTilCharacterForwardCommand extends EasyMotionCharMoveComm
 
 // easymotion-bd-t2
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharTilCharacterBidirectionalCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-bd-t2)>'];
   constructor() {
     super(
       { key: 'bd2t', leaderCount: 3 },
@@ -61,8 +67,9 @@ class EasyMotionTwoCharTilCharacterBidirectionalCommand extends EasyMotionCharMo
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-T2)>'];
   constructor() {
     super(
       { key: '2T' },
@@ -71,29 +78,33 @@ class EasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveCommandBase 
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionSearchCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-s)>'];
   constructor() {
     super({ key: 's' }, new SearchByCharCommand({ charCount: 1 }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionFindForwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-f)>'];
   constructor() {
     super({ key: 'f' }, new SearchByCharCommand({ charCount: 1, searchOptions: 'min' }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionFindBackwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-F)>'];
   constructor() {
     super({ key: 'F' }, new SearchByCharCommand({ charCount: 1, searchOptions: 'max' }));
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTilCharacterForwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-t)>'];
   constructor() {
     super(
       { key: 't' },
@@ -104,8 +115,9 @@ class EasyMotionTilCharacterForwardCommand extends EasyMotionCharMoveCommandBase
 
 // easymotion-bd-t
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTilCharacterBidirectionalCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-bd-t)>'];
   constructor() {
     super(
       { key: 'bdt', leaderCount: 3 },
@@ -114,8 +126,9 @@ class EasyMotionTilCharacterBidirectionalCommand extends EasyMotionCharMoveComma
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionTilBackwardCommand extends EasyMotionCharMoveCommandBase {
+  keys = ['<(easymotion-T)>'];
   constructor() {
     super(
       { key: 'T' },
@@ -126,8 +139,9 @@ class EasyMotionTilBackwardCommand extends EasyMotionCharMoveCommandBase {
 
 // EasyMotion word-move commands
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionStartOfWordForwardsCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-w)>'];
   constructor() {
     super({ key: 'w' }, { searchOptions: 'min' });
   }
@@ -135,22 +149,25 @@ class EasyMotionStartOfWordForwardsCommand extends EasyMotionWordMoveCommandBase
 
 // easymotion-bd-w
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionStartOfWordBidirectionalCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-bd-w)>'];
   constructor() {
     super({ key: 'bdw', leaderCount: 3 });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionLineForward extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-lineforward)>'];
   constructor() {
     super({ key: 'l' }, { jumpToAnywhere: true, searchOptions: 'min', labelPosition: 'after' });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionLineBackward extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-linebackward)>'];
   constructor() {
     super({ key: 'h' }, { jumpToAnywhere: true, searchOptions: 'max', labelPosition: 'after' });
   }
@@ -158,15 +175,17 @@ class EasyMotionLineBackward extends EasyMotionWordMoveCommandBase {
 
 // easymotion "JumpToAnywhere" motion
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionJumpToAnywhereCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-jumptoanywhere)>'];
   constructor() {
     super({ key: 'j', leaderCount: 3 }, { jumpToAnywhere: true, labelPosition: 'after' });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionEndOfWordForwardsCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-e)>'];
   constructor() {
     super({ key: 'e' }, { searchOptions: 'min', labelPosition: 'after' });
   }
@@ -174,22 +193,25 @@ class EasyMotionEndOfWordForwardsCommand extends EasyMotionWordMoveCommandBase {
 
 // easymotion-bd-e
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionEndOfWordBidirectionalCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-bd-e)>'];
   constructor() {
     super({ key: 'bde', leaderCount: 3 }, { labelPosition: 'after' });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionBeginningWordCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-b)>'];
   constructor() {
     super({ key: 'b' }, { searchOptions: 'max' });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionEndBackwardCommand extends EasyMotionWordMoveCommandBase {
+  keys = ['<(easymotion-ge)>'];
   constructor() {
     super({ key: 'ge' }, { searchOptions: 'max', labelPosition: 'after' });
   }
@@ -197,15 +219,17 @@ class EasyMotionEndBackwardCommand extends EasyMotionWordMoveCommandBase {
 
 // EasyMotion line-move commands
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionStartOfLineForwardsCommand extends EasyMotionLineMoveCommandBase {
+  keys = ['<(easymotion-j)>'];
   constructor() {
     super({ key: 'j' }, { searchOptions: 'min' });
   }
 }
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionStartOfLineBackwordsCommand extends EasyMotionLineMoveCommandBase {
+  keys = ['<(easymotion-k)>'];
   constructor() {
     super({ key: 'k' }, { searchOptions: 'max' });
   }
@@ -213,8 +237,9 @@ class EasyMotionStartOfLineBackwordsCommand extends EasyMotionLineMoveCommandBas
 
 // easymotion-bd-jk
 
-@RegisterAction
+@RegisterPluginAction
 class EasyMotionStartOfLineBidirectionalCommand extends EasyMotionLineMoveCommandBase {
+  keys = ['<(easymotion-bd-jk)>'];
   constructor() {
     super({ key: 'bdjk', leaderCount: 3 });
   }
