@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { vimrc } from '../vimrc';

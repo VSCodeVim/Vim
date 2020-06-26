@@ -20,7 +20,7 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
-import { getCursorsAfterSync, scrollView } from '../util/util';
+import { scrollView } from '../util/util';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -1379,7 +1379,6 @@ export class ModeHandler implements vscode.Disposable {
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.cursors = getCursorsAfterSync();
     }
     this.vimState.postponedCodeViewChanges = [];
 
@@ -1402,7 +1401,7 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  // Return true if a new undo point should be created based on brackets and parenthesis
+  // Return true if a new undo point should be created based on brackets and parentheses
   private createUndoPointForBrackets(vimState: VimState): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
