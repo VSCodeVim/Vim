@@ -382,7 +382,7 @@
         "vim.debug.silent": {
           "type": "boolean",
           "description": "If true, all logs are suppressed.",
-          "default": true
+          "default": false
         },
         "vim.debug.loggingLevelForAlert": {
           "type": "string",

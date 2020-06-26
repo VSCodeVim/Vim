@@ -3,7 +3,6 @@
 'use strict';
 
 const path = require('path');
-const webpack = require('webpack');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -40,11 +39,5 @@ const config = {
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      ENV: require(path.join(__dirname, './env/node'))
-    }),
-  ]
 };
-
 module.exports = config;
