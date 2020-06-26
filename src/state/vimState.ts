@@ -7,10 +7,6 @@ import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-<<<<<<< HEAD
-// import { NeovimWrapper } from '../neovim/neovim';
-=======
->>>>>>> optional nvim module import by webpack.
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
@@ -256,28 +252,16 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-<<<<<<< HEAD
-  // public nvim: NeovimWrapper;
-=======
->>>>>>> optional nvim module import by webpack.
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-<<<<<<< HEAD
-    // this.nvim = new NeovimWrapper();
-=======
->>>>>>> optional nvim module import by webpack.
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   dispose() {
-<<<<<<< HEAD
-    // this.nvim.dispose();
-=======
->>>>>>> optional nvim module import by webpack.
   }
 }
 

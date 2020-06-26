@@ -98,12 +98,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocalDisk
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
-<<<<<<< HEAD
-  // Set the storage path to be used by history files
-  // Globals.extensionStoragePath = context.globalStoragePath;
-
-=======
->>>>>>> optional nvim module import by webpack.
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
@@ -171,13 +165,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocalDisk
         });
     }
 
-<<<<<<< HEAD
-    // setTimeout(() => {
-    //   if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
-    //     handleContentChangedFromDisk(event.document);
-    //   }
-    // }, 0);
-=======
     if (handleLocalDiskChangeEvent) {
       setTimeout(() => {
         if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
@@ -185,7 +172,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocalDisk
         }
       }, 0);
     }
->>>>>>> optional nvim module import by webpack.
   });
 
   registerEventListener(

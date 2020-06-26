@@ -87,25 +87,6 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-<<<<<<< HEAD
-      // const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
-
-      // if (useNeovim) {
-      //   const { statusBarText, error } = await vimState.nvim.run(vimState, command);
-      //   StatusBar.setText(vimState, statusBarText, error);
-      // } else {
-      await cmd.execute(vimState.editor, vimState);
-      // }
-    } catch (e) {
-      if (e instanceof VimError) {
-        // if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
-        //   const { statusBarText } = await vimState.nvim.run(vimState, command);
-        //   StatusBar.setText(vimState, statusBarText, true);
-        // } else {
-        StatusBar.setText(vimState, e.toString(), true);
-        // }
-=======
-
       if (ENV.node) {
         const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
@@ -130,7 +111,6 @@ class CommandLine {
         } else {
           this._logger.error(`Error executing cmd=${command}. err=${e}.`);
         }
->>>>>>> optional nvim module import by webpack.
       } else {
         if (e instanceof VimError) {
           StatusBar.setText(vimState, e.toString(), true);
