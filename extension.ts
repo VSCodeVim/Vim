@@ -88,7 +88,10 @@ async function loadConfiguration() {
 /**
  * The extension's entry point
  */
-export async function activate(context: vscode.ExtensionContext, handleLocalDiskChangeEvent: boolean = true) {
+export async function activate(
+  context: vscode.ExtensionContext,
+  handleLocalDiskChangeEvent: boolean = true
+) {
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
@@ -121,14 +124,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocalDisk
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
-      changeEvent.contentChanges[0].range.end.line;
+        changeEvent.contentChanges[0].range.end.line;
 
     const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
       changeEvent.contentChanges[0].range.start.line ===
-      changeEvent.contentChanges[0].range.end.line;
+        changeEvent.contentChanges[0].range.end.line;
 
     if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
