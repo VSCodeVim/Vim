@@ -1,6 +1,6 @@
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { IConfiguration } from '../iconfiguration';
-import { exists } from '../../util/fs';
+import { existsAsync } from '../../util/fs';
 import { Globals } from '../../globals';
 import { configurationValidator } from '../configurationValidator';
 
@@ -27,7 +27,7 @@ export class InputMethodSwitcherConfigurationValidator implements IConfiguration
         level: 'error',
         message: 'vim.autoSwitchInputMethod.obtainIMCmd is empty.',
       });
-    } else if (!(await exists(this.getRawCmd(inputMethodConfig.obtainIMCmd)))) {
+    } else if (!(await existsAsync(this.getRawCmd(inputMethodConfig.obtainIMCmd)))) {
       result.append({
         level: 'error',
         message: `Unable to find ${inputMethodConfig.obtainIMCmd}. Check your 'vim.autoSwitchInputMethod.obtainIMCmd' in VSCode setting.`,
@@ -39,7 +39,7 @@ export class InputMethodSwitcherConfigurationValidator implements IConfiguration
         level: 'error',
         message: 'vim.autoSwitchInputMethod.defaultIM is empty.',
       });
-    } else if (!(await exists(this.getRawCmd(inputMethodConfig.switchIMCmd)))) {
+    } else if (!(await existsAsync(this.getRawCmd(inputMethodConfig.switchIMCmd)))) {
       result.append({
         level: 'error',
         message: `Unable to find ${inputMethodConfig.switchIMCmd}. Check your 'vim.autoSwitchInputMethod.switchIMCmd' in VSCode setting.`,

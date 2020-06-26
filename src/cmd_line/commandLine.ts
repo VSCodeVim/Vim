@@ -10,8 +10,6 @@ import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 
-declare var ENV: { node: boolean };
-
 interface INVim {
   run(
     vimState: VimState,
@@ -53,12 +51,9 @@ class CommandLine {
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
     this._history = new CommandLineHistory(context);
+    const m = await import('../neovim/neovim');
+    this._nvim = new m.NeovimWrapper();
     return this._history.load();
-
-    if (ENV.node) {
-      const m = await import('../neovim/neovim');
-      this._nvim = new m.NeovimWrapper();
-    }
   }
 
   public async Run(command: string, vimState: VimState): Promise<void> {
@@ -87,36 +82,24 @@ class CommandLine {
 
     try {
       const cmd = parser.parse(command);
-      if (ENV.node) {
-        const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
+      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
-        if (useNeovim) {
-          const { statusBarText, error } = await this._nvim!.run(vimState, command);
-          StatusBar.setText(vimState, statusBarText, error);
-        } else {
-          await cmd.execute(vimState.editor, vimState);
-        }
+      if (useNeovim) {
+        const { statusBarText, error } = await this._nvim!.run(vimState, command);
+        StatusBar.setText(vimState, statusBarText, error);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      if (ENV.node) {
-        if (e instanceof VimError) {
-          if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
-            const { statusBarText } = await this._nvim!.run(vimState, command);
-            StatusBar.setText(vimState, statusBarText, true);
-          } else {
-            StatusBar.setText(vimState, e.toString(), true);
-          }
+      if (e instanceof VimError) {
+        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+          const { statusBarText } = await this._nvim!.run(vimState, command);
+          StatusBar.setText(vimState, statusBarText, true);
         } else {
-          this._logger.error(`Error executing cmd=${command}. err=${e}.`);
+          StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
-        if (e instanceof VimError) {
-          StatusBar.setText(vimState, e.toString(), true);
-        } else {
-          this._logger.error(`Error executing cmd=${command}. err=${e}.`);
-        }
+        this._logger.error(`Error executing cmd=${command}. err=${e}.`);
       }
     }
   }

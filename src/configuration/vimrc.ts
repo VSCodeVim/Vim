@@ -26,7 +26,7 @@ class VimrcImpl {
       await window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
       return;
     }
-    if (!(await fs.exists(_path))) {
+    if (!(await fs.existsAsync(_path))) {
       window
         .showWarningMessage(`No .vimrc found at ${_path}.`, 'Create it')
         .then(async (choice: string | undefined) => {
@@ -35,7 +35,7 @@ class VimrcImpl {
               defaultUri: vscode.Uri.file(_path),
             });
             if (newVimrc) {
-              await fs.writeFile(newVimrc.fsPath, '', 'utf-8');
+              await fs.writeFileAsync(newVimrc.fsPath, '', 'utf-8');
               configuration.getConfiguration('vim').update('vimrc.path', newVimrc.fsPath, true);
               await vscode.workspace.openTextDocument(newVimrc);
               // TODO: add some sample remaps/settings in here?
@@ -50,7 +50,7 @@ class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      const lines = (await fs.readFile(this.vimrcPath, 'utf8')).split(/\r?\n/);
+      const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
       for (const line of lines) {
         const remap = await vimrcKeyRemappingBuilder.build(line);
         if (remap) {
@@ -121,12 +121,12 @@ class VimrcImpl {
 
   private static async findDefaultVimrc(): Promise<string | undefined> {
     let vimrcPath = path.join(os.homedir(), '.vimrc');
-    if (await fs.exists(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 
     vimrcPath = path.join(os.homedir(), '_vimrc');
-    if (await fs.exists(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 

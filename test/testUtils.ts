@@ -15,7 +15,6 @@ import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
 
-
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
   constructor() {

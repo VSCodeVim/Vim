@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as util from 'util';
 import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
@@ -5,27 +6,19 @@ import { getPathDetails, resolveUri } from '../../util/path';
 import * as node from '../node';
 import untildify = require('untildify');
 
-declare var ENV: { node: boolean };
-
 async function doesFileExist(fileUri: vscode.Uri) {
-  if (ENV.node) {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    if (activeTextEditor) {
-      try {
-        await vscode.workspace.fs.stat(fileUri);
-        return true;
-      } catch {
-        return false;
-      }
-    } else {
-      // fallback to local fs
-      return await import('fs').then(fs => {
-        const fsExists = util.promisify(fs.exists);
-        return fsExists(fileUri.fsPath);
-      });
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    try {
+      await vscode.workspace.fs.stat(fileUri);
+      return true;
+    } catch {
+      return false;
     }
   } else {
-    return vscode.workspace.fs.stat(fileUri);
+    // fallback to local fs
+    const fsExists = util.promisify(fs.exists);
+    return fsExists(fileUri.fsPath);
   }
 }
 

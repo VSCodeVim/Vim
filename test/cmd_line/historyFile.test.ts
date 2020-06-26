@@ -2,11 +2,9 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { HistoryFile } from '../../src/history/historyFile';
-import { setupWorkspace, cleanUpWorkspace, TestExtensionContext } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
 import { Globals } from '../../src/globals';
-
-import * as path from 'path';
 
 suite('HistoryFile', () => {
   let history: HistoryFile;
@@ -27,14 +25,14 @@ suite('HistoryFile', () => {
       run_cmds.push(i.toString());
     }
 
-    // Globals.extensionStoragePath = os.tmpdir();
-    history = new HistoryFile(new TestExtensionContext(), 'extension-test');
+    Globals.extensionStoragePath = os.tmpdir();
+    history = new HistoryFile(rndName());
     await history.load();
   });
 
   teardown(async () => {
     await cleanUpWorkspace();
-    await history.clear();
+    history.clear();
   });
 
   test('add command', async () => {
@@ -79,19 +77,19 @@ suite('HistoryFile', () => {
 
   test('file system', async () => {
     // history file is lazily created, should not exist
-    // assert.strictEqual(fs.existsSync(history.historyFilePath), false);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), false);
 
     for (const cmd of run_cmds) {
       await history.add(cmd);
     }
 
     // history file should exist after an `add` operation
-    // assert.strictEqual(fs.existsSync(history.historyFilePath), true);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), true);
 
-    await history.clear();
+    history.clear();
 
     // expect history file to be deleted from file system and empty
-    // assert.strictEqual(fs.existsSync(history.historyFilePath), false);
+    assert.strictEqual(fs.existsSync(history.historyFilePath), false);
   });
 
   test('change configuration.history', async () => {

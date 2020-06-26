@@ -1,43 +1,28 @@
+import * as TransportStream from 'winston-transport';
 import * as vscode from 'vscode';
+import * as winston from 'winston';
+import { ConsoleForElectron } from 'winston-console-for-electron';
 import { configuration } from '../configuration/configuration';
 
-export interface ILogger {
-  error(errorMessage: string): void;
-  debug(debugMessage: string): void;
-  warn(warnMessage: string): void;
-  verbose(verboseMessage: string): void;
+interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
+  prefix?: string;
 }
 
 /**
+ * Implementation of Winston transport
  * Displays VSCode message to user
  */
-export class VsCodeMessage implements ILogger {
-
+class VsCodeMessage extends TransportStream {
+  prefix?: string;
   actionMessages = ['Dismiss', 'Suppress Errors'];
 
-  constructor(
-    private prefix: string
-  ) {
+  constructor(options: VsCodeMessageOptions) {
+    super(options);
 
+    this.prefix = options.prefix;
   }
 
-  error(errorMessage: string): void {
-    this.log({ level: 'error', message: errorMessage });
-  }
-
-  debug(debugMessage: string): void {
-    this.log({ level: 'debug', message: debugMessage });
-  }
-
-  warn(warnMessage: string): void {
-    this.log({ level: 'warn', message: warnMessage });
-  }
-
-  verbose(verboseMessage: string): void {
-    this.log({ level: 'verbose', message: verboseMessage });
-  }
-
-  private async log(info: { level: string; message: string }) {
+  public async log(info: { level: string; message: string }, callback: Function) {
     if (configuration.debug.silent) {
       return;
     }
@@ -70,18 +55,28 @@ export class VsCodeMessage implements ILogger {
       );
       configuration.debug.silent = true;
     }
+
+    if (callback) {
+      callback();
+    }
   }
 }
 
 export class Logger {
-  static mapping: Map<string, ILogger> = new Map<string, ILogger>();
-  static get(prefix: string): ILogger {
-    if (Logger.mapping.has(prefix)) {
-      return Logger.mapping.get(prefix)!;
-    }
-
-    const logger = new VsCodeMessage(prefix);
-    Logger.mapping.set(prefix, logger);
-    return logger;
+  static get(prefix?: string): winston.Logger {
+    return winston.createLogger({
+      format: winston.format.simple(),
+      transports: [
+        new ConsoleForElectron({
+          level: configuration.debug.loggingLevelForConsole,
+          silent: configuration.debug.silent,
+          prefix: prefix,
+        }),
+        new VsCodeMessage({
+          level: configuration.debug.loggingLevelForAlert,
+          prefix: prefix,
+        }),
+      ],
+    });
   }
 }

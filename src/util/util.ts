@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Range } from '../common/motion/range';
-// import { exec } from 'child_process';
+import { exec } from 'child_process';
 import { VimState } from '../state/vimState';
 
 /**
@@ -19,14 +19,13 @@ export function getCursorsAfterSync(): Range[] {
 export function executeShell(cmd: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     try {
-      // TODO, use terminal
-      // exec(cmd, (err, stdout, stderr) => {
-      //   if (err) {
-      //     reject(err);
-      //   } else {
-      //     resolve(stdout);
-      //   }
-      // });
+      exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(stdout);
+        }
+      });
     } catch (error) {
       reject(error);
     }

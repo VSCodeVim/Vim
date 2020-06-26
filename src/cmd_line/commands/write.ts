@@ -56,23 +56,21 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    //TODO, use vscode.fs.
-
-    // try {
-    //   await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
-    //   return this.save(vimState);
-    // } catch (accessErr) {
-    //   if (this.arguments.bang) {
-    //     try {
-    //       await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
-    //       return this.save(vimState);
-    //     } catch (e) {
-    //       StatusBar.setText(vimState, e.message);
-    //     }
-    //   } else {
-    //     StatusBar.setText(vimState, accessErr.message);
-    //   }
-    // }
+    try {
+      await fs.accessAsync(vimState.editor.document.fileName, fs.constants.W_OK);
+      return this.save(vimState);
+    } catch (accessErr) {
+      if (this.arguments.bang) {
+        try {
+          await fs.chmodAsync(vimState.editor.document.fileName, 666);
+          return this.save(vimState);
+        } catch (e) {
+          StatusBar.setText(vimState, e.message);
+        }
+      } else {
+        StatusBar.setText(vimState, accessErr.message);
+      }
+    }
   }
 
   private async save(vimState: VimState): Promise<void> {
