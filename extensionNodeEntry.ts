@@ -19,6 +19,8 @@ import * as vscode from 'vscode';
 import { activate as activateFunc } from './extension';
 import { Globals } from './src/globals';
 
+export { getAndUpdateModeHandler } from './extension';
+
 export async function activate(context: vscode.ExtensionContext) {
   // Set the storage path to be used by history files
   Globals.extensionStoragePath = context.globalStoragePath;
