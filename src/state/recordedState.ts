@@ -284,12 +284,10 @@ export class RecordedState {
   }
 
   public isOperatorPending(mode: Mode): boolean {
-    // Visual modes do not require a motion -- they ARE the motion.
     return (
       this.operator !== undefined &&
       !this.hasRunOperator &&
-      mode !== Mode.SearchInProgressMode &&
-      mode !== Mode.CommandlineInProgress &&
+      mode === Mode.Normal &&
       !(
         this.hasRunAMovement ||
         isVisualMode(mode) ||
