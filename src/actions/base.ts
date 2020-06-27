@@ -309,58 +309,62 @@ export function RegisterAction(action: { new (): BaseAction }): void {
   }
 }
 
-export function RegisterPluginAction(action: typeof BasePluginAction): void {
-  const actionInstance = new action();
-  for (const mode of actionInstance.modes) {
-    let actions = actionMap.get(mode);
-    if (!actions) {
-      actions = [];
-      actionMap.set(mode, actions);
-    }
+export function RegisterPluginAction(pluginName: string) {
+  return (action: typeof BasePluginAction) => {
+    const actionInstance = new action();
+    for (const mode of actionInstance.modes) {
+      let actions = actionMap.get(mode);
+      if (!actions) {
+        actions = [];
+        actionMap.set(mode, actions);
+      }
 
-    const is2DArray = function (a: any): a is string[][] {
-      return Array.isArray(a[0]);
-    };
+      const is2DArray = function (a: any): a is string[][] {
+        return Array.isArray(a[0]);
+      };
 
-    if (
-      actionInstance.keys === undefined ||
-      is2DArray(actionInstance.keys) ||
-      actionInstance.keys.length > 1
-    ) {
-      // action that can't be called directly or invalid plugin action key
-      continue;
-    }
+      if (
+        actionInstance.keys === undefined ||
+        is2DArray(actionInstance.keys) ||
+        actionInstance.keys.length > 1
+      ) {
+        // action that can't be called directly or invalid plugin action key
+        continue;
+      }
 
-    let remappings: IKeyRemapping[] = [];
-    if (is2DArray(actionInstance.pluginActionDefaultKeys)) {
-      for (const keyset of actionInstance.pluginActionDefaultKeys) {
+      let remappings: any[] = [];
+      if (is2DArray(actionInstance.pluginActionDefaultKeys)) {
+        for (const keyset of actionInstance.pluginActionDefaultKeys) {
+          remappings.push({
+            before: keyset,
+            after: actionInstance.keys,
+            plugin: pluginName,
+          });
+        }
+      } else {
         remappings.push({
-          before: keyset,
+          before: actionInstance.pluginActionDefaultKeys,
           after: actionInstance.keys,
+          plugin: pluginName,
         });
       }
-    } else {
-      remappings.push({
-        before: actionInstance.pluginActionDefaultKeys,
-        after: actionInstance.keys,
-      });
-    }
 
-    // Create default mappings for the default modes. If the plugin creates another custom
-    // mode we don't need to create mappings for that because only that plugin's actions
-    // will apply for that mode.
-    if (mode === Mode.Normal) {
-      configuration.defaultnormalModeKeyBindingsNonRecursive.push(...remappings);
-    } else if (mode === Mode.Insert || mode === Mode.Replace) {
-      configuration.defaultinsertModeKeyBindingsNonRecursive.push(...remappings);
-    } else if (isVisualMode(mode)) {
-      configuration.defaultvisualModeKeyBindingsNonRecursive.push(...remappings);
-    } else if (mode === Mode.CommandlineInProgress || mode === Mode.SearchInProgressMode) {
-      configuration.defaultcommandLineModeKeyBindingsNonRecursive.push(...remappings);
-    } else if (mode === Mode.OperatorPendingMode) {
-      configuration.defaultoperatorPendingModeKeyBindingsNonRecursive.push(...remappings);
-    }
+      // Create default mappings for the default modes. If the plugin creates another custom
+      // mode we don't need to create mappings for that because only that plugin's actions
+      // will apply for that mode.
+      if (mode === Mode.Normal) {
+        configuration.defaultnormalModeKeyBindingsNonRecursive.push(...remappings);
+      } else if (mode === Mode.Insert || mode === Mode.Replace) {
+        configuration.defaultinsertModeKeyBindingsNonRecursive.push(...remappings);
+      } else if (isVisualMode(mode)) {
+        configuration.defaultvisualModeKeyBindingsNonRecursive.push(...remappings);
+      } else if (mode === Mode.CommandlineInProgress || mode === Mode.SearchInProgressMode) {
+        configuration.defaultcommandLineModeKeyBindingsNonRecursive.push(...remappings);
+      } else if (mode === Mode.OperatorPendingMode) {
+        configuration.defaultoperatorPendingModeKeyBindingsNonRecursive.push(...remappings);
+      }
 
-    actions.push(action);
-  }
+      actions.push(action);
+    }
+  };
 }

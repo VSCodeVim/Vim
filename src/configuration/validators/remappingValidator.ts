@@ -26,9 +26,12 @@ export class RemappingValidator implements IConfigurationValidator {
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
       const defaultKeybindings = config['default' + modeKeyBindingsKey] as IKeyRemapping[];
-      // filter the default keybindings whose 'after' already has a map to by the user
+      // filter out the default keybindings whose 'after' already has a map to by the user and
+      // the ones whose plugin is not active
       const filteredDefaultKeybindings = defaultKeybindings.filter(
-        (dkb) => keybindings.find((kb) => dkb.after && dkb.after === kb.after) === undefined
+        (dkb) =>
+          keybindings.find((kb) => dkb.after && dkb.after === kb.after) === undefined &&
+          this.isPluginActive(config, (dkb as any).plugin)
       );
       keybindings.push(...filteredDefaultKeybindings);
 
@@ -87,6 +90,21 @@ export class RemappingValidator implements IConfigurationValidator {
 
   disable(config: IConfiguration) {
     // no-op
+  }
+
+  private isPluginActive(config: IConfiguration, pluginName: string | undefined) {
+    if (!pluginName) {
+      return true;
+    } else {
+      switch (pluginName) {
+        case 'camelcasemotion':
+          return config.camelCaseMotion.enable;
+        case 'easymotion':
+          return config.easymotion;
+        default:
+          return false;
+      }
+    }
   }
 
   private async isRemappingValid(remapping: IKeyRemapping): Promise<ValidatorResults> {

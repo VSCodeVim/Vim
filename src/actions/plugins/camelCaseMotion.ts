@@ -29,7 +29,7 @@ abstract class CamelCaseTextObjectMovement extends TextObjectMovement {
 }
 
 // based off of `MoveWordBegin`
-@RegisterPluginAction
+@RegisterPluginAction('camelcasemotion')
 class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'w'];
   keys = ['<CamelCaseMotion_w>'];
@@ -50,7 +50,7 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
 }
 
 // based off of `MoveWordEnd`
-@RegisterPluginAction
+@RegisterPluginAction('camelcasemotion')
 class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'e'];
   keys = ['<CamelCaseMotion_e>'];
@@ -67,7 +67,7 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
 }
 
 // based off of `MoveBeginningWord`
-@RegisterPluginAction
+@RegisterPluginAction('camelcasemotion')
 class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'b'];
   keys = ['<CamelCaseMotion_b>'];
@@ -78,7 +78,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 }
 
 // based off of `SelectInnerWord`
-@RegisterPluginAction
+@RegisterPluginAction('camelcasemotion')
 class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   modes = [Mode.OperatorPendingMode, Mode.Visual];
   pluginActionDefaultKeys = ['i', '<leader>', 'w'];
