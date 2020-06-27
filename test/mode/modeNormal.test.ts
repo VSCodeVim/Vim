@@ -15,6 +15,7 @@ suite('Mode Normal', () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
+    configuration.whichwrap += 'b';
 
     await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
