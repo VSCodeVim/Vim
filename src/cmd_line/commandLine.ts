@@ -11,10 +11,7 @@ import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 
 interface INVim {
-  run(
-    vimState: VimState,
-    command: string
-  ): Promise<{ statusBarText: string; error: boolean }>;
+  run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
 
   dispose(): void;
 }
@@ -47,12 +44,12 @@ class CommandLine {
   public previousMode = Mode.Normal;
 
   constructor() {
+    this._history = new CommandLineHistory();
   }
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
-    this._history = new CommandLineHistory(context);
-    const m = await import('../neovim/neovim');
-    this._nvim = new m.NeovimWrapper();
+    // const m = await import('../neovim/neovim');
+    // this._nvim = new m.NeovimWrapper();
     return this._history.load();
   }
 

@@ -109,13 +109,13 @@ export class HistoryFile {
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor(context: vscode.ExtensionContext) {
+  constructor() {
     super('.search_history');
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor(context: vscode.ExtensionContext) {
+  constructor() {
     super('.cmdline_history');
   }
 }
