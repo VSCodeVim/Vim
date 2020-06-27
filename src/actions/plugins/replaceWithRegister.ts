@@ -11,7 +11,7 @@ import { RegisterAction } from './../base';
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine];
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);

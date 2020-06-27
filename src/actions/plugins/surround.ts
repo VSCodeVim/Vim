@@ -146,7 +146,7 @@ class CommandSurroundModeRepeat extends BaseMovement {
 
 @RegisterAction
 class CommandSurroundModeStart extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.OperatorPendingMode];
   keys = ['s'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {

@@ -184,6 +184,7 @@ class DisableExtension extends BaseCommand {
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
     Mode.SurroundInputMode,
+    Mode.OperatorPendingMode,
   ];
   keys = [SpecialKeys.ExtensionDisable];
 
@@ -206,7 +207,7 @@ class EnableExtension extends BaseCommand {
 
 @RegisterAction
 export class CommandNumber extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {
@@ -396,6 +397,7 @@ class CommandEsc extends BaseCommand {
     Mode.SurroundInputMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
+    Mode.OperatorPendingMode,
   ];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
