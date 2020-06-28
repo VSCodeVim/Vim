@@ -2173,7 +2173,7 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 }
 
 @RegisterAction
-class CommandUndo extends BaseCommand {
+export class CommandUndo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['u'];
   runsOnceForEveryCursor() {
