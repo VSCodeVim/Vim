@@ -3,14 +3,14 @@ import { configuration } from './configuration';
 export class Notation {
   // Mapping from a regex to the normalized string that it should be converted to.
   private static readonly _notationMap: Array<[RegExp, string]> = [
-    [/ctrl\+|c\-/gi, 'C-'],
-    [/cmd\+|d\-/gi, 'D-'],
-    [/escape|esc/gi, 'Esc'],
-    [/backspace|bs/gi, 'BS'],
-    [/delete|del/gi, 'Del'],
-    [/home/gi, 'Home'],
-    [/end/gi, 'End'],
-    [/insert/gi, 'Insert'],
+    [/<ctrl\+|<c\-/gi, '<C-'],
+    [/<cmd\+|<d\-/gi, '<D-'],
+    [/<escape>|<esc>/gi, '<Esc>'],
+    [/<backspace>|<bs>/gi, '<BS>'],
+    [/<delete>|<del>/gi, '<Del>'],
+    [/<home>/gi, '<Home>'],
+    [/<end>/gi, '<End>'],
+    [/<insert>/gi, '<Insert>'],
     [/<space>/gi, ' '],
     [/<cr>|<enter>/gi, '\n'],
   ];
@@ -56,7 +56,7 @@ export class Notation {
 
     if (!this.isSurroundedByAngleBrackets(key)) {
       key = `<${key}>`;
-      originalKey = `<${originalKey}`;
+      originalKey = `<${originalKey}>`;
     }
 
     if (key === '<leader>') {

@@ -359,6 +359,11 @@ export class ModeHandler implements vscode.Disposable {
   public async handleKeyEvent(key: string): Promise<void> {
     const now = Number(new Date());
     const printableKey = Notation.printableKey(key);
+    if (key === '<leader>') {
+      // this is only required for the plugins tests that might send this key instead of
+      // its representation. So we need to change it before sending it to remappers.
+      key = Notation.NormalizeKey(key, configuration.leader);
+    }
 
     // Check forceStopRemapping
     if (this.vimState.forceStopRecursiveRemapping) {

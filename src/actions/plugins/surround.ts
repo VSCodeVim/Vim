@@ -125,7 +125,7 @@ class CommandSurroundAddTarget extends BaseCommand {
 
 @RegisterAction
 class CommandSurroundModeRepeat extends BaseMovement {
-  modes = [Mode.Normal];
+  modes = [Mode.OperatorPendingMode];
   keys = ['s'];
   isCompleteAction = false;
   runsOnceForEveryCursor() {
