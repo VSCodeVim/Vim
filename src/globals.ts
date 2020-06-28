@@ -8,7 +8,7 @@ export class Globals {
   /**
    * This is where we put files like HistoryFile. The path is given to us by VSCode.
    */
-  static extensionStoragePath: string = 'vscode-vim';
+  static extensionStoragePath: string;
 
   /**
    * Used for testing.
