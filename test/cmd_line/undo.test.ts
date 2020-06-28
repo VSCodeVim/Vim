@@ -6,12 +6,10 @@ import { VimState } from '../../src/state/vimState';
 
 suite('Undo command', () => {
   let modeHandler: ModeHandler;
-  let vimState: VimState;
 
   setup(async () => {
     await setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
-    vimState = modeHandler.vimState;
   });
 
   teardown(cleanUpWorkspace);
@@ -19,7 +17,7 @@ suite('Undo command', () => {
   test('undoes last action after insert mode', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', '<Esc>']);
     await modeHandler.handleMultipleKeyEvents(['i', 'b', '<Esc>']);
-    await commandLine.Run('undo', vimState);
+    await commandLine.Run('undo', modeHandler.vimState);
     assertEqualLines(['a']);
   });
 });
