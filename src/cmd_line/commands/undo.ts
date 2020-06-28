@@ -1,8 +1,8 @@
 import * as node from '../node';
 import { Logger } from '../../util/logger';
-import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
-import { Range } from '../../common/motion/range';
+import { CommandUndo } from '../../actions/commands/actions';
+import { Position } from '../../common/motion/position';
 
 //
 //  Implements :u[ndo]
@@ -22,16 +22,7 @@ export class UndoCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const newPositions = await vimState.historyTracker.goBackHistoryStep();
-
-    if (newPositions === undefined) {
-      StatusBar.setText(vimState, 'Already at oldest change');
-    } else {
-      vimState.cursors = newPositions.map((x) => new Range(x, x));
-    }
-
-    vimState.alteredHistory = true;
-
+    await new CommandUndo().exec(new Position(0, 0), vimState);
     return;
   }
 }
