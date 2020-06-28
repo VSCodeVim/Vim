@@ -5,6 +5,7 @@ import {
   IKeyRemapping,
   IModeSpecificStrings,
 } from '../src/configuration/iconfiguration';
+import { Globals } from '../src/globals';
 
 export class Configuration implements IConfiguration {
   useSystemClipboard = false;
@@ -136,4 +137,46 @@ export class Configuration implements IConfiguration {
   wrapscan = true;
   scroll = 20;
   startofline = true;
+
+  constructor() {
+    this.loadDefaultMappings();
+  }
+
+  /**
+   * The 'RegisterPluginAction' saves the default mappings to 'configuration' but it can't save them to
+   * testConfiguration as well because it is a class that can be created any time by a test suite so that
+   * it can reset the settings to default. So in order to get the default mappings, the 'RegisterPluginAction'
+   * also saves them on a global variable, and we load them from there when creating a new testConfiguration.
+   */
+  private loadDefaultMappings() {
+    // normal mode defaults
+    this.defaultnormalModeKeyBindings =
+      Globals.mockConfigurationDefaultBindings.defaultNormalModeKeyBindings;
+    this.defaultnormalModeKeyBindingsNonRecursive =
+      Globals.mockConfigurationDefaultBindings.defaultNormalModeKeyBindingsNonRecursive;
+
+    // insert mode defaults
+    this.defaultinsertModeKeyBindings =
+      Globals.mockConfigurationDefaultBindings.defaultInsertModeKeyBindings;
+    this.defaultinsertModeKeyBindingsNonRecursive =
+      Globals.mockConfigurationDefaultBindings.defaultInsertModeKeyBindingsNonRecursive;
+
+    // visual mode defaults
+    this.defaultvisualModeKeyBindings =
+      Globals.mockConfigurationDefaultBindings.defaultVisualModeKeyBindings;
+    this.defaultvisualModeKeyBindingsNonRecursive =
+      Globals.mockConfigurationDefaultBindings.defaultVisualModeKeyBindingsNonRecursive;
+
+    // command line mode defaults
+    this.defaultcommandLineModeKeyBindings =
+      Globals.mockConfigurationDefaultBindings.defaultCommandLineModeKeyBindings;
+    this.defaultcommandLineModeKeyBindingsNonRecursive =
+      Globals.mockConfigurationDefaultBindings.defaultCommandLineModeKeyBindingsNonRecursive;
+
+    // operator pending mode defaults
+    this.defaultoperatorPendingModeKeyBindings =
+      Globals.mockConfigurationDefaultBindings.defaultOperatorPendingModeKeyBindings;
+    this.defaultoperatorPendingModeKeyBindingsNonRecursive =
+      Globals.mockConfigurationDefaultBindings.defaultOperatorPendingModeKeyBindingsNonRecursive;
+  }
 }

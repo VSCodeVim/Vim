@@ -1,11 +1,11 @@
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
-import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
 import { VimState } from './../state/vimState';
-import { IKeyRemapping } from '../configuration/iconfiguration';
+import { Notation } from '../configuration/notation';
+import { Globals } from '../globals';
 
 export abstract class BaseAction {
   /**
@@ -352,16 +352,33 @@ export function RegisterPluginAction(pluginName: string) {
       // Create default mappings for the default modes. If the plugin creates another custom
       // mode we don't need to create mappings for that because only that plugin's actions
       // will apply for that mode.
+      // Also store the default mappings on 'Globals.mockConfigurationDefaultBindings' to be used
+      // when testing.
       if (mode === Mode.Normal) {
         configuration.defaultnormalModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultNormalModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
       } else if (mode === Mode.Insert || mode === Mode.Replace) {
         configuration.defaultinsertModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultInsertModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
       } else if (isVisualMode(mode)) {
         configuration.defaultvisualModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultVisualModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
       } else if (mode === Mode.CommandlineInProgress || mode === Mode.SearchInProgressMode) {
         configuration.defaultcommandLineModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultCommandLineModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
       } else if (mode === Mode.OperatorPendingMode) {
         configuration.defaultoperatorPendingModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultOperatorPendingModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
       }
 
       actions.push(action);

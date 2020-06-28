@@ -25,13 +25,13 @@ export class RemappingValidator implements IConfigurationValidator {
       let keybindings = config[modeKeyBindingsKey] as IKeyRemapping[];
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
-      const defaultKeybindings = config['default' + modeKeyBindingsKey] as IKeyRemapping[];
+      let defaultKeybindings = [...(config['default' + modeKeyBindingsKey] as IKeyRemapping[])];
       // filter out the default keybindings whose 'after' already has a map to by the user and
       // the ones whose plugin is not active
-      const filteredDefaultKeybindings = defaultKeybindings.filter(
-        (dkb) =>
-          keybindings.find((kb) => dkb.after && dkb.after === kb.after) === undefined &&
-          this.isPluginActive(config, (dkb as any).plugin)
+      const filteredDefaultKeybindings = this.filterAndCloneKeybindings(
+        config,
+        defaultKeybindings,
+        keybindings
       );
       keybindings.push(...filteredDefaultKeybindings);
 
@@ -90,6 +90,40 @@ export class RemappingValidator implements IConfigurationValidator {
 
   disable(config: IConfiguration) {
     // no-op
+  }
+
+  private filterAndCloneKeybindings(
+    config: IConfiguration,
+    bindings: IKeyRemapping[],
+    existingBindings: IKeyRemapping[]
+  ) {
+    const filteredKeybindings: IKeyRemapping[] = [];
+    for (const keybinding of bindings) {
+      if (!this.isPluginActive(config, (keybinding as any).plugin)) {
+        continue;
+      }
+
+      const hasMapTo =
+        existingBindings.find((ekb) => keybinding.after && keybinding.after === ekb.after) !==
+        undefined;
+
+      if (hasMapTo) {
+        continue;
+      }
+
+      // need to make a clone of the remapping so that the NormalizeKey doesn't change
+      // the default bindings. That would mess up the bindings when testing and using
+      // different leader keys.
+      let remapping: IKeyRemapping = {
+        before: [...keybinding.before],
+        after: keybinding.after ? [...keybinding.after] : undefined,
+        commands: keybinding.commands ? [...keybinding.commands] : undefined,
+        recursive: keybinding.recursive,
+        source: keybinding.source,
+      };
+      filteredKeybindings.push(remapping);
+    }
+    return filteredKeybindings;
   }
 
   private isPluginActive(config: IConfiguration, pluginName: string | undefined) {
