@@ -330,19 +330,34 @@ export class HistoryTracker {
 
           for (const ch of change.text) {
             // Update mark
+            if (ch === '\r') {
+              // Don't do anything because after that it's \n
+              continue;
+            }
 
             if (pos.isBeforeOrEqual(newMark.position)) {
               if (ch === '\n') {
-                newMark.position = new Position(
-                  newMark.position.line + 1,
-                  newMark.position.character
-                );
-              } else if (ch !== '\n' && pos.line === newMark.position.line) {
+                if (pos.line === newMark.position.line) {
+                  newMark.position = new Position(
+                    newMark.position.line + 1,
+                    newMark.position.character - pos.character
+                  );
+                } else {
+                  newMark.position = new Position(
+                    newMark.position.line + 1,
+                    newMark.position.character
+                  );
+                }
+              } else if (pos.line === newMark.position.line) {
                 newMark.position = new Position(
                   newMark.position.line,
                   newMark.position.character + 1
                 );
               }
+            } else {
+              // if current position is past newMark position, from here it
+              // cannot affect the newMark position anymore
+              break;
             }
 
             // Advance position
@@ -356,42 +371,35 @@ export class HistoryTracker {
         } else {
           for (const ch of change.text) {
             // Update mark
+            if (ch === '\r') {
+              // Don't do anything because after that it's \n
+              continue;
+            }
 
             if (pos.isBefore(newMark.position)) {
               if (ch === '\n') {
-                newMark.position = new Position(
-                  newMark.position.line - 1,
-                  newMark.position.character
-                );
+                if (pos.line + 1 === newMark.position.line) {
+                  newMark.position = new Position(
+                    newMark.position.line - 1,
+                    newMark.position.character + pos.character
+                  );
+                } else {
+                  newMark.position = new Position(
+                    newMark.position.line - 1,
+                    newMark.position.character
+                  );
+                }
               } else if (pos.line === newMark.position.line) {
                 newMark.position = new Position(
                   newMark.position.line,
                   newMark.position.character - 1
                 );
               }
-            }
-
-            // De-advance position
-            // (What's the opposite of advance? Retreat position?)
-
-            if (ch === '\n') {
-              // The 99999 is a bit of a hack here. It's very difficult and
-              // completely unnecessary to get the correct position, so we
-              // just fake it.
-              pos = new Position(Math.max(pos.line - 1, 0), 99999);
             } else {
-              pos = new Position(pos.line, Math.max(pos.character - 1, 0));
+              break;
             }
           }
         }
-      }
-    }
-
-    // Ensure the position of every mark is within the range of the document.
-
-    for (const mark of newMarks) {
-      if (mark.position.isAfter(TextEditor.getDocumentEnd())) {
-        mark.position = TextEditor.getDocumentEnd();
       }
     }
 
