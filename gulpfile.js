@@ -250,7 +250,7 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('webpack'), 'commit-hash'));
+gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
 gulp.task(
   'build-dev',
   gulp.series('prettier', gulp.parallel('webpack-dev', 'tslint'), 'commit-hash')
