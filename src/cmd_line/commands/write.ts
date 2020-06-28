@@ -2,7 +2,6 @@ import * as fs from '../../util/fs';
 import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { promisify } from 'util';
 import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';

@@ -1,10 +1,9 @@
-import * as vscode from 'vscode';
 import * as path from 'path';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
 import { Globals } from '../globals';
 import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from '../util/fs';
-import { VSCodeVimCursorType } from '../mode/mode';
+
 export class HistoryFile {
   private readonly _logger = Logger.get('HistoryFile');
   private _historyFileName: string;

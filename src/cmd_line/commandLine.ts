@@ -48,8 +48,8 @@ class CommandLine {
   }
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
-    // const m = await import('../neovim/neovim');
-    // this._nvim = new m.NeovimWrapper();
+    const m = await import('../neovim/neovim');
+    this._nvim = new m.NeovimWrapper();
     return this._history.load();
   }
 
