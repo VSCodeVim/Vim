@@ -50,13 +50,15 @@ class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
-      for (const line of lines) {
-        const remap = await vimrcKeyRemappingBuilder.build(line);
-        if (remap) {
-          VimrcImpl.addRemapToConfig(config, remap);
+      try {
+        const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
+        for (const line of lines) {
+          const remap = await vimrcKeyRemappingBuilder.build(line);
+          if (remap) {
+            VimrcImpl.addRemapToConfig(config, remap);
+          }
         }
-      }
+      } catch (e) { }
     }
   }
 
