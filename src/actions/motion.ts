@@ -17,7 +17,6 @@ import { VimError, ErrorCode } from '../error';
 import { BaseMovement, SelectionType, IMovement, isIMovement, failedMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
-import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
@@ -662,18 +661,6 @@ class MoveFindForward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (configuration.sneakReplacesF) {
-      const pos = await new SneakForward(
-        this.keysPressed.concat('\n'),
-        this.isRepeat
-      ).execActionWithCount(position, vimState, count);
-      if (vimState.recordedState.operator && !isIMovement(pos)) {
-        return pos.getRight();
-      }
-
-      return pos;
-    }
-
     count = count || 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = findHelper(position, toFind, count, 'forward');
@@ -702,14 +689,6 @@ class MoveFindBackward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (configuration.sneakReplacesF) {
-      return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
-        position,
-        vimState,
-        count
-      );
-    }
-
     count = count || 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = findHelper(position, toFind, count, 'backward');

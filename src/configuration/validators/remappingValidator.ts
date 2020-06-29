@@ -138,6 +138,8 @@ export class RemappingValidator implements IConfigurationValidator {
           return config.easymotion;
         case 'replacewithregister':
           return config.replaceWithRegister;
+        case 'sneak':
+          return config.sneak;
         default:
           return false;
       }

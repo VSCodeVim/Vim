@@ -184,4 +184,18 @@ suite('sneakReplacesF', () => {
     keysPressed: 'Fa;',
     end: ['apple', 'ban|ana', 'carrot'],
   });
+
+  newTest({
+    title: 'sneakReplacesF forward till',
+    start: ['|apple', 'banana', 'carrot'],
+    keysPressed: 'ta;',
+    end: ['apple', 'ba|nana', 'carrot'],
+  });
+
+  newTest({
+    title: 'sneakReplacesF backward till',
+    start: ['apple', 'banana', '|carrot'],
+    keysPressed: 'Ta;',
+    end: ['apple', 'bana|na', 'carrot'],
+  });
 });
