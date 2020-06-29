@@ -65,7 +65,6 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
   return curHandler;
 }
 
-
 /**
  * Loads and validates the user's configuration
  */

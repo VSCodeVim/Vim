@@ -53,7 +53,7 @@ export class ReadCommand extends node.CommandBase {
       const data = await readFileAsync(this.arguments.file as string, 'utf8');
       return data;
     } catch (e) {
-      throw (e);
+      throw e;
     }
   }
 

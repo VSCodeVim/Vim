@@ -26,10 +26,9 @@ class TestMemento implements vscode.Memento {
   async update(key: string, value: any): Promise<void> {
     this.mapping.set(key, value);
   }
-
 }
 export class TestExtensionContext implements vscode.ExtensionContext {
-  subscriptions: { dispose(): any; }[] = [];
+  subscriptions: { dispose(): any }[] = [];
   workspaceState: vscode.Memento = new TestMemento();
   globalState: vscode.Memento = new TestMemento();
   extensionPath: string = 'inmem:///test';
@@ -41,7 +40,6 @@ export class TestExtensionContext implements vscode.ExtensionContext {
   storagePath: string | undefined;
   globalStoragePath: string;
   logPath: string;
-
 }
 
 export function rndName(): string {
