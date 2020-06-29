@@ -58,8 +58,8 @@ class VimrcImpl {
             VimrcImpl.addRemapToConfig(config, remap);
           }
         }
-      } finally {
-        await window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken'`);
+      } catch (err) {
+        await window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
       }
     }
   }
