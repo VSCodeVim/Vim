@@ -979,6 +979,10 @@ export class ModeHandler implements vscode.Disposable {
           let recordedMacro = (await Register.getByKey(transformation.register))
             .text as RecordedState;
 
+          if (!(recordedMacro instanceof RecordedState)) {
+            return vimState;
+          }
+
           vimState.isReplayingMacro = true;
 
           if (transformation.register === ':') {
