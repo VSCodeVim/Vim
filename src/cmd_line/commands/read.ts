@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { readFileAsync } from '../../util/fs';
+import { readFileAsync } from 'platform/fs';
 
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
@@ -53,7 +53,7 @@ export class ReadCommand extends node.CommandBase {
       const data = await readFileAsync(this.arguments.file as string, 'utf8');
       return data;
     } catch (e) {
-      throw (e);
+      throw e;
     }
   }
 

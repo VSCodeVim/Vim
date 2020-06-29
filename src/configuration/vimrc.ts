@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as fs from '../util/fs';
+import * as fs from 'platform/fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';

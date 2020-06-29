@@ -14,6 +14,10 @@
     "strictNullChecks": true,
     "experimentalDecorators": true,
     "alwaysStrict": true,
+    "baseUrl": ".",
+    "paths": {
+      "platform/*": ["src/platform/node/*"]
+    }
   },
   "exclude": [
     "node_modules",
