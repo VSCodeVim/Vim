@@ -45,7 +45,7 @@ class CommandLine {
     this._history = new CommandLineHistory();
   }
 
-  public async load(context: vscode.ExtensionContext): Promise<void> {
+  public async load(): Promise<void> {
     return this._history.load();
   }
 
