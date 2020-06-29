@@ -39,8 +39,6 @@ class CommandLine {
     return this._history.get();
   }
 
-  private _nvim?: INVim;
-
   public previousMode = Mode.Normal;
 
   constructor() {
@@ -48,8 +46,6 @@ class CommandLine {
   }
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
-    const m = await import('../neovim/neovim');
-    this._nvim = new m.NeovimWrapper();
     return this._history.load();
   }
 
@@ -82,7 +78,7 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
       if (useNeovim) {
-        const { statusBarText, error } = await this._nvim!.run(vimState, command);
+        const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
         await cmd.execute(vimState.editor, vimState);
@@ -90,7 +86,7 @@ class CommandLine {
     } catch (e) {
       if (e instanceof VimError) {
         if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
-          const { statusBarText } = await this._nvim!.run(vimState, command);
+          const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
           StatusBar.setText(vimState, e.toString(), true);

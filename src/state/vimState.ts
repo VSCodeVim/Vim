@@ -13,6 +13,12 @@ import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 
+interface INVim {
+  run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
+
+  dispose(): void;
+}
+
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -253,6 +259,7 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
+  public nvim: INVim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
@@ -261,6 +268,12 @@ export class VimState implements vscode.Disposable {
     this.easyMotion = new EasyMotion();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
+
+  async load() {
+    const m = await import('../neovim/neovim');
+    this.nvim = new m.NeovimWrapper();
+  }
+
   dispose() {
     this._disposables.forEach(d => d.dispose());
   }

@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import { promisify } from 'util';
-import * as fs from 'fs';
 
 export const constants = {
     UV_FS_SYMLINK_DIR: 1,
@@ -60,6 +58,15 @@ export const constants = {
     COPYFILE_FICLONE_FORCE: 4
 };
 
+export async function doesFileExist(fileUri: vscode.Uri) {
+  try {
+    await vscode.workspace.fs.stat(fileUri);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function existsAsync(path: string): Promise<boolean> {
   try {
     await vscode.workspace.fs.stat(vscode.Uri.parse(path));
@@ -79,21 +86,21 @@ export async function readFileAsync(path: string, encoding: string): Promise<str
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
-  return promisify(fs.mkdir)(path, options);
+  return await vscode.workspace.fs.createDirectory(vscode.Uri.parse(path));
 }
 
 export async function writeFileAsync(path: string, content: string, encoding: string): Promise<void> {
-  return promisify(fs.writeFile)(path, content, encoding);
+  return await vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
 }
 
 export async function accessAsync(path: string, mode: number) {
-  return promisify(fs.access)(path, mode);
+  // return promisify(fs.access)(path, mode);
 }
 
 export async function chmodAsync(path: string, mode: string | number) {
-  return promisify(fs.chmod)(path, mode);
+  // return promisify(fs.chmod)(path, mode);
 }
 
 export function unlinkSync(path: string) {
-  fs.unlinkSync(path);
+  // fs.unlinkSync(path);
 }

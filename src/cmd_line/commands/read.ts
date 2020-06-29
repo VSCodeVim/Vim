@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+// import { exec } from 'child_process';
 import { readFileAsync } from 'platform/fs';
 
 import { TextEditor } from '../../textEditor';
@@ -60,13 +60,13 @@ export class ReadCommand extends node.CommandBase {
   async getTextToInsertFromCmd(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
-        exec(this.arguments.cmd as string, (err, stdout, stderr) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(stdout);
-          }
-        });
+        // exec(this.arguments.cmd as string, (err, stdout, stderr) => {
+        //   if (err) {
+        //     reject(err);
+        //   } else {
+        //     resolve(stdout);
+        //   }
+        // });
       } catch (e) {
         reject(e);
       }
