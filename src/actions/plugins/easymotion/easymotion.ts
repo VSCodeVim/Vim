@@ -21,6 +21,17 @@ export class EasyMotion {
   private _markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
+  private fade: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+    textDecoration: `none;
+    filter: grayscale(1);`,
+  });
+  private hide: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+    // because opacity isn't enough, vscode blinking █ cursor
+    // would still reveal the hidden character
+    opacity: `0;
+    visibility: hidden;
+    margin: 0 ${configuration.easymotionMarkerMargin / 2}px;`,
+  });
 
   /**
    * TODO: For future motions
@@ -54,21 +65,15 @@ export class EasyMotion {
   /**
    * Create and cache decoration types for different marker lengths
    */
-  public static getDecorationType(length: number): vscode.TextEditorDecorationType {
+  public static getDecorationType(
+    length: number,
+    decorations?: vscode.DecorationRenderOptions
+  ): vscode.TextEditorDecorationType {
     const cache = this.decorationTypeCache[length];
     if (cache) {
       return cache;
     } else {
-      const width = length * 8;
-      const type = vscode.window.createTextEditorDecorationType({
-        after: {
-          margin: `0 0 0 -${width}px`,
-          height: `14px`,
-          // This is a tricky part. Set position and z-index property along with width
-          // to bring markers to front
-          width: `${width}px; position:absoulute; z-index:99;`,
-        },
-      });
+      const type = vscode.window.createTextEditorDecorationType(decorations || {});
 
       this.decorationTypeCache[length] = type;
 
@@ -81,9 +86,13 @@ export class EasyMotion {
    */
   public clearDecorations() {
     const editor = vscode.window.activeTextEditor!;
+
     for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
+
+    editor.setDecorations(this.fade, []);
+    editor.setDecorations(this.hide, []);
   }
 
   /**
@@ -198,10 +207,7 @@ export class EasyMotion {
   }
 
   private getEasymotionMarkerBackgroundColor() {
-    return this.getMarkerColor(
-      configuration.easymotionMarkerBackgroundColor,
-      'activityBarBadge.background'
-    );
+    return this.getMarkerColor(configuration.easymotionMarkerBackgroundColor, '#0000');
   }
 
   private getEasymotionMarkerForegroundColorOneChar() {
@@ -224,8 +230,21 @@ export class EasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
+    // Set the decorations for all the different marker lengths
+    const editor = vscode.window.activeTextEditor!;
+    const dimmingZones: vscode.Range[] = [];
+    // Why this instead of `background-color` on the marker?
+    // The easy fix would've been to let the user set the marker background to the same
+    // color as the editor so it would hide the character behind, However this would require
+    // the user to do more work, with this solution we temporarily hide the marked character
+    // so no user specific setting is needed
+    const hiddenChars: vscode.Range[] = [];
+    const markers = this._markers
+      .filter((m) => m.name.startsWith(this.accumulation))
+      .sort((a, b) => (a.position.isBefore(b.position) ? -1 : 1));
+
     // Ignore markers that do not start with the accumulated depth level
-    for (const marker of this._markers.filter((m) => m.name.startsWith(this.accumulation))) {
+    for (const marker of markers) {
       const pos = marker.position;
       // Get keys after the depth we're at
       const keystroke = marker.name.substr(this.accumulation.length);
@@ -239,26 +258,83 @@ export class EasyMotion {
           ? this.getEasymotionMarkerForegroundColorTwoChar()
           : this.getEasymotionMarkerForegroundColorOneChar();
 
+      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
+      // ^ is this still needed? it breaks with current implementation
+      const charPos = pos.character;
+      const range = new vscode.Range(pos.line, charPos, pos.line, charPos);
+
+      //#region Hack (remove once backend handles this)
+
+      /*
+        This hack is here because the backend for easy motion reports two adjacent
+        2 char markers resulting in a 4 char wide markers, this isn't what happens in
+        original easymotion for instance: for doom
+            - original reports d[m][m2]m where [m] is a marker and [m2] is secondary
+            - here it reports d[m][m][m][m]m
+        The reason this won't work with current impl is that it overflows resulting in
+        one extra hidden character, hence the check below (until backend truely mimics original)
+
+        if two consecutive 2 char markers, we only use the first char from the current marker
+        and reduce the char substitution by 1. Once backend properly reports adjacent markers
+        all instances of `trim` can be removed
+      */
+      let trim = 0;
+      const next = markers[markers.indexOf(marker) + 1];
+
+      if (next && next.position.character - pos.character === 1) {
+        const nextKeystroke = next.name.substr(this.accumulation.length);
+
+        if (keystroke.length > 1 && nextKeystroke.length > 1) {
+          trim = -1;
+        }
+      }
+
+      //#endregion
+
       const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
-        after: {
-          contentText: keystroke,
+        before: {
+          contentText: trim === -1 ? keystroke.substring(0, 1) : keystroke,
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
-          height: `${configuration.easymotionMarkerHeight}px`,
-          width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px`,
           color: fontColor,
-          textDecoration: `none;
+          width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px;
+          position: absolute;
+          z-index: 1;
+          margin: 0 ${configuration.easymotionMarkerMargin / 2}px;
+          transform: translateX(-0.05ch);
+          border-radius: 1px;
           font-family: ${configuration.easymotionMarkerFontFamily};
           font-size: ${configuration.easymotionMarkerFontSize}px;
-          font-weight: ${configuration.easymotionMarkerFontWeight};
-          position: absolute;
-          z-index: 99;
-          bottom: ${configuration.easymotionMarkerYOffset}px`,
+          font-weight: ${configuration.easymotionMarkerFontWeight};`,
         },
       };
-      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
-      const charPos = pos.character + 1 + (keystroke.length - 1);
+
+      hiddenChars.push(
+        new vscode.Range(pos.line, pos.character, pos.line, pos.character + keystroke.length + trim)
+      );
+
+      if (configuration.easymotionDimBackground) {
+        const dimPos =
+          pos.getLineEndIncludingEOL().character - charPos === 1 ? pos.character : charPos;
+
+        // This excludes markers from the dimming ranges by using them as anchors
+        // each marker adds the range between it and previous marker to the dimming zone
+        // except last marker after which the rest of document is dimmed
+        //
+        // example [m1] text that has multiple [m2] marks
+        // |<------    |<----------------------     ---->|
+        if (dimmingZones.length === 0) {
+          dimmingZones.push(new vscode.Range(0, 0, pos.line, dimPos));
+        } else {
+          const prevDimPos = dimmingZones[dimmingZones.length - 1];
+          const ln = prevDimPos.end.line;
+          const ps = prevDimPos.end.character;
+
+          dimmingZones.push(new vscode.Range(ln, ps, pos.line, dimPos));
+        }
+      }
+
       this.decorations[keystroke.length].push({
-        range: new vscode.Range(pos.line, charPos, pos.line, charPos),
+        range,
         renderOptions: {
           dark: renderOptions,
           light: renderOptions,
@@ -268,12 +344,26 @@ export class EasyMotion {
       this.visibleMarkers.push(marker);
     }
 
-    // Set the decorations for all the different marker lengths
-    const editor = vscode.window.activeTextEditor!;
+    // for the last marker dim till document end
+    if (configuration.easymotionDimBackground) {
+      dimmingZones.push(
+        new vscode.Range(
+          markers[markers.length - 1].position,
+          new Position(editor.document.lineCount, Number.MAX_VALUE)
+        )
+      );
+    }
+
     for (let j = 1; j < this.decorations.length; j++) {
       if (this.decorations[j]) {
         editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
       }
+    }
+
+    editor.setDecorations(this.hide, hiddenChars);
+
+    if (configuration.easymotionDimBackground) {
+      editor.setDecorations(this.fade, dimmingZones);
     }
   }
 }

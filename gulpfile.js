@@ -31,11 +31,10 @@ function runPrettier(command, done) {
       return done();
     }
 
-    var files = stdout
+    const filetypes = ['.ts', '.js', '.json', '.md', '.yml'];
+    const files = stdout
       .split(/\r?\n/)
-      .filter((f) => {
-        return f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.md');
-      })
+      .filter((f) => filetypes.some((filetype) => f.endsWith(filetype)))
       .join(' ');
 
     if (!files) {
@@ -213,7 +212,7 @@ gulp.task('run-test', function (done) {
   console.log('Building container...');
   var dockerBuildCmd = spawn(
     'docker',
-    ['build', '-f', './build/Dockerfile', '.', '-t', dockerTag],
+    ['build', '-f', './build/Dockerfile', './build/', '-t', dockerTag],
     {
       cwd: process.cwd(),
       stdio: 'inherit',
@@ -232,6 +231,7 @@ gulp.task('run-test', function (done) {
     const dockerRunArgs = [
       'run',
       '-it',
+      '--rm',
       '--env',
       `MOCHA_GREP=${options.grep}`,
       '-v',
