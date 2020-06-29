@@ -36,16 +36,16 @@ class CommandLine {
   public preCompleteCommand = '';
 
   public get historyEntries() {
-    return this._history.get();
+    return this._history?.get() || [];
   }
 
   public previousMode = Mode.Normal;
 
   constructor() {
-    this._history = new CommandLineHistory();
   }
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
+    this._history = new CommandLineHistory(context);
     return this._history.load();
   }
 

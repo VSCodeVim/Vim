@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 import { configuration } from '../configuration/configuration';
-
-export interface ILogger {
-  error(errorMessage: string): void;
-  debug(debugMessage: string): void;
-  warn(warnMessage: string): void;
-  verbose(verboseMessage: string): void;
-}
+import { ILogger } from 'src/platform/common/logger';
 
 /**
  * Displays VSCode message to user

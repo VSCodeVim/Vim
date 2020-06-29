@@ -7,7 +7,7 @@ const webpack = require('webpack');
 
 /**@type {import('webpack').Configuration}*/
 const nodelessConfig = {
-  target: 'web', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
+  target: 'webworker', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 
   mode: 'development',
 
