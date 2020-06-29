@@ -17,9 +17,6 @@ import { StatusBar } from '../src/statusBar';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
-  constructor() {
-
-  }
   get<T>(key: string): T | undefined;
   get<T>(key: string, defaultValue: T): T;
   get(key: any, defaultValue?: any) {
@@ -65,22 +62,22 @@ export async function createRandomDir() {
   return createDir(dirPath);
 }
 
-export async function createEmptyFile(path: string) {
-  await promisify(fs.writeFile)(path, '');
-  return path;
+export async function createEmptyFile(fsPath: string) {
+  await promisify(fs.writeFile)(fsPath, '');
+  return fsPath;
 }
 
-export async function createDir(path: string) {
-  await promisify(fs.mkdir)(path);
-  return path;
+export async function createDir(fsPath: string) {
+  await promisify(fs.mkdir)(fsPath);
+  return fsPath;
 }
 
-export async function removeFile(path: string) {
-  return promisify(fs.unlink)(path);
+export async function removeFile(fsPath: string) {
+  return promisify(fs.unlink)(fsPath);
 }
 
-export async function removeDir(path: string) {
-  return promisify(fs.rmdir)(path);
+export async function removeDir(fsPath: string) {
+  return promisify(fs.rmdir)(fsPath);
 }
 
 /**

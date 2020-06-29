@@ -58,7 +58,7 @@ export const constants = {
     COPYFILE_FICLONE: 2,
     UV_FS_COPYFILE_FICLONE_FORCE: 4,
     COPYFILE_FICLONE_FORCE: 4
-}
+};
 
 export async function existsAsync(path: string): Promise<boolean> {
   try {
@@ -74,15 +74,15 @@ export async function unlink(path): Promise<void> {
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {
-  return await promisify(fs.readFile)(path, encoding);
+  return promisify(fs.readFile)(path, encoding);
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
-  return await promisify(fs.mkdir)(path, options);
+  return promisify(fs.mkdir)(path, options);
 }
 
 export async function writeFileAsync(path: string, content: string, encoding: string): Promise<void> {
-  return await promisify(fs.writeFile)(path, content, encoding);
+  return promisify(fs.writeFile)(path, content, encoding);
 }
 
 export async function accessAsync(path: string, mode: number) {
