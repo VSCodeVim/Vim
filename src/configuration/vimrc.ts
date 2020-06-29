@@ -59,7 +59,7 @@ class VimrcImpl {
           }
         }
       } catch (err) {
-        await window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
+        window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
       }
     }
   }
