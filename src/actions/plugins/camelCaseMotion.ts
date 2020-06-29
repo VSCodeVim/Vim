@@ -32,7 +32,7 @@ abstract class CamelCaseTextObjectMovement extends TextObjectMovement {
 @RegisterPluginAction('camelcasemotion')
 class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'w'];
-  keys = ['<CamelCaseMotion_w>'];
+  keys = ['<Plug>CamelCaseMotion_w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
@@ -53,7 +53,7 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
 @RegisterPluginAction('camelcasemotion')
 class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'e'];
-  keys = ['<CamelCaseMotion_e>'];
+  keys = ['<Plug>CamelCaseMotion_e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentCamelCaseWordEnd();
@@ -70,7 +70,7 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
 @RegisterPluginAction('camelcasemotion')
 class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
   pluginActionDefaultKeys = ['<leader>', 'b'];
-  keys = ['<CamelCaseMotion_b>'];
+  keys = ['<Plug>CamelCaseMotion_b'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCamelCaseWordLeft();
@@ -82,7 +82,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   modes = [Mode.OperatorPendingMode, Mode.Visual];
   pluginActionDefaultKeys = ['i', '<leader>', 'w'];
-  keys = ['<CamelCaseMotion_iw>'];
+  keys = ['<Plug>CamelCaseMotion_iw'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;

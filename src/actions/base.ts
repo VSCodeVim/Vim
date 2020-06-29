@@ -326,9 +326,15 @@ export function RegisterPluginAction(pluginName: string) {
       if (
         actionInstance.keys === undefined ||
         is2DArray(actionInstance.keys) ||
-        actionInstance.keys.length > 1
+        !actionInstance.keys[0].toLocaleLowerCase().startsWith('<plug>')
       ) {
         // action that can't be called directly or invalid plugin action key
+        continue;
+      }
+
+      if (actionInstance.pluginActionDefaultKeys.length === 0) {
+        // plugin action without default mappings. Can be mapped later by the user.
+        actions.push(action);
         continue;
       }
 
@@ -337,14 +343,14 @@ export function RegisterPluginAction(pluginName: string) {
         for (const keyset of actionInstance.pluginActionDefaultKeys) {
           remappings.push({
             before: keyset,
-            after: actionInstance.keys,
+            after: [actionInstance.keys[0]],
             plugin: pluginName,
           });
         }
       } else {
         remappings.push({
           before: actionInstance.pluginActionDefaultKeys,
-          after: actionInstance.keys,
+          after: [actionInstance.keys[0]],
           plugin: pluginName,
         });
       }

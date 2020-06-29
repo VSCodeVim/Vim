@@ -12,7 +12,7 @@ import { BaseCommand } from '../commands/actions';
 @RegisterPluginAction('replacewithregister')
 export class ReplaceOperator extends BaseOperator {
   public pluginActionDefaultKeys = ['g', 'r'];
-  public keys = ['<ReplaceWithRegisterOperator>'];
+  public keys = ['<Plug>ReplaceWithRegisterOperator'];
   public modes = [Mode.Normal];
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -40,7 +40,7 @@ export class ReplaceOperator extends BaseOperator {
 @RegisterPluginAction('replacewithregister')
 export class ReplaceOperatorLine extends BaseCommand {
   public pluginActionDefaultKeys = ['g', 'r', 'r'];
-  public keys = ['<ReplaceWithRegisterLine>'];
+  public keys = ['<Plug>ReplaceWithRegisterLine'];
   public modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -59,7 +59,7 @@ export class ReplaceOperatorLine extends BaseCommand {
 @RegisterPluginAction('replacewithregister')
 export class ReplaceOperatorVisual extends ReplaceOperator {
   public pluginActionDefaultKeys = ['g', 'r'];
-  public keys = ['<ReplaceWithRegisterVisual>'];
+  public keys = ['<Plug>ReplaceWithRegisterVisual'];
   public modes = [Mode.Visual, Mode.VisualLine];
 }
 
@@ -73,7 +73,7 @@ const updateCursorPosition = (
   } = vimState;
   const lines = replaceWith.split('\n');
   const wasRunAsLineAction =
-    actionKeys.indexOf('<ReplaceWithRegisterLine>') === 0 && actionKeys.length === 1; // ie. grr
+    actionKeys.indexOf('<Plug>ReplaceWithRegisterLine') === 0 && actionKeys.length === 1; // ie. grr
   const registerAndRangeAreSingleLines = lines.length === 1 && range.isSingleLine;
   const singleLineAction = registerAndRangeAreSingleLines && !wasRunAsLineAction;
 
