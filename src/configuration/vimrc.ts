@@ -135,7 +135,7 @@ class VimrcImpl {
     }
 
     vimrcPath = path.join(os.homedir(), '.config/', 'nvim/', 'init.vim');
-    if (fs.existsSync(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 
