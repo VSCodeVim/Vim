@@ -110,7 +110,7 @@ export async function activate(
   }
 
   // load state
-  await Promise.all([commandLine.load(), globalState.load(context)]);
+  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(

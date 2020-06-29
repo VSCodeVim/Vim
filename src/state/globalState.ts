@@ -53,7 +53,7 @@ class GlobalState {
    */
   public hl = true;
 
-  public async load(context: vscode.ExtensionContext) {
+  public async load() {
     this._searchHistory = new SearchHistory();
     this._searchHistory
       .get()
