@@ -104,8 +104,9 @@ export class RemappingValidator implements IConfigurationValidator {
       }
 
       const hasMapTo =
-        existingBindings.find((ekb) => keybinding.after && keybinding.after === ekb.after) !==
-        undefined;
+        existingBindings.find(
+          (ekb) => keybinding.after && keybinding.after.join('') === ekb.after?.join('')
+        ) !== undefined;
 
       if (hasMapTo) {
         continue;
