@@ -462,8 +462,12 @@ export class MarkMovementBOL extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureDocumentIsActive(mark.editor);
+    if (
+      mark.isUppercaseMark &&
+      mark.editor !== undefined &&
+      !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
+    ) {
+      await ensureDocumentIsActive(mark.editor.document);
     }
 
     return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
@@ -483,18 +487,22 @@ export class MarkMovement extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureDocumentIsActive(mark.editor);
+    if (
+      mark.isUppercaseMark &&
+      mark.editor !== undefined &&
+      !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
+    ) {
+      // TODO: if the document is not active, this currently does not jump straight to the mark.
+      // Instead, you have to jump twice to get to the mark. Same for MarkMovementBOL
+      await ensureDocumentIsActive(mark.editor.document);
     }
 
     return mark.position;
   }
 }
 
-async function ensureDocumentIsActive(editor: vscode.TextEditor) {
-  if (editor.document !== vscode.window.activeTextEditor?.document) {
-    await vscode.window.showTextDocument(editor.document);
-  }
+async function ensureDocumentIsActive(document: vscode.TextDocument) {
+  await vscode.window.showTextDocument(document);
 }
 
 @RegisterAction

@@ -452,12 +452,20 @@ export class HistoryTracker {
    * Gets all local and global marks targeting the current document
    */
   private getAllCurrentDocumentMarks(): IMark[] {
-    const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) =>
-        mark.editor !== undefined &&
-        mark.editor.document === vscode.window.activeTextEditor?.document
-    );
+    const globalMarks = HistoryStep.globalMarks.filter(this.isGlobalMarkDocumentActive);
     return [...this.currentHistoryStep.marks, ...globalMarks];
+  }
+
+  /**
+   * Check if this global mark refers to the document in the currently active editor
+   */
+  public isGlobalMarkDocumentActive(globalMark: IMark): boolean {
+    return (
+      // must compare documents instead of editors because the editor objects changes
+      // after changing tabs back and forth
+      globalMark.editor !== undefined &&
+      globalMark.editor.document === vscode.window.activeTextEditor?.document
+    );
   }
 
   /**
