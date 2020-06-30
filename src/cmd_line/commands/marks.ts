@@ -32,8 +32,9 @@ export class MarksCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
+    // TODO: show all global marks. Currently only show marks targeting the current document.
     const quickPickItems: MarkQuickPickItem[] = vimState.historyTracker
-      .getMarks()
+      .getAllCurrentDocumentMarks()
       .filter((mark) => {
         return !this.marksFilter || this.marksFilter.includes(mark.name);
       })

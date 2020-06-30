@@ -451,7 +451,7 @@ export class HistoryTracker {
   /**
    * Gets all local and global marks targeting the current document
    */
-  private getAllCurrentDocumentMarks(): IMark[] {
+  public getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(this.isGlobalMarkDocumentActive);
     return [...this.currentHistoryStep.marks, ...globalMarks];
   }
