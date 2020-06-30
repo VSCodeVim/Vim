@@ -3914,9 +3914,23 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionChangeLineVisualModeS extends BaseCommand {
+  modes = [Mode.Visual, Mode.VisualLine];
+  keys = ['S'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.surround && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return new ActionChangeLineVisualMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
 class ActionChangeLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
-  keys = [['C'], ['R'], ['S']];
+  keys = [['C'], ['R']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
