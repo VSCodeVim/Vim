@@ -58,8 +58,8 @@ class VimrcImpl {
             VimrcImpl.addRemapToConfig(config, remap);
           }
         }
-      } finally {
-        await window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken'`);
+      } catch (err) {
+        window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
       }
     }
   }
@@ -130,6 +130,11 @@ class VimrcImpl {
     }
 
     vimrcPath = path.join(os.homedir(), '_vimrc');
+    if (await fs.existsAsync(vimrcPath)) {
+      return vimrcPath;
+    }
+
+    vimrcPath = path.join(os.homedir(), '.config/', 'nvim/', 'init.vim');
     if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }

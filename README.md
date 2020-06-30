@@ -419,11 +419,11 @@ Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and conf
 | vim.easymotionMarkerForegroundColorOneChar | The font color for one-character markers.                                                                                                                                                                                                                         |
 | vim.easymotionMarkerForegroundColorTwoChar | The font color for two-character markers, used to differentiate from one-character markers.                                                                                                                                                                       |
 | vim.easymotionMarkerWidthPerChar           | The width in pixels allotted to each character.                                                                                                                                                                                                                   |
-| vim.easymotionMarkerHeight                 | The height of the marker.                                                                                                                                                                                                                                         |
+| vim.easymotionDimBackground                | Whether to dim other text while markers are visible.                                                                                                                                                                                                              |
 | vim.easymotionMarkerFontFamily             | The font family used for the marker text.                                                                                                                                                                                                                         |
 | vim.easymotionMarkerFontSize               | The font size used for the marker text.                                                                                                                                                                                                                           |
 | vim.easymotionMarkerFontWeight             | The font weight used for the marker text.                                                                                                                                                                                                                         |
-| vim.easymotionMarkerYOffset                | The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).                                                                                                                            |
+| vim.easymotionMarkerMargin                 | Set the margin around each marker, in pixels.                                                                                                                                                                                                                     |
 | vim.easymotionKeys                         | The characters used for jump marker name                                                                                                                                                                                                                          |
 | vim.easymotionJumpToAnywhereRegex          | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s\*. | \\b[A-Za-z0-9] | [A-Za-z0-9]\\b | \_. | \\#. | [a-z][a-z] | // | .\$" |
 
@@ -710,7 +710,7 @@ VS Code has a lot of nifty tricks and we try to preserve some of them:
 
 - I've swapped Escape and Caps Lock with setxkbmap and VSCodeVim isn't respecting the swap
 
-  This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keycode"` and restart VS Code.
+  This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keyCode"` and restart VS Code.
 
 ## ❤️ Contributing
 

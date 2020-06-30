@@ -5,8 +5,7 @@ class ConfigurationValidator {
   private _validators: IConfigurationValidator[];
 
   constructor() {
-    this._validators = [
-    ];
+    this._validators = [];
   }
 
   public registerValidator(validator: IConfigurationValidator) {

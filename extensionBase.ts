@@ -44,6 +44,9 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId ||
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
+    // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
+    // need to update our representation of the cursors when switching between editors for the same document.
+    // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
@@ -107,7 +110,7 @@ export async function activate(
   }
 
   // load state
-  await Promise.all([commandLine.load(context), globalState.load(context)]);
+  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(

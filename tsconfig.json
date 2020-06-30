@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ES2019"
-    ],
+    "lib": ["ES2019"],
     "module": "commonjs",
     "target": "ES2019",
     "outDir": "out",
@@ -19,8 +17,5 @@
       "platform/*": ["src/platform/node/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "!node_modules/@types"
-  ]
+  "exclude": ["node_modules", "!node_modules/@types"]
 }

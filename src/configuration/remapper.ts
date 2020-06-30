@@ -150,36 +150,39 @@ export class Remapper implements IRemapper {
     vimState.keyHistory = vimState.keyHistory.slice(0, -numCharsToRemove);
 
     if (remapping.after) {
-      const count = vimState.recordedState.count || 1;
-      vimState.recordedState.count = 0;
-      for (let i = 0; i < count; i++) {
-        await modeHandler.handleMultipleKeyEvents(remapping.after);
-      }
+      await modeHandler.handleMultipleKeyEvents(remapping.after);
     }
 
     if (remapping.commands) {
-      for (const command of remapping.commands) {
-        let commandString: string;
-        let commandArgs: string[];
-        if (typeof command === 'string') {
-          commandString = command;
-          commandArgs = [];
-        } else {
-          commandString = command.command;
-          commandArgs = command.args;
-        }
+      const count = vimState.recordedState.count || 1;
+      vimState.recordedState.count = 0;
+      for (let i = 0; i < count; i++) {
+        for (const command of remapping.commands) {
+          let commandString: string;
+          let commandArgs: string[];
+          if (typeof command === 'string') {
+            commandString = command;
+            commandArgs = [];
+          } else {
+            commandString = command.command;
+            commandArgs = command.args;
+          }
 
-        if (commandString.slice(0, 1) === ':') {
-          // Check if this is a vim command by looking for :
-          await commandLine.Run(commandString.slice(1, commandString.length), modeHandler.vimState);
-          await modeHandler.updateView(modeHandler.vimState);
-        } else if (commandArgs) {
-          await vscode.commands.executeCommand(commandString, commandArgs);
-        } else {
-          await vscode.commands.executeCommand(commandString);
-        }
+          if (commandString.slice(0, 1) === ':') {
+            // Check if this is a vim command by looking for :
+            await commandLine.Run(
+              commandString.slice(1, commandString.length),
+              modeHandler.vimState
+            );
+            await modeHandler.updateView(modeHandler.vimState);
+          } else if (commandArgs) {
+            await vscode.commands.executeCommand(commandString, commandArgs);
+          } else {
+            await vscode.commands.executeCommand(commandString);
+          }
 
-        StatusBar.setText(vimState, `${commandString} ${commandArgs}`);
+          StatusBar.setText(vimState, `${commandString} ${commandArgs}`);
+        }
       }
     }
   }

@@ -30,7 +30,6 @@ interface INVim {
  */
 export class VimState implements vscode.Disposable {
   private readonly logger = Logger.get('VimState');
-  private _disposables: vscode.Disposable[] = [];
 
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
@@ -275,7 +274,7 @@ export class VimState implements vscode.Disposable {
   }
 
   dispose() {
-    this._disposables.forEach(d => d.dispose());
+    this.nvim.dispose();
   }
 }
 

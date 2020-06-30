@@ -15,9 +15,10 @@ export class OnlyCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-    await vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups');
-    await vscode.commands.executeCommand('workbench.action.maximizeEditor');
-    await vscode.commands.executeCommand('workbench.action.closePanel');
-    return;
+    await Promise.all([
+      vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups'),
+      vscode.commands.executeCommand('workbench.action.maximizeEditor'),
+      vscode.commands.executeCommand('workbench.action.closePanel'),
+    ]);
   }
 }
