@@ -307,11 +307,14 @@ export class HistoryTracker {
    *
    * This big gnarly method updates our marks such that they continue to mark
    * the same character when the user does a document edit that would move the
-   * text that was marked.
+   * text that was marked. If a line containing a mark is deleted, then the mark
+   * is also deleted.
    */
-  private updateAndReturnMarks(): IMark[] {
+  private updateMarks(): void {
     const previousMarks = this.getAllCurrentDocumentMarks();
-    let newMarks: IMark[] = [];
+    const newMarks: IMark[] = [];
+    const deletedGlobalMarks = {};
+    const deletedLocalMarks = {};
 
     // clone old marks into new marks
     for (const mark of previousMarks) {
@@ -320,6 +323,13 @@ export class HistoryTracker {
 
     for (const change of this.currentHistoryStep.changes) {
       for (const newMark of newMarks) {
+        if (
+          deletedGlobalMarks.hasOwnProperty(newMark.name) ||
+          deletedLocalMarks.hasOwnProperty(newMark.name)
+        ) {
+          // skip if this mark is going to be deleted
+          continue;
+        }
         // Run through each character added/deleted, and see if it could have
         // affected the position of this mark.
 
@@ -395,7 +405,18 @@ export class HistoryTracker {
                   newMark.position.character - 1
                 );
               }
-            } else {
+            } else if (
+              pos.isEqual(newMark.position) &&
+              (ch === '\n' || pos.isEqual(TextEditor.getDocumentEnd()))
+            ) {
+              // delete a mark when the line containing that mark is deleted
+              // (Specifically, when we delete from the mark to the end of the line,
+              // including \n, or to the end of the file (in case of the last line))
+              if (newMark.isUppercaseMark) {
+                deletedGlobalMarks[newMark.name] = true;
+              } else {
+                deletedLocalMarks[newMark.name] = true;
+              }
               break;
             }
           }
@@ -403,20 +424,20 @@ export class HistoryTracker {
       }
     }
 
-    return newMarks;
-  }
+    // update position and delete local marks
+    this.currentHistoryStep.marks = newMarks.filter(
+      (mark) => !mark.isUppercaseMark && !deletedLocalMarks.hasOwnProperty(mark.name)
+    );
 
-  /**
-   * Updates all marks affecting the active text editor.
-   * Since all currentHistoryStep's marks are affected, just update the
-   * array.  Global marks might not be from the active editor, so the
-   * global mark collection is mutated with the new element in place.
-   */
-  private updateMarks(): void {
-    const newMarks = this.updateAndReturnMarks();
-    this.currentHistoryStep.marks = newMarks.filter((mark) => !mark.isUppercaseMark);
+    // delete global marks
+    HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
+      (mark) => !deletedGlobalMarks.hasOwnProperty(mark.name)
+    );
 
-    newMarks.filter((mark) => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
+    // update position of global marks in the current document
+    newMarks
+      .filter((mark) => mark.isUppercaseMark && !deletedGlobalMarks.hasOwnProperty(mark.name))
+      .forEach(this.putMarkInList.bind(this));
   }
 
   /**
@@ -428,11 +449,13 @@ export class HistoryTracker {
   }
 
   /**
-   * Gets all local and global marks targeting the current editor.
+   * Gets all local and global marks targeting the current document
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.editor === vscode.window.activeTextEditor
+      (mark) =>
+        mark.editor !== undefined &&
+        mark.editor.document === vscode.window.activeTextEditor?.document
     );
     return [...this.currentHistoryStep.marks, ...globalMarks];
   }
@@ -674,7 +697,7 @@ export class HistoryTracker {
 
     this.currentHistoryStep.merge();
 
-    this.currentHistoryStep.marks = this.updateAndReturnMarks();
+    this.updateMarks();
   }
 
   /**

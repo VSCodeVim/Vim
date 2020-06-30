@@ -463,7 +463,7 @@ export class MarkMovementBOL extends BaseMovement {
     }
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureEditorIsActive(mark.editor);
+      await ensureDocumentIsActive(mark.editor);
     }
 
     return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
@@ -484,15 +484,15 @@ export class MarkMovement extends BaseMovement {
     }
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureEditorIsActive(mark.editor);
+      await ensureDocumentIsActive(mark.editor);
     }
 
     return mark.position;
   }
 }
 
-async function ensureEditorIsActive(editor: vscode.TextEditor) {
-  if (editor !== vscode.window.activeTextEditor) {
+async function ensureDocumentIsActive(editor: vscode.TextEditor) {
+  if (editor.document !== vscode.window.activeTextEditor?.document) {
     await vscode.window.showTextDocument(editor.document);
   }
 }
