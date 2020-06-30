@@ -25,7 +25,7 @@ class GlobalState {
   /**
    * Tracks search history
    */
-  private _searchHistory: SearchHistory = new SearchHistory();
+  private _searchHistory: SearchHistory;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -54,7 +54,7 @@ class GlobalState {
   public hl = true;
 
   public async load() {
-    await this._searchHistory.load();
+    this._searchHistory = new SearchHistory();
     this._searchHistory
       .get()
       .forEach((val) =>

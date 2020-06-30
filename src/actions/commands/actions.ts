@@ -392,11 +392,12 @@ class CommandRecordMacro extends BaseCommand {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const register = this.keysPressed[1];
+    const registerKey = this.keysPressed[1];
+    const register = registerKey.toLocaleLowerCase();
     vimState.recordedMacro = new RecordedState();
-    vimState.recordedMacro.registerName = register.toLocaleLowerCase();
+    vimState.recordedMacro.registerName = register;
 
-    if (!/^[A-Z]+$/.test(register) || !Register.has(register)) {
+    if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       let newRegister = new RecordedState();
       newRegister.registerName = register;
@@ -432,6 +433,11 @@ export class CommandQuitRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName))
       .text as RecordedState;
+
+    if (!(existingMacro instanceof RecordedState)) {
+      return vimState;
+    }
+
     existingMacro.actionsRun = existingMacro.actionsRun.concat(vimState.recordedMacro.actionsRun);
     vimState.isRecordingMacro = false;
     return vimState;
@@ -454,12 +460,14 @@ class CommandExecuteMacro extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const register = this.keysPressed[1];
-    vimState.recordedState.transformations.push({
-      type: 'macro',
-      register: register,
-      replay: 'contentChange',
-    });
+    const register = this.keysPressed[1].toLocaleLowerCase();
+    if (Register.has(register)) {
+      vimState.recordedState.transformations.push({
+        type: 'macro',
+        register: register,
+        replay: 'contentChange',
+      });
+    }
 
     return vimState;
   }
@@ -1321,18 +1329,12 @@ export class PutCommand extends BaseCommand {
     if (registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === Mode.Visual &&
-      registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === Mode.Visual && registerMode === RegisterMode.LineWise) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
       textToAdd = '\n' + text + '\n';
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === Mode.VisualLine &&
-      registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === Mode.VisualLine && registerMode === RegisterMode.LineWise) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
       const left = !noPrevLine && noNextLine ? '\n' : '';
@@ -1677,7 +1679,9 @@ export class PutCommandVisual extends BaseCommand {
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, { after: true });
+    let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, {
+      after: true,
+    });
     putResult.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     putResult.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
     putResult = await new operator.YankOperator(this.multicursorIndex).run(putResult, start, end);
@@ -1753,7 +1757,10 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const result = await new PutCommand().exec(position, vimState, { after: true, adjustIndent: true });
+    const result = await new PutCommand().exec(position, vimState, {
+      after: true,
+      adjustIndent: true,
+    });
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       result.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
@@ -2167,7 +2174,7 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 }
 
 @RegisterAction
-class CommandUndo extends BaseCommand {
+export class CommandUndo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['u'];
   runsOnceForEveryCursor() {
@@ -3910,9 +3917,23 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionChangeLineVisualModeS extends BaseCommand {
+  modes = [Mode.Visual, Mode.VisualLine];
+  keys = ['S'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.surround && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return new ActionChangeLineVisualMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
 class ActionChangeLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
-  keys = [['C'], ['R'], ['S']];
+  keys = [['C'], ['R']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);

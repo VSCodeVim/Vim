@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as fs from 'fs';
+import * as fs from '../util/fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -21,12 +21,12 @@ export class VimrcImpl {
   public async load(config: IConfiguration) {
     const _path = config.vimrc.path
       ? VimrcImpl.expandHome(config.vimrc.path)
-      : VimrcImpl.findDefaultVimrc();
+      : await VimrcImpl.findDefaultVimrc();
     if (!_path) {
       await window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
       return;
     }
-    if (!fs.existsSync(_path)) {
+    if (!(await fs.existsAsync(_path))) {
       window
         .showWarningMessage(`No .vimrc found at ${_path}.`, 'Create it')
         .then(async (choice: string | undefined) => {
@@ -35,7 +35,7 @@ export class VimrcImpl {
               defaultUri: vscode.Uri.file(_path),
             });
             if (newVimrc) {
-              fs.writeFileSync(newVimrc.fsPath, '');
+              await fs.writeFileAsync(newVimrc.fsPath, '', 'utf-8');
               configuration.getConfiguration('vim').update('vimrc.path', newVimrc.fsPath, true);
               await vscode.workspace.openTextDocument(newVimrc);
               // TODO: add some sample remaps/settings in here?
@@ -50,23 +50,27 @@ export class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      const lines = fs.readFileSync(this.vimrcPath, { encoding: 'utf8' }).split(/\r?\n/);
-      for (const line of lines) {
-        const remap = await vimrcKeyRemappingBuilder.build(line);
-        if (remap) {
-          VimrcImpl.addRemapToConfig(config, remap);
-          continue;
+      try {
+        const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
+        for (const line of lines) {
+          const remap = await vimrcKeyRemappingBuilder.build(line);
+          if (remap) {
+            VimrcImpl.addRemapToConfig(config, remap);
+            continue;
+          }
+          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+          if (unremap) {
+            VimrcImpl.removeRemapFromConfig(config, unremap);
+            continue;
+          }
+          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+          if (clearRemap) {
+            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+            continue;
+          }
         }
-        const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
-        if (unremap) {
-          VimrcImpl.removeRemapFromConfig(config, unremap);
-          continue;
-        }
-        const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
-        if (clearRemap) {
-          VimrcImpl.clearRemapsFromConfig(config, clearRemap);
-          continue;
-        }
+      } catch (err) {
+        window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
       }
     }
   }
@@ -393,19 +397,19 @@ export class VimrcImpl {
     }
   }
 
-  private static findDefaultVimrc(): string | undefined {
+  private static async findDefaultVimrc(): Promise<string | undefined> {
     let vimrcPath = path.join(os.homedir(), '.vimrc');
-    if (fs.existsSync(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 
     vimrcPath = path.join(os.homedir(), '_vimrc');
-    if (fs.existsSync(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 
     vimrcPath = path.join(os.homedir(), '.config/', 'nvim/', 'init.vim');
-    if (fs.existsSync(vimrcPath)) {
+    if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
     }
 

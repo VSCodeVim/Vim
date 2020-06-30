@@ -70,6 +70,7 @@ export class ModeHandler implements vscode.Disposable {
 
   public static async create(textEditor = vscode.window.activeTextEditor!): Promise<ModeHandler> {
     const modeHandler = new ModeHandler(textEditor);
+    await modeHandler.vimState.load();
     await modeHandler.setCurrentMode(configuration.startInInsertMode ? Mode.Insert : Mode.Normal);
     modeHandler.syncCursors();
     return modeHandler;
@@ -1058,6 +1059,10 @@ export class ModeHandler implements vscode.Disposable {
           let recordedMacro = (await Register.getByKey(transformation.register))
             .text as RecordedState;
 
+          if (!(recordedMacro instanceof RecordedState)) {
+            return vimState;
+          }
+
           vimState.isReplayingMacro = true;
 
           if (transformation.register === ':') {
@@ -1313,7 +1318,7 @@ export class ModeHandler implements vscode.Disposable {
              * start of the selection when it precedes where we started visual mode.
              */
             if (start.isAfter(stop)) {
-              start = start.getRightThroughLineBreaks();
+              start = start.getRight();
             }
 
             selections.push(new vscode.Selection(start, stop));

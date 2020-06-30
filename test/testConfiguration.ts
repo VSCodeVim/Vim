@@ -22,17 +22,17 @@ export class Configuration implements IConfiguration {
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
-  surround = true;
+  surround = false;
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
   easymotionMarkerForegroundColorTwoChar = '#ffa500';
   easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
+  easymotionDimBackground = true;
   easymotionMarkerFontFamily = 'Consolas';
   easymotionMarkerFontSize = '14';
   easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 0;
+  easymotionMarkerMargin = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   autoSwitchInputMethod = {
     enable: false,

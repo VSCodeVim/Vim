@@ -1,8 +1,7 @@
-import * as fs from 'fs';
+import * as fs from '../../util/fs';
 import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { promisify } from 'util';
 import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
@@ -57,12 +56,12 @@ export class WriteCommand extends node.CommandBase {
     }
 
     try {
-      await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
+      await fs.accessAsync(vimState.editor.document.fileName, fs.constants.W_OK);
       return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
         try {
-          await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
+          await fs.chmodAsync(vimState.editor.document.fileName, 666);
           return this.save(vimState);
         } catch (e) {
           StatusBar.setText(vimState, e.message);
