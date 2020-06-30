@@ -462,15 +462,22 @@ export class MarkMovementBOL extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
+    let pos: Position;
     if (
       mark.isUppercaseMark &&
       mark.editor !== undefined &&
       !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
     ) {
-      await ensureDocumentIsActive(mark.editor.document);
+      pos = new Position(
+        mark.position.line,
+        mark.editor.document.lineAt(mark.position.line).firstNonWhitespaceCharacterIndex
+      );
+      await jumpToPositionInAnotherFile(mark.editor.document, pos);
+    } else {
+      pos = TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
+    return pos;
   }
 }
 
@@ -487,22 +494,25 @@ export class MarkMovement extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
+    const pos = mark.position;
     if (
       mark.isUppercaseMark &&
       mark.editor !== undefined &&
       !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
     ) {
-      // TODO: if the document is not active, this currently does not jump straight to the mark.
-      // Instead, you have to jump twice to get to the mark. Same for MarkMovementBOL
-      await ensureDocumentIsActive(mark.editor.document);
+      await jumpToPositionInAnotherFile(mark.editor.document, pos);
     }
 
-    return mark.position;
+    return pos;
   }
 }
 
-async function ensureDocumentIsActive(document: vscode.TextDocument) {
-  await vscode.window.showTextDocument(document);
+async function jumpToPositionInAnotherFile(document: vscode.TextDocument, position: Position) {
+  const editor = await vscode.window.showTextDocument(document);
+  // by having a selection at the same position twice, the cursor jumps there
+  editor.selections = [new vscode.Selection(position, position)];
+  // And the visible range jumps there too
+  editor.revealRange(new vscode.Range(position, position));
 }
 
 @RegisterAction
