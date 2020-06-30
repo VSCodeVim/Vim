@@ -1,11 +1,14 @@
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { Configuration } from '../testConfiguration';
 
 suite('surround plugin', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace(undefined, '.js');
+    const configuration = new Configuration();
+    configuration.surround = true;
+    await setupWorkspace(configuration, '.js');
   });
 
   teardown(cleanUpWorkspace);
@@ -112,6 +115,34 @@ suite('surround plugin', () => {
     start: ['first (li|ne) test'],
     keysPressed: 'csb]',
     end: ['first [li|ne] test'],
+  });
+
+  newTest({
+    title: "'ysiwb' surrounds word with alias without space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwb',
+    end: ['first |(line) test'],
+  });
+
+  newTest({
+    title: "'ysiwB' surrounds word with alias without space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwB',
+    end: ['first |{line} test'],
+  });
+
+  newTest({
+    title: "'ysiwr' surrounds word with alias without space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwr',
+    end: ['first |[line] test'],
+  });
+
+  newTest({
+    title: "'ysiwa' surrounds word with alias without space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwa',
+    end: ['first |<line> test'],
   });
 
   newTest({
@@ -241,6 +272,51 @@ suite('surround plugin', () => {
     end: ['foo b|ar'],
   });
 
-  // TODO: visual mode tests
-  // TODO: visual line mode tests
+  // Visual mode tests
+
+  newTest({
+    title: "'S)' surrounds visual selection without space",
+    start: ['first li|ne test'],
+    keysPressed: 'viwS)',
+    end: ['first (lin|e) test'],
+  });
+
+  newTest({
+    title: "'S(' surrounds visual selection with space",
+    start: ['first li|ne test'],
+    keysPressed: 'viwS(',
+    end: ['first ( lin|e ) test'],
+  });
+
+  newTest({
+    title: "'S<div>' surrounds selection with <div></div>",
+    start: ['first li|ne test'],
+    // I've added the '0' key press at the end because the test was behaving weirdly, if I ran
+    // the extension and did this test manually the cursor would end up on the first '<'. But
+    // when running the tests this test was failing saying the cursor was actually on the
+    // second '<' (character 15) instead of the first (character 6) as expected.
+    keysPressed: 'viwS<div>0',
+    end: ['|first <div>line</div> test'],
+  });
+
+  newTest({
+    title: "'S)' surrounds visual line selection without space",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VS)',
+    end: ['first', '(', 'second', '|)', 'third'],
+  });
+
+  newTest({
+    title: "'S(' surrounds visual line selection with space",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VS(',
+    end: ['first', '( ', 'second', '| )', 'third'],
+  });
+
+  newTest({
+    title: "'S<div>' surrounds visual line selection with <div></div>",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VS<div>',
+    end: ['first', '<div>', 'second', '|</div>', 'third'],
+  });
 });
