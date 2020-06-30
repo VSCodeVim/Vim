@@ -1,7 +1,26 @@
-import * as util from '../../util/util';
 import { Logger } from '../../util/logger';
 import { Mode } from '../../mode/mode';
 import { configuration } from '../../configuration/configuration';
+import { exec } from 'child_process';
+
+/**
+ * This function executes a shell command and returns the standard output as a string.
+ */
+function executeShell(cmd: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    try {
+      exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(stdout);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 
 /**
  * InputMethodSwitcher changes input method when mode changed
@@ -11,7 +30,7 @@ export class InputMethodSwitcher {
   private execute: (cmd: string) => Promise<string>;
   private savedIMKey = '';
 
-  constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
+  constructor(execute: (cmd: string) => Promise<string> = executeShell) {
     this.execute = execute;
   }
 

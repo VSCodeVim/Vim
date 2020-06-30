@@ -4,7 +4,6 @@ import { BaseMovement } from '../actions/baseMotion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
 import { Position } from './../common/motion/position';
@@ -12,6 +11,11 @@ import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
+
+interface IInputMethodSwitcher {
+  switchInputMethod(prevMode: Mode, newMode: Mode)
+}
 
 interface INVim {
   run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
@@ -218,9 +222,9 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
-  private _inputMethodSwitcher: InputMethodSwitcher;
+  private _inputMethodSwitcher?: IInputMethodSwitcher;
   public async setCurrentMode(mode: Mode): Promise<void> {
-    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, mode);
+    await this._inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
     if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
       this.returnToInsertAfterCommand = false;
     }
@@ -258,23 +262,29 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  public nvim: INVim;
+  public nvim?: INVim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   async load() {
-    const m = await import('../neovim/neovim');
-    this.nvim = new m.NeovimWrapper();
+    if (SUPPORT_NVIM) {
+      const m = await import('../neovim/neovim');
+      this.nvim = new m.NeovimWrapper();
+    }
+
+    if (SUPPORT_IME_SWITCHER) {
+      const ime = await import('../actions/plugins/imswitcher');
+      this._inputMethodSwitcher = new ime.InputMethodSwitcher();
+    }
   }
 
   dispose() {
-    this.nvim.dispose();
+    this.nvim?.dispose();
   }
 }
 

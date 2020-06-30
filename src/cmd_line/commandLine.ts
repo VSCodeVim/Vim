@@ -77,7 +77,7 @@ class CommandLine {
       const cmd = parser.parse(command);
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
-      if (useNeovim) {
+      if (useNeovim && vimState.nvim) {
         const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
@@ -85,7 +85,7 @@ class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim && vimState.nvim) {
           const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {

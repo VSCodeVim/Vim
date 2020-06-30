@@ -41,7 +41,18 @@ const nodelessConfig = {
         ],
       },
     ],
-  }
+  },
+  plugins: [
+    new webpack.IgnorePlugin({
+      resourceRegExp: /\/neovim$/,
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /\/imswitcher$/,
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /child_process$/,
+    })
+  ]
 };
 
 module.exports = nodelessConfig;
