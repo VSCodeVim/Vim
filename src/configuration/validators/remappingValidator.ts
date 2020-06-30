@@ -140,6 +140,8 @@ export class RemappingValidator implements IConfigurationValidator {
           return config.replaceWithRegister;
         case 'sneak':
           return config.sneak;
+        case 'surround':
+          return config.surround;
         default:
           return false;
       }

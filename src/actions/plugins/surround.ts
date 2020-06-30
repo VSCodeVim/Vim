@@ -3,9 +3,9 @@ import { PairMatcher } from './../../common/matching/matcher';
 import { Position, PositionDiff, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
-import { Mode } from './../../mode/mode';
+import { Mode, isVisualMode } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction, BaseCommand } from './../base';
+import { RegisterAction, RegisterPluginAction, BaseCommand } from './../base';
 import { BaseMovement, IMovement } from '../baseMotion';
 import {
   MoveABacktick,
@@ -20,7 +20,7 @@ import {
   MoveInsideTag,
   MoveQuoteMatch,
 } from '../motion';
-import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
+import { ChangeOperator, DeleteOperator, YankOperator, BaseOperator } from './../operator';
 import {
   SelectInnerBigWord,
   SelectInnerParagraph,
@@ -28,6 +28,7 @@ import {
   SelectInnerWord,
   TextObjectMovement,
 } from './../textobject';
+import { RegisterMode } from '../../register/register';
 
 @RegisterAction
 class CommandSurroundAddTarget extends BaseCommand {
@@ -115,139 +116,146 @@ class CommandSurroundAddTarget extends BaseCommand {
   }
 }
 
-// Aaaaagghhhh. I tried so hard to make surround an operator to make use of our
-// sick new operator repeat structure, but there's just no clean way to do it.
-// In the future, if somebody wants to refactor Surround, the big problem for
-// why it's so weird is that typing `ys` loads up the Yank operator first,
-// which prevents us from making a surround operator that's `ys` or something.
-// You'd need to refactor our keybinding handling to "give up" keystrokes if it
-// can't find a match.
-
-@RegisterAction
-class CommandSurroundModeRepeat extends BaseMovement {
-  modes = [Mode.OperatorPendingMode];
-  keys = ['s'];
-  isCompleteAction = false;
-  runsOnceForEveryCursor() {
-    return false;
-  }
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBeginRespectingIndent(),
-      stop: position.getLineEnd().getLastWordEnd().getRight(),
-    };
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && vimState.surround !== undefined;
-  }
-}
-
-@RegisterAction
-class CommandSurroundModeStart extends BaseCommand {
-  modes = [Mode.OperatorPendingMode];
-  keys = ['s'];
-  isCompleteAction = false;
-  runsOnceForEveryCursor() {
-    return false;
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Only execute the action if the configuration is set
-    if (!configuration.surround) {
-      return vimState;
-    }
-
-    const operator = vimState.recordedState.operator;
-    let operatorString: 'change' | 'delete' | 'yank' | undefined;
-
-    if (operator instanceof ChangeOperator) {
-      operatorString = 'change';
-    } else if (operator instanceof DeleteOperator) {
-      operatorString = 'delete';
-    } else if (operator instanceof YankOperator) {
-      operatorString = 'yank';
-    }
-
-    if (!operatorString) {
-      return vimState;
-    }
-
-    // Start to record the keys to store for playback of surround using dot
-    vimState.recordedState.surroundKeys.push(vimState.keyHistory[vimState.keyHistory.length - 2]);
-    vimState.recordedState.surroundKeys.push('s');
-    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
-
-    vimState.surround = {
-      active: true,
-      target: undefined,
-      operator: operatorString,
-      replacement: undefined,
-      range: undefined,
-      previousMode: vimState.currentMode,
-    };
-
-    if (operatorString !== 'yank') {
-      await vimState.setCurrentMode(Mode.SurroundInputMode);
-    }
-
+async function StartSurroundMode(
+  vimState: VimState,
+  operatorString: 'change' | 'delete' | 'yank' | undefined = undefined,
+  keys: string[],
+  start: Position | undefined,
+  end: Position | undefined
+): Promise<VimState> {
+  // Only execute the action if the configuration is set
+  if (!configuration.surround || !operatorString || keys.length === 0) {
     return vimState;
   }
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const hasSomeOperator = !!vimState.recordedState.operator;
-
-    return super.doesActionApply(vimState, keysPressed) && hasSomeOperator;
+  // Start to record the keys to store for playback of surround using dot
+  vimState.recordedState.surroundKeys.push(keys[0]);
+  if (operatorString === 'yank' && vimState.recordedState.operator) {
+    // include the motion keys after the operator
+    vimState.recordedState.surroundKeyIndexStart =
+      vimState.keyHistory.length - vimState.recordedState.actionKeys.length;
+  } else {
+    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
   }
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const hasSomeOperator = !!vimState.recordedState.operator;
-
-    return super.doesActionApply(vimState, keysPressed) && hasSomeOperator;
+  let range: Range | undefined = undefined;
+  if (start && end) {
+    range = new Range(start, end);
   }
+
+  vimState.surround = {
+    active: true,
+    target: undefined,
+    operator: operatorString,
+    replacement: undefined,
+    range: range,
+    previousMode: vimState.currentMode,
+  };
+
+  if (operatorString === 'yank' && start) {
+    if (isVisualMode(vimState.surround.previousMode) && end) {
+      // Put the cursor at the beginning of the visual selection
+      vimState.cursorStopPosition = start;
+      vimState.cursorStartPosition = start;
+    } else {
+      vimState.cursorStopPosition = start;
+      vimState.cursorStartPosition = start;
+    }
+  }
+  await vimState.setCurrentMode(Mode.SurroundInputMode);
+
+  return vimState;
 }
 
-@RegisterAction
-class CommandSurroundModeStartVisual extends BaseCommand {
-  modes = [Mode.Visual, Mode.VisualLine];
-  keys = ['S'];
+class BaseSurroundCommand extends BaseCommand {
+  keys: string[] = [];
+  operatorString: 'change' | 'delete' | 'yank' | undefined = undefined;
   isCompleteAction = false;
   runsOnceForEveryCursor() {
     return false;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Only execute the action if the configuration is set
-    if (!configuration.surround) {
+    if (!this.operatorString || this.keys.length === 0) {
       return vimState;
     }
+    return StartSurroundMode(vimState, this.operatorString, this.keys, undefined, undefined);
+  }
 
-    // Start to record the keys to store for playback of surround using dot
-    vimState.recordedState.surroundKeys.push('S');
-    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.doesActionApply(vimState, keysPressed);
+  }
 
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterPluginAction('surround')
+class CommandChangeSurround extends BaseSurroundCommand {
+  modes = [Mode.Normal];
+  pluginActionDefaultKeys = ['c', 's'];
+  keys = ['<Plug>Csurround'];
+  operatorString: 'change' | 'delete' | 'yank' | undefined = 'change';
+}
+
+@RegisterPluginAction('surround')
+class CommandDeleteSurround extends BaseSurroundCommand {
+  modes = [Mode.Normal];
+  pluginActionDefaultKeys = ['d', 's'];
+  keys = ['<Plug>Dsurround'];
+  operatorString: 'change' | 'delete' | 'yank' | undefined = 'delete';
+}
+
+@RegisterPluginAction('surround')
+class CommandSurroundModeStartVisual extends BaseSurroundCommand {
+  modes = [Mode.Visual, Mode.VisualLine];
+  pluginActionDefaultKeys = ['S'];
+  keys = ['<Plug>VSurround'];
+  operatorString: 'change' | 'delete' | 'yank' | undefined = 'yank';
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
+    return StartSurroundMode(vimState, 'yank', this.keys, start, end);
+  }
+}
 
-    vimState.surround = {
-      active: true,
-      target: undefined,
-      operator: 'yank',
-      replacement: undefined,
-      range: new Range(start, end),
-      previousMode: vimState.currentMode,
-    };
+@RegisterPluginAction('surround')
+class CommandSurroundModeStartLine extends BaseSurroundCommand {
+  modes = [Mode.Normal];
+  pluginActionDefaultKeys = ['y', 's', 's'];
+  keys = ['<Plug>Yssurround'];
 
-    await vimState.setCurrentMode(Mode.SurroundInputMode);
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const start: Position = position.getLineBeginRespectingIndent();
+    const end: Position = position.getLineEnd().getLastWordEnd().getRight();
+    return StartSurroundMode(vimState, 'yank', this.keys, start, end);
+  }
+}
 
-    // Put the cursor at the beginning of the visual selection
-    vimState.cursorStopPosition = start;
-    vimState.cursorStartPosition = start;
+@RegisterPluginAction('surround')
+class SurroundModeStartOperator extends BaseOperator {
+  modes = [Mode.Normal];
+  pluginActionDefaultKeys = ['y', 's'];
+  keys = ['<Plug>Ysurround'];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
-    return vimState;
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    return StartSurroundMode(vimState, 'yank', this.keys, start, end);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.couldActionApply(vimState, keysPressed);
   }
 }
 
@@ -255,6 +263,14 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 export class CommandSurroundAddToReplacement extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   keys = ['<any>'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.surround && super.couldActionApply(vimState, keysPressed);
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (!vimState.surround) {
