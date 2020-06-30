@@ -412,6 +412,18 @@ export class HistoryTracker {
               // delete a mark when the line containing that mark is deleted
               // (Specifically, when we delete from the mark to the end of the line,
               // including \n, or to the end of the file (in case of the last line))
+
+              // TODO: this currently does not work if there is an identical character
+              // below the marked character because the change will not go past the
+              // marked character, but instead starts from after that character to the
+              // next line, including the below character.
+              // For example, when we have 3 lines like this:
+              // c1234
+              // azsdif
+              // abxvcjk
+              // if we mark the first 'a', then when we delete the second line, the mark
+              // is not deleted, but instead go to the 'a' character in the last line
+              // because the change is not 'azsdif\n', but instead 'zsdif\na'
               if (newMark.isUppercaseMark) {
                 deletedGlobalMarks[newMark.name] = true;
               } else {
