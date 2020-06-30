@@ -1,11 +1,14 @@
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { Configuration } from '../testConfiguration';
 
 suite('surround plugin', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace(undefined, '.js');
+    const configuration = new Configuration();
+    configuration.surround = true;
+    await setupWorkspace(configuration, '.js');
   });
 
   teardown(cleanUpWorkspace);
