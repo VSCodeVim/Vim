@@ -294,13 +294,16 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     // Convert a few shortcuts to the correct surround characters when NOT entering a tag
     if (vimState.surround.replacement.length === 0) {
       if (stringToAdd === 'b') {
-        stringToAdd = '(';
+        stringToAdd = ')';
       }
       if (stringToAdd === 'B') {
-        stringToAdd = '{';
+        stringToAdd = '}';
       }
       if (stringToAdd === 'r') {
-        stringToAdd = '[';
+        stringToAdd = ']';
+      }
+      if (stringToAdd === 'a') {
+        stringToAdd = '>';
       }
     }
 
