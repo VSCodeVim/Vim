@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { IConfiguration, IKeyRemapping } from '../iconfiguration';
 import { Notation } from '../notation';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
+import { configurationValidator } from '../configurationValidator';
 
 export class RemappingValidator implements IConfigurationValidator {
   private _commandMap: Map<string, boolean>;
@@ -131,3 +132,5 @@ export class RemappingValidator implements IConfigurationValidator {
     return this._commandMap;
   }
 }
+
+configurationValidator.registerValidator(new RemappingValidator());

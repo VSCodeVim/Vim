@@ -1,20 +1,15 @@
 import { IConfiguration } from './iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from './iconfigurationValidator';
-import { InputMethodSwitcherConfigurationValidator } from './validators/inputMethodSwitcherValidator';
-import { NeovimValidator } from './validators/neovimValidator';
-import { RemappingValidator } from './validators/remappingValidator';
-import { VimrcValidator } from './validators/vimrcValidator';
 
 class ConfigurationValidator {
   private _validators: IConfigurationValidator[];
 
   constructor() {
-    this._validators = [
-      new InputMethodSwitcherConfigurationValidator(),
-      new NeovimValidator(),
-      new RemappingValidator(),
-      new VimrcValidator(),
-    ];
+    this._validators = [];
+  }
+
+  public registerValidator(validator: IConfigurationValidator) {
+    this._validators.push(validator);
   }
 
   public async validate(config: IConfiguration): Promise<ValidatorResults> {

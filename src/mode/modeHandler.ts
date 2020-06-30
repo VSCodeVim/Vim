@@ -69,6 +69,7 @@ export class ModeHandler implements vscode.Disposable {
 
   public static async create(textEditor = vscode.window.activeTextEditor!): Promise<ModeHandler> {
     const modeHandler = new ModeHandler(textEditor);
+    await modeHandler.vimState.load();
     await modeHandler.setCurrentMode(configuration.startInInsertMode ? Mode.Insert : Mode.Normal);
     modeHandler.syncCursors();
     return modeHandler;
