@@ -1,5 +1,3 @@
-import { exists } from 'fs';
-import * as util from 'util';
 import * as vscode from 'vscode';
 
 import { FileCommand } from './../cmd_line/commands/file';
@@ -8,6 +6,7 @@ import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
+import { existsAsync } from '../util/fs';
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState
@@ -120,7 +119,7 @@ export class JumpTracker {
     if (jump.editor) {
       // Open jump file from stored editor
       await vscode.window.showTextDocument(jump.editor.document);
-    } else if (await util.promisify(exists)(jump.fileName)) {
+    } else if (await existsAsync(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
         name: jump.fileName,

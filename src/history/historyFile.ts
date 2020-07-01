@@ -1,9 +1,8 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
-import { promisify } from 'util';
-import { Globals } from './../globals';
+import { Globals } from '../globals';
+import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from '../util/fs';
 
 export class HistoryFile {
   private readonly _logger = Logger.get('HistoryFile');
@@ -52,7 +51,7 @@ export class HistoryFile {
   public clear() {
     try {
       this._history = [];
-      fs.unlinkSync(this.historyFilePath);
+      unlinkSync(this.historyFilePath);
     } catch (err) {
       this._logger.warn(`Unable to delete ${this.historyFilePath}. err=${err}.`);
     }
@@ -62,7 +61,7 @@ export class HistoryFile {
     let data = '';
 
     try {
-      data = await promisify(fs.readFile)(this.historyFilePath, 'utf-8');
+      data = await readFileAsync(this.historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
         this._logger.debug(`History does not exist. path=${this.historyFilePath}`);
@@ -92,7 +91,7 @@ export class HistoryFile {
     try {
       // create supplied directory. if directory already exists, do nothing and move on
       try {
-        await promisify(fs.mkdir)(Globals.extensionStoragePath, { recursive: true });
+        await mkdirAsync(Globals.extensionStoragePath, { recursive: true });
       } catch (createDirectoryErr) {
         if (createDirectoryErr.code !== 'EEXIST') {
           throw createDirectoryErr;
@@ -100,7 +99,7 @@ export class HistoryFile {
       }
 
       // create file
-      await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
+      await writeFileAsync(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
     } catch (err) {
       this._logger.error(`Failed to save history. filepath=${this.historyFilePath}. err=${err}.`);
       throw err;

@@ -7,12 +7,17 @@ import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+
+interface INVim {
+  run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
+
+  dispose(): void;
+}
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -253,15 +258,19 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  public nvim: NeovimWrapper;
+  public nvim: INVim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
+  }
+
+  async load() {
+    const m = await import('../neovim/neovim');
+    this.nvim = new m.NeovimWrapper();
   }
 
   dispose() {
