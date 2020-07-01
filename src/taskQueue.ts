@@ -74,7 +74,7 @@ class TaskQueue {
     }
 
     if (isHighPriority) {
-      // Insert task as the last high priotity task.
+      // Insert task as the last high priority task.
       const numHighPriority = this.numHighPriority(queueName);
       this._taskQueue[queueName].tasks.splice(numHighPriority, 0, task);
     } else {

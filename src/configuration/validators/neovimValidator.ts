@@ -1,12 +1,12 @@
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
-import { promisify } from 'util';
-import { execFile } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
+import { configurationValidator } from '../configurationValidator';
 
 export class NeovimValidator implements IConfigurationValidator {
-  async validate(config: IConfiguration): Promise<ValidatorResults> {
+  validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
 
     if (config.enableNeovim) {
@@ -16,7 +16,7 @@ export class NeovimValidator implements IConfigurationValidator {
         if (config.neovimPath === '') {
           const pathVar = process.env.PATH;
           if (pathVar) {
-            pathVar.split(';').forEach((element) => {
+            pathVar.split(path.delimiter).forEach((element) => {
               let neovimExecutable = 'nvim';
               if (process.platform === 'win32') {
                 neovimExecutable += '.exe';
@@ -30,7 +30,7 @@ export class NeovimValidator implements IConfigurationValidator {
             });
           }
         }
-        await promisify(execFile)(config.neovimPath, ['--version']);
+        execFileSync(config.neovimPath, ['--version']);
       } catch (e) {
         let errorMessage = `Invalid neovimPath. ${e.message}.`;
         if (triedToParsePath) {
@@ -50,3 +50,5 @@ export class NeovimValidator implements IConfigurationValidator {
     config.enableNeovim = false;
   }
 }
+
+configurationValidator.registerValidator(new NeovimValidator());

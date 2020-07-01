@@ -1,4 +1,4 @@
-import { PositionDiff, Position } from '../common/motion/position';
+import { Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';

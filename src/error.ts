@@ -4,6 +4,7 @@ interface IErrorMessage {
 
 export enum ErrorCode {
   MarkNotSet = 20,
+  NoInsertedTextYet = 29,
   NoFileName = 32,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
@@ -21,13 +22,14 @@ export enum ErrorCode {
 
 export const ErrorMessage: IErrorMessage = {
   20: 'Mark not set',
+  29: 'No inserted text yet',
   32: 'No file name',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
   208: 'Error writing to file',
   348: 'No string under cursor',
-  384: 'Search hit TOP without match',
-  385: 'Search hit BOTTOM without match',
+  384: 'Search hit TOP without match for',
+  385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',
   474: 'Invalid argument',
   486: 'Pattern not found',

@@ -11,6 +11,7 @@ export class SneakForward extends BaseMovement {
     ['s', '<character>', '<character>'],
     ['z', '<character>', '<character>'],
   ];
+  isJump = true;
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
@@ -76,6 +77,7 @@ export class SneakBackward extends BaseMovement {
     ['S', '<character>', '<character>'],
     ['Z', '<character>', '<character>'],
   ];
+  isJump = true;
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';

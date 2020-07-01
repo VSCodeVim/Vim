@@ -148,6 +148,57 @@ class CommandEnterInCommandline extends BaseCommand {
 }
 
 @RegisterAction
+class CommandRemoveWordCommandline extends BaseCommand {
+  modes = [Mode.CommandlineInProgress];
+  keys = [['<C-w>'], ['<C-BS>']];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+    const pos = vimState.statusBarCursorCharacterPos;
+    const cmdText = vimState.currentCommandlineText;
+    const characterAt = Position.getWordLeft(cmdText, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      vimState.currentCommandlineText = cmdText
+        .substring(0, characterAt)
+        .concat(cmdText.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
+
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandRemoveWordInSearchMode extends BaseCommand {
+  modes = [Mode.SearchInProgressMode];
+  keys = [['<C-w>'], ['<C-BS>']];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = globalState.searchState!;
+    const pos = vimState.statusBarCursorCharacterPos;
+    const searchString = searchState.searchString;
+    const characterAt = Position.getWordLeft(searchString, pos);
+    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
+    if (characterAt !== undefined) {
+      searchState.searchString = searchString
+        .substring(0, characterAt)
+        .concat(searchString.slice(pos));
+      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 // TODO: break up
 class CommandInsertInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
@@ -200,35 +251,35 @@ class CommandInsertInCommandline extends BaseCommand {
     } else if (key === '<End>' || key === '<C-e>') {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '<up>' || key === '<C-p>') {
-      commandLine.commandlineHistoryIndex -= 1;
+      commandLine.commandLineHistoryIndex -= 1;
 
       // Clamp the history index to stay within bounds of command history length
-      commandLine.commandlineHistoryIndex = Math.max(commandLine.commandlineHistoryIndex, 0);
+      commandLine.commandLineHistoryIndex = Math.max(commandLine.commandLineHistoryIndex, 0);
 
-      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+      if (commandLine.historyEntries[commandLine.commandLineHistoryIndex] !== undefined) {
         vimState.currentCommandlineText =
-          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+          commandLine.historyEntries[commandLine.commandLineHistoryIndex];
       }
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '<down>' || key === '<C-n>') {
-      commandLine.commandlineHistoryIndex += 1;
+      commandLine.commandLineHistoryIndex += 1;
 
       // If past the first history item, allow user to enter their own new command string (not using history)
-      if (commandLine.commandlineHistoryIndex > commandLine.historyEntries.length - 1) {
+      if (commandLine.commandLineHistoryIndex > commandLine.historyEntries.length - 1) {
         if (commandLine.previousMode === Mode.Normal) {
           vimState.currentCommandlineText = '';
         } else {
           vimState.currentCommandlineText = "'<,'>";
         }
 
-        commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+        commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
         vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
         return vimState;
       }
 
-      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+      if (commandLine.historyEntries[commandLine.commandLineHistoryIndex] !== undefined) {
         vimState.currentCommandlineText =
-          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+          commandLine.historyEntries[commandLine.commandLineHistoryIndex];
       }
 
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
@@ -319,8 +370,9 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.statusBarCursorCharacterPos = 0;
       Register.putByKey(searchState.searchString, '/', undefined, true);
       globalState.addSearchStateToHistory(searchState);
+      globalState.hl = true;
 
-      if (searchState.matchRanges.length === 0) {
+      if (searchState.getMatchRanges().length === 0) {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -345,16 +397,16 @@ class CommandInsertInSearchMode extends BaseCommand {
           VimError.fromCode(
             searchState.searchDirection === SearchDirection.Backward
               ? ErrorCode.SearchHitTop
-              : ErrorCode.SearchHitBottom
+              : ErrorCode.SearchHitBottom,
+            searchState.searchString
           )
         );
         return vimState;
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
-      globalState.hl = true;
 
-      reportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+      reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
 
       return vimState;
     } else if (key === '<up>' || key === '<C-p>') {
@@ -421,7 +473,7 @@ class CommandEscInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = globalState.searchState!;
 
-    vimState.cursorStopPosition = searchState.searchCursorStartPosition;
+    vimState.cursorStopPosition = searchState.cursorStartPosition;
 
     const prevSearchList = globalState.searchStatePrevious;
     globalState.searchState = prevSearchList
@@ -438,57 +490,6 @@ class CommandEscInSearchMode extends BaseCommand {
     vimState.statusBarCursorCharacterPos = 0;
     if (searchState.searchString.length > 0) {
       globalState.addSearchStateToHistory(searchState);
-    }
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandRemoveWordCommandline extends BaseCommand {
-  modes = [Mode.CommandlineInProgress];
-  keys = ['<C-w>'];
-  runsOnceForEveryCursor() {
-    return false;
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const key = this.keysPressed[0];
-    const pos = vimState.statusBarCursorCharacterPos;
-    const cmdText = vimState.currentCommandlineText;
-    const characterAt = Position.getWordLeft(cmdText, pos);
-    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
-    if (characterAt !== undefined) {
-      vimState.currentCommandlineText = cmdText
-        .substring(0, characterAt)
-        .concat(cmdText.slice(pos));
-      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
-    }
-
-    commandLine.lastKeyPressed = key;
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandRemoveWordInSearchMode extends BaseCommand {
-  modes = [Mode.SearchInProgressMode];
-  keys = ['<C-w>'];
-  runsOnceForEveryCursor() {
-    return false;
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = globalState.searchState!;
-    const pos = vimState.statusBarCursorCharacterPos;
-    const searchString = searchState.searchString;
-    const characterAt = Position.getWordLeft(searchString, pos);
-    // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
-    if (characterAt !== undefined) {
-      searchState.searchString = searchString
-        .substring(0, characterAt)
-        .concat(searchString.slice(pos));
-      vimState.statusBarCursorCharacterPos = pos - (pos - characterAt);
     }
 
     return vimState;

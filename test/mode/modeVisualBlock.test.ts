@@ -44,6 +44,13 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: '`A` over shorter line adds necessary spaces',
+    start: ['te|st', 'te', 't'],
+    keysPressed: '<C-v>jjA123',
+    end: ['tes123|t', 'te 123', 't  123'],
+  });
+
+  newTest({
     title: 'Can handle I forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
@@ -201,7 +208,7 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when the visual block spans multiple lines",
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: '<C-v>jjlJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
   });
 
@@ -209,7 +216,34 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when start position of the visual block is below the stop",
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: '<C-v>kkJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle ~/g~ in visual block mode',
+    start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+    keysPressed: '<C-v>jl~jjl<C-v>jlg~',
+    end: ['oNE', 'Two', 'T|HreE', 'foUR'],
+  });
+
+  suite('R and S', () => {
+    for (const command of ['R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `<C-v>jjh${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `<C-v>kkl${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
   });
 });

@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import { IKeyRemapping, IVimrcKeyRemapping } from '../../src/configuration/iconfiguration';
 import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder';
 
 suite('VimrcKeyRemappingBuilder', () => {

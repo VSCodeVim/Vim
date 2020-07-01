@@ -7,12 +7,17 @@ import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+
+interface INVim {
+  run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
+
+  dispose(): void;
+}
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -85,11 +90,6 @@ export class VimState implements vscode.Disposable {
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
   /**
-   * The column from which VisualLine mode was entered. `undefined` if not in VisualLine mode.
-   */
-  public visualLineStartColumn: number | undefined = undefined;
-
-  /**
    * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
@@ -104,7 +104,7 @@ export class VimState implements vscode.Disposable {
         target: string | undefined;
         replacement: string | undefined;
         range: Range | undefined;
-        isVisualLine: boolean;
+        previousMode: Mode;
       } = undefined;
 
   /**
@@ -173,7 +173,7 @@ export class VimState implements vscode.Disposable {
       map.set(cursor.toString(), cursor);
     }
 
-    this._cursors = Array.from(map.values());
+    this._cursors = [...map.values()];
     this.isMultiCursor = this._cursors.length > 1;
   }
 
@@ -184,8 +184,8 @@ export class VimState implements vscode.Disposable {
   public get cursorsInitialState(): Range[] {
     return this._cursorsInitialState;
   }
-  public set cursorsInitialState(value: Range[]) {
-    this._cursorsInitialState = Object.assign([], value);
+  public set cursorsInitialState(cursors: Range[]) {
+    this._cursorsInitialState = [...cursors];
   }
 
   public isRecordingMacro: boolean = false;
@@ -226,10 +226,6 @@ export class VimState implements vscode.Disposable {
     }
     this._currentMode = mode;
 
-    if (mode !== Mode.VisualLine) {
-      this.visualLineStartColumn = undefined;
-    }
-
     if (mode === Mode.SearchInProgressMode) {
       this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
     } else {
@@ -262,15 +258,19 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  public nvim: NeovimWrapper;
+  public nvim: INVim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
+  }
+
+  async load() {
+    const m = await import('../neovim/neovim');
+    this.nvim = new m.NeovimWrapper();
   }
 
   dispose() {

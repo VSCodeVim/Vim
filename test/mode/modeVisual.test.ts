@@ -1428,4 +1428,50 @@ suite('Mode Visual', () => {
       endMode: Mode.Normal,
     });
   });
+
+  suite('Can handle ~/g~', () => {
+    newTest({
+      title: '~/g~ on single character',
+      start: ['|one TWO three FOUR'],
+      keysPressed: 'v~wvg~wv~wvg~',
+      end: ['One tWO Three |fOUR'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '~/g~ across a selection',
+      start: ['|OnE TwO tHrEe'],
+      keysPressed: 'vllll~wwvlg~',
+      end: ['oNe twO |ThrEe'],
+      endMode: Mode.Normal,
+    });
+  });
+
+  newTest({
+    title: "Can handle 'J' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'vjjJ',
+    end: ['one two| three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  suite('C, R, and S', () => {
+    for (const command of ['C', 'R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `vjjh${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `vkkl${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
+  });
 });

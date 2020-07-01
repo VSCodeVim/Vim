@@ -706,7 +706,7 @@ export class YankVisualBlockMode extends BaseOperator {
 
 @RegisterAction
 export class ToggleCaseOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -741,7 +741,7 @@ export class ToggleCaseOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['~'];
+  public keys = [['g', '~'], ['~']];
   public modes = [Mode.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
@@ -761,7 +761,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
-  public keys = ['g', '~'];
+  public keys = [['g', '~']];
   public modes = [Mode.Normal];
 }
 
@@ -887,7 +887,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: true, start: ';' },
     { singleLine: true, start: '*' },
 
-    // Needs to come last, since everything starts with the emtpy string!
+    // Needs to come last, since everything starts with the empty string!
     { singleLine: true, start: '' },
   ];
 
@@ -906,7 +906,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
     return '';
   }
 
-  public reflowParagraph(s: string, indent: string): string {
+  public reflowParagraph(s: string): string {
+    const indent = this.getIndentation(s);
+
     let indentLevel = 0;
     for (const char of indent) {
       indentLevel += char === '\t' ? configuration.tabstop : 1;
@@ -1086,10 +1088,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     [start, end] = Position.sorted(start, end);
 
-    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
-    let indent = this.getIndentation(textToReflow);
+    start = start.getLineBegin();
+    end = end.getLineEnd();
 
-    textToReflow = this.reflowParagraph(textToReflow, indent);
+    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
+    textToReflow = this.reflowParagraph(textToReflow);
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',

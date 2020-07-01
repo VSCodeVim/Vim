@@ -53,6 +53,34 @@ suite('Record and execute a macro', () => {
   });
 
   newTest({
+    title: 'Append command to a not yet created register creates a new register',
+    start: ['1. |one', '2. two', '3. three', '4. four'],
+    keysPressed: 'qB0f.r)w~jq3@b',
+    end: ['1) One', '2) Two', '3) Three', '4) F|our'],
+  });
+
+  newTest({
+    title: 'Can handle calling an uppercase register',
+    start: ['1. |one', '2. two', '3. three', '4. four'],
+    keysPressed: 'qa0f.r)w~jq3@A',
+    end: ['1) One', '2) Two', '3) Three', '4) F|our'],
+  });
+
+  newTest({
+    title: 'Can handle calling a non existing macro',
+    start: ['1. |one', '2. two', '3. three', '4. four'],
+    keysPressed: '@x',
+    end: ['1. |one', '2. two', '3. three', '4. four'],
+  });
+
+  newTest({
+    title: 'Can handle calling a non existing macro with uppercase letter',
+    start: ['1. |one', '2. two', '3. three', '4. four'],
+    keysPressed: '@Z',
+    end: ['1. |one', '2. two', '3. three', '4. four'],
+  });
+
+  newTest({
     title: 'Can record Ctrl Keys and repeat',
     start: ['1|.'],
     keysPressed: 'qayyp<C-a>q4@a',
@@ -71,5 +99,12 @@ suite('Record and execute a macro', () => {
     start: ['|old', 'old', 'old'],
     keysPressed: ':s/old/new\nj@:j@@',
     end: ['new', 'new', '|new'],
+  });
+
+  newTest({
+    title: 'Can record and execute macro that handles multiple lines',
+    start: ['|Countdown:', '1', 'LAUNCH!!!'],
+    keysPressed: 'qajyyP<C-a>kq8@a',
+    end: ['C|ountdown:', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'LAUNCH!!!'],
   });
 });
