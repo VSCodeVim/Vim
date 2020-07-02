@@ -1120,4 +1120,19 @@ suite('Remaps', () => {
       },
     ],
   });
+
+  newTestWithRemapsOnly({
+    title: 'Can handle a remapping right after a failed movement',
+    remaps: ['nmap j gj'],
+    start: ['|first line', 'second line'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'fxj',
+        stepResult: {
+          end: ['first line', '|second line']
+        }
+      }
+    ]
+  });
 });

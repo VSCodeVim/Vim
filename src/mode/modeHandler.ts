@@ -409,6 +409,10 @@ export class ModeHandler implements vscode.Disposable {
       throw new ForceStopRemappingError('Last movement failed');
     }
 
+    // Reset lastMovementFailed. Anyone who needed it has probably already handled it.
+    // And keeping it past this point would make any following remapping force stop.
+    this.vimState.lastMovementFailed = false;
+
     // There was no action run yet but we still want to update the view to be able
     // to show the potential remapping keys being pressed, the `"` character when
     // waiting on a register key or the `?` character and any following character
