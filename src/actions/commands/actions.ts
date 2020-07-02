@@ -1908,6 +1908,18 @@ class CommandDot extends BaseCommand {
 
     return vimState;
   }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = vimState.recordedState.count || 1;
+
+    for (let i = 0; i < count; i++) {
+      vimState.recordedState.transformations.push({
+        type: 'dot',
+      });
+    }
+
+    return vimState;
+  }
 }
 
 @RegisterAction
