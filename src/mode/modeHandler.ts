@@ -1427,7 +1427,7 @@ export class ModeHandler implements vscode.Disposable {
     // cursor style
     let cursorStyle = configuration.getCursorStyleForMode(Mode[this.currentMode]);
     if (!cursorStyle) {
-      const cursorType = getCursorType(this.vimState, this.currentMode);
+      const cursorType = getCursorType(this.vimState, vimState.currentModeIncludingPseudoModes);
       cursorStyle = getCursorStyle(cursorType);
       if (
         cursorType === VSCodeVimCursorType.Native &&
@@ -1497,30 +1497,16 @@ export class ModeHandler implements vscode.Disposable {
           },
         };
 
-        let width = vscode.workspace.getConfiguration().get<number>('editor.fontSize');
-        width = width ? width * 0.625 : 8;
         /**
          * EOL Render Options:
-         * When at the line end the decorator doesn't have a character so we can't use the
-         * existent character background with the `::before` element overlapped, so we need
-         * to create the background on the `::before` element and give it a width. So we get
-         * the width from the fontSize.
-         * The formula bellow I got from trial and error (basically for a fontSize of 14 the
-         * width is aroung 8px, for a fontSize of 16 it is around 10) so it might lead to some
-         * graphical issues in some systems specially if not using a monospaced font. But since
-         * it is at the end of the line it shouldn't be a problem (worst that can happen is the
-         * background only filling half the character when using font sizes of 30 or higher)
-         * I did it this way because it allows to have a block cursor when on the EOL as well,
-         * while the other option would show only the character but not the color of the background
-         * which with some themes might end up with the character no being visible.
+         * Some times when at the end of line the `currentColor` won't work, or it might be
+         * transparent, so we set the color to 'editor.foreground' when at EOL to avoid the
+         * virtualKey character not showing up.
          */
         const eolRenderOptions: vscode.ThemableDecorationRenderOptions = {
-          backgroundColor: 'transparent',
           before: {
             contentText: virtualKey,
-            backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
-            margin: `0 -${width}px 0 0`,
-            width: `${width}px`,
+            color: new vscode.ThemeColor('editor.foreground'),
           },
         };
 
@@ -1528,18 +1514,12 @@ export class ModeHandler implements vscode.Disposable {
           if (cursorStop.isLineEnd()) {
             decorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
-              renderOptions: {
-                dark: eolRenderOptions,
-                light: eolRenderOptions,
-              },
+              renderOptions: eolRenderOptions,
             });
           } else {
             decorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getRightThroughLineBreaks(true)),
-              renderOptions: {
-                dark: renderOptions,
-                light: renderOptions,
-              },
+              renderOptions: renderOptions,
             });
           }
         }
@@ -1547,6 +1527,36 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this.vimState.editor.setDecorations(decoration.InsertModeVirtualCharacter, decorationOptions);
+
+    // OperatorPendingMode half block cursor
+    const opCursorDecorations: vscode.DecorationOptions[] = [];
+    const opCursorCharDecorations: vscode.DecorationOptions[] = [];
+    if (vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode) {
+      for (const { stop: cursorStop } of vimState.cursors) {
+        let text = TextEditor.getCharAt(cursorStop);
+        // the ' ' (<space>) needs to be changed to '&nbsp;'
+        text = text === ' ' ? '\u00a0' : text;
+        const renderOptions: vscode.ThemableDecorationRenderOptions = {
+          before: {
+            contentText: text,
+          },
+        };
+        opCursorDecorations.push({
+          range: new vscode.Range(cursorStop, cursorStop.getRight()),
+          renderOptions: renderOptions,
+        });
+        opCursorCharDecorations.push({
+          range: new vscode.Range(cursorStop, cursorStop.getRight()),
+          renderOptions: renderOptions,
+        });
+      }
+    }
+
+    this.vimState.editor.setDecorations(decoration.OperatorPendingModeCursor, opCursorDecorations);
+    this.vimState.editor.setDecorations(
+      decoration.OperatorPendingModeCursorChar,
+      opCursorCharDecorations
+    );
 
     // TODO: draw marks (#3963)
 
@@ -1646,6 +1656,8 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
       return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
+    case Mode.OperatorPendingMode:
+      return VSCodeVimCursorType.Underline;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;
