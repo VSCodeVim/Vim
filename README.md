@@ -468,8 +468,9 @@ Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is us
 
 | Surround Command                     | Description                                                           |
 | ------------------------------------ | --------------------------------------------------------------------- |
+| `y s i w <desired char>`             | Add desired surround around current word                              |
+| `c s <existing char> <desired char>` | Change existing surround to desired                                   |
 | `d s <existing char>`                | Delete existing surround                                              |
-| `c s <existing char> <desired char>` | Change surround existing to desired                                   |
 | `y s <motion> <desired char>`        | Surround something with something using motion (as in "you surround") |
 | `S <desired char>`                   | Surround when in visual modes (surrounds full selection)              |
 
