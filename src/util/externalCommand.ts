@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { readFile, writeFile, unlink } from 'fs';
+import { readFileAsync, writeFileAsync, unlink } from '../util/fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { VimError, ErrorCode } from '../error';
@@ -91,7 +91,7 @@ class ExternalCommand {
     let result = '';
 
     try {
-      await promisify(writeFile)(inputFile, stdin);
+      await writeFileAsync(inputFile, stdin, 'utf8');
 
       command = this.expandCommand(command);
       this.previousExternalCommand = command;
@@ -103,15 +103,15 @@ class ExternalCommand {
         // keep going and read the output anyway (just like vim)
       }
 
-      result = await promisify(readFile)(outputFile, 'utf8');
+      result = await readFileAsync(outputFile, 'utf8');
       // vim behavior: always trim newlines
       if (result.endsWith('\n')) {
         result = result.slice(0, -1);
       }
     } finally {
       // always delete tmp files at the end
-      await promisify(unlink)(inputFile);
-      await promisify(unlink)(outputFile);
+      await unlink(inputFile);
+      await unlink(outputFile);
     }
 
     return result;
