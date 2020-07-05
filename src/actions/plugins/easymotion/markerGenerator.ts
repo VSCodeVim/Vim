@@ -14,8 +14,7 @@ export class MarkerGenerator {
   }
 
   public generateMarker(index: number, markerPosition: Position): EasyMotion.Marker | null {
-    const keyTable = this.keyTable;
-    const prefixKeyTable = this.prefixKeyTable;
+    const { keyTable, prefixKeyTable } = this;
 
     if (index >= keyTable.length - prefixKeyTable.length) {
       const remainder = index - (keyTable.length - prefixKeyTable.length);
@@ -25,18 +24,22 @@ export class MarkerGenerator {
       } else {
         const prefix = prefixKeyTable[currentStep - 1];
         const label = keyTable[remainder % keyTable.length];
-        return new EasyMotion.Marker(prefix + label, markerPosition);
+        return {
+          name: prefix + label,
+          position: markerPosition,
+        };
       }
     } else {
-      const label = keyTable[index];
-      return new EasyMotion.Marker(label, markerPosition);
+      return {
+        name: keyTable[index],
+        position: markerPosition,
+      };
     }
   }
 
   private createPrefixKeyTable(): string[] {
-    const keyTable = this.keyTable;
-    const totalRemainder = Math.max(this.matchesCount - keyTable.length, 0);
-    const totalSteps = Math.ceil(totalRemainder / keyTable.length);
+    const totalRemainder = Math.max(this.matchesCount - this.keyTable.length, 0);
+    const totalSteps = Math.ceil(totalRemainder / this.keyTable.length);
     const reversed = this.keyTable.slice().reverse();
     const count = Math.min(totalSteps, reversed.length);
     return reversed.slice(0, count);
