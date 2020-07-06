@@ -2161,6 +2161,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/ with noignorecase, nosmartcase',
+    config: { ignorecase: false, smartcase: false },
+    start: ['bl|ah', 'blAh', 'BLAH', 'blah'],
+    keysPressed: '/blah\n',
+    end: ['blah', 'blAh', 'BLAH', '|blah'],
+  });
+
+  newTest({
     title: '/ matches ^ per line',
     start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
     keysPressed: '/^asdf\n',
