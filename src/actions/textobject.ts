@@ -741,11 +741,14 @@ abstract class SelectArgument extends TextObjectMovement {
     const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
       leftSearchStartPosition
     );
+    if (leftArgumentBoundary === undefined) {
+      return failure;
+    }
+
     const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(
       rightSearchStartPosition
     );
-
-    if (leftArgumentBoundary === undefined || rightArgumentBoundary === undefined) {
+    if (rightArgumentBoundary === undefined) {
       return failure;
     }
 
