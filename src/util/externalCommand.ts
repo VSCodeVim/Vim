@@ -1,5 +1,4 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { exec } from '../util/child_process';
 import { readFileAsync, writeFileAsync, unlink } from '../util/fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -97,7 +96,7 @@ class ExternalCommand {
       this.previousExternalCommand = command;
       command = this.redirectCommand(command, inputFile, outputFile);
       try {
-        await promisify(exec)(command);
+        await exec(command);
       } catch (e) {
         // exec throws an error if exit code != 0
         // keep going and read the output anyway (just like vim)
