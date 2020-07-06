@@ -43,6 +43,12 @@ export class SearchState {
   private readonly isRegex: boolean;
 
   /**
+   * If true, an all-lowercase needle will not be treated as case-insensitive, even if smartcase is enabled.
+   * This is used for [g]* and [g]#.
+   */
+  private readonly ignoreSmartcase: boolean;
+
+  /**
    * The string being searched for
    */
   private needle = '';
@@ -123,7 +129,12 @@ export class SearchState {
      * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
      */
     let ignorecase = configuration.ignorecase;
-    if (ignorecase && configuration.smartcase && /[A-Z]/.test(this.needle)) {
+    if (
+      ignorecase &&
+      configuration.smartcase &&
+      !this.ignoreSmartcase &&
+      /[A-Z]/.test(this.needle)
+    ) {
       ignorecase = false;
     }
 
@@ -353,12 +364,13 @@ export class SearchState {
     direction: SearchDirection,
     startPosition: Position,
     searchString = '',
-    { isRegex = false } = {},
+    { isRegex = false, ignoreSmartcase = false } = {},
     currentMode: Mode
   ) {
     this.searchDirection = direction;
     this.cursorStartPosition = startPosition;
     this.isRegex = isRegex;
+    this.ignoreSmartcase = ignoreSmartcase;
     this.searchString = searchString;
     this.previousMode = currentMode;
   }
