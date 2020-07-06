@@ -11,7 +11,7 @@ import { assertEqualLines, reloadConfiguration } from './testUtils';
 import { globalState } from '../src/state/globalState';
 import { IKeyRemapping } from '../src/configuration/iconfiguration';
 import * as os from 'os';
-import { vimrc, VimrcImpl } from '../src/configuration/vimrc';
+import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 
@@ -20,9 +20,10 @@ export function getTestingFunctions() {
     return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
   }
 
-  function newTestGeneric(
-    testObj: ITestObject,
-    testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction
+  function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
+    testObj: T,
+    testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
+    innerTest: (modeHandler: ModeHandler, testObj: T) => Promise<void>
   ): void {
     const stack = new Error().stack;
     const niceStack = getNiceStack(stack);
@@ -40,7 +41,7 @@ export function getTestingFunctions() {
           await reloadConfiguration();
         }
         const mh = await getAndUpdateModeHandler();
-        await testIt(mh, testObj);
+        await innerTest(mh, testObj);
       } catch (reason) {
         reason.stack = niceStack;
         throw reason;
@@ -53,66 +54,23 @@ export function getTestingFunctions() {
     });
   }
 
-  const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test);
+  const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test, testIt);
 
   const newTestOnly = (testObj: ITestObject) => {
     console.warn('!!! Running single test !!!');
-    return newTestGeneric(testObj, test.only);
+    return newTestGeneric(testObj, test.only, testIt);
   };
 
-  const newTestSkip = (testObj: ITestObject) => newTestGeneric(testObj, test.skip);
+  const newTestSkip = (testObj: ITestObject) => newTestGeneric(testObj, test.skip, testIt);
 
-  const newTestWithRemaps = (testObj: ITestWithRemapsObject): void => {
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    test(testObj.title, async () =>
-      testItWithRemaps
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
+  const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
+    newTestGeneric(testObj, test, testItWithRemaps);
+  const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) => {
+    console.warn('!!! Running single test !!!');
+    return newTestGeneric(testObj, test.only, testItWithRemaps);
   };
-
-  const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject): void => {
-    console.log('!!! Running single test !!!');
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    test.only(testObj.title, async () =>
-      testItWithRemaps
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
-  };
-
-  const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject): void => {
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    test.skip(testObj.title, async () =>
-      testItWithRemaps
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
-  };
+  const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
+    newTestGeneric(testObj, test.skip, testItWithRemaps);
 
   return {
     newTest,
@@ -148,6 +106,7 @@ type Step = {
 
 interface ITestWithRemapsObject {
   title: string;
+  config?: Partial<IConfiguration>;
   start: string[];
   remaps?:
     | {
