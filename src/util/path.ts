@@ -240,3 +240,7 @@ export async function readDirectory(
     return [];
   }
 }
+
+export function join(...paths: string[]): string {
+  return path.join(...paths);
+}
