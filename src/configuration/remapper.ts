@@ -417,6 +417,11 @@ export class Remapper implements IRemapper {
           vimState.isCurrentlyPerformingRecursiveRemapping = false;
         }
 
+        if (!hasParentRemapping) {
+          // Last remapping finished handling. Set undo step.
+          vimState.historyTracker.finishCurrentStep();
+        }
+
         // NonRecursive remappings can't have nested remaps so after a finished remap we always set this to
         // false, because either we were performing a non recursive remap and now we finish or we weren't
         // performing a non recursive remapping and this was false anyway.

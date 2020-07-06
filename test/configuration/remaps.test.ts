@@ -382,7 +382,7 @@ suite('Remaps', () => {
       {
         // Step 1:
         title: 'Prepare for next step',
-        keysPressed: 'uuuuuuuuuuG5o<Esc>gg',
+        keysPressed: 'uG5o<Esc>gg',
         stepResult: {
           end: ['|10£', '15£', '350£', '2£', '5£', '', '', '', '', ''],
           endMode: Mode.Normal,
@@ -1121,7 +1121,7 @@ suite('Remaps', () => {
     ],
   });
 
-  newTestWithRemapsOnly({
+  newTestWithRemaps({
     title: 'Can handle a remapping right after a failed movement',
     remaps: ['nmap j gj'],
     start: ['|first line', 'second line'],
@@ -1130,9 +1130,76 @@ suite('Remaps', () => {
         // Step 0:
         keysPressed: 'fxj',
         stepResult: {
-          end: ['first line', '|second line']
-        }
-      }
-    ]
+          end: ['first line', '|second line'],
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title: 'Remaps create an undo point only at the end of the remap handling',
+    remaps: [
+      'nmap <leader>$ 0f£xA$00<Esc>',
+      'nmap <leader>$G <leader>$j<leader>$G',
+      'nno <leader>a oThis is a Non Recursive Remap!<Esc>',
+    ],
+    start: ['|10£', '15£', '350£', '2£', '5£'],
+    steps: [
+      {
+        // Step 0:
+        title: 'Run remap once that executes two different steps',
+        keysPressed: ' $',
+        stepResult: {
+          end: ['|10£', '15£', '350£', '2£', '5£'],
+          endAfterTimeout: ['10$0|0', '15£', '350£', '2£', '5£'],
+          endModeAfterTimeout: Mode.Normal,
+        },
+      },
+      {
+        // Step 1:
+        title: 'Undo removes the $00 that was inserted and reinserts the deleted £ all at once',
+        keysPressed: 'u',
+        stepResult: {
+          end: ['10|£', '15£', '350£', '2£', '5£'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 2:
+        title: 'Calls itself until it errors',
+        keysPressed: ' $G',
+        stepResult: {
+          end: ['10$00', '15$00', '350$00', '2$00', '|5$00'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 3:
+        title: 'Undo should undo all the lines that were changed by the recursive remap',
+        keysPressed: 'u',
+        stepResult: {
+          end: ['10|£', '15£', '350£', '2£', '5£'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 4:
+        title: 'Make a non recursive remap',
+        keysPressed: 'G a',
+        stepResult: {
+          end: ['10£', '15£', '350£', '2£', '5£', 'This is a Non Recursive Remap|!'],
+          endMode: Mode.Normal,
+        },
+      },
+      {
+        // Step 5:
+        title: 'Undo works on NonRecursive remaps',
+        keysPressed: 'u',
+        stepResult: {
+          end: ['10£', '15£', '350£', '2£', '|5£'],
+          endMode: Mode.Normal,
+        },
+      },
+    ],
   });
 });

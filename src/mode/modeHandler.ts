@@ -706,7 +706,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Don't record an undo point for every action of a macro, only at the very end
-    if (ranRepeatableAction && !vimState.isReplayingMacro) {
+    if (
+      ranRepeatableAction &&
+      !vimState.isReplayingMacro &&
+      !vimState.isCurrentlyPerformingRemapping
+    ) {
       vimState.historyTracker.finishCurrentStep();
     }
 
