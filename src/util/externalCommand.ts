@@ -1,7 +1,7 @@
 import { exec } from '../util/child_process';
 import { readFileAsync, writeFileAsync, unlink } from '../util/fs';
 import { tmpdir } from '../util/os';
-import { join } from 'path';
+import { join } from '../util/path';
 import { VimError, ErrorCode } from '../error';
 
 class ExternalCommand {
