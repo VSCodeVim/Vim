@@ -697,6 +697,12 @@ abstract class SelectArgument extends TextObjectMovement {
     return configuration.argumentObjectSeparators;
   }
 
+  // SelectArgument supports two select types: inner and around.
+  //
+  // Inner will adjust start/stop positions, so that they are inside
+  // the delimiters (excluding the delimiters themselves).
+  // Around will adjust start/stop positions, so that ONE of them includes
+  // a separator character (optionally including extra whitespace).
   protected selectAround = false;
 
   // Requirement is that below example still works as expected, i.e.
