@@ -1000,7 +1000,7 @@
     "sinon": "9.0.2",
     "ts-loader": "7.0.5",
     "tslint": "6.1.2",
-    "typescript": "3.9.5",
+    "typescript": "3.9.6",
     "vscode-test": "1.4.0",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.12",

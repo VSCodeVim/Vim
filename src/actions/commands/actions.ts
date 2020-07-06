@@ -977,6 +977,9 @@ class CommandCmdA extends BaseCommand {
   }
 }
 
+/**
+ * Search for the word under the cursor; used by [g]* and [g]#
+ */
 function searchCurrentWord(
   position: Position,
   vimState: VimState,
@@ -1002,6 +1005,9 @@ function searchCurrentWord(
   });
 }
 
+/**
+ * Search for the word under the cursor; used by [g]* and [g]# in visual mode when `visualstar` is enabled
+ */
 async function searchCurrentSelection(vimState: VimState, direction: SearchDirection) {
   const selection = TextEditor.getSelection();
   const end = new Position(selection.end.line, selection.end.character);
@@ -1027,6 +1033,9 @@ async function searchCurrentSelection(vimState: VimState, direction: SearchDirec
   });
 }
 
+/**
+ * Used by [g]* and [g]#
+ */
 async function createSearchStateAndMoveToMatch(args: {
   needle?: string | undefined;
   vimState: VimState;
@@ -1047,7 +1056,7 @@ async function createSearchStateAndMoveToMatch(args: {
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { isRegex: isExact },
+    { isRegex: isExact, ignoreSmartcase: true },
     vimState.currentMode
   );
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
