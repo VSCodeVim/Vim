@@ -2510,6 +2510,238 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Will fail 'cia' with no delimiters",
+    start: ['f|oo'],
+    keysPressed: 'cia',
+    end: ['f|oo'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'cia' with flipped delimiters",
+    start: [')f|oo('],
+    keysPressed: 'cia',
+    end: [')f|oo('],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single argument",
+    start: ['(f|oo)'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in () with cursor at opening delimiter",
+    start: ['|()'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in () with cursor at closing delimiter",
+    start: ['(|)'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at opening delimiter",
+    start: ['|(,)'],
+    keysPressed: 'cia',
+    end: ['(|,)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at regular delimiter",
+    start: ['(|,)'],
+    keysPressed: 'cia',
+    end: ['(,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at closing delimiter",
+    start: ['(,|)'],
+    keysPressed: 'cia',
+    end: ['(,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at regular delimiter",
+    start: ['(|,,,)'],
+    keysPressed: 'cia',
+    end: ['(,|,,)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at second-to-last delimiter",
+    start: ['(,,|,)'],
+    keysPressed: 'cia',
+    end: ['(,,,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at closing delimiter",
+    start: ['(,,,|)'],
+    keysPressed: 'cia',
+    end: ['(,,,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with nested parentheses in argument",
+    start: ['(foo, (void*) ba|r(Foo<T>), baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in first argument",
+    start: ['(f|oo, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(|, bar, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on opening delimiter",
+    start: ['|(foo, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(|, bar, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in middle argument",
+    start: ['(foo, ba|r, baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on regular delimiter",
+    start: ['(foo|, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in last argument",
+    start: ['(foo, bar, b|az)'],
+    keysPressed: 'cia',
+    end: ['(foo, bar,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on closing delimiter",
+    start: ['(foo, bar, baz|)'],
+    keysPressed: 'cia',
+    end: ['(foo, bar,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   f|oo,', '   bar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '|,', '   bar,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '|,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   |baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '   bar,', '|', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single argument",
+    start: ['(f|oo)'],
+    keysPressed: 'daa',
+    end: ['(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'daa' in ()",
+    start: ['(|)'],
+    keysPressed: 'daa',
+    end: ['(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in first argument",
+    start: ['(f|oo, bar, baz)'],
+    keysPressed: 'daa',
+    end: ['(|bar, baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in middle argument",
+    start: ['(foo, b|ar, baz)'],
+    keysPressed: 'daa',
+    end: ['(foo|, baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in last argument",
+    start: ['(foo, bar, |baz)'],
+    keysPressed: 'daa',
+    end: ['(foo, bar|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   |foo,', '   bar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['|(', '   bar,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo|,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   ba|z', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo,', '   ba|r', ')'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: '`] go to the end of the previously operated or put text',
     start: ['hello|'],
     keysPressed: 'a world<Esc>`]',
