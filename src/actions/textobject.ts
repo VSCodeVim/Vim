@@ -826,7 +826,27 @@ abstract class SelectArgument extends TextObjectMovement {
         start = start.getRightThroughLineBreaks(true);
       }
       start = start.getRightThroughLineBreaks(true);
+
+      // Adjust the start further until we are on the first non-whitespace character.
+      // This ensures that indented argument-lists keep the indentation and as an extra
+      // benefit also retains the whitespace after a separator (if existant).
+      while (/\s/.test(TextEditor.getCharAt(start))) {
+        start = start.getRightThroughLineBreaks(true);
+      }
+
+      // Inset the stop once to get off the boundary and then keep
+      // going until the first non whitespace.
       stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+      while (/\s/.test(TextEditor.getCharAt(stop))) {
+        stop = stop.getLeftThroughLineBreaks(true);
+      }
+
+      // Edge-case: Seems there is only whitespace in this argument.
+      // Omit any weird handling and just clear all whitespace.
+      if (stop.isBeforeOrEqual(start)) {
+        start = leftArgumentBoundary.getRightThroughLineBreaks(true);
+        stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+      }
     }
 
     // Handle case when cursor is not inside the anticipated movement range

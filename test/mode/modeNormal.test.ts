@@ -2609,7 +2609,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' with nested parentheses in argument",
     start: ['(foo, (void*) ba|r(Foo<T>), baz)'],
     keysPressed: 'cia',
-    end: ['(foo,|, baz)'],
+    end: ['(foo, |, baz)'],
     endMode: Mode.Insert,
   });
 
@@ -2633,7 +2633,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a single-line comma seperated list with cursor in middle argument",
     start: ['(foo, ba|r, baz)'],
     keysPressed: 'cia',
-    end: ['(foo,|, baz)'],
+    end: ['(foo, |, baz)'],
     endMode: Mode.Insert,
   });
 
@@ -2641,7 +2641,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a single-line comma seperated list with cursor on regular delimiter",
     start: ['(foo|, bar, baz)'],
     keysPressed: 'cia',
-    end: ['(foo,|, baz)'],
+    end: ['(foo, |, baz)'],
     endMode: Mode.Insert,
   });
 
@@ -2649,7 +2649,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a single-line comma seperated list with cursor in last argument",
     start: ['(foo, bar, b|az)'],
     keysPressed: 'cia',
-    end: ['(foo, bar,|)'],
+    end: ['(foo, bar, |)'],
     endMode: Mode.Insert,
   });
 
@@ -2657,7 +2657,23 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a single-line comma seperated list with cursor on closing delimiter",
     start: ['(foo, bar, baz|)'],
     keysPressed: 'cia',
-    end: ['(foo, bar,|)'],
+    end: ['(foo, bar, |)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a whitespace-only argument",
+    start: ['(foo, | , baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with trailing whitespace after separator",
+    start: ['(', '   foo, ', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo, ', '   |,', '   baz', ')'],
     endMode: Mode.Insert,
   });
 
@@ -2665,7 +2681,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a multiline-line comma seperated list with cursor in first argument",
     start: ['(', '   f|oo,', '   bar,', '   baz', ')'],
     keysPressed: 'cia',
-    end: ['(', '|,', '   bar,', '   baz', ')'],
+    end: ['(', '   |,', '   bar,', '   baz', ')'],
     endMode: Mode.Insert,
   });
 
@@ -2673,7 +2689,7 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
     start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
     keysPressed: 'cia',
-    end: ['(', '   foo,', '|,', '   baz', ')'],
+    end: ['(', '   foo,', '   |,', '   baz', ')'],
     endMode: Mode.Insert,
   });
 
@@ -2681,7 +2697,15 @@ suite('Mode Normal', () => {
     title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
     start: ['(', '   foo,', '   bar,', '   |baz', ')'],
     keysPressed: 'cia',
-    end: ['(', '   foo,', '   bar,', '|', ')'],
+    end: ['(', '   foo,', '   bar,', '   |', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multi-line indented statement with one argument.",
+    start: ['   functionCall(', '      fo|o', '   )'],
+    keysPressed: 'cia',
+    end: ['   functionCall(', '      |', '   )'],
     endMode: Mode.Insert,
   });
 
