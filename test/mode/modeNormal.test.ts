@@ -2526,6 +2526,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Will fail 'cia' with separators but no delimiters",
+    start: ['alpha,', 'b|eta,', 'gamma'],
+    keysPressed: 'cia',
+    end: ['alpha,', 'b|eta,', 'gamma'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can do 'cia' in a single argument",
     start: ['(f|oo)'],
     keysPressed: 'cia',

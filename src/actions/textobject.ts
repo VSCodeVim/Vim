@@ -744,6 +744,22 @@ abstract class SelectArgument extends TextObjectMovement {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
+    // Early abort, if we are not even inside delimiters (i.e. (), [], etc.)
+    const leftDelimiter = SelectInnerArgument.findLeftArgumentBoundary(
+      leftSearchStartPosition,
+      true
+    );
+    if (leftDelimiter === undefined) {
+      return failure;
+    }
+    const rightDelimiter = SelectInnerArgument.findRightArgumentBoundary(
+      rightSearchStartPosition,
+      true
+    );
+    if (rightDelimiter === undefined) {
+      return failure;
+    }
+
     const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
       leftSearchStartPosition
     );
@@ -825,7 +841,10 @@ abstract class SelectArgument extends TextObjectMovement {
     };
   }
 
-  private static findLeftArgumentBoundary(position: Position): Position | undefined {
+  private static findLeftArgumentBoundary(
+    position: Position,
+    ignoreSeparators: boolean = false
+  ): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let closedParensCount = 0;
@@ -833,10 +852,12 @@ abstract class SelectArgument extends TextObjectMovement {
     while (true) {
       const char = TextEditor.getCharAt(walkingPosition);
       if (closedParensCount === 0) {
-        if (
-          SelectArgument.openingDelimiterCharacters().includes(char) ||
-          SelectArgument.separatorCharacters().includes(char)
-        ) {
+        let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
+        if (!ignoreSeparators) {
+          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+        }
+
+        if (isOnBoundary) {
           // We have found the left most delimiter or the first proper delimiter
           // in our cursor's list 'depth' and thus can abort.
           delimiterPosition = walkingPosition;
@@ -860,7 +881,10 @@ abstract class SelectArgument extends TextObjectMovement {
     return delimiterPosition;
   }
 
-  private static findRightArgumentBoundary(position: Position): Position | undefined {
+  private static findRightArgumentBoundary(
+    position: Position,
+    ignoreSeparators: boolean = false
+  ): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let openedParensCount = 0;
@@ -868,10 +892,12 @@ abstract class SelectArgument extends TextObjectMovement {
     while (true) {
       const char = TextEditor.getCharAt(walkingPosition);
       if (openedParensCount === 0) {
-        if (
-          SelectArgument.closingDelimiterCharacters().includes(char) ||
-          SelectArgument.separatorCharacters().includes(char)
-        ) {
+        let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
+        if (!ignoreSeparators) {
+          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+        }
+
+        if (isOnBoundary) {
           delimiterPosition = walkingPosition;
           break;
         }
