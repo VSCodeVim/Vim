@@ -817,28 +817,18 @@ abstract class SelectArgument extends TextObjectMovement {
         start = leftArgumentBoundary;
       }
     } else {
-      // Multi-line UX-boost:
-      // When the left delimiter is at the end of the line, we can skip over
-      // to the next line. This pre-advance prevents the cursor staying
-      // right behind the delimiter on the line above.
-      start = leftArgumentBoundary;
-      if (leftArgumentBoundary.getRight().isLineEnd()) {
-        start = start.getRightThroughLineBreaks(true);
-      }
-      start = start.getRightThroughLineBreaks(true);
-
-      // Adjust the start further until we are on the first non-whitespace character.
-      // This ensures that indented argument-lists keep the indentation and as an extra
-      // benefit also retains the whitespace after a separator (if existant).
-      while (/\s/.test(TextEditor.getCharAt(start))) {
-        start = start.getRightThroughLineBreaks(true);
-      }
-
-      // Inset the stop once to get off the boundary and then keep
+      // Inset the start once to get off the boundary and then keep
       // going until the first non whitespace.
-      stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+      // This ensures that indented argument-lists keep the indentation.
+      start = leftArgumentBoundary.getRightThroughLineBreaks(false);
+      while (/\s/.test(TextEditor.getCharAt(start))) {
+        start = start.getRightThroughLineBreaks(false);
+      }
+
+      // Same procedure for stop.
+      stop = rightArgumentBoundary.getLeftThroughLineBreaks(false);
       while (/\s/.test(TextEditor.getCharAt(stop))) {
-        stop = stop.getLeftThroughLineBreaks(true);
+        stop = stop.getLeftThroughLineBreaks(false);
       }
 
       // Edge-case: Seems there is only whitespace in this argument.

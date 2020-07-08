@@ -2670,10 +2670,26 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can do 'cia' in a whitespace-only argument across multiple lines",
+    start: ['(foo,', '  ', ' | ', '  ', ' , baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can do 'cia' with trailing whitespace after separator",
     start: ['(', '   foo, ', '   b|ar,', '   baz', ')'],
     keysPressed: 'cia',
     end: ['(', '   foo, ', '   |,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with trailing whitespace after separator and empty line",
+    start: ['(', '   foo, ', '    ', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo, ', '    ', '   |,', '   baz', ')'],
     endMode: Mode.Insert,
   });
 
