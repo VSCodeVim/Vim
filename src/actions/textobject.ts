@@ -726,6 +726,7 @@ abstract class SelectArgument extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
+
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
 
@@ -744,19 +745,12 @@ abstract class SelectArgument extends TextObjectMovement {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
-    // Early abort, if we are not even inside delimiters (i.e. (), [], etc.)
-    const leftDelimiter = SelectInnerArgument.findLeftArgumentBoundary(
-      leftSearchStartPosition,
-      true
-    );
-    if (leftDelimiter === undefined) {
-      return failure;
-    }
-    const rightDelimiter = SelectInnerArgument.findRightArgumentBoundary(
-      rightSearchStartPosition,
-      true
-    );
-    if (rightDelimiter === undefined) {
+    // Early abort, if no delimiters (i.e. (), [], etc.) surround us.
+    // This prevents applying the movement to surrounding separators across the buffer.
+    if (
+      SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition, true) === undefined ||
+      SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition, true) === undefined
+    ) {
       return failure;
     }
 
