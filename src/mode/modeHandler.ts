@@ -27,6 +27,7 @@ import {
   DocumentContentChangeAction,
   ActionOverrideCmdD,
   CommandRegister,
+  CommandVisualMode,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -561,7 +562,10 @@ export class ModeHandler implements vscode.Disposable {
         ranRepeatableAction = true;
       }
     }
-    if (ranAction && !(action instanceof CommandRegister) && vimState.currentMode !== Mode.Insert) {
+    if (
+      (ranAction && !(action instanceof CommandRegister) && vimState.currentMode !== Mode.Insert) ||
+      action instanceof CommandVisualMode
+    ) {
       vimState.recordedState.resetCommandList();
     }
 

@@ -27,6 +27,7 @@ import { StatusBar } from '../../statusBar';
 import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
+import _ = require('lodash');
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -985,23 +986,37 @@ function searchCurrentWord(
   direction: SearchDirection,
   isExact: boolean
 ) {
-  const currentWord = TextEditor.getWord(position);
+  let currentWord = TextEditor.getWord(position);
 
-  // If the search is going left then use `getWordLeft()` on position to start
-  // at the beginning of the word. This ensures that any matches happen
-  // outside of the currently selected word.
-  const searchStartCursorPosition =
-    direction === SearchDirection.Backward
-      ? vimState.cursorStopPosition.getWordLeft(true)
-      : vimState.cursorStopPosition;
+  if (currentWord) {
+    if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
+      // TODO: this kind of sucks. JS regex does not consider the boundary between a special
+      // character and whitespace to be a "word boundary", so we can't easily do an exact search.
+      isExact = false;
+    }
 
-  return createSearchStateAndMoveToMatch({
-    needle: currentWord,
-    vimState,
-    direction,
-    isExact,
-    searchStartCursorPosition,
-  });
+    if (isExact) {
+      currentWord = _.escapeRegExp(currentWord);
+    }
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition =
+      direction === SearchDirection.Backward
+        ? vimState.cursorStopPosition.getWordLeft(true)
+        : vimState.cursorStopPosition;
+
+    return createSearchStateAndMoveToMatch({
+      needle: currentWord,
+      vimState,
+      direction,
+      isExact,
+      searchStartCursorPosition,
+    });
+  }
+
+  StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
+  return vimState;
 }
 
 /**
@@ -2343,7 +2358,7 @@ class CommandExitVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVisualMode extends BaseCommand {
+export class CommandVisualMode extends BaseCommand {
   modes = [Mode.Normal, Mode.VisualLine, Mode.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
