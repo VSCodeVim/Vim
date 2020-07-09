@@ -687,7 +687,7 @@ class InsideIndentObjectBoth extends IndentObjectMatch {
 }
 
 abstract class SelectArgument extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual];
 
   private static openingDelimiterCharacters(): string[] {
     return configuration.argumentObjectOpeningDelimiters;
@@ -930,13 +930,11 @@ abstract class SelectArgument extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'a'];
 }
 
 @RegisterAction
 export class SelectAroundArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
   keys = ['a', 'a'];
   selectAround = true;
 }
