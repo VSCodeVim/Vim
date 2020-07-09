@@ -9,7 +9,14 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import { Position, PositionDiff, PositionDiffType } from './../../common/motion/position';
+import {
+  Position,
+  PositionDiff,
+  PositionDiffType,
+  earlierOf,
+  laterOf,
+  sorted,
+} from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
@@ -28,6 +35,7 @@ import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/sta
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 import { SpecialKeys } from '../../util/specialKeys';
+import _ = require('lodash');
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -94,7 +102,7 @@ export class DocumentContentChangeAction extends BaseAction {
           ? new Position(replaceRange.start.line, replaceRange.start.character + change.text.length)
           : new Position(replaceRange.start.line + numLinesAdded, textDiffLines.pop()!.length);
 
-      rightBoundary = Position.laterOf(rightBoundary, newRightBoundary);
+      rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
       vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
 
@@ -925,7 +933,7 @@ class CommandOverrideCopy extends BaseCommand {
     if (vimState.currentMode === Mode.Visual) {
       text = vimState.cursors
         .map((range) => {
-          const [start, stop] = Position.sorted(range.start, range.stop);
+          const [start, stop] = sorted(range.start, range.stop);
           return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
         })
         .join('\n');
@@ -934,8 +942,8 @@ class CommandOverrideCopy extends BaseCommand {
         .map((range) => {
           return vimState.editor.document.getText(
             new vscode.Range(
-              Position.earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
-              Position.laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
+              earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
+              laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
             )
           );
         })
@@ -986,23 +994,37 @@ function searchCurrentWord(
   direction: SearchDirection,
   isExact: boolean
 ) {
-  const currentWord = TextEditor.getWord(position);
+  let currentWord = TextEditor.getWord(position);
 
-  // If the search is going left then use `getWordLeft()` on position to start
-  // at the beginning of the word. This ensures that any matches happen
-  // outside of the currently selected word.
-  const searchStartCursorPosition =
-    direction === SearchDirection.Backward
-      ? vimState.cursorStopPosition.getWordLeft(true)
-      : vimState.cursorStopPosition;
+  if (currentWord) {
+    if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
+      // TODO: this kind of sucks. JS regex does not consider the boundary between a special
+      // character and whitespace to be a "word boundary", so we can't easily do an exact search.
+      isExact = false;
+    }
 
-  return createSearchStateAndMoveToMatch({
-    needle: currentWord,
-    vimState,
-    direction,
-    isExact,
-    searchStartCursorPosition,
-  });
+    if (isExact) {
+      currentWord = _.escapeRegExp(currentWord);
+    }
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition =
+      direction === SearchDirection.Backward
+        ? vimState.cursorStopPosition.getWordLeft(true)
+        : vimState.cursorStopPosition;
+
+    return createSearchStateAndMoveToMatch({
+      needle: currentWord,
+      vimState,
+      direction,
+      isExact,
+      searchStartCursorPosition,
+    });
+  }
+
+  StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
+  return vimState;
 }
 
 /**
@@ -1646,7 +1668,7 @@ export class PutCommandVisual extends BaseCommand {
     vimState: VimState,
     after: boolean = false
   ): Promise<VimState> {
-    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
@@ -2344,7 +2366,7 @@ class CommandExitVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVisualMode extends BaseCommand {
+export class CommandVisualMode extends BaseCommand {
   modes = [Mode.Normal, Mode.VisualLine, Mode.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
@@ -3326,7 +3348,7 @@ class ActionJoinVisualMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(
+    const [start, end] = sorted(
       Position.FromVSCodePosition(vimState.editor.selection.start),
       Position.FromVSCodePosition(vimState.editor.selection.end)
     );
@@ -3347,7 +3369,7 @@ class ActionJoinVisualBlockMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
 
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     return new ActionJoin().execJoinLines(start, end, vimState, 1);
@@ -3518,7 +3540,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     let visualSelectionOffset = 1;
 
     // If selection is reversed, reorganize it so that the text replace logic always works
-    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
@@ -3879,7 +3901,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newCursors: Range[] = [];
     for (const cursor of vimState.cursors) {
-      const [start, end] = Position.sorted(cursor.start, cursor.stop);
+      const [start, end] = sorted(cursor.start, cursor.stop);
       for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
         const line = TextEditor.getLine(lineNum);
         const insertionColumn =
@@ -3945,7 +3967,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
   keys = [['C'], ['R']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       start.getLineBegin(),

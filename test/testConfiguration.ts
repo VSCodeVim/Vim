@@ -23,6 +23,9 @@ export class Configuration implements IConfiguration {
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
   surround = false;
+  argumentObjectSeparators = [','];
+  argumentObjectOpeningDelimiters = ['(', '['];
+  argumentObjectClosingDelimiters = [')', ']'];
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
   easymotionMarkerForegroundColorOneChar = '#ff0000';

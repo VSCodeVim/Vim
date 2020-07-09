@@ -204,6 +204,10 @@ class Configuration implements IConfiguration {
 
   surround = true;
 
+  argumentObjectSeparators = [','];
+  argumentObjectOpeningDelimiters = ['(', '['];
+  argumentObjectClosingDelimiters = [')', ']'];
+
   easymotion = false;
   easymotionMarkerBackgroundColor = '';
   easymotionMarkerForegroundColorOneChar = '#ff0000';

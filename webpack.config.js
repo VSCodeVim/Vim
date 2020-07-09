@@ -3,6 +3,7 @@
 'use strict';
 
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -31,13 +32,10 @@ const config = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-        ],
+        loader: 'ts-loader',
       },
     ],
   },
+  plugins: [new CleanWebpackPlugin()],
 };
 module.exports = config;
