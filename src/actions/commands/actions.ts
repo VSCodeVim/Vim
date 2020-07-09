@@ -2358,7 +2358,7 @@ class CommandExitVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVisualMode extends BaseCommand {
+export class CommandVisualMode extends BaseCommand {
   modes = [Mode.Normal, Mode.VisualLine, Mode.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
