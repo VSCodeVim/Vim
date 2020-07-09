@@ -2582,6 +2582,17 @@ class CommandGoToDefinition extends BaseCommand {
 }
 
 @RegisterAction
+class CommandOpenLink extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  keys = ['g', 'x'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vscode.commands.executeCommand('editor.action.openLink');
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoBackInChangelist extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', ';'];
