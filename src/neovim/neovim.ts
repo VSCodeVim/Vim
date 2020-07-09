@@ -1,7 +1,7 @@
 import * as util from 'util';
 import * as vscode from 'vscode';
 import { Logger } from '../util/logger';
-import { Position } from './../common/motion/position';
+import { Position, sorted } from './../common/motion/position';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { VimState } from './../state/vimState';
@@ -117,7 +117,7 @@ export class NeovimWrapper implements vscode.Disposable {
       strictIndexing: true,
     });
 
-    const [rangeStart, rangeEnd] = Position.sorted(
+    const [rangeStart, rangeEnd] = sorted(
       vimState.cursorStartPosition,
       vimState.cursorStopPosition
     );

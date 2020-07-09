@@ -56,6 +56,27 @@ export class PositionDiff {
   }
 }
 
+/**
+ * @returns the Position of the 2 provided which comes earlier in the document.
+ */
+export function earlierOf(p1: Position, p2: Position): Position {
+  return p1.isBefore(p2) ? p1 : p2;
+}
+
+/**
+ * @returns the Position of the 2 provided which comes later in the document.
+ */
+export function laterOf(p1: Position, p2: Position): Position {
+  return p1.isBefore(p2) ? p2 : p1;
+}
+
+/**
+ * @returns the given Positions in the order they appear in the document.
+ */
+export function sorted(p1: Position, p2: Position): [Position, Position] {
+  return p1.isBefore(p2) ? [p1, p2] : [p2, p1];
+}
+
 export class Position extends vscode.Position {
   constructor(line: number, character: number) {
     super(line, character);
@@ -67,27 +88,6 @@ export class Position extends vscode.Position {
 
   public static FromVSCodePosition(pos: vscode.Position): Position {
     return new Position(pos.line, pos.character);
-  }
-
-  /**
-   * @returns the Position of the 2 provided which comes earlier in the document.
-   */
-  public static earlierOf(p1: Position, p2: Position): Position {
-    return p1.isBefore(p2) ? p1 : p2;
-  }
-
-  /**
-   * @returns the Position of the 2 provided which comes later in the document.
-   */
-  public static laterOf(p1: Position, p2: Position): Position {
-    return p1.isBefore(p2) ? p2 : p1;
-  }
-
-  /**
-   * @returns the given Positions in the order they appear in the document.
-   */
-  public static sorted(p1: Position, p2: Position): [Position, Position] {
-    return p1.isBefore(p2) ? [p1, p2] : [p2, p1];
   }
 
   /**
