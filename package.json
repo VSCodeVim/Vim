@@ -644,6 +644,11 @@
           "markdownDescription": "Enable the [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister) plugin for Vim.",
           "default": false
         },
+        "vim.smartRelativeLine": {
+          "type": "boolean",
+          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
+          "default": false
+        },
         "vim.sneak": {
           "type": "boolean",
           "markdownDescription": "Enable the [Sneak](https://github.com/justinmk/vim-sneak) plugin for Vim.",
