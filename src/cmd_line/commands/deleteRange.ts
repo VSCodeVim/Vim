@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Position } from '../../common/motion/position';
+import { Position, earlierOf } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import { TextEditor } from '../../textEditor';
@@ -46,7 +46,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     text = text.endsWith('\r\n') ? text.slice(0, -2) : text.slice(0, -1);
     await TextEditor.delete(new vscode.Range(start, end));
 
-    let resultPosition = Position.earlierOf(start, end);
+    let resultPosition = earlierOf(start, end);
     if (start.character > TextEditor.getLineAt(start).text.length) {
       resultPosition = start.getLeft();
     } else {
