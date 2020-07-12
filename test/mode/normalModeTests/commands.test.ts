@@ -319,6 +319,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'gJ' with count",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '3gJ',
+    end: ['onetwo|three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count and all whitespace is eliminated",
+    start: ['|one', '  two', '   three', 'four'],
+    keysPressed: '3gJ',
+    end: ['onetwo|three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count and end position is blank line",
+    start: ['|one', 'two', '', 'three', 'four'],
+    keysPressed: '3gJ',
+    end: ['onetw|o', 'three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count exceeding max number of rows",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '100gJ',
+    end: ['onetwothree|four'],
+  });
+
+  newTest({
     title: "Can handle '~'",
     start: ['|text'],
     keysPressed: '~',
