@@ -3389,40 +3389,46 @@ class ActionJoinNoWhitespace extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'J'];
   canBeRepeatedWithDot = true;
-  runsOnceForEachCountPrefix = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (position.line === TextEditor.getLineCount() - 1) {
+    const line = position.line;
+    if (line === TextEditor.getLineCount() - 1) {
       return vimState; // TODO: bell
     }
 
-    let lineOne = TextEditor.getLineAt(position).text;
-    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
-
-    lineTwo = lineTwo.substring(
-      TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown().line).character
-    );
-
-    let resultLine = lineOne + lineTwo;
+    const count = vimState.recordedState.count > 2 ? vimState.recordedState.count - 1 : 1;
+    const lastLine = Math.min(line + count, TextEditor.getLineCount() - 1);
+    const trimmedLines: string[] = [];
+    for (let i = line + 1; i <= lastLine; i++) {
+      const text = TextEditor.getLine(i).text;
+      trimmedLines.push(text.substring(TextEditor.getFirstNonWhitespaceCharOnLine(i).character));
+    }
+    const resultLine = TextEditor.getLine(line).text + trimmedLines.join('');
 
     let newState = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position.getLineBegin(),
-      lineTwo.length > 0
-        ? position.getNextLineBegin().getLineEnd().getLeft()
-        : position.getLineEnd()
+      TextEditor.getLineLength(lastLine) > 0
+        ? position.getDown(count).getLineEnd().getLeft()
+        : position.getDown(count - 1).getLineEnd()
     );
 
+    const trimmedLastLine = trimmedLines[trimmedLines.length - 1];
     vimState.recordedState.transformations.push({
       type: 'insertText',
       text: resultLine,
       position: position,
-      diff: new PositionDiff({ character: -lineTwo.length }),
+      diff: new PositionDiff({
+        character: -trimmedLastLine.length,
+      }),
     });
 
-    newState.cursorStopPosition = new Position(position.line, lineOne.length);
+    newState.cursorStopPosition = new Position(
+      position.line,
+      resultLine.length - trimmedLastLine.length
+    );
 
     return newState;
   }
