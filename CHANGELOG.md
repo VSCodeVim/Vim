@@ -1,5 +1,109 @@
 # Change Log
 
+## [v1.15.0](https://github.com/vscodevim/vim/tree/v1.15.0) (2020-07-13)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.5...v1.15.0)
+
+**Enhancements:**
+
+- \[Question\] Is it possible to open a file in new tab from keyboard while in file explorer? [\#4976](https://github.com/VSCodeVim/Vim/issues/4976)
+- Yank by line number [\#4938](https://github.com/VSCodeVim/Vim/issues/4938)
+- add :pu\[t\] command [\#4741](https://github.com/VSCodeVim/Vim/issues/4741)
+- Easymotion - Gray out fonts when activated [\#4524](https://github.com/VSCodeVim/Vim/issues/4524)
+- Add 'gx' support \(open URL\) [\#4518](https://github.com/VSCodeVim/Vim/issues/4518)
+- ":vsp %\<.h" to open the header file of the current file [\#4414](https://github.com/VSCodeVim/Vim/issues/4414)
+
+**Fixed Bugs:**
+
+- Make Vim \* and \# Quick Search Work Like REAL VIM [\#5001](https://github.com/VSCodeVim/Vim/issues/5001)
+- unexpected operation with \<ctrl - u\> in visual mode [\#4983](https://github.com/VSCodeVim/Vim/issues/4983)
+- Can't use the surround 'S' in visual mode, always defaults to ActionChangeLineVisualMode [\#4973](https://github.com/VSCodeVim/Vim/issues/4973)
+- Visual mode, word backwards motion selects EOL on last word [\#4966](https://github.com/VSCodeVim/Vim/issues/4966)
+- TaskQueue: Error running task. Failed to handle key=q. t.actionsRun is not iterable. [\#4948](https://github.com/VSCodeVim/Vim/issues/4948)
+- 'gj' and 'gk' when mapped move lines one by one instead of immediately [\#4903](https://github.com/VSCodeVim/Vim/issues/4903)
+- Extension host terminated unexpectedly: Can't use \<space\> in "vim.leader" setting [\#4899](https://github.com/VSCodeVim/Vim/issues/4899)
+- \<C-d\> with cursor above `scrolloff` should place the cursor at `scrolloff` in view port [\#4891](https://github.com/VSCodeVim/Vim/issues/4891)
+- `desiredColumn` gets forgotten after switching editors [\#4888](https://github.com/VSCodeVim/Vim/issues/4888)
+- Case toggling not working on single character [\#4835](https://github.com/VSCodeVim/Vim/issues/4835)
+- Various issues with `C`, `S`, and `R` in visual modes [\#4812](https://github.com/VSCodeVim/Vim/issues/4812)
+- `\*` and `\#` should skip over non-keyword characters [\#4808](https://github.com/VSCodeVim/Vim/issues/4808)
+- `\<C-y\>` does not correctly maintain visual selection when cursor is at bottom of screen [\#4440](https://github.com/VSCodeVim/Vim/issues/4440)
+
+**Closed issues:**
+
+- `zt`, `zz` does not works when remapping [\#5011](https://github.com/VSCodeVim/Vim/issues/5011)
+- Vim navigation very delayed when opening VSCode's settings.json for the first time [\#5003](https://github.com/VSCodeVim/Vim/issues/5003)
+- Build-dev task should do a clean of the 'out' folder first [\#4999](https://github.com/VSCodeVim/Vim/issues/4999)
+- Support Argument text objects from targets.vim [\#4998](https://github.com/VSCodeVim/Vim/issues/4998)
+- Parameter hint window loses focus; key presses go to editor instead [\#4994](https://github.com/VSCodeVim/Vim/issues/4994)
+- vH and vL is not work as expected when \$ and ^ is remapped to L and H respectively. [\#4991](https://github.com/VSCodeVim/Vim/issues/4991)
+- extra space in Surround [\#4965](https://github.com/VSCodeVim/Vim/issues/4965)
+- Ctrl C and Ctrl V not working [\#4953](https://github.com/VSCodeVim/Vim/issues/4953)
+- Ex commands, searches, etc. don't show in status bar [\#4951](https://github.com/VSCodeVim/Vim/issues/4951)
+- Mark file as clean after going back to the point where the file is saved [\#4950](https://github.com/VSCodeVim/Vim/issues/4950)
+- I am not allowed to set neovim path in wsl? Is there neovim support in wsl mode? [\#4947](https://github.com/VSCodeVim/Vim/issues/4947)
+- Remapping `hjkl` to `ijkl` leads to memory leak [\#4943](https://github.com/VSCodeVim/Vim/issues/4943)
+- Lag exiting insert mode: normal mode keystrokes are getting entered as text after ESC [\#4941](https://github.com/VSCodeVim/Vim/issues/4941)
+- gw stopped working [\#4937](https://github.com/VSCodeVim/Vim/issues/4937)
+- vim.visualstar setting has no effect [\#4932](https://github.com/VSCodeVim/Vim/issues/4932)
+- Q: How do I switch to Normal Mode from Visual Mode inside Macros? [\#4929](https://github.com/VSCodeVim/Vim/issues/4929)
+- Custom binding doesn't trigger compound command [\#4928](https://github.com/VSCodeVim/Vim/issues/4928)
+- Unable to use :!\<command\> [\#4920](https://github.com/VSCodeVim/Vim/issues/4920)
+- MoveLineEnd improvement [\#4910](https://github.com/VSCodeVim/Vim/issues/4910)
+- Not able to autodetect my Neovim path [\#4902](https://github.com/VSCodeVim/Vim/issues/4902)
+- command 'toggleVim' not found [\#4890](https://github.com/VSCodeVim/Vim/issues/4890)
+- Unable to bind \<S-J\> [\#4655](https://github.com/VSCodeVim/Vim/issues/4655)
+- Cannot use neovim on WSL 2 remote workspace \(Windows 10\) [\#4614](https://github.com/VSCodeVim/Vim/issues/4614)
+- Visibility of easymotion markers [\#4610](https://github.com/VSCodeVim/Vim/issues/4610)
+- \<space\> + s does not execute command [\#4394](https://github.com/VSCodeVim/Vim/issues/4394)
+
+**Merged pull requests:**
+
+- Update dependency @types/mocha to v8 [\#5013](https://github.com/VSCodeVim/Vim/pull/5013) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency webpack-merge to v5.0.9 [\#5008](https://github.com/VSCodeVim/Vim/pull/5008) ([renovate[bot]](https://github.com/apps/renovate))
+- Pin dependency clean-webpack-plugin to 3.0.0 [\#5006](https://github.com/VSCodeVim/Vim/pull/5006) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency ts-loader to v8 [\#5005](https://github.com/VSCodeVim/Vim/pull/5005) ([renovate[bot]](https://github.com/apps/renovate))
+- Textobject argument improvements [\#5004](https://github.com/VSCodeVim/Vim/pull/5004) ([lmNt](https://github.com/lmNt))
+- Fix 'v' enter visual mode not clearing commandList [\#5000](https://github.com/VSCodeVim/Vim/pull/5000) ([berknam](https://github.com/berknam))
+- Update dependency webpack-merge to v5 [\#4997](https://github.com/VSCodeVim/Vim/pull/4997) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/glob to v7.1.3 [\#4996](https://github.com/VSCodeVim/Vim/pull/4996) ([renovate[bot]](https://github.com/apps/renovate))
+- Implement ":!" bang command [\#4989](https://github.com/VSCodeVim/Vim/pull/4989) ([tagniam](https://github.com/tagniam))
+- Update dependency typescript to v3.9.6 [\#4987](https://github.com/VSCodeVim/Vim/pull/4987) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix surround alias using shortcut version with space instead of the ones without [\#4985](https://github.com/VSCodeVim/Vim/pull/4985) ([berknam](https://github.com/berknam))
+- prepration for running extension in nodeless environment [\#4981](https://github.com/VSCodeVim/Vim/pull/4981) ([rebornix](https://github.com/rebornix))
+- fixes issue \#3197: Adding :u\[ndo\] cmd and appropriate test [\#4980](https://github.com/VSCodeVim/Vim/pull/4980) ([adamjhawley](https://github.com/adamjhawley))
+- Fix macros not handling registers correctly [\#4975](https://github.com/VSCodeVim/Vim/pull/4975) ([berknam](https://github.com/berknam))
+- Update dependency gulp-bump to v3.2.0 [\#4971](https://github.com/VSCodeVim/Vim/pull/4971) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.157 [\#4970](https://github.com/VSCodeVim/Vim/pull/4970) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency winston to v3.3.3 [\#4968](https://github.com/VSCodeVim/Vim/pull/4968) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency winston to v3.3.2 [\#4962](https://github.com/VSCodeVim/Vim/pull/4962) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.156 [\#4961](https://github.com/VSCodeVim/Vim/pull/4961) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency winston to v3.3.1 [\#4960](https://github.com/VSCodeVim/Vim/pull/4960) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency winston to v3.3.0 [\#4958](https://github.com/VSCodeVim/Vim/pull/4958) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency winston-transport to v4.4.0 [\#4957](https://github.com/VSCodeVim/Vim/pull/4957) ([renovate[bot]](https://github.com/apps/renovate))
+- Pin dependencies [\#4956](https://github.com/VSCodeVim/Vim/pull/4956) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency webpack-cli to v3.3.12 [\#4954](https://github.com/VSCodeVim/Vim/pull/4954) ([renovate[bot]](https://github.com/apps/renovate))
+- Add `init.vim` support for vimrc [\#4952](https://github.com/VSCodeVim/Vim/pull/4952) ([vegerot](https://github.com/vegerot))
+- Fixed the workaround on line 713 so that it actually works [\#4945](https://github.com/VSCodeVim/Vim/pull/4945) ([AndreThompson-Atlow](https://github.com/AndreThompson-Atlow))
+- Update dependency mocha to v8.0.1 [\#4940](https://github.com/VSCodeVim/Vim/pull/4940) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v8 [\#4939](https://github.com/VSCodeVim/Vim/pull/4939) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix docker tests [\#4935](https://github.com/VSCodeVim/Vim/pull/4935) ([berknam](https://github.com/berknam))
+- Update dependency @types/glob to v7.1.2 [\#4924](https://github.com/VSCodeVim/Vim/pull/4924) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency typescript to v3.9.5 [\#4923](https://github.com/VSCodeVim/Vim/pull/4923) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.155 [\#4921](https://github.com/VSCodeVim/Vim/pull/4921) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/lodash to v4.14.154 [\#4918](https://github.com/VSCodeVim/Vim/pull/4918) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix path delimiter issue with neovim detection [\#4907](https://github.com/VSCodeVim/Vim/pull/4907) ([mhchen](https://github.com/mhchen))
+- Update dependency @types/lodash to v4.14.153 [\#4906](https://github.com/VSCodeVim/Vim/pull/4906) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency vscode-test to v1.4.0 [\#4904](https://github.com/VSCodeVim/Vim/pull/4904) ([renovate[bot]](https://github.com/apps/renovate))
+- Swap workspace and ui in extensionKind to enable WSL neovim use [\#4901](https://github.com/VSCodeVim/Vim/pull/4901) ([mhchen](https://github.com/mhchen))
+- Update dependency neovim to v4.9.0 [\#4897](https://github.com/VSCodeVim/Vim/pull/4897) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency ts-loader to v7.0.5 [\#4896](https://github.com/VSCodeVim/Vim/pull/4896) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v7.2.0 [\#4893](https://github.com/VSCodeVim/Vim/pull/4893) ([renovate[bot]](https://github.com/apps/renovate))
+- Change count handling on remapping, vscode commands and operators [\#4866](https://github.com/VSCodeVim/Vim/pull/4866) ([berknam](https://github.com/berknam))
+- Implement put ex command [\#4832](https://github.com/VSCodeVim/Vim/pull/4832) ([tagniam](https://github.com/tagniam))
+- WIP: Textobject argument movement [\#4653](https://github.com/VSCodeVim/Vim/pull/4653) ([lmNt](https://github.com/lmNt))
+- easymotion decorations now mimic the official plugin [\#4635](https://github.com/VSCodeVim/Vim/pull/4635) ([pushqrdx](https://github.com/pushqrdx))
+
 ## [v1.14.5](https://github.com/vscodevim/vim/tree/v1.14.5) (2020-05-22)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.4...v1.14.5)
@@ -24,7 +128,6 @@
 - TaskQueue: Error running task. Failed to handle key=\<Esc\>. . [\#4495](https://github.com/VSCodeVim/Vim/issues/4495)
 - Migrate from `vscode` dependency to `@types/vscode` and `vscode-test` dependencies [\#4448](https://github.com/VSCodeVim/Vim/issues/4448)
 - Extension issue [\#4354](https://github.com/VSCodeVim/Vim/issues/4354)
-- j mapped with gj is slow [\#4162](https://github.com/VSCodeVim/Vim/issues/4162)
 
 **Merged pull requests:**
 
@@ -175,9 +278,6 @@
 - Autocomplete disappears after typing [\#4515](https://github.com/VSCodeVim/Vim/issues/4515)
 - Can not map to `python.sortImports` in vimrc [\#4463](https://github.com/VSCodeVim/Vim/issues/4463)
 - When write c/c++ code use the 'snippets'，tab switch the key words，backspace is not doing well with the Multi-cursor.But when i disable Vim emulation, it work fine. [\#4281](https://github.com/VSCodeVim/Vim/issues/4281)
-- Expanding the snippet with multicursor is broken [\#4223](https://github.com/VSCodeVim/Vim/issues/4223)
-- `viw` cancels multi-cursor mode [\#4206](https://github.com/VSCodeVim/Vim/issues/4206)
-- Visual Mode + Multiple Cursor + \<Shift-i\> / \<Shift-a\> [\#4202](https://github.com/VSCodeVim/Vim/issues/4202)
 
 **Closed issues:**
 
@@ -294,8 +394,6 @@
 - When `nowrapscan`, hitting top or bottom should show an error message [\#4306](https://github.com/VSCodeVim/Vim/issues/4306)
 - Adopt TypeScript 3.7 [\#4254](https://github.com/VSCodeVim/Vim/issues/4254)
 - Detailed hover keybinding [\#4253](https://github.com/VSCodeVim/Vim/issues/4253)
-- Implement \<Del\> as vim insert command \( like \<c-h\> \) [\#4219](https://github.com/VSCodeVim/Vim/issues/4219)
-- saving registers per workspace. [\#4193](https://github.com/VSCodeVim/Vim/issues/4193)
 
 **Fixed Bugs:**
 
@@ -321,7 +419,6 @@
 - Normal mode 's' key is broken in 1.12 [\#4359](https://github.com/VSCodeVim/Vim/issues/4359)
 - vim.cursorStylePerMode is being ignored [\#4355](https://github.com/VSCodeVim/Vim/issues/4355)
 - zz doesn't maintain horizontal cursor position [\#4296](https://github.com/VSCodeVim/Vim/issues/4296)
-- Selecting a register using \["\] in visual block mode not working [\#4192](https://github.com/VSCodeVim/Vim/issues/4192)
 - Add Cursor to Line Ends Errors From Visual Line Mode [\#4270](https://github.com/VSCodeVim/Vim/issues/4270)
 
 **Closed issues:**
@@ -353,7 +450,6 @@
 - Extension host terminated unexpectedly. [\#4371](https://github.com/VSCodeVim/Vim/issues/4371)
 - When key 'p' typed, the cursor would blink many times and the pane would be frozen [\#4368](https://github.com/VSCodeVim/Vim/issues/4368)
 - Scrolling with \<C-e\> and \<C-y\> is very laggy [\#4309](https://github.com/VSCodeVim/Vim/issues/4309)
-- Insert mode's \<C-o\> doesn't work properly [\#4186](https://github.com/VSCodeVim/Vim/issues/4186)
 - \<c-o\>/\<c-t\> jump back to wrong location after 'gd' [\#4479](https://github.com/VSCodeVim/Vim/issues/4479)
 
 **Merged pull requests:**
@@ -501,7 +597,6 @@
 - High priority status bar messages should be cleared when the view scrolls [\#4310](https://github.com/VSCodeVim/Vim/issues/4310)
 - VSCodeVim uses the default node debugging port [\#4264](https://github.com/VSCodeVim/Vim/issues/4264)
 - ed style copy, move [\#4240](https://github.com/VSCodeVim/Vim/issues/4240)
-- Support pulling word under the cursor into a search [\#4102](https://github.com/VSCodeVim/Vim/issues/4102)
 
 **Fixed Bugs:**
 
@@ -509,7 +604,6 @@
 - Vim commands specified in .vimrc should only be executed if ended with \<CR\> [\#4311](https://github.com/VSCodeVim/Vim/issues/4311)
 - Searching backwards with offset is unaware of current word under cursor [\#4266](https://github.com/VSCodeVim/Vim/issues/4266)
 - `gp` incorrectly places cursor when pasting more than three lines [\#4246](https://github.com/VSCodeVim/Vim/issues/4246)
-- Copy command broke in 1.11.0 release [\#4126](https://github.com/VSCodeVim/Vim/issues/4126)
 
 **Closed issues:**
 
@@ -520,8 +614,6 @@
 - how can I configure to let easy motion start with one leader key stroke, instead of two, when used frenquetly, one more stroke seems inconvenience [\#4239](https://github.com/VSCodeVim/Vim/issues/4239)
 - Conversion from .vimrc [\#4231](https://github.com/VSCodeVim/Vim/issues/4231)
 - VSCodeVim stopped working with 1.11.3 [\#4225](https://github.com/VSCodeVim/Vim/issues/4225)
-- Version 1.11.3 not work. [\#4220](https://github.com/VSCodeVim/Vim/issues/4220)
-- Changing prefix in easy-motion [\#4218](https://github.com/VSCodeVim/Vim/issues/4218)
 
 **Merged pull requests:**
 
@@ -552,108 +644,18 @@
 - Update dependency typescript to v3.7.2 [\#4243](https://github.com/VSCodeVim/Vim/pull/4243) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency @types/node to v12.12.5 [\#4228](https://github.com/VSCodeVim/Vim/pull/4228) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency @types/node to v12.12.0 [\#4226](https://github.com/VSCodeVim/Vim/pull/4226) ([renovate[bot]](https://github.com/apps/renovate))
-- Remove prepare-test step from CONTRIBUTING.md [\#4222](https://github.com/VSCodeVim/Vim/pull/4222) ([JKillian](https://github.com/JKillian))
-- Fix bug causing increment/decrement issues for some number formats [\#4221](https://github.com/VSCodeVim/Vim/pull/4221) ([JKillian](https://github.com/JKillian))
-- Add vim.statusBarColors for 5 remaining modes [\#4185](https://github.com/VSCodeVim/Vim/pull/4185) ([thisisrandy](https://github.com/thisisrandy))
-- upgrade to node v12 [\#4171](https://github.com/VSCodeVim/Vim/pull/4171) ([jpoon](https://github.com/jpoon))
-- Update neovim path to be machine-overridable for remote use [\#4152](https://github.com/VSCodeVim/Vim/pull/4152) ([xconverge](https://github.com/xconverge))
-- Simplify storage directory to use supplied extension directory [\#4151](https://github.com/VSCodeVim/Vim/pull/4151) ([xconverge](https://github.com/xconverge))
-- \<C-r\> \<C-w\> \(insert word under cursor\) in search/commmand line [\#4143](https://github.com/VSCodeVim/Vim/pull/4143) ([fraenkel](https://github.com/fraenkel))
 
 ## [v1.11.3](https://github.com/vscodevim/vim/tree/v1.11.3) (2019-10-26)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.2...v1.11.3)
 
-**Enhancements:**
-
-- Add :UnicodeName \(aka ga\) [\#4204](https://github.com/VSCodeVim/Vim/issues/4204)
-- Feature request: Highlight text color [\#4164](https://github.com/VSCodeVim/Vim/issues/4164)
-- :sort u command does not remove duplicates [\#4142](https://github.com/VSCodeVim/Vim/issues/4142)
-
-**Fixed Bugs:**
-
-- \<C-d\>, etc. not working at beginning or end of buffer in 1.11.2 [\#4179](https://github.com/VSCodeVim/Vim/issues/4179)
-- `grj` is not linewise [\#4138](https://github.com/VSCodeVim/Vim/issues/4138)
-
-**Closed issues:**
-
-- Screen navigation doesn't work at top or bottom [\#4207](https://github.com/VSCodeVim/Vim/issues/4207)
-- Add support for vscode jupyter notebook [\#4203](https://github.com/VSCodeVim/Vim/issues/4203)
-- Cannot search for words which include slashes [\#4200](https://github.com/VSCodeVim/Vim/issues/4200)
-- After ctrl-C into insert mode [\#4189](https://github.com/VSCodeVim/Vim/issues/4189)
-- Extension Version 1.11.1 not Working for me [\#4174](https://github.com/VSCodeVim/Vim/issues/4174)
-- Activating extension 'vscodevim.vim' failed: Cannot find module 'neovim'. [\#4173](https://github.com/VSCodeVim/Vim/issues/4173)
-- S deletes the whole line  [\#4168](https://github.com/VSCodeVim/Vim/issues/4168)
-
-**Merged pull requests:**
-
-- Revert "WebPack builds for improved loading times \(\#3889\)" [\#4217](https://github.com/VSCodeVim/Vim/pull/4217) ([rickpr](https://github.com/rickpr))
-- Update dependency @types/node to v12.11.7 [\#4212](https://github.com/VSCodeVim/Vim/pull/4212) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.11.6 [\#4211](https://github.com/VSCodeVim/Vim/pull/4211) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency ts-loader to v6.2.1 [\#4210](https://github.com/VSCodeVim/Vim/pull/4210) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.11.5 [\#4208](https://github.com/VSCodeVim/Vim/pull/4208) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.11.2 [\#4201](https://github.com/VSCodeVim/Vim/pull/4201) ([renovate[bot]](https://github.com/apps/renovate))
-- Replace `assert.equal` with `assert.strictEqual` [\#4199](https://github.com/VSCodeVim/Vim/pull/4199) ([J-Fields](https://github.com/J-Fields))
-- Update CONTRIBUTING.md to recommend npx gulp [\#4198](https://github.com/VSCodeVim/Vim/pull/4198) ([nateroling](https://github.com/nateroling))
-- fix replace commands from visual and visual block mode not inserting tab [\#4195](https://github.com/VSCodeVim/Vim/pull/4195) ([peawyoyoyin](https://github.com/peawyoyoyin))
-- Update dependency mocha to v6.2.2 [\#4191](https://github.com/VSCodeVim/Vim/pull/4191) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.11.1 [\#4181](https://github.com/VSCodeVim/Vim/pull/4181) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.11.0 [\#4180](https://github.com/VSCodeVim/Vim/pull/4180) ([renovate[bot]](https://github.com/apps/renovate))
-- v1.11.2 [\#4172](https://github.com/VSCodeVim/Vim/pull/4172) ([jpoon](https://github.com/jpoon))
-- Add configuration for highlight/yank highlight text colors [\#4165](https://github.com/VSCodeVim/Vim/pull/4165) ([J-Fields](https://github.com/J-Fields))
-- Add support for za Vim binding [\#4160](https://github.com/VSCodeVim/Vim/pull/4160) ([aquova](https://github.com/aquova))
-- Fix back search when no matching \(\#4047\) [\#4157](https://github.com/VSCodeVim/Vim/pull/4157) ([seachicken](https://github.com/seachicken))
-- Support `\[ and`\] commands to go to start / end of previously operated text [\#4147](https://github.com/VSCodeVim/Vim/pull/4147) ([haifengkao](https://github.com/haifengkao))
-
 ## [v1.11.2](https://github.com/vscodevim/vim/tree/v1.11.2) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.1...v1.11.2)
 
-**Merged pull requests:**
-
-- v1.11.1 [\#4170](https://github.com/VSCodeVim/Vim/pull/4170) ([jpoon](https://github.com/jpoon))
-
 ## [v1.11.1](https://github.com/vscodevim/vim/tree/v1.11.1) (2019-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.11.0...v1.11.1)
-
-**Fixed Bugs:**
-
-- Cannot paste with Cmd+v in command mode on OSX. Works with Ctrl+v [\#4149](https://github.com/VSCodeVim/Vim/issues/4149)
-- Implement `startofline` [\#4137](https://github.com/VSCodeVim/Vim/issues/4137)
-- Cursor movement in wrapped lines changed from 1.10.2 to 1.11.0 [\#4120](https://github.com/VSCodeVim/Vim/issues/4120)
-
-**Closed issues:**
-
-- Trying to map Y to y\$ [\#4158](https://github.com/VSCodeVim/Vim/issues/4158)
-- Jupyter notebook mode [\#4156](https://github.com/VSCodeVim/Vim/issues/4156)
-- Cannot rebind : to ; [\#4124](https://github.com/VSCodeVim/Vim/issues/4124)
-- vs vim [\#4115](https://github.com/VSCodeVim/Vim/issues/4115)
-- Bind u to ctrl+z? [\#4113](https://github.com/VSCodeVim/Vim/issues/4113)
-
-**Merged pull requests:**
-
-- fix: exclude neovim from webpack module. \#4126 [\#4169](https://github.com/VSCodeVim/Vim/pull/4169) ([jpoon](https://github.com/jpoon))
-- Echo remapped command in statusbar [\#4163](https://github.com/VSCodeVim/Vim/pull/4163) ([xconverge](https://github.com/xconverge))
-- Try to parse neovim from PATH if neovimPath is empty [\#4161](https://github.com/VSCodeVim/Vim/pull/4161) ([xconverge](https://github.com/xconverge))
-- Update dependency typescript to v3.6.4 [\#4154](https://github.com/VSCodeVim/Vim/pull/4154) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.7.12 [\#4150](https://github.com/VSCodeVim/Vim/pull/4150) ([renovate[bot]](https://github.com/apps/renovate))
-- Added support for :sort u \(sort + unique\) [\#4148](https://github.com/VSCodeVim/Vim/pull/4148) ([jdxcode](https://github.com/jdxcode))
-- Implement `startofline` [\#4139](https://github.com/VSCodeVim/Vim/pull/4139) ([J-Fields](https://github.com/J-Fields))
-- Render newlines in command line as ^M [\#4136](https://github.com/VSCodeVim/Vim/pull/4136) ([J-Fields](https://github.com/J-Fields))
-- Update dependency @types/node to v12.7.11 [\#4132](https://github.com/VSCodeVim/Vim/pull/4132) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/node to v12.7.10 [\#4131](https://github.com/VSCodeVim/Vim/pull/4131) ([renovate[bot]](https://github.com/apps/renovate))
-- Make it possible to add skipped tests [\#4129](https://github.com/VSCodeVim/Vim/pull/4129) ([hetmankp](https://github.com/hetmankp))
-- Update CONTRIBUTING.md after webpack bundling addition [\#4128](https://github.com/VSCodeVim/Vim/pull/4128) ([hetmankp](https://github.com/hetmankp))
-- Fixes gj/gk behaviour on wrapped lines; closes \#4120 [\#4127](https://github.com/VSCodeVim/Vim/pull/4127) ([hetmankp](https://github.com/hetmankp))
-- Adding backspace motion in visual mode [\#4125](https://github.com/VSCodeVim/Vim/pull/4125) ([pedroapfilho](https://github.com/pedroapfilho))
-- Update README.md [\#4123](https://github.com/VSCodeVim/Vim/pull/4123) ([z1c0](https://github.com/z1c0))
-- Update dependency @types/node to v12.7.9 [\#4121](https://github.com/VSCodeVim/Vim/pull/4121) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency @types/sinon to v7.5.0 [\#4119](https://github.com/VSCodeVim/Vim/pull/4119) ([renovate[bot]](https://github.com/apps/renovate))
-- Refactor \<C-u\> and \<C-d\> [\#4117](https://github.com/VSCodeVim/Vim/pull/4117) ([J-Fields](https://github.com/J-Fields))
-- Update dependency mocha to v6.2.1 [\#4114](https://github.com/VSCodeVim/Vim/pull/4114) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency ts-loader to v6.2.0 [\#4111](https://github.com/VSCodeVim/Vim/pull/4111) ([renovate[bot]](https://github.com/apps/renovate))
-- v1.11.0 [\#4104](https://github.com/VSCodeVim/Vim/pull/4104) ([jpoon](https://github.com/jpoon))
 
 ## [v1.11.0](https://github.com/vscodevim/vim/tree/v1.11.0) (2019-09-28)
 
