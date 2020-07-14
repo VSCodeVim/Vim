@@ -15,6 +15,7 @@ import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
 import { parseMarksCommandArgs } from './subparsers/marks';
+import { parseJumpsCommandArgs } from './subparsers/jumps';
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
@@ -72,6 +73,11 @@ export const commandParsers = {
   history: {
     abbrev: 'his',
     parser: parseHistoryCommandArgs,
+  },
+
+  jumps: {
+    abbrev: 'ju',
+    parser: parseJumpsCommandArgs,
   },
 
   marks: {
