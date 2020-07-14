@@ -1229,7 +1229,7 @@ suite('Mode Normal', () => {
     title: 'Can handle dip',
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dip',
-    end: ['foo', '', '', '|fun'],
+    end: ['foo', '', '|', 'fun'],
     endMode: Mode.Normal,
   });
 
