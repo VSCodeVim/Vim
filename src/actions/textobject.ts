@@ -465,7 +465,7 @@ export class SelectParagraph extends TextObjectMovement {
     let stop = position.getCurrentParagraphEnd(true);
     while (
       stop.line < TextEditor.getLineCount() - 1 &&
-      TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
+      TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
     ) {
       stop = stop.getDownWithDesiredColumn(0);
     }
