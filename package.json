@@ -566,12 +566,16 @@
         "vim.easymotionMarkerFontFamily": {
           "type": "string",
           "description": "Set the font family of the marker text.",
-          "default": "Consolas"
+          "default": "",
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now uses `#editor.fontFamily#` instead.",
+          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now uses editor.fontFamily instead."
         },
         "vim.easymotionMarkerFontSize": {
           "type": "string",
           "description": "Set the font size of the marker text.",
-          "default": "14"
+          "default": "",
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now uses `#editor.fontSize#` instead.",
+          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now uses editor.fontSize instead."
         },
         "vim.easymotionMarkerFontWeight": {
           "type": "string",
