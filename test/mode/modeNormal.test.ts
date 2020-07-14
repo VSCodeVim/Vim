@@ -1226,6 +1226,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle dip',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dip on empty lines',
+    start: ['foo', '', '|', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can handle dap',
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dap',
