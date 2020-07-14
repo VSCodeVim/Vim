@@ -287,6 +287,11 @@ export class EasyMotion {
 
       //#endregion
 
+      const fontSize =
+        configuration.easymotionMarkerFontSize || configuration.getConfiguration('editor').fontSize;
+      const fontFamily =
+        configuration.easymotionMarkerFontFamily ||
+        configuration.getConfiguration('editor').fontFamily;
       const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
           contentText: trim === -1 ? keystroke.substring(0, 1) : keystroke,
@@ -298,8 +303,8 @@ export class EasyMotion {
           margin: 0 ${configuration.easymotionMarkerMargin / 2}px;
           transform: translateX(-0.05ch);
           border-radius: 1px;
-          font-family: ${configuration.easymotionMarkerFontFamily};
-          font-size: ${configuration.easymotionMarkerFontSize}px;
+          font-family: ${fontFamily};
+          font-size: ${fontSize}px;
           font-weight: ${configuration.easymotionMarkerFontWeight};`,
         },
       };
