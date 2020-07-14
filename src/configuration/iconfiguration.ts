@@ -155,6 +155,13 @@ export interface IConfiguration {
   surround: boolean;
 
   /**
+   * Customize argument textobject delimiter and separator characters
+   */
+  argumentObjectSeparators: string[];
+  argumentObjectOpeningDelimiters: string[];
+  argumentObjectClosingDelimiters: string[];
+
+  /**
    * Easymotion marker appearance settings
    */
   easymotionMarkerBackgroundColor: string;
