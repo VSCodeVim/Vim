@@ -496,7 +496,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
       }
       while (
         stop.line < TextEditor.getLineCount() - 1 &&
-        TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
+        TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
       ) {
         stop = stop.getDownWithDesiredColumn(0);
       }
