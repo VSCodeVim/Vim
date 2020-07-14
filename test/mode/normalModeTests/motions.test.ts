@@ -644,6 +644,45 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: '* ignores smartcase (ignorecase=true)',
+    config: { ignorecase: true, smartcase: true },
+    start: ['|test TEST test'],
+    keysPressed: '*',
+    end: ['test |TEST test'],
+  });
+
+  newTest({
+    title: '* ignores smartcase (ignorecase=false)',
+    config: { ignorecase: false, smartcase: true },
+    start: ['|test TEST test'],
+    keysPressed: '*',
+    end: ['test TEST |test'],
+  });
+
+  newTest({
+    title: '* skips over word separators',
+    start: ['const x| = 2 + 2;'],
+    // TODO: this should only require a single *
+    keysPressed: '**',
+    end: ['const x = 2 + |2;'],
+  });
+
+  newTest({
+    title: '* uses word separator if no word characters found before EOL',
+    start: ['if (x === 2)| {', '  if (y === 3) {'],
+    // TODO: this should only require a single *
+    keysPressed: '**',
+    end: ['if (x === 2) {', '  if (y === 3) |{'],
+  });
+
+  newTest({
+    title: '* does not go over line boundaries',
+    start: ['one  |   ', 'one two one two'],
+    keysPressed: '*',
+    end: ['one  |   ', 'one two one two'],
+  });
+
+  newTest({
     title: 'Can handle # on whitespace',
     start: ['abc abcdef| abc'],
     keysPressed: '#',
