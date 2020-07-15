@@ -312,10 +312,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'gJ' once and ALL WHITESPACE IS ELIMINATED",
+    title: "Can handle 'gJ' once when line has whitespaces",
     start: ['|one', '  two'],
     keysPressed: 'kgJ',
-    end: ['one|two'],
+    end: ['one|  two'],
   });
 
   newTest({
@@ -326,10 +326,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'gJ' with count and all whitespace is eliminated",
-    start: ['|one', '  two', '   three', 'four'],
+    title: "Can handle 'gJ' with count when line has whitespaces",
+    start: ['|one', '  two  ', 'three', 'four'],
     keysPressed: '3gJ',
-    end: ['onetwo|three', 'four'],
+    end: ['one  two  |three', 'four'],
   });
 
   newTest({
