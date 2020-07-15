@@ -4060,9 +4060,12 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   canBeRepeatedWithDot = true;
   offset: number;
+  staircase: boolean;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const ranges = this.getSearchRanges(vimState);
+
+    let stepNum = 1;
 
     for (const [idx, range] of ranges.entries()) {
       position = range.start;
@@ -4104,10 +4107,14 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           if (position.character < start.character + suffixOffset) {
             const pos = await this.replaceNum(
               num,
-              this.offset * (vimState.recordedState.count || 1),
+              this.offset * stepNum * (vimState.recordedState.count || 1),
               start,
               end
             );
+
+            if (this.staircase) {
+              stepNum++;
+            }
 
             if (idx === 0) {
               if (vimState.currentMode === Mode.Normal) {
@@ -4214,12 +4221,28 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 class IncrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-a>'];
   offset = +1;
+  staircase = false;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-x>'];
   offset = -1;
+  staircase = false;
+}
+
+@RegisterAction
+class IncrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-a>'];
+  offset = +1;
+  staircase = true;
+}
+
+@RegisterAction
+class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-x>'];
+  offset = -1;
+  staircase = true;
 }
 
 @RegisterAction
