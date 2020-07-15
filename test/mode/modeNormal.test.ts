@@ -1226,6 +1226,46 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle dip',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '', '|', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dip on empty lines',
+    start: ['foo', '', '|', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap with two blank lines',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap one single line with two blank lines',
+    start: ['foo', '', 'bar |baz', '', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Select sentence with trailing spaces',
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'das',
@@ -1860,6 +1900,20 @@ suite('Mode Normal', () => {
     start: ['|11223344'],
     keysPressed: 'A<BS><BS><Esc>0.',
     end: ['112|2'],
+  });
+
+  newTest({
+    title: 'Can repeat dw',
+    start: ['one |two three four'],
+    keysPressed: 'dw.',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: 'Can repeat dw with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dw2.',
+    end: ['one |five'],
   });
 
   newTest({
