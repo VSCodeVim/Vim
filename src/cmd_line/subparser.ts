@@ -24,6 +24,7 @@ import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
 import { UndoCommand } from './commands/undo';
 import { parseBangCommand } from './subparsers/bang';
+import { ClearJumpsCommand } from './commands/jumps';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -83,6 +84,10 @@ export const commandParsers = {
   jumps: {
     abbrev: 'ju',
     parser: parseJumpsCommandArgs,
+  },
+
+  clearjumps: {
+    parser: () => new ClearJumpsCommand(),
   },
 
   marks: {

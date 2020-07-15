@@ -12,6 +12,7 @@ export class Jump {
   public readonly editor: vscode.TextEditor | null;
   public readonly fileName: string;
   public readonly position: Position;
+  public number?: number;
 
   /**
    *

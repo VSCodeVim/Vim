@@ -18,7 +18,9 @@ class JumpPickItem implements QuickPickItem {
   constructor(jump: Jump) {
     this.jump = jump;
     this.label = jump.fileName;
-    this.detail = `line ${jump.position.line + 1} col ${jump.position.character}`;
+    this.detail = `jump ${jump.number} line ${jump.position.line + 1} col ${
+      jump.position.character
+    }`;
     try {
       this.description = jump.editor?.document.lineAt(jump.position)?.text;
     } catch (e) {
@@ -42,5 +44,12 @@ export class JumpsCommand extends node.CommandBase {
     } else {
       window.showInformationMessage('No jumps available');
     }
+  }
+}
+
+export class ClearJumpsCommand extends node.CommandBase {
+  async execute(): Promise<void> {
+    const jumpTracker = globalState.jumpTracker;
+    jumpTracker.clearJumps();
   }
 }
