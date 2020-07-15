@@ -248,6 +248,14 @@ suite('Mode Insert', () => {
   });
 
   newTest({
+    title: 'Repeat insert by count times with dot',
+    start: ['give me an a|:'],
+    keysPressed: 'aa<Esc>4.',
+    end: ['give me an a:aaaa|a'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can <Esc> after entering insert mode from <ctrl+o>',
     start: ['|'],
     keysPressed: 'i<C-o>i<Esc>',
