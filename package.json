@@ -1022,7 +1022,7 @@
     "prettier": "2.0.5",
     "pretty-quick": "2.0.1",
     "sinon": "9.0.2",
-    "ts-loader": "8.0.0",
+    "ts-loader": "8.0.1",
     "tslint": "6.1.2",
     "typescript": "3.9.6",
     "vscode-test": "1.4.0",
