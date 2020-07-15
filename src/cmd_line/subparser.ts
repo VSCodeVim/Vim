@@ -15,7 +15,6 @@ import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
 import { parseMarksCommandArgs } from './subparsers/marks';
-import { parseJumpsCommandArgs } from './subparsers/jumps';
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
@@ -24,7 +23,7 @@ import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
 import { UndoCommand } from './commands/undo';
 import { parseBangCommand } from './subparsers/bang';
-import { ClearJumpsCommand } from './commands/jumps';
+import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -83,7 +82,11 @@ export const commandParsers = {
 
   jumps: {
     abbrev: 'ju',
-    parser: parseJumpsCommandArgs,
+    parser: () => new JumpsCommand(),
+  },
+
+  jump: {
+    parser: () => new JumpsCommand(),
   },
 
   clearjumps: {
