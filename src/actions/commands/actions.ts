@@ -3397,19 +3397,17 @@ class ActionJoinNoWhitespace extends BaseCommand {
   // gJ is essentially J without the edge cases. ;-)
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const line = position.line;
-    if (line === TextEditor.getLineCount() - 1) {
+    if (position.line === TextEditor.getLineCount() - 1) {
       return vimState; // TODO: bell
     }
 
     const count = vimState.recordedState.count > 2 ? vimState.recordedState.count - 1 : 1;
-    const lastLine = Math.min(line + count, TextEditor.getLineCount() - 1);
-    const trimmedLines: string[] = [];
-    for (let i = line + 1; i <= lastLine; i++) {
-      const text = TextEditor.getLine(i).text;
-      trimmedLines.push(text.substring(TextEditor.getFirstNonWhitespaceCharOnLine(i).character));
+    const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
+    const lines: string[] = [];
+    for (let i = position.line + 1; i <= lastLine; i++) {
+      lines.push(TextEditor.getLine(i).text);
     }
-    const resultLine = TextEditor.getLine(line).text + trimmedLines.join('');
+    const resultLine = TextEditor.getLine(position.line).text + lines.join('');
 
     let newState = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
@@ -3419,20 +3417,17 @@ class ActionJoinNoWhitespace extends BaseCommand {
         : position.getDown(count - 1).getLineEnd()
     );
 
-    const trimmedLastLine = trimmedLines[trimmedLines.length - 1];
+    const lastLineLength = lines[lines.length - 1].length;
     vimState.recordedState.transformations.push({
       type: 'insertText',
       text: resultLine,
       position: position,
       diff: new PositionDiff({
-        character: -trimmedLastLine.length,
+        character: -lastLineLength,
       }),
     });
 
-    newState.cursorStopPosition = new Position(
-      position.line,
-      resultLine.length - trimmedLastLine.length
-    );
+    newState.cursorStopPosition = new Position(position.line, resultLine.length - lastLineLength);
 
     return newState;
   }
