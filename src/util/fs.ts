@@ -62,15 +62,17 @@ export const constants = {
 
 export async function existsAsync(path: string): Promise<boolean> {
   try {
-    await vscode.workspace.fs.stat(vscode.Uri.parse(path));
+    const uri = vscode.Uri.parse(`file:${path}`);
+    await vscode.workspace.fs.stat(uri);
     return true;
   } catch (_e) {
     return false;
   }
 }
 
-export async function unlink(path): Promise<void> {
-  await vscode.workspace.fs.delete(vscode.Uri.parse(path));
+export async function unlink(path: string): Promise<void> {
+  const uri = vscode.Uri.parse(`file:${path}`);
+  await vscode.workspace.fs.delete(uri);
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {
