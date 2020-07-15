@@ -23,6 +23,7 @@ import { NohlCommand } from './commands/nohl';
 import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
 import { UndoCommand } from './commands/undo';
+import { parseBangCommand } from './subparsers/bang';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -35,6 +36,10 @@ export type CommandParserMapping = {
 
 // Keep this sorted, please :)
 export const commandParsers = {
+  '!': {
+    parser: parseBangCommand,
+  },
+
   close: {
     abbrev: 'clo',
     parser: parseCloseCommandArgs,
