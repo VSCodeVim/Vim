@@ -1903,6 +1903,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can repeat dw',
+    start: ['one |two three four'],
+    keysPressed: 'dw.',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: 'Can repeat dw with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dw2.',
+    end: ['one |five'],
+  });
+
+  newTest({
     title: 'can delete linewise with d2G',
     start: ['|one', 'two', 'three'],
     keysPressed: 'd2G',
