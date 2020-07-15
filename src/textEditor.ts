@@ -11,7 +11,7 @@ import { lineCompletionProvider } from './completion/lineCompletionProvider';
  * Collection of helper functions around vscode.window.activeTextEditor
  */
 export class TextEditor {
-  static readonly whitespaceRegExp = new RegExp('^ *$');
+  static readonly whitespaceRegExp = new RegExp('\\s+');
 
   // TODO: Refactor args
 
