@@ -85,10 +85,6 @@ export const commandParsers = {
     parser: () => new JumpsCommand(),
   },
 
-  jump: {
-    parser: () => new JumpsCommand(),
-  },
-
   clearjumps: {
     parser: () => new ClearJumpsCommand(),
   },
