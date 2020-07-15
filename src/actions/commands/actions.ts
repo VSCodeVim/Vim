@@ -20,7 +20,12 @@ import {
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { Mode, visualBlockGetTopLeftPosition, isVisualMode } from './../../mode/mode';
+import {
+  Mode,
+  visualBlockGetTopLeftPosition,
+  isVisualMode,
+  visualBlockGetBottomRightPosition,
+} from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
@@ -4053,62 +4058,89 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 }
 
 abstract class IncrementDecrementNumberAction extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   canBeRepeatedWithDot = true;
   offset: number;
+  staircase: boolean;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const text = TextEditor.getLineAt(position).text;
+    const ranges = this.getSearchRanges(vimState);
 
-    // Make sure position within the text is possible and return if not
-    if (text.length <= position.character) {
-      return vimState;
-    }
+    let stepNum = 1;
 
-    // Start looking to the right for the next word to increment, unless we're
-    // already on a word to increment, in which case start at the beginning of
-    // that word.
-    const whereToStart = text[position.character].match(/\s/)
-      ? position
-      : position.getWordLeft(true);
+    for (const [idx, range] of ranges.entries()) {
+      position = range.start;
 
-    for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
-      // '-' doesn't count as a word, but is important to include in parsing
-      // the number, as long as it is not just part of the word (-foo2 for example)
-      if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
-        start = start.getLeft();
-        word = text[start.character] + word;
+      const text = TextEditor.getLineAt(position).text;
+
+      // Make sure position within the text is possible and return if not
+      if (text.length <= position.character) {
+        continue;
       }
-      // Strict number parsing so "1a" doesn't silently get converted to "1"
-      do {
-        const result = NumericString.parse(word);
-        if (result === undefined) {
+
+      // Start looking to the right for the next word to increment, unless we're
+      // already on a word to increment, in which case start at the beginning of
+      // that word.
+      const whereToStart = text[position.character].match(/\s/)
+        ? position
+        : position.getWordLeft(true);
+
+      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
+        if (start.isAfter(range.stop)) {
           break;
         }
-        const { num, suffixOffset } = result;
 
-        // Use suffix offset to check if current cursor is in or before detected number.
-        if (position.character < start.character + suffixOffset) {
-          vimState.cursorStopPosition = await this.replaceNum(
-            num,
-            this.offset * (vimState.recordedState.count || 1),
-            start,
-            end
-          );
-          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft(num.suffix.length);
-          return vimState;
-        } else {
-          // For situation like this: xyz1999em199[cursor]9m
-          word = word.slice(suffixOffset);
-          start = new Position(start.line, start.character + suffixOffset);
+        // '-' doesn't count as a word, but is important to include in parsing
+        // the number, as long as it is not just part of the word (-foo2 for example)
+        if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
+          start = start.getLeft();
+          word = text[start.character] + word;
         }
-      } while (true);
+        // Strict number parsing so "1a" doesn't silently get converted to "1"
+        do {
+          const result = NumericString.parse(word);
+          if (result === undefined) {
+            break;
+          }
+          const { num, suffixOffset } = result;
+
+          // Use suffix offset to check if current cursor is in or before detected number.
+          if (position.character < start.character + suffixOffset) {
+            const pos = await this.replaceNum(
+              num,
+              this.offset * stepNum * (vimState.recordedState.count || 1),
+              start,
+              end
+            );
+
+            if (this.staircase) {
+              stepNum++;
+            }
+
+            if (vimState.currentMode === Mode.Normal) {
+              vimState.cursorStartPosition = vimState.cursorStopPosition = pos.getLeft(
+                num.suffix.length
+              );
+            }
+            break wordLoop;
+          } else {
+            // For situation like this: xyz1999em199[cursor]9m
+            word = word.slice(suffixOffset);
+            start = new Position(start.line, start.character + suffixOffset);
+          }
+        } while (true);
+      }
     }
-    // No usable numbers, return the original position
+
+    if (isVisualMode(vimState.currentMode)) {
+      vimState.cursorStopPosition = ranges[0].start;
+    }
+
+    vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
 
-  public async replaceNum(
+  private async replaceNum(
     start: NumericString,
     offset: number,
     startPos: Position,
@@ -4120,17 +4152,65 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    if (oldLength === newNum.length) {
-      await TextEditor.replace(range, newNum);
-    } else {
-      // Can't use replace, since new number is a different width than old
-      await TextEditor.delete(range);
-      await TextEditor.insertAt(newNum, startPos);
+    await TextEditor.replace(range, newNum);
+    if (oldLength !== newNum.length) {
       // Adjust end position according to difference in width of number-string
       endPos = new Position(endPos.line, startPos.character + newNum.length - 1);
     }
 
     return endPos;
+  }
+
+  /**
+   * @returns a list of Ranges in which to search for numbers
+   */
+  private getSearchRanges(vimState: VimState): Range[] {
+    let ranges: Range[] = [];
+    const [start, stop] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    switch (vimState.currentMode) {
+      case Mode.Normal: {
+        ranges.push(
+          new Range(vimState.cursorStopPosition, vimState.cursorStopPosition.getLineEnd())
+        );
+        break;
+      }
+
+      case Mode.Visual: {
+        ranges.push(new Range(start, start.getLineEnd()));
+        for (let line = start.line + 1; line < stop.line; line++) {
+          const lineStart = new Position(line, 0);
+          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+        }
+        ranges.push(new Range(stop.getLineBegin(), stop));
+        break;
+      }
+
+      case Mode.VisualLine: {
+        for (let line = start.line; line <= stop.line; line++) {
+          const lineStart = new Position(line, 0);
+          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+        }
+        break;
+      }
+
+      case Mode.VisualBlock: {
+        const topLeft = visualBlockGetTopLeftPosition(start, stop);
+        const bottomRight = visualBlockGetBottomRightPosition(start, stop);
+        for (let line = topLeft.line; line <= bottomRight.line; line++) {
+          ranges.push(
+            new Range(
+              new Position(line, topLeft.character),
+              new Position(line, bottomRight.character)
+            )
+          );
+        }
+        break;
+      }
+
+      default:
+        throw new Error('Unexpected mode in IncrementDecrementNumberAction.getPositions()');
+    }
+    return ranges;
   }
 }
 
@@ -4138,12 +4218,28 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 class IncrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-a>'];
   offset = +1;
+  staircase = false;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-x>'];
   offset = -1;
+  staircase = false;
+}
+
+@RegisterAction
+class IncrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-a>'];
+  offset = +1;
+  staircase = true;
+}
+
+@RegisterAction
+class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-x>'];
+  offset = -1;
+  staircase = true;
 }
 
 @RegisterAction

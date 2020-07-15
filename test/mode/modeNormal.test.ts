@@ -2159,6 +2159,62 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3<C-a>',
+    end: ['9 9 9', '9| 12 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3<C-a>',
+    end: ['9 9 9', '|12 9 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 12 9', '9 12 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode does not go past selection',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3g<C-a>',
+    end: ['9 9 9', '9| 12 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3g<C-a>',
+    end: ['9 9 9', '|12 9 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3g<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 15 9', '9 18 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'can do Y',
     start: ['|blah blah'],
     keysPressed: 'Yp',
