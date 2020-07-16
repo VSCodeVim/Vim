@@ -144,9 +144,9 @@ export function statusBarCommandText(vimState: VimState): string {
       return `${lines}x${chars} ${vimState.recordedState.pendingCommandString}`;
     }
     case Mode.Insert:
+    case Mode.Replace:
       return vimState.recordedState.pendingCommandString;
     case Mode.Normal:
-    case Mode.Replace:
     case Mode.Disabled:
       return vimState.recordedState.commandString;
     default:

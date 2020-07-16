@@ -420,7 +420,7 @@ export class ModeHandler implements vscode.Disposable {
     // to call the updateView after we are no longer waiting keys so that any
     // existing overlapped key is removed.
     if (
-      this.currentMode === Mode.Insert &&
+      (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
       (this.vimState.recordedState.bufferedKeys.length > 0 ||
         this.vimState.recordedState.waitingForAnotherActionKey ||
         oldWaitingForAnotherActionKey !== this.vimState.recordedState.waitingForAnotherActionKey)
@@ -1468,7 +1468,7 @@ export class ModeHandler implements vscode.Disposable {
     // first character when inserting digraphs with `<C-k>`.
     let decorationOptions: vscode.DecorationOptions[] = [];
     if (
-      this.currentMode === Mode.Insert &&
+      (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
       (vimState.recordedState.bufferedKeys.length > 0 ||
         vimState.recordedState.waitingForAnotherActionKey)
     ) {
