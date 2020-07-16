@@ -20,6 +20,7 @@ import {
   CommandInsertAtFirstCharacter,
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
+  CommandReplaceAtCursorFromNormalMode,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
@@ -658,5 +659,31 @@ class CommandShowLineAutocomplete extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await lineCompletionProvider.showLineCompletionsQuickPick(position, vimState);
     return vimState;
+  }
+}
+
+@RegisterAction
+class NewLineInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [['<C-j>'], ['<C-m>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: '\n',
+      position: position,
+      diff: new PositionDiff({ character: -1 }),
+    });
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<Insert>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }

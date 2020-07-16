@@ -525,22 +525,6 @@ class CommandExecuteLastMacro extends BaseCommand {
 }
 
 @RegisterAction
-class CtrlM extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = [['<C-m>']];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type: 'insertText',
-      text: '\n',
-      position: position,
-      diff: new PositionDiff({ character: -1 }),
-    });
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [
     Mode.Visual,
@@ -831,7 +815,7 @@ export class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
+export class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['R'];
 
@@ -842,16 +826,6 @@ class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
     vimState.replaceState = new ReplaceState(position, timesToRepeat);
 
     return vimState;
-  }
-}
-
-@RegisterAction
-class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<Insert>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }
 
