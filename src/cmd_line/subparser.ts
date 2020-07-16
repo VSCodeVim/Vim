@@ -23,6 +23,7 @@ import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
 import { UndoCommand } from './commands/undo';
 import { parseBangCommand } from './subparsers/bang';
+import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -77,6 +78,16 @@ export const commandParsers = {
   history: {
     abbrev: 'his',
     parser: parseHistoryCommandArgs,
+  },
+
+  jumps: {
+    abbrev: 'ju',
+    parser: () => new JumpsCommand(),
+  },
+
+  clearjumps: {
+    abbrev: 'cle',
+    parser: () => new ClearJumpsCommand(),
   },
 
   marks: {
