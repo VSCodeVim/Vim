@@ -10,10 +10,10 @@ class JumpPickItem implements QuickPickItem {
   jump: Jump;
 
   label: string;
-  description?: string | undefined;
-  detail?: string | undefined;
-  picked?: boolean | undefined;
-  alwaysShow?: boolean | undefined;
+  description?: string;
+  detail?: string;
+  picked?: boolean;
+  alwaysShow?: boolean;
 
   constructor(jump: Jump) {
     this.jump = jump;

@@ -86,6 +86,7 @@ export const commandParsers = {
   },
 
   clearjumps: {
+    abbrev: 'cle',
     parser: () => new ClearJumpsCommand(),
   },
 
