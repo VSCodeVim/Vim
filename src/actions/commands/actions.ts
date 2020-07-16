@@ -3398,7 +3398,6 @@ class ActionJoinNoWhitespace extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'J'];
   canBeRepeatedWithDot = true;
-  runsOnceForEachCountPrefix = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
@@ -3407,31 +3406,33 @@ class ActionJoinNoWhitespace extends BaseCommand {
       return vimState; // TODO: bell
     }
 
-    let lineOne = TextEditor.getLineAt(position).text;
-    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
-
-    lineTwo = lineTwo.substring(
-      TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown().line).character
-    );
-
-    let resultLine = lineOne + lineTwo;
+    const count = vimState.recordedState.count > 2 ? vimState.recordedState.count - 1 : 1;
+    const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
+    const lines: string[] = [];
+    for (let i = position.line + 1; i <= lastLine; i++) {
+      lines.push(TextEditor.getLine(i).text);
+    }
+    const resultLine = TextEditor.getLine(position.line).text + lines.join('');
 
     let newState = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position.getLineBegin(),
-      lineTwo.length > 0
-        ? position.getNextLineBegin().getLineEnd().getLeft()
-        : position.getLineEnd()
+      TextEditor.getLineLength(lastLine) > 0
+        ? position.getDown(count).getLineEnd().getLeft()
+        : position.getDown(count - 1).getLineEnd()
     );
 
+    const lastLineLength = lines[lines.length - 1].length;
     vimState.recordedState.transformations.push({
       type: 'insertText',
       text: resultLine,
       position: position,
-      diff: new PositionDiff({ character: -lineTwo.length }),
+      diff: new PositionDiff({
+        character: -lastLineLength,
+      }),
     });
 
-    newState.cursorStopPosition = new Position(position.line, lineOne.length);
+    newState.cursorStopPosition = new Position(position.line, resultLine.length - lastLineLength);
 
     return newState;
   }
