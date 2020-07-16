@@ -4116,10 +4116,10 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
               stepNum++;
             }
 
-            if (idx === 0) {
-              if (vimState.currentMode === Mode.Normal) {
-                vimState.cursorStopPosition = pos.getLeft(num.suffix.length);
-              }
+            if (vimState.currentMode === Mode.Normal) {
+              vimState.cursorStartPosition = vimState.cursorStopPosition = pos.getLeft(
+                num.suffix.length
+              );
             }
             break wordLoop;
           } else {
@@ -4151,12 +4151,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    if (oldLength === newNum.length) {
-      await TextEditor.replace(range, newNum);
-    } else {
-      // Can't use replace, since new number is a different width than old
-      await TextEditor.delete(range);
-      await TextEditor.insertAt(newNum, startPos);
+    await TextEditor.replace(range, newNum);
+    if (oldLength !== newNum.length) {
       // Adjust end position according to difference in width of number-string
       endPos = new Position(endPos.line, startPos.character + newNum.length - 1);
     }
