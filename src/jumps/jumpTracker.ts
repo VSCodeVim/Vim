@@ -29,6 +29,10 @@ export class JumpTracker {
    * All recorded jumps, in the order of occurrence.
    */
   public get jumps(): Jump[] {
+    for (let i = 0; i < this._jumps.length; i++) {
+      const jump = this._jumps[i];
+      jump.number = i;
+    }
     return this._jumps;
   }
 
