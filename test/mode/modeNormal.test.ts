@@ -1783,6 +1783,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle undo delete',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwu',
+    end: ['one |three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete twice',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwuu',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count and redo',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u<C-r>',
+    end: ['one |three four five'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
@@ -2344,6 +2372,22 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', 'abd'],
     keysPressed: '/abc<C-h>d\n',
     end: ['foo', 'bar', '|abd'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can delete with search forward',
+    start: ['foo |junk junk bar'],
+    keysPressed: 'd/bar\n',
+    end: ['foo |bar'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can delete with search backward',
+    start: ['foo junk garbage trash |bar'],
+    keysPressed: 'd?junk\n',
+    end: ['foo |bar'],
     endMode: Mode.Normal,
   });
 
