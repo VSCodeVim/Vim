@@ -1783,6 +1783,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle undo delete',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwu',
+    end: ['one |three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete twice',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwuu',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count and redo',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u<C-r>',
+    end: ['one |three four five'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
@@ -2156,6 +2184,62 @@ suite('Mode Normal', () => {
     start: ['-fo|o2'],
     keysPressed: '<C-a>',
     end: ['-foo|3'],
+  });
+
+  newTest({
+    title: '<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3<C-a>',
+    end: ['9 9 9', '9| 12 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3<C-a>',
+    end: ['9 9 9', '|12 9 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 12 9', '9 12 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode does not go past selection',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3g<C-a>',
+    end: ['9 9 9', '9| 12 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3g<C-a>',
+    end: ['9 9 9', '|12 9 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3g<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 15 9', '9 18 9', '9 9 9'],
+    endMode: Mode.Normal,
   });
 
   newTest({
