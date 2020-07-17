@@ -26,6 +26,7 @@ import { parseBangCommand } from './subparsers/bang';
 import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
+import { ShCommand } from './commands/sh';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -200,6 +201,11 @@ export const commandParsers = {
   set: {
     abbrev: 'se',
     parser: parseOptionsCommandArgs,
+  },
+
+  shell: {
+    abbrev: 'sh',
+    parser: () => new ShCommand(),
   },
 
   smile: {
