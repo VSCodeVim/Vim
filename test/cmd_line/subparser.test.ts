@@ -20,7 +20,9 @@ suite('getParser', () => {
   });
 
   test(':sh', () => {
-    assert.notEqual(getParser('sh'), undefined);
+    const s = getParser('shell');
+    assert.notEqual(s, undefined);
+    assert.strictEqual(getParser('sh'), s);
   });
 
   test(':write', () => {

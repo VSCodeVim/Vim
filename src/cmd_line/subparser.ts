@@ -203,7 +203,8 @@ export const commandParsers = {
     parser: parseOptionsCommandArgs,
   },
 
-  sh: {
+  shell: {
+    abbrev: 'sh',
     parser: () => new ShCommand(),
   },
 
