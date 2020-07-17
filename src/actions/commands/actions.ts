@@ -2190,9 +2190,12 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 export class CommandUndo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['u'];
+  // we support a count to undo by this setting
+  runsOnceForEachCountPrefix = true;
   runsOnceForEveryCursor() {
     return false;
   }
+  // to prevent undo for accidental key chords like: cu, du...
   mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
