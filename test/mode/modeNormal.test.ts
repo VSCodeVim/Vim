@@ -2302,7 +2302,7 @@ suite('Mode Normal', () => {
   newTest({
     title: 'Can delete with search backward',
     start: ['foo junk junk |bar'],
-    keysPressed: 'd?bar\n',
+    keysPressed: 'd?foo\n',
     end: ['foo |bar'],
     endMode: Mode.Normal,
   });
