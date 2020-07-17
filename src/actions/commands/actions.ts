@@ -3381,6 +3381,10 @@ class ActionJoinNoWhitespace extends BaseCommand {
     }
 
     const count = vimState.recordedState.count > 2 ? vimState.recordedState.count - 1 : 1;
+    return this.execJoin(count, position, vimState);
+  }
+
+  public async execJoin(count: number, position: Position, vimState: VimState): Promise<VimState> {
     const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
     const lines: string[] = [];
     for (let i = position.line + 1; i <= lastLine; i++) {
@@ -3414,27 +3418,14 @@ class ActionJoinNoWhitespace extends BaseCommand {
 
 @RegisterAction
 class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
-  modes = [Mode.Visual];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['g', 'J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actionJoin = new ActionJoinNoWhitespace();
-    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
-
-    if (start.line === end.line) {
-      return vimState;
-    }
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
-
-    for (let i = start.line; i < end.line; i++) {
-      vimState = await actionJoin.exec(start, vimState);
-    }
-
-    return vimState;
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const count = start.line === end.line ? 1 : end.line - start.line;
+    vimState.currentRegisterMode = RegisterMode.CharacterWise;
+    return new ActionJoinNoWhitespace().execJoin(count, start, vimState);
   }
 }
 
