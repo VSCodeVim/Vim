@@ -19,6 +19,10 @@ suite('getParser', () => {
     assert.strictEqual(getParser('jump'), j);
   });
 
+  test(':sh', () => {
+    assert.notEqual(getParser('sh'), undefined);
+  });
+
   test(':write', () => {
     const w = getParser('w');
     assert.notEqual(w, undefined);
