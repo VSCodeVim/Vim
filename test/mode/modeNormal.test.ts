@@ -1783,6 +1783,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle undo delete',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwu',
+    end: ['one |three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete twice',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwuu',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count and redo',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u<C-r>',
+    end: ['one |three four five'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
