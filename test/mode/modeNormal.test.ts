@@ -1804,6 +1804,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle undo delete with count and redo',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u<C-r>',
+    end: ['one |three four five'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
