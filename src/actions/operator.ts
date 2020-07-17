@@ -1,6 +1,12 @@
 import * as vscode from 'vscode';
 
-import { Position, PositionDiff, PositionDiffType } from './../common/motion/position';
+import {
+  Position,
+  PositionDiff,
+  PositionDiffType,
+  earlierOf,
+  sorted,
+} from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -187,7 +193,7 @@ export class DeleteOperator extends BaseOperator {
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
-      resultingPosition = Position.earlierOf(start, end);
+      resultingPosition = earlierOf(start, end);
     }
 
     if (start.character > TextEditor.getLineAt(start).text.length) {
@@ -274,7 +280,7 @@ export class YankOperator extends BaseOperator {
 
     const originalMode = vimState.currentMode;
 
-    [start, end] = Position.sorted(start, end);
+    [start, end] = sorted(start, end);
     let extendedEnd = new Position(end.line, end.character + 1);
 
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -422,7 +428,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
       await TextEditor.replace(range, text.toUpperCase());
     }
 
-    const cursorPosition = Position.earlierOf(startPos, endPos);
+    const cursorPosition = earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -467,7 +473,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
       await TextEditor.replace(range, text.toLowerCase());
     }
 
-    const cursorPosition = Position.earlierOf(startPos, endPos);
+    const cursorPosition = earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -714,7 +720,7 @@ export class ToggleCaseOperator extends BaseOperator {
 
     await ToggleCaseOperator.toggleCase(range);
 
-    const cursorPosition = Position.earlierOf(start, end);
+    const cursorPosition = earlierOf(start, end);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -750,7 +756,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
       await ToggleCaseOperator.toggleCase(range);
     }
 
-    const cursorPosition = Position.earlierOf(startPos, endPos);
+    const cursorPosition = earlierOf(startPos, endPos);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -1086,7 +1092,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    [start, end] = Position.sorted(start, end);
+    [start, end] = sorted(start, end);
 
     start = start.getLineBegin();
     end = end.getLineEnd();

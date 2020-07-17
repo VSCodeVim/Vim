@@ -7,65 +7,56 @@ import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines } from './testUtils';
+import { assertEqualLines, reloadConfiguration } from './testUtils';
 import { globalState } from '../src/state/globalState';
+import { IConfiguration } from '../src/configuration/iconfiguration';
 
 export function getTestingFunctions() {
-  const getNiceStack = (stack: string | undefined): string => {
+  function getNiceStack(stack: string | undefined): string {
     return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
-  };
+  }
 
-  const newTest = (testObj: ITestObject): void => {
+  function newTestGeneric(
+    testObj: ITestObject,
+    testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction
+  ): void {
     const stack = new Error().stack;
     const niceStack = getNiceStack(stack);
 
-    test(testObj.title, async () =>
-      testIt
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
+    testFunc(testObj.title, async () => {
+      const prevConfig = { ...Globals.mockConfiguration };
+      try {
+        if (testObj.config) {
+          for (const key in testObj.config) {
+            if (testObj.config.hasOwnProperty(key)) {
+              const value = testObj.config[key];
+              Globals.mockConfiguration[key] = value;
+            }
+          }
+          await reloadConfiguration();
+        }
+        const mh = await getAndUpdateModeHandler();
+        await testIt(mh, testObj);
+      } catch (reason) {
+        reason.stack = niceStack;
+        throw reason;
+      } finally {
+        if (testObj.config) {
+          Globals.mockConfiguration = prevConfig;
+          await reloadConfiguration();
+        }
+      }
+    });
+  }
+
+  const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test);
+
+  const newTestOnly = (testObj: ITestObject) => {
+    console.warn('!!! Running single test !!!');
+    return newTestGeneric(testObj, test.only);
   };
 
-  const newTestOnly = (testObj: ITestObject): void => {
-    console.log('!!! Running single test !!!');
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    test.only(testObj.title, async () =>
-      testIt
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
-  };
-
-  const newTestSkip = (testObj: ITestObject): void => {
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    test.skip(testObj.title, async () =>
-      testIt
-        .bind(
-          null,
-          await getAndUpdateModeHandler()
-        )(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
-    );
-  };
+  const newTestSkip = (testObj: ITestObject) => newTestGeneric(testObj, test.skip);
 
   return {
     newTest,
@@ -76,6 +67,7 @@ export function getTestingFunctions() {
 
 interface ITestObject {
   title: string;
+  config?: Partial<IConfiguration>;
   start: string[];
   keysPressed: string;
   end: string[];
@@ -133,13 +125,7 @@ class TestObjectHelper {
   }
 
   private _parse(t: ITestObject): void {
-    this._isValid = true;
-    if (!this._setStartCursorPosition(t.start)) {
-      this._isValid = false;
-    }
-    if (!this._setEndCursorPosition(t.end)) {
-      this._isValid = false;
-    }
+    this._isValid = this._setStartCursorPosition(t.start) && this._setEndCursorPosition(t.end);
   }
 
   public asVimInputText(): string[] {
