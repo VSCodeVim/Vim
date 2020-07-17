@@ -1225,13 +1225,6 @@ export class CommandSearchBackwards extends BaseCommand {
   isMotion = true;
   isJump = true;
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Prevent collision with `g?` (rot13 operator)
-    return (
-      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
-    );
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     globalState.searchState = new SearchState(
       SearchDirection.Backward,
