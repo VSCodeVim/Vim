@@ -2376,6 +2376,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can delete with search forward',
+    start: ['foo |junk junk bar'],
+    keysPressed: 'd/bar\n',
+    end: ['foo |bar'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can delete with search backward',
+    start: ['foo junk garbage trash |bar'],
+    keysPressed: 'd?junk\n',
+    end: ['foo |bar'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
