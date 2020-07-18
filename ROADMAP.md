@@ -487,7 +487,7 @@ Since the list is too long, now we just put those already supported options here
 
 | Status             | Command     | Description                                                                |
 | ------------------ | ----------- | -------------------------------------------------------------------------- |
-| :arrow_down:       | :sh[ell]    | start a shell                                                              |
+| :white_check_mark: | :sh[ell]    | start a shell                                                              |
 | :white_check_mark: | :!{command} | execute {command} with a shell                                             |
 | :arrow_down:       | K           | lookup keyword under the cursor with 'keywordprg' program (default: "man") |
 
