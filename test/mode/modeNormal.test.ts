@@ -2306,14 +2306,6 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can change with search backward',
-    start: ['foo junk garbage trash |bar'],
-    keysPressed: 'c?junk\nbaz',
-    end: ['foo baz|bar'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
