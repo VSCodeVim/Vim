@@ -1918,9 +1918,23 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can delete linewise with d2G',
-    start: ['|one', 'two', 'three'],
+    start: ['on|e', 'two', 'three'],
     keysPressed: 'd2G',
     end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg',
+    start: ['on|e', 'two', 'three'],
+    keysPressed: 'd2gg',
+    end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg backwards',
+    start: ['one', 'two', 'thr|ee', 'four'],
+    keysPressed: 'd2gg',
+    end: ['one', '|four'],
   });
 
   newTest({
@@ -2289,6 +2303,14 @@ suite('Mode Normal', () => {
     keysPressed: '/abc<C-h>d\n',
     end: ['foo', 'bar', '|abd'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can change with search backward',
+    start: ['foo junk garbage trash |bar'],
+    keysPressed: 'c?junk\nbaz',
+    end: ['foo baz|bar'],
+    endMode: Mode.Insert,
   });
 
   newTest({
