@@ -12,6 +12,19 @@ suite('getParser', () => {
     assert.strictEqual(getParser('marksx'), undefined);
   });
 
+  test(':ju', () => {
+    const j = getParser('ju');
+    assert.notEqual(j, undefined);
+    assert.strictEqual(getParser('jumps'), j);
+    assert.strictEqual(getParser('jump'), j);
+  });
+
+  test(':sh', () => {
+    const s = getParser('shell');
+    assert.notEqual(s, undefined);
+    assert.strictEqual(getParser('sh'), s);
+  });
+
   test(':write', () => {
     const w = getParser('w');
     assert.notEqual(w, undefined);
