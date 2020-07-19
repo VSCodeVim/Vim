@@ -58,11 +58,6 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if ('help'.startsWith(command.split(/\s/)[0])) {
-      StatusBar.setText(vimState, `:help Not supported.`, true);
-      return;
-    }
-
     this._history.add(command);
     this.commandLineHistoryIndex = this._history.get().length;
 

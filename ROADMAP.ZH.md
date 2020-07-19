@@ -495,11 +495,11 @@
 
 ## 外部命令
 
-| 状态         | 命令        | 描述                                                  |
-| ------------ | ----------- | ----------------------------------------------------- |
-| :arrow_down: | :sh[ell]    | 开始一个 shell                                        |
-| :arrow_down: | :!{command} | 在 shell 中执行{command}                              |
-| :arrow_down: | K           | 使用'keyboard prg'程序在光标下查找关键字(默认: "man") |
+| 状态               | 命令        | 描述                                                  |
+| ------------------ | ----------- | ----------------------------------------------------- |
+| :white_check_mark: | :sh[ell]    | 开始一个 shell                                        |
+| :white_check_mark: | :!{command} | 在 shell 中执行{command}                              |
+| :arrow_down:       | K           | 使用'keyboard prg'程序在光标下查找关键字(默认: "man") |
 
 ## 执行范围
 

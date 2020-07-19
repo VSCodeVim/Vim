@@ -221,6 +221,38 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: "Can handle 'gJ' when the entire visual block is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lgJ',
+    end: ['one', 'two|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the visual block spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '<C-v>jjlgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the visual block spans multiple lines and line has whitespaces",
+    start: ['o|ne  ', 'two', '  three', 'four'],
+    keysPressed: '<C-v>jjlgJ',
+    end: ['one  two|  three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when start position of the visual block is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: '<C-v>kkgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can handle ~/g~ in visual block mode',
     start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
     keysPressed: '<C-v>jl~jjl<C-v>jlg~',
