@@ -178,7 +178,30 @@ export class ModeHandler implements vscode.Disposable {
         // We shouldn't go to visual mode on any other mode, because the other visual modes are handled
         // very differently than vscode so only our extension will create them. And the other modes
         // like the plugin modes shouldn't be changed or else it might mess up the plugins actions.
+        this._logger.debug('Selections: Creating Multi Cursor Visual Selection!');
+        if (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard) {
+          this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+          this.vimState.cursors = e.textEditor.selections.map(
+            (sel) =>
+              new Range(
+                Position.FromVSCodePosition(sel.anchor),
+                sel.anchor.isBefore(sel.active)
+                  ? Position.FromVSCodePosition(sel.active).getRight()
+                  : Position.FromVSCodePosition(sel.active)
+              )
+          );
+          this.vimState.editor.selections = e.textEditor.selections.map(
+            (sel) =>
+              new vscode.Selection(
+                sel.anchor.isAfter(sel.active) ? sel.anchor.translate(0, 1) : sel.anchor,
+                sel.anchor.isBefore(sel.active) ? sel.active.translate(0, 1) : sel.active
+              )
+          );
+        }
         await this.setCurrentMode(Mode.Visual);
+        await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+        this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+        return;
       }
       return this.updateView(this.vimState);
     }
@@ -189,14 +212,14 @@ export class ModeHandler implements vscode.Disposable {
      */
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
-          if (
+        if (
           [Mode.Normal, Mode.Visual, Mode.Insert, Mode.Replace].includes(this.vimState.currentMode)
-          ) {
-            // Since the selections weren't ignored then probably we got change of selection from
-            // a command, so we need to update our start and stop positions. This is where commands
-            // like 'editor.action.smartSelect.grow' are handled.
-            if (this.vimState.currentMode === Mode.Visual) {
-              this._logger.debug('Selections: Updating Visual Selection!');
+        ) {
+          // Since the selections weren't ignored then probably we got change of selection from
+          // a command, so we need to update our start and stop positions. This is where commands
+          // like 'editor.action.smartSelect.grow' are handled.
+          if (this.vimState.currentMode === Mode.Visual) {
+            this._logger.debug('Selections: Updating Visual Selection!');
             const active = Position.FromVSCodePosition(selection.active);
             const anchor = Position.FromVSCodePosition(selection.anchor);
             this.vimState.cursorStopPosition = active;
@@ -206,10 +229,10 @@ export class ModeHandler implements vscode.Disposable {
                 this.vimState.cursorStartPosition = anchor.getLeft();
               }
             }
-              await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
-              return;
-            } else if (!selection.active.isEqual(selection.anchor)) {
-              this._logger.debug('Selections: Creating Visual Selection from command!');
+            await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            return;
+          } else if (!selection.active.isEqual(selection.anchor)) {
+            this._logger.debug('Selections: Creating Visual Selection from command!');
             this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
             const active = Position.FromVSCodePosition(selection.active);
             const anchor = Position.FromVSCodePosition(selection.anchor);
@@ -229,12 +252,12 @@ export class ModeHandler implements vscode.Disposable {
                 );
               }
             }
-              await this.setCurrentMode(Mode.Visual);
-              await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            await this.setCurrentMode(Mode.Visual);
+            await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
             this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
-              return;
-            }
+            return;
           }
+        }
 
         if (isVisualMode(this.vimState.currentMode)) {
           /**
