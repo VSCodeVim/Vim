@@ -6,5 +6,5 @@ bug-labels=kind/bug
 enhancement-label=**Enhancements:**
 enhancement-labels=kind/enhancement,kind/feature
 exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion,pr/dependency
-since-tag=v1.15.0
+since-tag=v1.16.0
 max-issues=500
