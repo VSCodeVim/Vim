@@ -233,7 +233,7 @@ export class ModeHandler implements vscode.Disposable {
             return;
           } else if (!selection.active.isEqual(selection.anchor)) {
             this._logger.debug('Selections: Creating Visual Selection from command!');
-            this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+            // this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
             const active = Position.FromVSCodePosition(selection.active);
             const anchor = Position.FromVSCodePosition(selection.anchor);
             this.vimState.cursorStopPosition = active;
@@ -253,8 +253,9 @@ export class ModeHandler implements vscode.Disposable {
               }
             }
             await this.setCurrentMode(Mode.Visual);
-            await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
-            this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+            // await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            await this.updateView(this.vimState);
+            // this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
             return;
           }
         }
