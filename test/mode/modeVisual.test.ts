@@ -1490,8 +1490,8 @@ suite('Mode Visual', () => {
   newTest({
     title: 'Preserves desired column correctly when moving in visual mode',
     start: ['|one', '', 'two', 'three'],
-    keysPressed: 'vljj<Esc>',
-    end: ['one', '', 't|wo', 'three'],
+    keysPressed: 'vjj<Esc>',
+    end: ['one', '', '|two', 'three'],
     endMode: Mode.Normal,
   });
 
