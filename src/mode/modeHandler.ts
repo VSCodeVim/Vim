@@ -189,36 +189,52 @@ export class ModeHandler implements vscode.Disposable {
      */
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
-        if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
-          // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
-          // but it is also triggered when we set the 'editor.selections' on 'updateView'.
           if (
-            [Mode.Normal, Mode.Visual, Mode.Insert, Mode.Replace].includes(
-              this.vimState.currentMode
-            )
+          [Mode.Normal, Mode.Visual, Mode.Insert, Mode.Replace].includes(this.vimState.currentMode)
           ) {
             // Since the selections weren't ignored then probably we got change of selection from
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
               this._logger.debug('Selections: Updating Visual Selection!');
-              this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
-              this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
+            const active = Position.FromVSCodePosition(selection.active);
+            const anchor = Position.FromVSCodePosition(selection.anchor);
+            this.vimState.cursorStopPosition = active;
+            this.vimState.cursorStartPosition = anchor;
+            if (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard) {
+              if (selection.anchor.isAfter(selection.active)) {
+                this.vimState.cursorStartPosition = anchor.getLeft();
+              }
+            }
               await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               this._logger.debug('Selections: Creating Visual Selection from command!');
-              this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
-              this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
+            this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+            const active = Position.FromVSCodePosition(selection.active);
+            const anchor = Position.FromVSCodePosition(selection.anchor);
+            this.vimState.cursorStopPosition = active;
+            this.vimState.cursorStartPosition = anchor;
+            if (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard) {
+              if (selection.anchor.isAfter(selection.active)) {
+                this.vimState.editor.selection = new vscode.Selection(
+                  selection.anchor.translate(0, 1),
+                  selection.active
+                );
+              } else if (selection.anchor.isBefore(selection.active)) {
+                this.vimState.cursorStopPosition = active.getRight();
+                this.vimState.editor.selection = new vscode.Selection(
+                  selection.anchor,
+                  selection.active.translate(0, 1)
+                );
+              }
+            }
               await this.setCurrentMode(Mode.Visual);
               await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
               return;
             }
           }
-        }
-        // Here we are on the selection changed of kind 'Keyboard' or 'undefined' which is triggered
-        // when pressing movement keys that are not caught on the 'type' override but also when using
-        // commands like 'cursorMove'.
 
         if (isVisualMode(this.vimState.currentMode)) {
           /**
