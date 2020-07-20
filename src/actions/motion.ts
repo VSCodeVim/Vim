@@ -4,7 +4,7 @@ import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position } from './../common/motion/position';
+import { Position, sorted } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -445,6 +445,73 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
     return prevMatch.pos;
   }
+}
+
+enum VisualMark {
+  SelectionStart,
+  SelectionEnd,
+}
+abstract class MarkMovementVisual extends BaseMovement {
+  isJump = true;
+  registerMode: RegisterMode;
+  modes = [Mode.Normal];
+  mark: VisualMark;
+
+  private startOrEnd(lastVisualSelection): Position {
+    // marks from vimstate are sorted by direction of selection (moving forward vs backwards).
+    // must sort to document order
+    let [start, end] = sorted(lastVisualSelection.start, lastVisualSelection.end);
+    return this.mark === VisualMark.SelectionStart ? start : end;
+  }
+
+  private inLineCorrection(position: Position): Position {
+    // for ' mark, we must go to BOL.
+    // for `> mark, we must correct by one char left
+    return this.registerMode === RegisterMode.LineWise
+      ? position.getLineBeginRespectingIndent()
+      : this.mark === VisualMark.SelectionStart
+      ? position
+      : position.getLeft();
+  }
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = this.registerMode;
+
+    if (vimState.lastVisualSelection !== undefined) {
+      // todo: wait for pipe operator ;-)
+      return this.inLineCorrection(this.startOrEnd(vimState.lastVisualSelection));
+    }
+
+    throw VimError.fromCode(ErrorCode.MarkNotSet);
+  }
+}
+
+@RegisterAction
+class MarkMovementVisualStart extends MarkMovementVisual {
+  keys = ['`', '<'];
+  registerMode = RegisterMode.CharacterWise;
+  mark = VisualMark.SelectionStart;
+}
+
+@RegisterAction
+class MarkMovementVisualEnd extends MarkMovementVisual {
+  keys = ['`', '>'];
+  registerMode = RegisterMode.CharacterWise;
+  mark = VisualMark.SelectionEnd;
+}
+
+@RegisterAction
+class MarkMovementVisualStartLine extends MarkMovementVisual {
+  keys = ["'", '<'];
+  registerMode = RegisterMode.LineWise;
+  mark = VisualMark.SelectionStart;
+}
+
+@RegisterAction
+class MarkMovementVisualEndLine extends MarkMovementVisual {
+  keys = ["'", '>'];
+  registerMode = RegisterMode.LineWise;
+  mark = VisualMark.SelectionEnd;
 }
 
 @RegisterAction
