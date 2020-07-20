@@ -1487,6 +1487,22 @@ suite('Mode Visual', () => {
     endMode: Mode.Normal,
   });
 
+  newTest({
+    title: 'Preserves desired column correctly when moving in visual mode',
+    start: ['|one', '', 'two', 'three'],
+    keysPressed: 'vljj<Esc>',
+    end: ['one', '', 't|wo', 'three'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Updates desired column correctly when moving in visual mode',
+    start: ['|one', 'two', 'three'],
+    keysPressed: 'vlj<Esc>',
+    end: ['one', 't|wo', 'three'],
+    endMode: Mode.Normal,
+  });
+
   suite('C, R, and S', () => {
     for (const command of ['C', 'R', 'S']) {
       newTest({
