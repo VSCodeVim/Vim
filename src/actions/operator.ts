@@ -17,6 +17,7 @@ import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
+import { commandLine } from './../cmd_line/commandLine';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -328,6 +329,41 @@ export class YankOperator extends BaseOperator {
     const numLinesYanked = text.split('\n').length;
     reportLinesYanked(numLinesYanked, vimState);
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+export class FilterOperator extends BaseOperator {
+  public keys = ['!'];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    [start, end] = sorted(start, end);
+
+    if (vimState.currentMode === Mode.Normal && start.line === end.line) {
+      vimState.currentCommandlineText = '.!';
+    } else if (vimState.currentMode === Mode.Normal && start.line !== end.line) {
+      vimState.currentCommandlineText = `.,.+${end.line - start.line}!`;
+    } else {
+      vimState.currentCommandlineText = "'<,'>!";
+    }
+
+    vimState.cursorStartPosition = start;
+    if (vimState.currentMode === Mode.Normal) {
+      vimState.cursorStopPosition = start;
+    } else {
+      vimState.cursors = vimState.cursorsInitialState;
+    }
+
+    // Initialize the cursor position
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+    // Store the current mode for use in retaining selection
+    commandLine.previousMode = vimState.currentMode;
+    // Change to the new mode
+    await vimState.setCurrentMode(Mode.CommandlineInProgress);
+    // Reset history navigation index
+    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
     return vimState;
   }
 }

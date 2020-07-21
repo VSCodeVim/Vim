@@ -1159,7 +1159,11 @@ class MoveNonBlankFirst extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     const lineNumber = clamp(count, 1, TextEditor.getLineCount()) - 1;
-    return position.withLine(lineNumber).obeyStartOfLine();
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.withLine(lineNumber).obeyStartOfLine(),
+      registerMode: RegisterMode.LineWise,
+    };
   }
 }
 

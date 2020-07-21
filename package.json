@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -31,8 +31,8 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "workspace",
-    "ui"
+    "ui",
+    "workspace"
   ],
   "activationEvents": [
     "*",
@@ -113,12 +113,12 @@
       {
         "key": "up",
         "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions && !parameterHintsMultipleSignatures"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "down",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions && !parameterHintsMultipleSignatures"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "g g",
