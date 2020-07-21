@@ -19,6 +19,10 @@ export class BangCommand extends node.CommandBase {
     this._arguments = args;
   }
 
+  public neovimCapable(): boolean {
+    return true;
+  }
+
   private getReplaceDiff(text: string): PositionDiff {
     const lines = text.split('\n');
     const numNewlines = lines.length - 1;
