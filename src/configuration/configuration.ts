@@ -181,6 +181,8 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
+  matchpairs = '';
+
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
   };

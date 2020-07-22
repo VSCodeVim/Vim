@@ -1486,8 +1486,23 @@ class MoveToMatchingBracket extends BaseMovement {
     const failure = { start: position, stop: position, failed: true };
 
     for (let col = position.character; col < lineText.length; col++) {
-      const pairing = PairMatcher.pairings[lineText[col]];
-      if (pairing && pairing.matchesWithPercentageMotion) {
+      const currentChar = lineText[col];
+      const pairing = PairMatcher.pairings[currentChar];
+      let matchesWithPercentageMotion = false;
+
+      // we need to check pairing, because with text: bla |bla < blub > blub
+      // this for loop will walk over bla and check for a pairing till it finds <
+      if (pairing) {
+        // construct string for matchpair: <:>
+        const direction1 = currentChar.concat(':').concat(pairing.match);
+        const direction2 = pairing.match.concat(':').concat(currentChar);
+
+        matchesWithPercentageMotion =
+          pairing.matchesWithPercentageMotion ||
+          configuration.matchpairs.includes(direction1) ||
+          configuration.matchpairs.includes(direction2);
+      }
+      if (pairing && matchesWithPercentageMotion) {
         // We found an opening char, now move to the matching closing char
         return (
           PairMatcher.nextPairedChar(new Position(position.line, col), lineText[col]) || failure
