@@ -287,6 +287,12 @@ export interface IConfiguration {
   iskeyword: string;
 
   /**
+   * addional chars for pairwise jumping with %.
+   * for now only: <  >
+   */
+  matchpairs: string;
+
+  /**
    * In visual mode, start a search with * or # using the current selection
    */
   visualstar: boolean;

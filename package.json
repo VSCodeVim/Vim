@@ -543,6 +543,10 @@
           "markdownDescription": "Override the `ignorecase` option if the search pattern contains upper case characters.",
           "default": true
         },
+        "vim.matchpairs": {
+          "type": "string",
+          "markdownDescription": "additional chars to match as pairs. currently only <:>"
+        },
         "vim.camelCaseMotion.enable": {
           "type": "boolean",
           "markdownDescription": "Enable the [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion) plugin for Vim.",

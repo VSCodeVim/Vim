@@ -26,8 +26,9 @@ export class PairMatcher {
 
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
-    '<': { match: '>', isNextMatchForward: true },
-    '>': { match: '<', isNextMatchForward: false },
+    // matchesWithPercentageMotion can be overwritten with configuration.matchpairs
+    '<': { match: '>', isNextMatchForward: true, matchesWithPercentageMotion: false },
+    '>': { match: '<', isNextMatchForward: false, matchesWithPercentageMotion: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
     '"': { match: '"', isNextMatchForward: false, directionless: true },
