@@ -76,7 +76,7 @@ class CommandLine {
         const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
-        await cmd.execute(vimState.editor, vimState);
+        await cmd.execute(vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {

@@ -141,7 +141,7 @@ class CommandEnterInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
+    await commandLine.Run(vimState.currentCommandlineText, vimState);
     await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
