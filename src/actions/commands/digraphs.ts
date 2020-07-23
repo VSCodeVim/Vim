@@ -1,3 +1,6 @@
+import { configuration } from './../../configuration/configuration';
+import { Digraph } from '../../configuration/iconfiguration';
+
 // prettier-ignore
 export const DefaultDigraphs = {
   "SH": ["^A", 1],
@@ -1363,3 +1366,57 @@ export const DefaultDigraphs = {
   "Y`": ["Ỳ", 7922],
   "y`": ["ỳ", 7923],
 };
+
+export function parseDigraph(keysPressed: string[]): string | null {
+  const digraph = keysPressed.join('');
+  const reverseDigraph = keysPressed.reverse().join('');
+  let entry =
+    configuration.digraphs[digraph] ||
+    DefaultDigraphs[digraph] ||
+    configuration.digraphs[reverseDigraph] ||
+    DefaultDigraphs[reverseDigraph];
+  if (!entry) {
+    return null;
+  }
+  let charCodes = entry[1];
+  if (!(charCodes instanceof Array)) {
+    charCodes = [charCodes];
+  }
+  return String.fromCharCode(...charCodes);
+}
+
+export function isPartialDigraph(keysPressed: string[]): boolean {
+  if (keysPressed.length === 0) {
+    return true;
+  }
+  const chars = keysPressed.join('');
+  const reverseChars = keysPressed.reverse().join('');
+  const predicate = (digraph: string) => {
+    return digraph.startsWith(chars) || digraph.endsWith(reverseChars);
+  };
+  return (
+    Object.keys(DefaultDigraphs).some(predicate) ||
+    Object.keys(configuration.digraphs).some(predicate)
+  );
+}
+
+export function digraphsForChar(result: string): string[] {
+  let results: string[] = [];
+  for (const digraphs of [configuration.digraphs, DefaultDigraphs]) {
+    const entries = <Iterable<[string, Digraph]>>Object.entries(digraphs);
+    for (let [digraph, [_desc, charCodes]] of entries) {
+      if (!(charCodes instanceof Array)) {
+        charCodes = [charCodes];
+      }
+      // We have to re-parse the digraph to ensure it's not a default digraph shadowed by a user digraph.
+      // It would probably be more efficient to pre-process the user and default digraphs on configuration load...
+      if (
+        result === String.fromCharCode(...charCodes) &&
+        result === parseDigraph(digraph.split(''))
+      ) {
+        results.push(digraph);
+      }
+    }
+  }
+  return results;
+}

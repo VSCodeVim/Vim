@@ -380,6 +380,30 @@ suite('Mode Insert', () => {
     assertEqualLines(['🚀🚀']);
   });
 
+  test('Can handle custom digraph insert with priority', async () => {
+    Globals.mockConfiguration.digraphs = {
+      'a*': ['a', 97],
+      '*b': ['b', 98],
+    };
+    await reloadConfiguration();
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      '<C-k>',
+      'a',
+      '*',
+      '<C-k>',
+      '*',
+      'a',
+      '<C-k>',
+      'b',
+      '*',
+      '<C-k>',
+      '*',
+      'b',
+    ]);
+    assertEqualLines(['aaβb']);
+  });
+
   newTest({
     title: 'Can insert last inserted text',
     start: ['test|'],

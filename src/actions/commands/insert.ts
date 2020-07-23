@@ -19,7 +19,7 @@ import {
   DocumentContentChangeAction,
   CommandReplaceAtCursorFromNormalMode,
 } from './actions';
-import { DefaultDigraphs } from './digraphs';
+import { parseDigraph, isPartialDigraph } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
@@ -327,17 +327,8 @@ class CommandInsertDigraph extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const digraph = this.keysPressed.slice(1, 3).join('');
-    const reverseDigraph = digraph.split('').reverse().join('');
-    let charCodes = (DefaultDigraphs[digraph] ||
-      DefaultDigraphs[reverseDigraph] ||
-      configuration.digraphs[digraph] ||
-      configuration.digraphs[reverseDigraph])[1];
-    if (!(charCodes instanceof Array)) {
-      charCodes = [charCodes];
-    }
-    const char = String.fromCharCode(...charCodes);
-    await TextEditor.insertAt(char, position);
+    const char = parseDigraph(this.keysPressed.slice(1, 3));
+    await TextEditor.insertAt(char || '', position);
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
@@ -347,33 +338,14 @@ class CommandInsertDigraph extends BaseCommand {
     if (!super.doesActionApply(vimState, keysPressed)) {
       return false;
     }
-    const chars = keysPressed.slice(1, 3).join('');
-    const reverseChars = chars.split('').reverse().join('');
-    return (
-      chars in configuration.digraphs ||
-      reverseChars in configuration.digraphs ||
-      chars in DefaultDigraphs ||
-      reverseChars in DefaultDigraphs
-    );
+    return !!parseDigraph(keysPressed.slice(1, 3));
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (!super.couldActionApply(vimState, keysPressed)) {
       return false;
     }
-    const chars = keysPressed.slice(1, keysPressed.length).join('');
-    const reverseChars = chars.split('').reverse().join('');
-    if (chars.length > 0) {
-      const predicate = (digraph: string) => {
-        const digraphChars = digraph.substring(0, chars.length);
-        return chars === digraphChars || reverseChars === digraphChars;
-      };
-      const match =
-        Object.keys(configuration.digraphs).find(predicate) ||
-        Object.keys(DefaultDigraphs).find(predicate);
-      return match !== undefined;
-    }
-    return true;
+    return isPartialDigraph(keysPressed.slice(1, 3));
   }
 }
 

@@ -18,6 +18,7 @@ import { Position } from '../../common/motion/position';
 import { VimError, ErrorCode } from '../../error';
 import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
+import { parseDigraph, isPartialDigraph } from './digraphs';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -482,6 +483,61 @@ class CommandEscInSearchMode extends BaseCommand {
     if (searchState.searchString.length > 0) {
       globalState.addSearchStateToHistory(searchState);
     }
+  }
+}
+
+@RegisterAction
+class CommandInsertDigraphInCommandline extends BaseCommand {
+  modes = [Mode.CommandlineInProgress];
+  keys = ['<C-k>', '<any>', '<any>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const char = parseDigraph(this.keysPressed.slice(1, 3)) || '';
+    vimState.currentCommandlineText += char;
+    vimState.statusBarCursorCharacterPos += char.length;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.doesActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    return !!parseDigraph(keysPressed.slice(1, 3));
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.couldActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    return isPartialDigraph(keysPressed.slice(1, 3));
+  }
+}
+
+@RegisterAction
+class CommandInsertDigraphInSearchMode extends BaseCommand {
+  modes = [Mode.SearchInProgressMode];
+  keys = ['<C-k>', '<any>', '<any>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const char = parseDigraph(this.keysPressed.slice(1, 3)) || '';
+    const searchState = globalState.searchState!;
+    searchState.searchString += char;
+    vimState.statusBarCursorCharacterPos += char.length;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.doesActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    return !!parseDigraph(keysPressed.slice(1, 3));
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.couldActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    return isPartialDigraph(keysPressed.slice(1, 3));
   }
 }
 

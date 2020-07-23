@@ -34,6 +34,8 @@ import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
+import { digraphsForChar } from './digraphs';
+import { EasyMotionCharMoveCommandBase } from '../plugins/easymotion/easymotion.cmd';
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -3353,12 +3355,17 @@ class CommandUnicodeName extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
-    const charCode = char.charCodeAt(0);
+
     // TODO: Handle charCode > 127 by also including <M-x>
-    StatusBar.setText(
-      vimState,
-      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`
-    );
+    const charCode = char.charCodeAt(0);
+    const hex = charCode.toString(16);
+    const octal = charCode.toString(8);
+    const charCodesDisplay = `<${char}>  ${charCode},  Hex ${hex},  Octal ${octal}`;
+
+    const digraphs = digraphsForChar(char);
+    const digraphDisplay = digraphs.length > 0 ? `, Digraphs ['${digraphs.join(`', '`)}']` : '';
+
+    StatusBar.setText(vimState, `${charCodesDisplay}${digraphDisplay}`);
   }
 }
 
