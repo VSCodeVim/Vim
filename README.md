@@ -136,10 +136,12 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                                                                                                             | Type    | Default Value |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
+| Setting                 | Description                                                                                                                                            | Type    | Default Value |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | ------------- |
+| vim.enableNeovim        | Enable Neovim                                                                                                                                          | Boolean | false         |
+| vim.neovimPath          | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path.                                | String  |               |
+| vim.neovimUseConfigFile | If `true`, Neovim will load a config file specified by `vim.neovimConfigPath`. This is necessary if you want Neovim to be able to use its own plugins. | Boolean | false         |
+| vim.neovimConfigPath    | Path that Neovim will load as config file. If left blank, Neovim will search in its default location.                                                  | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
