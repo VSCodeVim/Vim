@@ -5,7 +5,8 @@ import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
-import * as token from '../token';
+import { config } from 'process';
+import { configuration } from '../../configuration/configuration';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
@@ -27,34 +28,31 @@ export class DeleteRangeCommand extends node.CommandBase {
     return true;
   }
 
-  async deleteRange(start: Position, end: Position, vimState: VimState): Promise<string> {
-    start = start.getLineBegin();
-    end = end.getLineEnd();
-    end = Position.FromVSCodePosition(end.with(end.line, end.character + 1));
+  /**
+   * Deletes text between `startLine` and `endLine`, inclusive.
+   * Puts the cursor at the start of the line where the deleted range was.
+   *
+   * @returns The deleted text, excluding leading/trailing newline
+   */
+  async deleteRange(startLine: number, endLine: number, vimState: VimState): Promise<string> {
+    let start = new Position(startLine, 0);
+    let end = new Position(endLine, 0).getLineEndIncludingEOL();
 
-    const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
-
-    if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-      end = end.getDownWithDesiredColumn(0);
+    if (endLine < vimState.editor.document.lineCount - 1) {
+      end = end.getRightThroughLineBreaks();
+    } else if (startLine > 0) {
+      start = start.getLeftThroughLineBreaks();
     }
 
-    if (isOnLastLine && start.line !== 0) {
-      start = start.getPreviousLineBegin().getLineEnd();
-    }
+    const range = new vscode.Range(start, end);
+    const text = vimState.editor.document
+      .getText(range)
+      // Remove leading or trailing newline
+      .replace(/^\r?\n/, '')
+      .replace(/\r?\n$/, '');
+    await TextEditor.delete(range);
 
-    let text = vimState.editor.document.getText(new vscode.Range(start, end));
-    text = text.endsWith('\r\n') ? text.slice(0, -2) : text.slice(0, -1);
-    await TextEditor.delete(new vscode.Range(start, end));
-
-    let resultPosition = earlierOf(start, end);
-    if (start.character > TextEditor.getLineAt(start).text.length) {
-      resultPosition = start.getLeft();
-    } else {
-      resultPosition = start;
-    }
-
-    resultPosition = resultPosition.getLineBegin();
-    vimState.editor.selection = new vscode.Selection(resultPosition, resultPosition);
+    vimState.cursorStopPosition = start.getLineBegin();
     return text;
   }
 
@@ -63,28 +61,17 @@ export class DeleteRangeCommand extends node.CommandBase {
       return;
     }
 
-    let cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active);
-    let text = await this.deleteRange(cursorPosition, cursorPosition, vimState);
-    Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
+    const line = vimState.cursorStopPosition.line;
+    const text = await this.deleteRange(line, line, vimState);
+    const register = this._arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
+    Register.putByKey(text, register, RegisterMode.LineWise);
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let start: vscode.Position;
-    let end: vscode.Position;
+    const [start, end] = range.resolve(vimState);
 
-    if (range.left[0].type === token.TokenType.Percent) {
-      start = new vscode.Position(0, 0);
-      end = new vscode.Position(TextEditor.getLineCount() - 1, 0);
-    } else {
-      start = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      end = range.lineRefToPosition(vimState.editor, range.right, vimState);
-    }
-
-    let text = await this.deleteRange(
-      Position.FromVSCodePosition(start),
-      Position.FromVSCodePosition(end),
-      vimState
-    );
-    Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
+    let text = await this.deleteRange(start, end, vimState);
+    const register = this._arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
+    Register.putByKey(text, register, RegisterMode.LineWise);
   }
 }
