@@ -41,6 +41,17 @@ export class NeovimValidator implements IConfigurationValidator {
           message: errorMessage,
         });
       }
+      // If Neovim config path doesn't exist, default to empty config path.
+      if (config.neovimUseConfigFile && config.neovimConfigPath !== '') {
+        if (!existsSync(config.neovimConfigPath)) {
+          let warningMessage = `No config file found in neovimConfigPath. Neovim will search its default config path.`;
+          config.neovimConfigPath = '';
+          result.append({
+            level: 'warning',
+            message: warningMessage,
+          });
+        }
+      }
     }
 
     return Promise.resolve(result);
