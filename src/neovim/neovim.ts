@@ -111,7 +111,10 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     await this.nvim.setOption('gdefault', configuration.gdefault === true);
-    await buf.setLines(TextEditor.getText().split('\n'), {
+
+    // Only on Windows there will be \r\n at the end of each line
+    const newlineRegex: RegExp = /\r?\n/;
+    await buf.setLines(TextEditor.getText().split(newlineRegex), {
       start: 0,
       end: -1,
       strictIndexing: true,
@@ -155,16 +158,14 @@ export class NeovimWrapper implements vscode.Disposable {
     const buf = await this.nvim.buffer;
     const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 
-    // one Windows, lines that went to nvim and back have a '\r' at the end,
-    // which causes the issues exhibited in #1914
-    const fixedLines =
-      process.platform === 'win32' ? lines.map((line, index) => line.replace(/\r$/, '')) : lines;
-
     const lineCount = TextEditor.getLineCount();
 
+    // Even though VSCode on Windows uses '\r\n' for newlines,
+    // we don't need to add it here because the replace() function
+    // will change '\n' to '\r\n' if necessary
     await TextEditor.replace(
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
-      fixedLines.join('\n')
+      lines.join('\n')
     );
 
     this.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
