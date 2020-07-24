@@ -304,11 +304,6 @@ export class YankOperator extends BaseOperator {
 
     Register.put(text, vimState, this.multicursorIndex);
 
-    if (vimState.currentMode === Mode.Visual || vimState.currentMode === Mode.VisualLine) {
-      vimState.historyTracker.addMark(start, '<');
-      vimState.historyTracker.addMark(end, '>');
-    }
-
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStartPosition = start;
 
