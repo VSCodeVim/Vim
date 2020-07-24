@@ -1380,13 +1380,12 @@ export class ModeHandler implements vscode.Disposable {
       // If they are the same vscode won't trigger a selectionChangeEvent so we don't
       // have to add it to the ignore selections.
       const willTriggerChange =
-        selections.length !== vimState.editor.selections.length
-          ? true
-          : selections.some(
-              (s, i) =>
-                !s.anchor.isEqual(vimState.editor.selections[i].anchor) ||
-                !s.active.isEqual(vimState.editor.selections[i].active)
-            );
+        selections.length !== vimState.editor.selections.length ||
+        selections.some(
+          (s, i) =>
+            !s.anchor.isEqual(vimState.editor.selections[i].anchor) ||
+            !s.active.isEqual(vimState.editor.selections[i].active)
+        );
 
       if (willTriggerChange) {
         const selectionsHash = selections.reduce(
