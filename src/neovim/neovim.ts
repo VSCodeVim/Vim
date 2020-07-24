@@ -126,20 +126,20 @@ export class NeovimWrapper implements vscode.Disposable {
     );
     await this.nvim.callFunction('setpos', [
       '.',
-      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
+      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character + 1, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'<",
-      [0, rangeStart.line + 1, rangeEnd.character, false],
+      [0, rangeStart.line + 1, rangeStart.character + 1, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'>",
-      [0, rangeEnd.line + 1, rangeEnd.character, false],
+      [0, rangeEnd.line + 1, rangeEnd.character + 1, false],
     ]);
     for (const mark of vimState.historyTracker.getLocalMarks()) {
       await this.nvim.callFunction('setpos', [
         `'${mark.name}`,
-        [0, mark.position.line + 1, mark.position.character, false],
+        [0, mark.position.line + 1, mark.position.character + 1, false],
       ]);
     }
 
@@ -170,14 +170,11 @@ export class NeovimWrapper implements vscode.Disposable {
 
     this.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
-    let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
-      1,
-      3
-    );
-    vimState.editor.selection = new vscode.Selection(
-      new Position(row - 1, character),
-      new Position(row - 1, character)
-    );
+    let [newCursorLine, newCursorCol] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<
+      number
+    >).slice(1, 3);
+    vimState.cursorStartPosition = new Position(newCursorLine - 1, newCursorCol - 1);
+    vimState.cursorStopPosition = new Position(newCursorLine - 1, newCursorCol - 1);
 
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToSpaces');
