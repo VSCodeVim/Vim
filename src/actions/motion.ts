@@ -469,9 +469,9 @@ abstract class MarkMovementVisual extends BaseMovement {
     // for `> mark, we must correct by one char left
     return this.registerMode === RegisterMode.LineWise
       ? position.getLineBeginRespectingIndent()
-      : this.mark === VisualMark.SelectionStart
-      ? position
-      : position.getLeft();
+      : this.mark === VisualMark.SelectionEnd
+      ? position.getLeft()
+      : position;
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
