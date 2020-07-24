@@ -10,7 +10,7 @@ import { Range } from './common/motion/range';
  * Collection of helper functions around vscode.window.activeTextEditor
  */
 export class TextEditor {
-  static readonly whitespaceRegExp = new RegExp('^ *$');
+  static readonly whitespaceRegExp = new RegExp('\\s+');
 
   // TODO: Refactor args
 
@@ -144,28 +144,53 @@ export class TextEditor {
   }
 
   /**
-   *  Retrieves the current word at position.
-   *  If current position is whitespace, selects the right-closest word
+   * Retrieves the word at the given position.
+   *
+   * Respects `iskeyword`:
+   *    - Will go right (but not over line boundaries) until it finds a "real" word
+   *    - Will settle for a "fake" word only if it hits the line end
    */
   static getWord(position: Position): string | undefined {
-    let start = position;
-    let end = position.getRight();
+    const line = TextEditor.getLineAt(position).text;
 
-    const char = TextEditor.getText(new vscode.Range(start, end));
-    if (this.whitespaceRegExp.test(char)) {
-      start = position.getWordRight();
-    } else {
-      start = position.getWordLeft(true);
-    }
-    end = start.getCurrentWordEnd(true).getRight();
-
-    const word = TextEditor.getText(new vscode.Range(start, end));
-
-    if (this.whitespaceRegExp.test(word)) {
-      return undefined;
+    // Skip over whitespace
+    let firstNonBlank = position.character;
+    while (this.whitespaceRegExp.test(line[firstNonBlank])) {
+      firstNonBlank++;
+      if (firstNonBlank === line.length) {
+        // Hit end of line without finding a non-whitespace character
+        return undefined;
+      }
     }
 
-    return word;
+    // Now skip over word separators and whitespace to find a "real" word
+    let start = firstNonBlank;
+    while (
+      configuration.iskeyword.includes(line[start]) ||
+      this.whitespaceRegExp.test(line[start])
+    ) {
+      start++;
+      if (start === line.length) {
+        // No keyword found - just settle for the word we're on
+        start = firstNonBlank;
+        break;
+      }
+    }
+
+    const foundRealWord = !configuration.iskeyword.includes(line[start]);
+    const includeInWord = (char: string) =>
+      !this.whitespaceRegExp.test(char) && configuration.iskeyword.includes(char) !== foundRealWord;
+
+    // Expand left and right to find the whole word
+    let end = start;
+    while (start > 0 && includeInWord(line[start - 1])) {
+      start--;
+    }
+    while (end < line.length && includeInWord(line[end + 1])) {
+      end++;
+    }
+
+    return line.substring(start, end + 1);
   }
 
   static getTabCharacter(editor: vscode.TextEditor): string {
@@ -303,6 +328,9 @@ export class TextEditor {
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
     const text = TextEditor.getLineAt(start).text;
+    if (/\s/.test(text[start.character])) {
+      start = start.getWordRight();
+    }
     let wordEnd = start.getCurrentWordEnd(true);
     do {
       const word = text.substring(start.character, wordEnd.character + 1);

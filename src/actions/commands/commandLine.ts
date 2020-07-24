@@ -141,7 +141,7 @@ class CommandEnterInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
+    await commandLine.Run(vimState.currentCommandlineText, vimState);
     await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
@@ -573,10 +573,6 @@ class CommandInsertWord extends BaseCommand {
   keys = ['<C-r>', '<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Skip forward to next word, not going past EOL
-    while (!/[a-zA-Z0-9_]/.test(TextEditor.getCharAt(position))) {
-      position = position.getRight();
-    }
     const word = TextEditor.getWord(position.getLeftIfEOL());
 
     if (word !== undefined) {

@@ -485,11 +485,11 @@ Since the list is too long, now we just put those already supported options here
 
 ## External commands
 
-| Status       | Command     | Description                                                                |
-| ------------ | ----------- | -------------------------------------------------------------------------- |
-| :arrow_down: | :sh[ell]    | start a shell                                                              |
-| :arrow_down: | :!{command} | execute {command} with a shell                                             |
-| :arrow_down: | K           | lookup keyword under the cursor with 'keywordprg' program (default: "man") |
+| Status             | Command     | Description                                                                |
+| ------------------ | ----------- | -------------------------------------------------------------------------- |
+| :white_check_mark: | :sh[ell]    | start a shell                                                              |
+| :white_check_mark: | :!{command} | execute {command} with a shell                                             |
+| :arrow_down:       | K           | lookup keyword under the cursor with 'keywordprg' program (default: "man") |
 
 ## Ex ranges
 

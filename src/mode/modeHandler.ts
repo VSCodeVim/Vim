@@ -27,6 +27,7 @@ import {
   DocumentContentChangeAction,
   ActionOverrideCmdD,
   CommandRegister,
+  CommandVisualMode,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -476,6 +477,10 @@ export class ModeHandler implements vscode.Disposable {
     }
     */
 
+    // We handle the end of selections different to VSCode. In order for VSCode to select
+    // including the last character we will at the end of 'runAction' shift our stop position
+    // to the right. So here we shift it back by one so that our actions have our correct
+    // position instead of the position sent to VSCode.
     if (vimState.currentMode === Mode.Visual) {
       vimState.cursors = vimState.cursors.map((c) =>
         c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c
@@ -542,16 +547,6 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (vimState.currentMode === Mode.Visual) {
-      vimState.cursors = vimState.cursors.map((c) =>
-        c.start.isBefore(c.stop)
-          ? c.withNewStop(
-              c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
-            )
-          : c
-      );
-    }
-
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
     if (vimState.currentMode !== this.currentMode) {
@@ -561,7 +556,10 @@ export class ModeHandler implements vscode.Disposable {
         ranRepeatableAction = true;
       }
     }
-    if (ranAction && !(action instanceof CommandRegister) && vimState.currentMode !== Mode.Insert) {
+    if (
+      (ranAction && !(action instanceof CommandRegister) && vimState.currentMode !== Mode.Insert) ||
+      action instanceof CommandVisualMode
+    ) {
       vimState.recordedState.resetCommandList();
     }
 
@@ -592,6 +590,20 @@ export class ModeHandler implements vscode.Disposable {
         // TODO: explain why not VisualBlock
         vimState.desiredColumn = vimState.cursorStopPosition.character;
       }
+    }
+
+    // Like previously stated we handle the end of selections different to VSCode. In order
+    // for VSCode to select including the last character we shift our stop position to the
+    // right now that all steps that need that position have already run. On the next action
+    // we will shift it back again on the start of 'runAction'.
+    if (vimState.currentMode === Mode.Visual) {
+      vimState.cursors = vimState.cursors.map((c) =>
+        c.start.isBefore(c.stop)
+          ? c.withNewStop(
+              c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
+            )
+          : c
+      );
     }
 
     if (ranAction) {

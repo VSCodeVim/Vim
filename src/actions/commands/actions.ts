@@ -9,11 +9,23 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import { Position, PositionDiff, PositionDiffType } from './../../common/motion/position';
+import {
+  Position,
+  PositionDiff,
+  PositionDiffType,
+  earlierOf,
+  laterOf,
+  sorted,
+} from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
-import { Mode, visualBlockGetTopLeftPosition, isVisualMode } from './../../mode/mode';
+import {
+  Mode,
+  visualBlockGetTopLeftPosition,
+  isVisualMode,
+  visualBlockGetBottomRightPosition,
+} from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
@@ -27,6 +39,7 @@ import { StatusBar } from '../../statusBar';
 import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
+import _ = require('lodash');
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -93,7 +106,7 @@ export class DocumentContentChangeAction extends BaseAction {
           ? new Position(replaceRange.start.line, replaceRange.start.character + change.text.length)
           : new Position(replaceRange.start.line + numLinesAdded, textDiffLines.pop()!.length);
 
-      rightBoundary = Position.laterOf(rightBoundary, newRightBoundary);
+      rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
       vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
 
@@ -512,22 +525,6 @@ class CommandExecuteLastMacro extends BaseCommand {
 }
 
 @RegisterAction
-class CtrlM extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = [['<C-m>']];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type: 'insertText',
-      text: '\n',
-      position: position,
-      diff: new PositionDiff({ character: -1 }),
-    });
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [
     Mode.Visual,
@@ -818,7 +815,7 @@ export class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
+export class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['R'];
 
@@ -829,16 +826,6 @@ class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
     vimState.replaceState = new ReplaceState(position, timesToRepeat);
 
     return vimState;
-  }
-}
-
-@RegisterAction
-class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<Insert>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }
 
@@ -924,7 +911,7 @@ class CommandOverrideCopy extends BaseCommand {
     if (vimState.currentMode === Mode.Visual) {
       text = vimState.cursors
         .map((range) => {
-          const [start, stop] = Position.sorted(range.start, range.stop);
+          const [start, stop] = sorted(range.start, range.stop);
           return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
         })
         .join('\n');
@@ -933,8 +920,8 @@ class CommandOverrideCopy extends BaseCommand {
         .map((range) => {
           return vimState.editor.document.getText(
             new vscode.Range(
-              Position.earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
-              Position.laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
+              earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
+              laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
             )
           );
         })
@@ -976,31 +963,51 @@ class CommandCmdA extends BaseCommand {
   }
 }
 
+/**
+ * Search for the word under the cursor; used by [g]* and [g]#
+ */
 function searchCurrentWord(
   position: Position,
   vimState: VimState,
   direction: SearchDirection,
   isExact: boolean
 ) {
-  const currentWord = TextEditor.getWord(position);
+  let currentWord = TextEditor.getWord(position);
 
-  // If the search is going left then use `getWordLeft()` on position to start
-  // at the beginning of the word. This ensures that any matches happen
-  // outside of the currently selected word.
-  const searchStartCursorPosition =
-    direction === SearchDirection.Backward
-      ? vimState.cursorStopPosition.getWordLeft(true)
-      : vimState.cursorStopPosition;
+  if (currentWord) {
+    if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
+      // TODO: this kind of sucks. JS regex does not consider the boundary between a special
+      // character and whitespace to be a "word boundary", so we can't easily do an exact search.
+      isExact = false;
+    }
 
-  return createSearchStateAndMoveToMatch({
-    needle: currentWord,
-    vimState,
-    direction,
-    isExact,
-    searchStartCursorPosition,
-  });
+    if (isExact) {
+      currentWord = _.escapeRegExp(currentWord);
+    }
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition =
+      direction === SearchDirection.Backward
+        ? vimState.cursorStopPosition.getWordLeft(true)
+        : vimState.cursorStopPosition;
+
+    return createSearchStateAndMoveToMatch({
+      needle: currentWord,
+      vimState,
+      direction,
+      isExact,
+      searchStartCursorPosition,
+    });
+  }
+
+  StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
+  return vimState;
 }
 
+/**
+ * Search for the word under the cursor; used by [g]* and [g]# in visual mode when `visualstar` is enabled
+ */
 async function searchCurrentSelection(vimState: VimState, direction: SearchDirection) {
   const selection = TextEditor.getSelection();
   const end = new Position(selection.end.line, selection.end.character);
@@ -1026,6 +1033,9 @@ async function searchCurrentSelection(vimState: VimState, direction: SearchDirec
   });
 }
 
+/**
+ * Used by [g]* and [g]#
+ */
 async function createSearchStateAndMoveToMatch(args: {
   needle?: string | undefined;
   vimState: VimState;
@@ -1046,7 +1056,7 @@ async function createSearchStateAndMoveToMatch(args: {
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { isRegex: isExact },
+    { isRegex: isExact, ignoreSmartcase: true },
     vimState.currentMode
   );
   Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
@@ -1193,13 +1203,6 @@ export class CommandSearchBackwards extends BaseCommand {
   keys = ['?'];
   isMotion = true;
   isJump = true;
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Prevent collision with `g?` (rot13 operator)
-    return (
-      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
-    );
-  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     globalState.searchState = new SearchState(
@@ -1636,7 +1639,7 @@ export class PutCommandVisual extends BaseCommand {
     vimState: VimState,
     after: boolean = false
   ): Promise<VimState> {
-    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
@@ -1870,10 +1873,14 @@ class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type: 'dot',
-    });
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = vimState.recordedState.count || 1;
+
+    for (let i = 0; i < count; i++) {
+      vimState.recordedState.transformations.push({
+        type: 'dot',
+      });
+    }
 
     return vimState;
   }
@@ -2176,9 +2183,12 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 export class CommandUndo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['u'];
+  // we support a count to undo by this setting
+  runsOnceForEachCountPrefix = true;
   runsOnceForEveryCursor() {
     return false;
   }
+  // to prevent undo for accidental key chords like: cu, du...
   mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2334,7 +2344,7 @@ class CommandExitVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVisualMode extends BaseCommand {
+export class CommandVisualMode extends BaseCommand {
   modes = [Mode.Normal, Mode.VisualLine, Mode.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
@@ -2546,6 +2556,17 @@ class CommandGoToDefinition extends BaseCommand {
       vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandOpenLink extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  keys = ['g', 'x'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vscode.commands.executeCommand('editor.action.openLink');
     return vimState;
   }
 }
@@ -3314,7 +3335,7 @@ class ActionJoinVisualMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(
+    const [start, end] = sorted(
       Position.FromVSCodePosition(vimState.editor.selection.start),
       Position.FromVSCodePosition(vimState.editor.selection.end)
     );
@@ -3335,7 +3356,7 @@ class ActionJoinVisualBlockMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
 
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     return new ActionJoin().execJoinLines(start, end, vimState, 1);
@@ -3347,7 +3368,6 @@ class ActionJoinNoWhitespace extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'J'];
   canBeRepeatedWithDot = true;
-  runsOnceForEachCountPrefix = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
@@ -3356,31 +3376,37 @@ class ActionJoinNoWhitespace extends BaseCommand {
       return vimState; // TODO: bell
     }
 
-    let lineOne = TextEditor.getLineAt(position).text;
-    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
+    const count = vimState.recordedState.count > 2 ? vimState.recordedState.count - 1 : 1;
+    return this.execJoin(count, position, vimState);
+  }
 
-    lineTwo = lineTwo.substring(
-      TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown().line).character
-    );
-
-    let resultLine = lineOne + lineTwo;
+  public async execJoin(count: number, position: Position, vimState: VimState): Promise<VimState> {
+    const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
+    const lines: string[] = [];
+    for (let i = position.line + 1; i <= lastLine; i++) {
+      lines.push(TextEditor.getLine(i).text);
+    }
+    const resultLine = TextEditor.getLine(position.line).text + lines.join('');
 
     let newState = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position.getLineBegin(),
-      lineTwo.length > 0
-        ? position.getNextLineBegin().getLineEnd().getLeft()
-        : position.getLineEnd()
+      TextEditor.getLineLength(lastLine) > 0
+        ? position.getDown(count).getLineEnd().getLeft()
+        : position.getDown(count - 1).getLineEnd()
     );
 
+    const lastLineLength = lines[lines.length - 1].length;
     vimState.recordedState.transformations.push({
       type: 'insertText',
       text: resultLine,
       position: position,
-      diff: new PositionDiff({ character: -lineTwo.length }),
+      diff: new PositionDiff({
+        character: -lastLineLength,
+      }),
     });
 
-    newState.cursorStopPosition = new Position(position.line, lineOne.length);
+    newState.cursorStopPosition = new Position(position.line, resultLine.length - lastLineLength);
 
     return newState;
   }
@@ -3388,27 +3414,14 @@ class ActionJoinNoWhitespace extends BaseCommand {
 
 @RegisterAction
 class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
-  modes = [Mode.Visual];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['g', 'J'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actionJoin = new ActionJoinNoWhitespace();
-    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
-
-    if (start.line === end.line) {
-      return vimState;
-    }
-
-    if (start.isAfter(end)) {
-      [start, end] = [end, start];
-    }
-
-    for (let i = start.line; i < end.line; i++) {
-      vimState = await actionJoin.exec(start, vimState);
-    }
-
-    return vimState;
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const count = start.line === end.line ? 1 : end.line - start.line;
+    vimState.currentRegisterMode = RegisterMode.CharacterWise;
+    return new ActionJoinNoWhitespace().execJoin(count, start, vimState);
   }
 }
 
@@ -3506,7 +3519,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     let visualSelectionOffset = 1;
 
     // If selection is reversed, reorganize it so that the text replace logic always works
-    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
@@ -3867,7 +3880,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newCursors: Range[] = [];
     for (const cursor of vimState.cursors) {
-      const [start, end] = Position.sorted(cursor.start, cursor.stop);
+      const [start, end] = sorted(cursor.start, cursor.stop);
       for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
         const line = TextEditor.getLine(lineNum);
         const insertionColumn =
@@ -3933,7 +3946,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
   keys = [['C'], ['R']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       start.getLineBegin(),
@@ -4006,62 +4019,89 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 }
 
 abstract class IncrementDecrementNumberAction extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   canBeRepeatedWithDot = true;
   offset: number;
+  staircase: boolean;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const text = TextEditor.getLineAt(position).text;
+    const ranges = this.getSearchRanges(vimState);
 
-    // Make sure position within the text is possible and return if not
-    if (text.length <= position.character) {
-      return vimState;
-    }
+    let stepNum = 1;
 
-    // Start looking to the right for the next word to increment, unless we're
-    // already on a word to increment, in which case start at the beginning of
-    // that word.
-    const whereToStart = text[position.character].match(/\s/)
-      ? position
-      : position.getWordLeft(true);
+    for (const [idx, range] of ranges.entries()) {
+      position = range.start;
 
-    for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
-      // '-' doesn't count as a word, but is important to include in parsing
-      // the number, as long as it is not just part of the word (-foo2 for example)
-      if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
-        start = start.getLeft();
-        word = text[start.character] + word;
+      const text = TextEditor.getLineAt(position).text;
+
+      // Make sure position within the text is possible and return if not
+      if (text.length <= position.character) {
+        continue;
       }
-      // Strict number parsing so "1a" doesn't silently get converted to "1"
-      do {
-        const result = NumericString.parse(word);
-        if (result === undefined) {
+
+      // Start looking to the right for the next word to increment, unless we're
+      // already on a word to increment, in which case start at the beginning of
+      // that word.
+      const whereToStart = text[position.character].match(/\s/)
+        ? position
+        : position.getWordLeft(true);
+
+      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
+        if (start.isAfter(range.stop)) {
           break;
         }
-        const { num, suffixOffset } = result;
 
-        // Use suffix offset to check if current cursor is in or before detected number.
-        if (position.character < start.character + suffixOffset) {
-          vimState.cursorStopPosition = await this.replaceNum(
-            num,
-            this.offset * (vimState.recordedState.count || 1),
-            start,
-            end
-          );
-          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft(num.suffix.length);
-          return vimState;
-        } else {
-          // For situation like this: xyz1999em199[cursor]9m
-          word = word.slice(suffixOffset);
-          start = new Position(start.line, start.character + suffixOffset);
+        // '-' doesn't count as a word, but is important to include in parsing
+        // the number, as long as it is not just part of the word (-foo2 for example)
+        if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
+          start = start.getLeft();
+          word = text[start.character] + word;
         }
-      } while (true);
+        // Strict number parsing so "1a" doesn't silently get converted to "1"
+        do {
+          const result = NumericString.parse(word);
+          if (result === undefined) {
+            break;
+          }
+          const { num, suffixOffset } = result;
+
+          // Use suffix offset to check if current cursor is in or before detected number.
+          if (position.character < start.character + suffixOffset) {
+            const pos = await this.replaceNum(
+              num,
+              this.offset * stepNum * (vimState.recordedState.count || 1),
+              start,
+              end
+            );
+
+            if (this.staircase) {
+              stepNum++;
+            }
+
+            if (vimState.currentMode === Mode.Normal) {
+              vimState.cursorStartPosition = vimState.cursorStopPosition = pos.getLeft(
+                num.suffix.length
+              );
+            }
+            break wordLoop;
+          } else {
+            // For situation like this: xyz1999em199[cursor]9m
+            word = word.slice(suffixOffset);
+            start = new Position(start.line, start.character + suffixOffset);
+          }
+        } while (true);
+      }
     }
-    // No usable numbers, return the original position
+
+    if (isVisualMode(vimState.currentMode)) {
+      vimState.cursorStopPosition = ranges[0].start;
+    }
+
+    vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
 
-  public async replaceNum(
+  private async replaceNum(
     start: NumericString,
     offset: number,
     startPos: Position,
@@ -4073,17 +4113,65 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    if (oldLength === newNum.length) {
-      await TextEditor.replace(range, newNum);
-    } else {
-      // Can't use replace, since new number is a different width than old
-      await TextEditor.delete(range);
-      await TextEditor.insertAt(newNum, startPos);
+    await TextEditor.replace(range, newNum);
+    if (oldLength !== newNum.length) {
       // Adjust end position according to difference in width of number-string
       endPos = new Position(endPos.line, startPos.character + newNum.length - 1);
     }
 
     return endPos;
+  }
+
+  /**
+   * @returns a list of Ranges in which to search for numbers
+   */
+  private getSearchRanges(vimState: VimState): Range[] {
+    let ranges: Range[] = [];
+    const [start, stop] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    switch (vimState.currentMode) {
+      case Mode.Normal: {
+        ranges.push(
+          new Range(vimState.cursorStopPosition, vimState.cursorStopPosition.getLineEnd())
+        );
+        break;
+      }
+
+      case Mode.Visual: {
+        ranges.push(new Range(start, start.getLineEnd()));
+        for (let line = start.line + 1; line < stop.line; line++) {
+          const lineStart = new Position(line, 0);
+          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+        }
+        ranges.push(new Range(stop.getLineBegin(), stop));
+        break;
+      }
+
+      case Mode.VisualLine: {
+        for (let line = start.line; line <= stop.line; line++) {
+          const lineStart = new Position(line, 0);
+          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+        }
+        break;
+      }
+
+      case Mode.VisualBlock: {
+        const topLeft = visualBlockGetTopLeftPosition(start, stop);
+        const bottomRight = visualBlockGetBottomRightPosition(start, stop);
+        for (let line = topLeft.line; line <= bottomRight.line; line++) {
+          ranges.push(
+            new Range(
+              new Position(line, topLeft.character),
+              new Position(line, bottomRight.character)
+            )
+          );
+        }
+        break;
+      }
+
+      default:
+        throw new Error('Unexpected mode in IncrementDecrementNumberAction.getPositions()');
+    }
+    return ranges;
   }
 }
 
@@ -4091,12 +4179,28 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 class IncrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-a>'];
   offset = +1;
+  staircase = false;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
   keys = ['<C-x>'];
   offset = -1;
+  staircase = false;
+}
+
+@RegisterAction
+class IncrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-a>'];
+  offset = +1;
+  staircase = true;
+}
+
+@RegisterAction
+class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
+  keys = ['g', '<C-x>'];
+  offset = -1;
+  staircase = true;
 }
 
 @RegisterAction

@@ -58,10 +58,6 @@ export class EasyMotion {
     this.decorations = [];
   }
 
-  public static createMarkerGenerator(matchesCount: number): MarkerGenerator {
-    return new MarkerGenerator(matchesCount);
-  }
-
   /**
    * Create and cache decoration types for different marker lengths
    */
@@ -291,6 +287,11 @@ export class EasyMotion {
 
       //#endregion
 
+      const fontSize =
+        configuration.easymotionMarkerFontSize || configuration.getConfiguration('editor').fontSize;
+      const fontFamily =
+        configuration.easymotionMarkerFontFamily ||
+        configuration.getConfiguration('editor').fontFamily;
       const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
           contentText: trim === -1 ? keystroke.substring(0, 1) : keystroke,
@@ -302,8 +303,8 @@ export class EasyMotion {
           margin: 0 ${configuration.easymotionMarkerMargin / 2}px;
           transform: translateX(-0.05ch);
           border-radius: 1px;
-          font-family: ${configuration.easymotionMarkerFontFamily};
-          font-size: ${configuration.easymotionMarkerFontSize}px;
+          font-family: ${fontFamily};
+          font-size: ${fontSize}px;
           font-weight: ${configuration.easymotionMarkerFontWeight};`,
         },
       };
@@ -326,10 +327,10 @@ export class EasyMotion {
           dimmingZones.push(new vscode.Range(0, 0, pos.line, dimPos));
         } else {
           const prevDimPos = dimmingZones[dimmingZones.length - 1];
-          const ln = prevDimPos.end.line;
-          const ps = prevDimPos.end.character;
 
-          dimmingZones.push(new vscode.Range(ln, ps, pos.line, dimPos));
+          dimmingZones.push(
+            new vscode.Range(prevDimPos.end.line, prevDimPos.end.character, pos.line, dimPos)
+          );
         }
       }
 
@@ -369,49 +370,20 @@ export class EasyMotion {
 }
 
 export namespace EasyMotion {
-  export class Marker {
-    private _name: string;
-    private _position: Position;
-
-    constructor(name: string, position: Position) {
-      this._name = name;
-      this._position = position;
-    }
-
-    public get name(): string {
-      return this._name;
-    }
-
-    public get position(): Position {
-      return this._position;
-    }
+  export interface Marker {
+    name: string;
+    position: Position;
   }
 
   export class Match {
-    private _position: Position;
-    private _text: string;
-    private _index: number;
+    public position: Position;
+    public readonly text: string;
+    public readonly index: number;
 
     constructor(position: Position, text: string, index: number) {
-      this._position = position;
-      this._text = text;
-      this._index = index;
-    }
-
-    public get position(): Position {
-      return this._position;
-    }
-
-    public get text(): string {
-      return this._text;
-    }
-
-    public get index(): number {
-      return this._index;
-    }
-
-    public set position(position: Position) {
-      this._position = position;
+      this.position = position;
+      this.text = text;
+      this.index = index;
     }
 
     public toRange(): vscode.Range {

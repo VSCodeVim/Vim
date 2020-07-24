@@ -58,11 +58,6 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if ('help'.startsWith(command.split(/\s/)[0])) {
-      StatusBar.setText(vimState, `:help Not supported.`, true);
-      return;
-    }
-
     this._history.add(command);
     this.commandLineHistoryIndex = this._history.get().length;
 
@@ -81,7 +76,7 @@ class CommandLine {
         const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
-        await cmd.execute(vimState.editor, vimState);
+        await cmd.execute(vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {

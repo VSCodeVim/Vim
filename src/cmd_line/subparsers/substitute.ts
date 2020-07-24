@@ -134,7 +134,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     let flags: number;
     let count: number;
 
-    if (!args) {
+    if (!args || !args.trim()) {
       // special case for :s
       return new node.SubstituteCommand({
         pattern: undefined,
