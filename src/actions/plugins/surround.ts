@@ -246,7 +246,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 
     // Put the cursor at the beginning of the visual selection
     vimState.cursorStopPosition = start;
-    vimState.cursorStartPosition = end;
+    vimState.cursorStartPosition = start;
 
     return vimState;
   }
