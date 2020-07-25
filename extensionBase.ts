@@ -276,6 +276,33 @@ export async function activate(
 
       const mh = await getAndUpdateModeHandler();
 
+      const selectionsHash = e.selections.reduce(
+        (hash, s) =>
+          hash +
+          `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
+        ''
+      );
+      const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
+      if (idx > -1) {
+        logger.debug(
+          `Selections: Ignoring selection: ${selectionsHash}, Count left: ${
+            mh.vimState.selectionsChanged.ourSelections.length - 1
+          }`
+        );
+        mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+        return;
+      } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
+        logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
+        return;
+      } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
+        // Some intermediate selection must have slipped in after setting the
+        // 'ignoreIntermediateSelections' to false. Which means we didn't count
+        // for it yet, but since we have selections to be ignored then we probably
+        // wanted this one to be ignored as well.
+        logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+        return;
+      }
+
       // We may receive changes from other panels when, having selections in them containing the same file
       // and changing text before the selection in current panel.
       if (e.textEditor !== mh.vimState.editor) {
@@ -302,7 +329,7 @@ export async function activate(
       );
     },
     true,
-    true
+    false
   );
 
   const compositionState = new CompositionState();
