@@ -3411,13 +3411,14 @@ class ActionTriggerHover extends BaseCommand {
 export class ActionOverrideCmdD extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual];
   keys = [['<D-d>'], ['g', 'b']];
+  vsCommand = 'editor.action.addSelectionToNextFindMatch';
   runsOnceForEveryCursor() {
     return false;
   }
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
+    await vscode.commands.executeCommand(this.vsCommand);
     vimState.cursors = getCursorsAfterSync();
 
     // If this is the first cursor, select 1 character less
@@ -3426,6 +3427,20 @@ export class ActionOverrideCmdD extends BaseCommand {
 
     await vimState.setCurrentMode(Mode.Visual);
   }
+}
+
+@RegisterAction
+export class ActionMoveSelectionNextMatch extends ActionOverrideCmdD {
+  modes = [Mode.Visual];
+  keys = [['g', 's']];
+  vsCommand = 'editor.action.moveSelectionToNextFindMatch';
+}
+
+@RegisterAction
+export class ActionUndoLastSelection extends ActionOverrideCmdD {
+  modes = [Mode.Visual];
+  keys = [['<cursorundo>']];
+  vsCommand = 'cursorUndo';
 }
 
 @RegisterAction
