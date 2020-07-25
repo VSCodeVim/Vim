@@ -1,5 +1,41 @@
 # Change Log
 
+## [v1.16.0](https://github.com/vscodevim/vim/tree/v1.16.0) (2020-07-18)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.15.0...v1.16.0)
+
+**Enhancements:**
+
+- Progressive increment/decrement (`g<C-a>`/`g<C-x>`) [\#3226](https://github.com/VSCodeVim/Vim/issues/3226)
+- Use editor font for the easymotion markers by default [\#5020](https://github.com/VSCodeVim/Vim/issues/5020)
+- Allow undo command (`u`) to accept \[count\] [\#4963](https://github.com/VSCodeVim/Vim/issues/4963)
+- Support `:ju[mps]` and `:cle[arjumps]` commands [\#4872](https://github.com/VSCodeVim/Vim/issues/4872)
+- Support `!` operator [\#4857](https://github.com/VSCodeVim/Vim/issues/4857)
+
+**Fixed Bugs:**
+
+- Visual mode cannot be navigated with up/down arrow keys [\#5029](https://github.com/VSCodeVim/Vim/issues/5029)
+- `gJ` doesn't work in visual mode [\#5027](https://github.com/VSCodeVim/Vim/issues/5027)
+- Shortcut asterisk \(wildcard\) key incorrectly includes extra tab [\#5026](https://github.com/VSCodeVim/Vim/issues/5026)
+- `d\<count\>gg` should be linewise [\#4806](https://github.com/VSCodeVim/Vim/issues/4806)
+- Delete backwards `\(d?\)` action is not working [\#4506](https://github.com/VSCodeVim/Vim/issues/4506)
+- `dap` deletes more than one paragraph [\#5012](https://github.com/VSCodeVim/Vim/issues/5012)
+- Usage with \[remote:ssh\] when installed remotely causes significant cursor movement issue\(s\) [\#5028](https://github.com/VSCodeVim/Vim/issues/5028)
+
+**Merged pull requests:**
+
+- Fix bug on issue \#5029 [\#5047](https://github.com/VSCodeVim/Vim/pull/5047) ([berknam](https://github.com/berknam))
+- Fix `gg` as linewise operation [\#5046](https://github.com/VSCodeVim/Vim/pull/5046) ([sql-koala](https://github.com/sql-koala))
+- Implement filter commands [\#5042](https://github.com/VSCodeVim/Vim/pull/5042) ([tagniam](https://github.com/tagniam))
+- Bugfix: search backwards with operator [\#5041](https://github.com/VSCodeVim/Vim/pull/5041) ([sql-koala](https://github.com/sql-koala))
+- add `:sh[ell]` command [\#5040](https://github.com/VSCodeVim/Vim/pull/5040) ([zimio](https://github.com/zimio))
+- Support undo count [\#5038](https://github.com/VSCodeVim/Vim/pull/5038) ([sql-koala](https://github.com/sql-koala))
+- Support `gJ` in visual modes [\#5037](https://github.com/VSCodeVim/Vim/pull/5037) ([lusingander](https://github.com/lusingander))
+- Implement count for CommandDot [\#5025](https://github.com/VSCodeVim/Vim/pull/5025) ([sql-koala](https://github.com/sql-koala))
+- Fix textobject: a paragraph ending position \(when paragraph is single line\) [\#5023](https://github.com/VSCodeVim/Vim/pull/5023) ([sql-koala](https://github.com/sql-koala))
+- Allows `:ju` and :jumps command to work. [\#5021](https://github.com/VSCodeVim/Vim/pull/5021) ([zimio](https://github.com/zimio))
+- Fix `\[count\]gJ` [\#5014](https://github.com/VSCodeVim/Vim/pull/5014) ([lusingander](https://github.com/lusingander))
+
 ## [v1.15.0](https://github.com/vscodevim/vim/tree/v1.15.0) (2020-07-13)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.14.5...v1.15.0)

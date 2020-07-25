@@ -79,7 +79,7 @@ namespace LexerFunctions {
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
         case '*':
-          state.emit();
+          state.ignore();
           tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
           tokens.push(new Token(TokenType.Comma, ',')!);
           tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
@@ -89,6 +89,9 @@ namespace LexerFunctions {
         case '!':
           tokens.push(emitToken(TokenType.CommandName, state)!);
           return lexCommandArgs;
+        case ' ':
+          state.ignore();
+          continue;
         default:
           return lexCommand;
       }
