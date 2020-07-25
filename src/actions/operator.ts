@@ -321,7 +321,13 @@ export class YankOperator extends BaseOperator {
 @RegisterAction
 export class FilterOperator extends BaseOperator {
   public keys = ['!'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  public modes = [
+    Mode.Normal,
+    Mode.OperatorPendingMode,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     [start, end] = sorted(start, end);
