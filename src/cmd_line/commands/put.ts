@@ -1,7 +1,3 @@
-import * as vscode from 'vscode';
-import * as token from '../token';
-import { TextEditor } from '../../textEditor';
-
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
@@ -49,20 +45,7 @@ export class PutExCommand extends node.CommandBase {
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let start: vscode.Position;
-    let end: vscode.Position;
-
-    if (range.left[0].type === token.TokenType.Percent) {
-      start = new vscode.Position(0, 0);
-      end = new vscode.Position(TextEditor.getLineCount() - 1, 0);
-    } else {
-      start = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      if (range.right.length === 0) {
-        end = start;
-      } else {
-        end = range.lineRefToPosition(vimState.editor, range.right, vimState);
-      }
-    }
-    await this.doPut(vimState, Position.FromVSCodePosition(end));
+    const [_, end] = range.resolve(vimState);
+    await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }
 }

@@ -5,13 +5,12 @@ import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
 import { Range } from './common/motion/range';
-import { lineCompletionProvider } from './completion/lineCompletionProvider';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
  */
 export class TextEditor {
-  static readonly whitespaceRegExp = new RegExp('^ *$');
+  static readonly whitespaceRegExp = new RegExp('\\s+');
 
   // TODO: Refactor args
 
@@ -329,6 +328,9 @@ export class TextEditor {
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
     const text = TextEditor.getLineAt(start).text;
+    if (/\s/.test(text[start.character])) {
+      start = start.getWordRight();
+    }
     let wordEnd = start.getCurrentWordEnd(true);
     do {
       const word = text.substring(start.character, wordEnd.character + 1);

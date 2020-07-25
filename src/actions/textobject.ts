@@ -465,7 +465,7 @@ export class SelectParagraph extends TextObjectMovement {
     let stop = position.getCurrentParagraphEnd(true);
     while (
       stop.line < TextEditor.getLineCount() - 1 &&
-      TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
+      TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
     ) {
       stop = stop.getDownWithDesiredColumn(0);
     }
@@ -496,7 +496,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
       }
       while (
         stop.line < TextEditor.getLineCount() - 1 &&
-        TextEditor.getLineAt(start.getDown()).isEmptyOrWhitespace
+        TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
       ) {
         stop = stop.getDownWithDesiredColumn(0);
       }
@@ -726,6 +726,7 @@ abstract class SelectArgument extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
+
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
 
@@ -742,6 +743,15 @@ abstract class SelectArgument extends TextObjectMovement {
       SelectArgument.closingDelimiterCharacters().includes(TextEditor.getCharAt(position))
     ) {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
+    }
+
+    // Early abort, if no delimiters (i.e. (), [], etc.) surround us.
+    // This prevents applying the movement to surrounding separators across the buffer.
+    if (
+      SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition, true) === undefined ||
+      SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition, true) === undefined
+    ) {
+      return failure;
     }
 
     const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
@@ -801,16 +811,26 @@ abstract class SelectArgument extends TextObjectMovement {
         start = leftArgumentBoundary;
       }
     } else {
-      // Multi-line UX-boost:
-      // When the left delimiter is at the end of the line, we can skip over
-      // to the next line. This pre-advance prevents the cursor staying
-      // right behind the delimiter on the line above.
-      start = leftArgumentBoundary;
-      if (leftArgumentBoundary.getRight().isLineEnd()) {
-        start = start.getRightThroughLineBreaks(true);
+      // Inset the start once to get off the boundary and then keep
+      // going until the first non whitespace.
+      // This ensures that indented argument-lists keep the indentation.
+      start = leftArgumentBoundary.getRightThroughLineBreaks(false);
+      while (/\s/.test(TextEditor.getCharAt(start))) {
+        start = start.getRightThroughLineBreaks(false);
       }
-      start = start.getRightThroughLineBreaks(true);
-      stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+
+      // Same procedure for stop.
+      stop = rightArgumentBoundary.getLeftThroughLineBreaks(false);
+      while (/\s/.test(TextEditor.getCharAt(stop))) {
+        stop = stop.getLeftThroughLineBreaks(false);
+      }
+
+      // Edge-case: Seems there is only whitespace in this argument.
+      // Omit any weird handling and just clear all whitespace.
+      if (stop.isBeforeOrEqual(start)) {
+        start = leftArgumentBoundary.getRightThroughLineBreaks(true);
+        stop = rightArgumentBoundary.getLeftThroughLineBreaks(true);
+      }
     }
 
     // Handle case when cursor is not inside the anticipated movement range
@@ -825,7 +845,10 @@ abstract class SelectArgument extends TextObjectMovement {
     };
   }
 
-  private static findLeftArgumentBoundary(position: Position): Position | undefined {
+  private static findLeftArgumentBoundary(
+    position: Position,
+    ignoreSeparators: boolean = false
+  ): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let closedParensCount = 0;
@@ -833,10 +856,12 @@ abstract class SelectArgument extends TextObjectMovement {
     while (true) {
       const char = TextEditor.getCharAt(walkingPosition);
       if (closedParensCount === 0) {
-        if (
-          SelectArgument.openingDelimiterCharacters().includes(char) ||
-          SelectArgument.separatorCharacters().includes(char)
-        ) {
+        let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
+        if (!ignoreSeparators) {
+          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+        }
+
+        if (isOnBoundary) {
           // We have found the left most delimiter or the first proper delimiter
           // in our cursor's list 'depth' and thus can abort.
           delimiterPosition = walkingPosition;
@@ -860,7 +885,10 @@ abstract class SelectArgument extends TextObjectMovement {
     return delimiterPosition;
   }
 
-  private static findRightArgumentBoundary(position: Position): Position | undefined {
+  private static findRightArgumentBoundary(
+    position: Position,
+    ignoreSeparators: boolean = false
+  ): Position | undefined {
     let delimiterPosition: Position | undefined;
     let walkingPosition = position;
     let openedParensCount = 0;
@@ -868,10 +896,12 @@ abstract class SelectArgument extends TextObjectMovement {
     while (true) {
       const char = TextEditor.getCharAt(walkingPosition);
       if (openedParensCount === 0) {
-        if (
-          SelectArgument.closingDelimiterCharacters().includes(char) ||
-          SelectArgument.separatorCharacters().includes(char)
-        ) {
+        let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
+        if (!ignoreSeparators) {
+          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+        }
+
+        if (isOnBoundary) {
           delimiterPosition = walkingPosition;
           break;
         }
