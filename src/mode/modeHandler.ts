@@ -28,6 +28,7 @@ import {
   ActionOverrideCmdD,
   CommandRegister,
   CommandVisualMode,
+  CompleteCommandWithModeChange,
 } from './../actions/commands/actions';
 import {
   areAnyTransformationsOverlapping,
@@ -573,7 +574,8 @@ export class ModeHandler implements vscode.Disposable {
       (ranRepeatableAction && vimState.currentMode === Mode.Normal) ||
       this.createUndoPointForBrackets(vimState);
     ranAction =
-      ranAction && (vimState.currentMode === Mode.Normal || action instanceof ActionOverrideCmdD);
+      ranAction &&
+      (vimState.currentMode === Mode.Normal || action instanceof CompleteCommandWithModeChange);
     // ActionOverrideCmdD is a complete action, but it changes mode from Normal to visual,
     // so it would cause a reset to false here. We cant allow that, because then we don't get a fresh recordedState below
 

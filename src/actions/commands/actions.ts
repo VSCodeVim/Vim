@@ -2356,8 +2356,10 @@ export class CommandVisualMode extends BaseCommand {
   }
 }
 
+export abstract class CompleteCommandWithModeChange extends BaseCommand {}
+
 @RegisterAction
-class CommandReselectVisual extends BaseCommand {
+class CommandReselectVisual extends CompleteCommandWithModeChange {
   modes = [Mode.Normal];
   keys = ['g', 'v'];
 
@@ -2437,7 +2439,7 @@ async function selectLastSearchWord(
 }
 
 @RegisterAction
-class CommandSelectNextLastSearchWord extends BaseCommand {
+class CommandSelectNextLastSearchWord extends CompleteCommandWithModeChange {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   keys = ['g', 'n'];
 
@@ -2447,7 +2449,7 @@ class CommandSelectNextLastSearchWord extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSelectPreviousLastSearchWord extends BaseCommand {
+class CommandSelectPreviousLastSearchWord extends CompleteCommandWithModeChange {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   keys = ['g', 'N'];
 
@@ -4250,7 +4252,7 @@ class ActionTriggerHover extends BaseCommand {
  */
 
 @RegisterAction
-export class ActionOverrideCmdD extends BaseCommand {
+export class ActionOverrideCmdD extends CompleteCommandWithModeChange {
   modes = [Mode.Normal, Mode.Visual];
   keys = [['<D-d>'], ['g', 'b']];
   runsOnceForEveryCursor() {
