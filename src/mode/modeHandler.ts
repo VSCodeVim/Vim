@@ -1388,7 +1388,7 @@ export class ModeHandler implements vscode.Disposable {
              * but if we hit b we expect to select abcd, so we need to getRight() on the
              * start of the selection when it precedes where we started visual mode.
              */
-            if (start.isAfter(stop)) {
+            if (start.isAfterOrEqual(stop)) {
               start = start.getRight();
             }
 
