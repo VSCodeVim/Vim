@@ -2,7 +2,7 @@ import * as node from '../commands/file';
 import { Scanner } from '../scanner';
 
 export function parseEditFileCommandArgs(args: string): node.FileCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     return new node.FileCommand({ name: '', createFileIfNotExists: true });
   }
 

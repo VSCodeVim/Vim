@@ -17,7 +17,6 @@ export enum TokenType {
   Offset,
   /**
    * Marks
-   *
    */
   SelectionFirstLine,
   SelectionLastLine,
