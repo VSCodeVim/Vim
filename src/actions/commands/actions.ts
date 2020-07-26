@@ -40,6 +40,7 @@ import { reportLinesChanged, reportFileInfo, reportSearch } from '../../util/sta
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 import _ = require('lodash');
+import { DefaultDigraphs } from './digraphs';
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -4214,12 +4215,25 @@ class CommandUnicodeName extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
     const charCode = char.charCodeAt(0);
+    const digraphChars = this.findDigraphChars(char);
+    let text = `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(
+      8
+    )}`;
+    if (digraphChars) {
+      text += `,  Digr ${digraphChars}`;
+    }
     // TODO: Handle charCode > 127 by also including <M-x>
-    StatusBar.setText(
-      vimState,
-      `<${char}>  ${charCode},  Hex ${charCode.toString(16)},  Octal ${charCode.toString(8)}`
-    );
+    StatusBar.setText(vimState, text);
     return vimState;
+  }
+
+  private findDigraphChars(c: string) {
+    for (const [k, v] of Object.entries(DefaultDigraphs)) {
+      if (v[0] === c) {
+        return k;
+      }
+    }
+    return undefined;
   }
 }
 

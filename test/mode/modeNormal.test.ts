@@ -5,7 +5,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace, assertStatusBarEqual } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
@@ -3366,5 +3366,17 @@ suite('Mode Normal', () => {
       end: ['hello |world and mars'],
       endMode: Mode.Normal,
     });
+  });
+
+  test('Can handle ga', async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'R', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(['g', 'a']);
+    assertStatusBarEqual('<R>  82,  Hex 52,  Octal 122');
+  });
+
+  test('Can handle ga if the character can be inserted as a digraph', async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'ö', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(['g', 'a']);
+    assertStatusBarEqual('<ö>  246,  Hex f6,  Octal 366,  Digr o:');
   });
 });
