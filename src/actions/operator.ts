@@ -169,6 +169,16 @@ export class DeleteOperator extends BaseOperator {
     // expression first and then update the start position.
 
     // Now rebornix is confused as well.
+
+    // berknam: Here is what I understand of all this to try and make it simpler for others.
+    // When we are at the last line, the `if` block above will try to move down to include the
+    // newLine character at the end. But since we are on last line there is no newLine
+    // character at the end. So if we delete from the beginning of the line to the end we
+    // will delete any text there is on the line but we will still be on the same line
+    // except that it is empty now. In order to remove this last line entirely we need to
+    // remove the newLine character of the line above, so we need to move start to the end
+    // of the previous line.
+    // Hope no one else is confused now! :)
     if (isOnLastLine && start.line !== 0 && registerMode === RegisterMode.LineWise) {
       start = start.getPreviousLineBegin().getLineEnd();
     }

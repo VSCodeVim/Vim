@@ -209,6 +209,9 @@ export class CommandNumber extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
+  preservesDesiredColumn() {
+    return true;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const number = parseInt(this.keysPressed[0], 10);

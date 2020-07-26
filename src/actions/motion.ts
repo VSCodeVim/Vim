@@ -120,47 +120,109 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   value = 1;
 }
 
-abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
+abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
+  movementType: CursorMovePosition;
+  by: CursorMoveByUnit;
+  value: number = 1;
   preservesDesiredColumn() {
     return true;
   }
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    let prevDesiredColumn = vimState.desiredColumn;
+    return this.execActionWithCount(position, vimState, 1);
+  }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    let desiredColumn = vimState.desiredColumn;
     let prevLine = vimState.editor.selection.active.line;
 
     if (vimState.currentMode !== Mode.Normal) {
       /**
        * As VIM and VSCode handle the end of selection index a little
-       * differently we need to sometimes move the cursor at the end
-       * of the selection back by a character.
+       * differently, sometimes the active cursor won't be on 'position',
+       * also when in Visual line Mode the active selection is always at
+       * the start or at the end of the line so we need to move the active
+       * cursor to the current 'position' before going up or down to make
+       * sure we won't move to a position past desired column. This means
+       * that when we move up or down we will always be before or at the
+       * desired column, if we end up after desired column that means we
+       * moved to a wrapped line and in that case we will move to the right
+       * only if the position we were previously was not at the desired column
        */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      if (
-        (this.movementType === 'down' && position.line > start.line) ||
-        (this.movementType === 'up' && position.line < prevLine)
-      ) {
-        await vscode.commands.executeCommand('cursorMove', {
-          to: 'left',
-          select: true,
-          by: 'character',
-          value: 1,
-        });
+      // Move VSCode cursor to 'position'
+      let active = vimState.editor.selection.active;
+      if (!active.isEqual(position)) {
+        // We need to use while loops here because when inside a wrapped line if you try to move
+        // to a position that is on a different "visual" line VSCode won't move directly to the
+        // position you want, first it moves to the end/start of the current "visual" line, depending
+        // if you're moving right or left, respectively.
+        while (active.isBefore(position) && active.line <= position.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'right',
+            select: true,
+            by: 'character',
+            value: Math.abs(position.character - active.character),
+          });
+          active = vimState.editor.selection.active;
+        }
+        while (position.isBefore(active) && active.line >= position.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'left',
+            select: true,
+            by: 'character',
+            value: Math.abs(active.character - position.character),
+          });
+          active = vimState.editor.selection.active;
+        }
       }
     }
+
+    const previousLineColumn = vimState.cursorStopPosition.character;
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
       select: vimState.currentMode !== Mode.Normal,
       by: this.by,
-      value: this.value,
+      value: this.value * count,
     });
 
+    // Set active position to the desired column
+    let activePos = Position.FromVSCodePosition(vimState.editor.selection.active);
+    if (activePos.character < desiredColumn && activePos.line !== prevLine) {
+      activePos = activePos.withColumn(desiredColumn);
+    } else if (previousLineColumn < desiredColumn) {
+      // If the active position is after desiredColumn it means we moved to a wrapped line.
+      // In that case if the position on previous line is less then desiredColumn we need to
+      // move right by the difference of desiredColumn and the previous line column.
+      const indent = vscode.workspace.getConfiguration('editor').get('wrappingIndent');
+      const indentSpace = TextEditor.getFirstNonWhitespaceCharOnLine(activePos.line).character;
+      const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize')!;
+      const diff =
+        indent === 'none'
+          ? 0
+          : indent === 'same'
+          ? indentSpace > previousLineColumn
+            ? indentSpace - previousLineColumn
+            : 0
+          : indent === 'indent'
+          ? indentSpace + tabSize > previousLineColumn
+            ? indentSpace + tabSize - previousLineColumn
+            : 0
+          : indent === 'deepIndent'
+          ? indentSpace + 2 * tabSize > previousLineColumn
+            ? indentSpace + 2 * tabSize - previousLineColumn
+            : 0
+          : 0;
+      activePos = activePos.getRight(Math.max(0, desiredColumn - previousLineColumn - diff));
+    } else if (activePos.character < previousLineColumn && activePos.character > desiredColumn) {
+      activePos = activePos.withColumn(desiredColumn);
+    }
+
     if (vimState.currentMode === Mode.Normal) {
-      let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
-      if (prevLine !== returnedPos.line) {
-        returnedPos = returnedPos.withColumn(prevDesiredColumn);
-      }
-      return returnedPos;
+      return activePos;
     } else {
       /**
        * cursorMove command is handling the selection for us.
@@ -168,21 +230,28 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        */
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
-      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
-      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos) && !start.isEqual(stop)) {
-        [start, stop] = [stop, start];
-        if (prevLine !== start.line) {
+      if (start.line === stop.line) {
+        return activePos;
+      } else if (activePos.line <= start.line) {
+        // We are before/above our initial position so VSCode selection end is our start
+        start = stop;
+        if (prevLine !== start.line && start.character > desiredColumn) {
+          // When we were not previously on the initial line, VSCode for some reason extends
+          // their selection.end (our start here) by one, so we need to go left by one.
           start = start.getLeft();
         }
+        return { start, stop: activePos };
+      } else {
+        // We are after/below our initial position so VSCode selection start is our start
+        if (prevLine < start.line && start.character > desiredColumn) {
+          // If the movement finished below our initial position but was previously above it
+          // we need to move start to left, because start was the previous stop that VSCode
+          // always moves to right by one.
+          start = start.getLeft();
+        }
+        return { start, stop: activePos };
       }
-
-      if (position.line !== stop.line) {
-        stop = stop.withColumn(prevDesiredColumn);
-      }
-
-      return { start, stop };
     }
   }
 }
@@ -927,7 +996,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByDisplayLine extends MoveByScreenLine {
+export class MoveUpByDisplayLine extends MoveUpByScreenLineMaintainDesiredColumn {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -939,7 +1008,7 @@ export class MoveUpByDisplayLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByDisplayLine extends MoveByScreenLine {
+class MoveDownByDisplayLine extends MoveDownByScreenLineMaintainDesiredColumn {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'j'],
@@ -956,26 +1025,26 @@ class MoveDownByDisplayLine extends MoveByScreenLine {
 // and moving by screen line just snaps us back to the original position.
 // Check PR #1600 for discussion.
 @RegisterAction
-class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
+class MoveUpByScreenLineVisualLine extends MoveUpByScreenLineMaintainDesiredColumn {
   modes = [Mode.VisualLine];
   keys = [
     ['g', 'k'],
     ['g', '<up>'],
   ];
   movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'line';
+  by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
 @RegisterAction
-class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
+class MoveDownByScreenLineVisualLine extends MoveDownByScreenLineMaintainDesiredColumn {
   modes = [Mode.VisualLine];
   keys = [
     ['g', 'j'],
     ['g', '<down>'],
   ];
   movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'line';
+  by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
