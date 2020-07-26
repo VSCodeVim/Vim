@@ -236,7 +236,10 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
       } else if (activePos.line <= start.line) {
         // We are before/above our initial position so VSCode selection end is our start
         start = stop;
-        if (prevLine !== start.line && start.character > desiredColumn) {
+        if (
+          prevLine !== start.line ||
+          (prevLine === start.line && previousLineColumn < start.character)
+        ) {
           // When we were not previously on the initial line, VSCode for some reason extends
           // their selection.end (our start here) by one, so we need to go left by one.
           start = start.getLeft();
@@ -244,7 +247,10 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
         return { start, stop: activePos };
       } else {
         // We are after/below our initial position so VSCode selection start is our start
-        if (prevLine < start.line && start.character > desiredColumn) {
+        if (
+          prevLine < start.line ||
+          (prevLine === start.line && previousLineColumn < start.character)
+        ) {
           // If the movement finished below our initial position but was previously above it
           // we need to move start to left, because start was the previous stop that VSCode
           // always moves to right by one.
