@@ -792,7 +792,7 @@ export class ModeHandler implements vscode.Disposable {
     // we will shift it back again on the start of 'runAction'.
     if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
-        c.start.isBefore(c.stop)
+        c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
               c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
             )
@@ -1445,7 +1445,7 @@ export class ModeHandler implements vscode.Disposable {
              * but if we hit b we expect to select abcd, so we need to getRight() on the
              * start of the selection when it precedes where we started visual mode.
              */
-            if (start.isAfterOrEqual(stop)) {
+            if (start.isAfter(stop)) {
               start = start.getRight();
             }
 
