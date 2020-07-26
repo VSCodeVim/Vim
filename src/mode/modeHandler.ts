@@ -180,27 +180,22 @@ export class ModeHandler implements vscode.Disposable {
         // like the plugin modes shouldn't be changed or else it might mess up the plugins actions.
         this._logger.debug('Selections: Creating Multi Cursor Visual Selection!');
         if (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard) {
-          this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
           this.vimState.cursors = e.textEditor.selections.map(
             (sel) =>
               new Range(
                 Position.FromVSCodePosition(sel.anchor),
                 sel.anchor.isBefore(sel.active)
-                  ? Position.FromVSCodePosition(sel.active).getRight()
+                  ? // This is another case where we are changing our cursor so that the selection looks right
+                    Position.FromVSCodePosition(sel.active).getRight()
                   : Position.FromVSCodePosition(sel.active)
-              )
-          );
-          this.vimState.editor.selections = e.textEditor.selections.map(
-            (sel) =>
-              new vscode.Selection(
-                sel.anchor.isAfter(sel.active) ? sel.anchor.translate(0, 1) : sel.anchor,
-                sel.anchor.isBefore(sel.active) ? sel.active.translate(0, 1) : sel.active
               )
           );
         }
         await this.setCurrentMode(Mode.Visual);
-        await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
-        this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+        // Here we need our updateView to draw the selection because we want vscode to include the initial
+        // character, and by doing it through out updateView we make sure that any resultant selection
+        // change event will be ignored.
+        await this.updateView(this.vimState);
         return;
       }
       return this.updateView(this.vimState);
@@ -233,29 +228,21 @@ export class ModeHandler implements vscode.Disposable {
             return;
           } else if (!selection.active.isEqual(selection.anchor)) {
             this._logger.debug('Selections: Creating Visual Selection from command!');
-            // this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
             const active = Position.FromVSCodePosition(selection.active);
             const anchor = Position.FromVSCodePosition(selection.anchor);
             this.vimState.cursorStopPosition = active;
             this.vimState.cursorStartPosition = anchor;
             if (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard) {
-              if (selection.anchor.isAfter(selection.active)) {
-                this.vimState.editor.selection = new vscode.Selection(
-                  selection.anchor.translate(0, 1),
-                  selection.active
-                );
-              } else if (selection.anchor.isBefore(selection.active)) {
+              if (selection.anchor.isBefore(selection.active)) {
+                // This is another case where we are changing our cursor so that the selection looks right
                 this.vimState.cursorStopPosition = active.getRight();
-                this.vimState.editor.selection = new vscode.Selection(
-                  selection.anchor,
-                  selection.active.translate(0, 1)
-                );
               }
             }
             await this.setCurrentMode(Mode.Visual);
-            // await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            // Here we need our updateView to draw the selection because we want vscode to include the initial
+            // character, and by doing it through out updateView we make sure that any resultant selection
+            // change event will be ignored.
             await this.updateView(this.vimState);
-            // this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
             return;
           }
         }

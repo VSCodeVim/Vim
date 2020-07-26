@@ -2026,5 +2026,67 @@ suite('Mode Visual', () => {
       ],
       endMode: Mode.Normal,
     });
+
+    newTest({
+      title:
+        'Command cursorLeftSelect enters visual mode and next movement keeps anchor in right place',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<C-h>'],
+            commands: ['cursorLeftSelect'],
+          },
+        ],
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "be|fore": ["j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      keysPressed: '<C-h>hd',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "|ore": ["j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title:
+        'Command cursorLeftSelect on multi cursors enters visual mode and next movement keeps anchor in right place',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<C-h>'],
+            commands: ['cursorLeftSelect'],
+          },
+        ],
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "before": ["|j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      keysPressed: 'vlgb_lll<Esc><C-h>hd<Esc>',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "|ore": ["j"],`,
+        `    "er": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Normal,
+    });
   });
 });
