@@ -224,7 +224,17 @@ export class ModeHandler implements vscode.Disposable {
                 this.vimState.cursorStartPosition = anchor.getLeft();
               }
             }
-            await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+            // Here we need our updateView to draw the selection because even though we don't need to
+            // change the vscode selection, in some situations when you trigger an initial selection
+            // and then update that selection these events will be triggered only after vscode has done
+            // both selection changes and in that situation we will get all the events in a row and since
+            // when creating the visual selection the first time (the code block below this) we change
+            // the selection, then we need to change the selection on the updates as well or else we
+            // would revert the vscode selection back to the initial one. (This issue is noticeable when
+            // using the VSpaceCode extension that shows a QuickPick menu that allows you to call commands
+            // that change the selection in vscode, but we will only get this 'handleSelectionChange'
+            // function called with all those changes after the user closes the QuickPick menu)
+            await this.updateView(this.vimState);
             return;
           } else if (!selection.active.isEqual(selection.anchor)) {
             this._logger.debug('Selections: Creating Visual Selection from command!');
@@ -239,9 +249,9 @@ export class ModeHandler implements vscode.Disposable {
               }
             }
             await this.setCurrentMode(Mode.Visual);
-            // Here we need our updateView to draw the selection because we want vscode to include the initial
-            // character, and by doing it through out updateView we make sure that any resultant selection
-            // change event will be ignored.
+            // Here we need our updateView to draw the selection because we want vscode to include the
+            // initial character, and by doing it through out updateView we make sure that any resultant
+            // selection change event will be ignored.
             await this.updateView(this.vimState);
             return;
           }
