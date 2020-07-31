@@ -53,6 +53,17 @@ abstract class MoveByScreenLine extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (
+      vimState.currentMode === Mode.Visual &&
+      vimState.cursorStopPosition.isAfterOrEqual(vimState.cursorStartPosition)
+    ) {
+      // The selection is on the right side of the cursor, while our representation considers the cursor to be the left edge
+      vimState.editor.selection = new vscode.Selection(
+        vimState.cursorStartPosition,
+        vimState.cursorStopPosition
+      );
+    }
+
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
       select: vimState.currentMode !== Mode.Normal,
