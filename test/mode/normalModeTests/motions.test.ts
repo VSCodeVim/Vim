@@ -1,6 +1,7 @@
 import { getTestingFunctions } from '../../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../../testUtils';
 import { Mode } from '../../../src/mode/mode';
+import { Globals } from '../../../src/globals';
 
 suite('Motions in Normal Mode', () => {
   const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
@@ -919,6 +920,72 @@ suite('Motions in Normal Mode', () => {
       start: ['short line', 'very long line of text....|.'],
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
+    });
+  });
+
+  suite('sneakReplacesF', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.hlsearchF = true;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+    newTest({
+      title: "Can handle 'f'",
+      start: ['text tex|t'],
+      keysPressed: '^ft',
+      end: ['tex|t text'],
+    });
+
+    newTest({
+      title: "Can handle 'f' twice",
+      start: ['text tex|t'],
+      keysPressed: '^ftft',
+      end: ['text |text'],
+    });
+
+    newTest({
+      title: "Can handle 'f' with <tab>",
+      start: ['|text\tttext'],
+      keysPressed: 'f<tab>',
+      end: ['text|\tttext'],
+    });
+
+    newTest({
+      title: "Can handle 'f' and find back search",
+      start: ['text tex|t'],
+      keysPressed: 'fe,',
+      end: ['text t|ext'],
+    });
+
+    newTest({
+      title: "Can handle 'F'",
+      start: ['text tex|t'],
+      keysPressed: '$Ft',
+      end: ['text |text'],
+    });
+
+    newTest({
+      title: "Can handle 'F' twice",
+      start: ['text tex|t'],
+      keysPressed: '$FtFt',
+      end: ['tex|t text'],
+    });
+
+    newTest({
+      title: "Can handle 'F' and find back search",
+      start: ['|text text'],
+      keysPressed: 'Fx,',
+      end: ['te|xt text'],
+    });
+
+    // See #4313
+    newTest({
+      title: "Can handle 'f' and multiple back searches",
+      start: ['|a a a a a'],
+      keysPressed: 'fa;;;,,,',
+      end: ['a |a a a a'],
     });
   });
 });
