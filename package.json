@@ -659,6 +659,11 @@
           "description": "Show all matches of the most recent search pattern.",
           "default": false
         },
+        "vim.hlsearchF": {
+          "type": "boolean",
+          "description": "Show all matches in the line by f search.",
+          "default": true
+        },
         "vim.incsearch": {
           "type": "boolean",
           "markdownDescription": "Show where a `/` or `?` search matches as you type it.",

@@ -25,6 +25,7 @@ export class SearchState {
   public readonly previousMode: Mode;
   public readonly searchDirection: SearchDirection;
   public readonly cursorStartPosition: Position;
+  oneLineSearch: boolean;
 
   /**
    * Every range in the document that matches the search string.
@@ -175,7 +176,10 @@ export class SearchState {
 
     // We store the entire text file as a string inside text, and run the
     // regex against it many times to find all of our matches.
-    const text = document.getText();
+    const text = this.oneLineSearch
+      ? document.lineAt(this.cursorStartPosition).text
+      : document.getText();
+
     const selection = vscode.window.activeTextEditor!.selection;
     const startOffset = document.offsetAt(selection.active);
     const regex = this.needleRegex;
@@ -192,13 +196,18 @@ export class SearchState {
           // We've found our first match again
           break;
         }
+        const start = this.oneLineSearch
+          ? new Position(document.lineAt(this.cursorStartPosition).lineNumber, result.index)
+          : document.positionAt(result.index);
 
-        matchRanges.push(
-          new vscode.Range(
-            document.positionAt(result.index),
-            document.positionAt(result.index + result[0].length)
-          )
-        );
+        const end = this.oneLineSearch
+          ? new Position(
+              document.lineAt(this.cursorStartPosition).lineNumber,
+              result.index + result[0].length
+            )
+          : document.positionAt(result.index + result[0].length);
+
+        matchRanges.push(new vscode.Range(start, end));
 
         if (matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
           break;
@@ -365,7 +374,8 @@ export class SearchState {
     startPosition: Position,
     searchString = '',
     { isRegex = false, ignoreSmartcase = false } = {},
-    currentMode: Mode
+    currentMode: Mode,
+    oneLineSearch = false
   ) {
     this.searchDirection = direction;
     this.cursorStartPosition = startPosition;
@@ -373,5 +383,6 @@ export class SearchState {
     this.ignoreSmartcase = ignoreSmartcase;
     this.searchString = searchString;
     this.previousMode = currentMode;
+    this.oneLineSearch = oneLineSearch;
   }
 }

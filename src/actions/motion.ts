@@ -19,7 +19,7 @@ import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
-import { SearchDirection } from '../state/searchState';
+import { SearchDirection, SearchState } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
 
@@ -684,6 +684,18 @@ class MoveFindForward extends BaseMovement {
       return pos;
     }
 
+    if (configuration.hlsearchF) {
+      globalState.hl = true;
+      globalState.searchState = new SearchState(
+        SearchDirection.Forward,
+        vimState.cursorStopPosition,
+        this.keysPressed[1],
+        { isRegex: true },
+        vimState.currentMode,
+        true
+      );
+    }
+
     count = count || 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = findHelper(position, toFind, count, 'forward');
@@ -717,6 +729,18 @@ class MoveFindBackward extends BaseMovement {
         position,
         vimState,
         count
+      );
+    }
+
+    if (configuration.hlsearchF) {
+      globalState.hl = true;
+      globalState.searchState = new SearchState(
+        SearchDirection.Backward,
+        vimState.cursorStopPosition,
+        this.keysPressed[1],
+        { isRegex: true },
+        vimState.currentMode,
+        true
       );
     }
 

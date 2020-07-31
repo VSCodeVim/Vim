@@ -190,6 +190,7 @@ class Configuration implements IConfiguration {
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
+  hlsearchF = false;
 
   surround = true;
 

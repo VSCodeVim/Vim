@@ -150,6 +150,11 @@ export interface IConfiguration {
   sneakReplacesF: boolean;
 
   /**
+   * Show all matches in the line by f search.
+   */
+  hlsearchF: boolean;
+
+  /**
    * Use surround plugin?
    */
   surround: boolean;
