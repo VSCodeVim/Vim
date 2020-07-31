@@ -1582,10 +1582,12 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     // when matching inside content of a pair, search for the next pair if
     // the inner content is already selected in full
     if (!this.includeSurrounding) {
-      const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks();
-      let adjacentPosRight = position.getRightThroughLineBreaks();
-      if (vimState.recordedState.operator) {
-        adjacentPosRight = adjacentPosRight.getLeftThroughLineBreaks();
+      const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks(false);
+      let adjacentPosRight = vimState.recordedState.operator
+        ? position
+        : position.getRightThroughLineBreaks();
+      if (adjacentPosRight.isLineBeginning()) {
+        adjacentPosRight = adjacentPosRight.getLineBeginRespectingIndent();
       }
       const adjacentCharLeft = TextEditor.getCharAt(adjacentPosLeft);
       const adjacentCharRight = TextEditor.getCharAt(adjacentPosRight);
