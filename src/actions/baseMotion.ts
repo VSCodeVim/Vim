@@ -126,7 +126,7 @@ export abstract class BaseMovement extends BaseAction {
         position = result;
       } else {
         if (result.failed) {
-          return prevResult;
+          return !recordedState.operator && count === 1 ? result : prevResult;
         }
 
         if (firstIteration) {
