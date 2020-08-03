@@ -1024,7 +1024,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
 @RegisterAction
 class MoveScreenToRight extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['z', 'h'];
+  keys = ['z', 'l'];
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'character';
   value = 1;
@@ -1040,7 +1040,7 @@ class MoveScreenToRight extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenToLeft extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['z', 'l'];
+  keys = ['z', 'h'];
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'character';
   value = 1;
@@ -1056,7 +1056,7 @@ class MoveScreenToLeft extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenToRightHalf extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['z', 'H'];
+  keys = ['z', 'L'];
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
@@ -1072,7 +1072,7 @@ class MoveScreenToRightHalf extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenToLeftHalf extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['z', 'L'];
+  keys = ['z', 'H'];
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
