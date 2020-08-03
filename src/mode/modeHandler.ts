@@ -43,6 +43,7 @@ import { Notation } from '../configuration/notation';
 import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
 import { BaseOperator } from '../actions/operator';
+import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -1521,13 +1522,21 @@ export class ModeHandler implements vscode.Disposable {
       ModeHandlerMap.get(EditorIdentity.fromEditor(editor))?.updateSearchHighlights(showHighlights);
     }
 
+    const easyMotionDimRanges =
+      this.currentMode === Mode.EasyMotionInputMode &&
+      configuration.easymotionDimBackground &&
+      vimState.easyMotion.searchAction instanceof SearchByNCharCommand
+        ? [new vscode.Range(TextEditor.getDocumentBegin(), TextEditor.getDocumentEnd())]
+        : [];
     const easyMotionHighlightRanges =
-      this.currentMode === Mode.EasyMotionInputMode
+      this.currentMode === Mode.EasyMotionInputMode &&
+      vimState.easyMotion.searchAction instanceof SearchByNCharCommand
         ? vimState.easyMotion.searchAction
             .getMatches(vimState.cursorStopPosition, vimState)
             .map((match) => match.toRange())
         : [];
-    this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
+    this.vimState.editor.setDecorations(decoration.EasyMotionDimIncSearch, easyMotionDimRanges);
+    this.vimState.editor.setDecorations(decoration.EasyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
