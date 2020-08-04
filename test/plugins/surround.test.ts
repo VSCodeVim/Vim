@@ -278,14 +278,14 @@ suite('surround plugin', () => {
     title: "'S)' surrounds visual selection without space",
     start: ['first li|ne test'],
     keysPressed: 'viwS)',
-    end: ['first (lin|e) test'],
+    end: ['first |(line) test'],
   });
 
   newTest({
     title: "'S(' surrounds visual selection with space",
     start: ['first li|ne test'],
     keysPressed: 'viwS(',
-    end: ['first ( lin|e ) test'],
+    end: ['first |( line ) test'],
   });
 
   newTest({
