@@ -1027,13 +1027,13 @@
     "prettier": "2.0.5",
     "pretty-quick": "2.0.1",
     "sinon": "9.0.2",
-    "ts-loader": "8.0.1",
+    "ts-loader": "8.0.2",
     "tslint": "6.1.3",
     "typescript": "3.9.7",
     "vscode-test": "1.4.0",
     "webpack": "4.44.1",
     "webpack-cli": "3.3.12",
-    "webpack-merge": "5.0.9",
+    "webpack-merge": "5.1.1",
     "webpack-stream": "5.2.1"
   }
 }
