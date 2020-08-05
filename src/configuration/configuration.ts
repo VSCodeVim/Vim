@@ -15,13 +15,15 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
-import { Mode } from '../mode/mode';
 
 const packagejson: {
+  version: string;
   contributes: {
     keybindings: VSCodeKeybinding[];
   };
 } = require('../../package.json');
+
+export const extensionVersion = packagejson.version;
 
 type OptionValue = number | string | boolean;
 
