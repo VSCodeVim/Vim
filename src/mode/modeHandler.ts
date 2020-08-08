@@ -18,7 +18,7 @@ import { VimError, ErrorCode } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
-import { configuration } from '../configuration/configuration';
+import { configuration, extensionVersion } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
 import {
@@ -427,8 +427,28 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
+      } else if (e instanceof Error) {
+        const errorMessage = `Failed to handle key=${key}. ${e.message}`;
+        const reportButton = 'Report bug';
+        const stack = e.stack;
+        vscode.window
+          .showErrorMessage(errorMessage, reportButton)
+          .then((picked: string | undefined) => {
+            let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
+            if (stack) {
+              body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+            }
+            if (picked === reportButton) {
+              vscode.commands.executeCommand(
+                'vscode.open',
+                vscode.Uri.parse(
+                  `https://github.com/VSCodeVim/Vim/issues/new?title=${errorMessage}&body=${body}`
+                )
+              );
+            }
+          });
       } else {
-        throw new Error(`Failed to handle key=${key}. ${e.message}`);
+        throw new Error(`Failed to handle key=${key} due to an unknown error.`);
       }
     }
 
