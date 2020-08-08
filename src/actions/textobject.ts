@@ -5,7 +5,7 @@ import { RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
-import { BaseMovement, IMovement } from './baseMotion';
+import { BaseMovement, IMovement, failedMovement } from './baseMotion';
 import {
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
@@ -725,7 +725,7 @@ abstract class SelectArgument extends TextObjectMovement {
   //     multi-line statements.
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = failedMovement(vimState);
 
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
