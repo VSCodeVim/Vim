@@ -16,12 +16,7 @@ import {
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
 
-const packagejson: {
-  version: string;
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../../package.json');
+import * as packagejson from '../../package.json';
 
 export const extensionVersion = packagejson.version;
 
