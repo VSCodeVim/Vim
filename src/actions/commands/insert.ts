@@ -423,12 +423,6 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
-  }
 }
 
 @RegisterAction
