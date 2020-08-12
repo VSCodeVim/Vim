@@ -542,21 +542,47 @@
         },
         "vim.easymotionMarkerBackgroundColor": {
           "type": "string",
+          "default": "#0000",
           "description": "Set a custom background color for EasyMotion markers."
         },
         "vim.easymotionMarkerForegroundColorOneChar": {
           "type": "string",
+          "default": "#ff0000",
           "description": "Set a custom color for the text on one character long markers."
         },
         "vim.easymotionMarkerForegroundColorTwoChar": {
           "type": "string",
-          "description": "Set a custom color for the text on two character long markers."
+          "description": "Set a custom color for the text on two character long markers.",
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharFirst": {
+          "type": "string",
+          "default": "#ffb400",
+          "description": "Set a custom color for the first character on two character long markers."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharSecond": {
+          "type": "string",
+          "default": "#b98300",
+          "description": "Set a custom color for the second character on two character long markers."
+        },
+        "vim.easymotionIncSearchForegroundColor": {
+          "type": "string",
+          "default": "#7fbf00",
+          "description": "Set a custom color for the easymotion search n-character (default `<leader><leader>/`)."
+        },
+        "vim.easymotionDimColor": {
+          "type": "string",
+          "default": "#777777",
+          "description": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
         },
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
           "description": "Set the width (in pixels) allocated to each character in the match.",
           "default": 8,
-          "minimum": 1
+          "minimum": 1,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now lets vscode calculate the correct width.",
+          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now lets vscode calculate the correct width."
         },
         "vim.easymotionDimBackground": {
           "type": "boolean",
@@ -580,12 +606,14 @@
         "vim.easymotionMarkerFontWeight": {
           "type": "string",
           "description": "Set the font weight of the marker text.",
-          "default": "normal"
+          "default": "bold"
         },
         "vim.easymotionMarkerMargin": {
           "type": "number",
           "description": "Set the margin around each marker, in pixels.",
-          "default": 0
+          "default": 0,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, it is no longer required.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, it is no longer required."
         },
         "vim.easymotionKeys": {
           "type": "string",
