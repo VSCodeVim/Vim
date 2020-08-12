@@ -7,7 +7,7 @@ import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position, PositionDiff, laterOf } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
@@ -233,16 +233,24 @@ export class ModeHandler implements vscode.Disposable {
           return;
         }
 
-        // We get here when we use a 'cursorMove' command (that is considered a selection changed
-        // kind of 'Keyboard') that ends past the line break. But our cursors are already on last
-        // character which is what we want. Even though our cursors will be corrected again when
-        // checking if they are in bounds on 'runAction' there is no need to be changing them back
-        // and forth so we check for this situation here.
-        if (
+        const cursorEnd = laterOf(
+          this.vimState.cursorStartPosition,
+          this.vimState.cursorStopPosition
+        );
+        if (e.textEditor.document.validatePosition(cursorEnd).isBefore(cursorEnd)) {
+          // The document changed such that our cursor position is now out of bounds, possibly by
+          // another program. Let's just use VSCode's selection.
+          // TODO: if this is the case, but we're in visual mode, we never get here (because of branch above)
+        } else if (
           this.vimState.cursorStopPosition.isEqual(this.vimState.cursorStartPosition) &&
           this.vimState.cursorStopPosition.getRight().isLineEnd() &&
           this.vimState.cursorStopPosition.getLineEnd().isEqual(selection.active)
         ) {
+          // We get here when we use a 'cursorMove' command (that is considered a selection changed
+          // kind of 'Keyboard') that ends past the line break. But our cursors are already on last
+          // character which is what we want. Even though our cursors will be corrected again when
+          // checking if they are in bounds on 'runAction' there is no need to be changing them back
+          // and forth so we check for this situation here.
           return;
         }
 
