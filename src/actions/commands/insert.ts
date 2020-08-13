@@ -11,10 +11,9 @@ import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
+import { RegisterAction, BaseCommand } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
-  BaseCommand,
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,

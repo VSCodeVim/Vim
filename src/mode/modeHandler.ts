@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 
-import { Actions, BaseAction, KeypressState } from './../actions/base';
+import { Actions, BaseAction, KeypressState, BaseCommand } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position, PositionDiff, laterOf } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
@@ -18,11 +18,10 @@ import { VimError, ErrorCode } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
-import { configuration, extensionVersion } from '../configuration/configuration';
+import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
 import {
-  BaseCommand,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
   ActionOverrideCmdD,
@@ -43,6 +42,7 @@ import { Notation } from '../configuration/notation';
 import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
 import { BaseOperator } from '../actions/operator';
+import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -232,16 +232,24 @@ export class ModeHandler implements vscode.Disposable {
           return;
         }
 
-        // We get here when we use a 'cursorMove' command (that is considered a selection changed
-        // kind of 'Keyboard') that ends past the line break. But our cursors are already on last
-        // character which is what we want. Even though our cursors will be corrected again when
-        // checking if they are in bounds on 'runAction' there is no need to be changing them back
-        // and forth so we check for this situation here.
-        if (
+        const cursorEnd = laterOf(
+          this.vimState.cursorStartPosition,
+          this.vimState.cursorStopPosition
+        );
+        if (e.textEditor.document.validatePosition(cursorEnd).isBefore(cursorEnd)) {
+          // The document changed such that our cursor position is now out of bounds, possibly by
+          // another program. Let's just use VSCode's selection.
+          // TODO: if this is the case, but we're in visual mode, we never get here (because of branch above)
+        } else if (
           this.vimState.cursorStopPosition.isEqual(this.vimState.cursorStartPosition) &&
           this.vimState.cursorStopPosition.getRight().isLineEnd() &&
           this.vimState.cursorStopPosition.getLineEnd().isEqual(selection.active)
         ) {
+          // We get here when we use a 'cursorMove' command (that is considered a selection changed
+          // kind of 'Keyboard') that ends past the line break. But our cursors are already on last
+          // character which is what we want. Even though our cursors will be corrected again when
+          // checking if they are in bounds on 'runAction' there is no need to be changing them back
+          // and forth so we check for this situation here.
           return;
         }
 
@@ -428,25 +436,8 @@ export class ModeHandler implements vscode.Disposable {
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
       } else if (e instanceof Error) {
-        const errorMessage = `Failed to handle key=${key}. ${e.message}`;
-        const reportButton = 'Report bug';
-        const stack = e.stack;
-        vscode.window
-          .showErrorMessage(errorMessage, reportButton)
-          .then((picked: string | undefined) => {
-            let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
-            if (stack) {
-              body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
-            }
-            if (picked === reportButton) {
-              vscode.commands.executeCommand(
-                'vscode.open',
-                vscode.Uri.parse(
-                  `https://github.com/VSCodeVim/Vim/issues/new?title=${errorMessage}&body=${body}`
-                )
-              );
-            }
-          });
+        e.message = `Failed to handle key=${key}. ${e.message}`;
+        throw e;
       } else {
         throw new Error(`Failed to handle key=${key} due to an unknown error.`);
       }
@@ -1541,13 +1532,21 @@ export class ModeHandler implements vscode.Disposable {
       ModeHandlerMap.get(EditorIdentity.fromEditor(editor))?.updateSearchHighlights(showHighlights);
     }
 
+    const easyMotionDimRanges =
+      this.currentMode === Mode.EasyMotionInputMode &&
+      configuration.easymotionDimBackground &&
+      vimState.easyMotion.searchAction instanceof SearchByNCharCommand
+        ? [new vscode.Range(TextEditor.getDocumentBegin(), TextEditor.getDocumentEnd())]
+        : [];
     const easyMotionHighlightRanges =
-      this.currentMode === Mode.EasyMotionInputMode
+      this.currentMode === Mode.EasyMotionInputMode &&
+      vimState.easyMotion.searchAction instanceof SearchByNCharCommand
         ? vimState.easyMotion.searchAction
             .getMatches(vimState.cursorStopPosition, vimState)
             .map((match) => match.toRange())
         : [];
-    this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
+    this.vimState.editor.setDecorations(decoration.EasyMotionDimIncSearch, easyMotionDimRanges);
+    this.vimState.editor.setDecorations(decoration.EasyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
