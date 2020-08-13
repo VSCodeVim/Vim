@@ -545,10 +545,22 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const start = position.isInLeadingWhitespace()
-      ? position.getLineBegin()
-      : position.getLineBeginRespectingIndent();
-    await TextEditor.delete(new vscode.Range(start, position));
+    let start: Position;
+
+    if (
+      vimState.insertModeCursorCtrlUStopPosition?.line === position.line &&
+      vimState.insertModeCursorCtrlUStopPosition?.isBefore(position)
+    ) {
+      start = vimState.insertModeCursorCtrlUStopPosition;
+    } else {
+      start = position.isInLeadingWhitespace()
+        ? position.getLineBegin()
+        : position.getLineBeginRespectingIndent();
+    }
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(start, position),
+    });
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
     return vimState;
