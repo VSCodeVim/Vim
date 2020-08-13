@@ -25,7 +25,6 @@ export class BaseOperator extends BaseAction {
     this.multicursorIndex = multicursorIndex;
   }
   canBeRepeatedWithDot = true;
-  isOperator = true;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
@@ -82,7 +81,6 @@ export class BaseOperator extends BaseAction {
     );
     const prevAction = nonCountActions[nonCountActions.length - 1];
     return (
-      this.isOperator &&
       keysPressed.length === 1 &&
       prevAction &&
       this.modes.includes(vimState.currentMode) &&

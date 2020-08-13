@@ -5,8 +5,7 @@ import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
-import { BaseCommand } from './../commands/actions';
+import { RegisterAction, BaseCommand } from './../base';
 import { BaseMovement, IMovement } from '../baseMotion';
 import {
   MoveABacktick,

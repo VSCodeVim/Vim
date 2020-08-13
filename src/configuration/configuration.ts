@@ -15,13 +15,10 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
-import { Mode } from '../mode/mode';
 
-const packagejson: {
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../../package.json');
+import * as packagejson from '../../package.json';
+
+export const extensionVersion = packagejson.version;
 
 type OptionValue = number | string | boolean;
 
@@ -198,15 +195,19 @@ class Configuration implements IConfiguration {
   argumentObjectClosingDelimiters = [')', ']'];
 
   easymotion = false;
-  easymotionMarkerBackgroundColor = '';
+  easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
+  easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
+  easymotionIncSearchForegroundColor = '#7fbf00';
+  easymotionDimColor = '#777777';
+  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerMargin = 0;
+  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
+  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
+  easymotionMarkerFontWeight = 'bold';
+  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 

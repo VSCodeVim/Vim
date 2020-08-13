@@ -1,7 +1,6 @@
 import { configuration } from '../configuration/configuration';
 import { Mode } from '../mode/mode';
-import { BaseAction } from './../actions/base';
-import { BaseCommand } from './../actions/commands/actions';
+import { BaseAction, BaseCommand } from './../actions/base';
 import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
 import { Transformation } from './../transformations/transformations';

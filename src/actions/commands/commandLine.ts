@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import { RegisterAction } from '../base';
-import { BaseCommand, CommandShowCommandHistory, CommandShowSearchHistory } from './actions';
+import { RegisterAction, BaseCommand } from '../base';
+import { CommandShowCommandHistory, CommandShowSearchHistory } from './actions';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { commandLine } from '../../cmd_line/commandLine';
