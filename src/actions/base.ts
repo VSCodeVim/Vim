@@ -39,8 +39,6 @@ export class BaseAction {
 
   public mustBeFirstKey = false;
 
-  public isOperator = false;
-
   /**
    * The keys pressed at the time that this action was triggered.
    */
