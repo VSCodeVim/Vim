@@ -34,7 +34,7 @@ export class PutExCommand extends node.CommandBase {
     let options: IPutCommandOptions = {
       forceLinewise: true,
       forceCursorLastLine: true,
-      after: this.arguments.bang,
+      pasteBeforeCursor: this.arguments.bang,
     };
 
     await new PutCommand().exec(position, vimState, options);
