@@ -23,7 +23,7 @@ export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = (await this.execAction(position, vimState)) as IMovement;
+    const res = await this.execAction(position, vimState);
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
     // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
@@ -31,6 +31,8 @@ export abstract class TextObjectMovement extends BaseMovement {
 
     return res;
   }
+
+  public abstract async execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction

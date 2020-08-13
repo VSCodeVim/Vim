@@ -137,13 +137,13 @@ export class Register {
       registerContent.text = [];
     }
 
-    (registerContent.text as string[]).push(content as string);
+    registerContent.text.push(content as string);
 
     if (multicursorIndex === vimState.cursors.length - 1) {
       if (this.isClipboardRegister(register)) {
         let clipboardText: string = '';
 
-        for (const line of registerContent.text as string[]) {
+        for (const line of registerContent.text) {
           clipboardText += line + '\n';
         }
         clipboardText = clipboardText.replace(/\n$/, '');
@@ -406,14 +406,14 @@ export class Register {
         registerText = text;
       } else {
         if (vimState && vimState.isMultiCursor && typeof text === 'object') {
-          if ((text as string[]).length === vimState.cursors.length) {
+          if (text.length === vimState.cursors.length) {
             registerText = text;
           } else {
-            registerText = (text as string[]).join('\n');
+            registerText = text.join('\n');
           }
         } else {
           if (typeof text === 'object') {
-            registerText = (text as string[]).join('\n');
+            registerText = text.join('\n');
           } else {
             registerText = text;
           }

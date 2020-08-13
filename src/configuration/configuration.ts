@@ -76,7 +76,7 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      let val = vimConfigs[option] as any;
+      let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
           val = Configuration.unproxify(val);

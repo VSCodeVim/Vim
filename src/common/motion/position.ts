@@ -713,7 +713,7 @@ export class Position extends vscode.Position {
       });
 
       if (newCharacter !== undefined) {
-        return new Position(currentLine, <number>newCharacter).getRightThroughLineBreaks();
+        return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
       }
     }
 
@@ -792,9 +792,9 @@ export class Position extends vscode.Position {
   }
 }
 
-const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword!);
+const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword);
 const nonBigWordCharRegex = makeWordRegex('');
-const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword!);
+const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword);
 const sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
 

@@ -314,9 +314,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName))
-      .text as RecordedState;
-
+    const existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName)).text;
     if (!(existingMacro instanceof RecordedState)) {
       return vimState;
     }
@@ -1710,7 +1708,7 @@ async function selectLastSearchWord(
   const newSearchState = new SearchState(
     direction,
     vimState.cursorStopPosition,
-    searchState!.searchString,
+    searchState.searchString,
     { isRegex: true },
     vimState.currentMode
   );

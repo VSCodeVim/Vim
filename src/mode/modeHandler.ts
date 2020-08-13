@@ -993,11 +993,11 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (command.diff) {
-        if (!accumulatedPositionDifferences[command.cursorIndex!]) {
-          accumulatedPositionDifferences[command.cursorIndex!] = [];
+        if (!accumulatedPositionDifferences[command.cursorIndex]) {
+          accumulatedPositionDifferences[command.cursorIndex] = [];
         }
 
-        accumulatedPositionDifferences[command.cursorIndex!].push(command.diff);
+        accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
       }
     };
 
@@ -1096,9 +1096,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'macro':
-          let recordedMacro = (await Register.getByKey(transformation.register))
-            .text as RecordedState;
-
+          let recordedMacro = (await Register.getByKey(transformation.register)).text;
           if (!(recordedMacro instanceof RecordedState)) {
             return vimState;
           }

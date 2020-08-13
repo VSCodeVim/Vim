@@ -121,7 +121,7 @@ export class LineRange {
         );
         break;
       case TokenType.Mark:
-        currentLineNum = vimState.historyTracker.getMark(firstToken.content).position.line;
+        currentLineNum = vimState.historyTracker.getMark(firstToken.content)!.position.line;
         break;
       default:
         throw new Error('Not Implemented');
