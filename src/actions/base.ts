@@ -6,7 +6,7 @@ import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
-export class BaseAction {
+export abstract class BaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
@@ -266,7 +266,7 @@ export enum KeypressState {
 /**
  * Every Vim action will be added here with the @RegisterAction decorator.
  */
-const actionMap = new Map<Mode, typeof BaseAction[]>();
+const actionMap = new Map<Mode, Array<{ new (): BaseAction }>>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -300,7 +300,7 @@ export function getRelevantAction(
   return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
-export function RegisterAction(action: typeof BaseAction): void {
+export function RegisterAction(action: { new (): BaseAction }): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
     let actions = actionMap.get(modeName);
