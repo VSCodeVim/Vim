@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Actions, BaseAction, KeypressState } from './../actions/base';
+import { Actions, BaseAction, KeypressState, BaseCommand } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
@@ -22,7 +22,6 @@ import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
 import {
-  BaseCommand,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
   ActionOverrideCmdD,
