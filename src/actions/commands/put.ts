@@ -529,7 +529,11 @@ class PutWithIndentCommand extends BaseCommand {
 
 @RegisterAction
 class PutBeforeWithIndentCommand extends BaseCommand {
-  keys = ['[', 'p'];
+  keys = [
+    ['[', 'P'],
+    [']', 'P'],
+    ['[', 'p'],
+  ];
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
