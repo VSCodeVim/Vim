@@ -2,8 +2,7 @@ import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { Mode, isVisualMode } from './../../../mode/mode';
-import { RegisterAction } from './../../base';
-import { BaseCommand } from './../../commands/actions';
+import { RegisterAction, BaseCommand } from './../../base';
 import { EasyMotion } from './easymotion';
 import {
   EasyMotionCharMoveOpions,

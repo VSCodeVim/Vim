@@ -4,17 +4,12 @@ import * as vscode from 'vscode';
 import * as srcConfiguration from '../src/configuration/configuration';
 import * as testConfiguration from './testConfiguration';
 
+import * as packagejson from '../package.json';
+
 suite('package.json', () => {
-  let pkg: any;
-
-  suiteSetup(() => {
-    pkg = require(__dirname + '/../../package.json');
-    assert.ok(pkg);
-  });
-
   test('all keys have handlers', async () => {
     const registeredCommands = await vscode.commands.getCommands();
-    const keybindings = pkg.contributes.keybindings;
+    const keybindings = packagejson.contributes.keybindings;
     assert.ok(keybindings);
 
     for (const keybinding of keybindings) {
@@ -28,7 +23,7 @@ suite('package.json', () => {
 
   test('all defined configurations in package.json have handlers', async () => {
     // package.json
-    const pkgConfigurations = pkg.contributes.configuration.properties;
+    const pkgConfigurations = packagejson.contributes.configuration.properties;
     assert.ok(pkgConfigurations);
     const keys = Object.keys(pkgConfigurations);
     assert.notEqual(keys.length, 0);

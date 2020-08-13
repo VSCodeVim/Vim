@@ -1,7 +1,10 @@
+import { Position } from '../common/motion/position';
+import { Range } from '../common/motion/range';
+import { Notation } from '../configuration/notation';
+import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
-import { Notation } from '../configuration/notation';
 
 export class BaseAction {
   /**
@@ -35,8 +38,6 @@ export class BaseAction {
   public keys: string[] | string[][];
 
   public mustBeFirstKey = false;
-
-  public isOperator = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -156,6 +157,104 @@ export class BaseAction {
 
   private static is2DArray<T>(x: any): x is T[][] {
     return Array.isArray(x[0]);
+  }
+}
+
+/**
+ * A command is something like <Esc>, :, v, i, etc.
+ */
+export abstract class BaseCommand extends BaseAction {
+  /**
+   * If isCompleteAction is true, then triggering this command is a complete action -
+   * that means that we'll go and try to run it.
+   */
+  isCompleteAction = true;
+
+  /**
+   * If isJump is true, then the cursor position will be added to the jump list on completion.
+   */
+  isJump = false;
+
+  multicursorIndex: number | undefined = undefined;
+
+  /**
+   * In multi-cursor mode, do we run this command for every cursor, or just once?
+   */
+  public runsOnceForEveryCursor(): boolean {
+    return true;
+  }
+
+  /**
+   * If true, exec() will get called N times where N is the count.
+   *
+   * If false, exec() will only be called once, and you are expected to
+   * handle count prefixes (e.g. the 3 in 3w) yourself.
+   */
+  runsOnceForEachCountPrefix = false;
+
+  canBeRepeatedWithDot = false;
+
+  /**
+   * Run the command a single time.
+   */
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    throw new Error('Not implemented!');
+  }
+
+  /**
+   * Run the command the number of times VimState wants us to.
+   */
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+
+    if (!this.runsOnceForEveryCursor()) {
+      for (let i = 0; i < timesToRepeat; i++) {
+        vimState = await this.exec(position, vimState);
+      }
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = 0;
+        }
+      }
+
+      return vimState;
+    }
+
+    let resultingCursors: Range[] = [];
+
+    const cursorsToIterateOver = vimState.cursors
+      .map((x) => new Range(x.start, x.stop))
+      .sort((a, b) =>
+        a.start.line > b.start.line ||
+        (a.start.line === b.start.line && a.start.character > b.start.character)
+          ? 1
+          : -1
+      );
+
+    let cursorIndex = 0;
+    for (const { start, stop } of cursorsToIterateOver) {
+      this.multicursorIndex = cursorIndex++;
+
+      vimState.cursorStopPosition = stop;
+      vimState.cursorStartPosition = start;
+
+      for (let j = 0; j < timesToRepeat; j++) {
+        vimState = await this.exec(stop, vimState);
+      }
+
+      resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = this.multicursorIndex;
+        }
+      }
+    }
+
+    vimState.cursors = resultingCursors;
+
+    return vimState;
   }
 }
 
