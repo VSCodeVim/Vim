@@ -2,8 +2,8 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 
-import { PutCommand, IPutCommandOptions } from '../../actions/commands/actions';
 import { Position } from '../../common/motion/position';
+import { PutCommand, IPutCommandOptions } from '../../actions/commands/put';
 
 export interface IPutCommandArguments extends node.ICommandArgs {
   bang?: boolean;
