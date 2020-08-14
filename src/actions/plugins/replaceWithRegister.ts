@@ -6,8 +6,7 @@ import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { BaseOperator } from '../operator';
-import { RegisterAction, RegisterPluginAction } from './../base';
-import { BaseCommand } from '../commands/actions';
+import { RegisterAction, RegisterPluginAction, BaseCommand } from './../base';
 
 @RegisterPluginAction('replacewithregister')
 export class ReplaceOperator extends BaseOperator {
