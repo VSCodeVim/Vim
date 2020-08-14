@@ -286,12 +286,10 @@ export async function activate(
       );
       const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
       if (idx > -1) {
-        logger.debug(
-          `Selections: Ignoring selection: ${selectionsHash}, Count left: ${
-            mh.vimState.selectionsChanged.ourSelections.length - 1
-          }`
-        );
         mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+        logger.debug(
+          `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
+        );
         return;
       } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
         logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);

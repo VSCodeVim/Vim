@@ -864,17 +864,27 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // adjust column
-        if (this.vimState.currentMode === Mode.Normal) {
+        if (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode)) {
           const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
-          if (currentLineLength > 0) {
-            const lineEndPosition = cursor.start.getLineEnd().getLeftThroughLineBreaks(true);
-            if (cursor.start.character >= currentLineLength) {
-              cursor = cursor.withNewStart(lineEndPosition);
-            }
+          const currentStartLineLength = TextEditor.getLineLength(cursor.start.line);
 
-            if (cursor.stop.character >= currentLineLength) {
-              cursor = cursor.withNewStop(lineEndPosition);
-            }
+          // When in visual mode you can move the cursor past the last character in order
+          // to select that character. We use this offset to allow for that, otherwise
+          // we would consider the position invalid and change it to the left of the last
+          // character.
+          const offsetAllowed = isVisualMode(this.vimState.currentMode)
+            ? currentLineLength > 0
+              ? 1
+              : 0
+            : 0;
+          if (cursor.start.character >= currentStartLineLength) {
+            cursor = cursor.withNewStart(
+              cursor.start.withColumn(Math.max(currentStartLineLength - 1, 0))
+            );
+          }
+
+          if (cursor.stop.character >= currentLineLength + offsetAllowed) {
+            cursor = cursor.withNewStop(cursor.stop.withColumn(Math.max(currentLineLength - 1, 0)));
           }
         }
         return cursor;
@@ -1432,7 +1442,7 @@ export class ModeHandler implements vscode.Disposable {
         selectionMode = this.vimState.surround!.previousMode;
       }
 
-      const selections = [] as vscode.Selection[];
+      let selections = [] as vscode.Selection[];
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {
@@ -1475,6 +1485,47 @@ export class ModeHandler implements vscode.Disposable {
             break;
         }
       }
+
+      // Combine instersected selections - When we have multiple cursors
+      // sometimes those cursors selections intersect and combine, we need
+      // to check that here so that we know if our currents cursors will
+      // trigger a selectionChangeEvent or not. If we didn't check for this
+      // vscode might already have the resulting combined selection selected
+      // but since that wouldn't be the same as our selections we would think
+      // there would be a selectionChangeEvent when there wouldn't be any.
+      let combinedSelections: vscode.Selection[] = [];
+      selections.forEach((s, i) => {
+        if (i > 0) {
+          const previousSelection = combinedSelections[i - 1];
+          const overlap = s.intersection(previousSelection);
+          if (overlap) {
+            // If anchor is after active we have a backwards selection and in that case we want
+            // the anchor that is lower and/or to the right and the active that is up and/or to
+            // the left. Otherwise we want the anchor that is upper and/or to the left and the
+            // active that is lower and/or to the right.
+            const anchor = s.anchor.isBeforeOrEqual(s.active)
+              ? s.anchor.isBeforeOrEqual(previousSelection.anchor) // Forwards Selection
+                ? s.anchor
+                : previousSelection.anchor
+              : s.anchor.isAfterOrEqual(previousSelection.anchor) // Backwards Selection
+              ? s.anchor
+              : previousSelection.anchor;
+            const active = s.anchor.isBeforeOrEqual(s.active)
+              ? s.active.isAfterOrEqual(previousSelection.active) // Forwards Selection
+                ? s.active
+                : previousSelection.active
+              : s.active.isBeforeOrEqual(previousSelection.active) // Backwards Selection
+              ? s.active
+              : previousSelection.active;
+            combinedSelections[i - 1] = new vscode.Selection(anchor, active);
+          } else {
+            combinedSelections.push(s);
+          }
+        } else {
+          combinedSelections.push(s);
+        }
+      });
+      selections = combinedSelections;
 
       // Check if the selection we are going to set is different than the current one.
       // If they are the same vscode won't trigger a selectionChangeEvent so we don't
