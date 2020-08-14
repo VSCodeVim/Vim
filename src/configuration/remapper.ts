@@ -251,7 +251,7 @@ export class Remapper implements IRemapper {
           } finally {
             vimState.isCurrentlyPerformingRecursiveRemapping = false;
             vimState.wasPerformingRemapThatFinishedWaitingForTimeout = false;
-            await modeHandler.handleMultipleKeyEvents(keysPressedByUser!);
+            await modeHandler.handleMultipleKeyEvents(keysPressedByUser);
           }
         } else {
           await modeHandler.handleMultipleKeyEvents(keys);

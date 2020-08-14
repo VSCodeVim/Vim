@@ -570,8 +570,8 @@ async function testItWithRemaps(
 
     let result1: { lines: string; position: vscode.Position; endMode: Mode }[] = await new Promise(
       async (r1Resolve, r1Reject) => {
-        let p1: Promise<{ lines: string; position: vscode.Position; endMode: Mode }>;
-        let p2: Promise<{ lines: string; position: vscode.Position; endMode: Mode }>;
+        let p1: Promise<{ lines: string; position: vscode.Position; endMode: Mode }> | undefined;
+        let p2: Promise<{ lines: string; position: vscode.Position; endMode: Mode }> | undefined;
 
         let p1Start = () => {
           return new Promise<{ lines: string; position: vscode.Position; endMode: Mode }>(

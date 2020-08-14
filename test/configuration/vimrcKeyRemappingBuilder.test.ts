@@ -270,8 +270,8 @@ suite('VimrcKeyRemappingBuilder', () => {
       } else {
         assert.deepStrictEqual(vimrcKeyRemapping!.keyRemapping, testCase.keyRemapping);
         assert.strictEqual(vimrcKeyRemapping!.keyRemappingType, testCase.keyRemappingType);
-        assert.strictEqual(vimrcKeyRemapping!.keyRemapping!.after, undefined);
-        assert.strictEqual(vimrcKeyRemapping!.keyRemapping!.commands, undefined);
+        assert.strictEqual(vimrcKeyRemapping!.keyRemapping.after, undefined);
+        assert.strictEqual(vimrcKeyRemapping!.keyRemapping.commands, undefined);
       }
     }
   });
@@ -364,8 +364,8 @@ suite('VimrcKeyRemappingBuilder', () => {
       } else {
         assert.deepStrictEqual(vimrcKeyRemapping!.keyRemapping, testCase.keyRemapping);
         assert.strictEqual(vimrcKeyRemapping!.keyRemappingType, testCase.keyRemappingType);
-        assert.strictEqual(vimrcKeyRemapping!.keyRemapping!.after, undefined);
-        assert.strictEqual(vimrcKeyRemapping!.keyRemapping!.commands, undefined);
+        assert.strictEqual(vimrcKeyRemapping!.keyRemapping.after, undefined);
+        assert.strictEqual(vimrcKeyRemapping!.keyRemapping.commands, undefined);
       }
     }
   });
