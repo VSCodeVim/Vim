@@ -26,12 +26,6 @@ export abstract class BaseOperator extends BaseAction {
   }
   canBeRepeatedWithDot = true;
 
-  /**
-   * If this is being run in multi cursor mode, the index of the cursor
-   * this operator is being applied to.
-   */
-  public multicursorIndex: number | undefined;
-
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
       return true;

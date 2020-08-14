@@ -917,6 +917,7 @@ export class ModeHandler implements vscode.Disposable {
        */
       const oldCursorPositionStart = this.vimState.cursorStartPosition;
       const oldCursorPositionStop = this.vimState.cursorStopPosition;
+      movement.multicursorIndex = i;
 
       this.vimState.cursorStartPosition = this.vimState.cursors[i].start;
       let cursorPosition = this.vimState.cursors[i].stop;
