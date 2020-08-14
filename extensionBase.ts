@@ -163,7 +163,7 @@ export async function activate(
     };
 
     if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
+      contentChangeHandler(Globals.mockModeHandler);
     } else {
       ModeHandlerMap.getAll()
         .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)

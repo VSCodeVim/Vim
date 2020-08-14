@@ -4,7 +4,8 @@ import { IConfiguration } from './iconfiguration';
 class DecorationImpl {
   private _default: vscode.TextEditorDecorationType;
   private _searchHighlight: vscode.TextEditorDecorationType;
-  private _easyMotion: vscode.TextEditorDecorationType;
+  private _easyMotionIncSearch: vscode.TextEditorDecorationType;
+  private _easyMotionDimIncSearch: vscode.TextEditorDecorationType;
   private _insertModeVirtualCharacter: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
@@ -31,15 +32,26 @@ class DecorationImpl {
     return this._searchHighlight;
   }
 
-  public set EasyMotion(value: vscode.TextEditorDecorationType) {
-    if (this._easyMotion) {
-      this._easyMotion.dispose();
+  public set EasyMotionIncSearch(value: vscode.TextEditorDecorationType) {
+    if (this._easyMotionIncSearch) {
+      this._easyMotionIncSearch.dispose();
     }
-    this._easyMotion = value;
+    this._easyMotionIncSearch = value;
   }
 
-  public get EasyMotion() {
-    return this._easyMotion;
+  public set EasyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
+    if (this._easyMotionDimIncSearch) {
+      this._easyMotionDimIncSearch.dispose();
+    }
+    this._easyMotionDimIncSearch = value;
+  }
+
+  public get EasyMotionIncSearch() {
+    return this._easyMotionIncSearch;
+  }
+
+  public get EasyMotionDimIncSearch() {
+    return this._easyMotionDimIncSearch;
   }
 
   public set InsertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
@@ -100,8 +112,13 @@ class DecorationImpl {
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
-    this.EasyMotion = vscode.window.createTextEditorDecorationType({
-      backgroundColor: searchHighlightColor,
+    this.EasyMotionIncSearch = vscode.window.createTextEditorDecorationType({
+      color: configuration.easymotionIncSearchForegroundColor,
+      fontWeight: configuration.easymotionMarkerFontWeight,
+    });
+
+    this.EasyMotionDimIncSearch = vscode.window.createTextEditorDecorationType({
+      color: configuration.easymotionDimColor,
     });
 
     this.InsertModeVirtualCharacter = vscode.window.createTextEditorDecorationType({

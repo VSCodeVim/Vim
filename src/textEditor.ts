@@ -51,7 +51,7 @@ export class TextEditor {
           at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
         }
 
-        editBuilder.insert(at!, text);
+        editBuilder.insert(at, text);
       });
 
       // maintain all selections in multi-cursor mode.

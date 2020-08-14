@@ -168,13 +168,17 @@ export interface IConfiguration {
    */
   easymotionMarkerBackgroundColor: string;
   easymotionMarkerForegroundColorOneChar: string;
-  easymotionMarkerForegroundColorTwoChar: string;
-  easymotionMarkerWidthPerChar: number;
+  easymotionMarkerForegroundColorTwoChar: string; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst: string;
+  easymotionMarkerForegroundColorTwoCharSecond: string;
+  easymotionIncSearchForegroundColor: string;
+  easymotionDimColor: string;
+  easymotionMarkerWidthPerChar: number; // Deprecated! No longer needed!
   easymotionDimBackground: boolean;
-  easymotionMarkerFontFamily: string;
-  easymotionMarkerFontSize: string;
+  easymotionMarkerFontFamily: string; // Deprecated! No longer needed!
+  easymotionMarkerFontSize: string; // Deprecated! No longer needed!
   easymotionMarkerFontWeight: string;
-  easymotionMarkerMargin: number;
+  easymotionMarkerMargin: number; // Deprecated! No longer needed!
   easymotionKeys: string;
 
   /**

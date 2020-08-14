@@ -33,17 +33,18 @@ export interface IMovement {
   registerMode?: RegisterMode;
 }
 
+export function failedMovement(vimState: VimState): IMovement {
+  return {
+    start: vimState.cursorStartPosition,
+    stop: vimState.cursorStopPosition,
+    failed: true,
+  };
+}
+
 export abstract class BaseMovement extends BaseAction {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   isMotion = true;
-
-  /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   *
-   * Default to false, as many motions operate on a single line and do not count as a jump.
-   */
-  isJump = false;
 
   /**
    * If movement can be repeated with semicolon or comma this will be true when
@@ -108,7 +109,7 @@ export abstract class BaseMovement extends BaseAction {
   ): Promise<Position | IMovement> {
     let recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
-    let prevResult: IMovement = { start: position, stop: position, failed: true };
+    let prevResult = failedMovement(vimState);
     let firstMovementStart: Position = new Position(position.line, position.character);
 
     count = clamp(count, this.minCount, this.maxCount);

@@ -78,7 +78,7 @@ export function statusBarText(vimState: VimState) {
       const leadingChar =
         globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
 
-      let searchWithCursor = globalState.searchState!.searchString.split('');
+      let searchWithCursor = globalState.searchState.searchString.split('');
       searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
       return `${leadingChar}${searchWithCursor.join('')}`;
