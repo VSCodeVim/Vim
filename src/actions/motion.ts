@@ -65,13 +65,12 @@ abstract class MoveByScreenLine extends BaseMovement {
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
-      select: vimState.currentMode !== Mode.Normal, // TODO: check if OperatorPendingMode needs this??
+      select: vimState.currentMode !== Mode.Normal,
       by: this.by,
       value: this.value * count,
     });
 
     if (vimState.currentMode === Mode.Normal) {
-      // TODO: when implementing full OperatorPendingMode check if this needs to change??
       return Position.FromVSCodePosition(vimState.editor.selection.active);
     } else {
       /**
@@ -129,7 +128,6 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     let prevLine = vimState.editor.selection.active.line;
 
     if (vimState.currentMode !== Mode.Normal) {
-      // TODO: when implementing full OperatorPendingMode check if this needs to change??
       /**
        * As VIM and VSCode handle the end of selection index a little
        * differently we need to sometimes move the cursor at the end
@@ -151,13 +149,12 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
-      select: vimState.currentMode !== Mode.Normal, // TODO: when implementing full OperatorPendingMode check if this needs to change??
+      select: vimState.currentMode !== Mode.Normal,
       by: this.by,
       value: this.value,
     });
 
     if (vimState.currentMode === Mode.Normal) {
-      // TODO: when implementing full OperatorPendingMode check if this needs to change??
       let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
       if (prevLine !== returnedPos.line) {
         returnedPos = returnedPos.withColumn(prevDesiredColumn);
@@ -1347,7 +1344,6 @@ class MoveParagraphEnd extends BaseMovement {
        */
       this.iteration++;
 
-      // TODO: when implementing full OperatorPendingMode check if this needs to change??
       const isLineWise = position.isLineBeginning() && vimState.currentMode === Mode.Normal;
 
       const isLastIteration = vimState.recordedState.count
