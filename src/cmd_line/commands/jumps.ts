@@ -15,12 +15,10 @@ class JumpPickItem implements QuickPickItem {
   picked?: boolean;
   alwaysShow?: boolean;
 
-  constructor(jump: Jump) {
+  constructor(jump: Jump, idx: number) {
     this.jump = jump;
     this.label = jump.fileName;
-    this.detail = `jump ${jump.number} line ${jump.position.line + 1} col ${
-      jump.position.character
-    }`;
+    this.detail = `jump ${idx} line ${jump.position.line + 1} col ${jump.position.character}`;
     try {
       this.description = jump.editor?.document.lineAt(jump.position)?.text;
     } catch (e) {
@@ -33,7 +31,7 @@ export class JumpsCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     if (jumpTracker.hasJumps) {
-      const quickPickItems = jumpTracker.jumps.map((jump) => new JumpPickItem(jump));
+      const quickPickItems = jumpTracker.jumps.map((jump, idx) => new JumpPickItem(jump, idx));
       const item = await window.showQuickPick(quickPickItems, {
         canPickMany: false,
       });

@@ -14,7 +14,7 @@ export abstract class BaseAction {
   public isMotion = false;
 
   /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
+   * If true, the cursor position will be added to the jump list on completion.
    */
   public isJump = false;
 
@@ -169,11 +169,6 @@ export abstract class BaseCommand extends BaseAction {
    * that means that we'll go and try to run it.
    */
   isCompleteAction = true;
-
-  /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   */
-  isJump = false;
 
   multicursorIndex: number | undefined = undefined;
 
