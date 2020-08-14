@@ -53,15 +53,12 @@ abstract class MoveByScreenLine extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (
-      vimState.currentMode === Mode.Visual &&
-      vimState.cursorStopPosition.isAfterOrEqual(vimState.cursorStartPosition)
-    ) {
+    if (vimState.currentMode === Mode.Visual) {
       // The selection is on the right side of the cursor, while our representation considers the cursor to be the left edge
-      vimState.editor.selection = new vscode.Selection(
-        vimState.cursorStartPosition,
-        vimState.cursorStopPosition
-      );
+      const multicursorIndex = this.multicursorIndex ?? 0;
+      let selections = vimState.editor.selections;
+      selections[multicursorIndex] = new vscode.Selection(vimState.cursorStartPosition, position);
+      vimState.editor.selections = selections;
     }
 
     await vscode.commands.executeCommand('cursorMove', {
@@ -208,13 +205,13 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     if (position.line >= TextEditor.getLineCount() - 1) {
       return position;
     }
-    let t: Position | IMovement;
+    let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
     const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
-      t = await moveDownByScreenLine.execAction(position, vimState);
+      t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
       const lineChanged = prevLine !== t.line;
       // wrappedLine movement goes to eol character only when at the last line
