@@ -41,7 +41,7 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap = new Map<string, IKeyRemapping>();
       }
       for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i] as IKeyRemapping;
+        let remapping = keybindings[i];
 
         // set 'recursive' of the remapping according to where it was stored
         remapping.recursive = isRecursive;
