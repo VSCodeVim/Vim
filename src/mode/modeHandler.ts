@@ -415,9 +415,9 @@ export class ModeHandler implements vscode.Disposable {
     const oldStatusBarText = StatusBar.getText();
     const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
+    let handledAsRemap = false;
+    let handledAsAction = false;
     try {
-      let handled = false;
-
       // Handling special case for '0'. From Vim documentation (:help :map-modes)
       // Special case: While typing a count for a command in Normal mode, mapping zero
       // is disabled. This makes it possible to map zero without making it impossible
@@ -438,7 +438,7 @@ export class ModeHandler implements vscode.Disposable {
         !preventZeroRemap &&
         !this.vimState.recordedState.waitingForAnotherActionKey
       ) {
-        handled = await this._remappers.sendKey(
+        handledAsRemap = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
           this,
           this.vimState
@@ -447,7 +447,7 @@ export class ModeHandler implements vscode.Disposable {
 
       this.vimState.recordedState.allowPotentialRemapOnFirstKey = true;
 
-      if (!handled) {
+      if (!handledAsRemap) {
         if (key === SpecialKeys.TimeoutFinished) {
           // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
           // key was the last key, then 'key' will be undefined and won't be sent to handle action.
@@ -457,7 +457,7 @@ export class ModeHandler implements vscode.Disposable {
           ];
         }
         if (key !== undefined) {
-          this.vimState = await this.handleKeyAsAnAction(key, this.vimState);
+          handledAsAction = await this.handleKeyAsAnAction(key, this.vimState);
         }
       }
     } catch (e) {
@@ -520,33 +520,34 @@ export class ModeHandler implements vscode.Disposable {
     // And keeping it past this point would make any following remapping force stop.
     this.vimState.lastMovementFailed = false;
 
-    // There was no action run yet but we still want to update the view to be able
-    // to show the potential remapping keys being pressed, the `"` character when
-    // waiting on a register key or the `?` character and any following character
-    // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
-    // to call the updateView after we are no longer waiting keys so that any
-    // existing overlapped key is removed.
-    if (
-      ((this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
-        (this.vimState.recordedState.bufferedKeys.length > 0 ||
-          this.vimState.recordedState.waitingForAnotherActionKey ||
-          this.vimState.recordedState.waitingForAnotherActionKey !==
-            oldWaitingForAnotherActionKey)) ||
-      this.vimState.currentModeIncludingPseudoModes !== oldFullMode
-    ) {
-      // TODO: make sure this only runs when there was no action run, so that we don't
-      // call updateView twice.
-      // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
-      // cursor decorations, if in the future we split up the updateView function there should
-      // be no need to call all of it.
-      await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+    if (!handledAsAction) {
+      // There was no action run yet but we still want to update the view to be able
+      // to show the potential remapping keys being pressed, the `"` character when
+      // waiting on a register key or the `?` character and any following character
+      // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
+      // to call the updateView after we are no longer waiting keys so that any
+      // existing overlapped key is removed.
+      if (
+        ((this.vimState.currentMode === Mode.Insert ||
+          this.vimState.currentMode === Mode.Replace) &&
+          (this.vimState.recordedState.bufferedKeys.length > 0 ||
+            this.vimState.recordedState.waitingForAnotherActionKey ||
+            this.vimState.recordedState.waitingForAnotherActionKey !==
+              oldWaitingForAnotherActionKey)) ||
+        this.vimState.currentModeIncludingPseudoModes !== oldFullMode
+      ) {
+        // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
+        // cursor decorations, if in the future we split up the updateView function there should
+        // be no need to call all of it.
+        await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
+      }
     }
   }
 
-  private async handleKeyAsAnAction(key: string, vimState: VimState): Promise<VimState> {
+  private async handleKeyAsAnAction(key: string, vimState: VimState): Promise<boolean> {
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
       this._logger.warn('Current window is not active');
-      return this.vimState;
+      return false;
     }
 
     // Catch any text change not triggered by us (example: tab completion).
@@ -564,11 +565,11 @@ export class ModeHandler implements vscode.Disposable {
         // Since there is no possible action we are no longer waiting any action keys
         vimState.recordedState.waitingForAnotherActionKey = false;
 
-        return vimState;
+        return false;
       case KeypressState.WaitingOnKeys:
         vimState.recordedState.waitingForAnotherActionKey = true;
 
-        return vimState;
+        return false;
     }
 
     if (!vimState.remapUsedACharacter && vimState.isCurrentlyPerformingRecursiveRemapping) {
@@ -645,7 +646,7 @@ export class ModeHandler implements vscode.Disposable {
       );
     }
 
-    return vimState;
+    return true;
   }
 
   private async runAction(
