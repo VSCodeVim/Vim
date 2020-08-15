@@ -10,85 +10,85 @@ class DecorationImpl {
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
 
-  public set Default(value: vscode.TextEditorDecorationType) {
+  public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
       this._default.dispose();
     }
     this._default = value;
   }
 
-  public get Default() {
+  public get default() {
     return this._default;
   }
 
-  public set SearchHighlight(value: vscode.TextEditorDecorationType) {
+  public set searchHighlight(value: vscode.TextEditorDecorationType) {
     if (this._searchHighlight) {
       this._searchHighlight.dispose();
     }
     this._searchHighlight = value;
   }
 
-  public get SearchHighlight() {
+  public get searchHighlight() {
     return this._searchHighlight;
   }
 
-  public set EasyMotionIncSearch(value: vscode.TextEditorDecorationType) {
+  public set easyMotionIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionIncSearch) {
       this._easyMotionIncSearch.dispose();
     }
     this._easyMotionIncSearch = value;
   }
 
-  public set EasyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
+  public set easyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionDimIncSearch) {
       this._easyMotionDimIncSearch.dispose();
     }
     this._easyMotionDimIncSearch = value;
   }
 
-  public get EasyMotionIncSearch() {
+  public get easyMotionIncSearch() {
     return this._easyMotionIncSearch;
   }
 
-  public get EasyMotionDimIncSearch() {
+  public get easyMotionDimIncSearch() {
     return this._easyMotionDimIncSearch;
   }
 
-  public set InsertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
+  public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
     if (this._insertModeVirtualCharacter) {
       this._insertModeVirtualCharacter.dispose();
     }
     this._insertModeVirtualCharacter = value;
   }
 
-  public get InsertModeVirtualCharacter() {
+  public get insertModeVirtualCharacter() {
     return this._insertModeVirtualCharacter;
   }
 
-  public set OperatorPendingModeCursor(value: vscode.TextEditorDecorationType) {
+  public set operatorPendingModeCursor(value: vscode.TextEditorDecorationType) {
     if (this._operatorPendingModeCursor) {
       this._operatorPendingModeCursor.dispose();
     }
     this._operatorPendingModeCursor = value;
   }
 
-  public get OperatorPendingModeCursor() {
+  public get operatorPendingModeCursor() {
     return this._operatorPendingModeCursor;
   }
 
-  public set OperatorPendingModeCursorChar(value: vscode.TextEditorDecorationType) {
+  public set operatorPendingModeCursorChar(value: vscode.TextEditorDecorationType) {
     if (this._operatorPendingModeCursorChar) {
       this._operatorPendingModeCursorChar.dispose();
     }
     this._operatorPendingModeCursorChar = value;
   }
 
-  public get OperatorPendingModeCursorChar() {
+  public get operatorPendingModeCursorChar() {
     return this._operatorPendingModeCursorChar;
   }
 
   public load(configuration: IConfiguration) {
-    this.Default = vscode.window.createTextEditorDecorationType({
+    this.default = vscode.window.createTextEditorDecorationType({
       backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
       borderColor: new vscode.ThemeColor('editorCursor.foreground'),
       dark: {
@@ -106,22 +106,22 @@ class DecorationImpl {
       ? configuration.searchHighlightColor
       : new vscode.ThemeColor('editor.findMatchHighlightBackground');
 
-    this.SearchHighlight = vscode.window.createTextEditorDecorationType({
+    this.searchHighlight = vscode.window.createTextEditorDecorationType({
       backgroundColor: searchHighlightColor,
       color: configuration.searchHighlightTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
-    this.EasyMotionIncSearch = vscode.window.createTextEditorDecorationType({
+    this.easyMotionIncSearch = vscode.window.createTextEditorDecorationType({
       color: configuration.easymotionIncSearchForegroundColor,
       fontWeight: configuration.easymotionMarkerFontWeight,
     });
 
-    this.EasyMotionDimIncSearch = vscode.window.createTextEditorDecorationType({
+    this.easyMotionDimIncSearch = vscode.window.createTextEditorDecorationType({
       color: configuration.easymotionDimColor,
     });
 
-    this.InsertModeVirtualCharacter = vscode.window.createTextEditorDecorationType({
+    this.insertModeVirtualCharacter = vscode.window.createTextEditorDecorationType({
       color: 'transparent', // no color to hide the existing character
       before: {
         color: 'currentColor',
@@ -133,7 +133,7 @@ class DecorationImpl {
     });
 
     // This creates the half block cursor when on operator pending mode
-    this.OperatorPendingModeCursor = vscode.window.createTextEditorDecorationType({
+    this.operatorPendingModeCursor = vscode.window.createTextEditorDecorationType({
       before: {
         // no color to hide the existing character. We only need the character here to make
         // the width be the same as the existing character.
@@ -152,7 +152,7 @@ class DecorationImpl {
 
     // This puts a character on top of the half block cursor and on top of the existing character
     // to create the mix-blend 'magic'
-    this.OperatorPendingModeCursorChar = vscode.window.createTextEditorDecorationType({
+    this.operatorPendingModeCursorChar = vscode.window.createTextEditorDecorationType({
       // We make the existing character 'black' -> rgb(0,0,0), because when using the mix-blend-mode
       // with 'exclusion' it subtracts the darker color from the lightest color which means we will
       // subtract zero from our 'currentcolor' leaving us with 'currentcolor' on the part above the

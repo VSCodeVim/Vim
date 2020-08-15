@@ -376,7 +376,7 @@ export class ModeHandler implements vscode.Disposable {
       // Handle the bufferedKeys or append the new key to the previously bufferedKeys
       clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
       this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
-      this.vimState.recordedState.commandList = this.vimState.recordedState.bufferedKeys.slice(0);
+      this.vimState.recordedState.commandList = [...this.vimState.recordedState.bufferedKeys];
       this.vimState.recordedState.bufferedKeys = [];
     }
 
@@ -410,21 +410,20 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState.commandList.push(key);
 
     const oldMode = this.vimState.currentMode;
+    const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
     const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
     const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
     try {
       let handled = false;
-      let preventZeroRemap = false;
 
       // Handling special case for '0'. From Vim documentation (:help :map-modes)
       // Special case: While typing a count for a command in Normal mode, mapping zero
       // is disabled. This makes it possible to map zero without making it impossible
       // to type a count with a zero.
-      if (key === '0' && this.vimState.recordedState.getLastActionRun() instanceof CommandNumber) {
-        preventZeroRemap = true;
-      }
+      const preventZeroRemap =
+        key === '0' && this.vimState.recordedState.getLastActionRun() instanceof CommandNumber;
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
@@ -499,8 +498,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // We either already ran an action or we have a potential action to run but
-    // the key is already stored on 'actionKeys' in that case so we don't need
-    // it anymore on commandList that is only used for the remapper and 'showCmd'
+    // the key is already stored on 'actionKeys' in that case we don't need it
+    // anymore on commandList that is only used for the remapper and 'showCmd'
     // and both had already been handled at this point.
     // If we got here it means that there is no potential remap for the key
     // either so we need to clear it from commandList so that it doesn't interfere
@@ -528,12 +527,19 @@ export class ModeHandler implements vscode.Disposable {
     // to call the updateView after we are no longer waiting keys so that any
     // existing overlapped key is removed.
     if (
-      (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
-      (this.vimState.recordedState.bufferedKeys.length > 0 ||
-        this.vimState.recordedState.waitingForAnotherActionKey ||
-        oldWaitingForAnotherActionKey !== this.vimState.recordedState.waitingForAnotherActionKey)
+      ((this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
+        (this.vimState.recordedState.bufferedKeys.length > 0 ||
+          this.vimState.recordedState.waitingForAnotherActionKey ||
+          this.vimState.recordedState.waitingForAnotherActionKey !==
+            oldWaitingForAnotherActionKey)) ||
+      this.vimState.currentModeIncludingPseudoModes !== oldFullMode
     ) {
-      await this.updateView(this.vimState);
+      // TODO: make sure this only runs when there was no action run, so that we don't
+      // call updateView twice.
+      // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
+      // cursor decorations, if in the future we split up the updateView function there should
+      // be no need to call all of it.
+      await this.updateView(this.vimState, { drawSelection: false, revealRange: false });
     }
   }
 
@@ -1396,7 +1402,7 @@ export class ModeHandler implements vscode.Disposable {
     if (showHighlights) {
       searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor.document) ?? [];
     }
-    this.vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
+    this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
   }
 
   public async updateView(
@@ -1601,22 +1607,18 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this.vimState.editor.setDecorations(decoration.Default, cursorRange);
+    this.vimState.editor.setDecorations(decoration.default, cursorRange);
 
     // Insert Mode virtual characters: used to temporarily show the remapping pressed keys on
     // insert mode, to show the `"` character after pressing `<C-r>`, and to show `?` and the
     // first character when inserting digraphs with `<C-k>`.
-    let decorationOptions: vscode.DecorationOptions[] = [];
-    if (
-      (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) &&
-      (vimState.recordedState.bufferedKeys.length > 0 ||
-        vimState.recordedState.waitingForAnotherActionKey)
-    ) {
-      let virtualKey: string | undefined = '';
+    let iModeVirtualCharDecorationOptions: vscode.DecorationOptions[] = [];
+    if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
+      let virtualKey: string | undefined = undefined;
       if (vimState.recordedState.bufferedKeys.length > 0) {
         virtualKey =
           vimState.recordedState.bufferedKeys[vimState.recordedState.bufferedKeys.length - 1];
-      } else {
+      } else if (vimState.recordedState.waitingForAnotherActionKey) {
         virtualKey =
           vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
         if (virtualKey === '<C-r>') {
@@ -1652,12 +1654,12 @@ export class ModeHandler implements vscode.Disposable {
 
         for (const { stop: cursorStop } of vimState.cursors) {
           if (cursorStop.isLineEnd()) {
-            decorationOptions.push({
+            iModeVirtualCharDecorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
               renderOptions: eolRenderOptions,
             });
           } else {
-            decorationOptions.push({
+            iModeVirtualCharDecorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getRightThroughLineBreaks(true)),
               renderOptions: renderOptions,
             });
@@ -1666,7 +1668,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this.vimState.editor.setDecorations(decoration.InsertModeVirtualCharacter, decorationOptions);
+    this.vimState.editor.setDecorations(
+      decoration.insertModeVirtualCharacter,
+      iModeVirtualCharDecorationOptions
+    );
 
     // OperatorPendingMode half block cursor
     const opCursorDecorations: vscode.DecorationOptions[] = [];
@@ -1692,9 +1697,9 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this.vimState.editor.setDecorations(decoration.OperatorPendingModeCursor, opCursorDecorations);
+    this.vimState.editor.setDecorations(decoration.operatorPendingModeCursor, opCursorDecorations);
     this.vimState.editor.setDecorations(
-      decoration.OperatorPendingModeCursorChar,
+      decoration.operatorPendingModeCursorChar,
       opCursorCharDecorations
     );
 
@@ -1720,8 +1725,8 @@ export class ModeHandler implements vscode.Disposable {
             .getMatches(vimState.cursorStopPosition, vimState)
             .map((match) => match.toRange())
         : [];
-    this.vimState.editor.setDecorations(decoration.EasyMotionDimIncSearch, easyMotionDimRanges);
-    this.vimState.editor.setDecorations(decoration.EasyMotionIncSearch, easyMotionHighlightRanges);
+    this.vimState.editor.setDecorations(decoration.easyMotionDimIncSearch, easyMotionDimRanges);
+    this.vimState.editor.setDecorations(decoration.easyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);

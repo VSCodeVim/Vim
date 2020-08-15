@@ -68,7 +68,7 @@ export class Remapper implements IRemapper {
    * call it an Ambiguous Remap and we store it here. If later we need to handle it
    * we don't need to go looking for it.
    */
-  private _hasAmbiguousRemap: false | IKeyRemapping = false;
+  private _hasAmbiguousRemap: IKeyRemapping | undefined;
 
   /**
    * If the commandList is a potential remap but has no ambiguous remap
@@ -182,7 +182,7 @@ export class Remapper implements IRemapper {
         // Use the commandList to get the remaining keys so that it includes any existing
         // '<TimeoutFinished>' key
         remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length);
-        this._hasAmbiguousRemap = false;
+        this._hasAmbiguousRemap = undefined;
       }
       if (!remapping) {
         // if there is still no remapping, handle all the keys without allowing
@@ -316,7 +316,7 @@ export class Remapper implements IRemapper {
         remapping = newRemapping;
       }
 
-      this._hasAmbiguousRemap = false;
+      this._hasAmbiguousRemap = undefined;
       this._hasPotentialRemap = false;
 
       let skipFirstCharacter = false;
@@ -473,7 +473,7 @@ export class Remapper implements IRemapper {
     }
 
     this._hasPotentialRemap = false;
-    this._hasAmbiguousRemap = false;
+    this._hasAmbiguousRemap = undefined;
     return false;
   }
 
