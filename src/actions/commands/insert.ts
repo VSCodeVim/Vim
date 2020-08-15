@@ -11,10 +11,9 @@ import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
+import { RegisterAction, BaseCommand } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
-  BaseCommand,
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
@@ -241,7 +240,10 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (
       position.character > 0 &&
@@ -287,7 +289,10 @@ export class CommandDeleteInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (!position.isAtDocumentEnd()) {
       // Otherwise, just delete a character (unless we're at the end of the document)
@@ -393,7 +398,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     let text: string;
 
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       vimState.recordedState.transformations.push({
         type: 'macro',
@@ -422,12 +427,6 @@ class CommandInsertRegisterContent extends BaseCommand {
     const register = keysPressed[1];
 
     return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 }
 

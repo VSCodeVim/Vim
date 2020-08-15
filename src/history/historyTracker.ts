@@ -461,9 +461,9 @@ export class HistoryTracker {
    * Retrieves a mark from either the global or local array depending on
    * mark.isUppercaseMark.
    */
-  public getMark(markName: string): IMark {
+  public getMark(markName: string): IMark | undefined {
     const marks = this.getMarkList(markName.toUpperCase() === markName);
-    return <IMark>marks.find((mark) => mark.name === markName);
+    return marks.find((mark) => mark.name === markName);
   }
 
   /**
@@ -689,7 +689,7 @@ export class HistoryTracker {
     const step = this.currentHistoryStep;
 
     for (const change of step.changes.slice(0).reverse()) {
-      await change!.undo();
+      await change.undo();
     }
 
     // TODO: if there are more/fewer lines after undoing the change, it should say so
@@ -784,7 +784,7 @@ export class HistoryTracker {
 
     // Note that reverse() is call-by-reference, so the changes are already in reverse order
     for (const change of changesToUndo) {
-      await change!.undo();
+      await change.undo();
       change.isAdd = !change.isAdd;
     }
 

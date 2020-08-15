@@ -1,7 +1,6 @@
 import { configuration } from '../configuration/configuration';
 import { Mode } from '../mode/mode';
-import { BaseAction } from './../actions/base';
-import { BaseCommand } from './../actions/commands/actions';
+import { BaseAction, BaseCommand } from './../actions/base';
 import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
 import { Transformation } from './../transformations/transformations';
@@ -125,18 +124,20 @@ export class RecordedState {
   }
 
   public get operators(): BaseOperator[] {
-    return this.actionsRun.filter((a) => a instanceof BaseOperator).reverse() as BaseOperator[];
+    return this.actionsRun.filter((a): a is BaseOperator => a instanceof BaseOperator).reverse();
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): BaseCommand {
-    const list = this.actionsRun.filter((a) => a instanceof BaseCommand).reverse();
+    const list = this.actionsRun
+      .filter((a): a is BaseCommand => a instanceof BaseCommand)
+      .reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
-    return list[0] as BaseCommand;
+    return list[0];
   }
 
   public get hasRunAMovement(): boolean {
