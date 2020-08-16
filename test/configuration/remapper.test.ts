@@ -418,17 +418,17 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
 
     const expected = 'text-to-put-on-register';
-    let actual: IRegisterContent;
+    let actual: IRegisterContent | undefined;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'd']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
   });
 
   test('d -> black hole register delete in normal mode through modehandler', async () => {
@@ -446,17 +446,17 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
 
     const expected = 'text-to-put-on-register';
-    let actual: IRegisterContent;
+    let actual: IRegisterContent | undefined;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'w']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
   });
 
   test('jj -> <Esc> after ciw operator through modehandler', async () => {
