@@ -354,7 +354,10 @@ export class Register {
   /**
    * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
    */
-  public static async get(vimState: VimState, register?: string): Promise<IRegisterContent> {
+  public static async get(
+    vimState: VimState,
+    register?: string
+  ): Promise<IRegisterContent | undefined> {
     if (register === undefined) {
       register = vimState.recordedState.registerName;
     }
@@ -363,16 +366,7 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    let lowercaseRegister = register.toLowerCase();
-
-    // Clipboard registers are always defined, so if a register doesn't already
-    // exist we can be sure it's not a clipboard one
-    if (!Register.registers.get(lowercaseRegister)) {
-      Register.registers.set(lowercaseRegister, {
-        text: '',
-        registerMode: RegisterMode.CharacterWise,
-      });
-    }
+    register = register.toLowerCase();
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
@@ -393,36 +387,12 @@ export class Register {
 
       const registerContent = {
         text: registerText,
-        registerMode: Register.registers.get(lowercaseRegister)!.registerMode,
+        registerMode: Register.registers.get(register)?.registerMode ?? RegisterMode.CharacterWise,
       };
-      Register.registers.set(lowercaseRegister, registerContent);
+      Register.registers.set(register, registerContent);
       return registerContent;
     } else {
-      let text = Register.registers.get(lowercaseRegister)!.text;
-
-      let registerText: RegisterContent;
-      if (text instanceof RecordedState) {
-        registerText = text;
-      } else {
-        if (vimState && vimState.isMultiCursor && typeof text === 'object') {
-          if (text.length === vimState.cursors.length) {
-            registerText = text;
-          } else {
-            registerText = text.join('\n');
-          }
-        } else {
-          if (typeof text === 'object') {
-            registerText = text.join('\n');
-          } else {
-            registerText = text;
-          }
-        }
-      }
-
-      return {
-        text: registerText,
-        registerMode: Register.registers.get(lowercaseRegister)!.registerMode,
-      };
+      return Register.registers.get(register);
     }
   }
 
