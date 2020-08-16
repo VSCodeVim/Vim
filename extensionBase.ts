@@ -18,6 +18,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { SpecialKeys } from './src/util/specialKeys';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -434,7 +435,13 @@ export async function activate(
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
+    registerCommand(context, boundKey.command, () => {
+      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
+        checkIfRecursiveRemapping(`${boundKey.key}`);
+      } else {
+        handleKeyEvent(`${boundKey.key}`);
+      }
+    });
   }
 
   // Initialize mode handler for current active Text Editor at startup.
@@ -468,11 +475,11 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
   }
   let mh = await getAndUpdateModeHandler();
   if (isDisabled) {
-    await mh.handleKeyEvent('<ExtensionDisable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
     compositionState.reset();
     ModeHandlerMap.clear();
   } else {
-    await mh.handleKeyEvent('<ExtensionEnable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
   }
 }
 
@@ -544,6 +551,15 @@ async function handleKeyEvent(key: string): Promise<void> {
   taskQueue.enqueueTask(async () => {
     await mh.handleKeyEvent(key);
   });
+}
+
+async function checkIfRecursiveRemapping(key: string): Promise<void> {
+  const mh = await getAndUpdateModeHandler();
+  if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+  } else {
+    handleKeyEvent(key);
+  }
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {

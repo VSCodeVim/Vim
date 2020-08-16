@@ -416,6 +416,14 @@
           "type": "array",
           "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
+        "vim.operatorPendingModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.operatorPendingModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
         "vim.useCtrlKeys": {
           "type": "boolean",
           "markdownDescription": "Enable some Vim Ctrl key commands that override otherwise common operations, like `Ctrl+C`.",
@@ -497,6 +505,12 @@
         "vim.timeout": {
           "type": "number",
           "description": "Timeout in milliseconds for remapped commands.",
+          "default": 1000,
+          "minimum": 0
+        },
+        "vim.maxmapdepth": {
+          "type": "number",
+          "description": "Maximum number of times a mapping is done without resulting in a character to be used.",
           "default": 1000,
           "minimum": 0
         },

@@ -29,8 +29,7 @@ suite('Configuration', () => {
 
   test('remappings are normalized', async () => {
     const normalizedKeybinds = srcConfiguration.configuration.normalModeKeyBindingsNonRecursive;
-    const normalizedKeybindsMap =
-      srcConfiguration.configuration.normalModeKeyBindingsNonRecursiveMap;
+    const normalizedKeybindsMap = srcConfiguration.configuration.normalModeKeyBindingsMap;
     const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
 
     assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
