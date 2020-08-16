@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
@@ -9,6 +10,8 @@ import {
 import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
+
+let extensionContext: vscode.ExtensionContext;
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -44,7 +47,7 @@ export class Register {
    */
   private static readonly specialRegisters = ['"', '*', '+', '.', '-', '/', ':', '%', '#', '_'];
 
-  private static registers: Map<string, IRegisterContent> = new Map();
+  private static registers: Map<string, IRegisterContent>;
 
   /**
    * ". readonly register: last content change.
@@ -78,6 +81,8 @@ export class Register {
         Register.putNormalRegister(content, register, vimState);
       }
     }
+
+    Register.saveToDisk();
   }
 
   public static isValidRegister(register: string): boolean {
@@ -297,6 +302,8 @@ export class Register {
       text: content,
       registerMode: registerMode || RegisterMode.AscertainFromCurrentMode,
     });
+
+    Register.saveToDisk();
   }
 
   /**
@@ -402,5 +409,23 @@ export class Register {
 
   public static getKeys(): string[] {
     return [...Register.registers.keys()];
+  }
+
+  private static async saveToDisk(): Promise<void> {
+    const serializable = new Map<string, IRegisterContent>();
+    for (const [key, content] of Register.registers) {
+      if (typeof content.text === 'string' || Array.isArray(content.text)) {
+        serializable.set(key, content);
+      }
+    }
+    extensionContext.globalState.update('registers', [...serializable]);
+  }
+
+  public static loadFromDisk(context: vscode.ExtensionContext): void {
+    extensionContext = context;
+    const savedRegisters = extensionContext.globalState.get<Array<[string, IRegisterContent]>>(
+      'registers'
+    );
+    Register.registers = savedRegisters ? new Map(savedRegisters) : new Map();
   }
 }

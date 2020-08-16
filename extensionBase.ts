@@ -105,13 +105,14 @@ export async function activate(
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+  // Load state
+  Register.loadFromDisk(extensionContext);
+  await Promise.all([commandLine.load(), globalState.load()]);
+
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
   }
-
-  // load state
-  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(
