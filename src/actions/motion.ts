@@ -214,7 +214,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
-      t = <Position | IMovement>await moveDownByScreenLine.execAction(position, vimState);
+      t = await moveDownByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
       const lineChanged = prevLine !== t.line;
       // wrappedLine movement goes to eol character only when at the last line
@@ -294,7 +294,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     const prevDesiredColumn = vimState.desiredColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
-      t = <Position | IMovement>await moveUpByScreenLine.execAction(position, vimState);
+      t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
     // fix column change at last line caused by wrappedLine movement
@@ -321,10 +321,10 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = <Position>await new MoveUpArrow().execAction(position, vimState);
+        newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
         break;
       case '<down>':
-        newPosition = <Position>await new MoveDownArrow().execAction(position, vimState);
+        newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
@@ -467,11 +467,11 @@ export class MarkMovementBOL extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    if (mark == null) {
+    if (mark === undefined) {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
+
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
       await ensureEditorIsActive(mark.editor);
@@ -490,7 +490,7 @@ export class MarkMovement extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
-    if (mark == null) {
+    if (mark === undefined) {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
@@ -2052,10 +2052,10 @@ export abstract class ArrowsInInsertMode extends BaseMovement {
     let newPosition: Position;
     switch (this.keys[0]) {
       case '<up>':
-        newPosition = <Position>await new MoveUpArrow().execAction(position, vimState);
+        newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
         break;
       case '<down>':
-        newPosition = <Position>await new MoveDownArrow().execAction(position, vimState);
+        newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
         newPosition = await new MoveLeftArrow(this.keysPressed).execAction(position, vimState);

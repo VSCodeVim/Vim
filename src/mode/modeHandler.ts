@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Actions, BaseAction, KeypressState, BaseCommand } from './../actions/base';
+import { BaseAction, KeypressState, BaseCommand, getRelevantAction } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
@@ -473,8 +473,8 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
     recordedState.actionKeys.push(key);
 
-    let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
-    switch (result) {
+    const action = getRelevantAction(recordedState.actionKeys, vimState);
+    switch (action) {
       case KeypressState.NoPossibleMatch:
         if (!this._remappers.isPotentialRemap) {
           vimState.recordedState = new RecordedState();
@@ -487,9 +487,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
-
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
     } else {
@@ -995,11 +993,11 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (command.diff) {
-        if (!accumulatedPositionDifferences[command.cursorIndex!]) {
-          accumulatedPositionDifferences[command.cursorIndex!] = [];
+        if (!accumulatedPositionDifferences[command.cursorIndex]) {
+          accumulatedPositionDifferences[command.cursorIndex] = [];
         }
 
-        accumulatedPositionDifferences[command.cursorIndex!].push(command.diff);
+        accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
       }
     };
 
@@ -1098,9 +1096,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'macro':
-          let recordedMacro = (await Register.getByKey(transformation.register))
-            .text as RecordedState;
-
+          let recordedMacro = (await Register.getByKey(transformation.register)).text;
           if (!(recordedMacro instanceof RecordedState)) {
             return vimState;
           }

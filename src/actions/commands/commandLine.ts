@@ -324,7 +324,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = globalState.searchState!;
-    const prevSearchList = globalState.searchStatePrevious!;
+    const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
@@ -508,7 +508,7 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
     let text: string;
 
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 
@@ -543,7 +543,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
     let text: string;
 
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 

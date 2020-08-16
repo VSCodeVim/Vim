@@ -27,6 +27,10 @@ export class PutExCommand extends node.CommandBase {
     return this._arguments;
   }
 
+  public neovimCapable(): boolean {
+    return true;
+  }
+
   async doPut(vimState: VimState, position: Position) {
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
     vimState.recordedState.registerName = registerName;
@@ -34,7 +38,7 @@ export class PutExCommand extends node.CommandBase {
     let options: IPutCommandOptions = {
       forceLinewise: true,
       forceCursorLastLine: true,
-      after: this.arguments.bang,
+      pasteBeforeCursor: this.arguments.bang,
     };
 
     await new PutCommand().exec(position, vimState, options);

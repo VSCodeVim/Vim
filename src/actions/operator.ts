@@ -19,19 +19,18 @@ import { TextObjectMovement } from './textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
 
-export class BaseOperator extends BaseAction {
+export abstract class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
     super();
     this.multicursorIndex = multicursorIndex;
   }
   canBeRepeatedWithDot = true;
-  isOperator = true;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
    * this operator is being applied to.
    */
-  multicursorIndex: number | undefined = undefined;
+  public multicursorIndex: number | undefined;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
@@ -82,7 +81,6 @@ export class BaseOperator extends BaseAction {
     );
     const prevAction = nonCountActions[nonCountActions.length - 1];
     return (
-      this.isOperator &&
       keysPressed.length === 1 &&
       prevAction &&
       this.modes.includes(vimState.currentMode) &&
@@ -96,11 +94,9 @@ export class BaseOperator extends BaseAction {
   /**
    * Run this operator on a range, returning the new location of the cursor.
    */
-  run(vimState: VimState, start: Position, stop: Position): Promise<VimState> {
-    throw new Error('You need to override this!');
-  }
+  public abstract run(vimState: VimState, start: Position, stop: Position): Promise<VimState>;
 
-  runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
+  public runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return this.run(
       vimState,

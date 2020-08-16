@@ -6,7 +6,7 @@ import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
-export class BaseAction {
+export abstract class BaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
@@ -14,7 +14,7 @@ export class BaseAction {
   public isMotion = false;
 
   /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
+   * If true, the cursor position will be added to the jump list on completion.
    */
   public isJump = false;
 
@@ -38,8 +38,6 @@ export class BaseAction {
   public keys: string[] | string[][];
 
   public mustBeFirstKey = false;
-
-  public isOperator = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -172,11 +170,6 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
-  /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   */
-  isJump = false;
-
   multicursorIndex: number | undefined = undefined;
 
   /**
@@ -265,53 +258,50 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
-// TODO: this should not be a class (#4429)
-export abstract class Actions {
-  /**
-   * Every Vim action will be added here with the @RegisterAction decorator.
-   */
-  public static actionMap = new Map<Mode, typeof BaseAction[]>();
+/**
+ * Every Vim action will be added here with the @RegisterAction decorator.
+ */
+const actionMap = new Map<Mode, Array<{ new (): BaseAction }>>();
 
-  /**
-   * Gets the action that should be triggered given a key sequence.
-   *
-   * If there is a definitive action that matched, returns that action.
-   *
-   * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
-   * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
-   *
-   * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
-   */
-  public static getRelevantAction(
-    keysPressed: string[],
-    vimState: VimState
-  ): BaseAction | KeypressState {
-    let isPotentialMatch = false;
+/**
+ * Gets the action that should be triggered given a key sequence.
+ *
+ * If there is a definitive action that matched, returns that action.
+ *
+ * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
+ * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
+ *
+ * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
+ */
+export function getRelevantAction(
+  keysPressed: string[],
+  vimState: VimState
+): BaseAction | KeypressState {
+  let isPotentialMatch = false;
 
-    const possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
-    for (const actionType of possibleActionsForMode) {
-      const action = new actionType();
-      if (action.doesActionApply(vimState, keysPressed)) {
-        action.keysPressed = vimState.recordedState.actionKeys.slice(0);
-        return action;
-      }
-
-      if (action.couldActionApply(vimState, keysPressed)) {
-        isPotentialMatch = true;
-      }
+  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  for (const actionType of possibleActionsForMode) {
+    const action = new actionType();
+    if (action.doesActionApply(vimState, keysPressed)) {
+      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+      return action;
     }
 
-    return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+    if (action.couldActionApply(vimState, keysPressed)) {
+      isPotentialMatch = true;
+    }
   }
+
+  return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
-export function RegisterAction(action: typeof BaseAction): void {
+export function RegisterAction(action: { new (): BaseAction }): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
-    let actions = Actions.actionMap.get(modeName);
+    let actions = actionMap.get(modeName);
     if (!actions) {
       actions = [];
-      Actions.actionMap.set(modeName, actions);
+      actionMap.set(modeName, actions);
     }
 
     if (actionInstance.keys === undefined) {

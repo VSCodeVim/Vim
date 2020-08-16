@@ -584,10 +584,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
           continue;
         }
 
-        let { stop, start, failed } = (await movement().execAction(
-          position,
-          vimState
-        )) as IMovement;
+        let { stop, start, failed } = await movement().execAction(position, vimState);
 
         stop = stop.getRight();
 
