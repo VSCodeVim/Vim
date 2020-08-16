@@ -373,11 +373,11 @@ class PutCommandVisual extends BaseCommand {
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
       const replaceRegisterName = vimState.recordedState.registerName;
-      const replaceRegister = await Register.getByKey(replaceRegisterName);
+      const replaceRegister = await Register.get(vimState, replaceRegisterName);
       vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
       await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, true);
       const deletedRegisterName = vimState.recordedState.registerName;
-      const deletedRegister = await Register.getByKey(deletedRegisterName);
+      const deletedRegister = await Register.get(vimState, deletedRegisterName);
       if (replaceRegisterName === deletedRegisterName) {
         Register.putByKey(replaceRegister.text, replaceRegisterName, replaceRegister.registerMode);
       }

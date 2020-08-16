@@ -312,15 +312,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'notthere');
   });
 
   test('Search register (/) is set by backward search', async () => {
@@ -330,15 +330,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'notthere');
   });
 
   test('Search register (/) is set by star search', async () => {
@@ -347,16 +347,16 @@ suite('register', () => {
     );
 
     await modeHandler.handleKeyEvent('*');
-    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '*']);
-    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'Wake');
 
     await modeHandler.handleKeyEvent('#');
-    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '#']);
-    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'Wake');
   });
 
   test('Command register (:) is set by command line', async () => {
@@ -366,7 +366,8 @@ suite('register', () => {
     // :reg should not update the command register
     await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
 
-    const regStr = ((await Register.getByKey(':')).text as RecordedState).commandString;
+    const regStr = ((await Register.get(modeHandler.vimState, ':')).text as RecordedState)
+      .commandString;
     assert.strictEqual(regStr, command);
   });
 
@@ -383,9 +384,9 @@ suite('register', () => {
     await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('":yy'.split(''));
 
-    assert.strictEqual((await Register.getByKey('/')).text, 'Expected for /');
-    assert.strictEqual((await Register.getByKey('.')).text, 'Expected for .');
-    assert.strictEqual((await Register.getByKey('%')).text, 'Expected for %');
-    assert.strictEqual((await Register.getByKey(':')).text, 'Expected for :');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/')).text, 'Expected for /');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '.')).text, 'Expected for .');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '%')).text, 'Expected for %');
+    assert.strictEqual((await Register.get(modeHandler.vimState, ':')).text, 'Expected for :');
   });
 });

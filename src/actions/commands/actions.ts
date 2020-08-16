@@ -314,7 +314,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName)).text;
+    const existingMacro = (await Register.get(vimState, vimState.recordedMacro.registerName)).text;
     if (!(existingMacro instanceof RecordedState)) {
       return vimState;
     }

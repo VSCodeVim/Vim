@@ -20,8 +20,8 @@ export class RegisterCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  private async getRegisterDisplayValue(register: string) {
-    let result = (await Register.getByKey(register)).text;
+  private async getRegisterDisplayValue(vimState: VimState, register: string) {
+    let result = (await Register.get(vimState, register)).text;
     if (result instanceof Array) {
       result = result.join('\n').substr(0, 100);
     } else if (result instanceof RecordedState) {
@@ -31,15 +31,15 @@ export class RegisterCommand extends node.CommandBase {
     return result;
   }
 
-  async displayRegisterValue(register: string): Promise<void> {
-    let result = await this.getRegisterDisplayValue(register);
+  async displayRegisterValue(vimState: VimState, register: string): Promise<void> {
+    let result = await this.getRegisterDisplayValue(vimState, register);
     result = result.replace(/\n/g, '\\n');
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.registers.length === 1) {
-      await this.displayRegisterValue(this.arguments.registers[0]);
+      await this.displayRegisterValue(vimState, this.arguments.registers[0]);
     } else {
       const currentRegisterKeys = Register.getKeys().filter(
         (reg) =>
@@ -51,7 +51,7 @@ export class RegisterCommand extends node.CommandBase {
       for (let registerKey of currentRegisterKeys) {
         registerKeyAndContent.push({
           label: registerKey,
-          description: await this.getRegisterDisplayValue(registerKey),
+          description: await this.getRegisterDisplayValue(vimState, registerKey),
         });
       }
 

@@ -352,14 +352,13 @@ export class Register {
   }
 
   /**
-   * Gets content from a register. If none is specified, uses the default register ".
+   * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
    */
-  public static async get(vimState: VimState): Promise<IRegisterContent> {
-    const register = vimState.recordedState.registerName;
-    return Register.getByKey(register, vimState);
-  }
+  public static async get(vimState: VimState, register?: string): Promise<IRegisterContent> {
+    if (register === undefined) {
+      register = vimState.recordedState.registerName;
+    }
 
-  public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }

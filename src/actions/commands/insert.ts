@@ -112,7 +112,7 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lastInserted = (await Register.getByKey('.')).text as RecordedState;
+    let lastInserted = (await Register.get(vimState, '.')).text as RecordedState;
     if (!lastInserted.actionsRun) {
       throw error.VimError.fromCode(error.ErrorCode.NoInsertedTextYet);
     }
