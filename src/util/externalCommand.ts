@@ -1,5 +1,4 @@
-import { exec } from '../util/child_process';
-import { readFileAsync, writeFileAsync, unlink } from '../util/fs';
+import { readFileAsync, writeFileAsync, unlink } from 'platform/fs';
 import { tmpdir } from '../util/os';
 import { join } from '../util/path';
 import { VimError, ErrorCode } from '../error';
@@ -96,7 +95,9 @@ class ExternalCommand {
       this.previousExternalCommand = command;
       command = this.redirectCommand(command, inputFile, outputFile);
       try {
-        await exec(command);
+        await import('child_process').then((cp) => {
+          cp.exec(command, (err, stdout, stderr) => {});
+        });
       } catch (e) {
         // exec throws an error if exit code != 0
         // keep going and read the output anyway (just like vim)
