@@ -49,6 +49,7 @@ export class Configuration implements IConfiguration {
     obtainIMCmd: '',
   };
   timeout = 1000;
+  maxmapdepth = 1000;
   showcmd = true;
   showmodename = true;
   leader = '//';
@@ -108,18 +109,17 @@ export class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   whichwrap = '';
   wrapKeys = {};
   report = 2;

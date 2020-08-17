@@ -235,7 +235,7 @@ export class SubstituteCommand extends node.CommandBase {
     ];
 
     vimState.editor.revealRange(new vscode.Range(line, 0, line, 0));
-    vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
+    vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
 
     const prompt = `Replace with ${replacement} (${validSelections.join('/')})?`;
     await vscode.window.showInputBox(

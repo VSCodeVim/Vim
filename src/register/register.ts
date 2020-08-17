@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
@@ -9,6 +10,8 @@ import {
 import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
+
+let extensionContext: vscode.ExtensionContext;
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -44,7 +47,7 @@ export class Register {
    */
   private static readonly specialRegisters = ['"', '*', '+', '.', '-', '/', ':', '%', '#', '_'];
 
-  private static registers: Map<string, IRegisterContent> = new Map();
+  private static registers: Map<string, IRegisterContent>;
 
   /**
    * ". readonly register: last content change.
@@ -78,6 +81,8 @@ export class Register {
         Register.putNormalRegister(content, register, vimState);
       }
     }
+
+    Register.saveToDisk();
   }
 
   public static isValidRegister(register: string): boolean {
@@ -297,6 +302,8 @@ export class Register {
       text: content,
       registerMode: registerMode || RegisterMode.AscertainFromCurrentMode,
     });
+
+    Register.saveToDisk();
   }
 
   /**
@@ -352,28 +359,21 @@ export class Register {
   }
 
   /**
-   * Gets content from a register. If none is specified, uses the default register ".
+   * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
    */
-  public static async get(vimState: VimState): Promise<IRegisterContent> {
-    const register = vimState.recordedState.registerName;
-    return Register.getByKey(register, vimState);
-  }
+  public static async get(
+    vimState: VimState,
+    register?: string
+  ): Promise<IRegisterContent | undefined> {
+    if (register === undefined) {
+      register = vimState.recordedState.registerName;
+    }
 
-  public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
 
-    let lowercaseRegister = register.toLowerCase();
-
-    // Clipboard registers are always defined, so if a register doesn't already
-    // exist we can be sure it's not a clipboard one
-    if (!Register.registers.get(lowercaseRegister)) {
-      Register.registers.set(lowercaseRegister, {
-        text: '',
-        registerMode: RegisterMode.CharacterWise,
-      });
-    }
+    register = register.toLowerCase();
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
@@ -394,36 +394,12 @@ export class Register {
 
       const registerContent = {
         text: registerText,
-        registerMode: Register.registers.get(lowercaseRegister)!.registerMode,
+        registerMode: Register.registers.get(register)?.registerMode ?? RegisterMode.CharacterWise,
       };
-      Register.registers.set(lowercaseRegister, registerContent);
+      Register.registers.set(register, registerContent);
       return registerContent;
     } else {
-      let text = Register.registers.get(lowercaseRegister)!.text;
-
-      let registerText: RegisterContent;
-      if (text instanceof RecordedState) {
-        registerText = text;
-      } else {
-        if (vimState && vimState.isMultiCursor && typeof text === 'object') {
-          if (text.length === vimState.cursors.length) {
-            registerText = text;
-          } else {
-            registerText = text.join('\n');
-          }
-        } else {
-          if (typeof text === 'object') {
-            registerText = text.join('\n');
-          } else {
-            registerText = text;
-          }
-        }
-      }
-
-      return {
-        text: registerText,
-        registerMode: Register.registers.get(lowercaseRegister)!.registerMode,
-      };
+      return Register.registers.get(register);
     }
   }
 
@@ -433,5 +409,23 @@ export class Register {
 
   public static getKeys(): string[] {
     return [...Register.registers.keys()];
+  }
+
+  private static async saveToDisk(): Promise<void> {
+    const serializable = new Map<string, IRegisterContent>();
+    for (const [key, content] of Register.registers) {
+      if (typeof content.text === 'string' || Array.isArray(content.text)) {
+        serializable.set(key, content);
+      }
+    }
+    extensionContext.globalState.update('registers', [...serializable]);
+  }
+
+  public static loadFromDisk(context: vscode.ExtensionContext): void {
+    extensionContext = context;
+    const savedRegisters = extensionContext.globalState.get<Array<[string, IRegisterContent]>>(
+      'registers'
+    );
+    Register.registers = savedRegisters ? new Map(savedRegisters) : new Map();
   }
 }

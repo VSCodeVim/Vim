@@ -151,9 +151,9 @@ Here's some ideas on what you can do with neovim integration:
 
 Custom remappings are defined on a per-mode basis.
 
-#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
+#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`
 
-- Keybinding overrides to use for insert, normal, and visual modes.
+- Keybinding overrides to use for insert, normal, operatorPending and visual modes.
 - Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -179,7 +179,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `:` to show the command palette:
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": [":"],
             "commands": [
@@ -192,7 +192,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://marketplace.visualstudio.com/items?itemName=alefragnani.Bookmarks) extension):
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": ["<leader>", "m"],
             "commands": [
@@ -211,7 +211,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before": ["Z", "Z"],
             "commands": [
@@ -224,7 +224,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
 
 ```json
-    "vim.normalModeKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindings": [
         {
             "before":["<C-n>"],
             "commands": [
@@ -240,28 +240,36 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `p` in visual mode to paste without overriding the current register
+- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively.
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.operatorPendingModeKeyBindings": [
         {
-            "before": [
-                "p",
-            ],
-            "after": [
-                "p",
-                "g",
-                "v",
-                "y"
-            ]
+            "before": ["{"],
+            "after": ["w"]
         }
-    ],
+    ]
+```
+
+- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `yL` and `d^` respectively.
+
+```json
+    "vim.operatorPendingModeKeyBindings": [
+        {
+            "before": ["L"],
+            "after": ["$"]
+        },
+        {
+            "before": ["H"],
+            "after": ["^"]
+        }
+    ]
 ```
 
 - Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindings": [
         {
             "before": [
                 ">"
@@ -284,7 +292,7 @@ Custom remappings are defined on a per-mode basis.
 - Bind `<leader>vim` to clone this repository to the selected location.
 
 ```json
-    "vim.visualModeKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindings": [
         {
             "before": [
                 "<leader>", "v", "i", "m"
@@ -299,18 +307,51 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`
 
 - Non-recursive keybinding overrides to use for insert, normal, and visual modes
-- _Example:_ Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or normalModeKeyBindingNonRecursive.
+- _Example:_ Exchange the meaning of two keys like `j` to `k` and `k` to `j` to exchange the cursor up and down commands. Notice that if you attempted this binding normally, the `j` would be replaced with `k` and the `k` would be replaced with `j`, on and on forever. When this happens 'maxmapdepth' times (default 1000) the error message 'E223 Recursive Mapping' will be thrown. Stop this recursive expansion using the NonRecursive variation of the keybindings.
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["j"],
-            "after": ["g", "j"]
+            "after": ["k"]
+        },
+        {
+            "before": ["k"],
+            "after": ["j"]
         }
     ]
+```
+
+- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively.
+
+```json
+    "vim.operatorPendingModeKeyBindingsNonRecursive": [
+        {
+            "before": ["("],
+            "after": ["i("]
+        }
+    ]
+```
+
+- Bind `p` in visual mode to paste without overriding the current register
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "p",
+            ],
+            "after": [
+                "p",
+                "g",
+                "v",
+                "y"
+            ]
+        }
+    ],
 ```
 
 #### Debugging Remappings
@@ -361,6 +402,7 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 | vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                                     | Boolean | true          |
 | vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                                    | Number  | 80            |
 | vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                         | Number  | 1000          |
+| vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done.         | Number  | 1000          |
 | vim.whichwrap    | Controls wrapping at beginning and end of line. Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode. To wrap "everything", set this to `h,l,<,>,[,]`. | String  | ``            |
 | vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                                      | Number  | 2             |
 

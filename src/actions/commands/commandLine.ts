@@ -505,8 +505,12 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
       text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
@@ -540,8 +544,12 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
       text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {

@@ -7,6 +7,8 @@ import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
 
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {
@@ -27,8 +29,12 @@ export class ReplaceOperator extends BaseOperator {
         ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
         : new vscode.Range(start, end.getRight());
     const register = await Register.get(vimState);
-    const replaceWith = register.text as string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    const replaceWith = register.text as string;
     await TextEditor.replace(range, replaceWith);
     await vimState.setCurrentMode(Mode.Normal);
     return updateCursorPosition(vimState, range, replaceWith);

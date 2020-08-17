@@ -32,6 +32,7 @@ import { StatusBar } from '../../statusBar';
 import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
+import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -184,7 +185,7 @@ class DisableExtension extends BaseCommand {
     Mode.EasyMotionInputMode,
     Mode.SurroundInputMode,
   ];
-  keys = ['<ExtensionDisable>'];
+  keys = [SpecialKeys.ExtensionDisable];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Disabled);
@@ -195,7 +196,7 @@ class DisableExtension extends BaseCommand {
 @RegisterAction
 class EnableExtension extends BaseCommand {
   modes = [Mode.Disabled];
-  keys = ['<ExtensionEnable>'];
+  keys = [SpecialKeys.ExtensionEnable];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vimState.setCurrentMode(Mode.Normal);
@@ -314,7 +315,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName)).text;
+    const existingMacro = (await Register.get(vimState, vimState.recordedMacro.registerName))?.text;
     if (!(existingMacro instanceof RecordedState)) {
       return vimState;
     }
@@ -1176,7 +1177,7 @@ export class CommandShowSearchHistory extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.recordedState.commandList.includes('?')) {
+    if (this.keysPressed.includes('?')) {
       this.direction = SearchDirection.Backward;
     }
     vimState.recordedState.transformations.push({
@@ -2458,8 +2459,10 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
     // http://vimdoc.sourceforge.net/htmldoc/change.html#<Del>
     if (vimState.recordedState.count !== 0) {
       vimState.recordedState.count = Math.floor(vimState.recordedState.count / 10);
-      vimState.recordedState.actionKeys = vimState.recordedState.count.toString().split('');
-      vimState.recordedState.commandList = vimState.recordedState.count.toString().split('');
+
+      // Change actionsRunPressedKeys so that showCmd updates correctly
+      vimState.recordedState.actionsRunPressedKeys =
+        vimState.recordedState.count > 0 ? vimState.recordedState.count.toString().split('') : [];
       this.isCompleteAction = false;
       return vimState;
     }

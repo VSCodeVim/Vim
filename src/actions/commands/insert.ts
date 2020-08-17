@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
-
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -23,6 +21,9 @@ import {
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
+import { error } from 'console';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -112,12 +113,16 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lastInserted = (await Register.getByKey('.')).text as RecordedState;
-    if (!lastInserted.actionsRun) {
-      throw error.VimError.fromCode(error.ErrorCode.NoInsertedTextYet);
+    const register = await Register.get(vimState, '.');
+    if (
+      register === undefined ||
+      !(register.text instanceof RecordedState) ||
+      !register.text.actionsRun
+    ) {
+      throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
     }
 
-    let actions = lastInserted.actionsRun.slice(0);
+    const actions = [...register.text.actionsRun];
     // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
@@ -395,8 +400,12 @@ class CommandInsertRegisterContent extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
       text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {

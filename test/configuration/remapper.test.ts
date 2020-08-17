@@ -10,6 +10,8 @@ import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
 import { VimState } from '../../src/state/vimState';
+import { TextEditor } from '../../src/textEditor';
+import { StatusBar } from '../../src/statusBar';
 
 /* tslint:disable:no-string-literal */
 
@@ -47,16 +49,18 @@ suite('Remapper', () => {
       ],
     },
     {
-      before: ['d'],
-      after: ['"', '_', 'd'],
-    },
-    {
       before: ['y', 'y'],
       after: ['y', 'l'],
     },
     {
       before: ['e'],
       after: ['$'],
+    },
+  ];
+  const defaultNormalModeKeyBindingsNonRecursive: IKeyRemapping[] = [
+    {
+      before: ['d'],
+      after: ['"', '_', 'd'],
     },
   ];
   const defaultVisualModeKeyBindings: IKeyRemapping[] = [
@@ -73,7 +77,7 @@ suite('Remapper', () => {
 
   class TestRemapper extends Remapper {
     constructor() {
-      super('configKey', [Mode.Insert], false);
+      super('configKey', [Mode.Insert]);
     }
 
     public findMatchingRemap(
@@ -94,16 +98,19 @@ suite('Remapper', () => {
   const setupWithBindings = async ({
     insertModeKeyBindings,
     normalModeKeyBindings,
+    normalModeKeyBindingsNonRecursive,
     visualModeKeyBindings,
   }: {
     insertModeKeyBindings?: IKeyRemapping[];
     normalModeKeyBindings?: IKeyRemapping[];
+    normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
   }) => {
     const configuration = new Configuration();
     configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings || [];
     configuration.normalModeKeyBindings = normalModeKeyBindings || [];
+    configuration.normalModeKeyBindingsNonRecursive = normalModeKeyBindingsNonRecursive || [];
     configuration.visualModeKeyBindings = visualModeKeyBindings || [];
 
     await setupWorkspace(configuration);
@@ -118,6 +125,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -140,6 +148,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -247,6 +256,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -282,6 +292,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -308,6 +319,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -343,6 +355,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -367,6 +380,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -394,6 +408,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -403,17 +418,17 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
 
     const expected = 'text-to-put-on-register';
-    let actual: IRegisterContent;
+    let actual: IRegisterContent | undefined;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'd']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
   });
 
   test('d -> black hole register delete in normal mode through modehandler', async () => {
@@ -421,6 +436,7 @@ suite('Remapper', () => {
     await setupWithBindings({
       insertModeKeyBindings: defaultInsertModeKeyBindings,
       normalModeKeyBindings: defaultNormalModeKeyBindings,
+      normalModeKeyBindingsNonRecursive: defaultNormalModeKeyBindingsNonRecursive,
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
@@ -430,17 +446,17 @@ suite('Remapper', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
 
     const expected = 'text-to-put-on-register';
-    let actual: IRegisterContent;
+    let actual: IRegisterContent | undefined;
     Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'w']);
 
     // assert
     actual = await Register.get(vimState);
-    assert.strictEqual(actual.text, expected);
+    assert.strictEqual(actual?.text, expected);
   });
 
   test('jj -> <Esc> after ciw operator through modehandler', async () => {
@@ -547,6 +563,276 @@ suite('Remapper', () => {
 
     await modeHandler.handleMultipleKeyEvents(['u']);
     assertEqualLines(['foo']);
+  });
+
+  test('Recursive remap throws E223', async () => {
+    // setup
+    await setupWithBindings({
+      normalModeKeyBindings: [
+        {
+          before: ['x'],
+          after: ['y'],
+        },
+        {
+          before: ['y'],
+          after: ['x'],
+        },
+      ],
+    });
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents(['x']);
+
+    // assert
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(StatusBar.getText(), 'E223: Recursive mapping');
+    assertEqualLines(['foo']);
+  });
+
+  test('ambiguous and potential remaps and timeouts', async () => {
+    // setup
+    await setupWithBindings({
+      normalModeKeyBindings: [
+        {
+          before: ['w', 'w'],
+          after: ['d', 'w'],
+        },
+        {
+          before: ['w', 'w', 'w', 'w'],
+          after: ['d', 'd'],
+        },
+        {
+          before: ['b', 'b'],
+          after: ['d', 'd'],
+        },
+      ],
+    });
+
+    // Using the default timeout
+    const timeout = new Configuration().timeout;
+    // Offset because the timeout might not finish exactly on time.
+    const timeoutOffset = 250;
+
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'foo', ' ', 'bar', ' ', 'biz', '<Esc>', '0']);
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assertEqualLines(['foo bar biz']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      0,
+      'Cursor is not on the right position, should be at the start of line'
+    );
+
+    // act and assert
+
+    // check that 'ww' -> 'dw' waits for timeout to finish and timeout isn't run twice
+    let result1: string[] = await new Promise(async (r1Resolve, r1Reject) => {
+      let p1: Promise<string> = new Promise((p1Resolve, p1Reject) => {
+        setTimeout(() => {
+          // get line after half timeout finishes
+          const currentLine = TextEditor.readLineAt(0);
+          p1Resolve(currentLine);
+        }, timeout / 2);
+      });
+      let p2: Promise<string> = new Promise((p2Resolve, p2Reject) => {
+        setTimeout(() => {
+          // get line after timeout + offset finishes
+          const currentLine = TextEditor.readLineAt(0);
+          p2Resolve(currentLine);
+        }, timeout + timeoutOffset);
+      });
+      let p3: Promise<string> = new Promise(async (p3Resolve, p3Reject) => {
+        await modeHandler.handleMultipleKeyEvents(['w', 'w']);
+        p3Resolve('modeHandler.handleMultipleKeyEvents finished');
+      });
+      await Promise.all([p1, p2, p3]).then((results) => {
+        r1Resolve(results);
+      });
+    });
+
+    // Before the timeout finishes it shouldn't have changed anything yet,
+    // because it is still waiting for a key or timeout to finish.
+    assert.strictEqual(result1[0], 'foo bar biz');
+
+    // After the timeout finishes (plus an offset to be sure it finished)
+    // it should have handled the remapping, if it wrongly ran the timeout
+    // twice this should fail too.
+    assert.strictEqual(result1[1], 'bar biz');
+
+    // check that 'www' -> 'dw' and then 'w' waits for timeout to finish
+    let result2: { line: string; position: number }[] = await new Promise(
+      async (r2Resolve, r2Reject) => {
+        let p1: Promise<{ line: string; position: number }> = new Promise((p1Resolve, p1Reject) => {
+          setTimeout(() => {
+            // get line and cursor character after half timeout finishes
+            const currentLine = TextEditor.readLineAt(0);
+            const cursorCharacter = modeHandler.vimState.cursorStopPosition.character;
+            p1Resolve({ line: currentLine, position: cursorCharacter });
+          }, timeout / 2);
+        });
+        let p2: Promise<{ line: string; position: number }> = new Promise((p2Resolve, p2Reject) => {
+          setTimeout(() => {
+            // get line and cursor character after timeout + offset finishes
+            const currentLine = TextEditor.readLineAt(0);
+            const cursorCharacter = modeHandler.vimState.cursorStopPosition.character;
+            p2Resolve({ line: currentLine, position: cursorCharacter });
+          }, timeout + timeoutOffset);
+        });
+        let p3: Promise<{ line: string; position: number }> = new Promise(
+          async (p3Resolve, p3Reject) => {
+            await modeHandler.handleMultipleKeyEvents(['w', 'w', 'w']);
+            p3Resolve({ line: 'modeHandler.handleMultipleKeyEvents finished', position: -1 });
+          }
+        );
+        await Promise.all([p1, p2, p3]).then((results) => {
+          r2Resolve(results);
+        });
+      }
+    );
+
+    // Before the timeout finishes it shouldn't have changed anything yet,
+    // because it is still waiting for a key or timeout to finish.
+    assert.strictEqual(result2[0].line, 'bar biz');
+    assert.strictEqual(
+      result2[0].position,
+      0,
+      'Cursor is not on the right position, should be at the start of line'
+    );
+
+    // After the timeout finishes (plus an offset to be sure it finished)
+    // it should have handled the remapping, if it wrongly ran the timeout
+    // twice this should fail too.
+    assert.strictEqual(result2[1].line, 'biz');
+    assert.strictEqual(
+      result2[1].position,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+
+    // add new line
+    await modeHandler.handleMultipleKeyEvents(['a', '\n', 'foo', '<Esc>']);
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // check that 'wwww' -> 'dd' doesn't wait for timeout
+    let result3 = await new Promise(async (r3Resolve, r3Reject) => {
+      const start = Number(new Date());
+
+      await modeHandler.handleMultipleKeyEvents(['w', 'w', 'w', 'w']).then(() => {
+        const now = Number(new Date());
+        const elapsed = now - start;
+
+        assertEqualLines(['biz']);
+        assert.strictEqual(
+          modeHandler.vimState.cursorStopPosition.character,
+          0,
+          'Cursor is not on the right position, shoul be at the start of line'
+        );
+        assert.strictEqual(
+          modeHandler.vimState.cursorStopPosition.line,
+          0,
+          'Cursor is not on the right position, should be on first line'
+        );
+
+        // We check if the elapsed time is less than half the timeout instead of
+        // just a few miliseconds to prevent any performance issue marking the
+        // test as failed when it would've succeeded. If it is less than half the
+        // timeout we can be sure the setTimeout was never ran.
+        assert.strictEqual(elapsed < timeout / 2, true);
+        r3Resolve("wwww -> dd doesn't wait for timeout to finish");
+      });
+    });
+
+    assert.strictEqual(result3, "wwww -> dd doesn't wait for timeout to finish");
+
+    // add new line again
+    await modeHandler.handleMultipleKeyEvents(['$', 'a', '\n', 'foo', '<Esc>']);
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // check 'bb' -> 'dd' sending each 'b' one by one checking between them to see
+    // that the remapping hasn't been handled yet and that the whole process
+    // doesn't take the timeout to finish
+
+    const startTime = Number(new Date());
+
+    // send first 'b'
+    await modeHandler.handleKeyEvent('b');
+
+    // should be the same
+    assertEqualLines(['biz', 'foo']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      2,
+      'Cursor is not on the right position, should be at the end of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      1,
+      'Cursor is not on the right position, should be on second line'
+    );
+
+    // wait for 500 miliseconds (half of timeout) to simulate the time the user takes
+    // between presses. Not using a fixed value here in case the default configuration
+    // gets changed to use a lower value for timeout.
+    let waited: boolean = await new Promise((wResolve, wReject) => {
+      setTimeout(() => {
+        wResolve(true);
+      }, timeout / 2);
+    });
+    assert.strictEqual(waited, true);
+
+    // send second 'b'
+    await modeHandler.handleKeyEvent('b');
+
+    // check result and time elapsed
+    const elapsedTime = Number(new Date()) - startTime;
+
+    assertEqualLines(['biz']);
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      0,
+      'Cursor is not on the right position, shoul be at the start of line'
+    );
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.line,
+      0,
+      'Cursor is not on the right position, should be on first line'
+    );
+
+    // We check if the elapsedTime is less than the timeout minus an offset just
+    // to be sure that some performance issue doesn't make the test fail when it
+    // would succeed but this might not be foolproof, since we are dealing with
+    // times here.
+    //
+    // Note: I didn't want to use a Promise here again like previously, because I
+    // wanted to have both methods of testing (with and without promises) and this
+    // method should simulate better the real use from the user.
+    assert.strictEqual(elapsedTime < timeout - timeoutOffset, true);
   });
 });
 
