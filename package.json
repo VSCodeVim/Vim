@@ -41,7 +41,7 @@
   ],
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
-  "browser": "./out/vim",
+  "browser": "./out/extensionWeb",
   "contributes": {
     "commands": [
       {

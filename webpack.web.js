@@ -15,8 +15,8 @@ const nodelessConfig = {
   output: {
     // the bundle is stored in the 'out' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'out-web'),
-    filename: 'vim.js',
-    libraryTarget: 'umd'
+    filename: 'extensionWeb.js',
+    libraryTarget: 'umd',
   },
   devtool: 'inline-source-map',
   externals: {
@@ -26,8 +26,8 @@ const nodelessConfig = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     alias: {
-      platform : path.resolve(__dirname, 'src', 'platform', 'browser'),
-    }
+      platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
+    },
   },
   module: {
     rules: [
@@ -51,8 +51,8 @@ const nodelessConfig = {
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,
-    })
-  ]
+    }),
+  ],
 };
 
 module.exports = nodelessConfig;
