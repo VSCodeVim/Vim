@@ -41,8 +41,7 @@ class CommandLine {
 
   public previousMode = Mode.Normal;
 
-  constructor() {
-  }
+  constructor() {}
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
     this._history = new CommandLineHistory(context);
@@ -80,7 +79,11 @@ class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim && vimState.nvim) {
+        if (
+          e.code === ErrorCode.NotAnEditorCommand &&
+          configuration.enableNeovim &&
+          vimState.nvim
+        ) {
           const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {

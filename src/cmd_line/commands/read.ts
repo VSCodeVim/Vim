@@ -60,7 +60,7 @@ export class ReadCommand extends node.CommandBase {
     if (SUPPORT_READ_COMMAND) {
       return new Promise<string>((resolve, reject) => {
         try {
-          import('child_process').then(cp => {
+          import('child_process').then((cp) => {
             cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
               if (err) {
                 reject(err);
@@ -68,8 +68,7 @@ export class ReadCommand extends node.CommandBase {
                 resolve(stdout);
               }
             });
-
-          })
+          });
         } catch (e) {
           reject(e);
         }
