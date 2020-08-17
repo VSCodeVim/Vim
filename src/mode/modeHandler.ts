@@ -78,6 +78,7 @@ export class ModeHandler implements vscode.Disposable {
 
   private constructor(textEditor: vscode.TextEditor) {
     this._remappers = new Remappers();
+
     this.vimState = new VimState(textEditor);
     this._disposables.push(this.vimState);
   }

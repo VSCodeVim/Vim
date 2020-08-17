@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
 import { ILogger } from '../common/logger';
+import { Globals } from '../../globals';
 
 export class HistoryBase {
   private _historyFileName: string;
@@ -11,8 +12,12 @@ export class HistoryBase {
     return path.join(this._extensionStoragePath, this._historyFileName);
   }
 
-
-  constructor(private _context: vscode.ExtensionContext, historyFileName: string, private _extensionStoragePath: string, private _logger: ILogger) {
+  constructor(
+    private _context: vscode.ExtensionContext,
+    historyFileName: string,
+    private _extensionStoragePath: string,
+    private _logger: ILogger
+  ) {
     this._historyFileName = historyFileName;
   }
 
@@ -57,6 +62,7 @@ export class HistoryBase {
   }
 
   public async load(): Promise<void> {
+    // await this._base.load();
     let data = '';
 
     try {
@@ -90,7 +96,7 @@ export class HistoryBase {
     try {
       // create supplied directory. if directory already exists, do nothing and move on
       try {
-        await mkdirAsync(this._extensionStoragePath, { recursive: true });
+        await mkdirAsync(Globals.extensionStoragePath, { recursive: true });
       } catch (createDirectoryErr) {
         if (createDirectoryErr.code !== 'EEXIST') {
           throw createDirectoryErr;
@@ -105,4 +111,3 @@ export class HistoryBase {
     }
   }
 }
-

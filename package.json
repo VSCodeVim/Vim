@@ -34,12 +34,14 @@
     "ui",
     "workspace"
   ],
+  "sideEffects": false,
   "activationEvents": [
     "*",
     "onCommand:type"
   ],
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
+  "browser": "./out/vim",
   "contributes": {
     "commands": [
       {

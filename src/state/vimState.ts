@@ -11,10 +11,11 @@ import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 
 interface IInputMethodSwitcher {
-  switchInputMethod(prevMode: Mode, newMode: Mode)
+  switchInputMethod(prevMode: Mode, newMode: Mode);
 }
 
 interface INVim {
