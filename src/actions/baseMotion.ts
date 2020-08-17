@@ -42,7 +42,7 @@ export function failedMovement(vimState: VimState): IMovement {
 }
 
 export abstract class BaseMovement extends BaseAction {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.OperatorPendingMode, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   isMotion = true;
 

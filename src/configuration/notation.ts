@@ -51,6 +51,11 @@ export class Notation {
       return key;
     }
 
+    if (/^<Plug>.+/gi.test(key)) {
+      // Plugin key. Return it as is
+      return key;
+    }
+
     key = key.toLocaleLowerCase();
 
     if (!this.isSurroundedByAngleBrackets(key)) {

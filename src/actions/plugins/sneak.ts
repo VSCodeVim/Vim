@@ -1,32 +1,30 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
-import { RegisterAction } from './../base';
+import { RegisterAction, RegisterPluginAction } from './../base';
 import { Position } from '../../common/motion/position';
-import { BaseMovement, IMovement } from '../baseMotion';
+import { BaseMovement, IMovement, isIMovement } from '../baseMotion';
+import { Mode } from '../../mode/mode';
 
-@RegisterAction
-export class SneakForward extends BaseMovement {
-  keys = [
-    ['s', '<character>', '<character>'],
-    ['z', '<character>', '<character>'],
-  ];
+class SneakForward extends BaseMovement {
   isJump = true;
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.sneak && super.doesActionApply(vimState, keysPressed);
+  }
 
-    return (
-      configuration.sneak &&
-      super.couldActionApply(vimState, keysPressed) &&
-      keysPressed[0] === startingLetter
-    );
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.sneak && super.couldActionApply(vimState, keysPressed);
+  }
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
+      this.setRepeatMovements(vimState);
     }
 
     const editor = vscode.window.activeTextEditor!;
@@ -71,28 +69,25 @@ export class SneakForward extends BaseMovement {
   }
 }
 
-@RegisterAction
-export class SneakBackward extends BaseMovement {
-  keys = [
-    ['S', '<character>', '<character>'],
-    ['Z', '<character>', '<character>'],
-  ];
+class SneakBackward extends BaseMovement {
   isJump = true;
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.sneak && super.doesActionApply(vimState, keysPressed);
+  }
 
-    return (
-      configuration.sneak &&
-      super.couldActionApply(vimState, keysPressed) &&
-      keysPressed[0] === startingLetter
-    );
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.sneak && super.couldActionApply(vimState, keysPressed);
+  }
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
-      vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
+      this.setRepeatMovements(vimState);
     }
 
     const editor = vscode.window.activeTextEditor!;
@@ -133,5 +128,123 @@ export class SneakBackward extends BaseMovement {
     }
 
     return position;
+  }
+}
+
+@RegisterPluginAction('sneak')
+class SneakForwardNormalAndVisualMode extends SneakForward {
+  keys = ['<Plug>Sneak_s', '<character>', '<character>'];
+  pluginActionDefaultKeys = ['s'];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+}
+
+@RegisterPluginAction('sneak')
+class SneakForwardOperatorPendingMode extends SneakForward {
+  keys = ['<Plug>Sneak_s', '<character>', '<character>'];
+  pluginActionDefaultKeys = ['z'];
+  modes = [Mode.OperatorPendingMode];
+}
+
+@RegisterPluginAction('sneak')
+class SneakBackwardNormalAndVisualMode extends SneakBackward {
+  keys = ['<Plug>Sneak_S', '<character>', '<character>'];
+  pluginActionDefaultKeys = ['S'];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+}
+
+@RegisterPluginAction('sneak')
+class SneakBackwardOperatorPendingMode extends SneakBackward {
+  keys = ['<Plug>Sneak_S', '<character>', '<character>'];
+  pluginActionDefaultKeys = ['Z'];
+  modes = [Mode.OperatorPendingMode];
+}
+
+@RegisterPluginAction('sneak')
+class SneakFForward extends SneakForward {
+  keys = ['<Plug>Sneak_f', '<character>'];
+  pluginActionDefaultKeys = [];
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakFForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakFBackward(this.keysPressed, true);
+  }
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    this.keysPressed.push('');
+    const pos = await super.execAction(position, vimState);
+    if (vimState.recordedState.operator && !isIMovement(pos)) {
+      // if ran with an operator move right to include the searched character
+      return pos.getRight();
+    }
+
+    return pos;
+  }
+}
+
+@RegisterPluginAction('sneak')
+class SneakFBackward extends SneakBackward {
+  keys = ['<Plug>Sneak_F', '<character>'];
+  pluginActionDefaultKeys = [];
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakFBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakFForward(this.keysPressed, true);
+  }
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    this.keysPressed.push('');
+    return super.execAction(position, vimState);
+  }
+}
+
+@RegisterPluginAction('sneak')
+class SneakTForward extends SneakForward {
+  keys = ['<Plug>Sneak_t', '<character>'];
+  pluginActionDefaultKeys = [];
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakTForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakTBackward(this.keysPressed, true);
+  }
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    this.keysPressed.push('');
+
+    if (this.isRepeat) {
+      position = position.getRightThroughLineBreaks(false);
+    }
+    const pos = await super.execAction(position, vimState);
+
+    if (!isIMovement(pos) && !vimState.recordedState.operator) {
+      // if not a failed movement and not an operator, go left of found character
+      return pos.getLeftThroughLineBreaks(false);
+    }
+
+    return pos;
+  }
+}
+
+@RegisterPluginAction('sneak')
+class SneakTBackward extends SneakBackward {
+  keys = ['<Plug>Sneak_T', '<character>'];
+  pluginActionDefaultKeys = [];
+
+  setRepeatMovements(vimState: VimState) {
+    vimState.lastSemicolonRepeatableMovement = new SneakTBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new SneakTForward(this.keysPressed, true);
+  }
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    this.keysPressed.push('');
+    if (this.isRepeat) {
+      position = position.getLeftThroughLineBreaks(false);
+    }
+    const pos = await super.execAction(position, vimState);
+    if (!isIMovement(pos)) {
+      // if not a failed movement, go right of found character
+      return pos.getRightThroughLineBreaks(false);
+    }
+
+    return pos;
   }
 }

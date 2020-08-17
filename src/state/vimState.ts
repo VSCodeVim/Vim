@@ -106,6 +106,7 @@ export class VimState implements vscode.Disposable {
         replacement: string | undefined;
         range: Range | undefined;
         previousMode: Mode;
+        forcedRegisterMode: RegisterMode | undefined;
       } = undefined;
 
   /**

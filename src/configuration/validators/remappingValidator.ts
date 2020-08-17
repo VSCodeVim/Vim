@@ -22,8 +22,18 @@ export class RemappingValidator implements IConfigurationValidator {
       'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = config[modeKeyBindingsKey];
+      let keybindings = config[modeKeyBindingsKey] as IKeyRemapping[];
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
+
+      let defaultKeybindings = [...(config['default' + modeKeyBindingsKey] as IKeyRemapping[])];
+      // filter out the default keybindings whose 'after' already has a map to by the user and
+      // the ones whose plugin is not active
+      const filteredDefaultKeybindings = this.filterAndCloneKeybindings(
+        config,
+        defaultKeybindings,
+        keybindings
+      );
+      keybindings.push(...filteredDefaultKeybindings);
 
       const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
       let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;
@@ -31,7 +41,7 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap = new Map<string, IKeyRemapping>();
       }
       for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i] as IKeyRemapping;
+        let remapping = keybindings[i];
 
         // set 'recursive' of the remapping according to where it was stored
         remapping.recursive = isRecursive;
@@ -80,6 +90,62 @@ export class RemappingValidator implements IConfigurationValidator {
 
   disable(config: IConfiguration) {
     // no-op
+  }
+
+  private filterAndCloneKeybindings(
+    config: IConfiguration,
+    bindings: IKeyRemapping[],
+    existingBindings: IKeyRemapping[]
+  ) {
+    const filteredKeybindings: IKeyRemapping[] = [];
+    for (const keybinding of bindings) {
+      if (!this.isPluginActive(config, (keybinding as any).plugin)) {
+        continue;
+      }
+
+      const hasMapTo =
+        existingBindings.find(
+          (ekb) => keybinding.after && keybinding.after.join('') === ekb.after?.join('')
+        ) !== undefined;
+
+      if (hasMapTo) {
+        continue;
+      }
+
+      // need to make a clone of the remapping so that the NormalizeKey doesn't change
+      // the default bindings. That would mess up the bindings when testing and using
+      // different leader keys.
+      let remapping: IKeyRemapping = {
+        before: [...keybinding.before],
+        after: keybinding.after ? [...keybinding.after] : undefined,
+        commands: keybinding.commands ? [...keybinding.commands] : undefined,
+        recursive: keybinding.recursive,
+        source: keybinding.source,
+      };
+      filteredKeybindings.push(remapping);
+    }
+    return filteredKeybindings;
+  }
+
+  private isPluginActive(config: IConfiguration, pluginName: string | undefined) {
+    if (!pluginName) {
+      return true;
+    } else {
+      switch (pluginName) {
+        case 'camelcasemotion':
+          return config.camelCaseMotion.enable;
+        case 'easymotion':
+          return config.easymotion;
+        case 'replacewithregister':
+          return config.replaceWithRegister;
+        case 'sneak':
+          return config.sneak;
+        case 'surround':
+          return config.surround;
+        default:
+          return false;
+      }
+    }
   }
 
   private async isRemappingValid(remapping: IKeyRemapping): Promise<ValidatorResults> {

@@ -1,10 +1,11 @@
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
-import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
-import { Mode } from './../mode/mode';
+import { Mode, isVisualMode } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { Notation } from '../configuration/notation';
+import { Globals } from '../globals';
 
 export abstract class BaseAction {
   /**
@@ -60,7 +61,7 @@ export abstract class BaseAction {
     }
 
     return (
-      this.modes.includes(vimState.currentMode) &&
+      this.modes.includes(vimState.currentModeIncludingPseudoModes) &&
       BaseAction.CompareKeypressSequence(this.keys, keysPressed)
     );
   }
@@ -69,7 +70,7 @@ export abstract class BaseAction {
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (!this.modes.includes(vimState.currentMode)) {
+    if (!this.modes.includes(vimState.currentModeIncludingPseudoModes)) {
       return false;
     }
 
@@ -134,17 +135,6 @@ export abstract class BaseAction {
         continue;
       }
 
-      if (left === '<leader>' && right === configuration.leader) {
-        continue;
-      }
-      if (right === '<leader>' && left === configuration.leader) {
-        continue;
-      }
-
-      if (left === configuration.leader || right === configuration.leader) {
-        return false;
-      }
-
       if (left !== right) {
         return false;
       }
@@ -160,6 +150,10 @@ export abstract class BaseAction {
   private static is2DArray<T>(x: any): x is T[][] {
     return Array.isArray(x[0]);
   }
+}
+
+export class BasePluginAction extends BaseAction {
+  public pluginActionDefaultKeys: string[] | string[][];
 }
 
 /**
@@ -281,7 +275,7 @@ export function getRelevantAction(
 ): BaseAction | KeypressState {
   let isPotentialMatch = false;
 
-  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  const possibleActionsForMode = actionMap.get(vimState.currentModeIncludingPseudoModes) || [];
   for (const actionType of possibleActionsForMode) {
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
@@ -299,11 +293,11 @@ export function getRelevantAction(
 
 export function RegisterAction(action: { new (): BaseAction }): void {
   const actionInstance = new action();
-  for (const modeName of actionInstance.modes) {
-    let actions = actionMap.get(modeName);
+  for (const mode of actionInstance.modes) {
+    let actions = actionMap.get(mode);
     if (!actions) {
       actions = [];
-      actionMap.set(modeName, actions);
+      actionMap.set(mode, actions);
     }
 
     if (actionInstance.keys === undefined) {
@@ -313,4 +307,87 @@ export function RegisterAction(action: { new (): BaseAction }): void {
 
     actions.push(action);
   }
+}
+
+export function RegisterPluginAction(pluginName: string) {
+  return (action: typeof BasePluginAction) => {
+    const actionInstance = new action();
+    for (const mode of actionInstance.modes) {
+      let actions = actionMap.get(mode);
+      if (!actions) {
+        actions = [];
+        actionMap.set(mode, actions);
+      }
+
+      const is2DArray = function (a: any): a is string[][] {
+        return Array.isArray(a[0]);
+      };
+
+      if (
+        actionInstance.keys === undefined ||
+        is2DArray(actionInstance.keys) ||
+        !actionInstance.keys[0].toLocaleLowerCase().startsWith('<plug>')
+      ) {
+        // action that can't be called directly or invalid plugin action key
+        continue;
+      }
+
+      if (actionInstance.pluginActionDefaultKeys.length === 0) {
+        // plugin action without default mappings. Can be mapped later by the user.
+        actions.push(action);
+        continue;
+      }
+
+      let remappings: any[] = [];
+      if (is2DArray(actionInstance.pluginActionDefaultKeys)) {
+        for (const keyset of actionInstance.pluginActionDefaultKeys) {
+          remappings.push({
+            before: keyset,
+            after: [actionInstance.keys[0]],
+            plugin: pluginName,
+          });
+        }
+      } else {
+        remappings.push({
+          before: actionInstance.pluginActionDefaultKeys,
+          after: [actionInstance.keys[0]],
+          plugin: pluginName,
+        });
+      }
+
+      // Create default mappings for the default modes. If the plugin creates another custom
+      // mode we don't need to create mappings for that because only that plugin's actions
+      // will apply for that mode.
+      // Also store the default mappings on 'Globals.mockConfigurationDefaultBindings' to be used
+      // when testing.
+      if (mode === Mode.Normal) {
+        configuration.defaultnormalModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultNormalModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
+      } else if (mode === Mode.Insert || mode === Mode.Replace) {
+        configuration.defaultinsertModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultInsertModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
+      } else if (isVisualMode(mode)) {
+        configuration.defaultvisualModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultVisualModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
+      } else if (mode === Mode.CommandlineInProgress || mode === Mode.SearchInProgressMode) {
+        configuration.defaultcommandLineModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultCommandLineModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
+      } else if (mode === Mode.OperatorPendingMode) {
+        configuration.defaultoperatorPendingModeKeyBindingsNonRecursive.push(...remappings);
+        Globals.mockConfigurationDefaultBindings.defaultOperatorPendingModeKeyBindingsNonRecursive.push(
+          ...remappings
+        );
+      }
+
+      actions.push(action);
+    }
+  };
 }

@@ -6,14 +6,15 @@ import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { BaseOperator } from '../operator';
-import { RegisterAction } from './../base';
+import { RegisterAction, RegisterPluginAction, BaseCommand } from './../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 
-@RegisterAction
+@RegisterPluginAction('replacewithregister')
 export class ReplaceOperator extends BaseOperator {
-  public keys = ['g', 'r'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  public pluginActionDefaultKeys = ['g', 'r'];
+  public keys = ['<Plug>ReplaceWithRegisterOperator'];
+  public modes = [Mode.Normal];
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
@@ -41,6 +42,32 @@ export class ReplaceOperator extends BaseOperator {
   }
 }
 
+@RegisterPluginAction('replacewithregister')
+export class ReplaceOperatorLine extends BaseCommand {
+  public pluginActionDefaultKeys = ['g', 'r', 'r'];
+  public keys = ['<Plug>ReplaceWithRegisterLine'];
+  public modes = [Mode.Normal];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return new ReplaceOperator().runRepeat(vimState, position, vimState.recordedState.count);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterPluginAction('replacewithregister')
+export class ReplaceOperatorVisual extends ReplaceOperator {
+  public pluginActionDefaultKeys = ['g', 'r'];
+  public keys = ['<Plug>ReplaceWithRegisterVisual'];
+  public modes = [Mode.Visual, Mode.VisualLine];
+}
+
 const updateCursorPosition = (
   vimState: VimState,
   range: vscode.Range,
@@ -50,7 +77,8 @@ const updateCursorPosition = (
     recordedState: { actionKeys },
   } = vimState;
   const lines = replaceWith.split('\n');
-  const wasRunAsLineAction = actionKeys.indexOf('r') === 0 && actionKeys.length === 1; // ie. grr
+  const wasRunAsLineAction =
+    actionKeys.indexOf('<Plug>ReplaceWithRegisterLine') === 0 && actionKeys.length === 1; // ie. grr
   const registerAndRangeAreSingleLines = lines.length === 1 && range.isSingleLine;
   const singleLineAction = registerAndRangeAreSingleLines && !wasRunAsLineAction;
 

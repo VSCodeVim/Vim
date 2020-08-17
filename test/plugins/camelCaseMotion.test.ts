@@ -17,7 +17,7 @@ suite('camelCaseMotion plugin if not enabled', () => {
     title: "basic motion doesn't work",
     start: ['|camelWord'],
     keysPressed: '<leader>w',
-    end: ['|camelWord'],
+    end: ['camelWor|d'],
   });
 });
 

@@ -93,6 +93,46 @@ class Configuration implements IConfiguration {
 
     this.clearKeyBindingsMaps();
 
+    // Create or remove the default mappings for 'f', 'F', 't' and 'T' for sneak
+    const sneakMappings = ['<Plug>Sneak_f', '<Plug>Sneak_F', '<Plug>Sneak_t', '<Plug>Sneak_T'];
+    if (this.sneakReplacesF) {
+      for (const sneakMap of sneakMappings) {
+        this.defaultnormalModeKeyBindingsNonRecursive.push({
+          before: [sneakMap[sneakMap.length - 1]],
+          after: [sneakMap],
+        });
+        this.defaultvisualModeKeyBindingsNonRecursive.push({
+          before: [sneakMap[sneakMap.length - 1]],
+          after: [sneakMap],
+        });
+        this.defaultoperatorPendingModeKeyBindingsNonRecursive.push({
+          before: [sneakMap[sneakMap.length - 1]],
+          after: [sneakMap],
+        });
+      }
+    } else {
+      for (const sneakMap of sneakMappings) {
+        let idx = this.defaultnormalModeKeyBindingsNonRecursive.findIndex(
+          (r) => r.after && r.after[0] === sneakMap && r.after.length === 1
+        );
+        if (idx > -1) {
+          this.defaultnormalModeKeyBindingsNonRecursive.splice(idx, 1);
+        }
+        idx = this.defaultvisualModeKeyBindingsNonRecursive.findIndex(
+          (r) => r.after && r.after[0] === sneakMap && r.after.length === 1
+        );
+        if (idx > -1) {
+          this.defaultvisualModeKeyBindingsNonRecursive.splice(idx, 1);
+        }
+        idx = this.defaultoperatorPendingModeKeyBindingsNonRecursive.findIndex(
+          (r) => r.after && r.after[0] === sneakMap && r.after.length === 1
+        );
+        if (idx > -1) {
+          this.defaultoperatorPendingModeKeyBindingsNonRecursive.splice(idx, 1);
+        }
+      }
+    }
+
     const validatorResults = await configurationValidator.validate(configuration);
 
     // wrap keys
@@ -387,6 +427,16 @@ class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultinsertModeKeyBindings: IKeyRemapping[] = [];
+  defaultinsertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultnormalModeKeyBindings: IKeyRemapping[] = [];
+  defaultnormalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultoperatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  defaultoperatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultvisualModeKeyBindings: IKeyRemapping[] = [];
+  defaultvisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  defaultcommandLineModeKeyBindings: IKeyRemapping[] = [];
+  defaultcommandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;

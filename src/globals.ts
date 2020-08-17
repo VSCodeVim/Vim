@@ -1,4 +1,4 @@
-import { IConfiguration } from './configuration/iconfiguration';
+import { IConfiguration, IKeyRemapping } from './configuration/iconfiguration';
 import { ModeHandler } from './mode/modeHandler';
 
 /**
@@ -16,4 +16,27 @@ export class Globals {
   static isTesting = false;
   static mockModeHandler: ModeHandler;
   static mockConfiguration: IConfiguration;
+  static mockConfigurationDefaultBindings: {
+    defaultNormalModeKeyBindings: IKeyRemapping[];
+    defaultNormalModeKeyBindingsNonRecursive: IKeyRemapping[];
+    defaultInsertModeKeyBindings: IKeyRemapping[];
+    defaultInsertModeKeyBindingsNonRecursive: IKeyRemapping[];
+    defaultVisualModeKeyBindings: IKeyRemapping[];
+    defaultVisualModeKeyBindingsNonRecursive: IKeyRemapping[];
+    defaultCommandLineModeKeyBindings: IKeyRemapping[];
+    defaultCommandLineModeKeyBindingsNonRecursive: IKeyRemapping[];
+    defaultOperatorPendingModeKeyBindings: IKeyRemapping[];
+    defaultOperatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[];
+  } = {
+    defaultNormalModeKeyBindings: [],
+    defaultNormalModeKeyBindingsNonRecursive: [],
+    defaultInsertModeKeyBindings: [],
+    defaultInsertModeKeyBindingsNonRecursive: [],
+    defaultVisualModeKeyBindings: [],
+    defaultVisualModeKeyBindingsNonRecursive: [],
+    defaultCommandLineModeKeyBindings: [],
+    defaultCommandLineModeKeyBindingsNonRecursive: [],
+    defaultOperatorPendingModeKeyBindings: [],
+    defaultOperatorPendingModeKeyBindingsNonRecursive: [],
+  };
 }
