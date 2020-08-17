@@ -92,7 +92,7 @@ export class HistoryBase {
     }
   }
 
-  private async save(): Promise<void> {
+  async save(): Promise<void> {
     try {
       // create supplied directory. if directory already exists, do nothing and move on
       try {

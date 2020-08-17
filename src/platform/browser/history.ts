@@ -9,7 +9,12 @@ export class HistoryBase {
     return `vim.${this._historyFileName}`;
   }
 
-  constructor(private _context: vscode.ExtensionContext, historyFileName: string, private _extensionStoragePath: string, private _logger: ILogger) {
+  constructor(
+    private _context: vscode.ExtensionContext,
+    historyFileName: string,
+    private _extensionStoragePath: string,
+    private _logger: ILogger
+  ) {
     this._historyFileName = historyFileName;
   }
 
@@ -62,7 +67,7 @@ export class HistoryBase {
     this._history = parsedData;
   }
 
-  private async save(): Promise<void> {
+  async save(): Promise<void> {
     this._context.workspaceState.update(this.historyKey, JSON.stringify(this._history));
   }
 }

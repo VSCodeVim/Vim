@@ -43,33 +43,6 @@ export class TestExtensionContext implements vscode.ExtensionContext {
   logPath: string;
 }
 
-class TestMemento implements vscode.Memento {
-  private mapping = new Map<string, any>();
-  get<T>(key: string): T | undefined;
-  get<T>(key: string, defaultValue: T): T;
-  get(key: any, defaultValue?: any) {
-    return this.mapping.get(key) || defaultValue;
-  }
-
-  async update(key: string, value: any): Promise<void> {
-    this.mapping.set(key, value);
-  }
-}
-export class TestExtensionContext implements vscode.ExtensionContext {
-  subscriptions: { dispose(): any }[] = [];
-  workspaceState: vscode.Memento = new TestMemento();
-  globalState: vscode.Memento = new TestMemento();
-  extensionPath: string = 'inmem:///test';
-
-  asAbsolutePath(relativePath: string): string {
-    return path.resolve(this.extensionPath, relativePath);
-  }
-
-  storagePath: string | undefined;
-  globalStoragePath: string;
-  logPath: string;
-}
-
 export function rndName(): string {
   return Math.random()
     .toString(36)
