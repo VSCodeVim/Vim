@@ -46,15 +46,32 @@ export class RegisterCommand extends node.CommandBase {
     }
   }
 
+  private regSortOrder(register: string): number {
+    const specials = ['-', '*', '+', '.', ':', '%', '#', '/', '='];
+    if (register === '"') {
+      return 0;
+    } else if (register >= '0' && register <= '9') {
+      return 10 + parseInt(register, 10);
+    } else if (register >= 'a' && register <= 'z') {
+      return 100 + (register.charCodeAt(0) - 'a'.charCodeAt(0));
+    } else if (specials.includes(register)) {
+      return 1000 + specials.indexOf(register);
+    } else {
+      throw new Error(`Unexpected register ${register}`);
+    }
+  }
+
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.registers.length === 1) {
       await this.displayRegisterValue(vimState, this.arguments.registers[0]);
     } else {
-      const currentRegisterKeys = Register.getKeys().filter(
-        (reg) =>
-          reg !== '_' &&
-          (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
-      );
+      const currentRegisterKeys = Register.getKeys()
+        .filter(
+          (reg) =>
+            reg !== '_' &&
+            (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
+        )
+        .sort((reg1: string, reg2: string) => this.regSortOrder(reg1) - this.regSortOrder(reg2));
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();
 
       for (let registerKey of currentRegisterKeys) {
