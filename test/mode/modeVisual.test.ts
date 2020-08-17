@@ -1455,6 +1455,54 @@ suite('Mode Visual', () => {
     endMode: Mode.Normal,
   });
 
+  newTest({
+    title: "Can handle 'gJ' when the entire selected area is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: 'vlgJ',
+    end: ['one', 'two|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'vjjgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines and line has whitespaces",
+    start: ['o|ne  ', 'two', '  three', 'four'],
+    keysPressed: 'vjjgJ',
+    end: ['one  two|  three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when start position of the selected area is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: 'vkkgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Preserves desired column correctly when moving in visual mode',
+    start: ['|one', '', 'two', 'three'],
+    keysPressed: 'vjj<Esc>',
+    end: ['one', '', '|two', 'three'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Updates desired column correctly when moving in visual mode',
+    start: ['|one', 'two', 'three'],
+    keysPressed: 'vlj<Esc>',
+    end: ['one', 't|wo', 'three'],
+    endMode: Mode.Normal,
+  });
+
   suite('C, R, and S', () => {
     for (const command of ['C', 'R', 'S']) {
       newTest({
@@ -1473,5 +1521,150 @@ suite('Mode Visual', () => {
         endMode: Mode.Insert,
       });
     }
+  });
+
+  suite('Visual mode with command editor.action.smartSelect.grow', () => {
+    newTest({
+      title: 'Command editor.action.smartSelect.grow enters visual mode',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "be|fore": ["j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      keysPressed: ' aflh',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "|before": ["j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Visual,
+    });
+
+    newTest({
+      title: 'Command editor.action.smartSelect.grow enters visual mode and increases selection',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        visualModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "be|fore": ["j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      keysPressed: ' af afd',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `   | `,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Command editor.action.smartSelect.grow enters visual mode on single character',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        visualModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "before": ["|j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      keysPressed: ' afd',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "before": ["|"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Command editor.action.smartSelect.grow enters visual mode on multicursors',
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        visualModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "before": ["|j"],`,
+        `    "after": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      // the initial 'vlgb<Esc>_ll' is just to create a multicursor on the words 'before' and 'after'
+      keysPressed: 'vlgb<Esc>_ll afd<Esc>',
+      end: [
+        `"vim.normalModeKeyBindingsNonRecursive": [`,
+        `  {`,
+        `    "|": ["j"],`,
+        `    "": ["g", "j"],`,
+        `  },`,
+        `]`,
+      ],
+      endMode: Mode.Normal,
+    });
   });
 });

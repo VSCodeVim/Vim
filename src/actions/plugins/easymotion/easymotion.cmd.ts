@@ -2,8 +2,7 @@ import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { Mode, isVisualMode } from './../../../mode/mode';
-import { RegisterAction } from './../../base';
-import { BaseCommand } from './../../commands/actions';
+import { RegisterAction, BaseCommand } from './../../base';
 import { EasyMotion } from './easymotion';
 import {
   EasyMotionCharMoveOpions,
@@ -12,6 +11,7 @@ import {
 } from './types';
 import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
+import { MarkerGenerator } from './markerGenerator';
 
 export interface EasymotionTrigger {
   key: string;
@@ -47,7 +47,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     vimState.easyMotion.clearMarkers();
 
     let index = 0;
-    const markerGenerator = EasyMotion.createMarkerGenerator(matches.length);
+    const markerGenerator = new MarkerGenerator(matches.length);
     for (const match of matches) {
       const matchPosition = this.resolveMatchPosition(match);
       // Skip if the match position equals to cursor position

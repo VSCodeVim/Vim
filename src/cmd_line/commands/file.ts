@@ -70,7 +70,7 @@ export class FileCommand extends node.CommandBase {
 
     // Only untidify when the currently open page and file completion is local
     if (this.arguments.name && editorFileUri.scheme === 'file') {
-      this._arguments.name = <string>untildify(this.arguments.name);
+      this._arguments.name = untildify(this.arguments.name);
     }
 
     let fileUri = editorFileUri;

@@ -18,6 +18,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { SpecialKeys } from './src/util/specialKeys';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -104,13 +105,14 @@ export async function activate(
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+  // Load state
+  Register.loadFromDisk(extensionContext);
+  await Promise.all([commandLine.load(), globalState.load()]);
+
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
   }
-
-  // load state
-  await Promise.all([commandLine.load(context), globalState.load(context)]);
 
   // workspace events
   registerEventListener(
@@ -162,7 +164,7 @@ export async function activate(
     };
 
     if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
+      contentChangeHandler(Globals.mockModeHandler);
     } else {
       ModeHandlerMap.getAll()
         .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
@@ -276,6 +278,33 @@ export async function activate(
 
       const mh = await getAndUpdateModeHandler();
 
+      const selectionsHash = e.selections.reduce(
+        (hash, s) =>
+          hash +
+          `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
+        ''
+      );
+      const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
+      if (idx > -1) {
+        logger.debug(
+          `Selections: Ignoring selection: ${selectionsHash}, Count left: ${
+            mh.vimState.selectionsChanged.ourSelections.length - 1
+          }`
+        );
+        mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+        return;
+      } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
+        logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
+        return;
+      } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
+        // Some intermediate selection must have slipped in after setting the
+        // 'ignoreIntermediateSelections' to false. Which means we didn't count
+        // for it yet, but since we have selections to be ignored then we probably
+        // wanted this one to be ignored as well.
+        logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+        return;
+      }
+
       // We may receive changes from other panels when, having selections in them containing the same file
       // and changing text before the selection in current panel.
       if (e.textEditor !== mh.vimState.editor) {
@@ -302,7 +331,7 @@ export async function activate(
       );
     },
     true,
-    true
+    false
   );
 
   const compositionState = new CompositionState();
@@ -407,7 +436,13 @@ export async function activate(
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
+    registerCommand(context, boundKey.command, () => {
+      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
+        checkIfRecursiveRemapping(`${boundKey.key}`);
+      } else {
+        handleKeyEvent(`${boundKey.key}`);
+      }
+    });
   }
 
   // Initialize mode handler for current active Text Editor at startup.
@@ -441,11 +476,11 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
   }
   let mh = await getAndUpdateModeHandler();
   if (isDisabled) {
-    await mh.handleKeyEvent('<ExtensionDisable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
     compositionState.reset();
     ModeHandlerMap.clear();
   } else {
-    await mh.handleKeyEvent('<ExtensionEnable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
   }
 }
 
@@ -517,6 +552,15 @@ async function handleKeyEvent(key: string): Promise<void> {
   taskQueue.enqueueTask(async () => {
     await mh.handleKeyEvent(key);
   });
+}
+
+async function checkIfRecursiveRemapping(key: string): Promise<void> {
+  const mh = await getAndUpdateModeHandler();
+  if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+  } else {
+    handleKeyEvent(key);
+  }
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {

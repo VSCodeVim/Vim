@@ -1,22 +1,26 @@
-import * as token from './token';
 import * as vscode from 'vscode';
-import { Position } from '../common/motion/position';
 import { VimState } from '../state/vimState';
+import { TokenType, Token } from './token';
 
-type LineRefOperation = token.TokenType.Plus | token.TokenType.Minus | undefined;
+type LineRefOperation = TokenType.Plus | TokenType.Minus;
 
+/**
+ * Represents a range of lines, as expressed on the command line.
+ *
+ * http://vimdoc.sourceforge.net/htmldoc/cmdline.html#cmdline-ranges
+ */
 export class LineRange {
-  left: token.Token[];
-  separator: token.Token | undefined;
-  right: token.Token[];
+  left: Token[];
+  separator: Token | undefined;
+  right: Token[];
 
   constructor() {
     this.left = [];
     this.right = [];
   }
 
-  addToken(tok: token.Token): void {
-    if (tok.type === token.TokenType.Comma) {
+  public addToken(tok: Token): void {
+    if (tok.type === TokenType.Comma) {
       this.separator = tok;
       return;
     }
@@ -24,9 +28,9 @@ export class LineRange {
     if (!this.separator) {
       if (this.left.length > 0) {
         switch (tok.type) {
-          case token.TokenType.Offset:
-          case token.TokenType.Plus:
-          case token.TokenType.Minus:
+          case TokenType.Offset:
+          case TokenType.Plus:
+          case TokenType.Minus:
             break;
           default:
             throw Error('Trailing characters');
@@ -36,9 +40,9 @@ export class LineRange {
     } else {
       if (this.right.length > 0) {
         switch (tok.type) {
-          case token.TokenType.Offset:
-          case token.TokenType.Plus:
-          case token.TokenType.Minus:
+          case TokenType.Offset:
+          case TokenType.Plus:
+          case TokenType.Minus:
             break;
           default:
             throw Error('Trailing characters');
@@ -52,69 +56,72 @@ export class LineRange {
     return this.left.length === 0 && this.right.length === 0 && !this.separator;
   }
 
-  toString(): string {
+  public toString(): string {
     return this.left.toString() + (this.separator?.content ?? '') + this.right.toString();
   }
 
-  execute(document: vscode.TextEditor, vimState: VimState): void {
-    if (this.isEmpty) {
-      return;
+  /**
+   * Resolves the line range to concrete line numbers
+   *
+   * @param vimState
+   * @returns Inclusive line number range [start, end]. Will always be in order.
+   */
+  public resolve(vimState: VimState): [number, number] {
+    if (this.left.length > 0 && this.left[0].type === TokenType.Percent) {
+      return [0, vimState.editor.document.lineCount - 1];
     }
-    const lineRef = this.right.length === 0 ? this.left : this.right;
-    const pos = this.lineRefToPosition(document, lineRef, vimState);
-    vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos)
-      .withColumn(vimState.cursorStopPosition.character)
-      .obeyStartOfLine();
+
+    const start = LineRange.resolveLineRef(this.left, vimState) ?? vimState.cursorStopPosition.line;
+    const end = LineRange.resolveLineRef(this.right, vimState) ?? start;
+    return end < start ? [end, start] : [start, end];
   }
 
-  lineRefToPosition(
-    doc: vscode.TextEditor,
-    toks: token.Token[],
-    vimState: VimState
-  ): vscode.Position {
+  private static resolveLineRef(toks: Token[], vimState: VimState): number | undefined {
+    if (toks.length === 0) {
+      return undefined;
+    }
+
     let currentLineNum: number;
-    let currentColumn = 0; // only mark does this differently
-    let currentOperation: LineRefOperation = undefined;
+    let currentOperation: LineRefOperation | undefined;
 
     const firstToken = toks[0];
     // handle first-token special cases (e.g. %, inital line number is "." by default)
     switch (firstToken.type) {
-      case token.TokenType.Percent:
-        return new vscode.Position(doc.document.lineCount - 1, 0);
-      case token.TokenType.Dollar:
-        currentLineNum = doc.document.lineCount - 1;
+      case TokenType.Percent:
+        return vimState.editor.document.lineCount - 1;
+      case TokenType.Dollar:
+        currentLineNum = vimState.editor.document.lineCount - 1;
         break;
-      case token.TokenType.Plus:
-      case token.TokenType.Minus:
-      case token.TokenType.Dot:
-        currentLineNum = doc.selection.active.line;
+      case TokenType.Plus:
+      case TokenType.Minus:
+      case TokenType.Dot:
+        currentLineNum = vimState.editor.selection.active.line;
         // undocumented: if the first token is plus or minus, vim seems to behave as though there was a "."
-        currentOperation = firstToken.type === token.TokenType.Dot ? undefined : firstToken.type;
+        currentOperation = firstToken.type === TokenType.Dot ? undefined : firstToken.type;
         break;
-      case token.TokenType.LineNumber:
+      case TokenType.LineNumber:
         currentLineNum = Number.parseInt(firstToken.content, 10) - 1; // user sees 1-based - everything else is 0-based
         break;
-      case token.TokenType.SelectionFirstLine:
+      case TokenType.SelectionFirstLine:
         currentLineNum = Math.min.apply(
           null,
-          doc.selections.map((selection) =>
+          vimState.editor.selections.map((selection) =>
             selection.start.isBeforeOrEqual(selection.end)
               ? selection.start.line
               : selection.end.line
           )
         );
         break;
-      case token.TokenType.SelectionLastLine:
+      case TokenType.SelectionLastLine:
         currentLineNum = Math.max.apply(
           null,
-          doc.selections.map((selection) =>
+          vimState.editor.selections.map((selection) =>
             selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line
           )
         );
         break;
-      case token.TokenType.Mark:
-        currentLineNum = vimState.historyTracker.getMark(firstToken.content).position.line;
-        currentColumn = vimState.historyTracker.getMark(firstToken.content).position.character;
+      case TokenType.Mark:
+        currentLineNum = vimState.historyTracker.getMark(firstToken.content)!.position.line;
         break;
       default:
         throw new Error('Not Implemented');
@@ -125,36 +132,32 @@ export class LineRange {
       let currentToken = toks[tokenIndex];
 
       switch (currentOperation) {
-        case token.TokenType.Plus:
+        case TokenType.Plus:
           switch (currentToken.type) {
-            case token.TokenType.Minus:
-            case token.TokenType.Plus:
+            case TokenType.Minus:
+            case TokenType.Plus:
               // undocumented: when there's two operators in a row, vim behaves as though there's a "1" between them
               currentLineNum += 1;
-              currentColumn = 0;
               currentOperation = currentToken.type;
               break;
-            case token.TokenType.Offset:
+            case TokenType.Offset:
               currentLineNum += Number.parseInt(currentToken.content, 10);
-              currentColumn = 0;
               currentOperation = undefined;
               break;
             default:
               throw Error('Trailing characters');
           }
           break;
-        case token.TokenType.Minus:
+        case TokenType.Minus:
           switch (currentToken.type) {
-            case token.TokenType.Minus:
-            case token.TokenType.Plus:
+            case TokenType.Minus:
+            case TokenType.Plus:
               // undocumented: when there's two operators in a row, vim behaves as though there's a "1" between them
               currentLineNum -= 1;
-              currentColumn = 0;
               currentOperation = currentToken.type;
               break;
-            case token.TokenType.Offset:
+            case TokenType.Offset:
               currentLineNum -= Number.parseInt(currentToken.content, 10);
-              currentColumn = 0;
               currentOperation = undefined;
               break;
             default:
@@ -163,8 +166,8 @@ export class LineRange {
           break;
         case undefined:
           switch (currentToken.type) {
-            case token.TokenType.Minus:
-            case token.TokenType.Plus:
+            case TokenType.Minus:
+            case TokenType.Plus:
               currentOperation = currentToken.type;
               break;
             default:
@@ -176,20 +179,18 @@ export class LineRange {
 
     // undocumented: when there's a trailing operation in the tank without an RHS, vim uses "1"
     switch (currentOperation) {
-      case token.TokenType.Plus:
+      case TokenType.Plus:
         currentLineNum += 1;
-        currentColumn = 0;
         break;
-      case token.TokenType.Minus:
+      case TokenType.Minus:
         currentLineNum -= 1;
-        currentColumn = 0;
         break;
     }
 
     // finally, make sure current position is in bounds :)
     currentLineNum = Math.max(0, currentLineNum);
-    currentLineNum = Math.min(doc.document.lineCount - 1, currentLineNum);
-    return new vscode.Position(currentLineNum, currentColumn);
+    currentLineNum = Math.min(vimState.editor.document.lineCount - 1, currentLineNum);
+    return currentLineNum;
   }
 }
 
@@ -209,16 +210,18 @@ export class CommandLine {
     return ':' + this.range.toString() + ' ' + (this.command?.toString() ?? '');
   }
 
-  async execute(document: vscode.TextEditor, vimState: VimState): Promise<void> {
-    if (!this.command) {
-      this.range.execute(document, vimState);
-      return;
-    }
-
-    if (this.range.isEmpty) {
-      await this.command.execute(vimState);
+  async execute(vimState: VimState): Promise<void> {
+    if (this.command) {
+      if (this.range.isEmpty) {
+        await this.command.execute(vimState);
+      } else {
+        await this.command.executeWithRange(vimState, this.range);
+      }
     } else {
-      await this.command.executeWithRange(vimState, this.range);
+      const [_, end] = this.range.resolve(vimState);
+      vimState.cursorStartPosition = vimState.cursorStopPosition = vimState.cursorStopPosition
+        .withLine(end)
+        .obeyStartOfLine();
     }
   }
 }

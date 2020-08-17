@@ -27,7 +27,7 @@ suite('Mode Normal', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
-      await modeHandler.handleKeyEvent(key!);
+      await modeHandler.handleKeyEvent(key);
 
       assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
@@ -1226,6 +1226,46 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle dip',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '', '|', 'fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dip on empty lines',
+    start: ['foo', '', '|', '', 'fun'],
+    keysPressed: 'dip',
+    end: ['foo', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap with two blank lines',
+    start: ['foo', '', 'bar baz', 'bar |baz', '', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle dap one single line with two blank lines',
+    start: ['foo', '', 'bar |baz', '', '', 'fun'],
+    keysPressed: 'dap',
+    end: ['foo', '', '|fun'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Select sentence with trailing spaces',
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'das',
@@ -1743,6 +1783,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can handle undo delete',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwu',
+    end: ['one |three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete twice',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdwuu',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u',
+    end: ['one |two three four five'],
+  });
+
+  newTest({
+    title: 'Can handle undo delete with count and redo',
+    start: ['one |two three four five'],
+    keysPressed: 'dwdw2u<C-r>',
+    end: ['one |three four five'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
@@ -1863,10 +1931,38 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Can repeat dw',
+    start: ['one |two three four'],
+    keysPressed: 'dw.',
+    end: ['one |four'],
+  });
+
+  newTest({
+    title: 'Can repeat dw with count',
+    start: ['one |two three four five'],
+    keysPressed: 'dw2.',
+    end: ['one |five'],
+  });
+
+  newTest({
     title: 'can delete linewise with d2G',
-    start: ['|one', 'two', 'three'],
+    start: ['on|e', 'two', 'three'],
     keysPressed: 'd2G',
     end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg',
+    start: ['on|e', 'two', 'three'],
+    keysPressed: 'd2gg',
+    end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg backwards',
+    start: ['one', 'two', 'thr|ee', 'four'],
+    keysPressed: 'd2gg',
+    end: ['one', '|four'],
   });
 
   newTest({
@@ -2105,6 +2201,62 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3<C-a>',
+    end: ['9 9 9', '9| 12 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3<C-a>',
+    end: ['9 9 9', '|12 9 9', '12 9 9', '12 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 12 9', '9 12 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-a> in visual block mode does not go past selection',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3<C-a>',
+    end: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'vjj3g<C-a>',
+    end: ['9 9 9', '9| 12 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual line mode',
+    start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: 'Vjj3g<C-a>',
+    end: ['9 9 9', '|12 9 9', '15 9 9', '18 9 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'g<C-a> in visual block mode',
+    start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
+    keysPressed: '<C-v>jj3g<C-a>',
+    end: ['9 9 9', '9 |12 9', '9 15 9', '9 18 9', '9 9 9'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'can do Y',
     start: ['|blah blah'],
     keysPressed: 'Yp',
@@ -2158,6 +2310,14 @@ suite('Mode Normal', () => {
     start: ['|asdf', '__asdf', 'asdf', 'abc', '   abc'],
     keysPressed: '/asdf\\nasdf\\nabc\n',
     end: ['asdf', '__|asdf', 'asdf', 'abc', '   abc'],
+  });
+
+  newTest({
+    title: '/ with noignorecase, nosmartcase',
+    config: { ignorecase: false, smartcase: false },
+    start: ['bl|ah', 'blAh', 'BLAH', 'blah'],
+    keysPressed: '/blah\n',
+    end: ['blah', 'blAh', 'BLAH', '|blah'],
   });
 
   newTest({
@@ -2226,6 +2386,22 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', 'abd'],
     keysPressed: '/abc<C-h>d\n',
     end: ['foo', 'bar', '|abd'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can delete with search forward',
+    start: ['foo |junk junk bar'],
+    keysPressed: 'd/bar\n',
+    end: ['foo |bar'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can delete with search backward',
+    start: ['foo junk garbage trash |bar'],
+    keysPressed: 'd?junk\n',
+    end: ['foo |bar'],
     endMode: Mode.Normal,
   });
 
@@ -2498,6 +2674,286 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'daI',
     end: ['|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'cia' with no delimiters",
+    start: ['f|oo'],
+    keysPressed: 'cia',
+    end: ['f|oo'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'cia' with flipped delimiters",
+    start: [')f|oo('],
+    keysPressed: 'cia',
+    end: [')f|oo('],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'cia' with separators but no delimiters",
+    start: ['alpha,', 'b|eta,', 'gamma'],
+    keysPressed: 'cia',
+    end: ['alpha,', 'b|eta,', 'gamma'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single argument",
+    start: ['(f|oo)'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in () with cursor at opening delimiter",
+    start: ['|()'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in () with cursor at closing delimiter",
+    start: ['(|)'],
+    keysPressed: 'cia',
+    end: ['(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at opening delimiter",
+    start: ['|(,)'],
+    keysPressed: 'cia',
+    end: ['(|,)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at regular delimiter",
+    start: ['(|,)'],
+    keysPressed: 'cia',
+    end: ['(,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,) with cursor at closing delimiter",
+    start: ['(,|)'],
+    keysPressed: 'cia',
+    end: ['(,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at regular delimiter",
+    start: ['(|,,,)'],
+    keysPressed: 'cia',
+    end: ['(,|,,)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at second-to-last delimiter",
+    start: ['(,,|,)'],
+    keysPressed: 'cia',
+    end: ['(,,,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in (,,,) with cursor at closing delimiter",
+    start: ['(,,,|)'],
+    keysPressed: 'cia',
+    end: ['(,,,|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with nested parentheses in argument",
+    start: ['(foo, (void*) ba|r(Foo<T>), baz)'],
+    keysPressed: 'cia',
+    end: ['(foo, |, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in first argument",
+    start: ['(f|oo, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(|, bar, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on opening delimiter",
+    start: ['|(foo, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(|, bar, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in middle argument",
+    start: ['(foo, ba|r, baz)'],
+    keysPressed: 'cia',
+    end: ['(foo, |, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on regular delimiter",
+    start: ['(foo|, bar, baz)'],
+    keysPressed: 'cia',
+    end: ['(foo, |, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor in last argument",
+    start: ['(foo, bar, b|az)'],
+    keysPressed: 'cia',
+    end: ['(foo, bar, |)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a single-line comma seperated list with cursor on closing delimiter",
+    start: ['(foo, bar, baz|)'],
+    keysPressed: 'cia',
+    end: ['(foo, bar, |)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a whitespace-only argument",
+    start: ['(foo, | , baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a whitespace-only argument across multiple lines",
+    start: ['(foo,', '  ', ' | ', '  ', ' , baz)'],
+    keysPressed: 'cia',
+    end: ['(foo,|, baz)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with trailing whitespace after separator",
+    start: ['(', '   foo, ', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo, ', '   |,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' with trailing whitespace after separator and empty line",
+    start: ['(', '   foo, ', '    ', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo, ', '    ', '   |,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   f|oo,', '   bar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   |,', '   bar,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '   |,', '   baz', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   |baz', ')'],
+    keysPressed: 'cia',
+    end: ['(', '   foo,', '   bar,', '   |', ')'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'cia' in a multi-line indented statement with one argument.",
+    start: ['   functionCall(', '      fo|o', '   )'],
+    keysPressed: 'cia',
+    end: ['   functionCall(', '      |', '   )'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single argument",
+    start: ['(f|oo)'],
+    keysPressed: 'daa',
+    end: ['(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Will fail 'daa' in ()",
+    start: ['(|)'],
+    keysPressed: 'daa',
+    end: ['(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in first argument",
+    start: ['(f|oo, bar, baz)'],
+    keysPressed: 'daa',
+    end: ['(|bar, baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in middle argument",
+    start: ['(foo, b|ar, baz)'],
+    keysPressed: 'daa',
+    end: ['(foo|, baz)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a single-line comma seperated list with cursor in last argument",
+    start: ['(foo, bar, |baz)'],
+    keysPressed: 'daa',
+    end: ['(foo, bar|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in first argument",
+    start: ['(', '   |foo,', '   bar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['|(', '   bar,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in center argument",
+    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo|,', '   baz', ')'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in last argument",
+    start: ['(', '   foo,', '   bar,', '   ba|z', ')'],
+    keysPressed: 'daa',
+    end: ['(', '   foo,', '   ba|r', ')'],
     endMode: Mode.Normal,
   });
 

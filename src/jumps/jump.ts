@@ -63,12 +63,7 @@ export class Jump {
    * Determine whether another jump matches the same file path, line number, and character column.
    * @param other - Another Jump to compare against
    */
-  public isSamePosition(other: Jump | null | undefined): boolean {
-    return (
-      !other ||
-      (this.fileName === other.fileName &&
-        this.position.line === other.position.line &&
-        this.position.character === other.position.character)
-    );
+  public isSamePosition(other: Jump): boolean {
+    return this.fileName === other.fileName && this.position.isEqual(other.position);
   }
 }

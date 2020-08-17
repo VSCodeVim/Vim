@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
-
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -11,18 +9,21 @@ import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
+import { RegisterAction, BaseCommand } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
-  BaseCommand,
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
+  CommandReplaceAtCursorFromNormalMode,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
+import { error } from 'console';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -112,12 +113,16 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lastInserted = (await Register.getByKey('.')).text as RecordedState;
-    if (!lastInserted.actionsRun) {
-      throw error.VimError.fromCode(error.ErrorCode.NoInsertedTextYet);
+    const register = await Register.get(vimState, '.');
+    if (
+      register === undefined ||
+      !(register.text instanceof RecordedState) ||
+      !register.text.actionsRun
+    ) {
+      throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
     }
 
-    let actions = lastInserted.actionsRun.slice(0);
+    const actions = [...register.text.actionsRun];
     // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
@@ -240,7 +245,10 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (
       position.character > 0 &&
@@ -286,7 +294,10 @@ export class CommandDeleteInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (!position.isAtDocumentEnd()) {
       // Otherwise, just delete a character (unless we're at the end of the document)
@@ -389,10 +400,14 @@ class CommandInsertRegisterContent extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       vimState.recordedState.transformations.push({
         type: 'macro',
@@ -421,12 +436,6 @@ class CommandInsertRegisterContent extends BaseCommand {
     const register = keysPressed[1];
 
     return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 }
 
@@ -658,5 +667,31 @@ class CommandShowLineAutocomplete extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await lineCompletionProvider.showLineCompletionsQuickPick(position, vimState);
     return vimState;
+  }
+}
+
+@RegisterAction
+class NewLineInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [['<C-j>'], ['<C-m>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: '\n',
+      position: position,
+      diff: new PositionDiff({ character: -1 }),
+    });
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<Insert>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }

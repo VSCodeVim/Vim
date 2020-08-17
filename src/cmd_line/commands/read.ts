@@ -1,6 +1,6 @@
-import { readFileAsync } from 'platform/fs';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
+import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 
 export interface IReadCommandArguments extends node.ICommandArgs {

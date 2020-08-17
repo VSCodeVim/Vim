@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import { RegisterAction } from '../base';
-import { BaseCommand, CommandShowCommandHistory, CommandShowSearchHistory } from './actions';
+import { RegisterAction, BaseCommand } from '../base';
+import { CommandShowCommandHistory, CommandShowSearchHistory } from './actions';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { commandLine } from '../../cmd_line/commandLine';
@@ -141,7 +141,7 @@ class CommandEnterInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await commandLine.Run(vimState.currentCommandlineText.trim(), vimState);
+    await commandLine.Run(vimState.currentCommandlineText, vimState);
     await vimState.setCurrentMode(Mode.Normal);
     return vimState;
   }
@@ -324,7 +324,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = globalState.searchState!;
-    const prevSearchList = globalState.searchStatePrevious!;
+    const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
@@ -505,10 +505,14 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 
@@ -540,10 +544,14 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return vimState;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 
@@ -573,10 +581,6 @@ class CommandInsertWord extends BaseCommand {
   keys = ['<C-r>', '<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Skip forward to next word, not going past EOL
-    while (!/[a-zA-Z0-9_]/.test(TextEditor.getCharAt(position))) {
-      position = position.getRight();
-    }
     const word = TextEditor.getWord(position.getLeftIfEOL());
 
     if (word !== undefined) {

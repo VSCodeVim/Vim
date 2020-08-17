@@ -79,13 +79,19 @@ namespace LexerFunctions {
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
         case '*':
-          state.emit();
-          tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
-          tokens.push(new Token(TokenType.Comma, ',')!);
-          tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
+          state.ignore();
+          tokens.push(new Token(TokenType.SelectionFirstLine, '<'));
+          tokens.push(new Token(TokenType.Comma, ','));
+          tokens.push(new Token(TokenType.SelectionLastLine, '>'));
           continue;
         case "'":
           return lexMark;
+        case '!':
+          tokens.push(emitToken(TokenType.CommandName, state)!);
+          return lexCommandArgs;
+        case ' ':
+          state.ignore();
+          continue;
         default:
           return lexCommand;
       }
@@ -111,7 +117,7 @@ namespace LexerFunctions {
       default:
         if (/[a-zA-Z]/.test(c)) {
           state.emit();
-          tokens.push(new Token(TokenType.Mark, c)!);
+          tokens.push(new Token(TokenType.Mark, c));
         } else {
           state.backup();
         }
@@ -158,16 +164,20 @@ namespace LexerFunctions {
       } else {
         state.backup();
         tokens.push(emitToken(TokenType.CommandName, state)!);
-        while (!state.isAtEof) {
-          state.next();
-        }
-        // TODO(guillermooo): We need to parse multiple commands.
-        const args = emitToken(TokenType.CommandArgs, state);
-        if (args) {
-          tokens.push(args);
-        }
-        break;
+        return lexCommandArgs;
       }
+    }
+    return null;
+  }
+
+  function lexCommandArgs(state: Scanner, tokens: Token[]): ILexFunction | null {
+    while (!state.isAtEof) {
+      state.next();
+    }
+    // TODO(guillermooo): We need to parse multiple commands.
+    const args = emitToken(TokenType.CommandArgs, state);
+    if (args) {
+      tokens.push(args);
     }
     return null;
   }

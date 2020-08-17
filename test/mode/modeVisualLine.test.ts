@@ -543,6 +543,38 @@ suite('Mode Visual Line', () => {
     endMode: Mode.Normal,
   });
 
+  newTest({
+    title: "Can handle 'gJ' when the entire selected area is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: 'VlgJ',
+    end: ['one', 'two|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines and line has whitespaces",
+    start: ['o|ne  ', 'two', '  three', 'four'],
+    keysPressed: 'VjjgJ',
+    end: ['one  two|  three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when start position of the selected area is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: 'VkkgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
   suite('C, R, and S', () => {
     for (const command of ['C', 'R', 'S']) {
       newTest({

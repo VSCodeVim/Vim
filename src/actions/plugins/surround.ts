@@ -1,12 +1,11 @@
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
-import { Position, PositionDiff } from './../../common/motion/position';
+import { Position, PositionDiff, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
-import { BaseCommand } from './../commands/actions';
+import { RegisterAction, BaseCommand } from './../base';
 import { BaseMovement, IMovement } from '../baseMotion';
 import {
   MoveABacktick,
@@ -228,7 +227,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     vimState.recordedState.surroundKeys.push('S');
     vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
-    let [start, end] = Position.sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
@@ -246,7 +245,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 
     // Put the cursor at the beginning of the visual selection
     vimState.cursorStopPosition = start;
-    vimState.cursorStartPosition = end;
+    vimState.cursorStartPosition = start;
 
     return vimState;
   }
@@ -294,13 +293,16 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     // Convert a few shortcuts to the correct surround characters when NOT entering a tag
     if (vimState.surround.replacement.length === 0) {
       if (stringToAdd === 'b') {
-        stringToAdd = '(';
+        stringToAdd = ')';
       }
       if (stringToAdd === 'B') {
-        stringToAdd = '{';
+        stringToAdd = '}';
       }
       if (stringToAdd === 'r') {
-        stringToAdd = '[';
+        stringToAdd = ']';
+      }
+      if (stringToAdd === 'a') {
+        stringToAdd = '>';
       }
     }
 
@@ -582,10 +584,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
           continue;
         }
 
-        let { stop, start, failed } = (await movement().execAction(
-          position,
-          vimState
-        )) as IMovement;
+        let { stop, start, failed } = await movement().execAction(position, vimState);
 
         stop = stop.getRight();
 

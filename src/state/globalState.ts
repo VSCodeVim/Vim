@@ -79,7 +79,7 @@ class GlobalState {
     const prevSearchString =
       this.searchStatePrevious.length === 0
         ? undefined
-        : this.searchStatePrevious[this.searchStatePrevious.length - 1]!.searchString;
+        : this.searchStatePrevious[this.searchStatePrevious.length - 1].searchString;
     // Store this search if different than previous
     if (searchState.searchString !== prevSearchString) {
       this.searchStatePrevious.push(searchState);

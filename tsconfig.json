@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "platform/*": ["src/platform/node/*"]
-    }
+    },
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }
