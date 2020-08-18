@@ -29,10 +29,6 @@ export class JumpTracker {
    * All recorded jumps, in the order of occurrence.
    */
   public get jumps(): Jump[] {
-    for (let i = 0; i < this._jumps.length; i++) {
-      const jump = this._jumps[i];
-      jump.number = i;
-    }
     return this._jumps;
   }
 
@@ -66,13 +62,6 @@ export class JumpTracker {
   }
 
   /**
-   * First jump in list of jumps.
-   */
-  public get start(): Jump | null {
-    return this._jumps[0];
-  }
-
-  /**
    * Record that a jump occurred.
    *
    * If the current position is back in history,
@@ -81,8 +70,8 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump | null, to?: Jump | null) {
-    if (from && to && from.isSamePosition(to)) {
+  public recordJump(from: Jump, to: Jump) {
+    if (from.isSamePosition(to)) {
       return;
     }
 
@@ -117,7 +106,7 @@ export class JumpTracker {
     this.pushJump(from, to);
   }
 
-  private async performFileJump(jump: Jump, vimState: VimState) {
+  private async performFileJump(jump: Jump, vimState: VimState): Promise<void> {
     this.isJumpingThroughHistory = true;
 
     if (jump.editor) {
@@ -140,34 +129,27 @@ export class JumpTracker {
         await vscode.window.showTextDocument(editor.document, jump.position.character, false);
       }
     }
-
-    return vimState;
   }
 
   /**
    * Jump forward, possibly resulting in a file jump
    */
-  public async jumpForward(position: Position, vimState?: VimState): Promise<VimState> {
-    return this.jumpThroughHistory(this.recordJumpForward.bind(this), position, vimState);
+  public async jumpForward(position: Position, vimState: VimState): Promise<void> {
+    await this.jumpThroughHistory(this.recordJumpForward.bind(this), position, vimState);
   }
 
   /**
    * Jump back, possibly resulting in a file jump
    */
-  public async jumpBack(position: Position, vimState?: VimState): Promise<VimState> {
-    return this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
+  public async jumpBack(position: Position, vimState: VimState): Promise<void> {
+    await this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
   }
 
   private async jumpThroughHistory(
-    getJump: (Jump) => Jump,
+    getJump: (j: Jump) => Jump,
     position: Position,
-    vimState?: VimState
-  ): Promise<VimState> {
-    if (!vimState) {
-      // Disposed? Don't attempt anything, but return whatever falsy value was given.
-      return vimState!;
-    }
-
+    vimState: VimState
+  ): Promise<void> {
     let jump = new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
@@ -180,7 +162,7 @@ export class JumpTracker {
     }
 
     if (!jump) {
-      return vimState;
+      return;
     }
 
     const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
@@ -191,8 +173,6 @@ export class JumpTracker {
     } else {
       vimState.cursorStopPosition = jump.position;
     }
-
-    return vimState;
   }
 
   /**
@@ -238,8 +218,7 @@ export class JumpTracker {
     }
 
     this._currentJumpNumber = Math.min(this._currentJumpNumber + 1, this._jumps.length - 1);
-    const jump = this._jumps[this._currentJumpNumber];
-    return jump;
+    return this._jumps[this._currentJumpNumber];
   }
 
   /**
@@ -316,7 +295,7 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  private pushJump(from: Jump | null, to?: Jump | null) {
+  private pushJump(from: Jump | null, to: Jump) {
     if (from) {
       this.clearJumpsOnSamePosition(from);
     }

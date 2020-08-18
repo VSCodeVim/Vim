@@ -4,6 +4,9 @@ import { configuration } from '../../configuration/configuration';
 
 import { Position } from '../../common/motion/position';
 import { PutCommand, IPutCommandOptions } from '../../actions/commands/put';
+import { Register } from '../../register/register';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
 
 export interface IPutCommandArguments extends node.ICommandArgs {
   bang?: boolean;
@@ -27,8 +30,17 @@ export class PutExCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async doPut(vimState: VimState, position: Position) {
+  public neovimCapable(): boolean {
+    return true;
+  }
+
+  async doPut(vimState: VimState, position: Position): Promise<void> {
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
+    if (!Register.isValidRegister(registerName)) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.TrailingCharacters));
+      return;
+    }
+
     vimState.recordedState.registerName = registerName;
 
     let options: IPutCommandOptions = {

@@ -8,7 +8,7 @@ import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 import { ChangeOperator } from '../operator';
 
-class CamelCaseBaseMovement extends BaseMovement {
+abstract class CamelCaseBaseMovement extends BaseMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {
     return configuration.camelCaseMotion.enable && super.doesActionApply(vimState, keysPressed);
   }
@@ -18,7 +18,7 @@ class CamelCaseBaseMovement extends BaseMovement {
   }
 }
 
-class CamelCaseTextObjectMovement extends TextObjectMovement {
+abstract class CamelCaseTextObjectMovement extends TextObjectMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {
     return configuration.camelCaseMotion.enable && super.doesActionApply(vimState, keysPressed);
   }
@@ -76,7 +76,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
 
 // based off of `SelectInnerWord`
 @RegisterAction
-export class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
+class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   modes = [Mode.Normal, Mode.Visual];
   keys = ['i', '<leader>', 'w'];
 

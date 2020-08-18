@@ -1,5 +1,4 @@
 import { PutExCommand, IPutCommandArguments } from '../commands/put';
-import { ErrorCode, VimError } from '../../error';
 import { Scanner } from '../scanner';
 
 export function parsePutExCommandArgs(args: string): PutExCommand {
@@ -14,8 +13,8 @@ export function parsePutExCommandArgs(args: string): PutExCommand {
   if (c === '!') {
     scannedArgs.bang = true;
     scanner.ignore();
-  } else if (c !== ' ') {
-    throw VimError.fromCode(ErrorCode.TrailingCharacters);
+  } else {
+    scanner.backup();
   }
   scanner.skipWhiteSpace();
 

@@ -27,7 +27,7 @@ suite('Mode Normal', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
-      await modeHandler.handleKeyEvent(key!);
+      await modeHandler.handleKeyEvent(key);
 
       assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
     }

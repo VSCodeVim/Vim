@@ -76,7 +76,7 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      let val = vimConfigs[option] as any;
+      let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
           val = Configuration.unproxify(val);
@@ -90,6 +90,8 @@ class Configuration implements IConfiguration {
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
+
+    this.clearKeyBindingsMaps();
 
     const validatorResults = await configurationValidator.validate(configuration);
 
@@ -160,6 +162,15 @@ class Configuration implements IConfiguration {
     return this.cursorTypeMap[cursorStyle];
   }
 
+  clearKeyBindingsMaps() {
+    // Clear the KeyBindingsMaps so that the previous configuration maps don't leak to this one
+    this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+  }
+
   handleKeys: IHandleKeys[] = [];
 
   useSystemClipboard = false;
@@ -219,6 +230,8 @@ class Configuration implements IConfiguration {
   };
 
   timeout = 1000;
+
+  maxmapdepth = 1000;
 
   showcmd = true;
 
@@ -368,19 +381,18 @@ class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

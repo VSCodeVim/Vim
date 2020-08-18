@@ -14,6 +14,7 @@ import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
+import { SpecialKeys } from '../src/util/specialKeys';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
@@ -145,7 +146,7 @@ const mockAndEnable = async () => {
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
   const mh = await getAndUpdateModeHandler();
   Globals.mockModeHandler = mh;
-  await mh.handleKeyEvent('<ExtensionEnable>');
+  await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
 };
 
 export async function cleanUpWorkspace(): Promise<void> {
