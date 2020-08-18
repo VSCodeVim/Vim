@@ -48,11 +48,11 @@ suite('Marks', () => {
           undefined,
           'failed to store ' + getMarkTypeText(isLowercaseMark) + ' mark'
         );
-        assert.strictEqual(mark.position.line, 1);
-        assert.strictEqual(mark.position.character, 4);
-        assert.strictEqual(mark.isUppercaseMark, !isLowercaseMark);
+        assert.strictEqual(mark?.position.line, 1);
+        assert.strictEqual(mark?.position.character, 4);
+        assert.strictEqual(mark?.isUppercaseMark, !isLowercaseMark);
         assert.strictEqual(
-          mark.editor,
+          mark?.editor,
           isLowercaseMark ? undefined : vscode.window.activeTextEditor
         );
         await modeHandler.handleMultipleKeyEvents('dd'.split(''));
