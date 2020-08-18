@@ -49,7 +49,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
-    await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
+    await curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
   previousActiveEditorId = activeEditorId;
@@ -398,7 +398,7 @@ export async function activate(
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
     await commandLine.PromptAndRun('', mh.vimState);
-    mh.updateView(mh.vimState);
+    mh.updateView();
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
@@ -416,7 +416,7 @@ export async function activate(
           // Check if this is a vim command by looking for :
           if (command.command.startsWith(':')) {
             await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
-            mh.updateView(mh.vimState);
+            mh.updateView();
           } else {
             vscode.commands.executeCommand(command.command, command.args);
           }
@@ -449,7 +449,7 @@ export async function activate(
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
     // This is called last because getAndUpdateModeHandler() will change cursor
-    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    mh.updateView({ drawSelection: false, revealRange: false });
   }
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere

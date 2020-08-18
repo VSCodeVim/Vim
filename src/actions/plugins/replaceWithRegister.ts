@@ -23,7 +23,7 @@ export class ReplaceOperator extends BaseOperator {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
   }
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range =
       vimState.currentRegisterMode === RegisterMode.LineWise
         ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
@@ -31,13 +31,13 @@ export class ReplaceOperator extends BaseOperator {
     const register = await Register.get(vimState);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
-      return vimState;
+      return;
     }
 
     const replaceWith = register.text as string;
     await TextEditor.replace(range, replaceWith);
     await vimState.setCurrentMode(Mode.Normal);
-    return updateCursorPosition(vimState, range, replaceWith);
+    updateCursorPosition(vimState, range, replaceWith);
   }
 }
 
@@ -45,7 +45,7 @@ const updateCursorPosition = (
   vimState: VimState,
   range: vscode.Range,
   replaceWith: string
-): VimState => {
+): void => {
   const {
     recordedState: { actionKeys },
   } = vimState;
@@ -58,7 +58,8 @@ const updateCursorPosition = (
     ? cursorAtEndOfReplacement(range, replaceWith)
     : cursorAtFirstNonBlankCharOfLine(range);
 
-  return vimStateWithCursorPosition(vimState, cursorPosition);
+  vimState.cursorStopPosition = cursorPosition;
+  vimState.cursorStartPosition = cursorPosition;
 };
 
 const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
@@ -66,10 +67,3 @@ const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
 
 const cursorAtFirstNonBlankCharOfLine = (range: vscode.Range) =>
   TextEditor.getFirstNonWhitespaceCharOnLine(range.start.line);
-
-const vimStateWithCursorPosition = (vimState: VimState, cursorPosition: Position): VimState => {
-  vimState.cursorStopPosition = cursorPosition;
-  vimState.cursorStartPosition = cursorPosition;
-
-  return vimState;
-};
