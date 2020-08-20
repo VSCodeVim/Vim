@@ -257,8 +257,7 @@ export class YankOperator extends BaseOperator {
   canBeRepeatedWithDot = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    // Hack to make Surround with y (which takes a motion) work.
-
+    // HACK: make Surround with y (which takes a motion) work.
     if (vimState.surround) {
       vimState.surround.range = new Range(start, end);
       await vimState.setCurrentMode(Mode.SurroundInputMode);
