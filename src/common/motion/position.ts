@@ -206,9 +206,9 @@ export class Position extends vscode.Position {
     }
 
     if (includeEol) {
-      return this.getUpWithDesiredColumn(0).getLineEnd();
+      return this.getUpWithDesiredVisualColumn(0).getLineEnd();
     } else {
-      return this.getUpWithDesiredColumn(0).getLineEnd().getLeft();
+      return this.getUpWithDesiredVisualColumn(0).getLineEnd().getLeft();
     }
   }
 
@@ -219,11 +219,11 @@ export class Position extends vscode.Position {
     }
 
     if (this.isLineEnd()) {
-      return this.getDownWithDesiredColumn(0);
+      return this.getDownWithDesiredVisualColumn(0);
     }
 
     if (!includeEol && this.getRight().isLineEnd()) {
-      return this.getDownWithDesiredColumn(0);
+      return this.getDownWithDesiredVisualColumn(0);
     }
 
     return this.getRight();
@@ -248,12 +248,13 @@ export class Position extends vscode.Position {
   /**
    * Get the position of the line directly below the current line.
    */
-  public getDownWithDesiredColumn(desiredColumn: number): Position {
+  public getDownWithDesiredVisualColumn(desiredColumn: number): Position {
     if (TextEditor.getDocumentEnd().line !== this.line) {
       let nextLine = this.line + 1;
-      let nextLineLength = TextEditor.getLineLength(nextLine);
+      // let nextLineLength = TextEditor.getLineLength(nextLine);
 
-      return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
+      // return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
+      return new Position(nextLine, 0).withVisualColumn(desiredColumn);
     }
 
     return this;
@@ -262,15 +263,118 @@ export class Position extends vscode.Position {
   /**
    * Get the position of the line directly above the current line.
    */
-  public getUpWithDesiredColumn(desiredColumn: number): Position {
+  public getUpWithDesiredVisualColumn(desiredColumn: number): Position {
     if (TextEditor.getDocumentBegin().line !== this.line) {
       let prevLine = this.line - 1;
-      let prevLineLength = TextEditor.getLineLength(prevLine);
+      // let prevLineLength = TextEditor.getLineLength(prevLine);
 
-      return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
+      // return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
+      return new Position(prevLine, 0).withVisualColumn(desiredColumn);
     }
 
     return this;
+  }
+
+  /**
+   * @returns the visual column of current position. It's the same as the positions `character`
+   * except it adds the tab spaces that aren't counted for `character`.
+   *
+   * We call it visual column because it takes into account the difference between tabs and
+   * spaces.
+   *
+   * If the indentation is made with spaces then 'indentSpaces' and 'indentColumn' will
+   * be the same so `visualColumn` will be the same as `position.character`. But if it is
+   * tabs then 'indentColumn' will always be smaller than 'indentSpaces', and the difference
+   * between them is the amount we want to add to 'visualColumn'. Example:
+   *
+   * 1. `--Line with tab (-- is equivalent to 2 spaces)`
+   *
+   * 2. `Line without tab (is the same as if it had space indentation)`
+   *
+   * The `w` on line 2 is on column 5 and the `w` on line 1 is on column 6 even though it
+   * looks to be on column 7, the tab `--` only counts as 1 since it is just one character
+   * the `\t` character. If we were on the `w` of line 2 (column 5) and moved up the column
+   * 5 would be the space character but we want to end up on the last `e` of the word `Line`
+   * and for that we use the `visualColumn` because the letter `e` is on `visualColumn` 5.
+   * The indentSpaces is 2 and the indentColumn is 1, so the resulting visualColumn would be
+   * `4 + (2 - 1) = 5` which will correspond to the desiredVisualColumn of 5.
+   *
+   * If we are inside the indentation then we calculate the indentation spaces until our
+   * current `position.character` like done on `TextEditor.getIndentationLevel`.
+   */
+  public get visualColumn(): number {
+    if (this.character === 0) {
+      return 0;
+    }
+    const textLine = TextEditor.getLineAt(this);
+    const indentSpaces = TextEditor.getIndentationLevel(textLine.text);
+    const indentColumn = textLine.firstNonWhitespaceCharacterIndex;
+    if (this.character >= indentColumn) {
+      return this.character + (indentSpaces - indentColumn);
+    } else {
+      // In case we are inside the indentation we need to get the visual column
+      // of the current character.
+      let visibleColumn = 0;
+      for (let i = 0; i < this.character; i++) {
+        const char = textLine.text[i];
+        switch (char) {
+          case '\t':
+            visibleColumn += vscode.window.activeTextEditor!.options.tabSize as number;
+            break;
+          case ' ':
+            visibleColumn += 1;
+            break;
+          default:
+            return visibleColumn;
+        }
+      }
+      return visibleColumn;
+    }
+  }
+
+  /**
+   * @returns a new Position with the same line and the resulting character from the given
+   * visual column.
+   * Does bounds-checking to make sure the result is valid.
+   */
+  public withVisualColumn(visualColumn: number): Position {
+    if (visualColumn === 0) {
+      return new Position(this.line, 0);
+    }
+    const textLine = TextEditor.getLineAt(this);
+    const indentSpaces = TextEditor.getIndentationLevel(textLine.text);
+    const indentColumn = textLine.firstNonWhitespaceCharacterIndex;
+    let column: number;
+    if (visualColumn >= indentSpaces) {
+      column = visualColumn - (indentSpaces - indentColumn);
+    } else {
+      // In case we are inside the indentation we need to check what is the first
+      // character whose visible column is the same or higher then `visualColumn`
+      let visibleColumn = 0;
+      column = -1;
+      for (let i = 0; i < indentColumn; i++) {
+        const char = textLine.text[i];
+        switch (char) {
+          case '\t':
+            visibleColumn += vscode.window.activeTextEditor!.options.tabSize as number;
+            break;
+          case ' ':
+            visibleColumn += 1;
+            break;
+          default:
+            break;
+        }
+        if (visibleColumn > visualColumn) {
+          column = i;
+          break;
+        }
+      }
+      if (column === -1) {
+        column = indentColumn;
+      }
+    }
+    column = clamp(column, 0, TextEditor.getLineLength(this.line));
+    return new Position(this.line, column);
   }
 
   /**
@@ -373,12 +477,12 @@ export class Position extends vscode.Position {
 
     // If we're not in a paragraph yet, go down until we are.
     while (pos.isLineBlank(trimWhite) && !TextEditor.isLastLine(pos)) {
-      pos = pos.getDownWithDesiredColumn(0);
+      pos = pos.getDownWithDesiredVisualColumn(0);
     }
 
     // Go until we're outside of the paragraph, or at the end of the document.
     while (!pos.isLineBlank(trimWhite) && pos.line < TextEditor.getLineCount() - 1) {
-      pos = pos.getDownWithDesiredColumn(0);
+      pos = pos.getDownWithDesiredVisualColumn(0);
     }
 
     return pos.getLineEnd();
@@ -392,12 +496,12 @@ export class Position extends vscode.Position {
 
     // If we're not in a paragraph yet, go up until we are.
     while (pos.isLineBlank(trimWhite) && !TextEditor.isFirstLine(pos)) {
-      pos = pos.getUpWithDesiredColumn(0);
+      pos = pos.getUpWithDesiredVisualColumn(0);
     }
 
     // Go until we're outside of the paragraph, or at the beginning of the document.
     while (pos.line > 0 && !pos.isLineBlank(trimWhite)) {
-      pos = pos.getUpWithDesiredColumn(0);
+      pos = pos.getUpWithDesiredVisualColumn(0);
     }
 
     return pos.getLineBegin();

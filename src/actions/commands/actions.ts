@@ -491,11 +491,11 @@ abstract class CommandEditorScroll extends BaseCommand {
     if (this.to === 'up' && scrolloff > linesAboveCursor) {
       vimState.cursorStopPosition = vimState.cursorStopPosition
         .getUp(scrolloff - linesAboveCursor)
-        .withColumn(vimState.desiredColumn);
+        .withVisualColumn(vimState.desiredVisualColumn);
     } else if (this.to === 'down' && scrolloff > linesBelowCursor) {
       vimState.cursorStopPosition = vimState.cursorStopPosition
         .getDown(scrolloff - linesBelowCursor)
-        .withColumn(vimState.desiredColumn);
+        .withVisualColumn(vimState.desiredVisualColumn);
     }
 
     vimState.postponedCodeViewChanges.push({
@@ -582,10 +582,9 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
       0,
       vimState.editor.document.lineCount - 1
     );
-    vimState.cursorStopPosition = new Position(
-      newPositionLine,
-      vimState.desiredColumn
-    ).obeyStartOfLine();
+    vimState.cursorStopPosition = new Position(newPositionLine, 0)
+      .withVisualColumn(vimState.desiredVisualColumn)
+      .obeyStartOfLine();
   }
 }
 
@@ -790,10 +789,11 @@ class CommandCmdA extends BaseCommand {
   keys = ['<D-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
-    vimState.cursorStopPosition = new Position(
-      TextEditor.getLineCount() - 1,
-      vimState.desiredColumn
+    vimState.cursorStartPosition = new Position(0, 0).withVisualColumn(
+      vimState.desiredVisualColumn
+    );
+    vimState.cursorStopPosition = new Position(TextEditor.getLineCount() - 1, 0).withVisualColumn(
+      vimState.desiredVisualColumn
     );
     await vimState.setCurrentMode(Mode.VisualLine);
   }
@@ -3046,7 +3046,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
       for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
         const line = TextEditor.getLine(lineNum);
         const insertionColumn =
-          vimState.desiredColumn === Number.POSITIVE_INFINITY
+          vimState.desiredVisualColumn === Number.POSITIVE_INFINITY
             ? line.text.length
             : Math.max(cursor.start.character, cursor.stop.character) + 1;
         if (line.text.length < insertionColumn) {

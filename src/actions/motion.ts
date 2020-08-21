@@ -136,8 +136,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    let desiredColumn = vimState.desiredColumn;
-    let prevLine = vimState.editor.selection.active.line;
+    let desiredVisualColumn = vimState.desiredVisualColumn;
 
     if (vimState.currentMode !== Mode.Normal) {
       /**
@@ -180,7 +179,9 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
       }
     }
 
-    const previousLineColumn = vimState.cursorStopPosition.character;
+    const prevLine = vimState.editor.selection.active.line;
+    const previousLineColumn = position.character;
+    const previousLineVisualColumn = position.visualColumn;
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
@@ -191,34 +192,40 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
 
     // Set active position to the desired column
     let activePos = Position.FromVSCodePosition(vimState.editor.selection.active);
-    if (activePos.character < desiredColumn && activePos.line !== prevLine) {
-      activePos = activePos.withColumn(desiredColumn);
-    } else if (previousLineColumn < desiredColumn) {
-      // If the active position is after desiredColumn it means we moved to a wrapped line.
-      // In that case if the position on previous line is less then desiredColumn we need to
-      // move right by the difference of desiredColumn and the previous line column.
-      const indent = vscode.workspace.getConfiguration('editor').get('wrappingIndent');
-      const indentSpace = TextEditor.getFirstNonWhitespaceCharOnLine(activePos.line).character;
-      const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize')!;
-      const diff =
-        indent === 'none'
-          ? 0
-          : indent === 'same'
-          ? indentSpace > previousLineColumn
-            ? indentSpace - previousLineColumn
-            : 0
-          : indent === 'indent'
-          ? indentSpace + tabSize > previousLineColumn
-            ? indentSpace + tabSize - previousLineColumn
-            : 0
-          : indent === 'deepIndent'
-          ? indentSpace + 2 * tabSize > previousLineColumn
-            ? indentSpace + 2 * tabSize - previousLineColumn
-            : 0
-          : 0;
-      activePos = activePos.getRight(Math.max(0, desiredColumn - previousLineColumn - diff));
-    } else if (activePos.character < previousLineColumn && activePos.character > desiredColumn) {
-      activePos = activePos.withColumn(desiredColumn);
+    if (activePos.visualColumn < desiredVisualColumn && activePos.line !== prevLine) {
+      activePos = activePos.withVisualColumn(desiredVisualColumn);
+    } else if (previousLineVisualColumn < desiredVisualColumn) {
+      // If the active position is after desiredVisualColumn it means we moved to a wrapped line.
+      // In that case if the position on previous line is less then desiredVisualColumn we need to
+      // move right by the difference of desiredVisualColumn and the previous line visual column.
+      const indentWrapping = vscode.workspace.getConfiguration('editor').get('wrappingIndent');
+      const indentSpace = TextEditor.getIndentationLevel(TextEditor.getLineAt(activePos).text);
+      const tabSize = vimState.editor.options.tabSize as number;
+      let diff: number = 0;
+      switch (indentWrapping) {
+        case 'none':
+          diff = 0;
+          break;
+        case 'same':
+          diff = Math.max(0, indentSpace - previousLineVisualColumn);
+          break;
+        case 'indent':
+          diff = Math.max(0, indentSpace + tabSize - previousLineVisualColumn);
+          break;
+        case 'deepIndent':
+          diff = Math.max(0, indentSpace + 2 * tabSize - previousLineVisualColumn);
+          break;
+        default:
+          throw new Error(`Unknown value for 'editor.wrappingIndent': '${indentWrapping}'`);
+      }
+      activePos = activePos.getRight(
+        Math.max(0, desiredVisualColumn - previousLineVisualColumn - diff)
+      );
+    } else if (
+      activePos.visualColumn < previousLineVisualColumn &&
+      activePos.visualColumn > desiredVisualColumn
+    ) {
+      activePos = activePos.withVisualColumn(desiredVisualColumn);
     }
 
     if (vimState.currentMode === Mode.Normal) {
@@ -286,7 +293,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
-    const prevDesiredColumn = vimState.desiredColumn;
+    const prevDesiredColumn = vimState.desiredVisualColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = await moveDownByScreenLine.execAction(position, vimState);
@@ -321,12 +328,12 @@ class MoveDown extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+    return position.getDownWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -346,12 +353,12 @@ class MoveUp extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+    return position.getUpWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -366,7 +373,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const prevDesiredColumn = vimState.desiredColumn;
+    const prevDesiredColumn = vimState.desiredVisualColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
@@ -396,15 +403,27 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case '<up>':
+        this.preservesDesiredColumn = () => {
+          return true;
+        };
         newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
         break;
       case '<down>':
+        this.preservesDesiredColumn = () => {
+          return true;
+        };
         newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
+        this.preservesDesiredColumn = () => {
+          return false;
+        };
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
         break;
       case '<right>':
+        this.preservesDesiredColumn = () => {
+          return false;
+        };
         newPosition = await new MoveRightArrow().execAction(position, vimState);
         break;
       default:
@@ -1066,12 +1085,12 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+    return position.getUpWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -1087,12 +1106,12 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+    return position.getDownWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -1513,8 +1532,8 @@ abstract class MoveSectionBoundary extends BaseMovement {
     }
 
     position = this.forward
-      ? position.getDownWithDesiredColumn(0)
-      : position.getUpWithDesiredColumn(0);
+      ? position.getDownWithDesiredVisualColumn(0)
+      : position.getUpWithDesiredVisualColumn(0);
 
     while (!TextEditor.getLineAt(position).text.startsWith(this.boundary)) {
       if (this.forward) {
@@ -1522,13 +1541,13 @@ abstract class MoveSectionBoundary extends BaseMovement {
           break;
         }
 
-        position = position.getDownWithDesiredColumn(0);
+        position = position.getDownWithDesiredVisualColumn(0);
       } else {
         if (position.line === 0) {
           break;
         }
 
-        position = position.getUpWithDesiredColumn(0);
+        position = position.getUpWithDesiredVisualColumn(0);
       }
     }
 
@@ -2125,11 +2144,17 @@ export abstract class ArrowsInInsertMode extends BaseMovement {
 @RegisterAction
 class UpArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<up>'];
+  preservesDesiredColumn() {
+    return true;
+  }
 }
 
 @RegisterAction
 class DownArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<down>'];
+  preservesDesiredColumn() {
+    return true;
+  }
 }
 
 @RegisterAction

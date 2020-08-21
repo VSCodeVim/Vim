@@ -151,7 +151,7 @@ export class DeleteOperator extends BaseOperator {
     // as selecting the newline character. Don't allow this in visual block mode
     if (vimState.currentMode !== Mode.VisualBlock) {
       if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-        end = end.getDownWithDesiredColumn(0);
+        end = end.getDownWithDesiredVisualColumn(0);
       }
     }
 
@@ -238,7 +238,7 @@ export class DeleteOperator extends BaseOperator {
 
     await vimState.setCurrentMode(Mode.Normal);
     if (vimState.currentMode === Mode.Visual) {
-      vimState.desiredColumn = newPos.character;
+      vimState.setDesiredVisualColumn(newPos);
     }
 
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;

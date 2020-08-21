@@ -97,7 +97,7 @@ export class ModeHandler implements vscode.Disposable {
           !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
           !this.vimState.cursorStopPosition.isEqual(selections[0].active)
         ) {
-          this.vimState.desiredColumn = selections[0].active.character;
+          this.vimState.setDesiredVisualColumn(Position.FromVSCodePosition(selections[0].active));
         }
 
         this.vimState.cursors = selections.map(({ active, anchor }) =>
@@ -304,7 +304,7 @@ export class ModeHandler implements vscode.Disposable {
 
       this.vimState.cursorStopPosition = newPosition;
       this.vimState.cursorStartPosition = newPosition;
-      this.vimState.desiredColumn = newPosition.character;
+      this.vimState.setDesiredVisualColumn(newPosition);
 
       // start visual mode?
       if (
@@ -776,13 +776,15 @@ export class ModeHandler implements vscode.Disposable {
       if (action instanceof BaseMovement) {
         // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
         if (action.setsDesiredColumnToEOL && !recordedState.operator) {
-          this.vimState.desiredColumn = Number.POSITIVE_INFINITY;
+          this.vimState.setDesiredVisualColumn(
+            new Position(this.vimState.cursorStopPosition.line, Number.POSITIVE_INFINITY)
+          );
         } else {
-          this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+          this.vimState.setDesiredVisualColumn(this.vimState.cursorStopPosition);
         }
       } else if (this.vimState.currentMode !== Mode.VisualBlock) {
         // TODO: explain why not VisualBlock
-        this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+        this.vimState.setDesiredVisualColumn(this.vimState.cursorStopPosition);
       }
     }
 

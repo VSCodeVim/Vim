@@ -469,7 +469,7 @@ export class SelectParagraph extends TextObjectMovement {
       stop.line < TextEditor.getLineCount() - 1 &&
       TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
     ) {
-      stop = stop.getDownWithDesiredColumn(0);
+      stop = stop.getDownWithDesiredVisualColumn(0);
     }
 
     return {
@@ -494,13 +494,13 @@ export class SelectInnerParagraph extends TextObjectMovement {
       start = position.getLineBegin();
       stop = position.getLineEnd();
       while (start.line > 0 && TextEditor.getLineAt(start.getUp()).isEmptyOrWhitespace) {
-        start = start.getUpWithDesiredColumn(0);
+        start = start.getUpWithDesiredVisualColumn(0);
       }
       while (
         stop.line < TextEditor.getLineCount() - 1 &&
         TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
       ) {
-        stop = stop.getDownWithDesiredColumn(0);
+        stop = stop.getDownWithDesiredVisualColumn(0);
       }
     } else {
       const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
@@ -513,7 +513,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
 
       // Exclude additional blank lines.
       while (stop.line > 0 && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
-        stop = stop.getUpWithDesiredColumn(0).getLineEnd();
+        stop = stop.getUpWithDesiredVisualColumn(0).getLineEnd();
       }
     }
 
