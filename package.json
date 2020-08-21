@@ -1047,7 +1047,7 @@
     "@types/lodash": "4.14.159",
     "@types/mocha": "8.0.3",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.4",
+    "@types/sinon": "9.0.5",
     "@types/vscode": "1.37.0",
     "clean-webpack-plugin": "3.0.0",
     "gulp": "4.0.2",
