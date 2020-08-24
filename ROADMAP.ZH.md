@@ -140,25 +140,25 @@
 
 ## 标记定位
 
-| 状态               | 命令                                      | 描述                                                   |
-| ------------------ | ----------------------------------------- | ------------------------------------------------------ |
-| :white_check_mark: | m{a-zA-Z}                                 | 使用{a-zA-Z}标记当前位置                               |
-| :white_check_mark: | `{a-z} | 跳转到当文件中的{a-z}标记处      |
-| :white_check_mark: | `{A-Z} | 跳转到任意文件中的{A-Z}          |
-| :white_check_mark: | `{0-9} | 跳转到 Vim 上次退出时的位置      |
-| :white_check_mark: | `` | 跳转到 Vim 最后一次跳转之前的位置    |
-| :arrow_down:       | `" | 跳转到当前文件中最后一次编辑的位置   |
-| :arrow_down:       | `[ | 跳转到上一次操作或输入文本的开始位置 |
-| :arrow_down:       | `] | 跳转到上一次操作或输入文本的结束位置 |
-| :arrow_down:       | `< | 跳转到(上一个)可视区开始             |
-| :arrow_down:       | `> | 跳转到(上一个)可视区末尾             |
-| :white_check_mark: | `. | 跳转到此文件的最后一次修改处         |
-| :white_check_mark: | '.                                        | 跳转到此文件的最后一次修改处                           |
-| :arrow_down:       | '{a-zA-Z0-9[]'"<>.}                       | 与`命令的意义相同,除了会定位到所在行的第一个非空白字符 |
-| :arrow_down:       | :marks                                    | 打印当前活动的标记                                     |
-| :white_check_mark: | :1234: CTRL-O                             | 跳转到跳转列表的第 N 个旧位置                          |
-| :white_check_mark: | :1234: CTRL-I                             | 跳转到跳转列表的第 N 个新位置                          |
-| :arrow_down:       | :ju[mps]                                  | 打印跳转列表                                           |
+| 状态               | 命令                | 描述                                                   |
+| ------------------ | ------------------- | ------------------------------------------------------ |
+| :white_check_mark: | m{a-zA-Z}           | 使用{a-zA-Z}标记当前位置                               |
+| :white_check_mark: | `{a-z}              | 跳转到当文件中的{a-z}标记处                            |
+| :white_check_mark: | `{A-Z}              | 跳转到任意文件中的{A-Z}                                |
+| :white_check_mark: | `{0-9}              | 跳转到 Vim 上次退出时的位置                            |
+| :white_check_mark: | ``                  | 跳转到 Vim 最后一次跳转之前的位置                      |
+| :arrow_down:       | `"                  | 跳转到当前文件中最后一次编辑的位置                     |
+| :arrow_down:       | `[                  | 跳转到上一次操作或输入文本的开始位置                   |
+| :arrow_down:       | `]                  | 跳转到上一次操作或输入文本的结束位置                   |
+| :arrow_down:       | `<                  | 跳转到(上一个)可视区开始                               |
+| :arrow_down:       | `>                  | 跳转到(上一个)可视区末尾                               |
+| :white_check_mark: | `.                  | 跳转到此文件的最后一次修改处                           |
+| :white_check_mark: | '.                  | 跳转到此文件的最后一次修改处                           |
+| :arrow_down:       | '{a-zA-Z0-9[]'"<>.} | 与`命令的意义相同,除了会定位到所在行的第一个非空白字符 |
+| :arrow_down:       | :marks              | 打印当前活动的标记                                     |
+| :white_check_mark: | :1234: CTRL-O       | 跳转到跳转列表的第 N 个旧位置                          |
+| :white_check_mark: | :1234: CTRL-I       | 跳转到跳转列表的第 N 个新位置                          |
+| :arrow_down:       | :ju[mps]            | 打印跳转列表                                           |
 
 ## 其它移动方式
 
@@ -406,32 +406,32 @@
 
 ## 文本对象 (仅在可视模式下有效)
 
-| 状态               | 命令                           | 描述                                           |
-| ------------------ | ------------------------------ | ---------------------------------------------- |
-| :white_check_mark: | :1234: aw                      | 选择一个单词                                   |
-| :white_check_mark: | :1234: iw                      | 选择一个内置单词                               |
-| :white_check_mark: | :1234: aW                      | 选择一个单词                                   |
-| :white_check_mark: | :1234: iW                      | 选择一个内置单词                               |
-| :white_check_mark: | :1234: as                      | 选择一个缓冲区                                 |
-| :white_check_mark: | :1234: is                      | 选择一个内置缓冲区                             |
-| :white_check_mark: | :1234: ap                      | 选择一个段落                                   |
-| :white_check_mark: | :1234: ip                      | 选择一个内置缓冲区                             |
-| :white_check_mark: | :1234: a], a[                  | 选择一个中括号区域                             |
-| :white_check_mark: | :1234: i], i[                  | 选择一个内置中括号区域                         |
-| :white_check_mark: | :1234: ab, a(, a)              | 选择从"[(" 到 "])"的区域                       |
-| :white_check_mark: | :1234: ib, i), i(              | 选择从"[(" 到 "])"的内置区域                   |
-| :white_check_mark: | :1234: a>, a<                  | 选择"<>"区域                                   |
-| :white_check_mark: | :1234: i>, i<                  | 选择"<>"的内部区域                             |
-| :white_check_mark: | :1234: aB, a{, a}              | 选择从"[{" 到 "})"的区域                       |
-| :white_check_mark: | :1234: iB, i{, i}              | 选择从"[{" 到 "})"的内置区域                   |
-| :white_check_mark: | :1234: at                      | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的区域     |
-| :white_check_mark: | :1234: it                      | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的内部区域 |
-| :white_check_mark: | :1234: a'                      | 选择单引号区域                                 |
-| :white_check_mark: | :1234: i'                      | 选择单引号内置区域                             |
-| :white_check_mark: | :1234: a"                      | 选择双引号区域                                 |
-| :white_check_mark: | :1234: i"                      | 选择双引号内置区域                             |
-| :white_check_mark: | :1234: a` | 选择反引号区域     |
-| :white_check_mark: | :1234: i` | 选择反引号内置区域 |
+| 状态               | 命令              | 描述                                           |
+| ------------------ | ----------------- | ---------------------------------------------- |
+| :white_check_mark: | :1234: aw         | 选择一个单词                                   |
+| :white_check_mark: | :1234: iw         | 选择一个内置单词                               |
+| :white_check_mark: | :1234: aW         | 选择一个单词                                   |
+| :white_check_mark: | :1234: iW         | 选择一个内置单词                               |
+| :white_check_mark: | :1234: as         | 选择一个缓冲区                                 |
+| :white_check_mark: | :1234: is         | 选择一个内置缓冲区                             |
+| :white_check_mark: | :1234: ap         | 选择一个段落                                   |
+| :white_check_mark: | :1234: ip         | 选择一个内置缓冲区                             |
+| :white_check_mark: | :1234: a], a[     | 选择一个中括号区域                             |
+| :white_check_mark: | :1234: i], i[     | 选择一个内置中括号区域                         |
+| :white_check_mark: | :1234: ab, a(, a) | 选择从"[(" 到 "])"的区域                       |
+| :white_check_mark: | :1234: ib, i), i( | 选择从"[(" 到 "])"的内置区域                   |
+| :white_check_mark: | :1234: a>, a<     | 选择"<>"区域                                   |
+| :white_check_mark: | :1234: i>, i<     | 选择"<>"的内部区域                             |
+| :white_check_mark: | :1234: aB, a{, a} | 选择从"[{" 到 "})"的区域                       |
+| :white_check_mark: | :1234: iB, i{, i} | 选择从"[{" 到 "})"的内置区域                   |
+| :white_check_mark: | :1234: at         | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的区域     |
+| :white_check_mark: | :1234: it         | 选择标签从&lt;aaa&gt;到 &lt;/aaa&gt;的内部区域 |
+| :white_check_mark: | :1234: a'         | 选择单引号区域                                 |
+| :white_check_mark: | :1234: i'         | 选择单引号内置区域                             |
+| :white_check_mark: | :1234: a"         | 选择双引号区域                                 |
+| :white_check_mark: | :1234: i"         | 选择双引号内置区域                             |
+| :white_check_mark: | :1234: a`         | 选择反引号区域                                 |
+| :white_check_mark: | :1234: i`         | 选择反引号内置区域                             |
 
 ## 重复性命令
 
