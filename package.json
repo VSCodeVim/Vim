@@ -1059,7 +1059,7 @@
     "gulp-typescript": "5.0.1",
     "husky": "4.2.5",
     "minimist": "1.2.5",
-    "mocha": "8.1.1",
+    "mocha": "8.1.2",
     "plugin-error": "1.0.1",
     "prettier": "2.1.0",
     "pretty-quick": "3.0.0",
