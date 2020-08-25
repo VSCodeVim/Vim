@@ -860,7 +860,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (closedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
-          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+          isOnBoundary ||= SelectArgument.separatorCharacters().includes(char);
         }
 
         if (isOnBoundary) {
@@ -900,7 +900,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (openedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
-          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+          isOnBoundary ||= SelectArgument.separatorCharacters().includes(char);
         }
 
         if (isOnBoundary) {
