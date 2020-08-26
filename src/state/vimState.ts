@@ -13,6 +13,7 @@ import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 import { IKeyRemapping } from '../configuration/iconfiguration';
+import { SurroundState } from '../actions/plugins/surround';
 
 interface INVim {
   run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
@@ -97,16 +98,7 @@ export class VimState implements vscode.Disposable {
 
   public focusChanged = false;
 
-  public surround:
-    | undefined
-    | {
-        active: boolean;
-        operator: 'change' | 'delete' | 'yank';
-        target: string | undefined;
-        replacement: string | undefined;
-        range: Range | undefined;
-        previousMode: Mode;
-      } = undefined;
+  public surround: SurroundState | undefined = undefined;
 
   /**
    * Used for `<C-o>` in insert mode, which allows you run one normal mode
