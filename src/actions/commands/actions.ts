@@ -413,8 +413,6 @@ class CommandEsc extends BaseCommand {
       } else {
         vimState.isMultiCursor = false;
       }
-    } else if (vimState.currentMode === Mode.Insert) {
-      vscode.commands.executeCommand('closeParameterHints');
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {

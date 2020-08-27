@@ -34,6 +34,8 @@ class CommandEscInsertMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    vscode.commands.executeCommand('closeParameterHints');
+
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
