@@ -404,7 +404,6 @@ class CommandEsc extends BaseCommand {
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
         await Promise.all([
-          vscode.commands.executeCommand('closeParameterHints'),
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
@@ -414,6 +413,8 @@ class CommandEsc extends BaseCommand {
       } else {
         vimState.isMultiCursor = false;
       }
+    } else if (vimState.currentMode === Mode.Insert) {
+      vscode.commands.executeCommand('closeParameterHints');
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
