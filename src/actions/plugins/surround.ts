@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
 import { Position, PositionDiff, sorted } from './../../common/motion/position';
@@ -35,8 +36,7 @@ export interface SurroundState {
 
   replacement: string | undefined;
 
-  // TODO: make this a vscode.Range
-  range: Range | undefined;
+  range: vscode.Range | undefined;
 
   /** The mode before surround was triggered */
   previousMode: Mode;
@@ -158,7 +158,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       target: undefined,
       operator: 'yank',
       replacement: undefined,
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       previousMode: vimState.currentMode,
     };
 
@@ -416,10 +416,11 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         return false;
       }
 
-      let { start, stop } = vimState.surround.range;
+      const start = Position.FromVSCodePosition(vimState.surround.range.start);
+      let end = Position.FromVSCodePosition(vimState.surround.range.end);
 
-      if (TextEditor.getCharAt(stop) !== ' ') {
-        stop = stop.getRight();
+      if (TextEditor.getCharAt(end) !== ' ') {
+        end = end.getRight();
       }
 
       if (vimState.surround.previousMode === Mode.VisualLine) {
@@ -437,7 +438,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'insertText',
         text: endReplace,
-        position: stop,
+        position: end,
       });
 
       return CommandSurroundAddToReplacement.finish(vimState);
