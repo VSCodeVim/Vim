@@ -800,8 +800,10 @@ export class ROT13Operator extends BaseOperator {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        start: Position.FromVSCodePosition(range.start),
-        end: Position.FromVSCodePosition(range.end),
+        range: new Range(
+          Position.FromVSCodePosition(range.start),
+          Position.FromVSCodePosition(range.end)
+        ),
       });
     }
   }
@@ -1092,8 +1094,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: textToReflow,
-      start: start,
-      end: end,
+      range: new Range(start, end),
       // Move cursor to front of line to realign the view
       diff: PositionDiff.newBOLDiff(),
     });

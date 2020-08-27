@@ -568,14 +568,12 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: startReplace,
-          start: startReplaceRange.start,
-          end: startReplaceRange.stop,
+          range: startReplaceRange,
         });
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: endReplace,
-          start: endReplaceRange.start,
-          end: endReplaceRange.stop,
+          range: endReplaceRange,
         });
       }
 
