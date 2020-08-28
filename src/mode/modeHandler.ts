@@ -55,7 +55,7 @@ export class ModeHandler implements vscode.Disposable {
 
   private _disposables: vscode.Disposable[] = [];
   private _remappers: Remappers;
-  private readonly _logger = Logger.get('ModeHandler');
+  private static readonly logger = Logger.get('ModeHandler');
 
   // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
   private _currentMode: Mode;
@@ -148,7 +148,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
     let selection = e.selections[0];
-    this._logger.debug(
+    ModeHandler.logger.debug(
       `Selections: Handling Selection Change! Selection: ${Position.FromVSCodePosition(
         selection.anchor
       ).toString()}, ${Position.FromVSCodePosition(selection.active)}, SelectionsLength: ${
@@ -202,13 +202,13 @@ export class ModeHandler implements vscode.Disposable {
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
-              this._logger.debug('Selections: Updating Visual Selection!');
+              ModeHandler.logger.debug('Selections: Updating Visual Selection!');
               this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
               this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
-              this._logger.debug('Selections: Creating Visual Selection from command!');
+              ModeHandler.logger.debug('Selections: Creating Visual Selection from command!');
               this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
               this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
               await this.setCurrentMode(Mode.Visual);
@@ -260,7 +260,7 @@ export class ModeHandler implements vscode.Disposable {
         // We still need to be careful with this because this here might be changing our cursors
         // in ways we don't want to. So with future selection issues this is a good place to start
         // looking.
-        this._logger.debug(
+        ModeHandler.logger.debug(
           `Selections: Changing Cursors from selection handler... ${Position.FromVSCodePosition(
             selection.anchor
           ).toString()}, ${Position.FromVSCodePosition(selection.active)}`
@@ -367,7 +367,7 @@ export class ModeHandler implements vscode.Disposable {
       throw new ForceStopRemappingError('Forced by user');
     }
 
-    this._logger.debug(`handling key=${printableKey}.`);
+    ModeHandler.logger.debug(`handling key=${printableKey}.`);
 
     if (
       (key === SpecialKeys.TimeoutFinished ||
@@ -507,7 +507,9 @@ export class ModeHandler implements vscode.Disposable {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    this._logger.debug(`handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`);
+    ModeHandler.logger.debug(
+      `handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`
+    );
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
@@ -547,7 +549,7 @@ export class ModeHandler implements vscode.Disposable {
 
   private async handleKeyAsAnAction(key: string): Promise<boolean> {
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
-      this._logger.warn('Current window is not active');
+      ModeHandler.logger.warn('Current window is not active');
       return false;
     }
 
@@ -1082,7 +1084,7 @@ export class ModeHandler implements vscode.Disposable {
         case 'moveCursor':
           break;
         default:
-          this._logger.warn(`Unhandled text transformation type: ${command.type}.`);
+          ModeHandler.logger.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
 
@@ -1101,7 +1103,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        this._logger.debug(
+        ModeHandler.logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -1142,7 +1144,7 @@ export class ModeHandler implements vscode.Disposable {
         // await vscode.commands.executeCommand('default:type', { text });
         await TextEditor.insert(text);
       } else {
-        this._logger.warn(
+        ModeHandler.logger.warn(
           `Unhandled multicursor transformations. Not all transformations are the same!`
         );
       }
@@ -1267,7 +1269,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         default:
-          this._logger.warn(`Unhandled text transformation type: ${transformation.type}.`);
+          ModeHandler.logger.warn(`Unhandled text transformation type: ${transformation.type}.`);
           break;
       }
     }
@@ -1492,7 +1494,7 @@ export class ModeHandler implements vscode.Disposable {
           ''
         );
         this.vimState.selectionsChanged.ourSelections.push(selectionsHash);
-        this._logger.debug(
+        ModeHandler.logger.debug(
           `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${Position.FromVSCodePosition(
             selections[0].anchor
           ).toString()}, ${Position.FromVSCodePosition(selections[0].active).toString()}`
