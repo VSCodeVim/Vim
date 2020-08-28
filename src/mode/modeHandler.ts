@@ -494,7 +494,7 @@ export class ModeHandler implements vscode.Disposable {
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
         this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
-        this.vimState.isRecordingMacro;
+        this.vimState.macro !== undefined;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
 
@@ -627,11 +627,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (
-      this.vimState.isRecordingMacro &&
+      this.vimState.macro !== undefined &&
       actionToRecord &&
       !(actionToRecord instanceof CommandQuitRecordMacro)
     ) {
-      this.vimState.recordedMacro.actionsRun.push(actionToRecord);
+      this.vimState.macro.actionsRun.push(actionToRecord);
     }
 
     await this.runAction(recordedState, action);

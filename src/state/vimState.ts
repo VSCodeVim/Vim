@@ -85,6 +85,7 @@ export class VimState implements vscode.Disposable {
   public alteredHistory = false;
 
   public isRunningDotCommand = false;
+  public isReplayingMacro: boolean = false;
 
   /**
    * The last visual selection before running the dot command
@@ -282,9 +283,6 @@ export class VimState implements vscode.Disposable {
     this._cursorsInitialState = [...cursors];
   }
 
-  public isRecordingMacro: boolean = false;
-  public isReplayingMacro: boolean = false;
-
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
@@ -379,7 +377,8 @@ export class VimState implements vscode.Disposable {
 
   public recordedState = new RecordedState();
 
-  public recordedMacro = new RecordedState();
+  /** The macro currently being recorded, if one exists. */
+  public macro: RecordedState | undefined;
 
   public nvim: INVim;
 

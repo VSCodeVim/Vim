@@ -330,7 +330,7 @@ export class Register {
         baseOperator instanceof ActionDeleteChar ||
         baseOperator instanceof ActionDeleteLastChar ||
         baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
-      !(vimState.isRecordingMacro || vimState.isReplayingMacro)
+      !(vimState.macro !== undefined || vimState.isReplayingMacro)
     ) {
       if (
         !content.toString().match(/\n/g) &&

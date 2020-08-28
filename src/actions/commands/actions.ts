@@ -288,8 +288,8 @@ class CommandRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
-    vimState.recordedMacro = new RecordedState();
-    vimState.recordedMacro.registerName = register;
+    vimState.macro = new RecordedState();
+    vimState.macro.registerName = register;
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
@@ -297,8 +297,6 @@ class CommandRecordMacro extends BaseCommand {
       newRegister.registerName = register;
       Register.putByKey(newRegister, register);
     }
-
-    vimState.isRecordingMacro = true;
   }
 }
 
@@ -308,21 +306,22 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const existingMacro = (await Register.get(vimState, vimState.recordedMacro.registerName))?.text;
-    if (!(existingMacro instanceof RecordedState)) {
-      return;
+    const macro = vimState.macro!;
+
+    const existingMacro = (await Register.get(vimState, macro.registerName))?.text;
+    if (existingMacro instanceof RecordedState) {
+      existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
     }
 
-    existingMacro.actionsRun = existingMacro.actionsRun.concat(vimState.recordedMacro.actionsRun);
-    vimState.isRecordingMacro = false;
+    vimState.macro = undefined;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+    return super.doesActionApply(vimState, keysPressed) && vimState.macro !== undefined;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+    return super.couldActionApply(vimState, keysPressed) && vimState.macro !== undefined;
   }
 }
 
