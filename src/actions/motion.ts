@@ -696,7 +696,7 @@ class MoveFindForward extends BaseMovement {
       );
     }
 
-    count = count || 1;
+    count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = findHelper(position, toFind, count, 'forward');
 
@@ -744,7 +744,7 @@ class MoveFindBackward extends BaseMovement {
       );
     }
 
-    count = count || 1;
+    count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = findHelper(position, toFind, count, 'backward');
 
@@ -778,7 +778,7 @@ class MoveTilForward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    count = count || 1;
+    count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = tilHelper(position, toFind, count, 'forward');
 
@@ -811,7 +811,7 @@ class MoveTilBackward extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    count = count || 1;
+    count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
     let result = tilHelper(position, toFind, count, 'backward');
 
@@ -932,7 +932,7 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    count = count || 1;
+    count ||= 1;
     const pos = await super.execActionWithCount(position, vimState, count);
 
     // If in visual, return a selection

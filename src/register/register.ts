@@ -365,9 +365,7 @@ export class Register {
     vimState: VimState,
     register?: string
   ): Promise<IRegisterContent | undefined> {
-    if (register === undefined) {
-      register = vimState.recordedState.registerName;
-    }
+    register ??= vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);

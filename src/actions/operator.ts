@@ -259,7 +259,7 @@ export class YankOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     // HACK: make Surround with y (which takes a motion) work.
     if (vimState.surround) {
-      vimState.surround.range = new Range(start, end);
+      vimState.surround.range = new vscode.Range(start, end);
       await vimState.setCurrentMode(Mode.SurroundInputMode);
       vimState.cursorStopPosition = start;
       vimState.cursorStartPosition = start;
@@ -800,8 +800,10 @@ export class ROT13Operator extends BaseOperator {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        start: Position.FromVSCodePosition(range.start),
-        end: Position.FromVSCodePosition(range.end),
+        range: new Range(
+          Position.FromVSCodePosition(range.start),
+          Position.FromVSCodePosition(range.end)
+        ),
       });
     }
   }
@@ -1092,8 +1094,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: textToReflow,
-      start: start,
-      end: end,
+      range: new Range(start, end),
       // Move cursor to front of line to realign the view
       diff: PositionDiff.newBOLDiff(),
     });

@@ -404,7 +404,6 @@ class CommandEsc extends BaseCommand {
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
         await Promise.all([
-          vscode.commands.executeCommand('closeParameterHints'),
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
@@ -697,8 +696,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: replaceState.originalChars[position.character - 1],
-          start: position.getLeft(),
-          end: position,
+          range: new Range(position.getLeft(), position),
           diff: new PositionDiff({ character: -1 }),
         });
       }
@@ -709,8 +707,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: char,
-          start: position,
-          end: position.getRight(),
+          range: new Range(position, position.getRight()),
           diff: new PositionDiff({ character: 1 }),
         });
       } else {
@@ -2451,8 +2448,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: trimmedLinesContent,
-          start: deleteStartPosition,
-          end: deleteEndPosition,
+          range: new Range(deleteStartPosition, deleteEndPosition),
           diff: new PositionDiff({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
@@ -2461,8 +2457,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: trimmedLinesContent,
-          start: deleteStartPosition,
-          end: deleteEndPosition,
+          range: new Range(deleteStartPosition, deleteEndPosition),
           manuallySetCursorPositions: true,
         });
 
@@ -2661,8 +2656,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
-        start: position,
-        end: endPos,
+        range: new Range(position, endPos),
         diff: new PositionDiff({ character: timesToRepeat - 1 }),
       });
     }
@@ -2714,8 +2708,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(end.character - start.character + 2).join(toInsert),
-          start: start,
-          end: new Position(end.line, end.character + 1),
+          range: new Range(start, new Position(end.line, end.character + 1)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === start.line) {
@@ -2723,8 +2716,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(lineText.length - start.character + 1).join(toInsert),
-          start: start,
-          end: new Position(start.line, lineText.length),
+          range: new Range(start, new Position(start.line, lineText.length)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === end.line) {
@@ -2732,8 +2724,10 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
-          start: new Position(end.line, 0),
-          end: new Position(end.line, end.character + visualSelectionOffset),
+          range: new Range(
+            new Position(end.line, 0),
+            new Position(end.line, end.character + visualSelectionOffset)
+          ),
           manuallySetCursorPositions: true,
         });
       } else {
@@ -2741,8 +2735,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(lineText.length + 1).join(toInsert),
-          start: new Position(lineNum, 0),
-          end: new Position(lineNum, lineText.length),
+          range: new Range(new Position(lineNum, 0), new Position(lineNum, lineText.length)),
           manuallySetCursorPositions: true,
         });
       }
@@ -2778,8 +2771,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: Array(end.character - start.character + 1).join(toInsert),
-        start: start,
-        end: end,
+        range: new Range(start, end),
         manuallySetCursorPositions: true,
       });
     }

@@ -1076,6 +1076,6 @@
     "webpack": "4.44.1",
     "webpack-cli": "3.3.12",
     "webpack-merge": "5.1.2",
-    "webpack-stream": "5.2.1"
+    "webpack-stream": "6.0.0"
   }
 }
