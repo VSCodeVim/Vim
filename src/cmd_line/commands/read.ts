@@ -61,7 +61,7 @@ export class ReadCommand extends node.CommandBase {
       return new Promise<string>((resolve, reject) => {
         try {
           import('child_process').then((cp) => {
-            cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
+            return cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
               if (err) {
                 reject(err);
               } else {

@@ -98,16 +98,13 @@ export async function writeFileAsync(
 }
 
 export async function accessAsync(path: string, mode: number) {
-  // no op
-  // return promisify(fs.access)(path, mode);
+  // no op in nodeless
 }
 
 export async function chmodAsync(path: string, mode: string | number) {
-  // no op
-  // return promisify(fs.chmod)(path, mode);
+  // no op in nodeless
 }
 
 export function unlinkSync(path: string) {
-  // no op
-  // fs.unlinkSync(path);
+  // no op in nodeless
 }
