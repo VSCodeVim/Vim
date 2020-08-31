@@ -87,9 +87,7 @@ export async function existsAsync(path: string): Promise<boolean> {
 }
 
 export async function unlink(path): Promise<void> {
-  try {
-    fs.unlinkSync(path);
-  } catch (_e) {}
+  fs.unlinkSync(path);
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {
