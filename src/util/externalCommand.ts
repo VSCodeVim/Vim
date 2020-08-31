@@ -96,7 +96,7 @@ class ExternalCommand {
       command = this.redirectCommand(command, inputFile, outputFile);
       try {
         await import('child_process').then((cp) => {
-          cp.exec(command, (err, stdout, stderr) => {});
+          cp.exec(command);
         });
       } catch (e) {
         // exec throws an error if exit code != 0

@@ -86,7 +86,7 @@ export async function readFileAsync(path: string, encoding: string): Promise<str
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
-  return await vscode.workspace.fs.createDirectory(vscode.Uri.parse(path));
+  return vscode.workspace.fs.createDirectory(vscode.Uri.parse(path));
 }
 
 export async function writeFileAsync(
@@ -94,7 +94,7 @@ export async function writeFileAsync(
   content: string,
   encoding: string
 ): Promise<void> {
-  return await vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
+  return vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
 }
 
 export async function accessAsync(path: string, mode: number) {

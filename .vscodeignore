@@ -13,6 +13,7 @@ test/**
 typings/**
 out/src/**
 out/test/**
+outWeb/**
 node_modules/**
 images/design/**
 

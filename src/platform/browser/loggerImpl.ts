@@ -6,8 +6,11 @@ import { ILogger } from 'src/platform/common/logger';
  */
 export class VsCodeMessage implements ILogger {
   actionMessages = ['Dismiss', 'Suppress Errors'];
+  private prefix: string;
 
-  constructor(private prefix: string) {}
+  constructor(prefix: string) {
+    this.prefix = prefix;
+  }
 
   error(errorMessage: string): void {
     this.log({ level: 'error', message: errorMessage });

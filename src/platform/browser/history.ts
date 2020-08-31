@@ -4,18 +4,23 @@ import { ILogger } from '../common/logger';
 export class HistoryBase {
   private _historyFileName: string;
   private _history: string[] = [];
-
   get historyKey(): string {
     return `vim.${this._historyFileName}`;
   }
+  private _context: vscode.ExtensionContext;
+  private _extensionStoragePath: string;
+  private _logger: ILogger;
 
   constructor(
-    private _context: vscode.ExtensionContext,
+    context: vscode.ExtensionContext,
     historyFileName: string,
-    private _extensionStoragePath: string,
-    private _logger: ILogger
+    extensionStoragePath: string,
+    logger: ILogger
   ) {
+    this._context = context;
     this._historyFileName = historyFileName;
+    this._extensionStoragePath = extensionStoragePath;
+    this._logger = logger;
   }
 
   public async add(value: string | undefined, history: number): Promise<void> {

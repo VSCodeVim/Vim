@@ -165,7 +165,10 @@ gulp.task('webpack', function () {
 });
 
 gulp.task('webpack-web', function () {
-  return gulp.src('./extension.ts').pipe(webpack_stream(webpack_web_config)).pipe(gulp.dest('out'));
+  return gulp
+    .src('./extension.ts')
+    .pipe(webpack_stream(webpack_web_config))
+    .pipe(gulp.dest('outWeb'));
 });
 
 gulp.task('webpack-dev', function () {
@@ -255,7 +258,10 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
+gulp.task(
+  'build',
+  gulp.series('prettier', gulp.parallel('webpack', 'webpack-web', 'tslint'), 'commit-hash')
+);
 gulp.task(
   'build-dev',
   gulp.series('prettier', gulp.parallel('webpack-dev', 'tslint'), 'commit-hash')
