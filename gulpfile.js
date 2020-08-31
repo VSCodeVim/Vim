@@ -11,7 +11,6 @@ var gulp = require('gulp'),
   webpack_stream = require('webpack-stream'),
   webpack_config = require('./webpack.config.js'),
   es = require('event-stream');
-webpack_web_config = require('./webpack.web.js');
 webpack_dev_config = require('./webpack.dev.js');
 
 const exec = require('child_process').exec;
@@ -186,18 +185,17 @@ gulp.task('tsc', function () {
 });
 
 gulp.task('webpack', function () {
-  return gulp.src('./extension.ts').pipe(webpack_stream(webpack_config)).pipe(gulp.dest('out'));
-});
-
-gulp.task('webpack-web', function () {
-  return gulp
-    .src('./extension.ts')
-    .pipe(webpack_stream(webpack_web_config))
-    .pipe(gulp.dest('outWeb'));
+  return webpack_stream({
+    config: webpack_config,
+    entry: ['./extension.ts', './extensionWeb.ts'],
+  }).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack-dev', function () {
-  return gulp.src('./extension.ts').pipe(webpack_stream(webpack_dev_config)).pipe(gulp.dest('out'));
+  return webpack_stream({
+    config: webpack_dev_config,
+    entry: ['./extension.ts', './extensionWeb.ts'],
+  }).pipe(gulp.dest('out'));
 });
 
 gulp.task('tslint', function () {
@@ -283,10 +281,7 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task(
-  'build',
-  gulp.series('prettier', gulp.parallel('webpack', 'webpack-web', 'tslint'), 'commit-hash')
-);
+gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
 gulp.task(
   'build-dev',
   gulp.series('prettier', gulp.parallel('webpack-dev', 'tslint'), 'commit-hash')
