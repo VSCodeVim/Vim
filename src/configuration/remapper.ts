@@ -516,7 +516,7 @@ export class Remapper implements IRemapper {
               commandString.slice(1, commandString.length),
               modeHandler.vimState
             );
-            await modeHandler.updateView(modeHandler.vimState);
+            await modeHandler.updateView();
           } else if (commandArgs) {
             await vscode.commands.executeCommand(commandString, commandArgs);
           } else {

@@ -10,12 +10,6 @@ import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 
-interface INVim {
-  run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
-
-  dispose(): void;
-}
-
 class CommandLine {
   private _history: CommandLineHistory;
   private readonly _logger = Logger.get('CommandLine');

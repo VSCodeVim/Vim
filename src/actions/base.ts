@@ -194,19 +194,19 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * Run the command a single time.
    */
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     throw new Error('Not implemented!');
   }
 
   /**
    * Run the command the number of times VimState wants us to.
    */
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<void> {
     let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (!this.runsOnceForEveryCursor()) {
       for (let i = 0; i < timesToRepeat; i++) {
-        vimState = await this.exec(position, vimState);
+        await this.exec(position, vimState);
       }
 
       for (const transformation of vimState.recordedState.transformations) {
@@ -215,7 +215,7 @@ export abstract class BaseCommand extends BaseAction {
         }
       }
 
-      return vimState;
+      return;
     }
 
     let resultingCursors: Range[] = [];
@@ -237,7 +237,7 @@ export abstract class BaseCommand extends BaseAction {
       vimState.cursorStartPosition = start;
 
       for (let j = 0; j < timesToRepeat; j++) {
-        vimState = await this.exec(stop, vimState);
+        await this.exec(stop, vimState);
       }
 
       resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
@@ -250,8 +250,6 @@ export abstract class BaseCommand extends BaseAction {
     }
 
     vimState.cursors = resultingCursors;
-
-    return vimState;
   }
 }
 

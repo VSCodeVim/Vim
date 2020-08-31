@@ -330,7 +330,7 @@ export class Register {
         baseOperator instanceof ActionDeleteChar ||
         baseOperator instanceof ActionDeleteLastChar ||
         baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
-      !(vimState.isRecordingMacro || vimState.isReplayingMacro)
+      !(vimState.macro !== undefined || vimState.isReplayingMacro)
     ) {
       if (
         !content.toString().match(/\n/g) &&
@@ -365,9 +365,7 @@ export class Register {
     vimState: VimState,
     register?: string
   ): Promise<IRegisterContent | undefined> {
-    if (register === undefined) {
-      register = vimState.recordedState.registerName;
-    }
+    register ??= vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);

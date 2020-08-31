@@ -4,7 +4,6 @@ import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
-import { MarkerGenerator } from './markerGenerator';
 import { Mode } from '../../../mode/mode';
 
 export class EasyMotion {
@@ -21,10 +20,11 @@ export class EasyMotion {
   private _markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
-  private fade: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+
+  private static readonly fade = vscode.window.createTextEditorDecorationType({
     color: configuration.easymotionDimColor,
   });
-  private hide: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+  private static readonly hide = vscode.window.createTextEditorDecorationType({
     color: 'transparent',
   });
 
@@ -82,8 +82,8 @@ export class EasyMotion {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
 
-    editor.setDecorations(this.fade, []);
-    editor.setDecorations(this.hide, []);
+    editor.setDecorations(EasyMotion.fade, []);
+    editor.setDecorations(EasyMotion.hide, []);
   }
 
   /**
@@ -420,10 +420,10 @@ export class EasyMotion {
       }
     }
 
-    editor.setDecorations(this.hide, hiddenChars);
+    editor.setDecorations(EasyMotion.hide, hiddenChars);
 
     if (configuration.easymotionDimBackground) {
-      editor.setDecorations(this.fade, dimmingZones);
+      editor.setDecorations(EasyMotion.fade, dimmingZones);
     }
   }
 }
