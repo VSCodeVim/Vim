@@ -9,7 +9,8 @@ var gulp = require('gulp'),
   minimist = require('minimist'),
   path = require('path'),
   webpack_stream = require('webpack-stream'),
-  webpack_config = require('./webpack.config.js');
+  webpack_config = require('./webpack.config.js'),
+  es = require('event-stream');
 webpack_web_config = require('./webpack.web.js');
 webpack_dev_config = require('./webpack.dev.js');
 
@@ -136,6 +137,29 @@ function updateVersion(done) {
     });
 }
 
+function updatePath() {
+  const input = es.through();
+  const output = input.pipe(
+    es.mapSync((f) => {
+      const contents = f.contents.toString('utf8');
+      const filePath = f.path;
+      let platformRelativepath = path.relative(
+        path.dirname(filePath),
+        path.resolve(process.cwd(), 'out/src/platform/node')
+      );
+      f.contents = Buffer.from(
+        contents.replace(
+          /\(\"platform\/([^"]*)\"\)/g,
+          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")'
+        ),
+        'utf8'
+      );
+      return f;
+    })
+  );
+  return es.duplex(input, output);
+}
+
 function copyPackageJson() {
   return gulp.src('./package.json').pipe(gulp.dest('out'));
 }
@@ -157,6 +181,7 @@ gulp.task('tsc', function () {
 
   return tsResult.js
     .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
+    .pipe(updatePath())
     .pipe(gulp.dest('out'));
 });
 

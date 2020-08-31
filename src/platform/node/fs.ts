@@ -87,7 +87,9 @@ export async function existsAsync(path: string): Promise<boolean> {
 }
 
 export async function unlink(path): Promise<void> {
-  await vscode.workspace.fs.delete(vscode.Uri.parse(path));
+  try {
+    fs.unlinkSync(path);
+  } catch (_e) {}
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {
