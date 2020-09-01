@@ -1009,7 +1009,8 @@
         "id": "vimrc",
         "extensions": [
           ".vimrc"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
