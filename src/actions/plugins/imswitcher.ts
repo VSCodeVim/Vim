@@ -7,7 +7,7 @@ import { configuration } from '../../configuration/configuration';
  * InputMethodSwitcher changes input method when mode changed
  */
 export class InputMethodSwitcher {
-  private readonly logger = Logger.get('IMSwitcher');
+  private static readonly logger = Logger.get('IMSwitcher');
   private execute: (cmd: string) => Promise<string>;
   private savedIMKey = '';
 
@@ -40,7 +40,7 @@ export class InputMethodSwitcher {
         this.savedIMKey = insertIMKey.trim();
       }
     } catch (e) {
-      this.logger.error(`Error switching to default IM. err=${e}`);
+      InputMethodSwitcher.logger.error(`Error switching to default IM. err=${e}`);
     }
 
     const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
@@ -63,7 +63,7 @@ export class InputMethodSwitcher {
       try {
         await this.execute(switchIMCmd);
       } catch (e) {
-        this.logger.error(`Error switching to IM. err=${e}`);
+        InputMethodSwitcher.logger.error(`Error switching to IM. err=${e}`);
       }
     }
   }

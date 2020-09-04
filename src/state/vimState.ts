@@ -31,7 +31,7 @@ interface INVim {
  * Each ModeHandler holds a VimState, so there is one for each open editor.
  */
 export class VimState implements vscode.Disposable {
-  private readonly logger = Logger.get('VimState');
+  private static readonly logger = Logger.get('VimState');
 
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
@@ -85,6 +85,7 @@ export class VimState implements vscode.Disposable {
   public alteredHistory = false;
 
   public isRunningDotCommand = false;
+  public isReplayingMacro: boolean = false;
 
   /**
    * The last visual selection before running the dot command
@@ -233,7 +234,7 @@ export class VimState implements vscode.Disposable {
   }
   public set cursorStartPosition(value: Position) {
     if (!value.isValid(this.editor)) {
-      this.logger.warn(`invalid cursor start position. ${value.toString()}.`);
+      VimState.logger.warn(`invalid cursor start position. ${value.toString()}.`);
     }
     this.cursors[0] = this.cursors[0].withNewStart(value);
   }
@@ -243,7 +244,7 @@ export class VimState implements vscode.Disposable {
   }
   public set cursorStopPosition(value: Position) {
     if (!value.isValid(this.editor)) {
-      this.logger.warn(`invalid cursor stop position. ${value.toString()}.`);
+      VimState.logger.warn(`invalid cursor stop position. ${value.toString()}.`);
     }
     this.cursors[0] = this.cursors[0].withNewStop(value);
   }
@@ -260,7 +261,7 @@ export class VimState implements vscode.Disposable {
     const map = new Map<string, Range>();
     for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
-        this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
+        VimState.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
 
       // use a map to ensure no two cursors are at the same location.
@@ -281,9 +282,6 @@ export class VimState implements vscode.Disposable {
   public set cursorsInitialState(cursors: Range[]) {
     this._cursorsInitialState = [...cursors];
   }
-
-  public isRecordingMacro: boolean = false;
-  public isReplayingMacro: boolean = false;
 
   public replaceState: ReplaceState | undefined = undefined;
 
@@ -379,7 +377,8 @@ export class VimState implements vscode.Disposable {
 
   public recordedState = new RecordedState();
 
-  public recordedMacro = new RecordedState();
+  /** The macro currently being recorded, if one exists. */
+  public macro: RecordedState | undefined;
 
   public nvim: INVim;
 

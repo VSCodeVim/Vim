@@ -67,6 +67,7 @@ export class Logger {
     return winston.createLogger({
       format: winston.format.simple(),
       transports: [
+        // TODO: update these when configuration changes
         new ConsoleForElectron({
           level: configuration.debug.loggingLevelForConsole,
           silent: configuration.debug.silent,
