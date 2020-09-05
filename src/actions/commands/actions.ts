@@ -1216,6 +1216,11 @@ class CommandCloseFold extends CommandFold {
 class CommandCloseAllFolds extends CommandFold {
   keys = ['z', 'M'];
   commandName = 'editor.foldAll';
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.cursors = getCursorsAfterSync();
+    await vimState.setCurrentMode(Mode.Normal);
+  }
 }
 
 @RegisterAction
@@ -1244,6 +1249,11 @@ class CommandCloseAllFoldsRecursively extends CommandFold {
   modes = [Mode.Normal];
   keys = ['z', 'C'];
   commandName = 'editor.foldRecursively';
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.cursors = getCursorsAfterSync();
+    await vimState.setCurrentMode(Mode.Normal);
+  }
 }
 
 @RegisterAction
