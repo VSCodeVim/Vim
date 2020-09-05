@@ -145,20 +145,17 @@ export const lineCompletionProvider = {
    * a space character (such that it shows almost any symbol in the list).
    * Quick Pick also allows for searching, which is a nice bonus.
    */
-  showLineCompletionsQuickPick: async (
-    position: Position,
-    vimState: VimState
-  ): Promise<VimState> => {
+  showLineCompletionsQuickPick: async (position: Position, vimState: VimState): Promise<void> => {
     const completions = getCompletionsForCurrentLine(position, vimState.editor.document);
 
     if (!completions) {
-      return vimState;
+      return;
     }
 
     const selectedCompletion = await vscode.window.showQuickPick(completions);
 
     if (!selectedCompletion) {
-      return vimState;
+      return;
     }
 
     vimState.recordedState.transformations.push({
@@ -173,7 +170,5 @@ export const lineCompletionProvider = {
       type: 'insertTextVSCode',
       text: selectedCompletion,
     });
-
-    return vimState;
   },
 };

@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
-
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -11,10 +9,9 @@ import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction } from './../base';
+import { RegisterAction, BaseCommand } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
-  BaseCommand,
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
@@ -24,6 +21,8 @@ import {
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -34,7 +33,9 @@ class CommandEscInsertMode extends BaseCommand {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    vscode.commands.executeCommand('closeParameterHints');
+
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
@@ -103,7 +104,6 @@ class CommandEscInsertMode extends BaseCommand {
       vimState.isMultiCursor = false;
       vimState.isFakeMultiCursor = false;
     }
-    return vimState;
   }
 }
 
@@ -112,13 +112,17 @@ export class CommandInsertPreviousText extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-a>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lastInserted = (await Register.getByKey('.')).text as RecordedState;
-    if (!lastInserted.actionsRun) {
-      throw error.VimError.fromCode(error.ErrorCode.NoInsertedTextYet);
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const register = await Register.get(vimState, '.');
+    if (
+      register === undefined ||
+      !(register.text instanceof RecordedState) ||
+      !register.text.actionsRun
+    ) {
+      throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
     }
 
-    let actions = lastInserted.actionsRun.slice(0);
+    const actions = [...register.text.actionsRun];
     // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
@@ -132,18 +136,17 @@ export class CommandInsertPreviousText extends BaseCommand {
 
     for (let action of actions) {
       if (action instanceof BaseCommand) {
-        vimState = await action.execCount(vimState.cursorStopPosition, vimState);
+        await action.execCount(vimState.cursorStopPosition, vimState);
       }
 
       if (action instanceof DocumentContentChangeAction) {
-        vimState = await action.exec(vimState.cursorStopPosition, vimState);
+        await action.exec(vimState.cursorStopPosition, vimState);
       }
     }
 
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     await vimState.setCurrentMode(Mode.Insert);
-    return vimState;
   }
 }
 
@@ -152,10 +155,9 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-shift+2>']; // <C-@>
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState = await new CommandInsertPreviousText().exec(position, vimState);
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new CommandInsertPreviousText().exec(position, vimState);
     await vimState.setCurrentMode(Mode.Normal);
-    return vimState;
   }
 }
 
@@ -164,15 +166,15 @@ class CommandInsertBelowChar extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-e>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     if (TextEditor.isLastLine(position)) {
-      return vimState;
+      return;
     }
 
     const charBelowCursorPosition = position.getDown();
 
     if (charBelowCursorPosition.isLineEnd()) {
-      return vimState;
+      return;
     }
 
     const char = TextEditor.getText(
@@ -182,8 +184,6 @@ class CommandInsertBelowChar extends BaseCommand {
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-
-    return vimState;
   }
 }
 
@@ -192,7 +192,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-t>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
@@ -201,12 +201,9 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
-      start: position.getLineBegin(),
-      end: position.getLineEnd(),
+      range: new Range(position.getLineBegin(), position.getLineEnd()),
       diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
     });
-
-    return vimState;
   }
 }
 
@@ -220,11 +217,10 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 //   keys = ["<tab>"];
 //   runsOnceForEveryCursor() { return false; }
 
-//   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+//   public async exec(position: Position, vimState: VimState): Promise<void> {
 //     vimState.recordedState.transformations.push({
 //       type: "tab"
 //     });
-//     return vimState;
 //   }
 // }
 
@@ -233,7 +229,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<BS>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const line = TextEditor.getLineAt(position).text;
     const selection = vimState.editor.selections.find((s) => s.contains(position));
 
@@ -241,7 +237,10 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (
       position.character > 0 &&
@@ -271,7 +270,6 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 
     vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
     vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
-    return vimState;
   }
 }
 
@@ -280,14 +278,17 @@ export class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const selection = TextEditor.getSelection();
 
     if (!selection.isEmpty) {
       // If a selection is active, delete it
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
-        range: new Range(selection.start as Position, selection.end as Position),
+        range: new Range(
+          Position.FromVSCodePosition(selection.start),
+          Position.FromVSCodePosition(selection.end)
+        ),
       });
     } else if (!position.isAtDocumentEnd()) {
       // Otherwise, just delete a character (unless we're at the end of the document)
@@ -296,7 +297,6 @@ export class CommandDeleteInInsertMode extends BaseCommand {
         position: position.getRightThroughLineBreaks(true),
       });
     }
-    return vimState;
   }
 }
 
@@ -305,7 +305,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     vimState.recordedState.transformations.push({
@@ -313,8 +313,6 @@ export class CommandInsertInInsertMode extends BaseCommand {
       text: char,
       isMultiCursor: vimState.isMultiCursor,
     });
-
-    return vimState;
   }
 
   public toString(): string {
@@ -328,7 +326,7 @@ class CommandInsertDigraph extends BaseCommand {
   keys = ['<C-k>', '<any>', '<any>'];
   isCompleteAction = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const digraph = this.keysPressed.slice(1, 3).join('');
     const reverseDigraph = digraph.split('').reverse().join('');
     let charCodes = (DefaultDigraphs[digraph] ||
@@ -343,8 +341,6 @@ class CommandInsertDigraph extends BaseCommand {
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-
-    return vimState;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -387,13 +383,17 @@ class CommandInsertRegisterContent extends BaseCommand {
   keys = ['<C-r>', '<character>'];
   isCompleteAction = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
-    let text: string;
+    if (register === undefined) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      return;
+    }
 
+    let text: string;
     if (register.text instanceof Array) {
-      text = (register.text as string[]).join('\n');
+      text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       vimState.recordedState.transformations.push({
         type: 'macro',
@@ -401,7 +401,7 @@ class CommandInsertRegisterContent extends BaseCommand {
         replay: 'keystrokes',
       });
 
-      return vimState;
+      return;
     } else {
       text = register.text;
     }
@@ -414,20 +414,12 @@ class CommandInsertRegisterContent extends BaseCommand {
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-
-    return vimState;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const register = keysPressed[1];
 
     return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 }
 
@@ -436,10 +428,10 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.returnToInsertAfterCommand = true;
     vimState.actionCount = 0;
-    return new CommandEscInsertMode().exec(position, vimState);
+    await new CommandEscInsertMode().exec(position, vimState);
   }
 }
 
@@ -448,7 +440,7 @@ class CommandCtrlW extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-w>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     let wordBegin: Position;
     if (position.isInLeadingWhitespace()) {
       wordBegin = position.getLineBegin();
@@ -461,8 +453,6 @@ class CommandCtrlW extends BaseCommand {
     await TextEditor.delete(new vscode.Range(wordBegin, position));
 
     vimState.cursorStopPosition = wordBegin;
-
-    return vimState;
   }
 }
 
@@ -471,12 +461,12 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-d>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
 
     if (indentationWidth === 0) {
-      return vimState;
+      return;
     }
 
     const tabSize = configuration.tabstop;
@@ -499,7 +489,6 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(Mode.Insert);
-    return vimState;
   }
 }
 
@@ -508,15 +497,15 @@ class CommandInsertAboveChar extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-y>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     if (TextEditor.isFirstLine(position)) {
-      return vimState;
+      return;
     }
 
     const charAboveCursorPosition = position.getUp(1);
 
     if (charAboveCursorPosition.isLineEnd()) {
-      return vimState;
+      return;
     }
 
     const char = TextEditor.getText(
@@ -526,8 +515,6 @@ class CommandInsertAboveChar extends BaseCommand {
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-
-    return vimState;
   }
 }
 
@@ -536,13 +523,11 @@ class CommandCtrlHInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-h>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformations.push({
       type: 'deleteText',
       position: position,
     });
-
-    return vimState;
   }
 }
 
@@ -551,14 +536,13 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-u>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const start = position.isInLeadingWhitespace()
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
     await TextEditor.delete(new vscode.Range(start, position));
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
-    return vimState;
   }
 }
 
@@ -567,7 +551,7 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<C-n>'], ['<C-j>']];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     /* if we're in a multi cursor state, we check to see if the current active text selection
      * is the same as the position we've been passed when we exec this function
      * this has the effect of only ever executing `selectNextSuggestion` once.
@@ -585,8 +569,6 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
     } else {
       await vscode.commands.executeCommand('selectNextSuggestion');
     }
-
-    return vimState;
   }
 }
 
@@ -595,7 +577,7 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-p>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     /* if we're in a multi cursor state, we check to see if the current active text selection
      * is the same as the position we've been passed when we exec this function
      * this has the effect of only ever executing `selectPrevSuggestion` once.
@@ -613,8 +595,6 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
     } else {
       await vscode.commands.executeCommand('selectPrevSuggestion');
     }
-
-    return vimState;
   }
 }
 
@@ -623,7 +603,7 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-v>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     const textFromClipboard = await Clipboard.Paste();
 
     vimState.recordedState.transformations.push({
@@ -643,8 +623,6 @@ class CommandCtrlVInInsertMode extends BaseCommand {
         text: textFromClipboard,
       });
     }
-
-    return vimState;
   }
 }
 
@@ -656,9 +634,8 @@ class CommandShowLineAutocomplete extends BaseCommand {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     await lineCompletionProvider.showLineCompletionsQuickPick(position, vimState);
-    return vimState;
   }
 }
 
@@ -667,14 +644,13 @@ class NewLineInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<C-j>'], ['<C-m>']];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformations.push({
       type: 'insertText',
       text: '\n',
       position: position,
       diff: new PositionDiff({ character: -1 }),
     });
-    return vimState;
   }
 }
 
@@ -683,7 +659,7 @@ class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Insert>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }
