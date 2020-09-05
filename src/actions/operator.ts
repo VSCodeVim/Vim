@@ -313,7 +313,7 @@ export class YankOperator extends BaseOperator {
       // our default for that is else, but this reset would destroy multicursor when run for the secondary cursors
       // so for these, we have the following alternative
       if (this.multicursorIndex !== undefined && this.multicursorIndex > 0) {
-        vimState.cursorStopPosition = vimState.cursors[this.multicursorIndex].start;
+        vimState.cursorStopPosition = vimState.cursors[this.multicursorIndex].stop;
       } else {
         vimState.cursors = vimState.cursorsInitialState;
       }
