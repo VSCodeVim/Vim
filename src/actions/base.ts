@@ -1,9 +1,12 @@
+import { Position } from '../common/motion/position';
+import { Range } from '../common/motion/range';
+import { Notation } from '../configuration/notation';
+import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
-import { Notation } from '../configuration/notation';
 
-export class BaseAction {
+export abstract class BaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
@@ -11,7 +14,7 @@ export class BaseAction {
   public isMotion = false;
 
   /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
+   * If true, the cursor position will be added to the jump list on completion.
    */
   public isJump = false;
 
@@ -36,8 +39,6 @@ export class BaseAction {
 
   public mustBeFirstKey = false;
 
-  public isOperator = false;
-
   /**
    * The keys pressed at the time that this action was triggered.
    */
@@ -52,7 +53,8 @@ export class BaseAction {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
+      (vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length ||
+        vimState.recordedState.operator)
     ) {
       return false;
     }
@@ -79,7 +81,8 @@ export class BaseAction {
 
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length
+      (vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length ||
+        vimState.recordedState.operator)
     ) {
       return false;
     }
@@ -159,58 +162,146 @@ export class BaseAction {
   }
 }
 
+/**
+ * A command is something like <Esc>, :, v, i, etc.
+ */
+export abstract class BaseCommand extends BaseAction {
+  /**
+   * If isCompleteAction is true, then triggering this command is a complete action -
+   * that means that we'll go and try to run it.
+   */
+  isCompleteAction = true;
+
+  multicursorIndex: number | undefined = undefined;
+
+  /**
+   * In multi-cursor mode, do we run this command for every cursor, or just once?
+   */
+  public runsOnceForEveryCursor(): boolean {
+    return true;
+  }
+
+  /**
+   * If true, exec() will get called N times where N is the count.
+   *
+   * If false, exec() will only be called once, and you are expected to
+   * handle count prefixes (e.g. the 3 in 3w) yourself.
+   */
+  runsOnceForEachCountPrefix = false;
+
+  canBeRepeatedWithDot = false;
+
+  /**
+   * Run the command a single time.
+   */
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    throw new Error('Not implemented!');
+  }
+
+  /**
+   * Run the command the number of times VimState wants us to.
+   */
+  public async execCount(position: Position, vimState: VimState): Promise<void> {
+    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+
+    if (!this.runsOnceForEveryCursor()) {
+      for (let i = 0; i < timesToRepeat; i++) {
+        await this.exec(position, vimState);
+      }
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = 0;
+        }
+      }
+
+      return;
+    }
+
+    let resultingCursors: Range[] = [];
+
+    const cursorsToIterateOver = vimState.cursors
+      .map((x) => new Range(x.start, x.stop))
+      .sort((a, b) =>
+        a.start.line > b.start.line ||
+        (a.start.line === b.start.line && a.start.character > b.start.character)
+          ? 1
+          : -1
+      );
+
+    let cursorIndex = 0;
+    for (const { start, stop } of cursorsToIterateOver) {
+      this.multicursorIndex = cursorIndex++;
+
+      vimState.cursorStopPosition = stop;
+      vimState.cursorStartPosition = start;
+
+      for (let j = 0; j < timesToRepeat; j++) {
+        await this.exec(stop, vimState);
+      }
+
+      resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = this.multicursorIndex;
+        }
+      }
+    }
+
+    vimState.cursors = resultingCursors;
+  }
+}
+
 export enum KeypressState {
   WaitingOnKeys,
   NoPossibleMatch,
 }
 
-// TODO: this should not be a class (#4429)
-export abstract class Actions {
-  /**
-   * Every Vim action will be added here with the @RegisterAction decorator.
-   */
-  public static actionMap = new Map<Mode, typeof BaseAction[]>();
+/**
+ * Every Vim action will be added here with the @RegisterAction decorator.
+ */
+const actionMap = new Map<Mode, Array<{ new (): BaseAction }>>();
 
-  /**
-   * Gets the action that should be triggered given a key sequence.
-   *
-   * If there is a definitive action that matched, returns that action.
-   *
-   * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
-   * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
-   *
-   * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
-   */
-  public static getRelevantAction(
-    keysPressed: string[],
-    vimState: VimState
-  ): BaseAction | KeypressState {
-    let isPotentialMatch = false;
+/**
+ * Gets the action that should be triggered given a key sequence.
+ *
+ * If there is a definitive action that matched, returns that action.
+ *
+ * If an action could potentially match if more keys were to be pressed, returns `KeyPressState.WaitingOnKeys`
+ * (e.g. you pressed "g" and are about to press "g" action to make the full action "gg")
+ *
+ * If no action could ever match, returns `KeypressState.NoPossibleMatch`.
+ */
+export function getRelevantAction(
+  keysPressed: string[],
+  vimState: VimState
+): BaseAction | KeypressState {
+  let isPotentialMatch = false;
 
-    const possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
-    for (const actionType of possibleActionsForMode) {
-      const action = new actionType();
-      if (action.doesActionApply(vimState, keysPressed)) {
-        action.keysPressed = vimState.recordedState.actionKeys.slice(0);
-        return action;
-      }
-
-      if (action.couldActionApply(vimState, keysPressed)) {
-        isPotentialMatch = true;
-      }
+  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  for (const actionType of possibleActionsForMode) {
+    const action = new actionType();
+    if (action.doesActionApply(vimState, keysPressed)) {
+      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+      return action;
     }
 
-    return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+    if (action.couldActionApply(vimState, keysPressed)) {
+      isPotentialMatch = true;
+    }
   }
+
+  return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
-export function RegisterAction(action: typeof BaseAction): void {
+export function RegisterAction(action: { new (): BaseAction }): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
-    let actions = Actions.actionMap.get(modeName);
+    let actions = actionMap.get(modeName);
     if (!actions) {
       actions = [];
-      Actions.actionMap.set(modeName, actions);
+      actionMap.set(modeName, actions);
     }
 
     if (actionInstance.keys === undefined) {

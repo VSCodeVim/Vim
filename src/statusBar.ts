@@ -91,8 +91,8 @@ class StatusBarImpl implements vscode.Disposable {
       }
     }
 
-    if (vimState.isRecordingMacro) {
-      const macroText = 'Recording @' + vimState.recordedMacro.registerName;
+    if (vimState.macro) {
+      const macroText = 'Recording @' + vimState.macro.registerName;
       text.push(macroText);
     }
 
@@ -121,24 +121,21 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     const workbenchConfiguration = configuration.getConfiguration('workbench');
-    const currentColorCustomizations = workbenchConfiguration.get('colorCustomizations');
+    const currentColorCustomizations: {
+      [index: string]: string;
+    } = workbenchConfiguration.get('colorCustomizations') ?? {};
 
-    const colorCustomizations = Object.assign({}, currentColorCustomizations || {}, {
-      'statusBar.background': `${background}`,
-      'statusBar.noFolderBackground': `${background}`,
-      'statusBar.debuggingBackground': `${background}`,
-      'statusBar.foreground': `${foreground}`,
-    });
+    const colorCustomizations = { ...currentColorCustomizations };
 
     // If colors are undefined, return to VSCode defaults
-    if (background === undefined) {
-      delete colorCustomizations['statusBar.background'];
-      delete colorCustomizations['statusBar.noFolderBackground'];
-      delete colorCustomizations['statusBar.debuggingBackground'];
+    if (background !== undefined) {
+      colorCustomizations['statusBar.background'] = background;
+      colorCustomizations['statusBar.noFolderBackground'] = background;
+      colorCustomizations['statusBar.debuggingBackground'] = background;
     }
 
-    if (foreground === undefined) {
-      delete colorCustomizations['statusBar.foreground'];
+    if (foreground !== undefined) {
+      colorCustomizations['statusBar.foreground'] = foreground;
     }
 
     if (currentColorCustomizations !== colorCustomizations) {

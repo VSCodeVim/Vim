@@ -235,7 +235,7 @@ export class SubstituteCommand extends node.CommandBase {
     ];
 
     vimState.editor.revealRange(new vscode.Range(line, 0, line, 0));
-    vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
+    vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
 
     const prompt = `Replace with ${replacement} (${validSelections.join('/')})?`;
     await vscode.window.showInputBox(
@@ -279,24 +279,11 @@ export class SubstituteCommand extends node.CommandBase {
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let startLine: vscode.Position;
-    let endLine: vscode.Position;
-
-    if (range.left[0].type === token.TokenType.Percent) {
-      startLine = new vscode.Position(0, 0);
-      endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
-    } else {
-      startLine = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      if (range.right.length === 0) {
-        endLine = startLine;
-      } else {
-        endLine = range.lineRefToPosition(vimState.editor, range.right, vimState);
-      }
-    }
+    let [startLine, endLine] = range.resolve(vimState);
 
     if (this._arguments.count && this._arguments.count >= 0) {
       startLine = endLine;
-      endLine = new vscode.Position(endLine.line + this._arguments.count - 1, 0);
+      endLine = endLine + this._arguments.count - 1;
     }
 
     // TODO: Global Setting.
@@ -304,8 +291,8 @@ export class SubstituteCommand extends node.CommandBase {
     let regex = this.getRegex(this._arguments, vimState);
     let foundPattern = false;
     for (
-      let currentLine = startLine.line;
-      currentLine <= endLine.line && currentLine < TextEditor.getLineCount();
+      let currentLine = startLine;
+      currentLine <= endLine && currentLine < TextEditor.getLineCount();
       currentLine++
     ) {
       if (this._abort) {

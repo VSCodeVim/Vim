@@ -39,9 +39,7 @@ export class TextEditor {
   ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
-    if (letVSCodeHandleKeystrokes === undefined) {
-      letVSCodeHandleKeystrokes = text.length === 1;
-    }
+    letVSCodeHandleKeystrokes ??= text.length === 1;
 
     if (!letVSCodeHandleKeystrokes) {
       // const selections = vscode.window.activeTextEditor!.selections.slice(0);
@@ -51,7 +49,7 @@ export class TextEditor {
           at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
         }
 
-        editBuilder.insert(at!, text);
+        editBuilder.insert(at, text);
       });
 
       // maintain all selections in multi-cursor mode.
@@ -109,7 +107,7 @@ export class TextEditor {
   }
 
   static getLineCount(textEditor?: vscode.TextEditor): number {
-    textEditor = textEditor ?? vscode.window.activeTextEditor;
+    textEditor ??= vscode.window.activeTextEditor;
     return textEditor?.document.lineCount ?? -1;
   }
 
@@ -290,9 +288,7 @@ export class TextEditor {
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
 
-    if (range === undefined) {
-      range = vimState.cursors[0];
-    }
+    range ??= vimState.cursors[0];
 
     const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
     const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);

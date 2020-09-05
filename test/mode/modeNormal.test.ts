@@ -27,7 +27,7 @@ suite('Mode Normal', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('i');
-      await modeHandler.handleKeyEvent(key!);
+      await modeHandler.handleKeyEvent(key);
 
       assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
@@ -1946,9 +1946,23 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can delete linewise with d2G',
-    start: ['|one', 'two', 'three'],
+    start: ['on|e', 'two', 'three'],
     keysPressed: 'd2G',
     end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg',
+    start: ['on|e', 'two', 'three'],
+    keysPressed: 'd2gg',
+    end: ['|three'],
+  });
+
+  newTest({
+    title: 'can delete linewise with d2gg backwards',
+    start: ['one', 'two', 'thr|ee', 'four'],
+    keysPressed: 'd2gg',
+    end: ['one', '|four'],
   });
 
   newTest({

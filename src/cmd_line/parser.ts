@@ -1,17 +1,19 @@
-import * as lexer from './lexer';
-import * as node from './node';
-import * as token from './token';
+import { lex } from './lexer';
+import { CommandLine } from './node';
+import { Token, TokenType } from './token';
 import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
 import { getParser } from './subparser';
 
+const logger = Logger.get('Parser');
+
 interface IParseFunction {
-  (state: ParserState, command: node.CommandLine): IParseFunction | null;
+  (state: ParserState, command: CommandLine): IParseFunction | undefined;
 }
 
-export function parse(input: string): node.CommandLine {
-  const cmd = new node.CommandLine();
-  let f: IParseFunction | null = parseLineRange;
+export function parse(input: string): CommandLine {
+  const cmd = new CommandLine();
+  let f: IParseFunction | undefined = parseLineRange;
   let state: ParserState = new ParserState(input);
   while (f) {
     f = f(state, cmd);
@@ -19,54 +21,49 @@ export function parse(input: string): node.CommandLine {
   return cmd;
 }
 
-function parseLineRange(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
-  const logger = Logger.get('Parser');
-
+function parseLineRange(state: ParserState, commandLine: CommandLine): IParseFunction | undefined {
   while (true) {
     let tok = state.next();
     switch (tok.type) {
-      case token.TokenType.Eof:
-        return null;
-      case token.TokenType.Dot:
-      case token.TokenType.Dollar:
-      case token.TokenType.Percent:
-      case token.TokenType.Comma:
-      case token.TokenType.LineNumber:
-      case token.TokenType.SelectionFirstLine:
-      case token.TokenType.SelectionLastLine:
-      case token.TokenType.Mark:
-      case token.TokenType.Offset:
-      case token.TokenType.Plus:
-      case token.TokenType.Minus:
+      case TokenType.Eof:
+        return undefined;
+      case TokenType.Dot:
+      case TokenType.Dollar:
+      case TokenType.Percent:
+      case TokenType.Comma:
+      case TokenType.LineNumber:
+      case TokenType.SelectionFirstLine:
+      case TokenType.SelectionLastLine:
+      case TokenType.Mark:
+      case TokenType.Offset:
+      case TokenType.Plus:
+      case TokenType.Minus:
         commandLine.range.addToken(tok);
         continue;
-      case token.TokenType.CommandName:
+      case TokenType.CommandName:
         state.backup();
         return parseCommand;
-      // commandLine.command = new node.CommandLineCommand(tok.content, null);
-      // continue;
       default:
         logger.warn(`Parser: skipping token Token(${tok.type},{${tok.content}})`);
-        return null;
+        return undefined;
     }
   }
 }
 
-function parseCommand(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
+function parseCommand(state: ParserState, commandLine: CommandLine): IParseFunction | undefined {
   while (!state.isAtEof) {
     const tok = state.next();
     switch (tok.type) {
-      case token.TokenType.CommandName:
+      case TokenType.CommandName:
         const commandParser = getParser(tok.content);
         if (!commandParser) {
           throw VimError.fromCode(ErrorCode.NotAnEditorCommand, state.input);
         }
-        // TODO: Pass the args, but keep in mind there could be multiple
-        // commands, not just one.
+        // TODO: Pass the args, but keep in mind there could be multiple commands, not just one.
         const argsTok = state.next();
-        const args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : undefined;
+        const args = argsTok.type === TokenType.CommandArgs ? argsTok.content : undefined;
         commandLine.command = commandParser(args);
-        return null;
+        return undefined;
       default:
         throw new Error('Not implemented');
     }
@@ -76,29 +73,25 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
     state.backup();
     return parseCommand;
   } else {
-    return null;
+    return undefined;
   }
 }
 
 // Keeps track of parsing state.
 class ParserState {
   input: string;
-  tokens: token.Token[] = [];
+  tokens: Token[] = [];
   pos: number = 0;
 
   constructor(input: string) {
     this.input = input;
-    this.lex(input);
+    this.tokens = lex(input);
   }
 
-  private lex(input: string) {
-    this.tokens = lexer.lex(input);
-  }
-
-  next(): token.Token {
+  next(): Token {
     if (this.pos >= this.tokens.length) {
       this.pos = this.tokens.length;
-      return new token.Token(token.TokenType.Eof, '__EOF__');
+      return new Token(TokenType.Eof, '__EOF__');
     }
     let tok = this.tokens[this.pos];
     this.pos++;

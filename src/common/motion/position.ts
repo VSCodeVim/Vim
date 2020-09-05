@@ -713,7 +713,7 @@ export class Position extends vscode.Position {
       });
 
       if (newCharacter !== undefined) {
-        return new Position(currentLine, <number>newCharacter).getRightThroughLineBreaks();
+        return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
       }
     }
 
@@ -792,9 +792,9 @@ export class Position extends vscode.Position {
   }
 }
 
-const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword!);
+const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword);
 const nonBigWordCharRegex = makeWordRegex('');
-const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword!);
+const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword);
 const sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
 
@@ -927,23 +927,32 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
   const segments: string[] = [];
 
+  // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
+  let supportsLookbehind = true;
+  try {
+    // tslint:disable-next-line
+    new RegExp('(<=x)');
+  } catch {
+    supportsLookbehind = false;
+  }
+
   // prettier-ignore
   const firstSegment =
-      '(' +                                 // OPEN: group for matching camel case words
-      `[^\\s${escaped}]` +                  //   words can start with any word character
-      '(?:' +                               //   OPEN: group for characters after initial char
-      `(?:(?<=[A-Z_])` +                    //     If first char was a capital
-      `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` + //       the word can continue with all caps
-      '|' +                                 //     OR
-      `(?:(?<=[0-9_])`   +                  //     If first char was a digit
-      `[0-9](?=[\\sA-Z0-9${escaped}_]))+` + //       the word can continue with all digits
-      '|' +                                 //     OR
-      `(?:(?<=[_])` +                       //     If first char was an underscore
-      `[_](?=[\\s${escaped}_]))+`  +        //       the word can continue with all underscores
-      '|' +                                 //     OR
-      `[^\\sA-Z0-9${escaped}_]*` +          //     Continue with regular characters
-      ')' +                                 //   END: group for characters after initial char
-      ')' +                                 // END: group for matching camel case words
+      '(' +                                             // OPEN: group for matching camel case words
+      `[^\\s${escaped}]` +                              //   words can start with any word character
+      '(?:' +                                           //   OPEN: group for characters after initial char
+      `(?:${supportsLookbehind ? '(?<=[A-Z_])' : ''}` + //     If first char was a capital
+      `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +             //       the word can continue with all caps
+      '|' +                                             //     OR
+      `(?:${supportsLookbehind ? '(?<=[0-9_])' : ''}` + //     If first char was a digit
+      `[0-9](?=[\\sA-Z0-9${escaped}_]))+` +             //       the word can continue with all digits
+      '|' +                                             //     OR
+      `(?:${supportsLookbehind ? '(?<=[_])' : ''}` +    //     If first char was an underscore
+      `[_](?=[\\s${escaped}_]))+`  +                    //       the word can continue with all underscores
+      '|' +                                             //     OR
+      `[^\\sA-Z0-9${escaped}_]*` +                      //     Continue with regular characters
+      ')' +                                             //   END: group for characters after initial char
+      ')' +                                             // END: group for matching camel case words
       '';
 
   segments.push(firstSegment);

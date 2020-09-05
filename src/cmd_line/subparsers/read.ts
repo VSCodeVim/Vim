@@ -2,7 +2,7 @@ import { IReadCommandArguments, ReadCommand } from '../commands/read';
 import { Scanner } from '../scanner';
 
 export function parseReadCommandArgs(args: string): ReadCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     throw Error('Expected arguments.');
   }
 

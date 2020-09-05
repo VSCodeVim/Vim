@@ -5,7 +5,7 @@ import { RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
-import { BaseMovement, IMovement } from './baseMotion';
+import { BaseMovement, IMovement, failedMovement } from './baseMotion';
 import {
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
@@ -23,7 +23,7 @@ export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = (await this.execAction(position, vimState)) as IMovement;
+    const res = await this.execAction(position, vimState);
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
     // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
@@ -31,6 +31,8 @@ export abstract class TextObjectMovement extends BaseMovement {
 
     return res;
   }
+
+  public abstract async execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction
@@ -725,7 +727,7 @@ abstract class SelectArgument extends TextObjectMovement {
   //     multi-line statements.
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = failedMovement(vimState);
 
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
@@ -858,7 +860,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (closedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
-          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+          isOnBoundary ||= SelectArgument.separatorCharacters().includes(char);
         }
 
         if (isOnBoundary) {
@@ -898,7 +900,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (openedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
-          isOnBoundary = isOnBoundary || SelectArgument.separatorCharacters().includes(char);
+          isOnBoundary ||= SelectArgument.separatorCharacters().includes(char);
         }
 
         if (isOnBoundary) {
