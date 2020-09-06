@@ -763,14 +763,15 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     ranRepeatableAction =
-      (ranRepeatableAction && vimState.currentMode === Mode.Normal) ||
-      this.createUndoPointForBrackets(vimState);
-    ranAction =
-      ranAction &&
-      (vimState.currentMode === Mode.Normal || action instanceof CompleteCommandWithModeChange);
+      (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
+      this.createUndoPointForBrackets();
+
     // ActionOverrideCmdD is a complete action, but it changes mode from Normal to visual,
     // so it would cause a reset to false here. We cant allow that, because then we don't get a fresh recordedState below
-
+    ranAction =
+      ranAction &&
+      (this.vimState.currentMode === Mode.Normal ||
+        action instanceof CompleteCommandWithModeChange);
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
