@@ -4,7 +4,6 @@ import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
-import { MarkerGenerator } from './markerGenerator';
 import { Mode } from '../../../mode/mode';
 
 export class EasyMotion {
@@ -21,16 +20,12 @@ export class EasyMotion {
   private _markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
-  private fade: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-    textDecoration: `none;
-    filter: grayscale(1);`,
+
+  private static readonly fade = vscode.window.createTextEditorDecorationType({
+    color: configuration.easymotionDimColor,
   });
-  private hide: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-    // because opacity isn't enough, vscode blinking █ cursor
-    // would still reveal the hidden character
-    opacity: `0;
-    visibility: hidden;
-    margin: 0 ${configuration.easymotionMarkerMargin / 2}px;`,
+  private static readonly hide = vscode.window.createTextEditorDecorationType({
+    color: 'transparent',
   });
 
   /**
@@ -87,8 +82,8 @@ export class EasyMotion {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
 
-    editor.setDecorations(this.fade, []);
-    editor.setDecorations(this.hide, []);
+    editor.setDecorations(EasyMotion.fade, []);
+    editor.setDecorations(EasyMotion.hide, []);
   }
 
   /**
@@ -197,8 +192,10 @@ export class EasyMotion {
   ): string | vscode.ThemeColor {
     if (customizedValue) {
       return customizedValue;
-    } else {
+    } else if (!themeColorId.startsWith('#')) {
       return new vscode.ThemeColor(themeColorId);
+    } else {
+      return themeColorId;
     }
   }
 
@@ -207,17 +204,25 @@ export class EasyMotion {
   }
 
   private getEasymotionMarkerForegroundColorOneChar() {
+    return this.getMarkerColor(configuration.easymotionMarkerForegroundColorOneChar, '#ff0000');
+  }
+
+  private getEasymotionMarkerForegroundColorTwoCharFirst() {
     return this.getMarkerColor(
-      configuration.easymotionMarkerForegroundColorOneChar,
-      'activityBarBadge.foreground'
+      configuration.easymotionMarkerForegroundColorTwoCharFirst,
+      '#ffb400'
     );
   }
 
-  private getEasymotionMarkerForegroundColorTwoChar() {
+  private getEasymotionMarkerForegroundColorTwoCharSecond() {
     return this.getMarkerColor(
-      configuration.easymotionMarkerForegroundColorTwoChar,
-      'activityBarBadge.foreground'
+      configuration.easymotionMarkerForegroundColorTwoCharSecond,
+      '#b98300'
     );
+  }
+
+  private getEasymotionDimColor() {
+    return this.getMarkerColor(configuration.easymotionDimColor, '#777777');
   }
 
   public updateDecorations() {
@@ -228,7 +233,11 @@ export class EasyMotion {
 
     // Set the decorations for all the different marker lengths
     const editor = vscode.window.activeTextEditor!;
-    const dimmingZones: vscode.Range[] = [];
+    const dimmingZones: vscode.DecorationOptions[] = [];
+    const dimmingRenderOptions: vscode.ThemableDecorationRenderOptions = {
+      // we update the color here again in case the configuration has changed
+      color: this.getEasymotionDimColor(),
+    };
     // Why this instead of `background-color` on the marker?
     // The easy fix would've been to let the user set the marker background to the same
     // color as the editor so it would hide the character behind, However this would require
@@ -249,16 +258,6 @@ export class EasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
-      const fontColor =
-        keystroke.length > 1
-          ? this.getEasymotionMarkerForegroundColorTwoChar()
-          : this.getEasymotionMarkerForegroundColorOneChar();
-
-      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
-      // ^ is this still needed? it breaks with current implementation
-      const charPos = pos.character;
-      const range = new vscode.Range(pos.line, charPos, pos.line, charPos);
-
       //#region Hack (remove once backend handles this)
 
       /*
@@ -277,7 +276,11 @@ export class EasyMotion {
       let trim = 0;
       const next = markers[markers.indexOf(marker) + 1];
 
-      if (next && next.position.character - pos.character === 1) {
+      if (
+        next &&
+        next.position.character - pos.character === 1 &&
+        next.position.line === pos.line
+      ) {
         const nextKeystroke = next.name.substr(this.accumulation.length);
 
         if (keystroke.length > 1 && nextKeystroke.length > 1) {
@@ -287,36 +290,68 @@ export class EasyMotion {
 
       //#endregion
 
-      const fontSize =
-        configuration.easymotionMarkerFontSize || configuration.getConfiguration('editor').fontSize;
-      const fontFamily =
-        configuration.easymotionMarkerFontFamily ||
-        configuration.getConfiguration('editor').fontFamily;
-      const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
+      // First Char/One Char decoration
+      const firstCharFontColor =
+        keystroke.length > 1
+          ? this.getEasymotionMarkerForegroundColorTwoCharFirst()
+          : this.getEasymotionMarkerForegroundColorOneChar();
+      const backgroundColor = this.getEasymotionMarkerBackgroundColor();
+      const firstCharRange = new vscode.Range(pos.line, pos.character, pos.line, pos.character);
+      const firstCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
-          contentText: trim === -1 ? keystroke.substring(0, 1) : keystroke,
-          backgroundColor: this.getEasymotionMarkerBackgroundColor(),
-          color: fontColor,
-          width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px;
+          contentText: keystroke.substring(0, 1),
+          backgroundColor: backgroundColor,
+          color: firstCharFontColor,
+          margin: `0 -1ch 0 0;
           position: absolute;
-          z-index: 1;
-          margin: 0 ${configuration.easymotionMarkerMargin / 2}px;
-          transform: translateX(-0.05ch);
-          border-radius: 1px;
-          font-family: ${fontFamily};
-          font-size: ${fontSize}px;
           font-weight: ${configuration.easymotionMarkerFontWeight};`,
+          height: '100%',
         },
       };
+
+      this.decorations[keystroke.length].push({
+        range: firstCharRange,
+        renderOptions: {
+          dark: firstCharRenderOptions,
+          light: firstCharRenderOptions,
+        },
+      });
+
+      // Second Char decoration
+      if (keystroke.length + trim > 1) {
+        const secondCharFontColor = this.getEasymotionMarkerForegroundColorTwoCharSecond();
+        const secondCharRange = new vscode.Range(
+          pos.line,
+          pos.character + 1,
+          pos.line,
+          pos.character + 1
+        );
+
+        const secondCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
+          before: {
+            contentText: keystroke.slice(1),
+            backgroundColor: backgroundColor,
+            color: secondCharFontColor,
+            margin: `0 -1ch 0 0;
+            position: absolute;
+            font-weight: ${configuration.easymotionMarkerFontWeight};`,
+            height: '100%',
+          },
+        };
+        this.decorations[keystroke.length].push({
+          range: secondCharRange,
+          renderOptions: {
+            dark: secondCharRenderOptions,
+            light: secondCharRenderOptions,
+          },
+        });
+      }
 
       hiddenChars.push(
         new vscode.Range(pos.line, pos.character, pos.line, pos.character + keystroke.length + trim)
       );
 
       if (configuration.easymotionDimBackground) {
-        const dimPos =
-          pos.getLineEndIncludingEOL().character - charPos === 1 ? pos.character : charPos;
-
         // This excludes markers from the dimming ranges by using them as anchors
         // each marker adds the range between it and previous marker to the dimming zone
         // except last marker after which the rest of document is dimmed
@@ -324,35 +359,59 @@ export class EasyMotion {
         // example [m1] text that has multiple [m2] marks
         // |<------    |<----------------------     ---->|
         if (dimmingZones.length === 0) {
-          dimmingZones.push(new vscode.Range(0, 0, pos.line, dimPos));
+          dimmingZones.push({
+            range: new vscode.Range(0, 0, pos.line, pos.character),
+            renderOptions: dimmingRenderOptions,
+          });
         } else {
-          const prevDimPos = dimmingZones[dimmingZones.length - 1];
-
-          dimmingZones.push(
-            new vscode.Range(prevDimPos.end.line, prevDimPos.end.character, pos.line, dimPos)
+          const prevMarker = markers[markers.indexOf(marker) - 1];
+          const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
+          const prevDimPos = prevMarker.position;
+          const offsetPrevDimPos = prevDimPos.withColumn(
+            prevDimPos.character + prevKeystroke.length
           );
+
+          // Don't create dimming ranges in between consecutive markers (the 'after' is in the cases
+          // where you have 2 char consecutive markers where the first one only shows the first char.
+          // since we don't take that into account when creating 'offsetPrevDimPos' it will be after
+          // the current marker position which means we are in the middle of two consecutive markers.
+          // See the hack region above.)
+          if (!offsetPrevDimPos.isAfterOrEqual(pos)) {
+            dimmingZones.push({
+              range: new vscode.Range(
+                offsetPrevDimPos.line,
+                offsetPrevDimPos.character,
+                pos.line,
+                pos.character
+              ),
+              renderOptions: dimmingRenderOptions,
+            });
+          }
         }
       }
-
-      this.decorations[keystroke.length].push({
-        range,
-        renderOptions: {
-          dark: renderOptions,
-          light: renderOptions,
-        },
-      });
 
       this.visibleMarkers.push(marker);
     }
 
     // for the last marker dim till document end
     if (configuration.easymotionDimBackground) {
-      dimmingZones.push(
-        new vscode.Range(
-          markers[markers.length - 1].position,
-          new Position(editor.document.lineCount, Number.MAX_VALUE)
-        )
+      const prevMarker = markers[markers.length - 1];
+      const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
+      const prevDimPos = Position.FromVSCodePosition(
+        dimmingZones[dimmingZones.length - 1].range.end
       );
+      const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
+
+      // Don't create any more dimming ranges when the last marker is at document end
+      if (!offsetPrevDimPos.isEqual(TextEditor.getDocumentEnd())) {
+        dimmingZones.push({
+          range: new vscode.Range(
+            offsetPrevDimPos,
+            new Position(editor.document.lineCount, Number.MAX_VALUE)
+          ),
+          renderOptions: dimmingRenderOptions,
+        });
+      }
     }
 
     for (let j = 1; j < this.decorations.length; j++) {
@@ -361,10 +420,10 @@ export class EasyMotion {
       }
     }
 
-    editor.setDecorations(this.hide, hiddenChars);
+    editor.setDecorations(EasyMotion.hide, hiddenChars);
 
     if (configuration.easymotionDimBackground) {
-      editor.setDecorations(this.fade, dimmingZones);
+      editor.setDecorations(EasyMotion.fade, dimmingZones);
     }
   }
 }

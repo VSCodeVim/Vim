@@ -18,6 +18,7 @@ import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { SpecialKeys } from './src/util/specialKeys';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -48,7 +49,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
-    await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
+    await curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
   previousActiveEditorId = activeEditorId;
@@ -104,13 +105,14 @@ export async function activate(
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
+  // Load state
+  Register.loadFromDisk(extensionContext);
+  await Promise.all([commandLine.load(), globalState.load()]);
+
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
     Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
   }
-
-  // load state
-  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(
@@ -162,7 +164,7 @@ export async function activate(
     };
 
     if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
+      contentChangeHandler(Globals.mockModeHandler);
     } else {
       ModeHandlerMap.getAll()
         .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
@@ -396,7 +398,7 @@ export async function activate(
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
     await commandLine.PromptAndRun('', mh.vimState);
-    mh.updateView(mh.vimState);
+    mh.updateView();
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
@@ -414,7 +416,7 @@ export async function activate(
           // Check if this is a vim command by looking for :
           if (command.command.startsWith(':')) {
             await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
-            mh.updateView(mh.vimState);
+            mh.updateView();
           } else {
             vscode.commands.executeCommand(command.command, command.args);
           }
@@ -434,14 +436,20 @@ export async function activate(
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
+    registerCommand(context, boundKey.command, () => {
+      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
+        checkIfRecursiveRemapping(`${boundKey.key}`);
+      } else {
+        handleKeyEvent(`${boundKey.key}`);
+      }
+    });
   }
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
     // This is called last because getAndUpdateModeHandler() will change cursor
-    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    mh.updateView({ drawSelection: false, revealRange: false });
   }
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere
@@ -468,11 +476,11 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
   }
   let mh = await getAndUpdateModeHandler();
   if (isDisabled) {
-    await mh.handleKeyEvent('<ExtensionDisable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
     compositionState.reset();
     ModeHandlerMap.clear();
   } else {
-    await mh.handleKeyEvent('<ExtensionEnable>');
+    await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
   }
 }
 
@@ -544,6 +552,15 @@ async function handleKeyEvent(key: string): Promise<void> {
   taskQueue.enqueueTask(async () => {
     await mh.handleKeyEvent(key);
   });
+}
+
+async function checkIfRecursiveRemapping(key: string): Promise<void> {
+  const mh = await getAndUpdateModeHandler();
+  if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+  } else {
+    handleKeyEvent(key);
+  }
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {

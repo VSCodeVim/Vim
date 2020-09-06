@@ -5,6 +5,7 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { Position, PositionDiff, PositionDiffType } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
+import { Range } from '../../common/motion/range';
 
 export interface IBangCommandArguments extends node.ICommandArgs {
   command: string;
@@ -54,8 +55,7 @@ export class BangCommand extends node.CommandBase {
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: output,
-      start: start,
-      end: end,
+      range: new Range(start, end),
       diff: diff,
     });
   }
