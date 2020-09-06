@@ -25,8 +25,6 @@ import {
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
   ActionOverrideCmdD,
-  CommandRegister,
-  CommandVisualMode,
   CompleteCommandWithModeChange,
   CommandNumber,
 } from './../actions/commands/actions';
