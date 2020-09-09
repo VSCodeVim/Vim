@@ -52,6 +52,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: l       | right (also: Space or Right key)                                               |
 | :white_check_mark: | 0              | to first character in the line (also: Home key)                                |
 | :white_check_mark: | ^              | to first non-blank character in the line                                       |
+| :white_check_mark: | :1234: \_      | to first non-blank character in the line                                       |
 | :white_check_mark: | :1234: \$      | to the last character in the line (N-1 lines lower) (also: End key)            |
 | :white_check_mark: | g0             | to first character in screen line (differs from "0" when lines wrap)           |
 | :white_check_mark: | g^             | to first non-blank character in screen line (differs from "^" when lines wrap) |
@@ -73,7 +74,6 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: j  | down N lines (also: CTRL-J, CTRL-N, NL, and Down)                                         |
 | :white_check_mark: | :1234: -  | up N lines, on the first non-blank character                                              |
 | :white_check_mark: | :1234: +  | down N lines, on the first non-blank character (also: CTRL-M and CR)                      |
-| :white_check_mark: | :1234: \_ | down N-1 lines, on the first non-blank character                                          |
 | :white_check_mark: | :1234: G  | goto line N (default: last line), on the first non-blank character                        |
 | :white_check_mark: | :1234: gg | goto line N (default: first line), on the first non-blank character                       |
 | :white_check_mark: | :1234: %  | goto line N percentage down in the file; N must be given, otherwise it is the `%` command |
