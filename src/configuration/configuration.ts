@@ -318,6 +318,16 @@ class Configuration implements IConfiguration {
   })
   iskeyword: string;
 
+  @overlapSetting({
+    settingName: 'multiCursorPaste',
+    defaultValue: false,
+    map: new Map([
+      ['spread', true],
+      ['full', false],
+    ]),
+  })
+  multiCursorPasteSpread: boolean;
+
   boundKeyCombinations: IKeyBinding[] = [];
 
   visualstar = false;

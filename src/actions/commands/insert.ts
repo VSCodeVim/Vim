@@ -23,6 +23,7 @@ import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { PutCommand } from './put';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -393,7 +394,10 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     let text: string;
     if (register.text instanceof Array) {
-      text = register.text.join('\n');
+      text =
+        vimState.isMultiCursor && vimState.cursors.length === register.text.length
+          ? await PutCommand.getText(vimState, register, this.multicursorIndex)
+          : register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       vimState.recordedState.transformations.push({
         type: 'macro',
@@ -403,14 +407,25 @@ class CommandInsertRegisterContent extends BaseCommand {
 
       return;
     } else {
-      text = register.text;
+      const registerLines = register.text.split('\n');
+      const isMultiCursorPasteSpread =
+        configuration.multiCursorPasteSpread &&
+        vimState.isMultiCursor &&
+        vimState.cursors.length === registerLines.length;
+      text = isMultiCursorPasteSpread
+        ? registerLines[this.multicursorIndex!].trimEnd()
+        : register.text;
     }
 
-    if (register.registerMode === RegisterMode.LineWise) {
+    if (register.registerMode === RegisterMode.LineWise && !vimState.isMultiCursor) {
       text += '\n';
     }
 
-    await TextEditor.insertAt(text, position);
+    vimState.recordedState.transformations.push({
+      type: 'insertText',
+      text: text,
+      position: position,
+    });
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
