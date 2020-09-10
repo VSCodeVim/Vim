@@ -1171,9 +1171,11 @@ class CommandRepeatSubstitution extends BaseCommand {
   }
 }
 
+type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   commandName: string;
+  direction: FoldDirection;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1183,7 +1185,13 @@ abstract class CommandFold extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const args =
+      this.direction !== undefined
+        ? { levels: timesToRepeat, direction: this.direction }
+        : undefined;
+    await vscode.commands.executeCommand(this.commandName, args);
+    vimState.cursors = getCursorsAfterSync();
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1192,24 +1200,13 @@ abstract class CommandFold extends BaseCommand {
 class CommandToggleFold extends CommandFold {
   keys = ['z', 'a'];
   commandName = 'editor.toggleFold';
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
-    vimState.cursors = getCursorsAfterSync();
-    await vimState.setCurrentMode(Mode.Normal);
-  }
 }
 
 @RegisterAction
 class CommandCloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.cursors = getCursorsAfterSync();
-  }
+  direction: FoldDirection = 'up';
 }
 
 @RegisterAction
@@ -1222,15 +1219,7 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ['z', 'o'];
   commandName = 'editor.unfold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.unfold', {
-      levels: timesToRepeat,
-      direction: 'down',
-    });
-  }
+  direction: FoldDirection = 'down';
 }
 
 @RegisterAction

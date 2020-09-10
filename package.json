@@ -1058,12 +1058,12 @@
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "husky": "4.2.5",
+    "husky": "4.3.0",
     "minimist": "1.2.5",
     "mocha": "8.1.3",
     "plugin-error": "1.0.1",
     "prettier": "2.1.1",
-    "pretty-quick": "3.0.0",
+    "pretty-quick": "3.0.1",
     "sinon": "9.0.3",
     "ts-loader": "8.0.3",
     "tslint": "6.1.3",
@@ -1071,7 +1071,7 @@
     "vscode-test": "1.4.0",
     "webpack": "4.44.1",
     "webpack-cli": "3.3.12",
-    "webpack-merge": "5.1.3",
+    "webpack-merge": "5.1.4",
     "webpack-stream": "6.1.0"
   }
 }
