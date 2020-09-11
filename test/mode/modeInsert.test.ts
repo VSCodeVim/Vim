@@ -394,4 +394,21 @@ suite('Mode Insert', () => {
       assert(false);
     }
   });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register",
+    start: ['foo |bar'],
+    keysPressed: 'yei<C-r>"',
+    end: ['foo bar|bar'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register with mupltiple cursor",
+    start: ['foo |bar', 'foo bar'],
+    // create two cursors on bar, yank and paste it in insert mode
+    keysPressed: 'gbgbyi<C-r>"',
+    end: ['foo bar|bar', 'foo barbar'],
+    endMode: Mode.Insert,
+  });
 });
