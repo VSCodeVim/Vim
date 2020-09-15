@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { BaseMovement } from '../actions/baseMotion';
+import { configuration } from '../configuration/configuration';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
@@ -352,6 +353,18 @@ export class VimState implements vscode.Disposable {
       this.returnToInsertAfterCommand = false;
     }
     this._currentMode = mode;
+
+    if (configuration.smartRelativeLine) {
+      const activeTextEditor = vscode.window.activeTextEditor;
+
+      if (activeTextEditor) {
+        if (mode === Mode.Insert) {
+          activeTextEditor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On;
+        } else {
+          activeTextEditor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative;
+        }
+      }
+    }
 
     if (mode === Mode.SearchInProgressMode) {
       this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
