@@ -251,7 +251,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `yL` and `d^` respectively.
+- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `y$` and `d^` respectively.
 
 ```json
     "vim.operatorPendingModeKeyBindings": [

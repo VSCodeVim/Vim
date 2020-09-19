@@ -19,6 +19,7 @@ export class Configuration implements IConfiguration {
     enable: false,
   };
   replaceWithRegister = false;
+  smartRelativeLine = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
