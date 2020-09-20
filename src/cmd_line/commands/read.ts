@@ -1,8 +1,7 @@
-import { exec } from 'child_process';
-import { readFileAsync } from '../../util/fs';
-
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
+import { readFileAsync } from 'platform/fs';
+import { SUPPORT_READ_COMMAND } from 'platform/constants';
 
 export interface IReadCommandArguments extends node.ICommandArgs {
   file?: string;
@@ -58,18 +57,24 @@ export class ReadCommand extends node.CommandBase {
   }
 
   async getTextToInsertFromCmd(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      try {
-        exec(this.arguments.cmd as string, (err, stdout, stderr) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(stdout);
-          }
-        });
-      } catch (e) {
-        reject(e);
-      }
-    });
+    if (SUPPORT_READ_COMMAND) {
+      return new Promise<string>((resolve, reject) => {
+        try {
+          import('child_process').then((cp) => {
+            return cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(stdout);
+              }
+            });
+          });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    } else {
+      return '';
+    }
   }
 }

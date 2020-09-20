@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import { promisify } from 'util';
-import * as fs from 'fs';
 
 export const constants = {
   UV_FS_SYMLINK_DIR: 1,
@@ -60,27 +58,35 @@ export const constants = {
   COPYFILE_FICLONE_FORCE: 4,
 };
 
+export async function doesFileExist(fileUri: vscode.Uri) {
+  try {
+    await vscode.workspace.fs.stat(fileUri);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function existsAsync(path: string): Promise<boolean> {
   try {
-    const uri = vscode.Uri.parse(`file:${path}`);
-    await vscode.workspace.fs.stat(uri);
+    await vscode.workspace.fs.stat(vscode.Uri.parse(path));
     return true;
   } catch (_e) {
     return false;
   }
 }
 
-export async function unlink(path: string): Promise<void> {
-  const uri = vscode.Uri.parse(`file:${path}`);
-  await vscode.workspace.fs.delete(uri);
+export async function unlink(path): Promise<void> {
+  await vscode.workspace.fs.delete(vscode.Uri.parse(path));
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {
-  return promisify(fs.readFile)(path, encoding);
+  const ret = await vscode.workspace.fs.readFile(vscode.Uri.parse(path));
+  return ret.toString();
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
-  return promisify(fs.mkdir)(path, options);
+  return vscode.workspace.fs.createDirectory(vscode.Uri.parse(path));
 }
 
 export async function writeFileAsync(
@@ -88,17 +94,17 @@ export async function writeFileAsync(
   content: string,
   encoding: string
 ): Promise<void> {
-  return promisify(fs.writeFile)(path, content, encoding);
+  return vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
 }
 
 export async function accessAsync(path: string, mode: number) {
-  return promisify(fs.access)(path, mode);
+  // no op in nodeless
 }
 
 export async function chmodAsync(path: string, mode: string | number) {
-  return promisify(fs.chmod)(path, mode);
+  // no op in nodeless
 }
 
 export function unlinkSync(path: string) {
-  fs.unlinkSync(path);
+  // no op in nodeless
 }
