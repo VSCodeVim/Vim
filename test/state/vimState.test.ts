@@ -12,9 +12,10 @@ suite('VimState', () => {
 
   teardown(cleanUpWorkspace);
 
-  test('de-dupes cursors', () => {
+  test('de-dupes cursors', async () => {
     // setup
     const vimState = new VimState(vscode.window.activeTextEditor!);
+    await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
     const initialCursors = [new Range(cursorStart, cursorStop), new Range(cursorStart, cursorStop)];
@@ -26,9 +27,10 @@ suite('VimState', () => {
     assert.strictEqual(vimState.cursors.length, 1);
   });
 
-  test('cursorStart/cursorStop should be first cursor in cursors', () => {
+  test('cursorStart/cursorStop should be first cursor in cursors', async () => {
     // setup
     const vimState = new VimState(vscode.window.activeTextEditor!);
+    await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
     const initialCursors = [

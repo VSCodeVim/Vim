@@ -5,7 +5,6 @@ import { configuration } from '../configuration/configuration';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
 import { Position } from './../common/motion/position';
@@ -15,6 +14,11 @@ import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
+import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
+
+interface IInputMethodSwitcher {
+  switchInputMethod(prevMode: Mode, newMode: Mode);
+}
 
 interface INVim {
   run(vimState: VimState, command: string): Promise<{ statusBarText: string; error: boolean }>;
@@ -331,6 +335,7 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
+  private _inputMethodSwitcher?: IInputMethodSwitcher;
   /**
    * The mode Vim is currently including pseudo-modes like OperatorPendingMode
    * This is to be used only by the Remappers when getting the remappings so don't
@@ -342,9 +347,8 @@ export class VimState implements vscode.Disposable {
       : this._currentMode;
   }
 
-  private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(mode: Mode): Promise<void> {
-    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, mode);
+    await this._inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
     if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
       this.returnToInsertAfterCommand = false;
     }
@@ -393,23 +397,29 @@ export class VimState implements vscode.Disposable {
   /** The macro currently being recorded, if one exists. */
   public macro: RecordedState | undefined;
 
-  public nvim: INVim;
+  public nvim?: INVim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   async load() {
-    const m = await import('../neovim/neovim');
-    this.nvim = new m.NeovimWrapper();
+    if (SUPPORT_NVIM) {
+      const m = await import('../neovim/neovim');
+      this.nvim = new m.NeovimWrapper();
+    }
+
+    if (SUPPORT_IME_SWITCHER) {
+      const ime = await import('../actions/plugins/imswitcher');
+      this._inputMethodSwitcher = new ime.InputMethodSwitcher();
+    }
   }
 
   dispose() {
-    this.nvim.dispose();
+    this.nvim?.dispose();
   }
 }
 

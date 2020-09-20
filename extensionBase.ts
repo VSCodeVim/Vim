@@ -107,7 +107,7 @@ export async function activate(
 
   // Load state
   Register.loadFromDisk(extensionContext);
-  await Promise.all([commandLine.load(), globalState.load()]);
+  await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);

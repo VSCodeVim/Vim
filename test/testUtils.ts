@@ -124,7 +124,7 @@ export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
 ): Promise<void> {
-  await commandLine.load();
+  await commandLine.load(new TestExtensionContext());
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 
