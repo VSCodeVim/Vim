@@ -34,6 +34,8 @@ class CommandEscInsertMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    vscode.commands.executeCommand('closeParameterHints');
+
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
@@ -199,8 +201,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
-      start: position.getLineBegin(),
-      end: position.getLineEnd(),
+      range: new Range(position.getLineBegin(), position.getLineEnd()),
       diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
     });
   }

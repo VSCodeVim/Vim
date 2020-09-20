@@ -291,8 +291,8 @@ class CommandRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
-    vimState.recordedMacro = new RecordedState();
-    vimState.recordedMacro.registerName = register;
+    vimState.macro = new RecordedState();
+    vimState.macro.registerName = register;
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
@@ -300,8 +300,6 @@ class CommandRecordMacro extends BaseCommand {
       newRegister.registerName = register;
       Register.putByKey(newRegister, register);
     }
-
-    vimState.isRecordingMacro = true;
   }
 }
 
@@ -311,21 +309,22 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const existingMacro = (await Register.get(vimState, vimState.recordedMacro.registerName))?.text;
-    if (!(existingMacro instanceof RecordedState)) {
-      return;
+    const macro = vimState.macro!;
+
+    const existingMacro = (await Register.get(vimState, macro.registerName))?.text;
+    if (existingMacro instanceof RecordedState) {
+      existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
     }
 
-    existingMacro.actionsRun = existingMacro.actionsRun.concat(vimState.recordedMacro.actionsRun);
-    vimState.isRecordingMacro = false;
+    vimState.macro = undefined;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+    return super.doesActionApply(vimState, keysPressed) && vimState.macro !== undefined;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+    return super.couldActionApply(vimState, keysPressed) && vimState.macro !== undefined;
   }
 }
 
@@ -407,7 +406,6 @@ class CommandEsc extends BaseCommand {
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
         await Promise.all([
-          vscode.commands.executeCommand('closeParameterHints'),
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
@@ -699,8 +697,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: replaceState.originalChars[position.character - 1],
-          start: position.getLeft(),
-          end: position,
+          range: new Range(position.getLeft(), position),
           diff: new PositionDiff({ character: -1 }),
         });
       }
@@ -711,8 +708,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: char,
-          start: position,
-          end: position.getRight(),
+          range: new Range(position, position.getRight()),
           diff: new PositionDiff({ character: 1 }),
         });
       } else {
@@ -1178,9 +1174,11 @@ class CommandRepeatSubstitution extends BaseCommand {
   }
 }
 
+type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   commandName: string;
+  direction: FoldDirection;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1190,7 +1188,13 @@ abstract class CommandFold extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const args =
+      this.direction !== undefined
+        ? { levels: timesToRepeat, direction: this.direction }
+        : undefined;
+    await vscode.commands.executeCommand(this.commandName, args);
+    vimState.cursors = getCursorsAfterSync();
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1199,24 +1203,13 @@ abstract class CommandFold extends BaseCommand {
 class CommandToggleFold extends CommandFold {
   keys = ['z', 'a'];
   commandName = 'editor.toggleFold';
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
-    vimState.cursors = getCursorsAfterSync();
-    await vimState.setCurrentMode(Mode.Normal);
-  }
 }
 
 @RegisterAction
 class CommandCloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.cursors = getCursorsAfterSync();
-  }
+  direction: FoldDirection = 'up';
 }
 
 @RegisterAction
@@ -1229,15 +1222,7 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ['z', 'o'];
   commandName = 'editor.unfold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.unfold', {
-      levels: timesToRepeat,
-      direction: 'down',
-    });
-  }
+  direction: FoldDirection = 'down';
 }
 
 @RegisterAction
@@ -2454,8 +2439,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: trimmedLinesContent,
-          start: deleteStartPosition,
-          end: deleteEndPosition,
+          range: new Range(deleteStartPosition, deleteEndPosition),
           diff: new PositionDiff({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
@@ -2464,8 +2448,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: trimmedLinesContent,
-          start: deleteStartPosition,
-          end: deleteEndPosition,
+          range: new Range(deleteStartPosition, deleteEndPosition),
           manuallySetCursorPositions: true,
         });
 
@@ -2664,8 +2647,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
-        start: position,
-        end: endPos,
+        range: new Range(position, endPos),
         diff: new PositionDiff({ character: timesToRepeat - 1 }),
       });
     }
@@ -2717,8 +2699,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(end.character - start.character + 2).join(toInsert),
-          start: start,
-          end: new Position(end.line, end.character + 1),
+          range: new Range(start, new Position(end.line, end.character + 1)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === start.line) {
@@ -2726,8 +2707,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(lineText.length - start.character + 1).join(toInsert),
-          start: start,
-          end: new Position(start.line, lineText.length),
+          range: new Range(start, new Position(start.line, lineText.length)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === end.line) {
@@ -2735,8 +2715,10 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
-          start: new Position(end.line, 0),
-          end: new Position(end.line, end.character + visualSelectionOffset),
+          range: new Range(
+            new Position(end.line, 0),
+            new Position(end.line, end.character + visualSelectionOffset)
+          ),
           manuallySetCursorPositions: true,
         });
       } else {
@@ -2744,8 +2726,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformations.push({
           type: 'replaceText',
           text: Array(lineText.length + 1).join(toInsert),
-          start: new Position(lineNum, 0),
-          end: new Position(lineNum, lineText.length),
+          range: new Range(new Position(lineNum, 0), new Position(lineNum, lineText.length)),
           manuallySetCursorPositions: true,
         });
       }
@@ -2781,8 +2762,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'replaceText',
         text: Array(end.character - start.character + 1).join(toInsert),
-        start: start,
-        end: end,
+        range: new Range(start, end),
         manuallySetCursorPositions: true,
       });
     }

@@ -259,9 +259,6 @@ suite('register', () => {
   test('Small deletion using x is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
-
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '2', 'x', 'j', '"', '-', 'p']);
 
@@ -271,9 +268,6 @@ suite('register', () => {
   test('Small deletion using Del is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
-
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '<Del>', 'j', '"', '-', 'p']);
 
@@ -282,9 +276,6 @@ suite('register', () => {
 
   test('Small deletion using X is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
-
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents([

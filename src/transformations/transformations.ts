@@ -58,14 +58,9 @@ export interface ReplaceTextTransformation {
   text: string;
 
   /**
-   * Start of location to replace.
+   * Range of characters to replace.
    */
-  start: Position;
-
-  /**
-   * End of location to replace.
-   */
-  end: Position;
+  range: Range;
 
   /**
    * The index of the cursor that this transformation applies to.
@@ -305,7 +300,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
     case 'insertText':
       return new Range(transformation.position, transformation.position);
     case 'replaceText':
-      return new Range(transformation.start, transformation.end);
+      return transformation.range;
     case 'deleteText':
       return new Range(transformation.position, transformation.position);
     case 'deleteRange':

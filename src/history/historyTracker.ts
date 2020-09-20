@@ -206,7 +206,7 @@ class HistoryStep {
 }
 
 export class HistoryTracker {
-  private readonly _logger = Logger.get('DocumentChange');
+  private static readonly logger = Logger.get('DocumentChange');
   public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
@@ -234,14 +234,14 @@ export class HistoryTracker {
     versionNumber: number;
   };
 
-  private vimState: VimState;
+  private readonly vimState: VimState;
 
   private currentMode: Mode;
 
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
       const msg = 'Tried to modify history at index -1';
-      this._logger.warn(msg);
+      HistoryTracker.logger.warn(msg);
       throw new Error('HistoryTracker:' + msg);
     }
 
@@ -599,7 +599,7 @@ export class HistoryTracker {
    */
   public async undoAndRemoveChanges(n: number): Promise<void> {
     if (this.currentContentChanges.length < n) {
-      this._logger.warn('Something bad happened in removeChange');
+      HistoryTracker.logger.warn('Something bad happened in removeChange');
       return;
     } else if (n === 0) {
       return;
