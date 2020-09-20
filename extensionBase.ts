@@ -430,10 +430,15 @@ export async function activate(
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  registerCommand(context, 'vim.editVimrc', async () => {
-    const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
-    await vscode.window.showTextDocument(document);
-  });
+  registerCommand(
+    context,
+    'vim.editVimrc',
+    async () => {
+      const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
+      await vscode.window.showTextDocument(document);
+    },
+    false
+  );
 
   for (const boundKey of configuration.boundKeyCombinations) {
     registerCommand(context, boundKey.command, () => {
@@ -513,10 +518,11 @@ function overrideCommand(
 function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
-  callback: (...args: any[]) => any
+  callback: (...args: any[]) => any,
+  requiresActiveEditor: boolean = true
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
-    if (!vscode.window.activeTextEditor) {
+    if (requiresActiveEditor && !vscode.window.activeTextEditor) {
       return;
     }
 
