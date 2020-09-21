@@ -77,3 +77,12 @@ deploy:
       repo: VSCodeVim/Vim
       tags: true
       condition: $TRAVIS_OS_NAME = linux AND tag = beta
+
+  - provider: script
+    script: vsce package
+    skip_cleanup: true
+    on:
+      repo: VSCodeVim/Vim
+      branch: master
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux AND tag = beta
