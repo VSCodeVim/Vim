@@ -42,7 +42,7 @@ script:
 
 before_deploy:
   - npm install -g vsce;
-  - vsce package --web;
+  - vsce package;
 
 deploy:
   - provider: releases
@@ -56,7 +56,7 @@ deploy:
       tags: true
       condition: $TRAVIS_OS_NAME = linux AND NOT tag = beta
   - provider: script
-    script: vsce publish -p $VS_TOKEN
+    script: vsce publish --web -p $VS_TOKEN
     skip_cleanup: true
     on:
       repo: VSCodeVim/Vim
