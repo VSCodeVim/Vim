@@ -223,7 +223,7 @@ gulp.task('forceprettier', function (done) {
 
 gulp.task('commit-hash', function (done) {
   git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
-    require('fs').writeFileSync('out/version', hash);
+    require('fs').writeFileSync('out/version.txt', hash);
     done();
   });
 });
