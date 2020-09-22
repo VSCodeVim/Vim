@@ -42,7 +42,7 @@ script:
 
 before_deploy:
   - npm install -g vsce;
-  - vsce package;
+  - vsce package --web;
 
 deploy:
   - provider: releases

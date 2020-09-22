@@ -42,7 +42,7 @@
   ],
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
-  "browser": "./outWeb/extensionWeb",
+  "browser": "./out/extensionWeb",
   "contributes": {
     "commands": [
       {
