@@ -79,7 +79,7 @@ export async function doesFileExist(fileUri: vscode.Uri) {
 
 export async function existsAsync(path: string): Promise<boolean> {
   try {
-    await vscode.workspace.fs.stat(vscode.Uri.parse(path));
+    await vscode.workspace.fs.stat(vscode.Uri.parse(`file:${path}`));
     return true;
   } catch (_e) {
     return false;
