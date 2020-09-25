@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.42.0"
   },
   "categories": [
     "Other",
@@ -1042,7 +1042,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "neovim": "4.9.0",
     "untildify": "4.0.0",
     "winston": "3.3.3",
@@ -1057,7 +1057,7 @@
     "@types/mocha": "8.0.3",
     "@types/node": "12.12.31",
     "@types/sinon": "9.0.5",
-    "@types/vscode": "1.37.0",
+    "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
     "gulp": "4.0.2",
