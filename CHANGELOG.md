@@ -1,5 +1,35 @@
 # Change Log
 
+## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.0...v1.17.1)
+
+**Enhancements:**
+
+- Make an interactive/incremental version of easy motion [\#5201](https://github.com/VSCodeVim/Vim/issues/5201)
+
+**Fixed Bugs:**
+
+- "No .vimrc found. Please set `vim.vimrc.path.`" reported with v1.17.0 [\#5220](https://github.com/VSCodeVim/Vim/issues/5220)
+
+**Closed issues:**
+
+- .vim [\#5247](https://github.com/VSCodeVim/Vim/issues/5247)
+- Failed to handle key=p. v.split is not a function [\#5244](https://github.com/VSCodeVim/Vim/issues/5244)
+- Best way to implement "vim-cutlass" behavior? [\#5242](https://github.com/VSCodeVim/Vim/issues/5242)
+- in 1.17.0, unable to find imselect.exe [\#5229](https://github.com/VSCodeVim/Vim/issues/5229)
+- Mouse clicked position isn't registered after navigating only with `hjkl` [\#5212](https://github.com/VSCodeVim/Vim/issues/5212)
+- Cannot trigger Esc with `jk` after typing whitespace [\#5142](https://github.com/VSCodeVim/Vim/issues/5142)
+- Iskeyword does not respect language specific editor overrides [\#4503](https://github.com/VSCodeVim/Vim/issues/4503)
+
+**Merged pull requests:**
+
+- make getConfiguration use the document languageId \(fixes \#4503\) [\#5245](https://github.com/VSCodeVim/Vim/pull/5245) ([dalev](https://github.com/dalev))
+
+## [v1.17.0](https://github.com/vscodevim/vim/tree/v1.17.0) (2020-09-22)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/beta...v1.17.0)
+
 ## [beta](https://github.com/vscodevim/vim/tree/beta) (2020-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.16.0...beta)
@@ -18,7 +48,6 @@
 - VIM forbids multiple cursors across pages [\#4834](https://github.com/VSCodeVim/Vim/issues/4834)
 - gk/gj do not work properly in visual mode [\#4544](https://github.com/VSCodeVim/Vim/issues/4544)
 - Failed "f" Command in Visual Mode Resets Selection [\#4512](https://github.com/VSCodeVim/Vim/issues/4512)
-- it seems cc cannot be remapped [\#4464](https://github.com/VSCodeVim/Vim/issues/4464)
 
 **Closed issues:**
 
