@@ -1035,9 +1035,6 @@ export class ModeHandler implements vscode.Disposable {
     } else {
       // Keep track of all cursors (in the case of multi-cursor).
       this.vimState.cursors = resultingCursors;
-      this.vimState.editor.selections = this.vimState.cursors.map(
-        (cursor: Range) => new vscode.Selection(cursor.start, cursor.stop)
-      );
     }
   }
 
