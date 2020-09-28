@@ -1202,4 +1202,21 @@ suite('Remaps', () => {
       },
     ],
   });
+
+  newTestWithRemaps({
+    title:
+      'Potential remap key followed by a remapped key in insert mode should insert first potential remap key and then handle the following remapped key.',
+    remaps: ['imap jk <Esc>', 'imap <C-e> <C-o>A'],
+    start: ['|Test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'ij<C-e>',
+        stepResult: {
+          end: ['jTest|'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
+  });
 });
