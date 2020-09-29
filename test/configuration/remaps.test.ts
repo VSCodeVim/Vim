@@ -1202,4 +1202,20 @@ suite('Remaps', () => {
       },
     ],
   });
+
+  newTestWithRemaps({
+    title: `Don't confuse a '<' keystroke with a potential special key like '<C-e>'`,
+    remaps: ['inoremap <C-e> <C-o>$'],
+    start: ['|test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'i<',
+        stepResult: {
+          end: ['<|test'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
+  });
 });

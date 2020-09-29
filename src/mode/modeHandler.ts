@@ -1630,11 +1630,10 @@ export class ModeHandler implements vscode.Disposable {
           virtualKey = '"';
         } else if (virtualKey === '<C-k>') {
           virtualKey = '?';
-        } else {
-          // Don't show keys with `<` like `<C-x>` but show everything else
-          virtualKey = virtualKey.indexOf('<') >= 0 ? undefined : virtualKey;
         }
       }
+      // Don't show keys with `<` like `<C-x>` but show everything else
+      virtualKey = virtualKey && /<[^>]+>/.test(virtualKey) ? undefined : virtualKey;
 
       if (virtualKey) {
         // Normal Render Options with the key to overlap on the next character

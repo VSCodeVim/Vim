@@ -594,9 +594,15 @@ export class Remapper implements IRemapper {
     countRemapAsPotential: boolean = false
   ): boolean {
     const keysAsString = keys.join('');
+    const re = /^<([^>]+)>/;
     if (keysAsString !== '') {
       for (let remap of remappings.keys()) {
         if (remap.startsWith(keysAsString) && (remap !== keysAsString || countRemapAsPotential)) {
+          // Don't confuse a key combination starting with '<' that is not a special key like '<C-a>'
+          // with a remap that starts with a special key.
+          if (keysAsString.startsWith('<') && !re.test(keysAsString) && re.test(remap)) {
+            continue;
+          }
           return true;
         }
       }
