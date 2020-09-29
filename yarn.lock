@@ -3235,7 +3235,7 @@ log-symbols@4.0.0:
   dependencies:
     chalk "^4.0.0"
 
-logform@^2.1.1, logform@^2.2.0:
+logform@^2.1.1, logform@^2.1.2, logform@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/logform/-/logform-2.2.0.tgz#40f036d19161fc76b68ab50fdc7fe495544492f2"
   integrity sha512-N0qPlqfypFx7UHNn4B3lzS/b0uLqt2hmuoa+PpuXNYgozdJYAyauF5Ky0BWVjrxDlMWiT3qN4zPq3vVAfZy7Yg==
@@ -5529,19 +5529,13 @@ wildcard@^2.0.0:
   resolved "https://registry.yarnpkg.com/wildcard/-/wildcard-2.0.0.tgz#a77d20e5200c6faaac979e4b3aadc7b3dd7f8fec"
   integrity sha512-JcKqAHLPxcdb9KM49dufGXn2x3ssnfjbcaQdLlfZsL9rH9wgDQjUtDxbo8NE0F6SFvydeu1VhZe7hZuHsB2/pw==
 
-winston-console-for-electron@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/winston-console-for-electron/-/winston-console-for-electron-0.0.6.tgz#c6a56e5cfa9b5fe3d0903743ab7734ccadd1c4df"
-  integrity sha512-4oc83FpZ04CC+Rne1ljh6ysl/fzUbE7fmIacjgh+1CDU3xBCpgqfNYRrcw6rL0yTOCJ8e4Fk2CYnOgBhWao1iA==
+winston-console-for-electron@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/winston-console-for-electron/-/winston-console-for-electron-0.0.7.tgz#903dec6854c4a53b0f8e1f8aca5be2f7dc6f6f42"
+  integrity sha512-ddF9vkAOSkTuH8HrghsG16RpH72Ql0CV12vDSAKxuWT0VhCvCiZRzbogHYsP3cvHSgoo+Ld14O+1MoDllUJxvw==
   dependencies:
-    winston-transport "4.1.0"
-
-winston-transport@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/winston-transport/-/winston-transport-4.1.0.tgz#4eedb6e3ad79bdd8a682e380abebd7b80951e797"
-  integrity sha512-rNMfXfGfTyiOrAJ9KLLy0nlow98NyD0oNCOSnP3jnNVHoKsJGLDsa8BaOH+ftKDR5pZKJMBhbQNEft7Vr+dJLw==
-  dependencies:
-    triple-beam "^1.2.0"
+    logform "^2.1.2"
+    winston-transport "^4.3.0"
 
 winston-transport@4.4.0, winston-transport@^4.3.0, winston-transport@^4.4.0:
   version "4.4.0"
