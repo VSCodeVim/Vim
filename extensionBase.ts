@@ -376,21 +376,16 @@ export async function activate(
 
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== Mode.Insert) {
-        compositionState.isInComposition = true;
-      }
+      compositionState.isInComposition = true;
     });
   });
 
   overrideCommand(context, 'compositionEnd', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== Mode.Insert) {
-        let text = compositionState.composingText;
-        compositionState.reset();
-        mh.handleMultipleKeyEvents(text.split(''));
-      }
+      let text = compositionState.composingText;
+      compositionState.reset();
+      mh.handleMultipleKeyEvents(text.split(''));
     });
   });
 
