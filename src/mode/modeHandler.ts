@@ -872,11 +872,8 @@ export class ModeHandler implements vscode.Disposable {
           // to select that character. We use this offset to allow for that, otherwise
           // we would consider the position invalid and change it to the left of the last
           // character.
-          const offsetAllowed = isVisualMode(this.vimState.currentMode)
-            ? currentLineLength > 0
-              ? 1
-              : 0
-            : 0;
+          const offsetAllowed =
+            isVisualMode(this.vimState.currentMode) && currentLineLength > 0 ? 1 : 0;
           if (cursor.start.character >= currentStartLineLength) {
             cursor = cursor.withNewStart(
               cursor.start.withColumn(Math.max(currentStartLineLength - 1, 0))
@@ -1501,49 +1498,76 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      // Combine instersected selections - When we have multiple cursors
-      // sometimes those cursors selections intersect and combine, we need
-      // to check that here so that we know if our currents cursors will
-      // trigger a selectionChangeEvent or not. If we didn't check for this
-      // vscode might already have the resulting combined selection selected
-      // but since that wouldn't be the same as our selections we would think
-      // there would be a selectionChangeEvent when there wouldn't be any.
-      let combinedSelections: vscode.Selection[] = [];
-      selections.forEach((s, i) => {
-        if (i > 0) {
-          const previousSelection = combinedSelections[combinedSelections.length - 1];
-          const overlap = s.intersection(previousSelection);
-          if (overlap) {
-            // If anchor is after active we have a backwards selection and in that case we want
-            // the anchor that is lower and/or to the right and the active that is up and/or to
-            // the left. Otherwise we want the anchor that is upper and/or to the left and the
-            // active that is lower and/or to the right.
-            const anchor = s.anchor.isBeforeOrEqual(s.active)
-              ? s.anchor.isBeforeOrEqual(previousSelection.anchor) // Forwards Selection
-                ? s.anchor
-                : previousSelection.anchor
-              : s.anchor.isAfterOrEqual(previousSelection.anchor) // Backwards Selection
-              ? s.anchor
-              : previousSelection.anchor;
-            const active = s.anchor.isBeforeOrEqual(s.active)
-              ? s.active.isAfterOrEqual(previousSelection.active) // Forwards Selection
-                ? s.active
-                : previousSelection.active
-              : s.active.isBeforeOrEqual(previousSelection.active) // Backwards Selection
-              ? s.active
-              : previousSelection.active;
-            combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
-              anchor,
-              active
-            );
+      /**
+       * Combine instersected selections - When we have multiple cursors
+       * sometimes those cursors selections intersect and combine, we need
+       * to check that here so that we know if our currents cursors will
+       * trigger a selectionChangeEvent or not. If we didn't check for this
+       * vscode might already have the resulting combined selection selected
+       * but since that wouldn't be the same as our selections we would think
+       * there would be a selectionChangeEvent when there wouldn't be any.
+       */
+      const getSelectionsCombined = (sel: vscode.Selection[]) => {
+        let combinedSelections: vscode.Selection[] = [];
+        sel.forEach((s, i) => {
+          if (i > 0) {
+            const previousSelection = combinedSelections[combinedSelections.length - 1];
+            const overlap = s.intersection(previousSelection);
+            if (overlap) {
+              // If anchor is after active we have a backwards selection and in that case we want
+              // the anchor that is lower and/or to the right and the active that is up and/or to
+              // the left. Otherwise we want the anchor that is upper and/or to the left and the
+              // active that is lower and/or to the right.
+
+              let anchor: vscode.Position;
+              let active: vscode.Position;
+              if (s.anchor.isBeforeOrEqual(s.active)) {
+                // Forwards Selection
+
+                // Get min anchor
+                if (s.anchor.isBeforeOrEqual(previousSelection.anchor)) {
+                  anchor = s.anchor;
+                } else {
+                  anchor = previousSelection.anchor;
+                }
+
+                // Get max active
+                if (s.active.isAfterOrEqual(previousSelection.active)) {
+                  active = s.active;
+                } else {
+                  active = previousSelection.active;
+                }
+              } else {
+                // Backwards Selection
+
+                // Get max anchor
+                if (s.anchor.isAfterOrEqual(previousSelection.anchor)) {
+                  anchor = s.anchor;
+                } else {
+                  anchor = previousSelection.anchor;
+                }
+
+                // Get min active
+                if (s.active.isBeforeOrEqual(previousSelection.active)) {
+                  active = s.active;
+                } else {
+                  active = previousSelection.active;
+                }
+              }
+              combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
+                anchor,
+                active
+              );
+            } else {
+              combinedSelections.push(s);
+            }
           } else {
             combinedSelections.push(s);
           }
-        } else {
-          combinedSelections.push(s);
-        }
-      });
-      selections = combinedSelections;
+        });
+        return combinedSelections;
+      };
+      selections = getSelectionsCombined(selections);
 
       // Check if the selection we are going to set is different than the current one.
       // If they are the same vscode won't trigger a selectionChangeEvent so we don't
