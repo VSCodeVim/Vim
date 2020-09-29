@@ -794,7 +794,7 @@ export class ModeHandler implements vscode.Disposable {
     // we will shift it back again on the start of 'runAction'.
     if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
-        c.start.isBefore(c.stop)
+        c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
               c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
             )
@@ -911,6 +911,7 @@ export class ModeHandler implements vscode.Disposable {
   private async executeMovement(movement: BaseMovement): Promise<RecordedState> {
     this.vimState.lastMovementFailed = false;
     let recordedState = this.vimState.recordedState;
+    let cursorsToRemove: number[] = [];
 
     for (let i = 0; i < this.vimState.cursors.length; i++) {
       /**
@@ -961,10 +962,27 @@ export class ModeHandler implements vscode.Disposable {
           this.vimState.lastMovementFailed = true;
         }
 
-        this.vimState.cursors[i] = new Range(result.start, result.stop);
+        if (result.removed) {
+          cursorsToRemove.push(i);
+        } else {
+          this.vimState.cursors[i] = new Range(result.start, result.stop);
+        }
 
         if (result.registerMode) {
           this.vimState.currentRegisterMode = result.registerMode;
+        }
+      }
+    }
+
+    if (cursorsToRemove.length > 0) {
+      // Remove the cursors that no longer exist. Remove from the end to the start
+      // so that the index values don't change.
+      for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
+        const idx = cursorsToRemove[i];
+        if (idx !== 0) {
+          // We should never remove the main selection! This shouldn't happen, but just
+          // in case it does, lets protect against it. Remember kids, always use protection!
+          this.vimState.cursors.splice(idx, 1);
         }
       }
     }
@@ -1493,7 +1511,7 @@ export class ModeHandler implements vscode.Disposable {
       let combinedSelections: vscode.Selection[] = [];
       selections.forEach((s, i) => {
         if (i > 0) {
-          const previousSelection = combinedSelections[i - 1];
+          const previousSelection = combinedSelections[combinedSelections.length - 1];
           const overlap = s.intersection(previousSelection);
           if (overlap) {
             // If anchor is after active we have a backwards selection and in that case we want
@@ -1514,7 +1532,10 @@ export class ModeHandler implements vscode.Disposable {
               : s.active.isBeforeOrEqual(previousSelection.active) // Backwards Selection
               ? s.active
               : previousSelection.active;
-            combinedSelections[i - 1] = new vscode.Selection(anchor, active);
+            combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
+              anchor,
+              active
+            );
           } else {
             combinedSelections.push(s);
           }
