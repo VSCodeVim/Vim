@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { promisify } from 'util';
+import * as util from 'util';
 import * as fs from 'fs';
 
 export const constants = {
@@ -60,19 +61,33 @@ export const constants = {
   COPYFILE_FICLONE_FORCE: 4,
 };
 
+export async function doesFileExist(fileUri: vscode.Uri) {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    try {
+      await vscode.workspace.fs.stat(fileUri);
+      return true;
+    } catch {
+      return false;
+    }
+  } else {
+    // fallback to local fs
+    const fsExists = util.promisify(fs.exists);
+    return fsExists(fileUri.fsPath);
+  }
+}
+
 export async function existsAsync(path: string): Promise<boolean> {
   try {
-    const uri = vscode.Uri.parse(`file:${path}`);
-    await vscode.workspace.fs.stat(uri);
+    await vscode.workspace.fs.stat(vscode.Uri.file(path));
     return true;
   } catch (_e) {
     return false;
   }
 }
 
-export async function unlink(path: string): Promise<void> {
-  const uri = vscode.Uri.parse(`file:${path}`);
-  await vscode.workspace.fs.delete(uri);
+export async function unlink(path): Promise<void> {
+  fs.unlinkSync(path);
 }
 
 export async function readFileAsync(path: string, encoding: string): Promise<string> {

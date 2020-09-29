@@ -6,7 +6,7 @@ import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
-import { existsAsync } from '../util/fs';
+import { existsAsync } from 'platform/fs';
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState

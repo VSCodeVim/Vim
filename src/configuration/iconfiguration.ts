@@ -137,6 +137,11 @@ export interface IConfiguration {
   replaceWithRegister: boolean;
 
   /**
+   * Use SmartRelativeLine plugin?
+   */
+  smartRelativeLine: boolean;
+
+  /**
    * Use sneak plugin?
    */
   sneak: boolean;

@@ -11,7 +11,7 @@ export class Clipboard {
     try {
       await vscode.env.clipboard.writeText(text);
     } catch (e) {
-      this.logger.error(e, `Error copying to clipboard. err=${e}`);
+      this.logger.error(`Error copying to clipboard. err=${e}`);
     }
   }
 

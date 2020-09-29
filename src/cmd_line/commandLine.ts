@@ -30,16 +30,13 @@ class CommandLine {
   public preCompleteCommand = '';
 
   public get historyEntries() {
-    return this._history.get();
+    return this._history?.get() || [];
   }
 
   public previousMode = Mode.Normal;
 
-  constructor() {
-    this._history = new CommandLineHistory();
-  }
-
-  public async load(): Promise<void> {
+  public async load(context: vscode.ExtensionContext): Promise<void> {
+    this._history = new CommandLineHistory(context);
     return this._history.load();
   }
 
@@ -66,7 +63,7 @@ class CommandLine {
       const cmd = parser.parse(command);
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
-      if (useNeovim) {
+      if (useNeovim && vimState.nvim) {
         const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
@@ -74,7 +71,11 @@ class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+        if (
+          e.code === ErrorCode.NotAnEditorCommand &&
+          configuration.enableNeovim &&
+          vimState.nvim
+        ) {
           const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
