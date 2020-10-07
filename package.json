@@ -1080,7 +1080,7 @@
     "vscode-test": "1.4.0",
     "webpack": "4.44.2",
     "webpack-cli": "3.3.12",
-    "webpack-merge": "5.1.4",
+    "webpack-merge": "5.2.0",
     "webpack-stream": "6.1.0"
   }
 }
