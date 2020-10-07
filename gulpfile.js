@@ -146,6 +146,7 @@ function updatePath() {
         path.dirname(filePath),
         path.resolve(process.cwd(), 'out/src/platform/node')
       );
+      platformRelativepath = platformRelativepath.replace(/\\/g, '/');
       f.contents = Buffer.from(
         contents.replace(
           /\(\"platform\/([^"]*)\"\)/g,
