@@ -279,6 +279,9 @@ class Configuration implements IConfiguration {
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
 
+  @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
+  ts: number;
+
   @overlapSetting({ settingName: 'cursorStyle', defaultValue: 'line' })
   private editorCursorStyleRaw: string;
 
