@@ -472,12 +472,22 @@ export class MarkMovementBOL extends BaseMovement {
     }
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureEditorIsActive(mark.editor);
+    let pos: Position;
+    if (
+      mark.isUppercaseMark &&
+      mark.editor !== undefined &&
+      !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
+    ) {
+      pos = new Position(
+        mark.position.line,
+        mark.editor.document.lineAt(mark.position.line).firstNonWhitespaceCharacterIndex
+      );
+      await jumpToPositionInAnotherFile(mark.editor.document, pos);
+    } else {
+      pos = TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
+    return pos;
   }
 }
 
@@ -494,18 +504,25 @@ export class MarkMovement extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      await ensureEditorIsActive(mark.editor);
+    const pos = mark.position;
+    if (
+      mark.isUppercaseMark &&
+      mark.editor !== undefined &&
+      !vimState.historyTracker.isGlobalMarkDocumentActive(mark)
+    ) {
+      await jumpToPositionInAnotherFile(mark.editor.document, pos);
     }
 
-    return mark.position;
+    return pos;
   }
 }
 
-async function ensureEditorIsActive(editor: vscode.TextEditor) {
-  if (editor !== vscode.window.activeTextEditor) {
-    await vscode.window.showTextDocument(editor.document);
-  }
+async function jumpToPositionInAnotherFile(document: vscode.TextDocument, position: Position) {
+  const editor = await vscode.window.showTextDocument(document);
+  // by having a selection at the same position twice, the cursor jumps there
+  editor.selections = [new vscode.Selection(position, position)];
+  // And the visible range jumps there too
+  editor.revealRange(new vscode.Range(position, position));
 }
 
 @RegisterAction

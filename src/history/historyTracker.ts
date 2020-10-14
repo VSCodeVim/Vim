@@ -307,11 +307,14 @@ export class HistoryTracker {
    *
    * This big gnarly method updates our marks such that they continue to mark
    * the same character when the user does a document edit that would move the
-   * text that was marked.
+   * text that was marked. If a line containing a mark is deleted, then the mark
+   * is also deleted.
    */
-  private updateAndReturnMarks(): IMark[] {
+  private updateMarks(): void {
     const previousMarks = this.getAllCurrentDocumentMarks();
-    let newMarks: IMark[] = [];
+    const newMarks: IMark[] = [];
+    const deletedGlobalMarks = {};
+    const deletedLocalMarks = {};
 
     // clone old marks into new marks
     for (const mark of previousMarks) {
@@ -320,6 +323,13 @@ export class HistoryTracker {
 
     for (const change of this.currentHistoryStep.changes) {
       for (const newMark of newMarks) {
+        if (
+          deletedGlobalMarks.hasOwnProperty(newMark.name) ||
+          deletedLocalMarks.hasOwnProperty(newMark.name)
+        ) {
+          // skip if this mark is going to be deleted
+          continue;
+        }
         // Run through each character added/deleted, and see if it could have
         // affected the position of this mark.
 
@@ -330,19 +340,34 @@ export class HistoryTracker {
 
           for (const ch of change.text) {
             // Update mark
+            if (ch === '\r') {
+              // Don't do anything because after that it's \n
+              continue;
+            }
 
             if (pos.isBeforeOrEqual(newMark.position)) {
               if (ch === '\n') {
-                newMark.position = new Position(
-                  newMark.position.line + 1,
-                  newMark.position.character
-                );
-              } else if (ch !== '\n' && pos.line === newMark.position.line) {
+                if (pos.line === newMark.position.line) {
+                  newMark.position = new Position(
+                    newMark.position.line + 1,
+                    newMark.position.character - pos.character
+                  );
+                } else {
+                  newMark.position = new Position(
+                    newMark.position.line + 1,
+                    newMark.position.character
+                  );
+                }
+              } else if (pos.line === newMark.position.line) {
                 newMark.position = new Position(
                   newMark.position.line,
                   newMark.position.character + 1
                 );
               }
+            } else {
+              // if current position is past newMark position, from here it
+              // cannot affect the newMark position anymore
+              break;
             }
 
             // Advance position
@@ -356,59 +381,75 @@ export class HistoryTracker {
         } else {
           for (const ch of change.text) {
             // Update mark
+            if (ch === '\r') {
+              // Don't do anything because after that it's \n
+              continue;
+            }
 
             if (pos.isBefore(newMark.position)) {
               if (ch === '\n') {
-                newMark.position = new Position(
-                  newMark.position.line - 1,
-                  newMark.position.character
-                );
+                if (pos.line + 1 === newMark.position.line) {
+                  newMark.position = new Position(
+                    newMark.position.line - 1,
+                    newMark.position.character + pos.character
+                  );
+                } else {
+                  newMark.position = new Position(
+                    newMark.position.line - 1,
+                    newMark.position.character
+                  );
+                }
               } else if (pos.line === newMark.position.line) {
                 newMark.position = new Position(
                   newMark.position.line,
                   newMark.position.character - 1
                 );
               }
-            }
+            } else if (
+              pos.isEqual(newMark.position) &&
+              (ch === '\n' || pos.isEqual(TextEditor.getDocumentEnd()))
+            ) {
+              // delete a mark when the line containing that mark is deleted
+              // (Specifically, when we delete from the mark to the end of the line,
+              // including \n, or to the end of the file (in case of the last line))
 
-            // De-advance position
-            // (What's the opposite of advance? Retreat position?)
-
-            if (ch === '\n') {
-              // The 99999 is a bit of a hack here. It's very difficult and
-              // completely unnecessary to get the correct position, so we
-              // just fake it.
-              pos = new Position(Math.max(pos.line - 1, 0), 99999);
-            } else {
-              pos = new Position(pos.line, Math.max(pos.character - 1, 0));
+              // TODO: this currently does not work if there is an identical character
+              // below the marked character because the change will not go past the
+              // marked character, but instead starts from after that character to the
+              // next line, including the below character.
+              // For example, when we have 3 lines like this:
+              // c1234
+              // azsdif
+              // abxvcjk
+              // if we mark the first 'a', then when we delete the second line, the mark
+              // is not deleted, but instead go to the 'a' character in the last line
+              // because the change is not 'azsdif\n', but instead 'zsdif\na'
+              if (newMark.isUppercaseMark) {
+                deletedGlobalMarks[newMark.name] = true;
+              } else {
+                deletedLocalMarks[newMark.name] = true;
+              }
+              break;
             }
           }
         }
       }
     }
 
-    // Ensure the position of every mark is within the range of the document.
+    // update position and delete local marks
+    this.currentHistoryStep.marks = newMarks.filter(
+      (mark) => !mark.isUppercaseMark && !deletedLocalMarks.hasOwnProperty(mark.name)
+    );
 
-    for (const mark of newMarks) {
-      if (mark.position.isAfter(TextEditor.getDocumentEnd())) {
-        mark.position = TextEditor.getDocumentEnd();
-      }
-    }
+    // delete global marks
+    HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
+      (mark) => !deletedGlobalMarks.hasOwnProperty(mark.name)
+    );
 
-    return newMarks;
-  }
-
-  /**
-   * Updates all marks affecting the active text editor.
-   * Since all currentHistoryStep's marks are affected, just update the
-   * array.  Global marks might not be from the active editor, so the
-   * global mark collection is mutated with the new element in place.
-   */
-  private updateMarks(): void {
-    const newMarks = this.updateAndReturnMarks();
-    this.currentHistoryStep.marks = newMarks.filter((mark) => !mark.isUppercaseMark);
-
-    newMarks.filter((mark) => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
+    // update position of global marks in the current document
+    newMarks
+      .filter((mark) => mark.isUppercaseMark && !deletedGlobalMarks.hasOwnProperty(mark.name))
+      .forEach(this.putMarkInList.bind(this));
   }
 
   /**
@@ -420,13 +461,23 @@ export class HistoryTracker {
   }
 
   /**
-   * Gets all local and global marks targeting the current editor.
+   * Gets all local and global marks targeting the current document
    */
-  private getAllCurrentDocumentMarks(): IMark[] {
-    const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.editor === vscode.window.activeTextEditor
-    );
+  public getAllCurrentDocumentMarks(): IMark[] {
+    const globalMarks = HistoryStep.globalMarks.filter(this.isGlobalMarkDocumentActive);
     return [...this.currentHistoryStep.marks, ...globalMarks];
+  }
+
+  /**
+   * Check if this global mark refers to the document in the currently active editor
+   */
+  public isGlobalMarkDocumentActive(globalMark: IMark): boolean {
+    return (
+      // must compare documents instead of editors because the editor objects changes
+      // after changing tabs back and forth
+      globalMark.editor !== undefined &&
+      globalMark.editor.document === vscode.window.activeTextEditor?.document
+    );
   }
 
   /**
@@ -666,7 +717,7 @@ export class HistoryTracker {
 
     this.currentHistoryStep.merge();
 
-    this.currentHistoryStep.marks = this.updateAndReturnMarks();
+    this.updateMarks();
   }
 
   /**
