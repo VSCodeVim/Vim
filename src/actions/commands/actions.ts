@@ -2933,16 +2933,24 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
     vimState.cursors = [];
 
+    const cursorsOnBlankLines: Range[] = [];
     for (const selection of vimState.editor.selections) {
       let { start, end } = selection;
 
       for (let i = start.line; i <= end.line; i++) {
         const line = TextEditor.getLine(i);
 
+        const cursorRange = this.getCursorRangeForLine(line, start, end);
         if (!line.isEmptyOrWhitespace) {
-          vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+          vimState.cursors.push(cursorRange);
+        } else {
+          cursorsOnBlankLines.push(cursorRange);
         }
       }
+    }
+
+    if (vimState.cursors.length === 0) {
+      vimState.cursors = cursorsOnBlankLines;
     }
   }
 }
