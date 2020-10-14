@@ -181,7 +181,7 @@ export class ModeHandler implements vscode.Disposable {
         // like the plugin modes shouldn't be changed or else it might mess up the plugins actions.
         await this.setCurrentMode(Mode.Visual);
       }
-      return this.updateView();
+      return this.updateView({ drawSelection: false, revealRange: false });
     }
 
     /**
