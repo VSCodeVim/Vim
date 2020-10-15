@@ -439,6 +439,7 @@ export async function activate(
     registerCommand(context, boundKey.command, () => {
       if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
         checkIfRecursiveRemapping(`${boundKey.key}`);
+        handleKeyEvent(`${boundKey.key}`);
       } else {
         handleKeyEvent(`${boundKey.key}`);
       }

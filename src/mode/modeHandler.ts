@@ -363,8 +363,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Check forceStopRemapping
     if (this.vimState.forceStopRecursiveRemapping) {
-      this.vimState.forceStopRecursiveRemapping = false;
-      throw new ForceStopRemappingError('Forced by user');
+      return;
     }
 
     ModeHandler.logger.debug(`handling key=${printableKey}.`);
