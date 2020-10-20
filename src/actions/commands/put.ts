@@ -71,7 +71,11 @@ export class PutCommand extends BaseCommand {
       }
     }
 
-    return registerContent.text as string;
+    // if we yanked with multicursors before (=text is an array), but paste with one cursor only
+    // we need to the register
+    return registerContent.text instanceof Array
+      ? registerContent.text.join('\n')
+      : (registerContent.text as string);
   }
 
   public async exec(
