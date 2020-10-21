@@ -185,3 +185,43 @@ suite('sneakReplacesF', () => {
     end: ['apple', 'ban|ana', 'carrot'],
   });
 });
+
+suite('sneakLabelMode', () => {
+  setup(async () => {
+    await setupWorkspace();
+    Globals.mockConfiguration.sneak = true;
+    Globals.mockConfiguration.sneakLabelMode = true;
+    Globals.mockConfiguration.sneakLabelTargets = ';sftunq/SFGHLTUNRMQZ?0';
+    await reloadConfiguration();
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title: 'Can handle forward label mode',
+    start: ['|abc', 'abc', 'abc', 'abc'],
+    keysPressed: 'sabs',
+    end: ['abc', 'abc', 'abc', '|abc'],
+  });
+
+  newTest({
+    title: 'Can handle backward label mode',
+    start: ['abc', 'abc', 'abc', '|abc'],
+    keysPressed: 'Sabs',
+    end: ['|abc', 'abc', 'abc', 'abc'],
+  });
+
+  newTest({
+    title: 'Can handle <operator>z in label mode',
+    start: ['|abc', 'abc', 'abc', 'abc'],
+    keysPressed: 'dzabs',
+    end: ['|abc', 'abc'],
+  });
+
+  newTest({
+    title: 'Can handle <operator>Z label mode',
+    start: ['abc', 'abc', 'abc', '|abc'],
+    keysPressed: 'dZabs',
+    end: ['abc', '|abc'],
+  });
+});

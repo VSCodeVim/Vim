@@ -15,6 +15,7 @@ export enum Mode {
   Replace,
   EasyMotionMode,
   EasyMotionInputMode,
+  SneakLabelInputMode,
   SurroundInputMode,
   OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
@@ -66,6 +67,8 @@ export function statusBarText(vimState: VimState) {
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:
       return '-- EASYMOTION INPUT --';
+    case Mode.SneakLabelInputMode:
+      return '-- SNEAK LABEL INPUT --';
     case Mode.SurroundInputMode:
       return '-- SURROUND INPUT --';
     case Mode.Disabled:

@@ -447,6 +447,7 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.searchinprogressmode": "#007ACC",
     "vim.statusBarColors.easymotionmode": "#007ACC",
     "vim.statusBarColors.easymotioninputmode": "#007ACC",
+    "vim.statusBarColors.sneaklabelinputmode": "#007ACC",
     "vim.statusBarColors.surroundinputmode": "#007ACC",
 ```
 
@@ -545,10 +546,18 @@ Provided there is a new line between the opening and closing braces / tag, it ca
 
 Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumping to any location specified by two characters.
 
-| Setting                            | Description                                                 | Type    | Default Value |
-| ---------------------------------- | ----------------------------------------------------------- | ------- | ------------- |
-| vim.sneak                          | Enable/disable vim-sneak                                    | Boolean | false         |
-| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | false         |
+| Setting                            | Description                                                                                                                                                                                                                | Type    | Default Value            |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------ |
+| vim.sneak                          | Enable/disable vim-sneak                                                                                                                                                                                                   | Boolean | false                    |
+| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking                                                                                                                                                                | Boolean | false                    |
+| vim.sneakMaxLinesToConsider        | The maximum number of lines searched (starting from the position of the cursor) while sneaking (useful if one is working with large files). -1 means no restriction.                                                       | Number  | -1                       |
+| vim.sneakReplacesF                 | Make f/F work like vim-sneak.                                                                                                                                                                                              | Boolean | false                    |
+| vim.sneakLabelMode                 | Enable/disable label mode. If enabled, Sneak overlays text with "labels" which can be jumped to by typing the label character.                                                                                             | Boolean | false                    |
+| vim.sneakLabelTargets              | List of characters used to label the target locations (if `vim.sneakLabelMode` is active).                                                                                                                                 | String  | ";sftunq/SFGHLTUNRMQZ?0" |
+| vim.sneakHighlightFontColor        | Font color to use for highlighting.                                                                                                                                                                                        |         |                          |
+| vim.sneakHighlightBackgroundColor  | Background color to use for highlighting.                                                                                                                                                                                  |         |                          |
+| vim.sneakHighlightUseFadeout       | If enabled, the visible text (except for Sneak matches) is faded-out to provide more contrast to targets (usually used by setting `vim.sneakHighlightBackgroundColor` to be identical with the editor's background color). | Boolean | false                    |
+| vim.sneakHighlightFadeColor        | The color used for the fade-out effect (if `vim.sneakHighlightUseFadeout` is enabled).                                                                                                                                     |         |                          |
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
