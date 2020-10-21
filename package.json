@@ -732,10 +732,41 @@
           "markdownDescription": "Case sensitivity is determined by `#vim.ignorecase#` and `#vim.smartcase#`.",
           "default": false
         },
+        "vim.sneakMaxLinesToConsider": {
+          "type": "number",
+          "description": "Maximum number of lines to search during Sneak search (useful when one works with large files). -1 means no restriction.",
+          "default": -1
+        },
         "vim.sneakReplacesF": {
           "type": "boolean",
           "markdownDescription": "Use single-character [Sneak](https://github.com/justinmk/vim-sneak) instead of Vim's native `f`.",
           "default": false
+        },
+        "vim.sneakLabelMode": {
+          "type": "boolean",
+          "description": "Use Sneak label mode.",
+          "default": false
+        },
+        "vim.sneakLabelTargets": {
+          "type": "string",
+          "description": "List of targets used to label target locations.",
+          "default": ";sftunq/SFGHLTUNRMQZ?0"
+        },
+        "vim.sneakHighlightFontColor": {
+          "type": "string",
+          "description": "Set a custom color for the text highlighted by Sneak search."
+        },
+        "vim.sneakHighlightBackgroundColor": {
+          "type": "string",
+          "description": "Set a custom color for the background of the Sneak search highlighting."
+        },
+        "vim.sneakHighlightUseFadeout": {
+          "type": "boolean",
+          "description": "Fade out the text in the visible area highlighting is active (EasyMotion style)."
+        },
+        "vim.sneakHighlightFadeColor": {
+          "type": "string",
+          "description": "Set a custom color for the faded-out text of Sneak highlighting (used only if vim.sneakHighlightUseFadeout is set)."
         },
         "vim.surround": {
           "type": "boolean",
@@ -894,6 +925,14 @@
             "array"
           ],
           "description": "Status bar color when in EasyMotionInput mode.",
+          "default": "#007acc"
+        },
+        "vim.statusBarColors.sneaklabelinputmode": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "description": "Status bar color when in SneakLabelInput mode.",
           "default": "#007acc"
         },
         "vim.statusBarColors.surroundinputmode": {

@@ -11,6 +11,9 @@ import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { SneakAction } from '../actions/plugins/sneak';
+import { BaseAction } from '../actions/base';
+import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
@@ -62,6 +65,8 @@ export class VimState implements vscode.Disposable {
 
   public readonly identity: EditorIdentity;
 
+  public sneak: SneakAction | undefined;
+
   public editor: vscode.TextEditor;
 
   public get document(): vscode.TextDocument {
@@ -97,6 +102,11 @@ export class VimState implements vscode.Disposable {
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
+
+  /**
+   * Tracks the last action
+   */
+  public lastRecognizedAction: BaseAction | undefined = undefined;
 
   /**
    * The last visual selection before running the dot command
