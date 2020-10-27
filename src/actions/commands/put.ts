@@ -1,7 +1,7 @@
 import { Position, PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
-import { Register, RegisterMode, IRegisterContent } from '../../register/register';
+import { Register, RegisterMode, IRegisterContent, RegisterContent } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
@@ -364,9 +364,43 @@ class PutBeforeCommand extends BaseCommand {
 }
 
 @RegisterAction
+class PutCommandVisualLine extends BaseCommand {
+  keys = [['p'], ['P']];
+  modes = [Mode.VisualLine];
+  runsOnceForEachCountPrefix = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const multiLinePaste = vimState.recordedState.count > 1;
+    const replaceRegisterName = vimState.recordedState.registerName;
+    let oldText: RegisterContent = '';
+
+    if (multiLinePaste) {
+      oldText = (await Register.get(vimState, replaceRegisterName))!.text;
+      // Repeat register content requested number of times and save this into the register
+      Register.putByKey(
+        Array(vimState.recordedState.count).fill(oldText).join('\n'),
+        replaceRegisterName,
+        RegisterMode.LineWise,
+        true
+      );
+      // Only put the register content once as it's repeated in the register
+      vimState.recordedState.count = 1;
+    }
+
+    // Call regular visual put command implementation
+    await new PutCommandVisual().exec(position, vimState);
+
+    // Restore register content
+    if (multiLinePaste) {
+      Register.putByKey(oldText, replaceRegisterName, RegisterMode.LineWise, true);
+    }
+  }
+}
+
+@RegisterAction
 class PutCommandVisual extends BaseCommand {
   keys = [['p'], ['P']];
-  modes = [Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Visual];
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -427,8 +461,6 @@ class PutCommandVisual extends BaseCommand {
     );
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
   }
-
-  // TODO - execWithCount
 }
 
 @RegisterAction
