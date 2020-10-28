@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { Position, PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
@@ -521,7 +520,7 @@ class GPutCommandVisualLine extends PutCommandVisualLine {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
     await super.exec(position, vimState);
-    // gp should place the cursor on the last character
+    // Vgp should place the cursor on the next line
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       vimState.recordedState.transformations.push({
         type: 'moveCursor',
