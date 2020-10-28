@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { Position, PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
@@ -364,40 +365,6 @@ class PutBeforeCommand extends BaseCommand {
 }
 
 @RegisterAction
-class PutCommandVisualLine extends BaseCommand {
-  keys = [['p'], ['P']];
-  modes = [Mode.VisualLine];
-  runsOnceForEachCountPrefix = false;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    const multiLinePaste = vimState.recordedState.count > 1;
-    const replaceRegisterName = vimState.recordedState.registerName;
-    let oldText: RegisterContent = '';
-
-    if (multiLinePaste) {
-      oldText = (await Register.get(vimState, replaceRegisterName))!.text;
-      // Repeat register content requested number of times and save this into the register
-      Register.putByKey(
-        Array(vimState.recordedState.count).fill(oldText).join('\n'),
-        replaceRegisterName,
-        RegisterMode.LineWise,
-        true
-      );
-      // Only put the register content once as it's repeated in the register
-      vimState.recordedState.count = 1;
-    }
-
-    // Call regular visual put command implementation
-    await new PutCommandVisual().exec(position, vimState);
-
-    // Restore register content
-    if (multiLinePaste) {
-      Register.putByKey(oldText, replaceRegisterName, RegisterMode.LineWise, true);
-    }
-  }
-}
-
-@RegisterAction
 class PutCommandVisual extends BaseCommand {
   keys = [['p'], ['P']];
   modes = [Mode.Visual];
@@ -464,9 +431,43 @@ class PutCommandVisual extends BaseCommand {
 }
 
 @RegisterAction
+class PutCommandVisualLine extends BaseCommand {
+  keys = [['p'], ['P']];
+  modes = [Mode.VisualLine];
+  runsOnceForEachCountPrefix = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const isMultiLinePaste = vimState.recordedState.count > 1;
+    const replaceRegisterName = vimState.recordedState.registerName;
+    let oldText: RegisterContent = '';
+
+    if (isMultiLinePaste) {
+      oldText = (await Register.get(vimState, replaceRegisterName))!.text;
+      // Repeat register content requested number of times and save this into the register
+      Register.putByKey(
+        Array(vimState.recordedState.count).fill(oldText).join('\n'),
+        replaceRegisterName,
+        RegisterMode.LineWise,
+        true
+      );
+      // Only put the register content once as it's repeated in the register
+      vimState.recordedState.count = 1;
+    }
+
+    // Call regular visual put command implementation
+    await new PutCommandVisual().exec(position, vimState);
+
+    // Restore register content
+    if (isMultiLinePaste) {
+      Register.putByKey(oldText, replaceRegisterName, RegisterMode.LineWise, true);
+    }
+  }
+}
+
+@RegisterAction
 class GPutCommand extends BaseCommand {
   keys = ['g', 'p'];
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Normal, Mode.Visual];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
@@ -504,6 +505,27 @@ class GPutCommand extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'moveCursor',
         diff: PositionDiff.newBOLDiff(addedLinesCount),
+        cursorIndex: this.multicursorIndex,
+      });
+    }
+  }
+}
+
+@RegisterAction
+class GPutCommandVisualLine extends PutCommandVisualLine {
+  keys = [
+    ['g', 'p'],
+    ['g', 'P'],
+  ];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    let repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
+    await super.exec(position, vimState);
+    // gp should place the cursor on the last character
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      vimState.recordedState.transformations.push({
+        type: 'moveCursor',
+        diff: new PositionDiff({ line: repeats, character: 0 }),
         cursorIndex: this.multicursorIndex,
       });
     }

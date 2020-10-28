@@ -86,4 +86,18 @@ suite('put operator', () => {
     keysPressed: 'yykV3p',
     end: ['123', '|789', '789', '789', '789'],
   });
+
+  newTest({
+    title: 'test visual line paste without count using gp',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykVgp',
+    end: ['123', '789', '|789'],
+  });
+
+  newTest({
+    title: 'test visual line paste with count using gp',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykV3gp',
+    end: ['123', '789', '789', '789', '|789'],
+  });
 });
