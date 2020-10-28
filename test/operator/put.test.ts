@@ -72,4 +72,18 @@ suite('put operator', () => {
     keysPressed: '<C-v>lldhP',
     end: ['|34512'],
   });
+
+  newTest({
+    title: 'test visual line paste without count',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykVp',
+    end: ['123', '|789', '789'],
+  });
+
+  newTest({
+    title: 'test visual line paste with count',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykV3p',
+    end: ['123', '|789', '789', '789', '789'],
+  });
 });
