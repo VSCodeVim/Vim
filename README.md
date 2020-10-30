@@ -345,12 +345,12 @@ Custom remappings are defined on a per-mode basis.
                 "p",
             ],
             "after": [
-                "p",
-                "g",
-                "v",
-                "y"
+                "\"",
+                "_",
+                "d",
+                "P"
             ]
-        }
+        },
     ],
 ```
 
