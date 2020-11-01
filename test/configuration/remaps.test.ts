@@ -1235,4 +1235,28 @@ suite('Remaps', () => {
       },
     ],
   });
+
+  newTestWithRemaps({
+    title:
+      'Forced stop recursive remaps that are not infinite remaps should stop without throwing error',
+    remaps: {
+      insertModeKeyBindings: [
+        {
+          before: ['i', 'i'],
+          commands: ['extension.vim_escape'],
+        },
+      ],
+    },
+    start: ['|test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'aii<Esc>l',
+        stepResult: {
+          end: ['t|est'],
+          endMode: Mode.Normal,
+        },
+      },
+    ],
+  });
 });

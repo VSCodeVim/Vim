@@ -415,6 +415,7 @@ export class Remapper implements IRemapper {
             vimState.wasPerformingRemapThatFinishedWaitingForTimeout = { ...remapping };
           }
           vimState.isCurrentlyPerformingRecursiveRemapping = false;
+          vimState.forceStopRecursiveRemapping = false;
         }
 
         if (!hasParentRemapping) {
