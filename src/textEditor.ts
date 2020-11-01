@@ -81,7 +81,7 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.version;
   }
 
-  static getDocumentName(): String {
+  static getDocumentName(): string {
     return vscode.window.activeTextEditor!.document.fileName;
   }
 

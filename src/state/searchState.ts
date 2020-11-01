@@ -35,7 +35,7 @@ export class SearchState {
     }
     return this.recalculateSearchRanges(document);
   }
-  private matchRanges: Map<String, { version: number; ranges: Array<vscode.Range> }> = new Map();
+  private matchRanges: Map<string, { version: number; ranges: Array<vscode.Range> }> = new Map();
 
   /**
    * Whether the needle should be interpreted as a regular expression

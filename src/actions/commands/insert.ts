@@ -450,7 +450,10 @@ class CommandCtrlW extends BaseCommand {
       wordBegin = position.getWordLeft();
     }
 
-    await TextEditor.delete(new vscode.Range(wordBegin, position));
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(wordBegin, position),
+    });
 
     vimState.cursorStopPosition = wordBegin;
   }
@@ -540,7 +543,10 @@ class CommandCtrlUInInsertMode extends BaseCommand {
     const start = position.isInLeadingWhitespace()
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
-    await TextEditor.delete(new vscode.Range(start, position));
+    vimState.recordedState.transformations.push({
+      type: 'deleteRange',
+      range: new Range(start, position),
+    });
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
   }
