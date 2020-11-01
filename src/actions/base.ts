@@ -21,6 +21,12 @@ export abstract class BaseAction {
   public canBeRepeatedWithDot = false;
 
   /**
+   * If this is being run in multi cursor mode, the index of the cursor
+   * this action is being applied to.
+   */
+  multicursorIndex: number | undefined = undefined;
+
+  /**
    * Whether we should change `vimState.desiredColumn`
    */
   public preservesDesiredColumn(): boolean {
@@ -171,8 +177,6 @@ export abstract class BaseCommand extends BaseAction {
    * that means that we'll go and try to run it.
    */
   isCompleteAction = true;
-
-  multicursorIndex: number | undefined = undefined;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?

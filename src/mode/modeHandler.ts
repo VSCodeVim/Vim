@@ -793,7 +793,7 @@ export class ModeHandler implements vscode.Disposable {
     // we will shift it back again on the start of 'runAction'.
     if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
-        c.start.isBefore(c.stop)
+        c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
               c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight()
             )
@@ -863,17 +863,24 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // adjust column
-        if (this.vimState.currentMode === Mode.Normal) {
+        if (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode)) {
           const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
-          if (currentLineLength > 0) {
-            const lineEndPosition = cursor.start.getLineEnd().getLeftThroughLineBreaks(true);
-            if (cursor.start.character >= currentLineLength) {
-              cursor = cursor.withNewStart(lineEndPosition);
-            }
+          const currentStartLineLength = TextEditor.getLineLength(cursor.start.line);
 
-            if (cursor.stop.character >= currentLineLength) {
-              cursor = cursor.withNewStop(lineEndPosition);
-            }
+          // When in visual mode you can move the cursor past the last character in order
+          // to select that character. We use this offset to allow for that, otherwise
+          // we would consider the position invalid and change it to the left of the last
+          // character.
+          const offsetAllowed =
+            isVisualMode(this.vimState.currentMode) && currentLineLength > 0 ? 1 : 0;
+          if (cursor.start.character >= currentStartLineLength) {
+            cursor = cursor.withNewStart(
+              cursor.start.withColumn(Math.max(currentStartLineLength - 1, 0))
+            );
+          }
+
+          if (cursor.stop.character >= currentLineLength + offsetAllowed) {
+            cursor = cursor.withNewStop(cursor.stop.withColumn(Math.max(currentLineLength - 1, 0)));
           }
         }
         return cursor;
@@ -900,6 +907,7 @@ export class ModeHandler implements vscode.Disposable {
   private async executeMovement(movement: BaseMovement): Promise<RecordedState> {
     this.vimState.lastMovementFailed = false;
     let recordedState = this.vimState.recordedState;
+    let cursorsToRemove: number[] = [];
 
     for (let i = 0; i < this.vimState.cursors.length; i++) {
       /**
@@ -916,6 +924,7 @@ export class ModeHandler implements vscode.Disposable {
        */
       const oldCursorPositionStart = this.vimState.cursorStartPosition;
       const oldCursorPositionStop = this.vimState.cursorStopPosition;
+      movement.multicursorIndex = i;
 
       this.vimState.cursorStartPosition = this.vimState.cursors[i].start;
       let cursorPosition = this.vimState.cursors[i].stop;
@@ -949,10 +958,27 @@ export class ModeHandler implements vscode.Disposable {
           this.vimState.lastMovementFailed = true;
         }
 
-        this.vimState.cursors[i] = new Range(result.start, result.stop);
+        if (result.removed) {
+          cursorsToRemove.push(i);
+        } else {
+          this.vimState.cursors[i] = new Range(result.start, result.stop);
+        }
 
         if (result.registerMode) {
           this.vimState.currentRegisterMode = result.registerMode;
+        }
+      }
+    }
+
+    if (cursorsToRemove.length > 0) {
+      // Remove the cursors that no longer exist. Remove from the end to the start
+      // so that the index values don't change.
+      for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
+        const idx = cursorsToRemove[i];
+        if (idx !== 0) {
+          // We should never remove the main selection! This shouldn't happen, but just
+          // in case it does, lets protect against it. Remember kids, always use protection!
+          this.vimState.cursors.splice(idx, 1);
         }
       }
     }
@@ -1427,7 +1453,7 @@ export class ModeHandler implements vscode.Disposable {
         selectionMode = this.vimState.surround!.previousMode;
       }
 
-      const selections = [] as vscode.Selection[];
+      let selections = [] as vscode.Selection[];
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {
@@ -1470,6 +1496,77 @@ export class ModeHandler implements vscode.Disposable {
             break;
         }
       }
+
+      /**
+       * Combine instersected selections - When we have multiple cursors
+       * sometimes those cursors selections intersect and combine, we need
+       * to check that here so that we know if our currents cursors will
+       * trigger a selectionChangeEvent or not. If we didn't check for this
+       * vscode might already have the resulting combined selection selected
+       * but since that wouldn't be the same as our selections we would think
+       * there would be a selectionChangeEvent when there wouldn't be any.
+       */
+      const getSelectionsCombined = (sel: vscode.Selection[]) => {
+        let combinedSelections: vscode.Selection[] = [];
+        sel.forEach((s, i) => {
+          if (i > 0) {
+            const previousSelection = combinedSelections[combinedSelections.length - 1];
+            const overlap = s.intersection(previousSelection);
+            if (overlap) {
+              // If anchor is after active we have a backwards selection and in that case we want
+              // the anchor that is lower and/or to the right and the active that is up and/or to
+              // the left. Otherwise we want the anchor that is upper and/or to the left and the
+              // active that is lower and/or to the right.
+
+              let anchor: vscode.Position;
+              let active: vscode.Position;
+              if (s.anchor.isBeforeOrEqual(s.active)) {
+                // Forwards Selection
+
+                // Get min anchor
+                if (s.anchor.isBeforeOrEqual(previousSelection.anchor)) {
+                  anchor = s.anchor;
+                } else {
+                  anchor = previousSelection.anchor;
+                }
+
+                // Get max active
+                if (s.active.isAfterOrEqual(previousSelection.active)) {
+                  active = s.active;
+                } else {
+                  active = previousSelection.active;
+                }
+              } else {
+                // Backwards Selection
+
+                // Get max anchor
+                if (s.anchor.isAfterOrEqual(previousSelection.anchor)) {
+                  anchor = s.anchor;
+                } else {
+                  anchor = previousSelection.anchor;
+                }
+
+                // Get min active
+                if (s.active.isBeforeOrEqual(previousSelection.active)) {
+                  active = s.active;
+                } else {
+                  active = previousSelection.active;
+                }
+              }
+              combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
+                anchor,
+                active
+              );
+            } else {
+              combinedSelections.push(s);
+            }
+          } else {
+            combinedSelections.push(s);
+          }
+        });
+        return combinedSelections;
+      };
+      selections = getSelectionsCombined(selections);
 
       // Check if the selection we are going to set is different than the current one.
       // If they are the same vscode won't trigger a selectionChangeEvent so we don't
