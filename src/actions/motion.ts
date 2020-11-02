@@ -2022,12 +2022,12 @@ abstract class MoveTagMatch extends ExpandingSelection {
     }
 
     if (position.isAfter(endPosition)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: endPosition.subtract(position),
       });
     } else if (position.isBefore(startPosition)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: startPosition.subtract(position),
       });

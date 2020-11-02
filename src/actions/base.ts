@@ -213,7 +213,7 @@ export abstract class BaseCommand extends BaseAction {
         await this.exec(position, vimState);
       }
 
-      for (const transformation of vimState.recordedState.transformations) {
+      for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
           transformation.cursorIndex = 0;
         }
@@ -246,7 +246,7 @@ export abstract class BaseCommand extends BaseAction {
 
       resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
-      for (const transformation of vimState.recordedState.transformations) {
+      for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
           transformation.cursorIndex = this.multicursorIndex;
         }

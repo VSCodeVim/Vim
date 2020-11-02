@@ -6,7 +6,7 @@ import { Range } from './../common/motion/range';
 /**
  * This file contains definitions of objects that represent text
  * additions/deletions/replacements on the document. You'll add them
- * to vimState.recordedState.transformations and then they will be applied
+ * to vimState.recordedState.transformer.transformations and then they will be applied
  * later on.
  *
  * We do it in this way so they can all be processed in parallel and merged

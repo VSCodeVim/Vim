@@ -52,7 +52,7 @@ export class BangCommand extends node.CommandBase {
     // place cursor at the start of the replaced text and first non-whitespace character
     const diff = this.getReplaceDiff(output);
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: output,
       range: new Range(start, end),

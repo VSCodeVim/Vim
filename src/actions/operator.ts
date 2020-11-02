@@ -201,7 +201,7 @@ export class DeleteOperator extends BaseOperator {
       });
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, end),
       diff: diff,
@@ -645,14 +645,14 @@ export class ChangeOperator extends BaseOperator {
 
     if (configuration.autoindent) {
       if (vimState.editor.document.languageId === 'plaintext') {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: thisLineIndent,
           position: position.getLineBegin(),
           cursorIndex: this.multicursorIndex,
         });
       } else {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
           diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
@@ -791,7 +791,7 @@ export class ROT13Operator extends BaseOperator {
 
     for (const range of selections) {
       const original = TextEditor.getText(range);
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
         range: new Range(
@@ -1085,7 +1085,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     let textToReflow = TextEditor.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: textToReflow,
       range: new Range(start, end),
