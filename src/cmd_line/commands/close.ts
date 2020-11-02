@@ -27,7 +27,7 @@ export class CloseCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
+    if (vimState.editor.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 
@@ -35,7 +35,7 @@ export class CloseCommand extends node.CommandBase {
       throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
     }
 
-    let oldViewColumn = this.activeTextEditor!.viewColumn;
+    let oldViewColumn = vimState.editor.viewColumn;
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
     if (
