@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
+import { VimState } from '../../state/vimState';
 import * as node from '../node';
 
 export interface IQuitCommandArguments extends node.ICommandArgs {
@@ -25,7 +26,7 @@ export class QuitCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     // NOTE: We can't currently get all open text editors, so this isn't perfect. See #3809
     const duplicatedInSplit =
       vscode.window.visibleTextEditors.filter(

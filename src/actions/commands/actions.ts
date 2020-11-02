@@ -1756,7 +1756,7 @@ class CommandOpenFile extends BaseCommand {
         lineNumber: lineNumber,
         createFileIfNotExists: false,
       });
-      fileCommand.execute();
+      fileCommand.execute(vimState);
     }
   }
 }
@@ -2094,7 +2094,7 @@ class CommandQuit extends BaseCommand {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    new QuitCommand({}).execute();
+    new QuitCommand({}).execute(vimState);
   }
 }
 
@@ -2107,7 +2107,7 @@ class CommandOnly extends BaseCommand {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    new OnlyCommand({}).execute();
+    new OnlyCommand({}).execute(vimState);
   }
 }
 
@@ -2242,12 +2242,12 @@ class CommandTabNext extends BaseCommand {
       new TabCommand({
         tab: Tab.Absolute,
         count: vimState.recordedState.count - 1,
-      }).execute();
+      }).execute(vimState);
     } else {
       new TabCommand({
         tab: Tab.Next,
         count: 1,
-      }).execute();
+      }).execute(vimState);
     }
   }
 }
@@ -2262,7 +2262,7 @@ class CommandTabPrevious extends BaseCommand {
     new TabCommand({
       tab: Tab.Previous,
       count: 1,
-    }).execute();
+    }).execute(vimState);
   }
 }
 
