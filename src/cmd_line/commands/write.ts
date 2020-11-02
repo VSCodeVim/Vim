@@ -1,4 +1,4 @@
-import * as fs from '../../util/fs';
+import * as fs from 'platform/fs';
 import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';

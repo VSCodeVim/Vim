@@ -107,7 +107,7 @@ export async function activate(
 
   // Load state
   Register.loadFromDisk(extensionContext);
-  await Promise.all([commandLine.load(), globalState.load()]);
+  await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
@@ -278,31 +278,31 @@ export async function activate(
 
       const mh = await getAndUpdateModeHandler();
 
-      const selectionsHash = e.selections.reduce(
-        (hash, s) =>
-          hash +
-          `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-        ''
-      );
-      const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
-      if (idx > -1) {
-        logger.debug(
-          `Selections: Ignoring selection: ${selectionsHash}, Count left: ${
-            mh.vimState.selectionsChanged.ourSelections.length - 1
-          }`
+      if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
+        const selectionsHash = e.selections.reduce(
+          (hash, s) =>
+            hash +
+            `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
+          ''
         );
-        mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
-        return;
-      } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
-        logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
-        return;
-      } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
-        // Some intermediate selection must have slipped in after setting the
-        // 'ignoreIntermediateSelections' to false. Which means we didn't count
-        // for it yet, but since we have selections to be ignored then we probably
-        // wanted this one to be ignored as well.
-        logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
-        return;
+        const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
+        if (idx > -1) {
+          mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+          logger.debug(
+            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
+          );
+          return;
+        } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
+          logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
+          return;
+        } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
+          // Some intermediate selection must have slipped in after setting the
+          // 'ignoreIntermediateSelections' to false. Which means we didn't count
+          // for it yet, but since we have selections to be ignored then we probably
+          // wanted this one to be ignored as well.
+          logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+          return;
+        }
       }
 
       // We may receive changes from other panels when, having selections in them containing the same file
@@ -376,21 +376,16 @@ export async function activate(
 
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== Mode.Insert) {
-        compositionState.isInComposition = true;
-      }
+      compositionState.isInComposition = true;
     });
   });
 
   overrideCommand(context, 'compositionEnd', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      if (mh.vimState.currentMode !== Mode.Insert) {
-        let text = compositionState.composingText;
-        compositionState.reset();
-        mh.handleMultipleKeyEvents(text.split(''));
-      }
+      let text = compositionState.composingText;
+      compositionState.reset();
+      mh.handleMultipleKeyEvents(text.split(''));
     });
   });
 
@@ -430,15 +425,21 @@ export async function activate(
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  registerCommand(context, 'vim.editVimrc', async () => {
-    const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
-    await vscode.window.showTextDocument(document);
-  });
+  registerCommand(
+    context,
+    'vim.editVimrc',
+    async () => {
+      const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
+      await vscode.window.showTextDocument(document);
+    },
+    false
+  );
 
   for (const boundKey of configuration.boundKeyCombinations) {
     registerCommand(context, boundKey.command, () => {
       if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
         checkIfRecursiveRemapping(`${boundKey.key}`);
+        handleKeyEvent(`${boundKey.key}`);
       } else {
         handleKeyEvent(`${boundKey.key}`);
       }
@@ -513,10 +514,11 @@ function overrideCommand(
 function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
-  callback: (...args: any[]) => any
+  callback: (...args: any[]) => any,
+  requiresActiveEditor: boolean = true
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
-    if (!vscode.window.activeTextEditor) {
+    if (requiresActiveEditor && !vscode.window.activeTextEditor) {
       return;
     }
 

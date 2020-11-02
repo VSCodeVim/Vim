@@ -335,7 +335,7 @@ class CommandExecuteMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1].toLocaleLowerCase();
     if (Register.has(register)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: register,
         replay: 'contentChange',
@@ -364,7 +364,7 @@ class CommandExecuteLastMacro extends BaseCommand {
     const { lastInvokedMacro } = vimState.historyTracker;
 
     if (lastInvokedMacro) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: lastInvokedMacro.registerName,
         replay: 'contentChange',
@@ -444,7 +444,7 @@ class CommandEscReplaceMode extends BaseCommand {
       textToAdd += vimState.replaceState!.newChars.join('');
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: textToAdd,
       position: position,
@@ -687,12 +687,12 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         position.line > replaceState.replaceCursorStartPosition.line ||
         position.character > replaceState.originalChars.length
       ) {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'deleteText',
           position: position,
         });
       } else {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: replaceState.originalChars[position.character - 1],
           range: new Range(position.getLeft(), position),
@@ -703,14 +703,14 @@ class CommandReplaceInReplaceMode extends BaseCommand {
       replaceState.newChars.pop();
     } else {
       if (!position.isLineEnd() && char !== '\n') {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: char,
           range: new Range(position, position.getRight()),
           diff: new PositionDiff({ character: 1 }),
         });
       } else {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: char,
           position: position,
@@ -1098,7 +1098,7 @@ export class CommandShowCommandHistory extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'showCommandHistory',
     });
 
@@ -1134,7 +1134,7 @@ export class CommandShowSearchHistory extends BaseCommand {
     if (this.keysPressed.includes('?')) {
       this.direction = SearchDirection.Backward;
     }
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'showSearchHistory',
       direction: this.direction,
     });
@@ -1152,7 +1152,7 @@ class CommandDot extends BaseCommand {
     let count = vimState.recordedState.count || 1;
 
     for (let i = 0; i < count; i++) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'dot',
       });
     }
@@ -1171,9 +1171,11 @@ class CommandRepeatSubstitution extends BaseCommand {
   }
 }
 
+type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   commandName: string;
+  direction: FoldDirection;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1183,7 +1185,13 @@ abstract class CommandFold extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const args =
+      this.direction !== undefined
+        ? { levels: timesToRepeat, direction: this.direction }
+        : undefined;
+    await vscode.commands.executeCommand(this.commandName, args);
+    vimState.cursors = getCursorsAfterSync();
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1192,24 +1200,13 @@ abstract class CommandFold extends BaseCommand {
 class CommandToggleFold extends CommandFold {
   keys = ['z', 'a'];
   commandName = 'editor.toggleFold';
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand(this.commandName);
-    vimState.cursors = getCursorsAfterSync();
-    await vimState.setCurrentMode(Mode.Normal);
-  }
 }
 
 @RegisterAction
 class CommandCloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.cursors = getCursorsAfterSync();
-  }
+  direction: FoldDirection = 'up';
 }
 
 @RegisterAction
@@ -1222,15 +1219,7 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ['z', 'o'];
   commandName = 'editor.unfold';
-  runsOnceForEachCountPrefix = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
-    await vscode.commands.executeCommand('editor.unfold', {
-      levels: timesToRepeat,
-      direction: 'down',
-    });
-  }
+  direction: FoldDirection = 'down';
 }
 
 @RegisterAction
@@ -2014,7 +2003,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
 
       // Ahhhhhh. We have to manually set cursor position here as we need text
       // transformations AND to set multiple cursors.
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
         text: TextEditor.setIndentationLevel('', newPos.character),
         position: newPos,
@@ -2444,7 +2433,7 @@ class ActionJoin extends BaseCommand {
 
     if (!deleteStartPosition.isEqual(deleteEndPosition)) {
       if (startPosition.isEqual(position)) {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: trimmedLinesContent,
           range: new Range(deleteStartPosition, deleteEndPosition),
@@ -2453,7 +2442,7 @@ class ActionJoin extends BaseCommand {
           }),
         });
       } else {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: trimmedLinesContent,
           range: new Range(deleteStartPosition, deleteEndPosition),
@@ -2490,7 +2479,7 @@ class ActionJoin extends BaseCommand {
 
       resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
-      for (const transformation of vimState.recordedState.transformations) {
+      for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
           transformation.cursorIndex = this.multicursorIndex;
         }
@@ -2567,7 +2556,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
     );
 
     const lastLineLength = lines[lines.length - 1].length;
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: resultLine,
       position: position,
@@ -2630,11 +2619,11 @@ class ActionReplaceCharacter extends BaseCommand {
     }
 
     if (toReplace === '<tab>') {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(position, endPos),
       });
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
         diff: new PositionDiff({ character: -1 }),
@@ -2643,16 +2632,16 @@ class ActionReplaceCharacter extends BaseCommand {
       // A newline replacement always inserts exactly one newline (regardless
       // of count prefix) and puts the cursor on the next line.
       // We use `insertTextVSCode` so we get the right indentation
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(position, endPos),
       });
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertTextVSCode',
         text: '\n',
       });
     } else {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
         range: new Range(position, endPos),
@@ -2704,7 +2693,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
 
       if (start.line === end.line) {
         // This is a visual section all on one line, only replace the part within the selection
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(end.character - start.character + 2).join(toInsert),
           range: new Range(start, new Position(end.line, end.character + 1)),
@@ -2712,7 +2701,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         });
       } else if (lineNum === start.line) {
         // This is the first line of the selection so only replace after the cursor
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(lineText.length - start.character + 1).join(toInsert),
           range: new Range(start, new Position(start.line, lineText.length)),
@@ -2720,7 +2709,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         });
       } else if (lineNum === end.line) {
         // This is the last line of the selection so only replace before the cursor
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
           range: new Range(
@@ -2731,7 +2720,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         });
       } else {
         // Replace the entire line length since it is in the middle of the selection
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(lineText.length + 1).join(toInsert),
           range: new Range(new Position(lineNum, 0), new Position(lineNum, lineText.length)),
@@ -2767,7 +2756,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
         continue;
       }
 
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: Array(end.character - start.character + 1).join(toInsert),
         range: new Range(start, end),
@@ -2798,7 +2787,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       lines.push(line);
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(start, end),
         manuallySetCursorPositions: true,
@@ -2830,7 +2819,7 @@ class ActionShiftDVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(start, start.getLineEnd()),
         manuallySetCursorPositions: true,
@@ -2880,7 +2869,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(start, end),
         manuallySetCursorPositions: true,
@@ -2908,7 +2897,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(start, start.getLineEnd()),
         collapseRange: true,
@@ -2944,16 +2933,24 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
     vimState.cursors = [];
 
+    const cursorsOnBlankLines: Range[] = [];
     for (const selection of vimState.editor.selections) {
       let { start, end } = selection;
 
       for (let i = start.line; i <= end.line; i++) {
         const line = TextEditor.getLine(i);
 
+        const cursorRange = this.getCursorRangeForLine(line, start, end);
         if (!line.isEmptyOrWhitespace) {
-          vimState.cursors.push(this.getCursorRangeForLine(line, start, end));
+          vimState.cursors.push(cursorRange);
+        } else {
+          cursorsOnBlankLines.push(cursorRange);
         }
       }
+    }
+
+    if (vimState.cursors.length === 0) {
+      vimState.cursors = cursorsOnBlankLines;
     }
   }
 }
