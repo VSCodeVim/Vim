@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as winston from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import { configuration } from '../../configuration/configuration';
+import { ILogger } from '../common/logger';
 
 interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
   prefix?: string;
@@ -43,12 +44,8 @@ class VsCodeMessage extends TransportStream {
         throw 'Unsupported ' + info.level;
     }
 
-    let message = info.message;
-    if (this.prefix) {
-      message = this.prefix + ': ' + message;
-    }
-
-    let selectedAction = await showMessage(message, ...this.actionMessages);
+    const message = `${this.prefix}: ${info.message}`;
+    const selectedAction = await showMessage(message, ...this.actionMessages);
     if (selectedAction === 'Suppress Errors') {
       vscode.window.showInformationMessage(
         'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.silent`.'
@@ -62,12 +59,14 @@ class VsCodeMessage extends TransportStream {
   }
 }
 
-export class LoggerImpl {
-  static get(prefix?: string): winston.Logger {
-    return winston.createLogger({
+class NodeLogger implements ILogger {
+  private _logger: winston.Logger;
+
+  constructor(prefix: string) {
+    this._logger = winston.createLogger({
       format: winston.format.simple(),
+      level: 'debug', // filtering will be done at the transport level
       transports: [
-        // TODO: update these when configuration changes
         new ConsoleForElectron({
           level: configuration.debug.loggingLevelForConsole,
           silent: configuration.debug.silent,
@@ -79,5 +78,33 @@ export class LoggerImpl {
         }),
       ],
     });
+  }
+
+  public error(errorMessage: string): void {
+    this._logger.error(errorMessage);
+  }
+
+  public debug(debugMessage: string): void {
+    this._logger.debug(debugMessage);
+  }
+
+  public warn(warnMessage: string): void {
+    this._logger.warn(warnMessage);
+  }
+
+  public verbose(verboseMessage: string): void {
+    this._logger.verbose(verboseMessage);
+  }
+
+  public configChanged() {
+    this._logger.transports[0].level = configuration.debug.loggingLevelForConsole;
+    this._logger.transports[0].silent = configuration.debug.silent;
+    this._logger.transports[1].level = configuration.debug.loggingLevelForAlert;
+  }
+}
+
+export class LoggerImpl {
+  static get(prefix: string): ILogger {
+    return new NodeLogger(prefix);
   }
 }
