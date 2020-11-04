@@ -541,25 +541,18 @@ export class Remapper implements IRemapper {
 
     const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
     const startingSliceLength = inputtedKeys.length;
+    const inputtedString = inputtedKeys.join('');
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
       this._logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
-        // In Insert mode, we allow users to precede remapped commands
-        // with extraneous keystrokes (eg. "hello world jj")
-        // In other modes, we have to precisely match the keysequence
-        // unless the preceding keys are numbers
-        if (currentMode !== Mode.Insert) {
-          const precedingKeys = inputtedKeys
-            .slice(0, inputtedKeys.length - keySlice.length)
-            .join('');
-          if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
-            this._logger.verbose(
-              `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
-            );
-            break;
-          }
+        const precedingKeys = inputtedString.slice(0, inputtedString.length - keySlice.length);
+        if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
+          this._logger.verbose(
+            `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
+          );
+          break;
         }
 
         return userDefinedRemappings.get(keySlice);

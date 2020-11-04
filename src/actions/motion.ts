@@ -53,39 +53,68 @@ abstract class MoveByScreenLine extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    if (
-      vimState.currentMode === Mode.Visual &&
-      vimState.cursorStopPosition.isAfterOrEqual(vimState.cursorStartPosition)
-    ) {
-      // The selection is on the right side of the cursor, while our representation considers the cursor to be the left edge
-      vimState.editor.selection = new vscode.Selection(
-        vimState.cursorStartPosition,
-        vimState.cursorStopPosition
-      );
+    const multicursorIndex = this.multicursorIndex ?? 0;
+
+    if (multicursorIndex === 0) {
+      if (vimState.currentMode === Mode.Visual) {
+        // If we change the `vimState.editor.selections` directly with the forEach
+        // for some reason vscode doesn't update them. But doing it this way does
+        // update vscode's selections.
+        let selections = vimState.editor.selections;
+        selections.forEach((s, i) => {
+          if (s.active.isAfter(s.anchor)) {
+            // The selection is on the right side of the cursor, while our representation
+            // considers the cursor to be the left edge, so we need to move the selection
+            // to the right place before executing the 'cursorMove' command.
+            const active = Position.FromVSCodePosition(s.active).getLeftThroughLineBreaks();
+            vimState.editor.selections[i] = new vscode.Selection(s.anchor, active);
+          }
+        });
+        vimState.editor.selections = selections;
+      }
+
+      // When we have multicursors and run a 'cursorMove' command, vscode applies that command
+      // to all cursors at the same time. So we should only run it once.
+      await vscode.commands.executeCommand('cursorMove', {
+        to: this.movementType,
+        select: vimState.currentMode !== Mode.Normal,
+        by: this.by,
+        value: this.value * count,
+      });
     }
 
-    await vscode.commands.executeCommand('cursorMove', {
-      to: this.movementType,
-      select: vimState.currentMode !== Mode.Normal,
-      by: this.by,
-      value: this.value * count,
-    });
-
     if (vimState.currentMode === Mode.Normal) {
-      return Position.FromVSCodePosition(vimState.editor.selection.active);
+      return Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].active);
     } else {
       /**
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
-      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+      if (!vimState.editor.selections[multicursorIndex]) {
+        // Vscode selections no longer have the same amount of cursors as we do. This means that
+        // two or more selections combined into one. In this case we return these cursors as they
+        // were with the removed flag so that they can be removed.
+        return {
+          start: vimState.cursorStartPosition,
+          stop: vimState.cursorStopPosition,
+          removed: true,
+        };
+      }
 
-      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos)) {
-        position = start;
-        [start, stop] = [stop, start];
+      let start = Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].anchor);
+      let stop = Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].active);
+
+      // If we are moving up we need to keep getting the left of anchor/start because vscode is
+      // to the right of the character in order to include it but our positions are always on the
+      // left side of the character.
+      // Also when we switch from being before anchor to being after anchor we need to move
+      // the anchor/start to the left as well in order to include the character.
+      if (
+        (start.isAfter(stop) &&
+          vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) ||
+        (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition) &&
+          start.isBeforeOrEqual(stop))
+      ) {
         start = start.getLeft();
       }
 
@@ -94,16 +123,32 @@ abstract class MoveByScreenLine extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    await vscode.commands.executeCommand('cursorMove', {
-      to: this.movementType,
-      select: true,
-      by: this.by,
-      value: this.value,
-    });
+    const multicursorIndex = this.multicursorIndex ?? 0;
+    if (multicursorIndex === 0) {
+      // When we have multicursors and run a 'cursorMove' command, vscode applies that command
+      // to all cursors at the same time. So we should only run it once.
+      await vscode.commands.executeCommand('cursorMove', {
+        to: this.movementType,
+        select: true,
+        by: this.by,
+        value: this.value,
+      });
+    }
+
+    if (!vimState.editor.selections[multicursorIndex]) {
+      // Vscode selections no longer have the same amount of cursors as we do. This means that
+      // two or more selections combined into one. In this case we return these cursors as they
+      // were with the removed flag so that they can be removed.
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+        removed: true,
+      };
+    }
 
     return {
-      start: Position.FromVSCodePosition(vimState.editor.selection.start),
-      stop: Position.FromVSCodePosition(vimState.editor.selection.end),
+      start: Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].start),
+      stop: Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].end),
     };
   }
 }
@@ -208,13 +253,13 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     if (position.line >= TextEditor.getLineCount() - 1) {
       return position;
     }
-    let t: Position | IMovement;
+    let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
     const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
-      t = await moveDownByScreenLine.execAction(position, vimState);
+      t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
       const lineChanged = prevLine !== t.line;
       // wrappedLine movement goes to eol character only when at the last line
@@ -915,7 +960,7 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
     if (pos instanceof Position) {
       return pos.getDown(count - 1);
     } else {
-      return { start: pos.start, stop: pos.stop.getDown(count - 1).getLeft() };
+      return { start: pos.start, stop: pos.stop.getDown(count - 1).getLeftThroughLineBreaks() };
     }
   }
 }
@@ -1977,12 +2022,12 @@ abstract class MoveTagMatch extends ExpandingSelection {
     }
 
     if (position.isAfter(endPosition)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: endPosition.subtract(position),
       });
     } else if (position.isBefore(startPosition)) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: startPosition.subtract(position),
       });

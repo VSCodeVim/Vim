@@ -70,9 +70,11 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
  * Loads and validates the user's configuration
  */
 async function loadConfiguration() {
-  const logger = Logger.get('Configuration');
-
   const validatorResults = await configuration.load();
+
+  Logger.configChanged();
+
+  const logger = Logger.get('Configuration');
   logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
   if (validatorResults.numErrors > 0) {
@@ -287,12 +289,10 @@ export async function activate(
         );
         const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
-          logger.debug(
-            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${
-              mh.vimState.selectionsChanged.ourSelections.length - 1
-            }`
-          );
           mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+          logger.debug(
+            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
+          );
           return;
         } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
           logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);

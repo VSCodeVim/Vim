@@ -29,6 +29,12 @@ export interface IMovement {
    */
   failed?: boolean;
 
+  /**
+   * Wheter this motion resulted in the current multicursor index being removed. This
+   * happens when multiple selections combine into one.
+   */
+  removed?: boolean;
+
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }

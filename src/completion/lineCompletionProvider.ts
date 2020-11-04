@@ -158,7 +158,7 @@ export const lineCompletionProvider = {
       return;
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
@@ -166,7 +166,7 @@ export const lineCompletionProvider = {
       ),
     });
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',
       text: selectedCompletion,
     });

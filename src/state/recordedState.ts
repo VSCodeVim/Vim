@@ -3,7 +3,7 @@ import { Mode, isVisualMode } from '../mode/mode';
 import { BaseAction, BaseCommand } from './../actions/base';
 import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
-import { Transformation } from './../transformations/transformations';
+import { Transformer } from './../transformations/transformer';
 import { SpecialKeys } from '../util/specialKeys';
 
 /**
@@ -206,7 +206,7 @@ export class RecordedState {
    * Note that the text transformations are run in parallel. This is useful in most cases,
    * but will get you in trouble in others.
    */
-  public transformations: Transformation[] = [];
+  public transformer = new Transformer();
 
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
