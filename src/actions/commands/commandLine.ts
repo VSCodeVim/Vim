@@ -30,7 +30,7 @@ import { scrollView } from '../../util/util';
 @RegisterAction
 class CommandTabInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
-  keys = [['<tab>'], ['<shift+tab>']];
+  keys = [['<tab>'], ['<shift+tab>'], ['<s-tab>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }

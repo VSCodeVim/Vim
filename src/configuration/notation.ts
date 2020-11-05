@@ -5,6 +5,7 @@ export class Notation {
   private static readonly _notationMap: Array<[RegExp, string]> = [
     [/ctrl\+|c\-/gi, 'C-'],
     [/cmd\+|d\-/gi, 'D-'],
+    [/shift\+|s\-/gi, 'S-'],
     [/escape|esc/gi, 'Esc'],
     [/backspace|bs/gi, 'BS'],
     [/delete|del/gi, 'Del'],
@@ -32,6 +33,7 @@ export class Notation {
       this.isSurroundedByAngleBrackets(key) &&
       key !== '<BS>' &&
       key !== '<SHIFT+BS>' &&
+      key !== '<S-BS>' &&
       key !== '<TAB>'
     );
   }
