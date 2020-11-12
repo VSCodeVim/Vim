@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { VimState } from '../../state/vimState';
 
 import * as node from '../node';
 
@@ -23,7 +24,7 @@ export class WallCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     // TODO : overwrite readonly files when bang? == true
     await vscode.workspace.saveAll(false);
   }

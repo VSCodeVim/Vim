@@ -46,7 +46,7 @@ export class JumpsCommand extends node.CommandBase {
 }
 
 export class ClearJumpsCommand extends node.CommandBase {
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();
   }

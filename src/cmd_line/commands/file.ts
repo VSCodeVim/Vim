@@ -4,6 +4,7 @@ import { getPathDetails, resolveUri } from '../../util/path';
 import * as node from '../node';
 import { doesFileExist } from 'platform/fs';
 import untildify = require('untildify');
+import { VimState } from '../../state/vimState';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -31,7 +32,7 @@ export class FileCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (this.arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;

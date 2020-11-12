@@ -70,9 +70,11 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
  * Loads and validates the user's configuration
  */
 async function loadConfiguration() {
-  const logger = Logger.get('Configuration');
-
   const validatorResults = await configuration.load();
+
+  Logger.configChanged();
+
+  const logger = Logger.get('Configuration');
   logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
   if (validatorResults.numErrors > 0) {

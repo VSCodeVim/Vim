@@ -49,25 +49,16 @@ export class VsCodeMessage implements ILogger {
         throw 'Unsupported ' + info.level;
     }
 
-    let message = info.message;
-    if (this.prefix) {
-      message = this.prefix + ': ' + message;
-    }
+    showMessage(`${this.prefix}: ${info.message}`, ...this.actionMessages);
+  }
 
-    showMessage(message, ...this.actionMessages);
+  public configChanged(): void {
+    // Nothing to change
   }
 }
 
 export class LoggerImpl {
-  static mapping: Map<string, ILogger> = new Map<string, ILogger>();
-  static get(prefix?: string): ILogger {
-    prefix = prefix || 'default';
-    if (LoggerImpl.mapping.has(prefix)) {
-      return LoggerImpl.mapping.get(prefix)!;
-    }
-
-    const logger = new VsCodeMessage(prefix);
-    LoggerImpl.mapping.set(prefix, logger);
-    return logger;
+  static get(prefix: string): ILogger {
+    return new VsCodeMessage(prefix);
   }
 }
