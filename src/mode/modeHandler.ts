@@ -1335,8 +1335,8 @@ export class ModeHandler implements vscode.Disposable {
         ? vscode.TextEditorRevealType.InCenter
         : vscode.TextEditorRevealType.Default;
 
-      if (this.vimState.currentMode === Mode.SearchInProgressMode) {
-        const nextMatch = globalState.searchState!.getNextSearchMatchPosition(
+      if (this.vimState.currentMode === Mode.SearchInProgressMode && globalState.searchState) {
+        const nextMatch = globalState.searchState.getNextSearchMatchPosition(
           this.vimState.cursorStopPosition
         );
 
