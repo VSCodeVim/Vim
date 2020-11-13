@@ -216,7 +216,7 @@ export class TextEditor {
     for (const char of line) {
       switch (char) {
         case '\t':
-          visibleColumn += configuration.tabstop;
+          visibleColumn += vscode.window.activeTextEditor!.options.tabSize as number;
           break;
         case ' ':
           visibleColumn += 1;
@@ -233,7 +233,7 @@ export class TextEditor {
    * @returns `line` with its indentation replaced with `screenCharacters` visible columns of whitespace
    */
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    const tabSize = configuration.tabstop;
+    const tabSize = vscode.window.activeTextEditor!.options.tabSize as number;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;
@@ -297,7 +297,7 @@ export class TextEditor {
       ? [bottomRight.line, topLeft.line]
       : [topLeft.line, bottomRight.line];
 
-    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
+    const runToLineEnd = vimState.desiredVisualColumn === Number.POSITIVE_INFINITY;
 
     for (
       let lineIndex = itrStart;

@@ -46,8 +46,34 @@ export class VimState implements vscode.Disposable {
    * will be 20, even if you press j and the next column is only 5 characters.
    * This is because if the third column is 25 characters, the cursor will go
    * back to the 20th column.
+   *
+   * We call it visual column because it takes into account the difference between tabs and
+   * spaces.
+   *
+   * If the indentation is made with spaces then the `character` of a position will be the same
+   * as its visualColumn. But if it is tabs then the `visualColumn` will be higher because for
+   * the `character` each tab counts as one character, but for the visualColumn each tab counts
+   * as `editor.tabSize` amount of spaces.
+   * Example:
+   *
+   * 1. `--Line with tab (-- simulates a tab with a tabSize of 2 spaces)`
+   *
+   * 2. `Line without tab (is the same as if it had space indentation)`
+   *
+   * The `w` on line 2 is on column 5 and the `w` on line 1 is on column 6 even though it
+   * "looks" to be on column 7, the tab `--` only counts as 1 since it is just one character,
+   * the `\t` character. If we were on the `w` of line 2 (column 5) and moved up the column
+   * 5 would be the space character but we want to end up on the last `e` of the word `Line`
+   * and for that we use the `visualColumn` because the letter `e` is on `visualColumn` 5.
    */
-  public desiredColumn = 0;
+  private _desiredVisualColumn = 0;
+
+  public get desiredVisualColumn(): number {
+    return this._desiredVisualColumn;
+  }
+  public setDesiredVisualColumn(position: Position) {
+    this._desiredVisualColumn = position.visualColumn;
+  }
 
   public historyTracker: HistoryTracker;
 

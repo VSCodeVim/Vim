@@ -247,14 +247,14 @@ suite('Mode Visual', () => {
       end: ['blah', 'duh', '|ur'],
     });
 
-    newTestSkip({
+    newTest({
       title: "Preserves cursor position when handling 'gk'",
       start: ['blah', 'word', 'a', 'la|st'],
       keysPressed: 'vgkgkx',
       end: ['blah', 'wo|t'],
     });
 
-    newTestSkip({
+    newTest({
       title: "Preserves cursor position when handling 'gj'",
       start: ['blah', 'wo|rd', 'a', 'last'],
       keysPressed: 'vgjgjx',

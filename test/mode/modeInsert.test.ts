@@ -350,6 +350,20 @@ suite('Mode Insert', () => {
     end: ['ab|c     '],
   });
 
+  newTest({
+    title: "Preserves cursor position when handling '<up>' in insert mode",
+    start: ['blah', 'duh', 'a', 'hu|r '],
+    keysPressed: 'i<up><up>',
+    end: ['blah', 'du|h', 'a', 'hur '],
+  });
+
+  newTest({
+    title: "Preserves cursor position when handling '<down>' in insert mode",
+    start: ['blah', 'du|h', 'a', 'hur '],
+    keysPressed: 'i<down><down>',
+    end: ['blah', 'duh', 'a', 'hu|r '],
+  });
+
   test('Can handle digraph insert', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',

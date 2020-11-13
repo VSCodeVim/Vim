@@ -165,47 +165,116 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   value = 1;
 }
 
-abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
+abstract class MoveByScreenLineMaintainDesiredColumn extends BaseMovement {
+  movementType: CursorMovePosition;
+  by: CursorMoveByUnit;
+  value: number = 1;
   preservesDesiredColumn() {
     return true;
   }
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    let prevDesiredColumn = vimState.desiredColumn;
-    let prevLine = vimState.editor.selection.active.line;
+    return this.execActionWithCount(position, vimState, 1);
+  }
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    let desiredVisualColumn = vimState.desiredVisualColumn;
 
     if (vimState.currentMode !== Mode.Normal) {
       /**
        * As VIM and VSCode handle the end of selection index a little
-       * differently we need to sometimes move the cursor at the end
-       * of the selection back by a character.
+       * differently, sometimes the active cursor won't be on 'position',
+       * also when in Visual line Mode the active selection is always at
+       * the start or at the end of the line so we need to move the active
+       * cursor to the current 'position' before going up or down to make
+       * sure we won't move to a position past desired column. This means
+       * that when we move up or down we will always be before or at the
+       * desired column, if we end up after desired column that means we
+       * moved to a wrapped line and in that case we will move to the right
+       * only if the position we were previously was not at the desired column
        */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      if (
-        (this.movementType === 'down' && position.line > start.line) ||
-        (this.movementType === 'up' && position.line < prevLine)
-      ) {
-        await vscode.commands.executeCommand('cursorMove', {
-          to: 'left',
-          select: true,
-          by: 'character',
-          value: 1,
-        });
+      // Move VSCode cursor to 'position'
+      let active = vimState.editor.selection.active;
+      if (!active.isEqual(position)) {
+        // We need to use while loops here because when inside a wrapped line if you try to move
+        // to a position that is on a different "visual" line VSCode won't move directly to the
+        // position you want, first it moves to the end/start of the current "visual" line, depending
+        // if you're moving right or left, respectively.
+        while (active.isBefore(position) && active.line <= position.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'right',
+            select: true,
+            by: 'character',
+            value: Math.abs(position.character - active.character),
+          });
+          active = vimState.editor.selection.active;
+        }
+        while (position.isBefore(active) && active.line >= position.line) {
+          await vscode.commands.executeCommand('cursorMove', {
+            to: 'left',
+            select: true,
+            by: 'character',
+            value: Math.abs(active.character - position.character),
+          });
+          active = vimState.editor.selection.active;
+        }
       }
     }
+
+    const prevLine = vimState.editor.selection.active.line;
+    const previousLineColumn = position.character;
+    const previousLineVisualColumn = position.visualColumn;
 
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
       select: vimState.currentMode !== Mode.Normal,
       by: this.by,
-      value: this.value,
+      value: this.value * count,
     });
 
-    if (vimState.currentMode === Mode.Normal) {
-      let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
-      if (prevLine !== returnedPos.line) {
-        returnedPos = returnedPos.withColumn(prevDesiredColumn);
+    // Set active position to the desired column
+    let activePos = Position.FromVSCodePosition(vimState.editor.selection.active);
+    if (activePos.visualColumn < desiredVisualColumn && activePos.line !== prevLine) {
+      activePos = activePos.withVisualColumn(desiredVisualColumn);
+    } else if (previousLineVisualColumn < desiredVisualColumn) {
+      // If the active position is after desiredVisualColumn it means we moved to a wrapped line.
+      // In that case if the position on previous line is less then desiredVisualColumn we need to
+      // move right by the difference of desiredVisualColumn and the previous line visual column.
+      const indentWrapping = vscode.workspace.getConfiguration('editor').get('wrappingIndent');
+      const indentSpace = TextEditor.getIndentationLevel(TextEditor.getLineAt(activePos).text);
+      const tabSize = vimState.editor.options.tabSize as number;
+      let diff: number = 0;
+      switch (indentWrapping) {
+        case 'none':
+          diff = 0;
+          break;
+        case 'same':
+          diff = Math.max(0, indentSpace - previousLineVisualColumn);
+          break;
+        case 'indent':
+          diff = Math.max(0, indentSpace + tabSize - previousLineVisualColumn);
+          break;
+        case 'deepIndent':
+          diff = Math.max(0, indentSpace + 2 * tabSize - previousLineVisualColumn);
+          break;
+        default:
+          throw new Error(`Unknown value for 'editor.wrappingIndent': '${indentWrapping}'`);
       }
-      return returnedPos;
+      activePos = activePos.getRight(
+        Math.max(0, desiredVisualColumn - previousLineVisualColumn - diff)
+      );
+    } else if (
+      activePos.visualColumn < previousLineVisualColumn &&
+      activePos.visualColumn > desiredVisualColumn
+    ) {
+      activePos = activePos.withVisualColumn(desiredVisualColumn);
+    }
+
+    if (vimState.currentMode === Mode.Normal) {
+      return activePos;
     } else {
       /**
        * cursorMove command is handling the selection for us.
@@ -213,21 +282,34 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        */
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
-      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
-      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos) && !start.isEqual(stop)) {
-        [start, stop] = [stop, start];
-        if (prevLine !== start.line) {
+      if (start.line === stop.line) {
+        return activePos;
+      } else if (activePos.line <= start.line) {
+        // We are before/above our initial position so VSCode selection end is our start
+        start = stop;
+        if (
+          prevLine !== start.line ||
+          (prevLine === start.line && previousLineColumn < start.character)
+        ) {
+          // When we were not previously on the initial line, VSCode for some reason extends
+          // their selection.end (our start here) by one, so we need to go left by one.
           start = start.getLeft();
         }
+        return { start, stop: activePos };
+      } else {
+        // We are after/below our initial position so VSCode selection start is our start
+        if (
+          prevLine < start.line ||
+          (prevLine === start.line && previousLineColumn < start.character)
+        ) {
+          // If the movement finished below our initial position but was previously above it
+          // we need to move start to left, because start was the previous stop that VSCode
+          // always moves to right by one.
+          start = start.getLeft();
+        }
+        return { start, stop: activePos };
       }
-
-      if (position.line !== stop.line) {
-        stop = stop.withColumn(prevDesiredColumn);
-      }
-
-      return { start, stop };
     }
   }
 }
@@ -256,7 +338,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
-    const prevDesiredColumn = vimState.desiredColumn;
+    const prevDesiredColumn = vimState.desiredVisualColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
@@ -291,12 +373,12 @@ class MoveDown extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+    return position.getDownWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -316,12 +398,12 @@ class MoveUp extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+    return position.getUpWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -336,7 +418,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const prevDesiredColumn = vimState.desiredColumn;
+    const prevDesiredColumn = vimState.desiredVisualColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
@@ -366,15 +448,27 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case '<up>':
+        this.preservesDesiredColumn = () => {
+          return true;
+        };
         newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
         break;
       case '<down>':
+        this.preservesDesiredColumn = () => {
+          return true;
+        };
         newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
+        this.preservesDesiredColumn = () => {
+          return false;
+        };
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
         break;
       case '<right>':
+        this.preservesDesiredColumn = () => {
+          return false;
+        };
         newPosition = await new MoveRightArrow().execAction(position, vimState);
         break;
       default:
@@ -972,7 +1066,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByDisplayLine extends MoveByScreenLine {
+export class MoveUpByDisplayLine extends MoveUpByScreenLineMaintainDesiredColumn {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -984,7 +1078,7 @@ export class MoveUpByDisplayLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByDisplayLine extends MoveByScreenLine {
+class MoveDownByDisplayLine extends MoveDownByScreenLineMaintainDesiredColumn {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'j'],
@@ -1001,26 +1095,26 @@ class MoveDownByDisplayLine extends MoveByScreenLine {
 // and moving by screen line just snaps us back to the original position.
 // Check PR #1600 for discussion.
 @RegisterAction
-class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
+class MoveUpByScreenLineVisualLine extends MoveUpByScreenLineMaintainDesiredColumn {
   modes = [Mode.VisualLine];
   keys = [
     ['g', 'k'],
     ['g', '<up>'],
   ];
   movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'line';
+  by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
 @RegisterAction
-class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
+class MoveDownByScreenLineVisualLine extends MoveDownByScreenLineMaintainDesiredColumn {
   modes = [Mode.VisualLine];
   keys = [
     ['g', 'j'],
     ['g', '<down>'],
   ];
   movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'line';
+  by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
@@ -1036,12 +1130,12 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+    return position.getUpWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -1057,12 +1151,12 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+    return position.getDownWithDesiredVisualColumn(vimState.desiredVisualColumn);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown().withColumn(position.getLineEnd().character);
   }
 }
 
@@ -1483,8 +1577,8 @@ abstract class MoveSectionBoundary extends BaseMovement {
     }
 
     position = this.forward
-      ? position.getDownWithDesiredColumn(0)
-      : position.getUpWithDesiredColumn(0);
+      ? position.getDownWithDesiredVisualColumn(0)
+      : position.getUpWithDesiredVisualColumn(0);
 
     while (!TextEditor.getLineAt(position).text.startsWith(this.boundary)) {
       if (this.forward) {
@@ -1492,13 +1586,13 @@ abstract class MoveSectionBoundary extends BaseMovement {
           break;
         }
 
-        position = position.getDownWithDesiredColumn(0);
+        position = position.getDownWithDesiredVisualColumn(0);
       } else {
         if (position.line === 0) {
           break;
         }
 
-        position = position.getUpWithDesiredColumn(0);
+        position = position.getUpWithDesiredVisualColumn(0);
       }
     }
 
@@ -2097,11 +2191,17 @@ export abstract class ArrowsInInsertMode extends BaseMovement {
 @RegisterAction
 class UpArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<up>'];
+  preservesDesiredColumn() {
+    return true;
+  }
 }
 
 @RegisterAction
 class DownArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<down>'];
+  preservesDesiredColumn() {
+    return true;
+  }
 }
 
 @RegisterAction
