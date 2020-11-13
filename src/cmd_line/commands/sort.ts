@@ -37,7 +37,7 @@ export class SortCommand extends node.CommandBase {
   }
 
   async sortLines(startLine: number, endLine: number) {
-    let originalLines: String[] = [];
+    let originalLines: string[] = [];
 
     for (
       let currentLine = startLine;

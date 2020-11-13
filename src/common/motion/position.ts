@@ -143,21 +143,6 @@ export class Position extends vscode.Position {
     return new Position(this.line, column);
   }
 
-  public getLeftTabStop(): Position {
-    if (!this.isLineBeginning()) {
-      let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(this).text);
-      let tabSize = vscode.window.activeTextEditor!.options.tabSize as number;
-
-      if (indentationWidth % tabSize > 0) {
-        return new Position(this.line, Math.max(0, this.character - (indentationWidth % tabSize)));
-      } else {
-        return new Position(this.line, Math.max(0, this.character - tabSize));
-      }
-    }
-
-    return this;
-  }
-
   /**
    * @returns the Position `count` characters to the left of this Position. Does not go over line breaks.
    */

@@ -232,10 +232,6 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  protected get activeTextEditor() {
-    return vscode.window.activeTextEditor;
-  }
-
   get arguments(): ICommandArgs {
     return this._arguments;
   }

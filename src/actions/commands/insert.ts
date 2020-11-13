@@ -51,7 +51,7 @@ class CommandEscInsertMode extends BaseCommand {
         vimState.editor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'deleteRange',
           range: new Range(
             vimState.cursors[i].stop.getLineBegin(),
@@ -90,7 +90,9 @@ class CommandEscInsertMode extends BaseCommand {
             : new PositionDiff();
 
         // Add a transform containing the change
-        vimState.recordedState.transformations.push(changeAction.getTransformation(positionDiff));
+        vimState.recordedState.transformer.addTransformation(
+          changeAction.getTransformation(positionDiff)
+        );
       }
     }
 
@@ -198,7 +200,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
       range: new Range(position.getLineBegin(), position.getLineEnd()),
@@ -218,7 +220,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 //   runsOnceForEveryCursor() { return false; }
 
 //   public async exec(position: Position, vimState: VimState): Promise<void> {
-//     vimState.recordedState.transformations.push({
+//     vimState.recordedState.transformer.addTransformation({
 //       type: "tab"
 //     });
 //   }
@@ -235,7 +237,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 
     if (selection && !selection.isEmpty) {
       // If a selection is active, delete it
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(
           Position.FromVSCodePosition(selection.start),
@@ -256,13 +258,13 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       const tabSize = vimState.editor.options.tabSize as number;
       const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
 
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(position.withColumn(desiredLineLength), position.withColumn(line.length)),
       });
     } else if (!position.isAtDocumentBegin()) {
       // Otherwise, just delete a character (unless we're at the start of the document)
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
         position: position,
       });
@@ -283,7 +285,7 @@ export class CommandDeleteInInsertMode extends BaseCommand {
 
     if (!selection.isEmpty) {
       // If a selection is active, delete it
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new Range(
           Position.FromVSCodePosition(selection.start),
@@ -292,7 +294,7 @@ export class CommandDeleteInInsertMode extends BaseCommand {
       });
     } else if (!position.isAtDocumentEnd()) {
       // Otherwise, just delete a character (unless we're at the end of the document)
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
         position: position.getRightThroughLineBreaks(true),
       });
@@ -308,7 +310,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',
       text: char,
       isMultiCursor: vimState.isMultiCursor,
@@ -395,7 +397,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     if (register.text instanceof Array) {
       text = register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: vimState.recordedState.registerName,
         replay: 'keystrokes',
@@ -450,7 +452,10 @@ class CommandCtrlW extends BaseCommand {
       wordBegin = position.getWordLeft();
     }
 
-    await TextEditor.delete(new vscode.Range(wordBegin, position));
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteRange',
+      range: new Range(wordBegin, position),
+    });
 
     vimState.cursorStopPosition = wordBegin;
   }
@@ -524,7 +529,7 @@ class CommandCtrlHInInsertMode extends BaseCommand {
   keys = ['<C-h>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteText',
       position: position,
     });
@@ -540,7 +545,10 @@ class CommandCtrlUInInsertMode extends BaseCommand {
     const start = position.isInLeadingWhitespace()
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
-    await TextEditor.delete(new vscode.Range(start, position));
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteRange',
+      range: new Range(start, position),
+    });
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
   }
@@ -606,19 +614,19 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const textFromClipboard = await Clipboard.Paste();
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
     });
 
     if (vimState.isMultiCursor) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
         text: textFromClipboard,
         position: vimState.cursorStopPosition,
       });
     } else {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertTextVSCode',
         text: textFromClipboard,
       });
@@ -645,7 +653,7 @@ class NewLineInsertMode extends BaseCommand {
   keys = [['<C-j>'], ['<C-m>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: '\n',
       position: position,

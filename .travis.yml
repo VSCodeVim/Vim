@@ -9,8 +9,6 @@ notifications:
     on_cancel: never
     on_error: never
 
-sudo: false
-
 os:
   - linux
 
@@ -48,7 +46,7 @@ before_deploy:
 
 deploy:
   - provider: releases
-    api_key:
+    token:
       secure: PmBcza43E3Y5/OxmR2V3nLJSBW9LildJCHdNQrKC0AndO6b14K+FLq3lwUBNX36q08noRX1V/nrYiDIFbZf8AQNq7j+rsR6mJOTXmu/pThrz0ugBK12f5aVoJOAdPPD2XZ/Cu7nLNvqVbLgZIqACVwWzCukSD0/3JWFv1w3yjGj/t1QNBHJoT7Wy1K6a1d3IISnDC9XROBYWvG/4IZipTAiv8yD0TMncgVaWxjEng5lhtmDE+XhBQU7Z5Ywc9IJMgajos+Ix6j+bju7Evta26+tLvonwC3dK8eeUZbIqdanrGl1zW0yft15y2SYo1YYQE6qLFO1kDsR90iY1YaW94vGyDJ3TLDAEjyZ3RMYv1OFOKOc6fhV3l5piyacCmvc30gP+AKjlukxgckYRY1soDNW5xqjcMSluaOMumNPbXpVsx7Kup+ceYkktQBSoTHtZFxt1uQmo7KY9IcNIsZuRP2hLcxV0eI6HI78THa56vTffxXWBZ2NYkKJ6gBADghQlJaz6D40yX2Qj2XsXH09aaY6oQ2Y/x3TZTLxwbyiHA2DPVY5e06GDRaEeavIyDiM9p4wlgsYuS4vDXGbNkzoBZuijpKw3fG1tf39+rUqlVw2LBN1kroAiNfHjaalTwsWS3F9y1ispCALYUuMl4lIAsgGXYgOZbfPO5sof6Wjvg4Q=
     file_glob: true
     file: '*.vsix'
@@ -56,12 +54,33 @@ deploy:
     on:
       repo: VSCodeVim/Vim
       tags: true
-      condition: $TRAVIS_OS_NAME = linux
+      condition: $TRAVIS_OS_NAME = linux AND NOT tag = beta
   - provider: script
-    script: vsce publish -p $VS_TOKEN
+    script: vsce publish --web -p $VS_TOKEN
     skip_cleanup: true
     on:
       repo: VSCodeVim/Vim
       branch: master
       tags: true
-      condition: $TRAVIS_OS_NAME = linux
+      condition: $TRAVIS_OS_NAME = linux AND NOT tag = beta
+
+  - provider: releases
+    token:
+      secure: PmBcza43E3Y5/OxmR2V3nLJSBW9LildJCHdNQrKC0AndO6b14K+FLq3lwUBNX36q08noRX1V/nrYiDIFbZf8AQNq7j+rsR6mJOTXmu/pThrz0ugBK12f5aVoJOAdPPD2XZ/Cu7nLNvqVbLgZIqACVwWzCukSD0/3JWFv1w3yjGj/t1QNBHJoT7Wy1K6a1d3IISnDC9XROBYWvG/4IZipTAiv8yD0TMncgVaWxjEng5lhtmDE+XhBQU7Z5Ywc9IJMgajos+Ix6j+bju7Evta26+tLvonwC3dK8eeUZbIqdanrGl1zW0yft15y2SYo1YYQE6qLFO1kDsR90iY1YaW94vGyDJ3TLDAEjyZ3RMYv1OFOKOc6fhV3l5piyacCmvc30gP+AKjlukxgckYRY1soDNW5xqjcMSluaOMumNPbXpVsx7Kup+ceYkktQBSoTHtZFxt1uQmo7KY9IcNIsZuRP2hLcxV0eI6HI78THa56vTffxXWBZ2NYkKJ6gBADghQlJaz6D40yX2Qj2XsXH09aaY6oQ2Y/x3TZTLxwbyiHA2DPVY5e06GDRaEeavIyDiM9p4wlgsYuS4vDXGbNkzoBZuijpKw3fG1tf39+rUqlVw2LBN1kroAiNfHjaalTwsWS3F9y1ispCALYUuMl4lIAsgGXYgOZbfPO5sof6Wjvg4Q=
+    file_glob: true
+    file: '*.vsix'
+    skip_cleanup: true
+    draft: true
+    on:
+      repo: VSCodeVim/Vim
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux AND tag = beta
+
+  - provider: script
+    script: vsce package
+    skip_cleanup: true
+    on:
+      repo: VSCodeVim/Vim
+      branch: master
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux AND tag = beta

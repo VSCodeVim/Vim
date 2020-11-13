@@ -6,7 +6,7 @@ import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
-import { existsAsync } from '../util/fs';
+import { existsAsync } from 'platform/fs';
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState
@@ -118,7 +118,7 @@ export class JumpTracker {
         name: jump.fileName,
         lineNumber: jump.position.line,
         createFileIfNotExists: false,
-      }).execute();
+      }).execute(vimState);
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
