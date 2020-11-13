@@ -1074,7 +1074,7 @@
     "prettier": "2.1.2",
     "pretty-quick": "3.1.0",
     "sinon": "9.2.1",
-    "ts-loader": "8.0.9",
+    "ts-loader": "8.0.11",
     "tslint": "6.1.3",
     "typescript": "4.0.5",
     "vscode-test": "1.4.1",
