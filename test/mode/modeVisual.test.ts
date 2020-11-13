@@ -550,6 +550,66 @@ suite('Mode Visual', () => {
     });
   });
 
+  suite('handles bracket blocks in visual mode', () => {
+    const brackets = [
+      {
+        start: '{',
+        end: '}',
+      },
+      {
+        start: '[',
+        end: ']',
+      },
+      {
+        start: '(',
+        end: ')',
+      },
+      {
+        start: '<',
+        end: '>',
+      },
+    ];
+
+    // each test case gets run with start bracket and end bracket
+    const bracketsToTest = brackets.flatMap(({ start, end }) => [
+      { start, end, buttonToPress: start },
+      { start, end, buttonToPress: end },
+    ]);
+    bracketsToTest.forEach(({ start, end, buttonToPress }) => {
+      newTest({
+        title: `Can do di${buttonToPress} on a matching bracket`,
+        start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+        keysPressed: `di${buttonToPress}`,
+        end: [`${start} one ${start} two ${start}|${end} four ${end} five ${end}`],
+        endMode: Mode.Normal,
+      });
+
+      newTest({
+        title: `Can do i${buttonToPress} on multiple matching brackets`,
+        start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+        keysPressed: `vi${buttonToPress}i${buttonToPress}i${buttonToPress}d`,
+        end: [`${start}|${end}`],
+        endMode: Mode.Normal,
+      });
+
+      newTest({
+        title: `Can do d3i${buttonToPress} on matching brackets`,
+        start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
+        keysPressed: `d3i${buttonToPress}`,
+        end: [`${start}|${end}`],
+        endMode: Mode.Normal,
+      });
+
+      newTest({
+        title: `Can do d3i${buttonToPress} on matching brackets for multiple lines`,
+        start: [start, 'one', start, 'two', start, 'th|ree', end, 'four', end, 'five', end],
+        keysPressed: `d3i${buttonToPress}`,
+        end: [start, `|${end}`],
+        endMode: Mode.Normal,
+      });
+    });
+  });
+
   suite('handles tag blocks in visual mode', () => {
     newTest({
       title: 'Can do vit on a matching tag',
