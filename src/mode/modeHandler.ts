@@ -148,10 +148,22 @@ export class ModeHandler implements vscode.Disposable {
       }`
     );
 
+    // If our previous cursors are not included on any of the current selections, then a snippet
+    // must have been inserted.
+    const isSnippetSelectionChange = () => {
+      return e.selections.every((s) => {
+        return this.vimState.cursors.every((c) => !s.contains(new vscode.Range(c.start, c.stop)));
+      });
+    };
+
     if (
       (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== Mode.VisualBlock
     ) {
+      let allowedModes = [Mode.Normal];
+      if (!isSnippetSelectionChange()) {
+        allowedModes.push(...[Mode.Insert, Mode.Replace]);
+      }
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
         (sel) =>
@@ -164,8 +176,8 @@ export class ModeHandler implements vscode.Disposable {
           )
       );
       if (
-        e.textEditor.selections.some((s) => !s.anchor.isEqual(s.active)) &&
-        [Mode.Normal, Mode.Insert, Mode.Replace].includes(this.vimState.currentMode)
+        e.selections.some((s) => !s.anchor.isEqual(s.active)) &&
+        allowedModes.includes(this.vimState.currentMode)
       ) {
         // If we got a visual selection and we are on normal, insert or replace mode, enter visual mode.
         // We shouldn't go to visual mode on any other mode, because the other visual modes are handled
@@ -185,11 +197,12 @@ export class ModeHandler implements vscode.Disposable {
         if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
           // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
           // but it is also triggered when we set the 'editor.selections' on 'updateView'.
-          if (
-            [Mode.Normal, Mode.Visual, Mode.Insert, Mode.Replace].includes(
-              this.vimState.currentMode
-            )
-          ) {
+          let allowedModes = [Mode.Normal, Mode.Visual];
+          if (!isSnippetSelectionChange()) {
+            // if we just inserted a snippet then don't allow insert modes to go to visual mode
+            allowedModes.push(...[Mode.Insert, Mode.Replace]);
+          }
+          if (allowedModes.includes(this.vimState.currentMode)) {
             // Since the selections weren't ignored then probably we got change of selection from
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
