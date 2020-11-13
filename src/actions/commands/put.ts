@@ -98,7 +98,7 @@ export class PutCommand extends BaseCommand {
        *  Backspace. However here, we shall
        *  insert the plain text content of the register, which is `a1<80>kb2`.
        */
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: vimState.recordedState.registerName,
         replay: 'keystrokes',
@@ -269,7 +269,7 @@ export class PutCommand extends BaseCommand {
       });
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: textToAdd,
       position: whereToAddText,
@@ -338,7 +338,7 @@ export class PutCommand extends BaseCommand {
         (await PutCommand.getText(vimState, register, this.multicursorIndex)).split('\n').length *
         vimState.recordedState.count;
 
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: new PositionDiff({ line: -numNewlines + 1 }),
         cursorIndex: this.multicursorIndex,
@@ -400,7 +400,9 @@ class PutCommandVisual extends BaseCommand {
       let resultMode = vimState.currentMode;
       await vimState.setCurrentMode(oldMode);
       vimState.recordedState.registerName = replaceRegisterName;
-      await new PutCommand().exec(start, vimState, { pasteBeforeCursor: true });
+      await new PutCommand(this.multicursorIndex).exec(start, vimState, {
+        pasteBeforeCursor: true,
+      });
       await vimState.setCurrentMode(resultMode);
       if (replaceRegisterName === deletedRegisterName) {
         Register.putByKey(deletedRegister.text, deletedRegisterName, deletedRegister.registerMode);
@@ -471,7 +473,7 @@ class GPutCommand extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState);
+    await new PutCommand(this.multicursorIndex).exec(position, vimState);
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
@@ -483,7 +485,7 @@ class GPutCommand extends BaseCommand {
 
     let addedLinesCount: number;
     if (register.text instanceof RecordedState) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: vimState.recordedState.registerName,
         replay: 'keystrokes',
@@ -501,7 +503,7 @@ class GPutCommand extends BaseCommand {
     await super.execCount(position, vimState);
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: PositionDiff.newBOLDiff(addedLinesCount),
         cursorIndex: this.multicursorIndex,
@@ -537,7 +539,9 @@ class GPutBeforeCommand extends BaseCommand {
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, { pasteBeforeCursor: true });
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, {
+      pasteBeforeCursor: true,
+    });
     const register = await Register.get(vimState);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
@@ -546,7 +550,7 @@ class GPutBeforeCommand extends BaseCommand {
 
     let addedLinesCount: number;
     if (register.text instanceof RecordedState) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: vimState.recordedState.registerName,
         replay: 'keystrokes',
@@ -561,7 +565,7 @@ class GPutBeforeCommand extends BaseCommand {
     }
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: PositionDiff.newBOLDiff(addedLinesCount),
         cursorIndex: this.multicursorIndex,
@@ -578,7 +582,7 @@ class PutWithIndentCommand extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, { adjustIndent: true });
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, { adjustIndent: true });
   }
 }
 
@@ -592,7 +596,7 @@ class PutBeforeWithIndentCommand extends BaseCommand {
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, {
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, {
       pasteBeforeCursor: true,
       adjustIndent: true,
     });

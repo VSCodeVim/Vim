@@ -52,6 +52,6 @@ export class WriteQuitCommand extends node.CommandBase {
     };
 
     let quitCmd = new quit.QuitCommand(quitArgs);
-    await quitCmd.execute();
+    await quitCmd.execute(vimState);
   }
 }

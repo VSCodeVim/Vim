@@ -2,6 +2,7 @@ import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
+import { VimState } from '../../state/vimState';
 
 export interface IReadCommandArguments extends node.ICommandArgs {
   file?: string;
@@ -29,7 +30,7 @@ export class ReadCommand extends node.CommandBase {
     return true;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     const textToInsert = await this.getTextToInsert();
     if (textToInsert) {
       await TextEditor.insert(textToInsert);

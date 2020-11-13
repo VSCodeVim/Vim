@@ -130,3 +130,30 @@ suite('Multicursor with remaps', () => {
     end: ['onfo|oe', 'twfooo'],
   });
 });
+
+suite('Multicursor selections', () => {
+  const { newTest, newTestOnly } = getTestingFunctions();
+
+  setup(async () => {
+    const configuration = new Configuration();
+    configuration.normalModeKeyBindings = [
+      {
+        before: ['<leader>', 'a', 'f'],
+        commands: ['editor.action.smartSelect.grow'],
+      },
+    ];
+    configuration.leader = ' ';
+
+    await setupWorkspace(configuration);
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title:
+      'Can handle combined multicursor selections without leaving ghost selection changes behind',
+    start: ['|this is a test', '1', '2', 'this is another test', '1', '2', '3', '4', '5'],
+    keysPressed: 'gbgb<Esc>Vjjj<Esc><Esc>gg afd',
+    end: ['| is a test', '1', '2', 'this is another test', '1', '2', '3', '4', '5'],
+  });
+});
