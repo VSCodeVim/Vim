@@ -524,7 +524,7 @@ class GPutCommandVisualLine extends PutCommandVisualLine {
     await super.exec(position, vimState);
     // Vgp should place the cursor on the next line
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: new PositionDiff({ line: repeats, character: 0 }),
         cursorIndex: this.multicursorIndex,
