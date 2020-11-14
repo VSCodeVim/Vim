@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
 import { FileCommand } from './../cmd_line/commands/file';
-import { Position } from './../common/motion/position';
 import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
 import { existsAsync } from 'platform/fs';
+import { Position } from 'vscode';
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState

@@ -3,9 +3,10 @@ import { TextEditor } from '../../textEditor';
 
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
-import { Position, PositionDiff, PositionDiffType } from '../../common/motion/position';
+import { PositionDiff, PositionDiffType } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
 import { Range } from '../../common/motion/range';
+import { Position } from 'vscode';
 
 export interface IBangCommandArguments extends node.ICommandArgs {
   command: string;

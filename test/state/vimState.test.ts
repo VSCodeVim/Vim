@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { Position } from '../../src/common/motion/position';
+import { Position } from 'vscode';
 import { Range } from '../../src/common/motion/range';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';

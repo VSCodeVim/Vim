@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
-import { Position, PositionDiff, sorted } from './../../common/motion/position';
+import { PositionDiff, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
@@ -26,7 +26,8 @@ import {
   SelectInnerSentence,
   SelectInnerWord,
   TextObjectMovement,
-} from './../textobject';
+} from '../../textobject/textobject';
+import { Position } from 'vscode';
 
 export interface SurroundState {
   /** The operator paired with the surround action. "yank" is really "add", but it uses 'y' */
@@ -422,8 +423,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         return false;
       }
 
-      const start = Position.FromVSCodePosition(vimState.surround.range.start);
-      let end = Position.FromVSCodePosition(vimState.surround.range.end);
+      const start = vimState.surround.range.start;
+      let end = vimState.surround.range.end;
 
       if (TextEditor.getCharAt(end) !== ' ') {
         end = end.getRight();

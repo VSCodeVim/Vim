@@ -4,7 +4,6 @@ import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position } from './../common/motion/position';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
@@ -22,6 +21,8 @@ import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
+import { Position } from 'vscode';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -66,7 +67,7 @@ abstract class MoveByScreenLine extends BaseMovement {
             // The selection is on the right side of the cursor, while our representation
             // considers the cursor to be the left edge, so we need to move the selection
             // to the right place before executing the 'cursorMove' command.
-            const active = Position.FromVSCodePosition(s.active).getLeftThroughLineBreaks();
+            const active = s.active.getLeftThroughLineBreaks();
             vimState.editor.selections[i] = new vscode.Selection(s.anchor, active);
           }
         });
@@ -84,7 +85,7 @@ abstract class MoveByScreenLine extends BaseMovement {
     }
 
     if (vimState.currentMode === Mode.Normal) {
-      return Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].active);
+      return vimState.editor.selections[multicursorIndex].active;
     } else {
       /**
        * cursorMove command is handling the selection for us.
@@ -101,8 +102,8 @@ abstract class MoveByScreenLine extends BaseMovement {
         };
       }
 
-      let start = Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].anchor);
-      let stop = Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].active);
+      let start = vimState.editor.selections[multicursorIndex].anchor;
+      let stop = vimState.editor.selections[multicursorIndex].active;
 
       // If we are moving up we need to keep getting the left of anchor/start because vscode is
       // to the right of the character in order to include it but our positions are always on the
@@ -147,8 +148,8 @@ abstract class MoveByScreenLine extends BaseMovement {
     }
 
     return {
-      start: Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].start),
-      stop: Position.FromVSCodePosition(vimState.editor.selections[multicursorIndex].end),
+      start: vimState.editor.selections[multicursorIndex].start,
+      stop: vimState.editor.selections[multicursorIndex].end,
     };
   }
 }
@@ -179,7 +180,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        * differently we need to sometimes move the cursor at the end
        * of the selection back by a character.
        */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      let start = vimState.editor.selection.start;
       if (
         (this.movementType === 'down' && position.line > start.line) ||
         (this.movementType === 'up' && position.line < prevLine)
@@ -201,7 +202,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     });
 
     if (vimState.currentMode === Mode.Normal) {
-      let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+      let returnedPos = vimState.editor.selection.active;
       if (prevLine !== returnedPos.line) {
         returnedPos = returnedPos.withColumn(prevDesiredColumn);
       }
@@ -211,9 +212,9 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
-      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+      let start = vimState.editor.selection.start;
+      let stop = vimState.editor.selection.end;
+      let curPos = vimState.editor.selection.active;
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
       if (start.isEqual(curPos) && !start.isEqual(stop)) {
@@ -1412,7 +1413,7 @@ class MoveParagraphEnd extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const hasOperator = vimState.recordedState.operator;
-    const paragraphEnd = position.getCurrentParagraphEnd();
+    const paragraphEnd = getCurrentParagraphEnd(position);
 
     if (hasOperator) {
       /**
@@ -1464,7 +1465,7 @@ class MoveParagraphBegin extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentParagraphBeginning();
+    return getCurrentParagraphBeginning(position);
   }
 }
 

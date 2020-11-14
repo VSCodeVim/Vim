@@ -10,7 +10,6 @@ import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { Mode } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
-import { Position } from './src/common/motion/position';
 import { StatusBar } from './src/statusBar';
 import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
@@ -366,12 +365,8 @@ export async function activate(
           text: args.text,
           replaceCharCnt: args.replaceCharCnt,
         });
-        mh.vimState.cursorStopPosition = Position.FromVSCodePosition(
-          mh.vimState.editor.selection.start
-        );
-        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(
-          mh.vimState.editor.selection.start
-        );
+        mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+        mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
       }
     });
   });

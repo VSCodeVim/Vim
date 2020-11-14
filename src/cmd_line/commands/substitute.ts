@@ -2,9 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as node from '../node';
-import * as token from '../token';
 import { Jump } from '../../jumps/jump';
-import { Position } from '../../common/motion/position';
 import { SearchState, SearchDirection } from '../../state/searchState';
 import { SubstituteState } from '../../state/substituteState';
 import { TextEditor } from '../../textEditor';
@@ -13,6 +11,7 @@ import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
+import { Position } from 'vscode';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 
 export enum Mode {
   Normal,

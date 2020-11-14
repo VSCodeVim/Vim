@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { Position } from './common/motion/position';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
 import { Range } from './common/motion/range';
+import { Position } from 'vscode';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -46,7 +46,7 @@ export class TextEditor {
 
       await vscode.window.activeTextEditor!.edit((editBuilder) => {
         if (!at) {
-          at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+          at = vscode.window.activeTextEditor!.selection.active;
         }
 
         editBuilder.insert(at, text);
@@ -62,7 +62,7 @@ export class TextEditor {
   /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
-  static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
+  static async insertAt(text: string, position: Position): Promise<boolean> {
     return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(position, text);
     });
@@ -123,7 +123,7 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
   }
 
-  static getLineAt(position: vscode.Position): vscode.TextLine {
+  static getLineAt(position: Position): vscode.TextLine {
     return vscode.window.activeTextEditor!.document.lineAt(position);
   }
 
@@ -200,11 +200,11 @@ export class TextEditor {
     return '\t';
   }
 
-  static isFirstLine(position: vscode.Position): boolean {
+  static isFirstLine(position: Position): boolean {
     return position.line === 0;
   }
 
-  static isLastLine(position: vscode.Position): boolean {
+  static isLastLine(position: Position): boolean {
     return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
   }
 
@@ -247,11 +247,10 @@ export class TextEditor {
   }
 
   static getPositionAt(offset: number): Position {
-    const pos = vscode.window.activeTextEditor!.document.positionAt(offset);
-    return Position.FromVSCodePosition(pos);
+    return vscode.window.activeTextEditor!.document.positionAt(offset);
   }
 
-  static getOffsetAt(position: vscode.Position): number {
+  static getOffsetAt(position: Position): number {
     return vscode.window.activeTextEditor!.document.offsetAt(position);
   }
 

@@ -7,7 +7,6 @@ import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
@@ -15,6 +14,7 @@ import { ReplaceState } from './../state/replaceState';
 import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
+import { Position } from 'vscode';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode);

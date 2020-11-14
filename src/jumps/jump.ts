@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { VimState } from '../state/vimState';
 
 /**
