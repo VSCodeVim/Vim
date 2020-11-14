@@ -1,6 +1,6 @@
 import * as assert from 'assert';
+import { Position } from 'vscode';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/textobject/paragraph';
-import { Position } from './../src/common/motion/position';
 import { TextEditor } from './../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 

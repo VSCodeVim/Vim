@@ -12,7 +12,7 @@ import {
 } from './transformations';
 import { commandLine } from '../cmd_line/commandLine';
 import { PairMatcher } from '../common/matching/matcher';
-import { Position, PositionDiff } from '../common/motion/position';
+import { PositionDiff } from '../common/motion/position';
 import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
 import { Register } from '../register/register';
@@ -21,6 +21,7 @@ import { RecordedState } from '../state/recordedState';
 import { TextEditor } from '../textEditor';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { Range } from '../common/motion/range';
+import { Position } from 'vscode';
 
 export class Transformer {
   public readonly transformations: Transformation[] = [];
@@ -221,9 +222,7 @@ export class Transformer {
         case 'contentChange':
           for (const change of transformation.changes) {
             await TextEditor.insert(change.text);
-            vimState.cursorStopPosition = Position.FromVSCodePosition(
-              vimState.editor.selection.start
-            );
+            vimState.cursorStopPosition = vimState.editor.selection.start;
           }
           const newPos = vimState.cursorStopPosition.add(transformation.diff);
           vimState.editor.selection = new vscode.Selection(newPos, newPos);

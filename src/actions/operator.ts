@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 
-import {
-  Position,
-  PositionDiff,
-  PositionDiffType,
-  earlierOf,
-  sorted,
-} from './../common/motion/position';
+import { PositionDiff, PositionDiffType, earlierOf, sorted } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -18,6 +12,7 @@ import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from '../textobject/textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
+import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -794,10 +789,7 @@ export class ROT13Operator extends BaseOperator {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        range: new Range(
-          Position.FromVSCodePosition(range.start),
-          Position.FromVSCodePosition(range.end)
-        ),
+        range: new Range(range.start, range.end),
       });
     }
   }

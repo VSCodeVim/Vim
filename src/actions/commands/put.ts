@@ -1,4 +1,4 @@
-import { Position, PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
+import { PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
 import { Register, RegisterMode, IRegisterContent } from '../../register/register';
@@ -10,6 +10,7 @@ import { BaseCommand, RegisterAction } from '../base';
 import * as operator from '../operator';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { Position } from 'vscode';
 
 /**
  * Flags used for executing PutCommand.

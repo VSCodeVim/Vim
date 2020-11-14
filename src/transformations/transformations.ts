@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
-import { Position, PositionDiff } from './../common/motion/position';
+import { PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 
 /**

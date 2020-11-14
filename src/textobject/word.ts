@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { TextEditor } from '../textEditor';
 import { getAllPositions, getAllEndPositions } from './util';

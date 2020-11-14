@@ -11,6 +11,7 @@ import {
   getWordLeft,
   getWordRight,
 } from '../../textobject/word';
+import { Position } from 'vscode';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
@@ -84,380 +85,524 @@ export function sorted(p1: Position, p2: Position): [Position, Position] {
   return p1.isBefore(p2) ? [p1, p2] : [p2, p1];
 }
 
-export class Position extends vscode.Position {
-  constructor(line: number, character: number) {
-    super(line, character);
+declare module 'vscode' {
+  interface Position {
+    toString(): string;
+
+    add(diff: PositionDiff, boundsCheck?: boolean): Position;
+    subtract(other: Position): PositionDiff;
+
+    /**
+     * @returns a new Position with the same character and the given line.
+     * Does bounds-checking to make sure the result is valid.
+     */
+    withLine(line: number): Position;
+    /**
+     * @returns a new Position with the same line and the given character.
+     * Does bounds-checking to make sure the result is valid.
+     */
+    withColumn(column: number): Position;
+
+    /**
+     * @returns the Position `count` characters to the left of this Position. Does not go over line breaks.
+     */
+    getLeft(count?: number): Position;
+    /**
+     * @returns the Position `count` characters to the right of this Position. Does not go over line breaks.
+     */
+    getRight(count?: number): Position;
+    /**
+     * @returns the Position `count` lines down from this Position
+     */
+    getDown(count?: number): Position;
+    /**
+     * @returns the Position `count` lines up from this Position
+     */
+    getUp(count?: number): Position;
+
+    getLeftThroughLineBreaks(includeEol?: boolean): Position;
+    getRightThroughLineBreaks(includeEol?: boolean): Position;
+    getOffsetThroughLineBreaks(offset: number): Position;
+
+    getDownWithDesiredColumn(desiredColumn: number): Position;
+    getUpWithDesiredColumn(desiredColumn: number): Position;
+
+    getWordLeft(inclusive?: boolean): Position;
+    getWordRight(inclusive?: boolean): Position;
+    getCurrentWordEnd(inclusive?: boolean): Position;
+    getLastWordEnd(): Position;
+
+    getBigWordLeft(inclusive?: boolean): Position;
+    getBigWordRight(): Position;
+    getCurrentBigWordEnd(inclusive?: boolean): Position;
+    getLastBigWordEnd(): Position;
+
+    getSentenceBegin(args: { forward: boolean }): Position;
+    getSentenceEnd(): Position;
+
+    getLineBegin(): Position;
+
+    /**
+     * @returns the beginning of the line, excluding preceeding whitespace.
+     * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
+     */
+    getLineBeginRespectingIndent(): Position;
+
+    /**
+     * @return the beginning of the previous line.
+     * If already on the first line, return the beginning of this line.
+     */
+    getPreviousLineBegin(): Position;
+
+    /**
+     * @return the beginning of the next line.
+     * If already on the last line, return the *end* of this line.
+     */
+    getNextLineBegin(): Position;
+
+    /**
+     * @returns a new Position at the end of this position's line.
+     */
+    getLineEnd(): Position;
+
+    /**
+     * @returns a new Position at the end of this Position's line, including the invisible newline character.
+     */
+    getLineEndIncludingEOL(): Position;
+
+    /**
+     * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
+     */
+    getLeftIfEOL(): Position;
+
+    /**
+     * @returns the position that the cursor would be at if you pasted *text* at the current position.
+     */
+    advancePositionByText(text: string): Position;
+
+    /**
+     * Is this position at the beginning of the line?
+     */
+    isLineBeginning(): boolean;
+
+    /**
+     * Is this position at the end of the line?
+     */
+    isLineEnd(): boolean;
+
+    isFirstWordOfLine(): boolean;
+
+    isAtDocumentBegin(): boolean;
+
+    isAtDocumentEnd(): boolean;
+
+    /**
+     * Returns whether the current position is in the leading whitespace of a line
+     * @param allowEmpty : Use true if "" is valid
+     */
+    isInLeadingWhitespace(allowEmpty?: boolean): boolean;
+
+    /**
+     * If `vim.startofline` is set, get first non-blank character's position.
+     */
+    obeyStartOfLine(): Position;
+
+    isValid(textEditor: vscode.TextEditor): boolean;
+  }
+}
+
+Position.prototype.toString = function (this: Position) {
+  return `[${this.line}, ${this.character}]`;
+};
+
+Position.prototype.add = function (
+  this: Position,
+  diff: PositionDiff,
+  boundsCheck = true
+): Position {
+  let resultLine = this.line + diff.line;
+
+  let resultChar: number;
+  if (diff.type === PositionDiffType.Offset) {
+    resultChar = this.character + diff.character;
+  } else if (diff.type === PositionDiffType.ExactCharacter) {
+    resultChar = diff.character;
+  } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
+    resultChar = this.withLine(resultLine).obeyStartOfLine().character;
+  } else {
+    throw new Error(`Unknown PositionDiffType: ${diff.type}`);
   }
 
-  public toString(): string {
-    return `[${this.line}, ${this.character}]`;
+  if (boundsCheck) {
+    resultLine = clamp(resultLine, 0, TextEditor.getLineCount() - 1);
+    resultChar = clamp(resultChar, 0, TextEditor.getLineLength(resultLine));
   }
 
-  public static FromVSCodePosition(pos: vscode.Position): Position {
-    return new Position(pos.line, pos.character);
+  return new Position(resultLine, resultChar);
+};
+
+Position.prototype.subtract = function (this: Position, other: Position): PositionDiff {
+  return new PositionDiff({
+    line: this.line - other.line,
+    character: this.character - other.character,
+  });
+};
+
+/**
+ * @returns a new Position with the same character and the given line.
+ * Does bounds-checking to make sure the result is valid.
+ */
+Position.prototype.withLine = function (this: Position, line: number): Position {
+  line = clamp(line, 0, TextEditor.getLineCount() - 1);
+  return new Position(line, this.character);
+};
+
+/**
+ * @returns a new Position with the same line and the given character.
+ * Does bounds-checking to make sure the result is valid.
+ */
+Position.prototype.withColumn = function (this: Position, column: number): Position {
+  column = clamp(column, 0, TextEditor.getLineLength(this.line));
+  return new Position(this.line, column);
+};
+
+/**
+ * @returns the Position `count` characters to the left of this Position. Does not go over line breaks.
+ */
+Position.prototype.getLeft = function (this: Position, count = 1): Position {
+  return new Position(this.line, Math.max(this.character - count, 0));
+};
+
+/**
+ * @returns the Position `count` characters to the right of this Position. Does not go over line breaks.
+ */
+Position.prototype.getRight = function (this: Position, count = 1): Position {
+  return new Position(
+    this.line,
+    Math.min(this.character + count, TextEditor.getLineLength(this.line))
+  );
+};
+
+/**
+ * @returns the Position `count` lines down from this Position
+ */
+Position.prototype.getDown = function (this: Position, count = 1): Position {
+  const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
+  return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+};
+
+/**
+ * @returns the Position `count` lines up from this Position
+ */
+Position.prototype.getUp = function (this: Position, count = 1): Position {
+  const line = Math.max(this.line - count, 0);
+  return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+};
+
+/**
+ * Same as getLeft, but goes up to the previous line on line breaks.
+ * Equivalent to left arrow (in a non-vim editor!)
+ */
+Position.prototype.getLeftThroughLineBreaks = function (
+  this: Position,
+  includeEol = true
+): Position {
+  if (!this.isLineBeginning()) {
+    return this.getLeft();
   }
 
-  /**
-   * Subtracts another position from this one, returning the difference between the two.
-   */
-  public subtract(other: Position): PositionDiff {
-    return new PositionDiff({
-      line: this.line - other.line,
-      character: this.character - other.character,
-    });
-  }
-
-  /**
-   * Adds a PositionDiff to this position, returning a new position.
-   */
-  public add(diff: PositionDiff, { boundsCheck = true } = {}): Position {
-    let resultLine = this.line + diff.line;
-
-    let resultChar: number;
-    if (diff.type === PositionDiffType.Offset) {
-      resultChar = this.character + diff.character;
-    } else if (diff.type === PositionDiffType.ExactCharacter) {
-      resultChar = diff.character;
-    } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
-      resultChar = this.withLine(resultLine).obeyStartOfLine().character;
-    } else {
-      throw new Error(`Unknown PositionDiffType: ${diff.type}`);
-    }
-
-    if (boundsCheck) {
-      resultLine = clamp(resultLine, 0, TextEditor.getLineCount() - 1);
-      resultChar = clamp(resultChar, 0, TextEditor.getLineLength(resultLine));
-    }
-
-    return new Position(resultLine, resultChar);
-  }
-
-  /**
-   * @returns a new Position with the same character and the given line.
-   * Does bounds-checking to make sure the result is valid.
-   */
-  public withLine(line: number): Position {
-    line = clamp(line, 0, TextEditor.getLineCount() - 1);
-    return new Position(line, this.character);
-  }
-
-  /**
-   * @returns a new Position with the same line and the given character.
-   * Does bounds-checking to make sure the result is valid.
-   */
-  public withColumn(column: number): Position {
-    column = clamp(column, 0, TextEditor.getLineLength(this.line));
-    return new Position(this.line, column);
-  }
-
-  /**
-   * @returns the Position `count` characters to the left of this Position. Does not go over line breaks.
-   */
-  public getLeft(count = 1): Position {
-    return new Position(this.line, Math.max(this.character - count, 0));
-  }
-
-  /**
-   * @returns the Position `count` characters to the right of this Position. Does not go over line breaks.
-   */
-  public getRight(count = 1): Position {
-    return new Position(
-      this.line,
-      Math.min(this.character + count, TextEditor.getLineLength(this.line))
-    );
-  }
-
-  /**
-   * @returns the Position `count` lines down from this Position
-   */
-  public getDown(count = 1): Position {
-    const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
-    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
-  }
-
-  /**
-   * @returns the Position `count` lines up from this Position
-   */
-  public getUp(count = 1): Position {
-    const line = Math.max(this.line - count, 0);
-    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
-  }
-
-  /**
-   * Same as getLeft, but goes up to the previous line on line breaks.
-   * Equivalent to left arrow (in a non-vim editor!)
-   */
-  public getLeftThroughLineBreaks(includeEol = true): Position {
-    if (!this.isLineBeginning()) {
-      return this.getLeft();
-    }
-
-    // First char on first line, can not go left any more
-    if (this.line === 0) {
-      return this;
-    }
-
-    if (includeEol) {
-      return this.getUpWithDesiredColumn(0).getLineEnd();
-    } else {
-      return this.getUpWithDesiredColumn(0).getLineEnd().getLeft();
-    }
-  }
-
-  public getRightThroughLineBreaks(includeEol = false): Position {
-    if (this.isAtDocumentEnd()) {
-      // TODO(bell)
-      return this;
-    }
-
-    if (this.isLineEnd()) {
-      return this.getDownWithDesiredColumn(0);
-    }
-
-    if (!includeEol && this.getRight().isLineEnd()) {
-      return this.getDownWithDesiredColumn(0);
-    }
-
-    return this.getRight();
-  }
-
-  public getOffsetThroughLineBreaks(offset: number): Position {
-    let pos = new Position(this.line, this.character);
-
-    if (offset < 0) {
-      for (let i = 0; i < -offset; i++) {
-        pos = pos.getLeftThroughLineBreaks();
-      }
-    } else {
-      for (let i = 0; i < offset; i++) {
-        pos = pos.getRightThroughLineBreaks();
-      }
-    }
-
-    return pos;
-  }
-
-  /**
-   * Get the position of the line directly below the current line.
-   */
-  public getDownWithDesiredColumn(desiredColumn: number): Position {
-    if (TextEditor.getDocumentEnd().line !== this.line) {
-      let nextLine = this.line + 1;
-      let nextLineLength = TextEditor.getLineLength(nextLine);
-
-      return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
-    }
-
+  // First char on first line, can not go left any more
+  if (this.line === 0) {
     return this;
   }
 
-  /**
-   * Get the position of the line directly above the current line.
-   */
-  public getUpWithDesiredColumn(desiredColumn: number): Position {
-    if (TextEditor.getDocumentBegin().line !== this.line) {
-      let prevLine = this.line - 1;
-      let prevLineLength = TextEditor.getLineLength(prevLine);
+  if (includeEol) {
+    return this.getUpWithDesiredColumn(0).getLineEnd();
+  } else {
+    return this.getUpWithDesiredColumn(0).getLineEnd().getLeft();
+  }
+};
 
-      return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
-    }
-
+Position.prototype.getRightThroughLineBreaks = function (
+  this: Position,
+  includeEol = false
+): Position {
+  if (this.isAtDocumentEnd()) {
+    // TODO(bell)
     return this;
   }
 
-  /**
-   * Inclusive is true if we consider the current position a valid result, false otherwise.
-   */
-  public getWordLeft(inclusive: boolean = false): Position {
-    return getWordLeft(this, WordType.Normal, inclusive);
+  if (this.isLineEnd()) {
+    return this.getDownWithDesiredColumn(0);
   }
 
-  public getBigWordLeft(inclusive: boolean = false): Position {
-    return getWordLeft(this, WordType.Big, inclusive);
+  if (!includeEol && this.getRight().isLineEnd()) {
+    return this.getDownWithDesiredColumn(0);
   }
 
-  /**
-   * Inclusive is true if we consider the current position a valid result, false otherwise.
-   */
-  public getWordRight(inclusive: boolean = false): Position {
-    return getWordRight(this, WordType.Normal, inclusive);
-  }
+  return this.getRight();
+};
 
-  public getBigWordRight(): Position {
-    return getWordRight(this, WordType.Big);
-  }
+Position.prototype.getOffsetThroughLineBreaks = function (
+  this: Position,
+  offset: number
+): Position {
+  let pos = new Position(this.line, this.character);
 
-  public getLastWordEnd(): Position {
-    return getLastWordEnd(this, WordType.Normal);
-  }
-
-  public getLastBigWordEnd(): Position {
-    return getLastWordEnd(this, WordType.Big);
-  }
-
-  /**
-   * Inclusive is true if we consider the current position a valid result, false otherwise.
-   */
-  public getCurrentWordEnd(inclusive: boolean = false): Position {
-    return getCurrentWordEnd(this, WordType.Normal, inclusive);
-  }
-
-  /**
-   * Inclusive is true if we consider the current position a valid result, false otherwise.
-   */
-  public getCurrentBigWordEnd(inclusive: boolean = false): Position {
-    return getCurrentWordEnd(this, WordType.Big, inclusive);
-  }
-
-  public getSentenceBegin(args: { forward: boolean }): Position {
-    return getSentenceBegin(this, args);
-  }
-
-  public getSentenceEnd(): Position {
-    return getSentenceEnd(this);
-  }
-
-  /**
-   * @returns a new Position at the beginning of the current line.
-   */
-  public getLineBegin(): Position {
-    return new Position(this.line, 0);
-  }
-
-  /**
-   * @returns the beginning of the line, excluding preceeding whitespace.
-   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
-   */
-  public getLineBeginRespectingIndent(): Position {
-    if (!configuration.autoindent) {
-      return this.getLineBegin();
+  if (offset < 0) {
+    for (let i = 0; i < -offset; i++) {
+      pos = pos.getLeftThroughLineBreaks();
     }
-    return TextEditor.getFirstNonWhitespaceCharOnLine(this.line);
-  }
-
-  /**
-   * @return the beginning of the previous line.
-   * If already on the first line, return the beginning of this line.
-   */
-  public getPreviousLineBegin(): Position {
-    if (this.line === 0) {
-      return this.getLineBegin();
-    }
-
-    return new Position(this.line - 1, 0);
-  }
-
-  /**
-   * @return the beginning of the next line.
-   * If already on the last line, return the *end* of this line.
-   */
-  public getNextLineBegin(): Position {
-    if (this.line >= TextEditor.getLineCount() - 1) {
-      return this.getLineEnd();
-    }
-
-    return new Position(this.line + 1, 0);
-  }
-
-  /**
-   * @returns a new Position at the end of this position's line.
-   */
-  public getLineEnd(): Position {
-    return new Position(this.line, TextEditor.getLineLength(this.line));
-  }
-
-  /**
-   * @returns a new Position at the end of this Position's line, including the invisible newline character.
-   */
-  public getLineEndIncludingEOL(): Position {
-    // TODO: isn't this one too far?
-    return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
-  }
-
-  /**
-   * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
-   */
-  public getLeftIfEOL(): Position {
-    return this.character === TextEditor.getLineLength(this.line) ? this.getLeft() : this;
-  }
-
-  /**
-   * @returns the position that the cursor would be at if you pasted *text* at the current position.
-   */
-  public advancePositionByText(text: string): Position {
-    const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
-
-    return new Position(
-      this.line + numberOfLinesSpanned,
-      numberOfLinesSpanned === 0
-        ? this.character + text.length
-        : text.length - (text.lastIndexOf('\n') + 1)
-    );
-  }
-
-  /**
-   * Is this position at the beginning of the line?
-   */
-  public isLineBeginning(): boolean {
-    return this.character === 0;
-  }
-
-  /**
-   * Is this position at the end of the line?
-   */
-  public isLineEnd(): boolean {
-    return this.character >= TextEditor.getLineLength(this.line);
-  }
-
-  public isFirstWordOfLine(): boolean {
-    return TextEditor.getFirstNonWhitespaceCharOnLine(this.line).character === this.character;
-  }
-
-  public isAtDocumentBegin(): boolean {
-    return this.line === 0 && this.isLineBeginning();
-  }
-
-  public isAtDocumentEnd(): boolean {
-    return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
-  }
-
-  /**
-   * Returns whether the current position is in the leading whitespace of a line
-   * @param allowEmpty : Use true if "" is valid
-   */
-  public isInLeadingWhitespace(allowEmpty: boolean = false): boolean {
-    if (allowEmpty) {
-      return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-    } else {
-      return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+  } else {
+    for (let i = 0; i < offset; i++) {
+      pos = pos.getRightThroughLineBreaks();
     }
   }
 
-  /**
-   * If `vim.startofline` is set, get first non-blank character's position.
-   */
-  public obeyStartOfLine(): Position {
-    return configuration.startofline ? TextEditor.getFirstNonWhitespaceCharOnLine(this.line) : this;
+  return pos;
+};
+
+/**
+ * Get the position of the line directly below the current line.
+ */
+Position.prototype.getDownWithDesiredColumn = function (
+  this: Position,
+  desiredColumn: number
+): Position {
+  if (TextEditor.getDocumentEnd().line !== this.line) {
+    let nextLine = this.line + 1;
+    let nextLineLength = TextEditor.getLineLength(nextLine);
+
+    return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
   }
 
-  public isValid(textEditor: vscode.TextEditor): boolean {
-    try {
-      // line
-      // TODO: this `|| 1` seems dubious...
-      let lineCount = TextEditor.getLineCount(textEditor) || 1;
-      if (this.line >= lineCount) {
-        return false;
-      }
+  return this;
+};
 
-      // char
-      let charCount = TextEditor.getLineLength(this.line);
-      if (this.character > charCount + 1) {
-        return false;
-      }
-    } catch (e) {
+/**
+ * Get the position of the line directly above the current line.
+ */
+Position.prototype.getUpWithDesiredColumn = function (
+  this: Position,
+  desiredColumn: number
+): Position {
+  if (TextEditor.getDocumentBegin().line !== this.line) {
+    let prevLine = this.line - 1;
+    let prevLineLength = TextEditor.getLineLength(prevLine);
+
+    return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
+  }
+
+  return this;
+};
+
+/**
+ * Inclusive is true if we consider the current position a valid result, false otherwise.
+ */
+Position.prototype.getWordLeft = function (this: Position, inclusive: boolean = false): Position {
+  return getWordLeft(this, WordType.Normal, inclusive);
+};
+
+Position.prototype.getBigWordLeft = function (
+  this: Position,
+  inclusive: boolean = false
+): Position {
+  return getWordLeft(this, WordType.Big, inclusive);
+};
+
+/**
+ * Inclusive is true if we consider the current position a valid result, false otherwise.
+ */
+Position.prototype.getWordRight = function (this: Position, inclusive: boolean = false): Position {
+  return getWordRight(this, WordType.Normal, inclusive);
+};
+
+Position.prototype.getBigWordRight = function (this: Position): Position {
+  return getWordRight(this, WordType.Big);
+};
+
+Position.prototype.getLastWordEnd = function (this: Position): Position {
+  return getLastWordEnd(this, WordType.Normal);
+};
+
+Position.prototype.getLastBigWordEnd = function (this: Position): Position {
+  return getLastWordEnd(this, WordType.Big);
+};
+
+/**
+ * Inclusive is true if we consider the current position a valid result, false otherwise.
+ */
+Position.prototype.getCurrentWordEnd = function (
+  this: Position,
+  inclusive: boolean = false
+): Position {
+  return getCurrentWordEnd(this, WordType.Normal, inclusive);
+};
+
+/**
+ * Inclusive is true if we consider the current position a valid result, false otherwise.
+ */
+Position.prototype.getCurrentBigWordEnd = function (
+  this: Position,
+  inclusive: boolean = false
+): Position {
+  return getCurrentWordEnd(this, WordType.Big, inclusive);
+};
+
+Position.prototype.getSentenceBegin = function (
+  this: Position,
+  args: { forward: boolean }
+): Position {
+  return getSentenceBegin(this, args);
+};
+
+Position.prototype.getSentenceEnd = function (this: Position): Position {
+  return getSentenceEnd(this);
+};
+
+/**
+ * @returns a new Position at the beginning of the current line.
+ */
+Position.prototype.getLineBegin = function (this: Position): Position {
+  return new Position(this.line, 0);
+};
+
+/**
+ * @returns the beginning of the line, excluding preceeding whitespace.
+ * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
+ */
+Position.prototype.getLineBeginRespectingIndent = function (this: Position): Position {
+  if (!configuration.autoindent) {
+    return this.getLineBegin();
+  }
+  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line);
+};
+
+/**
+ * @return the beginning of the previous line.
+ * If already on the first line, return the beginning of this line.
+ */
+Position.prototype.getPreviousLineBegin = function (this: Position): Position {
+  if (this.line === 0) {
+    return this.getLineBegin();
+  }
+
+  return new Position(this.line - 1, 0);
+};
+
+/**
+ * @return the beginning of the next line.
+ * If already on the last line, return the *end* of this line.
+ */
+Position.prototype.getNextLineBegin = function (this: Position): Position {
+  if (this.line >= TextEditor.getLineCount() - 1) {
+    return this.getLineEnd();
+  }
+
+  return new Position(this.line + 1, 0);
+};
+
+/**
+ * @returns a new Position at the end of this position's line.
+ */
+Position.prototype.getLineEnd = function (this: Position): Position {
+  return new Position(this.line, TextEditor.getLineLength(this.line));
+};
+
+/**
+ * @returns a new Position at the end of this Position's line, including the invisible newline character.
+ */
+Position.prototype.getLineEndIncludingEOL = function (this: Position): Position {
+  // TODO: isn't this one too far?
+  return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
+};
+
+/**
+ * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
+ */
+Position.prototype.getLeftIfEOL = function (this: Position): Position {
+  return this.character === TextEditor.getLineLength(this.line) ? this.getLeft() : this;
+};
+
+/**
+ * @returns the position that the cursor would be at if you pasted *text* at the current position.
+ */
+Position.prototype.advancePositionByText = function (this: Position, text: string): Position {
+  const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
+
+  return new Position(
+    this.line + numberOfLinesSpanned,
+    numberOfLinesSpanned === 0
+      ? this.character + text.length
+      : text.length - (text.lastIndexOf('\n') + 1)
+  );
+};
+
+/**
+ * Is this position at the beginning of the line?
+ */
+Position.prototype.isLineBeginning = function (this: Position): boolean {
+  return this.character === 0;
+};
+
+/**
+ * Is this position at the end of the line?
+ */
+Position.prototype.isLineEnd = function (this: Position): boolean {
+  return this.character >= TextEditor.getLineLength(this.line);
+};
+
+Position.prototype.isFirstWordOfLine = function (this: Position): boolean {
+  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line).character === this.character;
+};
+
+Position.prototype.isAtDocumentBegin = function (this: Position): boolean {
+  return this.line === 0 && this.isLineBeginning();
+};
+
+Position.prototype.isAtDocumentEnd = function (this: Position): boolean {
+  return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
+};
+
+/**
+ * Returns whether the current position is in the leading whitespace of a line
+ * @param allowEmpty : Use true if "" is valid
+ */
+Position.prototype.isInLeadingWhitespace = function (
+  this: Position,
+  allowEmpty: boolean = false
+): boolean {
+  if (allowEmpty) {
+    return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+  } else {
+    return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+  }
+};
+
+/**
+ * If `vim.startofline` is set, get first non-blank character's position.
+ */
+Position.prototype.obeyStartOfLine = function (this: Position): Position {
+  return configuration.startofline ? TextEditor.getFirstNonWhitespaceCharOnLine(this.line) : this;
+};
+
+Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEditor): boolean {
+  try {
+    // line
+    // TODO: this `|| 1` seems dubious...
+    let lineCount = TextEditor.getLineCount(textEditor) || 1;
+    if (this.line >= lineCount) {
       return false;
     }
 
-    return true;
+    // char
+    let charCount = TextEditor.getLineLength(this.line);
+    if (this.character > charCount + 1) {
+      return false;
+    }
+  } catch (e) {
+    return false;
   }
-}
+
+  return true;
+};

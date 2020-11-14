@@ -2,7 +2,7 @@ import { Mode } from '../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 
 /**
  * Shows the number of lines you just changed (with `dG`, for instance), if it

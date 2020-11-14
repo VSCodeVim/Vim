@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { Mode } from '../../../mode/mode';
+import { Position } from 'vscode';
 
 export class EasyMotion {
   /**
@@ -397,9 +397,7 @@ export class EasyMotion {
     if (configuration.easymotionDimBackground) {
       const prevMarker = markers[markers.length - 1];
       const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
-      const prevDimPos = Position.FromVSCodePosition(
-        dimmingZones[dimmingZones.length - 1].range.end
-      );
+      const prevDimPos = dimmingZones[dimmingZones.length - 1].range.end;
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 
       // Don't create any more dimming ranges when the last marker is at document end

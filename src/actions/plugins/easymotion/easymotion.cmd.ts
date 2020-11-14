@@ -1,5 +1,4 @@
 import { VimState } from '../../../state/vimState';
-import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { Mode, isVisualMode } from './../../../mode/mode';
 import { RegisterAction, BaseCommand } from './../../base';
@@ -12,6 +11,7 @@ import {
 import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
 import { MarkerGenerator } from './markerGenerator';
+import { Position } from 'vscode';
 
 export interface EasymotionTrigger {
   key: string;

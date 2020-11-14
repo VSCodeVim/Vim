@@ -14,11 +14,11 @@ import { StatusBar } from '../../statusBar';
 import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
-import { Position } from '../../common/motion/position';
 import { VimError, ErrorCode } from '../../error';
 import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
 import { getWordLeftInText } from '../../textobject/word';
+import { Position } from 'vscode';
 
 /**
  * Commands that are only relevant when entering a command or search

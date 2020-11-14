@@ -1,7 +1,6 @@
 import { TextObjectMovement } from '../../textobject/textobject';
 import { RegisterAction } from '../base';
 import { Mode } from '../../mode/mode';
-import { Position } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { IMovement, BaseMovement } from '../baseMotion';
 import { TextEditor } from '../../textEditor';
@@ -14,6 +13,7 @@ import {
   getWordRight,
   WordType,
 } from '../../textobject/word';
+import { Position } from 'vscode';
 
 abstract class CamelCaseBaseMovement extends BaseMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {

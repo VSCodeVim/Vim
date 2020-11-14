@@ -1,4 +1,4 @@
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 import { TextEditor } from '../textEditor';
 
 /**

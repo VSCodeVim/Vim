@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../extension';
-import { Position } from '../src/common/motion/position';
 import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
@@ -14,6 +13,7 @@ import * as os from 'os';
 import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
 import { IConfiguration } from '../src/configuration/iconfiguration';
+import { Position } from 'vscode';
 
 export function getTestingFunctions() {
   function getNiceStack(stack: string | undefined): string {

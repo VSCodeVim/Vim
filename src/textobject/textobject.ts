@@ -1,4 +1,3 @@
-import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { Mode } from '../mode/mode';
 import { RegisterMode } from '../register/register';
@@ -19,6 +18,7 @@ import {
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
+import { Position } from 'vscode';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
