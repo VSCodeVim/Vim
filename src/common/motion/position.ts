@@ -295,10 +295,6 @@ export class Position extends vscode.Position {
     return getLastWordEnd(this, WordType.Big);
   }
 
-  public getLastCamelCaseWordEnd(): Position {
-    return getLastWordEnd(this, WordType.CamelCase);
-  }
-
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
@@ -311,49 +307,6 @@ export class Position extends vscode.Position {
    */
   public getCurrentBigWordEnd(inclusive: boolean = false): Position {
     return getCurrentWordEnd(this, WordType.Big, inclusive);
-  }
-
-  private isLineBlank(trimWhite: boolean = false): boolean {
-    let text = TextEditor.getLineAt(this).text;
-    return (trimWhite ? text.trim() : text) === '';
-  }
-
-  /**
-   * Get the end of the current paragraph.
-   */
-  public getCurrentParagraphEnd(trimWhite: boolean = false): Position {
-    let pos: Position = this;
-
-    // If we're not in a paragraph yet, go down until we are.
-    while (pos.isLineBlank(trimWhite) && !TextEditor.isLastLine(pos)) {
-      pos = pos.getDownWithDesiredColumn(0);
-    }
-
-    // Go until we're outside of the paragraph, or at the end of the document.
-    while (!pos.isLineBlank(trimWhite) && pos.line < TextEditor.getLineCount() - 1) {
-      pos = pos.getDownWithDesiredColumn(0);
-    }
-
-    return pos.getLineEnd();
-  }
-
-  /**
-   * Get the beginning of the current paragraph.
-   */
-  public getCurrentParagraphBeginning(trimWhite: boolean = false): Position {
-    let pos: Position = this;
-
-    // If we're not in a paragraph yet, go up until we are.
-    while (pos.isLineBlank(trimWhite) && !TextEditor.isFirstLine(pos)) {
-      pos = pos.getUpWithDesiredColumn(0);
-    }
-
-    // Go until we're outside of the paragraph, or at the beginning of the document.
-    while (pos.line > 0 && !pos.isLineBlank(trimWhite)) {
-      pos = pos.getUpWithDesiredColumn(0);
-    }
-
-    return pos.getLineBegin();
   }
 
   public getSentenceBegin(args: { forward: boolean }): Position {

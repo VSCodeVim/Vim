@@ -18,6 +18,7 @@ import {
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -450,11 +451,11 @@ export class SelectParagraph extends TextObjectMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     let start: Position;
-    const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
+    const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
 
     if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning(true).getCurrentParagraphEnd(true);
+      start = getCurrentParagraphEnd(getCurrentParagraphBeginning(position, true), true);
     } else {
       if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
@@ -464,7 +465,7 @@ export class SelectParagraph extends TextObjectMovement {
     }
 
     // Include additional blank lines.
-    let stop = position.getCurrentParagraphEnd(true);
+    let stop = getCurrentParagraphEnd(position, true);
     while (
       stop.line < TextEditor.getLineCount() - 1 &&
       TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
@@ -503,8 +504,8 @@ export class SelectInnerParagraph extends TextObjectMovement {
         stop = stop.getDownWithDesiredColumn(0);
       }
     } else {
-      const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
-      stop = position.getCurrentParagraphEnd(true);
+      const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
+      stop = getCurrentParagraphEnd(position, true);
       if (TextEditor.getLineAt(currentParagraphBegin).isEmptyOrWhitespace) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {

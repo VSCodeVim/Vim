@@ -1,5 +1,6 @@
 import { Position } from '../common/motion/position';
 import { TextEditor } from '../textEditor';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { getAllPositions, getAllEndPositions } from './util';
 
 const sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
@@ -13,7 +14,7 @@ export function getSentenceBegin(position: Position, args: { forward: boolean })
 }
 
 export function getSentenceEnd(pos: Position): Position {
-  const paragraphEnd = pos.getCurrentParagraphEnd();
+  const paragraphEnd = getCurrentParagraphEnd(pos);
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
     const allPositions = getAllPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
     const newCharacter = allPositions.find(
@@ -29,7 +30,7 @@ export function getSentenceEnd(pos: Position): Position {
 }
 
 function getPreviousSentenceBegin(pos: Position): Position {
-  const paragraphBegin = pos.getCurrentParagraphBeginning();
+  const paragraphBegin = getCurrentParagraphBeginning(pos);
   for (let currentLine = pos.line; currentLine >= paragraphBegin.line; currentLine--) {
     const endPositions = getAllEndPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
     const newCharacter = endPositions.reverse().find((index) => {
@@ -54,7 +55,7 @@ function getPreviousSentenceBegin(pos: Position): Position {
 
 function getNextSentenceBegin(pos: Position): Position {
   // A paragraph and section boundary is also a sentence boundary.
-  const paragraphEnd = pos.getCurrentParagraphEnd();
+  const paragraphEnd = getCurrentParagraphEnd(pos);
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
     const endPositions = getAllEndPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
     const newCharacter = endPositions.find(

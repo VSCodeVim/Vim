@@ -22,6 +22,7 @@ import { Notation } from '../configuration/notation';
 import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -1412,7 +1413,7 @@ class MoveParagraphEnd extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const hasOperator = vimState.recordedState.operator;
-    const paragraphEnd = position.getCurrentParagraphEnd();
+    const paragraphEnd = getCurrentParagraphEnd(position);
 
     if (hasOperator) {
       /**
@@ -1464,7 +1465,7 @@ class MoveParagraphBegin extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentParagraphBeginning();
+    return getCurrentParagraphBeginning(position);
   }
 }
 
