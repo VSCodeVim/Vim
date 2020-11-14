@@ -1,11 +1,10 @@
-import { Position } from './../common/motion/position';
-import { Range } from './../common/motion/range';
-import { Mode } from './../mode/mode';
-import { RegisterMode } from './../register/register';
-import { VimState } from './../state/vimState';
-import { TextEditor } from './../textEditor';
-import { RegisterAction } from './base';
-import { BaseMovement, IMovement, failedMovement } from './baseMotion';
+import { Range } from '../common/motion/range';
+import { Mode } from '../mode/mode';
+import { RegisterMode } from '../register/register';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
+import { RegisterAction } from '../actions/base';
+import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
@@ -15,9 +14,11 @@ import {
   MoveABacktick,
   MoveAroundTag,
   ExpandingSelection,
-} from './motion';
-import { ChangeOperator } from './operator';
-import { configuration } from './../configuration/configuration';
+} from '../actions/motion';
+import { ChangeOperator } from '../actions/operator';
+import { configuration } from '../configuration/configuration';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
+import { Position } from 'vscode';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -351,20 +352,20 @@ export class SelectSentence extends TextObjectMovement {
     let stop: Position;
 
     const currentSentenceBegin = position.getSentenceBegin({ forward: false });
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getSentenceEnd();
 
     if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
       // The cursor is on a trailing white space.
       start = currentSentenceNonWhitespaceEnd.getRight();
-      stop = currentSentenceBegin.getSentenceBegin({ forward: true }).getCurrentSentenceEnd();
+      stop = currentSentenceBegin.getSentenceBegin({ forward: true }).getSentenceEnd();
     } else {
       const nextSentenceBegin = currentSentenceBegin.getSentenceBegin({ forward: true });
 
       // If the sentence has no trailing white spaces, `as` should include its leading white spaces.
-      if (nextSentenceBegin.isEqual(currentSentenceBegin.getCurrentSentenceEnd())) {
+      if (nextSentenceBegin.isEqual(currentSentenceBegin.getSentenceEnd())) {
         start = currentSentenceBegin
           .getSentenceBegin({ forward: false })
-          .getCurrentSentenceEnd()
+          .getSentenceEnd()
           .getRight();
         stop = nextSentenceBegin;
       } else {
@@ -384,7 +385,7 @@ export class SelectSentence extends TextObjectMovement {
         if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorStopPosition)) {
           stop = currentSentenceBegin
             .getSentenceBegin({ forward: false })
-            .getCurrentSentenceEnd()
+            .getSentenceEnd()
             .getRight();
         } else {
           stop = currentSentenceBegin;
@@ -408,7 +409,7 @@ export class SelectInnerSentence extends TextObjectMovement {
     let stop: Position;
 
     const currentSentenceBegin = position.getSentenceBegin({ forward: false });
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getSentenceEnd();
 
     if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
       // The cursor is on a trailing white space.
@@ -450,11 +451,11 @@ export class SelectParagraph extends TextObjectMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     let start: Position;
-    const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
+    const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
 
     if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning(true).getCurrentParagraphEnd(true);
+      start = getCurrentParagraphEnd(getCurrentParagraphBeginning(position, true), true);
     } else {
       if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
@@ -464,7 +465,7 @@ export class SelectParagraph extends TextObjectMovement {
     }
 
     // Include additional blank lines.
-    let stop = position.getCurrentParagraphEnd(true);
+    let stop = getCurrentParagraphEnd(position, true);
     while (
       stop.line < TextEditor.getLineCount() - 1 &&
       TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
@@ -503,8 +504,8 @@ export class SelectInnerParagraph extends TextObjectMovement {
         stop = stop.getDownWithDesiredColumn(0);
       }
     } else {
-      const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
-      stop = position.getCurrentParagraphEnd(true);
+      const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
+      stop = getCurrentParagraphEnd(position, true);
       if (TextEditor.getLineAt(currentParagraphBegin).isEmptyOrWhitespace) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {

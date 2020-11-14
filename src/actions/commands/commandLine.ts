@@ -14,10 +14,11 @@ import { StatusBar } from '../../statusBar';
 import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
-import { Position } from '../../common/motion/position';
 import { VimError, ErrorCode } from '../../error';
 import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
+import { getWordLeftInText } from '../../textobject/word';
+import { Position } from 'vscode';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -157,7 +158,7 @@ class CommandRemoveWordCommandline extends BaseCommand {
     const key = this.keysPressed[0];
     const pos = vimState.statusBarCursorCharacterPos;
     const cmdText = vimState.currentCommandlineText;
-    const characterAt = Position.getWordLeft(cmdText, pos);
+    const characterAt = getWordLeftInText(cmdText, pos);
     // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
     if (characterAt !== undefined) {
       vimState.currentCommandlineText = cmdText
@@ -187,7 +188,7 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
 
     const pos = vimState.statusBarCursorCharacterPos;
     const searchString = searchState.searchString;
-    const characterAt = Position.getWordLeft(searchString, pos);
+    const characterAt = getWordLeftInText(searchString, pos);
     // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
     if (characterAt !== undefined) {
       searchState.searchString = searchString

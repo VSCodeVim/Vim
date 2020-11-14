@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { Position } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
@@ -9,6 +8,7 @@ import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { Position } from 'vscode';
 
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {

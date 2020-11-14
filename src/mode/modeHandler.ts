@@ -7,7 +7,7 @@ import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { Position, laterOf } from './../common/motion/position';
+import { laterOf } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
@@ -35,6 +35,7 @@ import { EditorIdentity } from '../editorIdentity';
 import { SpecialKeys } from '../util/specialKeys';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
+import { Position } from 'vscode';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -93,12 +94,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         this.vimState.cursors = selections.map(({ active, anchor }) =>
-          active.isBefore(anchor)
-            ? new Range(
-                Position.FromVSCodePosition(anchor).getLeft(),
-                Position.FromVSCodePosition(active)
-              )
-            : new Range(Position.FromVSCodePosition(anchor), Position.FromVSCodePosition(active))
+          active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
         );
       }
     }, 0);
@@ -141,31 +137,39 @@ export class ModeHandler implements vscode.Disposable {
     }
     let selection = e.selections[0];
     ModeHandler.logger.debug(
-      `Selections: Handling Selection Change! Selection: ${Position.FromVSCodePosition(
-        selection.anchor
-      ).toString()}, ${Position.FromVSCodePosition(selection.active)}, SelectionsLength: ${
-        e.selections.length
-      }`
+      `Selections: Handling Selection Change! Selection: ${selection.anchor.toString()}, ${
+        selection.active
+      }, SelectionsLength: ${e.selections.length}`
     );
+
+    // If our previous cursors are not included on any of the current selections, then a snippet
+    // must have been inserted.
+    const isSnippetSelectionChange = () => {
+      return e.selections.every((s) => {
+        return this.vimState.cursors.every((c) => !s.contains(new vscode.Range(c.start, c.stop)));
+      });
+    };
 
     if (
       (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== Mode.VisualBlock
     ) {
+      let allowedModes = [Mode.Normal];
+      if (!isSnippetSelectionChange()) {
+        allowedModes.push(...[Mode.Insert, Mode.Replace]);
+      }
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
         (sel) =>
           new Range(
             // Adjust the cursor positions because cursors & selections don't match exactly
-            sel.anchor.isAfter(sel.active)
-              ? Position.FromVSCodePosition(sel.anchor).getLeft()
-              : Position.FromVSCodePosition(sel.anchor),
-            Position.FromVSCodePosition(sel.active)
+            sel.anchor.isAfter(sel.active) ? sel.anchor.getLeft() : sel.anchor,
+            sel.active
           )
       );
       if (
-        e.textEditor.selections.some((s) => !s.anchor.isEqual(s.active)) &&
-        [Mode.Normal, Mode.Insert, Mode.Replace].includes(this.vimState.currentMode)
+        e.selections.some((s) => !s.anchor.isEqual(s.active)) &&
+        allowedModes.includes(this.vimState.currentMode)
       ) {
         // If we got a visual selection and we are on normal, insert or replace mode, enter visual mode.
         // We shouldn't go to visual mode on any other mode, because the other visual modes are handled
@@ -185,24 +189,25 @@ export class ModeHandler implements vscode.Disposable {
         if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
           // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
           // but it is also triggered when we set the 'editor.selections' on 'updateView'.
-          if (
-            [Mode.Normal, Mode.Visual, Mode.Insert, Mode.Replace].includes(
-              this.vimState.currentMode
-            )
-          ) {
+          let allowedModes = [Mode.Normal, Mode.Visual];
+          if (!isSnippetSelectionChange()) {
+            // if we just inserted a snippet then don't allow insert modes to go to visual mode
+            allowedModes.push(...[Mode.Insert, Mode.Replace]);
+          }
+          if (allowedModes.includes(this.vimState.currentMode)) {
             // Since the selections weren't ignored then probably we got change of selection from
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
               ModeHandler.logger.debug('Selections: Updating Visual Selection!');
-              this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
-              this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
+              this.vimState.cursorStopPosition = selection.active;
+              this.vimState.cursorStartPosition = selection.anchor;
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               ModeHandler.logger.debug('Selections: Creating Visual Selection from command!');
-              this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
-              this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
+              this.vimState.cursorStopPosition = selection.active;
+              this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
@@ -253,12 +258,12 @@ export class ModeHandler implements vscode.Disposable {
         // in ways we don't want to. So with future selection issues this is a good place to start
         // looking.
         ModeHandler.logger.debug(
-          `Selections: Changing Cursors from selection handler... ${Position.FromVSCodePosition(
-            selection.anchor
-          ).toString()}, ${Position.FromVSCodePosition(selection.active)}`
+          `Selections: Changing Cursors from selection handler... ${selection.anchor.toString()}, ${
+            selection.active
+          }`
         );
-        this.vimState.cursorStopPosition = Position.FromVSCodePosition(selection.active);
-        this.vimState.cursorStartPosition = Position.FromVSCodePosition(selection.anchor);
+        this.vimState.cursorStopPosition = selection.active;
+        this.vimState.cursorStartPosition = selection.anchor;
         await this.updateView({ drawSelection: false, revealRange: false });
       }
       return;
@@ -275,7 +280,7 @@ export class ModeHandler implements vscode.Disposable {
     let toDraw = false;
 
     if (selection) {
-      let newPosition = Position.FromVSCodePosition(selection.active);
+      let newPosition = selection.active;
 
       // Only check on a click, not a full selection (to prevent clicking past EOL)
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
@@ -1223,8 +1228,8 @@ export class ModeHandler implements vscode.Disposable {
               // the left. Otherwise we want the anchor that is upper and/or to the left and the
               // active that is lower and/or to the right.
 
-              let anchor: vscode.Position;
-              let active: vscode.Position;
+              let anchor: Position;
+              let active: Position;
               if (s.anchor.isBeforeOrEqual(s.active)) {
                 // Forwards Selection
 
@@ -1293,9 +1298,7 @@ export class ModeHandler implements vscode.Disposable {
         );
         this.vimState.selectionsChanged.ourSelections.push(selectionsHash);
         ModeHandler.logger.debug(
-          `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${Position.FromVSCodePosition(
-            selections[0].anchor
-          ).toString()}, ${Position.FromVSCodePosition(selections[0].active).toString()}`
+          `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );
       }
 

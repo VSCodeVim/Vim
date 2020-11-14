@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
 import { Range } from '../common/motion/range';
+import { Position } from 'vscode';
 
 /**
  * Return open text documents, with a given file at the top of the list.

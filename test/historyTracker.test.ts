@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
 import { VimState } from '../src/state/vimState';
-import { Position } from '../src/common/motion/position';
 
 suite('historyTracker unit tests', () => {
   let sandbox: sinon.SinonSandbox;

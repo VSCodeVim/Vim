@@ -1,7 +1,7 @@
-import { Position, PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
+import { PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
-import { Register, RegisterMode, IRegisterContent } from '../../register/register';
+import { Register, RegisterMode, IRegisterContent, RegisterContent } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
@@ -10,6 +10,7 @@ import { BaseCommand, RegisterAction } from '../base';
 import * as operator from '../operator';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { Position } from 'vscode';
 
 /**
  * Flags used for executing PutCommand.
@@ -370,7 +371,7 @@ class PutBeforeCommand extends BaseCommand {
 @RegisterAction
 class PutCommandVisual extends BaseCommand {
   keys = [['p'], ['P']];
-  modes = [Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Visual];
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -404,7 +405,9 @@ class PutCommandVisual extends BaseCommand {
       let resultMode = vimState.currentMode;
       await vimState.setCurrentMode(oldMode);
       vimState.recordedState.registerName = replaceRegisterName;
-      await new PutCommand().exec(start, vimState, { pasteBeforeCursor: true });
+      await new PutCommand(this.multicursorIndex).exec(start, vimState, {
+        pasteBeforeCursor: true,
+      });
       await vimState.setCurrentMode(resultMode);
       if (replaceRegisterName === deletedRegisterName) {
         Register.putByKey(deletedRegister.text, deletedRegisterName, deletedRegister.registerMode);
@@ -431,19 +434,51 @@ class PutCommandVisual extends BaseCommand {
     );
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
   }
+}
 
-  // TODO - execWithCount
+@RegisterAction
+class PutCommandVisualLine extends BaseCommand {
+  keys = [['p'], ['P']];
+  modes = [Mode.VisualLine];
+  runsOnceForEachCountPrefix = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const isMultiLinePaste = vimState.recordedState.count > 1;
+    const replaceRegisterName = vimState.recordedState.registerName;
+    let oldText: RegisterContent = '';
+
+    if (isMultiLinePaste) {
+      oldText = (await Register.get(vimState, replaceRegisterName))!.text;
+      // Repeat register content requested number of times and save this into the register
+      Register.putByKey(
+        Array(vimState.recordedState.count).fill(oldText).join('\n'),
+        replaceRegisterName,
+        RegisterMode.LineWise,
+        true
+      );
+      // Only put the register content once as it's repeated in the register
+      vimState.recordedState.count = 1;
+    }
+
+    // Call regular visual put command implementation
+    await new PutCommandVisual().exec(position, vimState);
+
+    // Restore register content
+    if (isMultiLinePaste) {
+      Register.putByKey(oldText, replaceRegisterName, RegisterMode.LineWise, true);
+    }
+  }
 }
 
 @RegisterAction
 class GPutCommand extends BaseCommand {
   keys = ['g', 'p'];
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Normal, Mode.Visual];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState);
+    await new PutCommand(this.multicursorIndex).exec(position, vimState);
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
@@ -483,12 +518,35 @@ class GPutCommand extends BaseCommand {
 }
 
 @RegisterAction
+class GPutCommandVisualLine extends PutCommandVisualLine {
+  keys = [
+    ['g', 'p'],
+    ['g', 'P'],
+  ];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    let repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
+    await super.exec(position, vimState);
+    // Vgp should place the cursor on the next line
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'moveCursor',
+        diff: new PositionDiff({ line: repeats, character: 0 }),
+        cursorIndex: this.multicursorIndex,
+      });
+    }
+  }
+}
+
+@RegisterAction
 class GPutBeforeCommand extends BaseCommand {
   keys = ['g', 'P'];
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, { pasteBeforeCursor: true });
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, {
+      pasteBeforeCursor: true,
+    });
     const register = await Register.get(vimState);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
@@ -529,7 +587,7 @@ class PutWithIndentCommand extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, { adjustIndent: true });
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, { adjustIndent: true });
   }
 }
 
@@ -543,7 +601,7 @@ class PutBeforeWithIndentCommand extends BaseCommand {
   modes = [Mode.Normal];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new PutCommand().exec(position, vimState, {
+    await new PutCommand(this.multicursorIndex).exec(position, vimState, {
       pasteBeforeCursor: true,
       adjustIndent: true,
     });

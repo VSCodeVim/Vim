@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { Position, PositionDiff } from './../common/motion/position';
+import { PositionDiff } from './../common/motion/position';
 import { Mode } from './../mode/mode';
 
 export enum SearchDirection {
@@ -284,8 +285,8 @@ export class SearchState {
       for (const [index, matchRange] of matchRanges.entries()) {
         if (matchRange.start.isAfter(startPosition)) {
           return {
-            start: Position.FromVSCodePosition(matchRange.start),
-            end: Position.FromVSCodePosition(matchRange.end),
+            start: matchRange.start,
+            end: matchRange.end,
             match: true,
             index,
           };
@@ -296,8 +297,8 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[0];
         return {
-          start: Position.FromVSCodePosition(range.start),
-          end: Position.FromVSCodePosition(range.end),
+          start: range.start,
+          end: range.end,
           match: true,
           index: 0,
         };
@@ -308,8 +309,8 @@ export class SearchState {
       for (const [index, matchRange] of matchRanges.slice(0).reverse().entries()) {
         if (matchRange.end.isBeforeOrEqual(startPosition)) {
           return {
-            start: Position.FromVSCodePosition(matchRange.start),
-            end: Position.FromVSCodePosition(matchRange.end),
+            start: matchRange.start,
+            end: matchRange.end,
             match: true,
             index: matchRanges.length - index - 1,
           };
@@ -321,8 +322,8 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[matchRanges.length - 1];
         return {
-          start: Position.FromVSCodePosition(range.start),
-          end: Position.FromVSCodePosition(range.end),
+          start: range.start,
+          end: range.end,
           match: true,
           index: matchRanges.length - 1,
         };
@@ -348,8 +349,8 @@ export class SearchState {
     for (let [index, matchRange] of matchRanges.entries()) {
       if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
         return {
-          start: Position.FromVSCodePosition(matchRange.start),
-          end: Position.FromVSCodePosition(matchRange.end),
+          start: matchRange.start,
+          end: matchRange.end,
           match: true,
           index,
         };

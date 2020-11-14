@@ -1,4 +1,4 @@
-import { Position } from './../../../common/motion/position';
+import { Position } from 'vscode';
 import { configuration } from './../../../configuration/configuration';
 import { EasyMotion } from './easymotion';
 

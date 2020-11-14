@@ -1,4 +1,4 @@
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 import { Range } from '../common/motion/range';
 import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';

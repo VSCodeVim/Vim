@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 
-import { Position, earlierOf } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
-import { config } from 'process';
 import { configuration } from '../../configuration/configuration';
+import { Position } from 'vscode';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
