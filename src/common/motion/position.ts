@@ -276,14 +276,6 @@ export class Position extends vscode.Position {
     return getWordLeft(this, WordType.Big, inclusive);
   }
 
-  public getCamelCaseWordLeft(inclusive: boolean = false): Position {
-    return getWordLeft(this, WordType.CamelCase, inclusive);
-  }
-
-  public getFilePathLeft(inclusive: boolean = false): Position {
-    return getWordLeft(this, WordType.FileName, inclusive);
-  }
-
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
@@ -293,14 +285,6 @@ export class Position extends vscode.Position {
 
   public getBigWordRight(): Position {
     return getWordRight(this, WordType.Big);
-  }
-
-  public getCamelCaseWordRight(): Position {
-    return getWordRight(this, WordType.CamelCase);
-  }
-
-  public getFilePathRight(inclusive: boolean = false): Position {
-    return getWordRight(this, WordType.FileName, inclusive);
   }
 
   public getLastWordEnd(): Position {
@@ -327,13 +311,6 @@ export class Position extends vscode.Position {
    */
   public getCurrentBigWordEnd(inclusive: boolean = false): Position {
     return getCurrentWordEnd(this, WordType.Big, inclusive);
-  }
-
-  /**
-   * Inclusive is true if we consider the current position a valid result, false otherwise.
-   */
-  public getCurrentCamelCaseWordEnd(inclusive: boolean = false): Position {
-    return getCurrentWordEnd(this, WordType.CamelCase, inclusive);
   }
 
   private isLineBlank(trimWhite: boolean = false): boolean {

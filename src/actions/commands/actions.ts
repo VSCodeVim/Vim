@@ -34,6 +34,7 @@ import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
+import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -1742,7 +1743,10 @@ class CommandOpenFile extends BaseCommand {
     if (vimState.currentMode === Mode.Visual) {
       fullFilePath = TextEditor.getText(TextEditor.getSelection());
     } else {
-      const range = new vscode.Range(position.getFilePathLeft(true), position.getFilePathRight());
+      const range = new vscode.Range(
+        getWordLeft(position, WordType.FileName, true),
+        getWordRight(position, WordType.FileName)
+      );
 
       fullFilePath = TextEditor.getText(range).trim();
     }

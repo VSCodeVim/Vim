@@ -111,7 +111,11 @@ export function getWordRight(
 /**
  * Inclusive is true if we consider the current position a valid result, false otherwise.
  */
-export function getCurrentWordEnd(pos: Position, wordType: WordType, inclusive: boolean): Position {
+export function getCurrentWordEnd(
+  pos: Position,
+  wordType: WordType,
+  inclusive: boolean = false
+): Position {
   for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
     let positions = getAllEndPositions(
       TextEditor.getLine(currentLine).text,
