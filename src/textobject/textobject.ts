@@ -1,11 +1,11 @@
-import { Position } from './../common/motion/position';
-import { Range } from './../common/motion/range';
-import { Mode } from './../mode/mode';
-import { RegisterMode } from './../register/register';
-import { VimState } from './../state/vimState';
-import { TextEditor } from './../textEditor';
-import { RegisterAction } from './base';
-import { BaseMovement, IMovement, failedMovement } from './baseMotion';
+import { Position } from '../common/motion/position';
+import { Range } from '../common/motion/range';
+import { Mode } from '../mode/mode';
+import { RegisterMode } from '../register/register';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
+import { RegisterAction } from '../actions/base';
+import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
   MoveAClosingCurlyBrace,
   MoveADoubleQuotes,
@@ -15,9 +15,9 @@ import {
   MoveABacktick,
   MoveAroundTag,
   ExpandingSelection,
-} from './motion';
-import { ChangeOperator } from './operator';
-import { configuration } from './../configuration/configuration';
+} from '../actions/motion';
+import { ChangeOperator } from '../actions/operator';
+import { configuration } from '../configuration/configuration';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -351,20 +351,20 @@ export class SelectSentence extends TextObjectMovement {
     let stop: Position;
 
     const currentSentenceBegin = position.getSentenceBegin({ forward: false });
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getSentenceEnd();
 
     if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
       // The cursor is on a trailing white space.
       start = currentSentenceNonWhitespaceEnd.getRight();
-      stop = currentSentenceBegin.getSentenceBegin({ forward: true }).getCurrentSentenceEnd();
+      stop = currentSentenceBegin.getSentenceBegin({ forward: true }).getSentenceEnd();
     } else {
       const nextSentenceBegin = currentSentenceBegin.getSentenceBegin({ forward: true });
 
       // If the sentence has no trailing white spaces, `as` should include its leading white spaces.
-      if (nextSentenceBegin.isEqual(currentSentenceBegin.getCurrentSentenceEnd())) {
+      if (nextSentenceBegin.isEqual(currentSentenceBegin.getSentenceEnd())) {
         start = currentSentenceBegin
           .getSentenceBegin({ forward: false })
-          .getCurrentSentenceEnd()
+          .getSentenceEnd()
           .getRight();
         stop = nextSentenceBegin;
       } else {
@@ -384,7 +384,7 @@ export class SelectSentence extends TextObjectMovement {
         if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorStopPosition)) {
           stop = currentSentenceBegin
             .getSentenceBegin({ forward: false })
-            .getCurrentSentenceEnd()
+            .getSentenceEnd()
             .getRight();
         } else {
           stop = currentSentenceBegin;
@@ -408,7 +408,7 @@ export class SelectInnerSentence extends TextObjectMovement {
     let stop: Position;
 
     const currentSentenceBegin = position.getSentenceBegin({ forward: false });
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getSentenceEnd();
 
     if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
       // The cursor is on a trailing white space.

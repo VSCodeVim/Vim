@@ -1,4 +1,4 @@
-import { TextObjectMovement } from '../textobject';
+import { TextObjectMovement } from '../../textobject/textobject';
 import { RegisterAction } from '../base';
 import { Mode } from '../../mode/mode';
 import { Position } from '../../common/motion/position';

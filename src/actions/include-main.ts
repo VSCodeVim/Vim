@@ -1,7 +1,7 @@
 import './base';
 import './operator';
 import './motion';
-import './textobject';
+import '../textobject/textobject';
 
 // commands
 import './commands/insert';

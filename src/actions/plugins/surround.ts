@@ -26,7 +26,7 @@ import {
   SelectInnerSentence,
   SelectInnerWord,
   TextObjectMovement,
-} from './../textobject';
+} from '../../textobject/textobject';
 
 export interface SurroundState {
   /** The operator paired with the surround action. "yank" is really "add", but it uses 'y' */
