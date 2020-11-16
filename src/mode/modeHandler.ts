@@ -845,7 +845,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Ensure cursors are within bounds
     if (
-      !this.vimState.editor.document.isClosed &&
+      !this.vimState.document.isClosed &&
       this.vimState.editor === vscode.window.activeTextEditor
     ) {
       this.vimState.cursors = this.vimState.cursors.map((cursor: Range) => {
@@ -1135,7 +1135,7 @@ export class ModeHandler implements vscode.Disposable {
   public updateSearchHighlights(showHighlights: boolean) {
     let searchRanges: vscode.Range[] = [];
     if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor.document) ?? [];
+      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.document) ?? [];
     }
     this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
   }
@@ -1557,7 +1557,7 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.cursorStartPosition,
       this.vimState.cursorStopPosition
     );
-    if (!/\s+/.test(this.vimState.editor.document.getText(range))) {
+    if (!/\s+/.test(this.vimState.document.getText(range))) {
       vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
   }

@@ -203,7 +203,7 @@ export async function activate(
         if (modeHandler == null || modeHandler.vimState.editor === undefined) {
           shouldDelete = true;
         } else {
-          const document = modeHandler.vimState.editor.document;
+          const document = modeHandler.vimState.document;
           if (!documents.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {

@@ -40,7 +40,7 @@ export function reportLinesYanked(numLinesYanked: number, vimState: VimState) {
  * Triggered via `<C-g>` or `:f[ile]`.
  */
 export function reportFileInfo(position: Position, vimState: VimState) {
-  const doc = vimState.editor.document;
+  const doc = vimState.document;
   const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
 
   StatusBar.setText(vimState, `"${doc.fileName}" ${doc.lineCount} lines --${progress}%--`);

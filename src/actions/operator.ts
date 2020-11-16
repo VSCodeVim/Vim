@@ -144,7 +144,7 @@ export class DeleteOperator extends BaseOperator {
       }
     }
 
-    let text = vimState.editor.document.getText(new vscode.Range(start, end));
+    let text = vimState.document.getText(new vscode.Range(start, end));
 
     // If we delete linewise to the final line of the document, we expect the line
     // to be removed. This is actually a special case because the newline
@@ -415,7 +415,7 @@ export class UpperCaseOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
+    let text = vimState.document.getText(range);
 
     await TextEditor.replace(range, text.toUpperCase());
 
@@ -438,7 +438,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
+      let text = vimState.document.getText(range);
       await TextEditor.replace(range, text.toUpperCase());
     }
 
@@ -456,7 +456,7 @@ export class LowerCaseOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
+    let text = vimState.document.getText(range);
 
     await TextEditor.replace(range, text.toLowerCase());
 
@@ -479,7 +479,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
+      let text = vimState.document.getText(range);
       await TextEditor.replace(range, text.toLowerCase());
     }
 
@@ -633,7 +633,7 @@ export class ChangeOperator extends BaseOperator {
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
-    const thisLineIndent = vimState.editor.document.getText(
+    const thisLineIndent = vimState.document.getText(
       new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
     );
 
@@ -646,7 +646,7 @@ export class ChangeOperator extends BaseOperator {
     );
 
     if (configuration.autoindent) {
-      if (vimState.editor.document.languageId === 'plaintext') {
+      if (vimState.document.languageId === 'plaintext') {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: thisLineIndent,

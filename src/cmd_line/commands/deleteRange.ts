@@ -37,14 +37,14 @@ export class DeleteRangeCommand extends node.CommandBase {
     let start = new Position(startLine, 0);
     let end = new Position(endLine, 0).getLineEndIncludingEOL();
 
-    if (endLine < vimState.editor.document.lineCount - 1) {
+    if (endLine < vimState.document.lineCount - 1) {
       end = end.getRightThroughLineBreaks();
     } else if (startLine > 0) {
       start = start.getLeftThroughLineBreaks();
     }
 
     const range = new vscode.Range(start, end);
-    const text = vimState.editor.document
+    const text = vimState.document
       .getText(range)
       // Remove leading or trailing newline
       .replace(/^\r?\n/, '')

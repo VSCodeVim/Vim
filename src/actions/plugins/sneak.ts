@@ -35,7 +35,7 @@ export class SneakForward extends BaseMovement {
 
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
-    const document = vimState.editor.document;
+    const document = vimState.document;
     const lineCount = document.lineCount;
     for (let i = position.line; i < lineCount; ++i) {
       const lineText = document.lineAt(i).text;
@@ -99,7 +99,7 @@ export class SneakBackward extends BaseMovement {
 
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
-    const document = vimState.editor.document;
+    const document = vimState.document;
     for (let i = position.line; i >= 0; --i) {
       const lineText = document.lineAt(i).text;
 

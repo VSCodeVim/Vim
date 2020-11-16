@@ -27,7 +27,7 @@ export class CloseCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (vimState.editor.document.isDirty && !this.arguments.bang) {
+    if (vimState.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 

@@ -146,7 +146,7 @@ export const lineCompletionProvider = {
    * Quick Pick also allows for searching, which is a nice bonus.
    */
   showLineCompletionsQuickPick: async (position: Position, vimState: VimState): Promise<void> => {
-    const completions = getCompletionsForCurrentLine(position, vimState.editor.document);
+    const completions = getCompletionsForCurrentLine(position, vimState.document);
 
     if (!completions) {
       return;

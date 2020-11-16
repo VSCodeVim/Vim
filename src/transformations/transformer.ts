@@ -177,7 +177,7 @@ export class Transformer {
             modeHandler.updateView();
             reportSearch(
               nextMatch.index,
-              searchState.getMatchRanges(vimState.editor.document).length,
+              searchState.getMatchRanges(vimState.document).length,
               vimState
             );
           }

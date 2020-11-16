@@ -57,6 +57,10 @@ export class VimState implements vscode.Disposable {
 
   public editor: vscode.TextEditor;
 
+  public get document(): vscode.TextDocument {
+    return this.editor.document;
+  }
+
   /**
    * For timing out remapped keys like jj to esc.
    */

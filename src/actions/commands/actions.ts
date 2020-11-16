@@ -577,7 +577,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     const newPositionLine = clamp(
       position.line + (this.to === 'down' ? moveLines : -moveLines),
       0,
-      vimState.editor.document.lineCount - 1
+      vimState.document.lineCount - 1
     );
     vimState.cursorStopPosition = new Position(
       newPositionLine,
@@ -747,13 +747,13 @@ class CommandOverrideCopy extends BaseCommand {
       text = vimState.cursors
         .map((range) => {
           const [start, stop] = sorted(range.start, range.stop);
-          return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
+          return vimState.document.getText(new vscode.Range(start, stop.getRight()));
         })
         .join('\n');
     } else if (vimState.currentMode === Mode.VisualLine) {
       text = vimState.cursors
         .map((range) => {
-          return vimState.editor.document.getText(
+          return vimState.document.getText(
             new vscode.Range(
               earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
               laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
@@ -768,7 +768,7 @@ class CommandOverrideCopy extends BaseCommand {
     } else if (vimState.currentMode === Mode.Insert || vimState.currentMode === Mode.Normal) {
       text = vimState.editor.selections
         .map((selection) => {
-          return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
+          return vimState.document.getText(new vscode.Range(selection.start, selection.end));
         })
         .join('\n');
     }
@@ -903,7 +903,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
     reportSearch(
       nextMatch.index,
-      globalState.searchState.getMatchRanges(vimState.editor.document).length,
+      globalState.searchState.getMatchRanges(vimState.document).length,
       vimState
     );
   } else {
@@ -1666,7 +1666,7 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     vimState.cursorStopPosition
   );
 
-  reportSearch(result.index, searchState.getMatchRanges(vimState.editor.document).length, vimState);
+  reportSearch(result.index, searchState.getMatchRanges(vimState.document).length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 }
@@ -2084,7 +2084,7 @@ class CommandNavigateLastBOL extends BaseCommand {
     }
     const jump = new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: lastJump.position.getLineBegin(),
     });
     globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
@@ -3358,7 +3358,7 @@ class CommandUnicodeName extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
+    const char = vimState.document.getText(new vscode.Range(position, position.getRight()));
     const charCode = char.charCodeAt(0);
     // TODO: Handle charCode > 127 by also including <M-x>
     StatusBar.setText(

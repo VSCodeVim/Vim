@@ -152,7 +152,7 @@ export class JumpTracker {
   ): Promise<void> {
     let jump = new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position,
     });
 
@@ -165,7 +165,7 @@ export class JumpTracker {
       return;
     }
 
-    const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
+    const jumpedFiles = jump.fileName !== vimState.document.fileName;
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);

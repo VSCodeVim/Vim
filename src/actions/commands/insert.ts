@@ -49,7 +49,7 @@ class CommandEscInsertMode extends BaseCommand {
       const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
       if (
         ['o', 'O', '\n'].includes(lastActionBeforeEsc) &&
-        vimState.editor.document.languageId !== 'plaintext' &&
+        vimState.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {
         vimState.recordedState.transformer.addTransformation({
