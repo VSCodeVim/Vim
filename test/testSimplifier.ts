@@ -39,7 +39,7 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
         }
         await reloadConfiguration();
       }
-      const mh = await getAndUpdateModeHandler();
+      const mh = (await getAndUpdateModeHandler())!;
       await innerTest(mh, testObj);
     } catch (reason) {
       reason.stack = niceStack;

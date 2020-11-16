@@ -16,7 +16,7 @@ suite('Basic substitute', () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   suiteTeardown(cleanUpWorkspace);

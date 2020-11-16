@@ -15,7 +15,6 @@ import './src/configuration/validators/vimrcValidator';
 
 import * as vscode from 'vscode';
 import { activate as activateFunc } from './extensionBase';
-export { getAndUpdateModeHandler } from './extensionBase';
 
 export async function activate(context: vscode.ExtensionContext) {
   activateFunc(context, false);

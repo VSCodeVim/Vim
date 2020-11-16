@@ -10,7 +10,7 @@ suite('cursor location', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   suiteTeardown(cleanUpWorkspace);

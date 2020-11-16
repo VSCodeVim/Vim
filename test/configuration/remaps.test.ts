@@ -18,7 +18,7 @@ suite('Remaps', () => {
     configuration.leader = ' ';
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);

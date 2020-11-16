@@ -114,7 +114,7 @@ suite('Remapper', () => {
     configuration.visualModeKeyBindings = visualModeKeyBindings || [];
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   };
 
