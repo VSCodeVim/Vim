@@ -1,8 +1,6 @@
-import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Configuration } from '../testConfiguration';
-
-const { newTest } = getTestingFunctions();
+import { newTest } from '../testSimplifier';
 
 suite('camelCaseMotion plugin if not enabled', () => {
   setup(async () => {

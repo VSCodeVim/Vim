@@ -3,9 +3,9 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Position } from '../../src/common/motion/position';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { VimState } from '../../src/state/vimState';
+import { Position } from 'vscode';
 
 suite('Provide line completions', () => {
   let modeHandler: ModeHandler;
@@ -13,7 +13,7 @@ suite('Provide line completions', () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   });
 
@@ -36,7 +36,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = ['a2', 'a1', 'a3', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.editor.document
+        vimState.document
       )!.slice(0, expectedCompletions.length);
 
       assert.deepEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
@@ -48,7 +48,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = ['a 2', 'a1', 'a3  ', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.editor.document
+        vimState.document
       )!.slice(0, expectedCompletions.length);
 
       assert.deepEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
@@ -60,7 +60,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = [];
       const completions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.editor.document
+        vimState.document
       )!.slice(0, expectedCompletions.length);
 
       assert.strictEqual(completions.length, 0, 'Completions found, but none were expected');

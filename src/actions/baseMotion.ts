@@ -1,10 +1,10 @@
-import { Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
+import { Position } from 'vscode';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -28,6 +28,12 @@ export interface IMovement {
    * deleting to the current character would generally delete 1 character.
    */
   failed?: boolean;
+
+  /**
+   * Wheter this motion resulted in the current multicursor index being removed. This
+   * happens when multiple selections combine into one.
+   */
+  removed?: boolean;
 
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;

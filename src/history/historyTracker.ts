@@ -12,13 +12,13 @@
 import DiffMatchPatch = require('diff-match-patch');
 import * as vscode from 'vscode';
 
-import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
+import { Position } from 'vscode';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -360,13 +360,13 @@ export class HistoryTracker {
             if (pos.isBefore(newMark.position)) {
               if (ch === '\n') {
                 newMark.position = new Position(
-                  newMark.position.line - 1,
+                  Math.max(newMark.position.line - 1, 0),
                   newMark.position.character
                 );
               } else if (pos.line === newMark.position.line) {
                 newMark.position = new Position(
                   newMark.position.line,
-                  newMark.position.character - 1
+                  Math.max(newMark.position.character - 1, 0)
                 );
               }
             }
@@ -389,9 +389,10 @@ export class HistoryTracker {
 
     // Ensure the position of every mark is within the range of the document.
 
+    const docEnd = TextEditor.getDocumentEnd();
     for (const mark of newMarks) {
-      if (mark.position.isAfter(TextEditor.getDocumentEnd())) {
-        mark.position = TextEditor.getDocumentEnd();
+      if (mark.position.isAfter(docEnd)) {
+        mark.position = docEnd;
       }
     }
 

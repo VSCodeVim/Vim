@@ -1,9 +1,9 @@
 import * as node from '../node';
-import { globalState } from '../../state/globalState';
 import { window } from 'vscode';
+import { VimState } from '../../state/vimState';
 
 export class ShCommand extends node.CommandBase {
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     window.createTerminal().show();
   }
 }

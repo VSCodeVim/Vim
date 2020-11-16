@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 
-import { Position, earlierOf } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
-import { config } from 'process';
 import { configuration } from '../../configuration/configuration';
+import { Position } from 'vscode';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
@@ -38,14 +37,14 @@ export class DeleteRangeCommand extends node.CommandBase {
     let start = new Position(startLine, 0);
     let end = new Position(endLine, 0).getLineEndIncludingEOL();
 
-    if (endLine < vimState.editor.document.lineCount - 1) {
+    if (endLine < vimState.document.lineCount - 1) {
       end = end.getRightThroughLineBreaks();
     } else if (startLine > 0) {
       start = start.getLeftThroughLineBreaks();
     }
 
     const range = new vscode.Range(start, end);
-    const text = vimState.editor.document
+    const text = vimState.document
       .getText(range)
       // Remove leading or trailing newline
       .replace(/^\r?\n/, '')

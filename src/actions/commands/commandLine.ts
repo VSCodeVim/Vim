@@ -14,10 +14,11 @@ import { StatusBar } from '../../statusBar';
 import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
-import { Position } from '../../common/motion/position';
 import { VimError, ErrorCode } from '../../error';
 import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
+import { getWordLeftInText } from '../../textobject/word';
+import { Position } from 'vscode';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -90,7 +91,7 @@ class CommandTabInCommandline extends BaseCommand {
       // File completion by searching if there is a space after the first word/command
       // ideally it should be a process of white-listing to selected commands like :e and :vsp
       let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
-      const currentUri = vscode.window.activeTextEditor!.document.uri;
+      const currentUri = vimState.document.uri;
       const isRemote = !!vscode.env.remoteName;
 
       const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
@@ -157,7 +158,7 @@ class CommandRemoveWordCommandline extends BaseCommand {
     const key = this.keysPressed[0];
     const pos = vimState.statusBarCursorCharacterPos;
     const cmdText = vimState.currentCommandlineText;
-    const characterAt = Position.getWordLeft(cmdText, pos);
+    const characterAt = getWordLeftInText(cmdText, pos);
     // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
     if (characterAt !== undefined) {
       vimState.currentCommandlineText = cmdText
@@ -179,10 +180,15 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const searchState = globalState.searchState!;
+    const searchState = globalState.searchState;
+    if (searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+
     const pos = vimState.statusBarCursorCharacterPos;
     const searchString = searchState.searchString;
-    const characterAt = Position.getWordLeft(searchString, pos);
+    const characterAt = getWordLeftInText(searchString, pos);
     // Needs explicit check undefined because zero is falsy and zero is a valid character pos.
     if (characterAt !== undefined) {
       searchState.searchString = searchString
@@ -316,8 +322,13 @@ class CommandInsertInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (globalState.searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+
+    const searchState = globalState.searchState;
     const key = this.keysPressed[0];
-    const searchState = globalState.searchState!;
     const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
@@ -334,10 +345,7 @@ class CommandInsertInSearchMode extends BaseCommand {
         searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '<C-f>') {
-      await new CommandShowSearchHistory(globalState.searchState!.searchDirection).exec(
-        position,
-        vimState
-      );
+      await new CommandShowSearchHistory(searchState.searchDirection).exec(position, vimState);
     } else if (key === '<C-u>') {
       searchState.searchString = searchState.searchString.slice(
         vimState.statusBarCursorCharacterPos
@@ -350,9 +358,9 @@ class CommandInsertInSearchMode extends BaseCommand {
     } else if (key === '<Home>' || key === '<C-b>') {
       vimState.statusBarCursorCharacterPos = 0;
     } else if (key === '<End>' || key === '<C-e>') {
-      vimState.statusBarCursorCharacterPos = globalState.searchState!.searchString.length;
+      vimState.statusBarCursorCharacterPos = searchState.searchString.length;
     } else if (key === '\n' || key === '<C-m>') {
-      await vimState.setCurrentMode(globalState.searchState!.previousMode);
+      await vimState.setCurrentMode(searchState.previousMode);
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === '') {
@@ -366,7 +374,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
       globalState.hl = true;
 
-      if (searchState.getMatchRanges().length === 0) {
+      if (searchState.getMatchRanges(vimState.document).length === 0) {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -400,7 +408,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       vimState.cursorStopPosition = nextMatch.pos;
 
-      reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
+      reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.document).length, vimState);
 
       return;
     } else if (key === '<up>' || key === '<C-p>') {
@@ -462,7 +470,11 @@ class CommandEscInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const searchState = globalState.searchState!;
+    const searchState = globalState.searchState;
+    if (searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
 
     vimState.cursorStopPosition = searchState.cursorStartPosition;
 
@@ -530,6 +542,11 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (globalState.searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState);
     if (register === undefined) {
@@ -556,8 +573,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
       text += '\n';
     }
 
-    const searchState = globalState.searchState!;
-    searchState.searchString += text;
+    globalState.searchState.searchString += text;
     vimState.statusBarCursorCharacterPos += text.length;
   }
 }
@@ -568,12 +584,16 @@ class CommandInsertWord extends BaseCommand {
   keys = ['<C-r>', '<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (globalState.searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+
     const word = TextEditor.getWord(position.getLeftIfEOL());
 
     if (word !== undefined) {
       if (vimState.currentMode === Mode.SearchInProgressMode) {
-        const searchState = globalState.searchState!;
-        searchState.searchString += word;
+        globalState.searchState.searchString += word;
       } else {
         vimState.currentCommandlineText += word;
       }
@@ -649,12 +669,15 @@ class CommandPasteInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const searchState = globalState.searchState!;
-    const searchString = searchState.searchString;
+    if (globalState.searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+    const searchString = globalState.searchState.searchString;
     const pos = vimState.statusBarCursorCharacterPos;
     const textFromClipboard = await Clipboard.Paste();
 
-    searchState.searchString = searchString
+    globalState.searchState.searchString = searchString
       .substring(0, pos)
       .concat(textFromClipboard)
       .concat(searchString.slice(pos));

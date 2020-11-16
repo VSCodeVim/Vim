@@ -1,15 +1,15 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     const configuration = new Configuration();
@@ -17,7 +17,7 @@ suite('Mode Normal', () => {
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -3344,19 +3344,19 @@ suite('Mode Normal', () => {
       configuration.tabstop = 4;
       configuration.expandtab = false;
       await setupWorkspace(configuration);
-      return getAndUpdateModeHandler();
+      return (await getAndUpdateModeHandler())!;
     };
 
     test('capital marks can change the editors active document', async () => {
-      const firstDocumentName = TextEditor.getDocumentName();
+      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
       await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 
       const otherModeHandler = await jumpToNewFile();
-      const otherDocumentName = TextEditor.getDocumentName();
+      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
       assert.notStrictEqual(firstDocumentName, otherDocumentName);
 
       await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+      assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
     });
 
     newTest({
