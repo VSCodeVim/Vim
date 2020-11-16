@@ -157,7 +157,7 @@ export class SubstituteCommand extends node.CommandBase {
    * @returns whether the search pattern existed on the line
    */
   async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState): Promise<boolean> {
-    const originalContent = TextEditor.readLineAt(line);
+    const originalContent = vimState.document.lineAt(line).text;
 
     if (!regex.test(originalContent)) {
       return false;
@@ -186,7 +186,11 @@ export class SubstituteCommand extends node.CommandBase {
           newContent =
             newContent.slice(0, matchPos) +
             newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
-          await TextEditor.replace(new vscode.Range(line, 0, line, rangeEnd), newContent);
+          await TextEditor.replace(
+            vimState.editor,
+            new vscode.Range(line, 0, line, rangeEnd),
+            newContent
+          );
 
           globalState.jumpTracker.recordJump(
             new Jump({
@@ -201,6 +205,7 @@ export class SubstituteCommand extends node.CommandBase {
       }
     } else {
       await TextEditor.replace(
+        vimState.editor,
         new vscode.Range(line, 0, line, originalContent.length),
         originalContent.replace(regex, this._arguments.replace)
       );
@@ -291,7 +296,7 @@ export class SubstituteCommand extends node.CommandBase {
     let foundPattern = false;
     for (
       let currentLine = startLine;
-      currentLine <= endLine && currentLine < TextEditor.getLineCount();
+      currentLine <= endLine && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
       if (this._abort) {

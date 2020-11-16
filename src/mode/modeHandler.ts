@@ -851,7 +851,7 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.cursors = this.vimState.cursors.map((cursor: Range) => {
         // adjust start/stop
         const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.editor);
-        const documentLineCount = TextEditor.getLineCount(this.vimState.editor);
+        const documentLineCount = this.vimState.document.lineCount;
         if (cursor.start.line >= documentLineCount) {
           cursor = cursor.withNewStart(documentEndPosition);
         }
@@ -1135,7 +1135,7 @@ export class ModeHandler implements vscode.Disposable {
   public updateSearchHighlights(showHighlights: boolean) {
     let searchRanges: vscode.Range[] = [];
     if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.document) ?? [];
+      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor) ?? [];
     }
     this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
   }
@@ -1340,6 +1340,7 @@ export class ModeHandler implements vscode.Disposable {
 
       if (this.vimState.currentMode === Mode.SearchInProgressMode && globalState.searchState) {
         const nextMatch = globalState.searchState.getNextSearchMatchPosition(
+          this.vimState.editor,
           this.vimState.cursorStopPosition
         );
 
@@ -1575,14 +1576,24 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this.vimState.currentMode === Mode.Insert) {
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      let result = PairMatcher.nextPairedChar(this.vimState.cursorStopPosition, key);
+      let result = PairMatcher.nextPairedChar(
+        this.vimState.cursorStopPosition,
+        key,
+        this.vimState,
+        false
+      );
       if (result !== undefined) {
         if (this.vimState.cursorStopPosition.isEqual(result)) {
           return true;
         }
       }
 
-      result = PairMatcher.nextPairedChar(this.vimState.cursorStopPosition.getLeft(), key);
+      result = PairMatcher.nextPairedChar(
+        this.vimState.cursorStopPosition.getLeft(),
+        key,
+        this.vimState,
+        false
+      );
       if (result !== undefined) {
         if (this.vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
           return true;

@@ -30,21 +30,21 @@ export class SortCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     if (isVisualMode(vimState.currentMode)) {
       const { start, end } = vimState.editor.selection;
-      await this.sortLines(start.line, end.line);
+      await this.sortLines(vimState, start.line, end.line);
     } else {
-      await this.sortLines(0, TextEditor.getLineCount() - 1);
+      await this.sortLines(vimState, 0, vimState.document.lineCount - 1);
     }
   }
 
-  async sortLines(startLine: number, endLine: number) {
+  async sortLines(vimState: VimState, startLine: number, endLine: number) {
     let originalLines: string[] = [];
 
     for (
       let currentLine = startLine;
-      currentLine <= endLine && currentLine < TextEditor.getLineCount();
+      currentLine <= endLine && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
-      originalLines.push(TextEditor.readLineAt(currentLine));
+      originalLines.push(vimState.document.lineAt(currentLine).text);
     }
     if (this._arguments.unique) {
       originalLines = [...new Set(originalLines)];
@@ -63,6 +63,7 @@ export class SortCommand extends node.CommandBase {
     let sortedContent = sortedLines.join('\n');
 
     await TextEditor.replace(
+      vimState.editor,
       new vscode.Range(startLine, 0, endLine, lastLineLength),
       sortedContent
     );
@@ -71,6 +72,6 @@ export class SortCommand extends node.CommandBase {
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
 
-    await this.sortLines(start, end);
+    await this.sortLines(vimState, start, end);
   }
 }

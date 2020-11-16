@@ -487,11 +487,6 @@ export async function activate(
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
   await VsCodeContext.Set('vim.active', !isDisabled);
-  if (!vscode.window.activeTextEditor) {
-    // This was happening in unit tests.
-    // If activate was called and no editor window is open, we can't properly initialize.
-    return;
-  }
   const mh = await getAndUpdateModeHandler();
   if (mh) {
     if (isDisabled) {

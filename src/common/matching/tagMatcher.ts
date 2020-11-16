@@ -95,7 +95,7 @@ export class TagMatcher {
         ? firstNonWhitespacePositionOnLine
         : vimState.cursorStartPosition;
 
-    const startPosOffset = TextEditor.getOffsetAt(startPos);
+    const startPosOffset = vimState.document.offsetAt(startPos);
     const endPosOffset = position;
     const tagsSurrounding = matchedTags.filter((n) => {
       return startPosOffset >= n.openingTagStart && endPosOffset < n.closingTagEnd;

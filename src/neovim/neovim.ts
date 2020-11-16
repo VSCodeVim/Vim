@@ -12,6 +12,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { attach } from 'neovim/lib/attach';
 import { Neovim } from 'neovim/lib/api/Neovim';
 import { Position } from 'vscode';
+import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
@@ -24,7 +25,7 @@ export class NeovimWrapper implements vscode.Disposable {
     command: string
   ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
-      this.nvim = await this.startNeovim();
+      this.nvim = await this.startNeovim(vimState.document);
 
       try {
         const nvimAttach = this.nvim.uiAttach(80, 20, {
@@ -86,9 +87,9 @@ export class NeovimWrapper implements vscode.Disposable {
     return { statusBarText, error };
   }
 
-  private async startNeovim() {
+  private async startNeovim(document: TextDocument) {
     NeovimWrapper.logger.debug('Spawning Neovim process...');
-    let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
+    let dir = dirname(document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
@@ -112,7 +113,7 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     await this.nvim.setOption('gdefault', configuration.gdefault === true);
-    await buf.setLines(TextEditor.getText().split('\n'), {
+    await buf.setLines(vimState.document.getText().split('\n'), {
       start: 0,
       end: -1,
       strictIndexing: true,
@@ -163,9 +164,10 @@ export class NeovimWrapper implements vscode.Disposable {
     const fixedLines =
       process.platform === 'win32' ? lines.map((line, index) => line.replace(/\r$/, '')) : lines;
 
-    const lineCount = TextEditor.getLineCount();
+    const lineCount = vimState.document.lineCount;
 
     await TextEditor.replace(
+      vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
       fixedLines.join('\n')
     );

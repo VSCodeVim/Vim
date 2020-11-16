@@ -153,10 +153,8 @@ class Configuration implements IConfiguration {
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor
-      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
-      : null;
+    const document = vscode.window.activeTextEditor?.document;
+    const resource = document ? { uri: document.uri, languageId: document.languageId } : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 

@@ -62,7 +62,7 @@ export class Transformer {
           edit.replace(new vscode.Selection(command.range.start, command.range.stop), command.text);
           break;
         case 'deleteText':
-          let matchRange = PairMatcher.immediateMatchingBracket(command.position);
+          const matchRange = PairMatcher.immediateMatchingBracket(vimState, command.position);
           if (matchRange) {
             edit.delete(matchRange);
           }
@@ -162,6 +162,7 @@ export class Transformer {
           if (searchState) {
             globalState.searchState = searchState;
             const nextMatch = searchState.getNextSearchMatchPosition(
+              vimState.editor,
               vimState.cursorStartPosition,
               transformation.direction
             );
@@ -177,7 +178,7 @@ export class Transformer {
             modeHandler.updateView();
             reportSearch(
               nextMatch.index,
-              searchState.getMatchRanges(vimState.document).length,
+              searchState.getMatchRanges(vimState.editor).length,
               vimState
             );
           }
