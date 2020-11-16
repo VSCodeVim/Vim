@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
@@ -3347,15 +3348,15 @@ suite('Mode Normal', () => {
     };
 
     test('capital marks can change the editors active document', async () => {
-      const firstDocumentName = TextEditor.getDocumentName();
+      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
       await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 
       const otherModeHandler = await jumpToNewFile();
-      const otherDocumentName = TextEditor.getDocumentName();
+      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
       assert.notStrictEqual(firstDocumentName, otherDocumentName);
 
       await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+      assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
     });
 
     newTest({

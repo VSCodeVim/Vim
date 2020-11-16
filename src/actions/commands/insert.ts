@@ -279,7 +279,7 @@ export class CommandDeleteInInsertMode extends BaseCommand {
   keys = ['<Del>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const selection = TextEditor.getSelection();
+    const selection = vimState.editor.selection;
 
     if (!selection.isEmpty) {
       // If a selection is active, delete it
@@ -559,8 +559,8 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
      * without this we execute it once per multi cursor, meaning it skips over the autocomplete
      * list suggestions
      */
-    if (vimState.isMultiCursor && vscode.window.activeTextEditor) {
-      const selection = vscode.window.activeTextEditor.selections[0];
+    if (vimState.isMultiCursor) {
+      const selection = vimState.editor.selection;
       if (
         selection.active.line === position.line &&
         selection.active.character === position.character
@@ -585,8 +585,8 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
      * without this we execute it once per multi cursor, meaning it skips over the autocomplete
      * list suggestions
      */
-    if (vimState.isMultiCursor && vscode.window.activeTextEditor) {
-      const selection = vscode.window.activeTextEditor.selections[0];
+    if (vimState.isMultiCursor) {
+      const selection = vimState.editor.selection;
       if (
         selection.active.line === position.line &&
         selection.active.character === position.character

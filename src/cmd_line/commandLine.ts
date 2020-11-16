@@ -91,11 +91,7 @@ class CommandLine {
    * Prompts the user for a command using an InputBox, and runs the provided command
    */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document');
-      return;
-    }
-    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
+    const cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
     await this.Run(cmd!, vimState);
   }
 
@@ -109,19 +105,12 @@ class CommandLine {
   }
 
   public async showHistory(initialText: string): Promise<string | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document.');
-      return '';
-    }
-
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(this._history.get().slice().reverse(), {
+    return vscode.window.showQuickPick(this._history.get().slice().reverse(), {
       placeHolder: 'Vim command history',
       ignoreFocusOut: false,
     });
-
-    return cmd;
   }
 }
 

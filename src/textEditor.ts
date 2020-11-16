@@ -15,21 +15,6 @@ export class TextEditor {
   // TODO: Refactor args
 
   /**
-   * Verify that a tab is even open for the TextEditor to act upon.
-   *
-   * This class was designed assuming there will usually be an active editor
-   * to act upon, which is usually true with editor hotkeys.
-   *
-   * But there are cases where an editor won't be active, such as running
-   * code on VSCodeVim activation, where you might see the error:
-   * > [Extension Host] Here is the error stack:
-   * > TypeError: Cannot read property 'document' of undefined
-   */
-  static get isActive() {
-    return vscode.window.activeTextEditor != null;
-  }
-
-  /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
   static async insert(
@@ -75,14 +60,6 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.delete(range);
     });
-  }
-
-  static getDocumentVersion(): number {
-    return vscode.window.activeTextEditor!.document.version;
-  }
-
-  static getDocumentName(): string {
-    return vscode.window.activeTextEditor!.document.fileName;
   }
 
   /**
@@ -133,6 +110,7 @@ export class TextEditor {
     return line.text[position.character];
   }
 
+  /** @deprecated Only used in tests. Remove ASAP. */
   static getSelection(): vscode.Range {
     return vscode.window.activeTextEditor!.selection;
   }

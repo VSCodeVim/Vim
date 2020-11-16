@@ -421,7 +421,7 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.getMatchRanges().length === 0) {
+    if (searchState.getMatchRanges(vimState.editor.document).length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -454,7 +454,11 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
-    reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
+    reportSearch(
+      nextMatch.index,
+      searchState.getMatchRanges(vimState.editor.document).length,
+      vimState
+    );
 
     return nextMatch.pos;
   }
@@ -475,7 +479,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.getMatchRanges().length === 0) {
+    if (searchState.getMatchRanges(vimState.editor.document).length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -498,7 +502,11 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    reportSearch(prevMatch.index, searchState.getMatchRanges().length, vimState);
+    reportSearch(
+      prevMatch.index,
+      searchState.getMatchRanges(vimState.editor.document).length,
+      vimState
+    );
 
     return prevMatch.pos;
   }

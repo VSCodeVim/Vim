@@ -91,7 +91,7 @@ class CommandTabInCommandline extends BaseCommand {
       // File completion by searching if there is a space after the first word/command
       // ideally it should be a process of white-listing to selected commands like :e and :vsp
       let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
-      const currentUri = vscode.window.activeTextEditor!.document.uri;
+      const currentUri = vimState.editor.document.uri;
       const isRemote = !!vscode.env.remoteName;
 
       const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
@@ -374,7 +374,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
       globalState.hl = true;
 
-      if (searchState.getMatchRanges().length === 0) {
+      if (searchState.getMatchRanges(vimState.editor.document).length === 0) {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -408,7 +408,11 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       vimState.cursorStopPosition = nextMatch.pos;
 
-      reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
+      reportSearch(
+        nextMatch.index,
+        searchState.getMatchRanges(vimState.editor.document).length,
+        vimState
+      );
 
       return;
     } else if (key === '<up>' || key === '<C-p>') {

@@ -30,10 +30,7 @@ export class SearchState {
   /**
    * Every range in the document that matches the search string.
    */
-  public getMatchRanges(document?: vscode.TextDocument): vscode.Range[] {
-    if (!document) {
-      document = vscode.window.activeTextEditor!.document;
-    }
+  public getMatchRanges(document: vscode.TextDocument): vscode.Range[] {
     return this.recalculateSearchRanges(document);
   }
   private matchRanges: Map<string, { version: number; ranges: Array<vscode.Range> }> = new Map();

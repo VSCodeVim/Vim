@@ -175,7 +175,11 @@ export class Transformer {
 
             vimState.cursorStopPosition = nextMatch.pos;
             modeHandler.updateView();
-            reportSearch(nextMatch.index, searchState.getMatchRanges().length, vimState);
+            reportSearch(
+              nextMatch.index,
+              searchState.getMatchRanges(vimState.editor.document).length,
+              vimState
+            );
           }
           break;
 

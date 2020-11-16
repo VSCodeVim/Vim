@@ -417,7 +417,7 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
-      vimState.easyMotion.clearDecorations();
+      vimState.easyMotion.clearDecorations(vimState.editor);
     }
 
     // Abort surround operation
@@ -839,7 +839,7 @@ async function searchCurrentWord(
  * Search for the word under the cursor; used by [g]* and [g]# in visual mode when `visualstar` is enabled
  */
 async function searchCurrentSelection(vimState: VimState, direction: SearchDirection) {
-  const selection = TextEditor.getSelection();
+  const selection = vimState.editor.selection;
   const end = new Position(selection.end.line, selection.end.character);
   const currentSelection = TextEditor.getText(selection.with(selection.start, end));
 
@@ -901,7 +901,11 @@ async function createSearchStateAndMoveToMatch(args: {
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    reportSearch(nextMatch.index, globalState.searchState.getMatchRanges().length, vimState);
+    reportSearch(
+      nextMatch.index,
+      globalState.searchState.getMatchRanges(vimState.editor.document).length,
+      vimState
+    );
   } else {
     StatusBar.displayError(
       vimState,
@@ -1657,12 +1661,12 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
   vimState.cursorStopPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
 
   // Move the cursor, this is a bit hacky...
-  vscode.window.activeTextEditor!.selection = new vscode.Selection(
+  vimState.editor.selection = new vscode.Selection(
     vimState.cursorStartPosition,
     vimState.cursorStopPosition
   );
 
-  reportSearch(result.index, searchState.getMatchRanges().length, vimState);
+  reportSearch(result.index, searchState.getMatchRanges(vimState.editor.document).length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 }
@@ -1742,7 +1746,7 @@ class CommandOpenFile extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let fullFilePath: string;
     if (vimState.currentMode === Mode.Visual) {
-      fullFilePath = TextEditor.getText(TextEditor.getSelection());
+      fullFilePath = TextEditor.getText(vimState.editor.selection);
     } else {
       const range = new vscode.Range(
         getWordLeft(position, WordType.FileName, true),

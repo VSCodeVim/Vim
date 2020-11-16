@@ -1543,7 +1543,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this.currentMode === Mode.EasyMotionMode) {
       // Update all EasyMotion decorations
-      this.vimState.easyMotion.updateDecorations();
+      this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
 
     StatusBar.clear(this.vimState, false);

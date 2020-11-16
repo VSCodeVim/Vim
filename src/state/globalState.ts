@@ -103,10 +103,6 @@ class GlobalState {
    * @returns The SearchState that was selected by the user, if there was one.
    */
   public async showSearchHistory(): Promise<SearchState | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-
     const items = this._searchStatePrevious
       .slice()
       .reverse()

@@ -75,9 +75,7 @@ export class EasyMotion {
   /**
    * Clear all decorations
    */
-  public clearDecorations() {
-    const editor = vscode.window.activeTextEditor!;
-
+  public clearDecorations(editor: vscode.TextEditor) {
     for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
@@ -225,14 +223,13 @@ export class EasyMotion {
     return this.getMarkerColor(configuration.easymotionDimColor, '#777777');
   }
 
-  public updateDecorations() {
-    this.clearDecorations();
+  public updateDecorations(editor: vscode.TextEditor) {
+    this.clearDecorations(editor);
 
     this.visibleMarkers = [];
     this.decorations = [];
 
     // Set the decorations for all the different marker lengths
-    const editor = vscode.window.activeTextEditor!;
     const dimmingZones: vscode.DecorationOptions[] = [];
     const dimmingRenderOptions: vscode.ThemableDecorationRenderOptions = {
       // we update the color here again in case the configuration has changed
