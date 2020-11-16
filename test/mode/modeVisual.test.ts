@@ -5,7 +5,7 @@ import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 import {
   assertEqualLines,
   cleanUpWorkspace,
@@ -15,8 +15,6 @@ import {
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
-
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

@@ -4,12 +4,11 @@ import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     const configuration = new Configuration();

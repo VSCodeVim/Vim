@@ -4,13 +4,11 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
-
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

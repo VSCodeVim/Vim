@@ -4,12 +4,10 @@ import * as vscode from 'vscode';
 import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { getTestingFunctions } from './testSimplifier';
 import { Position } from 'vscode';
+import { newTest } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  const { newTest } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });

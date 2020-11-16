@@ -10,10 +10,8 @@ import {
   reloadConfiguration,
   setupWorkspace,
 } from './../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
-
+import { newTest } from '../testSimplifier';
 suite('Basic substitute', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {

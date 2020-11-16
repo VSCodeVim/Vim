@@ -1,9 +1,7 @@
-import { getTestingFunctions } from './testSimplifier';
+import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });

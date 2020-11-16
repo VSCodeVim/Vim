@@ -1,25 +1,20 @@
 import * as assert from 'assert';
 
-import * as error from '../../src/error';
-
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
 import {
   assertEqualLines,
-  assertStatusBarEqual,
   cleanUpWorkspace,
   setupWorkspace,
   reloadConfiguration,
 } from './../testUtils';
 import { Globals } from '../../src/globals';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
-
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

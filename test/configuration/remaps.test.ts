@@ -1,14 +1,12 @@
-import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTestWithRemaps } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
   let modeHandler: ModeHandler;
-  const { newTestWithRemaps, newTestWithRemapsOnly, newTestWithRemapsSkip } = getTestingFunctions();
 
   setup(async () => {
     const configuration = new Configuration();

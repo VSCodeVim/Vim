@@ -1,10 +1,8 @@
 import { Configuration } from './testConfiguration';
-import { getTestingFunctions } from './testSimplifier';
+import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   teardown(cleanUpWorkspace);
 
   suite('whichwrap enabled', () => {
