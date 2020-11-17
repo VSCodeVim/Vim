@@ -1,7 +1,7 @@
 import * as util from 'util';
 import * as vscode from 'vscode';
 import { Logger } from '../util/logger';
-import { Position, sorted } from './../common/motion/position';
+import { sorted } from './../common/motion/position';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { VimState } from './../state/vimState';
@@ -11,6 +11,7 @@ import { exists } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 import { attach } from 'neovim/lib/attach';
 import { Neovim } from 'neovim/lib/api/Neovim';
+import { Position } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;

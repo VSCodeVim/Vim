@@ -7,7 +7,6 @@ import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
@@ -15,6 +14,7 @@ import { ReplaceState } from './../state/replaceState';
 import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
+import { Position } from 'vscode';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode);
@@ -56,6 +56,10 @@ export class VimState implements vscode.Disposable {
   public identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
+
+  public get document(): vscode.TextDocument {
+    return this.editor.document;
+  }
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -355,15 +359,10 @@ export class VimState implements vscode.Disposable {
     this._currentMode = mode;
 
     if (configuration.smartRelativeLine) {
-      const activeTextEditor = vscode.window.activeTextEditor;
-
-      if (activeTextEditor) {
-        if (mode === Mode.Insert) {
-          activeTextEditor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On;
-        } else {
-          activeTextEditor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative;
-        }
-      }
+      this.editor.options.lineNumbers =
+        mode === Mode.Insert
+          ? vscode.TextEditorLineNumbersStyle.On
+          : vscode.TextEditorLineNumbersStyle.Relative;
     }
 
     if (mode === Mode.SearchInProgressMode) {

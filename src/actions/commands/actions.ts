@@ -9,7 +9,7 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import { Position, PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
+import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
@@ -34,6 +34,8 @@ import { globalState } from '../../state/globalState';
 import { VimError, ErrorCode } from '../../error';
 import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
+import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
+import { Position } from 'vscode';
 
 export class DocumentContentChangeAction extends BaseAction {
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -76,7 +78,7 @@ export class DocumentContentChangeAction extends BaseAction {
       }
 
       // Translates diffPos from a position relative to originalLeftBoundary to one relative to position
-      const translate = (diffPos: vscode.Position): Position => {
+      const translate = (diffPos: Position): Position => {
         const lineOffset = diffPos.line - originalLeftBoundary.line;
         const char =
           lineOffset === 0
@@ -105,7 +107,7 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
 
       if (replaceRange.start.isEqual(replaceRange.stop)) {
-        await TextEditor.insert(change.text, Position.FromVSCodePosition(replaceRange.start));
+        await TextEditor.insert(change.text, replaceRange.start);
       } else {
         await TextEditor.replace(vimState.editor.selection, change.text);
       }
@@ -415,7 +417,7 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode === Mode.EasyMotionMode) {
-      vimState.easyMotion.clearDecorations();
+      vimState.easyMotion.clearDecorations(vimState.editor);
     }
 
     // Abort surround operation
@@ -575,7 +577,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     const newPositionLine = clamp(
       position.line + (this.to === 'down' ? moveLines : -moveLines),
       0,
-      vimState.editor.document.lineCount - 1
+      vimState.document.lineCount - 1
     );
     vimState.cursorStopPosition = new Position(
       newPositionLine,
@@ -745,13 +747,13 @@ class CommandOverrideCopy extends BaseCommand {
       text = vimState.cursors
         .map((range) => {
           const [start, stop] = sorted(range.start, range.stop);
-          return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
+          return vimState.document.getText(new vscode.Range(start, stop.getRight()));
         })
         .join('\n');
     } else if (vimState.currentMode === Mode.VisualLine) {
       text = vimState.cursors
         .map((range) => {
-          return vimState.editor.document.getText(
+          return vimState.document.getText(
             new vscode.Range(
               earlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
               laterOf(range.start.getLineEnd(), range.stop.getLineEnd())
@@ -766,7 +768,7 @@ class CommandOverrideCopy extends BaseCommand {
     } else if (vimState.currentMode === Mode.Insert || vimState.currentMode === Mode.Normal) {
       text = vimState.editor.selections
         .map((selection) => {
-          return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
+          return vimState.document.getText(new vscode.Range(selection.start, selection.end));
         })
         .join('\n');
     }
@@ -837,7 +839,7 @@ async function searchCurrentWord(
  * Search for the word under the cursor; used by [g]* and [g]# in visual mode when `visualstar` is enabled
  */
 async function searchCurrentSelection(vimState: VimState, direction: SearchDirection) {
-  const selection = TextEditor.getSelection();
+  const selection = vimState.editor.selection;
   const end = new Position(selection.end.line, selection.end.character);
   const currentSelection = TextEditor.getText(selection.with(selection.start, end));
 
@@ -899,7 +901,11 @@ async function createSearchStateAndMoveToMatch(args: {
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
 
-    reportSearch(nextMatch.index, globalState.searchState.getMatchRanges().length, vimState);
+    reportSearch(
+      nextMatch.index,
+      globalState.searchState.getMatchRanges(vimState.document).length,
+      vimState
+    );
   } else {
     StatusBar.displayError(
       vimState,
@@ -1655,12 +1661,12 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
   vimState.cursorStopPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
 
   // Move the cursor, this is a bit hacky...
-  vscode.window.activeTextEditor!.selection = new vscode.Selection(
+  vimState.editor.selection = new vscode.Selection(
     vimState.cursorStartPosition,
     vimState.cursorStopPosition
   );
 
-  reportSearch(result.index, searchState.getMatchRanges().length, vimState);
+  reportSearch(result.index, searchState.getMatchRanges(vimState.document).length, vimState);
 
   await vimState.setCurrentMode(Mode.Visual);
 }
@@ -1740,9 +1746,12 @@ class CommandOpenFile extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let fullFilePath: string;
     if (vimState.currentMode === Mode.Visual) {
-      fullFilePath = TextEditor.getText(TextEditor.getSelection());
+      fullFilePath = TextEditor.getText(vimState.editor.selection);
     } else {
-      const range = new vscode.Range(position.getFilePathLeft(true), position.getFilePathRight());
+      const range = new vscode.Range(
+        getWordLeft(position, WordType.FileName, true),
+        getWordRight(position, WordType.FileName)
+      );
 
       fullFilePath = TextEditor.getText(range).trim();
     }
@@ -1772,7 +1781,7 @@ class CommandGoToDefinition extends BaseCommand {
 
     if (vimState.editor === vscode.window.activeTextEditor) {
       // We didn't switch to a different editor
-      vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+      vimState.cursorStopPosition = vimState.editor.selection.start;
     }
   }
 }
@@ -2075,7 +2084,7 @@ class CommandNavigateLastBOL extends BaseCommand {
     }
     const jump = new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: lastJump.position.getLineBegin(),
     });
     globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
@@ -2496,10 +2505,7 @@ class ActionJoinVisualMode extends BaseCommand {
   keys = ['J'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const [start, end] = sorted(
-      Position.FromVSCodePosition(vimState.editor.selection.start),
-      Position.FromVSCodePosition(vimState.editor.selection.end)
-    );
+    const [start, end] = sorted(vimState.editor.selection.start, vimState.editor.selection.end);
 
     /**
      * For joining lines, Visual Line behaves the same as Visual so we align the register mode here.
@@ -2922,8 +2928,8 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
   abstract getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: vscode.Position,
-    selectionEnd: vscode.Position
+    selectionStart: Position,
+    selectionEnd: Position
   ): Range;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2987,12 +2993,12 @@ export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCo
 
   getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: vscode.Position,
-    selectionEnd: vscode.Position
+    selectionStart: Position,
+    selectionEnd: Position
   ): Range {
     const startCharacterPosition =
       line.lineNumber === selectionStart.line
-        ? Position.FromVSCodePosition(selectionStart)
+        ? selectionStart
         : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
     return new Range(startCharacterPosition, startCharacterPosition);
   }
@@ -3005,12 +3011,12 @@ export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLine
 
   getCursorRangeForLine(
     line: vscode.TextLine,
-    selectionStart: vscode.Position,
-    selectionEnd: vscode.Position
+    selectionStart: Position,
+    selectionEnd: Position
   ): Range {
     const endCharacterPosition =
       line.lineNumber === selectionEnd.line
-        ? Position.FromVSCodePosition(selectionEnd)
+        ? selectionEnd
         : new Position(line.lineNumber, line.range.end.character);
     return new Range(endCharacterPosition, endCharacterPosition);
   }
@@ -3352,7 +3358,7 @@ class CommandUnicodeName extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = vimState.editor.document.getText(new vscode.Range(position, position.getRight()));
+    const char = vimState.document.getText(new vscode.Range(position, position.getRight()));
     const charCode = char.charCodeAt(0);
     // TODO: Handle charCode > 127 by also including <M-x>
     StatusBar.setText(
@@ -3422,7 +3428,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
     // selections to the word boundaries before we make the api call.
     vscode.window.activeTextEditor!.selections = vscode.window.activeTextEditor!.selections.map(
       (x, idx) => {
-        const curPos = Position.FromVSCodePosition(x.active);
+        const curPos = x.active;
         if (idx === 0) {
           return new vscode.Selection(
             curPos.getWordLeft(false),
@@ -3431,9 +3437,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
         } else {
           // Since we're adding the selections ourselves, we need to make sure
           // that our selection is actually over what our original word is
-          const matchWordPos = Position.FromVSCodePosition(
-            vscode.window.activeTextEditor!.selections[0].active
-          );
+          const matchWordPos = vscode.window.activeTextEditor!.selections[0].active;
           const matchWordLength =
             matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
             matchWordPos.getWordLeft(false).character;

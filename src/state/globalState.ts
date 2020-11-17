@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import { JumpTracker } from '../jumps/jumpTracker';
 import { Mode } from '../mode/mode';
-import { Position } from '../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { SearchHistory } from '../history/historyFile';
 import { SearchState, SearchDirection } from './searchState';
 import { SubstituteState } from './substituteState';
 import { configuration } from '../configuration/configuration';
+import { Position } from 'vscode';
 
 /**
  * State which stores global state (across editors)
@@ -103,10 +103,6 @@ class GlobalState {
    * @returns The SearchState that was selected by the user, if there was one.
    */
   public async showSearchHistory(): Promise<SearchState | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-
     const items = this._searchStatePrevious
       .slice()
       .reverse()

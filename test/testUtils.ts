@@ -144,7 +144,7 @@ export async function setupWorkspace(
 
 const mockAndEnable = async () => {
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
-  const mh = await getAndUpdateModeHandler();
+  const mh = (await getAndUpdateModeHandler())!;
   Globals.mockModeHandler = mh;
   await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
 };

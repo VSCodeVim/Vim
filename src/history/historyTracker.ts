@@ -12,13 +12,13 @@
 import DiffMatchPatch = require('diff-match-patch');
 import * as vscode from 'vscode';
 
-import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
+import { Position } from 'vscode';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second

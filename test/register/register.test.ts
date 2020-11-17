@@ -3,21 +3,19 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { IRegisterContent, Register } from '../../src/register/register';
+import { Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
-import { getTestingFunctions } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { RecordedState } from '../../src/state/recordedState';
+import { newTest } from '../testSimplifier';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);

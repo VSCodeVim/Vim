@@ -10,7 +10,6 @@ import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { Mode } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
-import { Position } from './src/common/motion/position';
 import { StatusBar } from './src/statusBar';
 import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
@@ -29,8 +28,14 @@ interface ICodeKeybinding {
   commands?: { command: string; args: any[] }[];
 }
 
-export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promise<ModeHandler> {
+export async function getAndUpdateModeHandler(
+  forceSyncAndUpdate = false
+): Promise<ModeHandler | undefined> {
   const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor === undefined) {
+    return undefined;
+  }
+
   const activeEditorId = EditorIdentity.fromEditor(activeTextEditor);
 
   let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId);
@@ -38,7 +43,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     extensionContext.subscriptions.push(curHandler);
   }
 
-  curHandler.vimState.editor = activeTextEditor!;
+  curHandler.vimState.editor = activeTextEditor;
 
   if (
     forceSyncAndUpdate ||
@@ -198,7 +203,7 @@ export async function activate(
         if (modeHandler == null || modeHandler.vimState.editor === undefined) {
           shouldDelete = true;
         } else {
-          const document = modeHandler.vimState.editor.document;
+          const document = modeHandler.vimState.document;
           if (!documents.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {
@@ -251,9 +256,8 @@ export async function activate(
       Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
 
       taskQueue.enqueueTask(async () => {
-        if (vscode.window.activeTextEditor !== undefined) {
-          const mh: ModeHandler = await getAndUpdateModeHandler(true);
-
+        const mh = await getAndUpdateModeHandler(true);
+        if (mh) {
           globalState.jumpTracker.handleFileJump(
             lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
             Jump.fromStateNow(mh.vimState)
@@ -273,12 +277,15 @@ export async function activate(
         vscode.window.activeTextEditor === undefined ||
         e.textEditor.document !== vscode.window.activeTextEditor.document
       ) {
-        // we don't care if there is no active editor
-        // or user selection changed in a paneled window (e.g debug console/terminal)
+        // We don't care if user selection changed in a paneled window (e.g debug console/terminal)
         return;
       }
 
       const mh = await getAndUpdateModeHandler();
+      if (mh === undefined) {
+        // We don't care if there is no active editor
+        return;
+      }
 
       if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
         const selectionsHash = e.selections.reduce(
@@ -342,11 +349,12 @@ export async function activate(
   overrideCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-
-      if (compositionState.isInComposition) {
-        compositionState.composingText += args.text;
-      } else {
-        await mh.handleKeyEvent(args.text);
+      if (mh) {
+        if (compositionState.isInComposition) {
+          compositionState.composingText += args.text;
+        } else {
+          await mh.handleKeyEvent(args.text);
+        }
       }
     });
   });
@@ -354,24 +362,21 @@ export async function activate(
   overrideCommand(context, 'replacePreviousChar', async (args) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-
-      if (compositionState.isInComposition) {
-        compositionState.composingText =
-          compositionState.composingText.substr(
-            0,
-            compositionState.composingText.length - args.replaceCharCnt
-          ) + args.text;
-      } else {
-        await vscode.commands.executeCommand('default:replacePreviousChar', {
-          text: args.text,
-          replaceCharCnt: args.replaceCharCnt,
-        });
-        mh.vimState.cursorStopPosition = Position.FromVSCodePosition(
-          mh.vimState.editor.selection.start
-        );
-        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(
-          mh.vimState.editor.selection.start
-        );
+      if (mh) {
+        if (compositionState.isInComposition) {
+          compositionState.composingText =
+            compositionState.composingText.substr(
+              0,
+              compositionState.composingText.length - args.replaceCharCnt
+            ) + args.text;
+        } else {
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: args.text,
+            replaceCharCnt: args.replaceCharCnt,
+          });
+          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+        }
       }
     });
   });
@@ -385,22 +390,30 @@ export async function activate(
   overrideCommand(context, 'compositionEnd', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      let text = compositionState.composingText;
-      compositionState.reset();
-      mh.handleMultipleKeyEvents(text.split(''));
+      if (mh) {
+        const text = compositionState.composingText;
+        compositionState.reset();
+        mh.handleMultipleKeyEvents(text.split(''));
+      }
     });
   });
 
   // Register extension commands
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
-    await commandLine.PromptAndRun('', mh.vimState);
-    mh.updateView();
+    if (mh) {
+      await commandLine.PromptAndRun('', mh.vimState);
+      mh.updateView();
+    }
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
+      if (mh === undefined) {
+        return;
+      }
+
       if (args.after) {
         for (const key of args.after) {
           await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
@@ -448,11 +461,13 @@ export async function activate(
     });
   }
 
-  // Initialize mode handler for current active Text Editor at startup.
-  if (vscode.window.activeTextEditor) {
-    let mh = await getAndUpdateModeHandler();
-    // This is called last because getAndUpdateModeHandler() will change cursor
-    mh.updateView({ drawSelection: false, revealRange: false });
+  {
+    // Initialize mode handler for current active Text Editor at startup.
+    const modeHandler = await getAndUpdateModeHandler();
+    if (modeHandler) {
+      // This is called last because getAndUpdateModeHandler() will change cursor
+      modeHandler.updateView({ drawSelection: false, revealRange: false });
+    }
   }
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere
@@ -477,13 +492,15 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
     // If activate was called and no editor window is open, we can't properly initialize.
     return;
   }
-  let mh = await getAndUpdateModeHandler();
-  if (isDisabled) {
-    await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
-    compositionState.reset();
-    ModeHandlerMap.clear();
-  } else {
-    await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
+  const mh = await getAndUpdateModeHandler();
+  if (mh) {
+    if (isDisabled) {
+      await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
+      compositionState.reset();
+      ModeHandlerMap.clear();
+    } else {
+      await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
+    }
   }
 }
 
@@ -552,18 +569,21 @@ function registerEventListener<T>(
 
 async function handleKeyEvent(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
-
-  taskQueue.enqueueTask(async () => {
-    await mh.handleKeyEvent(key);
-  });
+  if (mh) {
+    taskQueue.enqueueTask(async () => {
+      await mh.handleKeyEvent(key);
+    });
+  }
 }
 
 async function checkIfRecursiveRemapping(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
-  if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
-    mh.vimState.forceStopRecursiveRemapping = true;
-  } else {
-    handleKeyEvent(key);
+  if (mh) {
+    if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
+      mh.vimState.forceStopRecursiveRemapping = true;
+    } else {
+      handleKeyEvent(key);
+    }
   }
 }
 

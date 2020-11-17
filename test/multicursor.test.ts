@@ -2,15 +2,15 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { getTestingFunctions } from './testSimplifier';
 import { Configuration } from './testConfiguration';
+import { newTest } from './testSimplifier';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -107,8 +107,6 @@ suite('Multicursor', () => {
 });
 
 suite('Multicursor with remaps', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
@@ -132,8 +130,6 @@ suite('Multicursor with remaps', () => {
 });
 
 suite('Multicursor selections', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.normalModeKeyBindings = [

@@ -29,11 +29,10 @@ export class QuitCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     // NOTE: We can't currently get all open text editors, so this isn't perfect. See #3809
     const duplicatedInSplit =
-      vscode.window.visibleTextEditors.filter(
-        (editor) => editor.document === vimState.editor.document
-      ).length > 1;
+      vscode.window.visibleTextEditors.filter((editor) => editor.document === vimState.document)
+        .length > 1;
     if (
-      vimState.editor.document.isDirty &&
+      vimState.document.isDirty &&
       !this.arguments.bang &&
       (!duplicatedInSplit || this._arguments.quitAll)
     ) {

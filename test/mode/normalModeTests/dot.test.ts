@@ -1,10 +1,8 @@
 import { Configuration } from '../../testConfiguration';
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -66,8 +64,6 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -115,8 +111,6 @@ suite('Repeat content change', () => {
 });
 
 suite('Dot Operator repeat with remap', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
