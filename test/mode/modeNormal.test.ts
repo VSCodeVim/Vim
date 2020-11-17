@@ -2379,27 +2379,21 @@ suite('Mode Normal', () => {
     end: ['__ASDF', '|asdf'],
   });
 
-  newTest({
-    title: '<BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
+  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
+    newTest({
+      title: `${backspace} deletes the last character in search in progress mode`,
+      start: ['|foo', 'bar', 'abd'],
+      keysPressed: `/abc${backspace}d\n`,
+      end: ['foo', 'bar', '|abd'],
+      endMode: Mode.Normal,
+    });
+  }
 
   newTest({
-    title: '<S-bs> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<S-bs>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '<C-h> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<C-h>d\n',
-    end: ['foo', 'bar', '|abd'],
+    title: '<C-l> adds the next character in the first match to search term',
+    start: ['|foo', 'bar', 'abcd'],
+    keysPressed: '/ab<C-l>d\n',
+    end: ['foo', 'bar', '|abcd'],
     endMode: Mode.Normal,
   });
 

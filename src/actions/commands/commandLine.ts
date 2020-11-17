@@ -684,3 +684,28 @@ class CommandPasteInSearchMode extends BaseCommand {
     vimState.statusBarCursorCharacterPos += textFromClipboard.length;
   }
 }
+
+@RegisterAction
+class CommandCtrlLInSearchMode extends BaseCommand {
+  modes = [Mode.SearchInProgressMode];
+  keys = ['<C-l>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (globalState.searchState === undefined) {
+      // TODO: log warning, at least
+      return;
+    }
+
+    const nextMatch = globalState.searchState.getNextSearchMatchRange(position);
+    if (nextMatch?.match) {
+      const line = vimState.document.lineAt(nextMatch.end).text;
+      if (nextMatch.end.character < line.length) {
+        globalState.searchState.searchString += line[nextMatch.end.character];
+        vimState.statusBarCursorCharacterPos++;
+      }
+    }
+  }
+}
