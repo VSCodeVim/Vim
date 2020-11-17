@@ -2334,6 +2334,20 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  newTest({
+    title: '/ search $, walk over matches',
+    start: ['|start', '', '', 'end'],
+    keysPressed: '/$\nnnn',
+    end: ['start', '', '', 'en|d'],
+  });
+
+  newTest({
+    title: '?, match at EOL, walk over matches',
+    start: ['x end', 'x', 'x', '|start'],
+    keysPressed: '?x\nnn',
+    end: ['|x end', 'x', 'x', 'start'],
+  });
+
   /**
    * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
    */
