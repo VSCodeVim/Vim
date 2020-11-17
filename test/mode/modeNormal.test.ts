@@ -2374,9 +2374,9 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: '<S-BS> deletes the last character in search in progress mode',
+    title: '<S-bs> deletes the last character in search in progress mode',
     start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<shift+BS>d\n',
+    keysPressed: '/abc<S-bs>d\n',
     end: ['foo', 'bar', '|abd'],
     endMode: Mode.Normal,
   });

@@ -31,7 +31,7 @@ import { Position } from 'vscode';
 @RegisterAction
 class CommandTabInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
-  keys = [['<tab>'], ['<shift+tab>']];
+  keys = [['<tab>'], ['<S-tab>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -226,7 +226,7 @@ class CommandInsertInCommandline extends BaseCommand {
     const key = this.keysPressed[0];
 
     // handle special keys first
-    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
       if (vimState.statusBarCursorCharacterPos === 0) {
         await vimState.setCurrentMode(Mode.Normal);
         return;
@@ -332,7 +332,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
       if (searchState.searchString.length === 0) {
         await new CommandEscInSearchMode().exec(position, vimState);
       }

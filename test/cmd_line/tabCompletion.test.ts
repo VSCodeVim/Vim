@@ -34,7 +34,7 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleKeyEvent('<tab>');
     const secondTab = StatusBar.getText();
 
-    await modeHandler.handleKeyEvent('<shift+tab>');
+    await modeHandler.handleKeyEvent('<S-tab>');
     const actual = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
