@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 
 export enum Mode {
   Normal,
@@ -27,6 +27,7 @@ export enum VSCodeVimCursorType {
   Underline,
   TextDecoration,
   Native,
+  UnderlineThin,
 }
 
 /**
@@ -164,6 +165,8 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Underline:
       return vscode.TextEditorCursorStyle.Underline;
+    case VSCodeVimCursorType.UnderlineThin:
+      return vscode.TextEditorCursorStyle.UnderlineThin;
     case VSCodeVimCursorType.TextDecoration:
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Native:

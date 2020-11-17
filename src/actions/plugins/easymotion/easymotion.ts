@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { Mode } from '../../../mode/mode';
+import { Position } from 'vscode';
 
 export class EasyMotion {
   /**
@@ -75,9 +75,7 @@ export class EasyMotion {
   /**
    * Clear all decorations
    */
-  public clearDecorations() {
-    const editor = vscode.window.activeTextEditor!;
-
+  public clearDecorations(editor: vscode.TextEditor) {
     for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
@@ -225,14 +223,13 @@ export class EasyMotion {
     return this.getMarkerColor(configuration.easymotionDimColor, '#777777');
   }
 
-  public updateDecorations() {
-    this.clearDecorations();
+  public updateDecorations(editor: vscode.TextEditor) {
+    this.clearDecorations(editor);
 
     this.visibleMarkers = [];
     this.decorations = [];
 
     // Set the decorations for all the different marker lengths
-    const editor = vscode.window.activeTextEditor!;
     const dimmingZones: vscode.DecorationOptions[] = [];
     const dimmingRenderOptions: vscode.ThemableDecorationRenderOptions = {
       // we update the color here again in case the configuration has changed
@@ -397,9 +394,7 @@ export class EasyMotion {
     if (configuration.easymotionDimBackground) {
       const prevMarker = markers[markers.length - 1];
       const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
-      const prevDimPos = Position.FromVSCodePosition(
-        dimmingZones[dimmingZones.length - 1].range.end
-      );
+      const prevDimPos = dimmingZones[dimmingZones.length - 1].range.end;
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 
       // Don't create any more dimming ranges when the last marker is at document end

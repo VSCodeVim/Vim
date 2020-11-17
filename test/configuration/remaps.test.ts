@@ -1,14 +1,12 @@
-import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTestWithRemaps } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
   let modeHandler: ModeHandler;
-  const { newTestWithRemaps, newTestWithRemapsOnly, newTestWithRemapsSkip } = getTestingFunctions();
 
   setup(async () => {
     const configuration = new Configuration();
@@ -20,7 +18,7 @@ suite('Remaps', () => {
     configuration.leader = ' ';
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -1197,6 +1195,63 @@ suite('Remaps', () => {
         keysPressed: 'u',
         stepResult: {
           end: ['10£', '15£', '350£', '2£', '|5£'],
+          endMode: Mode.Normal,
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'Potential remap key followed by a remapped key in insert mode should insert first potential remap key and then handle the following remapped key.',
+    remaps: ['imap jk <Esc>', 'imap <C-e> <C-o>A'],
+    start: ['|Test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'ij<C-e>',
+        stepResult: {
+          end: ['jTest|'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title: `Don't confuse a '<' keystroke with a potential special key like '<C-e>'`,
+    remaps: ['inoremap <C-e> <C-o>$'],
+    start: ['|test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'i<',
+        stepResult: {
+          end: ['<|test'],
+          endMode: Mode.Insert,
+        },
+      },
+    ],
+  });
+
+  newTestWithRemaps({
+    title:
+      'Forced stop recursive remaps that are not infinite remaps should stop without throwing error',
+    remaps: {
+      insertModeKeyBindings: [
+        {
+          before: ['i', 'i'],
+          commands: ['extension.vim_escape'],
+        },
+      ],
+    },
+    start: ['|test'],
+    steps: [
+      {
+        // Step 0:
+        keysPressed: 'aii<Esc>l',
+        stepResult: {
+          end: ['t|est'],
           endMode: Mode.Normal,
         },
       },

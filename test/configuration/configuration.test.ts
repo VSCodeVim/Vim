@@ -2,11 +2,10 @@ import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
 import { Mode } from '../../src/mode/mode';
+import { newTest } from '../testSimplifier';
 
 suite('Configuration', () => {
-  const { newTest } = getTestingFunctions();
   const configuration = new testConfiguration.Configuration();
   configuration.leader = '<space>';
   configuration.normalModeKeyBindingsNonRecursive = [

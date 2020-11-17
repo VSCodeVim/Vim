@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 
-import {
-  Position,
-  PositionDiff,
-  PositionDiffType,
-  earlierOf,
-  sorted,
-} from './../common/motion/position';
+import { PositionDiff, PositionDiffType, earlierOf, sorted } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -15,9 +9,10 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
-import { TextObjectMovement } from './textobject';
+import { TextObjectMovement } from '../textobject/textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
+import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -25,12 +20,6 @@ export abstract class BaseOperator extends BaseAction {
     this.multicursorIndex = multicursorIndex;
   }
   canBeRepeatedWithDot = true;
-
-  /**
-   * If this is being run in multi cursor mode, the index of the cursor
-   * this operator is being applied to.
-   */
-  public multicursorIndex: number | undefined;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
@@ -155,7 +144,7 @@ export class DeleteOperator extends BaseOperator {
       }
     }
 
-    let text = vimState.editor.document.getText(new vscode.Range(start, end));
+    let text = vimState.document.getText(new vscode.Range(start, end));
 
     // If we delete linewise to the final line of the document, we expect the line
     // to be removed. This is actually a special case because the newline
@@ -207,7 +196,7 @@ export class DeleteOperator extends BaseOperator {
       });
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, end),
       diff: diff,
@@ -309,7 +298,14 @@ export class YankOperator extends BaseOperator {
     }
 
     if (originalMode === Mode.Normal && !moveCursor) {
-      vimState.cursors = vimState.cursorsInitialState;
+      // we dont want to move the cursor(s)
+      // our default for that is else, but this reset would destroy multicursor when run for the secondary cursors
+      // so for these, we have the following alternative
+      if (this.multicursorIndex !== undefined && this.multicursorIndex > 0) {
+        vimState.cursorStopPosition = vimState.cursors[this.multicursorIndex].stop;
+      } else {
+        vimState.cursors = vimState.cursorsInitialState;
+      }
     } else {
       vimState.cursorStopPosition = start;
     }
@@ -419,7 +415,7 @@ export class UpperCaseOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
+    let text = vimState.document.getText(range);
 
     await TextEditor.replace(range, text.toUpperCase());
 
@@ -442,7 +438,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
+      let text = vimState.document.getText(range);
       await TextEditor.replace(range, text.toUpperCase());
     }
 
@@ -460,7 +456,7 @@ export class LowerCaseOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
+    let text = vimState.document.getText(range);
 
     await TextEditor.replace(range, text.toLowerCase());
 
@@ -483,7 +479,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
+      let text = vimState.document.getText(range);
       await TextEditor.replace(range, text.toLowerCase());
     }
 
@@ -637,7 +633,7 @@ export class ChangeOperator extends BaseOperator {
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
-    const thisLineIndent = vimState.editor.document.getText(
+    const thisLineIndent = vimState.document.getText(
       new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
     );
 
@@ -650,15 +646,15 @@ export class ChangeOperator extends BaseOperator {
     );
 
     if (configuration.autoindent) {
-      if (vimState.editor.document.languageId === 'plaintext') {
-        vimState.recordedState.transformations.push({
+      if (vimState.document.languageId === 'plaintext') {
+        vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: thisLineIndent,
           position: position.getLineBegin(),
           cursorIndex: this.multicursorIndex,
         });
       } else {
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
           diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
@@ -797,13 +793,10 @@ export class ROT13Operator extends BaseOperator {
 
     for (const range of selections) {
       const original = TextEditor.getText(range);
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        range: new Range(
-          Position.FromVSCodePosition(range.start),
-          Position.FromVSCodePosition(range.end)
-        ),
+        range: new Range(range.start, range.end),
       });
     }
   }
@@ -878,6 +871,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: false, start: '/*', inner: '*', final: '*/' },
     { singleLine: false, start: '{-', inner: '-', final: '-}' },
     { singleLine: true, start: '///' },
+    { singleLine: true, start: '//!' },
     { singleLine: true, start: '//' },
     { singleLine: true, start: '--' },
     { singleLine: true, start: '#' },
@@ -1091,7 +1085,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     let textToReflow = TextEditor.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: textToReflow,
       range: new Range(start, end),

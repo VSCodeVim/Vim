@@ -1,4 +1,4 @@
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 import { Range } from '../common/motion/range';
 import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
@@ -19,6 +19,12 @@ export abstract class BaseAction {
   public isJump = false;
 
   public canBeRepeatedWithDot = false;
+
+  /**
+   * If this is being run in multi cursor mode, the index of the cursor
+   * this action is being applied to.
+   */
+  multicursorIndex: number | undefined = undefined;
 
   /**
    * Whether we should change `vimState.desiredColumn`
@@ -172,8 +178,6 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
-  multicursorIndex: number | undefined = undefined;
-
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
    */
@@ -209,7 +213,7 @@ export abstract class BaseCommand extends BaseAction {
         await this.exec(position, vimState);
       }
 
-      for (const transformation of vimState.recordedState.transformations) {
+      for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
           transformation.cursorIndex = 0;
         }
@@ -242,7 +246,7 @@ export abstract class BaseCommand extends BaseAction {
 
       resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
-      for (const transformation of vimState.recordedState.transformations) {
+      for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
           transformation.cursorIndex = this.multicursorIndex;
         }

@@ -68,7 +68,7 @@ export class LineRange {
    */
   public resolve(vimState: VimState): [number, number] {
     if (this.left.length > 0 && this.left[0].type === TokenType.Percent) {
-      return [0, vimState.editor.document.lineCount - 1];
+      return [0, vimState.document.lineCount - 1];
     }
 
     const start = LineRange.resolveLineRef(this.left, vimState) ?? vimState.cursorStopPosition.line;
@@ -88,9 +88,9 @@ export class LineRange {
     // handle first-token special cases (e.g. %, inital line number is "." by default)
     switch (firstToken.type) {
       case TokenType.Percent:
-        return vimState.editor.document.lineCount - 1;
+        return vimState.document.lineCount - 1;
       case TokenType.Dollar:
-        currentLineNum = vimState.editor.document.lineCount - 1;
+        currentLineNum = vimState.document.lineCount - 1;
         break;
       case TokenType.Plus:
       case TokenType.Minus:
@@ -189,7 +189,7 @@ export class LineRange {
 
     // finally, make sure current position is in bounds :)
     currentLineNum = Math.max(0, currentLineNum);
-    currentLineNum = Math.min(vimState.editor.document.lineCount - 1, currentLineNum);
+    currentLineNum = Math.min(vimState.document.lineCount - 1, currentLineNum);
     return currentLineNum;
   }
 }
@@ -232,10 +232,6 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  protected get activeTextEditor() {
-    return vscode.window.activeTextEditor;
-  }
-
   get arguments(): ICommandArgs {
     return this._arguments;
   }

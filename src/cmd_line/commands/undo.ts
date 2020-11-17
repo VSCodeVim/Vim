@@ -2,7 +2,7 @@ import * as node from '../node';
 import { Logger } from '../../util/logger';
 import { VimState } from '../../state/vimState';
 import { CommandUndo } from '../../actions/commands/actions';
-import { Position } from '../../common/motion/position';
+import { Position } from 'vscode';
 
 //
 //  Implements :u[ndo]

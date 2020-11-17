@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-
-import { Position } from './position';
+import { Position } from 'vscode';
 
 export class Range {
   public readonly start: Position;
@@ -19,7 +18,7 @@ export class Range {
    * Create a range from a VSCode selection.
    */
   public static FromVSCodeSelection(sel: vscode.Selection): Range {
-    return new Range(Position.FromVSCodePosition(sel.start), Position.FromVSCodePosition(sel.end));
+    return new Range(sel.start, sel.end);
   }
 
   public equals(other: Range): boolean {
