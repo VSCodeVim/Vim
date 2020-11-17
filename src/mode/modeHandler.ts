@@ -1611,9 +1611,9 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.VisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return getCursorType(vimState, globalState.searchState!.previousMode);
+      return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
-      return getCursorType(vimState, commandLine.previousMode);
+      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
     case Mode.EasyMotionMode:
@@ -1623,7 +1623,7 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
     case Mode.OperatorPendingMode:
-      return VSCodeVimCursorType.Underline;
+      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;
