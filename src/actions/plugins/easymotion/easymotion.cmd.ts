@@ -349,7 +349,7 @@ class EasyMotionCharInputMode extends BaseCommand {
     const action = vimState.easyMotion.searchAction;
     const oldSearchString = action.getSearchString();
     const newSearchString =
-      key === '<BS>' || key === '<shift+BS>' ? oldSearchString.slice(0, -1) : oldSearchString + key;
+      key === '<BS>' || key === '<S-bs>' ? oldSearchString.slice(0, -1) : oldSearchString + key;
     action.updateSearchString(newSearchString);
     if (action.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it

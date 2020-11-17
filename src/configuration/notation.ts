@@ -30,11 +30,7 @@ export class Notation {
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
     return (
-      this.isSurroundedByAngleBrackets(key) &&
-      key !== '<BS>' &&
-      key !== '<SHIFT+BS>' &&
-      key !== '<S-BS>' &&
-      key !== '<TAB>'
+      this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<S-BS>' && key !== '<TAB>'
     );
   }
 

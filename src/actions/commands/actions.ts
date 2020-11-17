@@ -2594,11 +2594,11 @@ class ActionReplaceCharacter extends BaseCommand {
     const toReplace = this.keysPressed[1];
 
     /**
-     * <character> includes <BS>, <SHIFT+BS> and <TAB> but not any control keys,
+     * <character> includes <BS>, <S-BS> and <TAB> but not any control keys,
      * so we ignore the former two keys and have a special handle for <tab>.
      */
 
-    if (['<BS>', '<SHIFT+BS>'].includes(toReplace.toUpperCase())) {
+    if (['<BS>', '<S-BS>'].includes(toReplace.toUpperCase())) {
       return;
     }
 
