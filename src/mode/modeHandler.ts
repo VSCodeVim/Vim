@@ -730,12 +730,6 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Set context for overriding cmd-V, this is only done in search entry and
-    // commandline modes
-    if (isStatusBarMode(this.vimState.currentMode) !== isStatusBarMode(prevMode)) {
-      await VSCodeContext.set('vim.overrideCmdV', isStatusBarMode(this.vimState.currentMode));
-    }
-
     if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
       if (this.vimState.recordedState.operator) {
         await this.executeOperator();
