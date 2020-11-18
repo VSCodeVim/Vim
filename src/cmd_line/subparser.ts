@@ -48,6 +48,21 @@ export const commandParsers = {
     parser: undefined,
   },
 
+  bnext: {
+    abbrev: 'bn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  bNext: {
+    abbrev: 'bN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  bprevious: {
+    abbrev: 'bp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
   buffers: {
     parser: undefined,
   },
