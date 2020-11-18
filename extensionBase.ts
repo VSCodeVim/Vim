@@ -451,14 +451,17 @@ export async function activate(
   );
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => {
-      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
-        checkIfRecursiveRemapping(`${boundKey.key}`);
-        handleKeyEvent(`${boundKey.key}`);
-      } else {
-        handleKeyEvent(`${boundKey.key}`);
-      }
-    });
+    const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
+      ? async () => {
+          const didStopRemap = await forceStopRecursiveRemap();
+          if (!didStopRemap) {
+            handleKeyEvent(`${boundKey.key}`);
+          }
+        }
+      : () => {
+          handleKeyEvent(`${boundKey.key}`);
+        };
+    registerCommand(context, boundKey.command, command);
   }
 
   {
@@ -571,15 +574,17 @@ async function handleKeyEvent(key: string): Promise<void> {
   }
 }
 
-async function checkIfRecursiveRemapping(key: string): Promise<void> {
+/**
+ * @returns true if there was a remap being executed to stop
+ */
+async function forceStopRecursiveRemap(): Promise<boolean> {
   const mh = await getAndUpdateModeHandler();
-  if (mh) {
-    if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
-      mh.vimState.forceStopRecursiveRemapping = true;
-    } else {
-      handleKeyEvent(key);
-    }
+  if (mh?.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+    return true;
   }
+
+  return false;
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
