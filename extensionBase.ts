@@ -11,7 +11,7 @@ import { Mode } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
 import { StatusBar } from './src/statusBar';
-import { VsCodeContext } from './src/util/vscode-context';
+import { VSCodeContext } from './src/util/vscodeContext';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
@@ -472,7 +472,7 @@ export async function activate(
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere
   // with our list navigation keybindings
-  await VsCodeContext.Set('listAutomaticKeyboardNavigation', false);
+  await VSCodeContext.set('listAutomaticKeyboardNavigation', false);
 
   await toggleExtension(configuration.disableExtension, compositionState);
 
@@ -486,7 +486,7 @@ export async function activate(
  * @param isDisabled if true, sets VSCodeVim to Disabled mode; else sets to enabled mode
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
-  await VsCodeContext.Set('vim.active', !isDisabled);
+  await VSCodeContext.set('vim.active', !isDisabled);
   const mh = await getAndUpdateModeHandler();
   if (mh) {
     if (isDisabled) {

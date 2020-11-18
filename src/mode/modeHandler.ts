@@ -16,7 +16,7 @@ import { StatusBar } from '../statusBar';
 import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
-import { VsCodeContext } from '../util/vscode-context';
+import { VSCodeContext } from '../util/vscodeContext';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
@@ -733,7 +733,7 @@ export class ModeHandler implements vscode.Disposable {
     // Set context for overriding cmd-V, this is only done in search entry and
     // commandline modes
     if (isStatusBarMode(this.vimState.currentMode) !== isStatusBarMode(prevMode)) {
-      await VsCodeContext.Set('vim.overrideCmdV', isStatusBarMode(this.vimState.currentMode));
+      await VSCodeContext.set('vim.overrideCmdV', isStatusBarMode(this.vimState.currentMode));
     }
 
     if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
@@ -1549,7 +1549,7 @@ export class ModeHandler implements vscode.Disposable {
 
     StatusBar.clear(this.vimState, false);
 
-    await VsCodeContext.Set('vim.mode', Mode[this.vimState.currentMode]);
+    await VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
     // Tell VSCode that the cursor position changed, so it updates its highlights for
     // `editor.occurrencesHighlight`.
