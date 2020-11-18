@@ -5,6 +5,8 @@ import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
 import { getParser } from './subparser';
 
+const logger = Logger.get('Parser');
+
 interface IParseFunction {
   (state: ParserState, command: CommandLine): IParseFunction | undefined;
 }
@@ -20,8 +22,6 @@ export function parse(input: string): CommandLine {
 }
 
 function parseLineRange(state: ParserState, commandLine: CommandLine): IParseFunction | undefined {
-  const logger = Logger.get('Parser');
-
   while (true) {
     let tok = state.next();
     switch (tok.type) {

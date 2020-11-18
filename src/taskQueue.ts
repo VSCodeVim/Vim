@@ -1,4 +1,6 @@
+import * as vscode from 'vscode';
 import { Logger } from './util/logger';
+import { extensionVersion } from './configuration/configuration';
 
 interface IEnqueuedTask {
   promise: () => Promise<void>;
@@ -35,7 +37,28 @@ class TaskQueue {
         await task.promise();
         task.isRunning = false;
       } catch (e) {
-        this._logger.error(`Error running task. ${e.message}.`);
+        if (e instanceof Error) {
+          const reportButton = 'Report bug';
+          const stack = e.stack;
+          vscode.window
+            .showErrorMessage(e.message, reportButton)
+            .then((picked: string | undefined) => {
+              let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
+              if (stack) {
+                body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+              }
+              if (picked === reportButton) {
+                vscode.commands.executeCommand(
+                  'vscode.open',
+                  vscode.Uri.parse(
+                    `https://github.com/VSCodeVim/Vim/issues/new?title=${e.message}&body=${body}`
+                  )
+                );
+              }
+            });
+        } else {
+          this._logger.error(`Error running task due to an unknown error: ${e}.`);
+        }
       } finally {
         this.dequeueTask(task);
       }

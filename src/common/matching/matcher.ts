@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
 import { TextEditor } from './../../textEditor';
-import { Position } from './../motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
+import { Position } from 'vscode';
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested

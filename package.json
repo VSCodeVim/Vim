@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.16.0",
+  "version": "1.17.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.42.0"
   },
   "categories": [
     "Other",
@@ -32,14 +32,17 @@
   ],
   "extensionKind": [
     "ui",
-    "workspace"
+    "workspace",
+    "web"
   ],
+  "sideEffects": false,
   "activationEvents": [
     "*",
     "onCommand:type"
   ],
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
+  "browser": "./out/extensionWeb",
   "contributes": {
     "commands": [
       {
@@ -416,6 +419,14 @@
           "type": "array",
           "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
+        "vim.operatorPendingModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.operatorPendingModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
         "vim.useCtrlKeys": {
           "type": "boolean",
           "markdownDescription": "Enable some Vim Ctrl key commands that override otherwise common operations, like `Ctrl+C`.",
@@ -500,6 +511,12 @@
           "default": 1000,
           "minimum": 0
         },
+        "vim.maxmapdepth": {
+          "type": "number",
+          "description": "Maximum number of times a mapping is done without resulting in a character to be used.",
+          "default": 1000,
+          "minimum": 0
+        },
         "vim.scroll": {
           "type": "number",
           "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",
@@ -542,21 +559,47 @@
         },
         "vim.easymotionMarkerBackgroundColor": {
           "type": "string",
+          "default": "#0000",
           "description": "Set a custom background color for EasyMotion markers."
         },
         "vim.easymotionMarkerForegroundColorOneChar": {
           "type": "string",
+          "default": "#ff0000",
           "description": "Set a custom color for the text on one character long markers."
         },
         "vim.easymotionMarkerForegroundColorTwoChar": {
           "type": "string",
-          "description": "Set a custom color for the text on two character long markers."
+          "description": "Set a custom color for the text on two character long markers.",
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharFirst": {
+          "type": "string",
+          "default": "#ffb400",
+          "description": "Set a custom color for the first character on two character long markers."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharSecond": {
+          "type": "string",
+          "default": "#b98300",
+          "description": "Set a custom color for the second character on two character long markers."
+        },
+        "vim.easymotionIncSearchForegroundColor": {
+          "type": "string",
+          "default": "#7fbf00",
+          "description": "Set a custom color for the easymotion search n-character (default `<leader><leader>/`)."
+        },
+        "vim.easymotionDimColor": {
+          "type": "string",
+          "default": "#777777",
+          "description": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
         },
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
           "description": "Set the width (in pixels) allocated to each character in the match.",
           "default": 8,
-          "minimum": 1
+          "minimum": 1,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now lets vscode calculate the correct width.",
+          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now lets vscode calculate the correct width."
         },
         "vim.easymotionDimBackground": {
           "type": "boolean",
@@ -580,12 +623,14 @@
         "vim.easymotionMarkerFontWeight": {
           "type": "string",
           "description": "Set the font weight of the marker text.",
-          "default": "normal"
+          "default": "bold"
         },
         "vim.easymotionMarkerMargin": {
           "type": "number",
           "description": "Set the margin around each marker, in pixels.",
-          "default": 0
+          "default": 0,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, it is no longer required.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, it is no longer required."
         },
         "vim.easymotionKeys": {
           "type": "string",
@@ -600,6 +645,11 @@
         "vim.replaceWithRegister": {
           "type": "boolean",
           "markdownDescription": "Enable the [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister) plugin for Vim.",
+          "default": false
+        },
+        "vim.smartRelativeLine": {
+          "type": "boolean",
+          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
           "default": false
         },
         "vim.sneak": {
@@ -978,7 +1028,8 @@
         "id": "vimrc",
         "extensions": [
           ".vimrc"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -1002,7 +1053,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "neovim": "4.9.0",
     "untildify": "4.0.0",
     "winston": "3.3.3",
@@ -1013,33 +1064,34 @@
     "@types/diff": "4.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.3",
-    "@types/lodash": "4.14.158",
-    "@types/mocha": "8.0.1",
+    "@types/lodash": "4.14.165",
+    "@types/mocha": "8.0.4",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.4",
-    "@types/vscode": "1.37.0",
+    "@types/sinon": "9.0.8",
+    "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
+    "event-stream": "4.0.1",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
-    "gulp-sourcemaps": "2.6.5",
+    "gulp-sourcemaps": "3.0.0",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "husky": "4.2.5",
+    "husky": "4.3.0",
     "minimist": "1.2.5",
-    "mocha": "8.1.0",
+    "mocha": "8.2.1",
     "plugin-error": "1.0.1",
-    "prettier": "2.0.5",
-    "pretty-quick": "2.0.1",
-    "sinon": "9.0.2",
-    "ts-loader": "8.0.2",
+    "prettier": "2.1.2",
+    "pretty-quick": "3.1.0",
+    "sinon": "9.2.1",
+    "ts-loader": "8.0.9",
     "tslint": "6.1.3",
-    "typescript": "3.9.7",
-    "vscode-test": "1.4.0",
-    "webpack": "4.44.1",
-    "webpack-cli": "3.3.12",
-    "webpack-merge": "5.0.9",
-    "webpack-stream": "5.2.1"
+    "typescript": "4.0.5",
+    "vscode-test": "1.4.1",
+    "webpack": "5.5.0",
+    "webpack-cli": "4.2.0",
+    "webpack-merge": "5.4.0",
+    "webpack-stream": "6.1.1"
   }
 }
