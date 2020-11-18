@@ -2,9 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as node from '../node';
-import * as token from '../token';
 import { Jump } from '../../jumps/jump';
-import { Position } from '../../common/motion/position';
 import { SearchState, SearchDirection } from '../../state/searchState';
 import { SubstituteState } from '../../state/substituteState';
 import { TextEditor } from '../../textEditor';
@@ -13,6 +11,7 @@ import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
+import { Position } from 'vscode';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -192,7 +191,7 @@ export class SubstituteCommand extends node.CommandBase {
           globalState.jumpTracker.recordJump(
             new Jump({
               editor: vimState.editor,
-              fileName: vimState.editor.document.fileName,
+              fileName: vimState.document.fileName,
               position: new Position(line, 0),
             }),
             Jump.fromStateNow(vimState)
@@ -209,7 +208,7 @@ export class SubstituteCommand extends node.CommandBase {
       globalState.jumpTracker.recordJump(
         new Jump({
           editor: vimState.editor,
-          fileName: vimState.editor.document.fileName,
+          fileName: vimState.document.fileName,
           position: new Position(line, 0),
         }),
         Jump.fromStateNow(vimState)
@@ -235,7 +234,7 @@ export class SubstituteCommand extends node.CommandBase {
     ];
 
     vimState.editor.revealRange(new vscode.Range(line, 0, line, 0));
-    vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
+    vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
 
     const prompt = `Replace with ${replacement} (${validSelections.join('/')})?`;
     await vscode.window.showInputBox(

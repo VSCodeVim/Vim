@@ -80,9 +80,9 @@ namespace LexerFunctions {
           continue;
         case '*':
           state.ignore();
-          tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
-          tokens.push(new Token(TokenType.Comma, ',')!);
-          tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
+          tokens.push(new Token(TokenType.SelectionFirstLine, '<'));
+          tokens.push(new Token(TokenType.Comma, ','));
+          tokens.push(new Token(TokenType.SelectionLastLine, '>'));
           continue;
         case "'":
           return lexMark;
@@ -117,7 +117,7 @@ namespace LexerFunctions {
       default:
         if (/[a-zA-Z]/.test(c)) {
           state.emit();
-          tokens.push(new Token(TokenType.Mark, c)!);
+          tokens.push(new Token(TokenType.Mark, c));
         } else {
           state.backup();
         }

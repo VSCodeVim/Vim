@@ -1,9 +1,7 @@
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('put operator', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
@@ -71,5 +69,33 @@ suite('put operator', () => {
     start: ['12|345'],
     keysPressed: '<C-v>lldhP',
     end: ['|34512'],
+  });
+
+  newTest({
+    title: 'test visual line paste without count',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykVp',
+    end: ['123', '|789', '789'],
+  });
+
+  newTest({
+    title: 'test visual line paste with count',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykV3p',
+    end: ['123', '|789', '789', '789', '789'],
+  });
+
+  newTest({
+    title: 'test visual line paste without count using gp',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykVgp',
+    end: ['123', '789', '|789'],
+  });
+
+  newTest({
+    title: 'test visual line paste with count using gp',
+    start: ['123', '456', '|789'],
+    keysPressed: 'yykV3gp',
+    end: ['123', '789', '789', '789', '|789'],
   });
 });

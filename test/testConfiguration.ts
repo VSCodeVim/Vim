@@ -19,6 +19,7 @@ export class Configuration implements IConfiguration {
     enable: false,
   };
   replaceWithRegister = false;
+  smartRelativeLine = false;
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
@@ -27,15 +28,19 @@ export class Configuration implements IConfiguration {
   argumentObjectOpeningDelimiters = ['(', '['];
   argumentObjectClosingDelimiters = [')', ']'];
   easymotion = false;
-  easymotionMarkerBackgroundColor = '';
+  easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
+  easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
+  easymotionIncSearchForegroundColor = '#7fbf00';
+  easymotionDimColor = '#777777';
+  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerMargin = 0;
+  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
+  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
+  easymotionMarkerFontWeight = 'bold';
+  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   autoSwitchInputMethod = {
     enable: false,
@@ -44,6 +49,7 @@ export class Configuration implements IConfiguration {
     obtainIMCmd: '',
   };
   timeout = 1000;
+  maxmapdepth = 1000;
   showcmd = true;
   showmodename = true;
   leader = '//';
@@ -103,18 +109,17 @@ export class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   whichwrap = '';
   wrapKeys = {};
   report = 2;

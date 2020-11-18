@@ -15,13 +15,10 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
-import { Mode } from '../mode/mode';
 
-const packagejson: {
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../../package.json');
+import * as packagejson from '../../package.json';
+
+export const extensionVersion = packagejson.version;
 
 type OptionValue = number | string | boolean;
 
@@ -79,7 +76,7 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      let val = vimConfigs[option] as any;
+      let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
           val = Configuration.unproxify(val);
@@ -93,6 +90,8 @@ class Configuration implements IConfiguration {
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
+
+    this.clearKeyBindingsMaps();
 
     const validatorResults = await configurationValidator.validate(configuration);
 
@@ -155,12 +154,23 @@ class Configuration implements IConfiguration {
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
+    const resource = activeTextEditor
+      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
+      : null;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     return this.cursorTypeMap[cursorStyle];
+  }
+
+  clearKeyBindingsMaps() {
+    // Clear the KeyBindingsMaps so that the previous configuration maps don't leak to this one
+    this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
   handleKeys: IHandleKeys[] = [];
@@ -187,6 +197,8 @@ class Configuration implements IConfiguration {
 
   replaceWithRegister = false;
 
+  smartRelativeLine = false;
+
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
@@ -198,15 +210,19 @@ class Configuration implements IConfiguration {
   argumentObjectClosingDelimiters = [')', ']'];
 
   easymotion = false;
-  easymotionMarkerBackgroundColor = '';
+  easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
+  easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
+  easymotionIncSearchForegroundColor = '#7fbf00';
+  easymotionDimColor = '#777777';
+  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerMargin = 0;
+  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
+  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
+  easymotionMarkerFontWeight = 'bold';
+  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
@@ -218,6 +234,8 @@ class Configuration implements IConfiguration {
   };
 
   timeout = 1000;
+
+  maxmapdepth = 1000;
 
   showcmd = true;
 
@@ -367,19 +385,18 @@ class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

@@ -40,10 +40,10 @@ export class WriteQuitAllCommand extends node.CommandBase {
     };
 
     const wallCmd = new wall.WallCommand(writeArgs);
-    await wallCmd.execute();
+    await wallCmd.execute(vimState);
 
     quitArgs.quitAll = true;
     const quitCmd = new quit.QuitCommand(quitArgs);
-    await quitCmd.execute();
+    await quitCmd.execute(vimState);
   }
 }

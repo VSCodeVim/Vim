@@ -14,6 +14,8 @@ export class RemappingValidator implements IConfigurationValidator {
       'insertModeKeyBindingsNonRecursive',
       'normalModeKeyBindings',
       'normalModeKeyBindingsNonRecursive',
+      'operatorPendingModeKeyBindings',
+      'operatorPendingModeKeyBindingsNonRecursive',
       'visualModeKeyBindings',
       'visualModeKeyBindingsNonRecursive',
       'commandLineModeKeyBindings',
@@ -21,10 +23,18 @@ export class RemappingValidator implements IConfigurationValidator {
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
       let keybindings = config[modeKeyBindingsKey];
+      const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
-      const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
+      const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
+      let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;
+      if (!modeKeyBindingsMap) {
+        modeKeyBindingsMap = new Map<string, IKeyRemapping>();
+      }
       for (let i = keybindings.length - 1; i >= 0; i--) {
         let remapping = keybindings[i] as IKeyRemapping;
+
+        // set 'recursive' of the remapping according to where it was stored
+        remapping.recursive = isRecursive;
 
         // validate
         let remappingError = await this.isRemappingValid(remapping);
@@ -62,7 +72,7 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap.set(beforeKeys, remapping);
       }
 
-      config[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
+      config[modeMapName + 'Map'] = modeKeyBindingsMap;
     }
 
     return result;
@@ -86,6 +96,13 @@ export class RemappingValidator implements IConfigurationValidator {
       result.append({
         level: 'error',
         message: `Remapping of '${remapping.before}' should be a string array.`,
+      });
+    }
+
+    if (remapping.recursive === undefined) {
+      result.append({
+        level: 'error',
+        message: `Remapping of '${remapping.before}' missing 'recursive' info.`,
       });
     }
 

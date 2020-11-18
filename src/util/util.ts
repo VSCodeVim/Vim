@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { Range } from '../common/motion/range';
-import { exec } from 'child_process';
 import { VimState } from '../state/vimState';
 
 /**
@@ -11,25 +10,6 @@ import { VimState } from '../state/vimState';
  */
 export function getCursorsAfterSync(): Range[] {
   return vscode.window.activeTextEditor!.selections.map((x) => Range.FromVSCodeSelection(x));
-}
-
-/**
- * This function executes a shell command and returns the standard output as a string.
- */
-export function executeShell(cmd: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    try {
-      exec(cmd, (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(stdout);
-        }
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
 }
 
 export function clamp(num: number, min: number, max: number) {

@@ -1,10 +1,8 @@
-import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Replace', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
