@@ -429,17 +429,15 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
-    let nextMatch:
-      | {
-          pos: Position;
-          index: number;
-        }
-      | undefined;
-    if (position.getRight().isEqual(position.getLineEnd())) {
-      nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
-    } else {
-      nextMatch = searchState.getNextSearchMatchPosition(position);
-    }
+    // we have to handle a special case here: searching for $ or \n,
+    // which we approximate by positionIsEOL. In that case (but only when searching forward)
+    // we need to "offset" by getRight for searching the next match, otherwise we get stuck.
+    const searchForward = searchState.searchDirection === SearchDirection.Forward;
+    const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
+    const nextMatch =
+      positionIsEOL && searchForward
+        ? searchState.getNextSearchMatchPosition(position.getRight())
+        : searchState.getNextSearchMatchPosition(position);
 
     if (!nextMatch) {
       StatusBar.displayError(
@@ -483,7 +481,14 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    const prevMatch = searchState.getNextSearchMatchPosition(position, SearchDirection.Backward);
+    const searchForward = searchState.searchDirection === SearchDirection.Forward;
+    const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
+
+    // see implementation of n, above.
+    const prevMatch =
+      positionIsEOL && !searchForward
+        ? searchState.getNextSearchMatchPosition(position.getRight(), SearchDirection.Backward)
+        : searchState.getNextSearchMatchPosition(position, SearchDirection.Backward);
 
     if (!prevMatch) {
       StatusBar.displayError(
