@@ -1,9 +1,7 @@
-import { getTestingFunctions } from './testSimplifier';
+import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('sentence motion', () => {
-  const { newTest } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace(undefined, '.js');
   });

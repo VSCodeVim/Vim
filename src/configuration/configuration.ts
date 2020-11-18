@@ -154,7 +154,9 @@ class Configuration implements IConfiguration {
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
+    const resource = activeTextEditor
+      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
+      : null;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -194,6 +196,8 @@ class Configuration implements IConfiguration {
   };
 
   replaceWithRegister = false;
+
+  smartRelativeLine = false;
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;

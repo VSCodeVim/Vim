@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
 import { FileCommand } from './../cmd_line/commands/file';
-import { Position } from './../common/motion/position';
 import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
 import { getCursorsAfterSync } from '../util/util';
-import { existsAsync } from '../util/fs';
+import { existsAsync } from 'platform/fs';
+import { Position } from 'vscode';
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState
@@ -118,7 +118,7 @@ export class JumpTracker {
         name: jump.fileName,
         lineNumber: jump.position.line,
         createFileIfNotExists: false,
-      }).execute();
+      }).execute(vimState);
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
@@ -152,7 +152,7 @@ export class JumpTracker {
   ): Promise<void> {
     let jump = new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position,
     });
 
@@ -165,7 +165,7 @@ export class JumpTracker {
       return;
     }
 
-    const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
+    const jumpedFiles = jump.fileName !== vimState.document.fileName;
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);

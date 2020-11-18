@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 
@@ -35,7 +36,7 @@ export class SmileCommand extends node.CommandBase {
     super();
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
     await TextEditor.insert(SmileCommand.smileText);
   }

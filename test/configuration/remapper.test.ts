@@ -114,7 +114,7 @@ suite('Remapper', () => {
     configuration.visualModeKeyBindings = visualModeKeyBindings || [];
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   };
 
@@ -189,24 +189,6 @@ suite('Remapper', () => {
         before: 'jj',
         after: '<Esc>',
         input: 'jj',
-        mode: Mode.Insert,
-        expectedAfter: '<Esc>',
-        expectedAfterMode: Mode.Normal,
-      },
-      {
-        // able to match with preceding keystrokes in insert mode
-        before: 'jj',
-        after: '<Esc>',
-        input: 'hello world jj',
-        mode: Mode.Insert,
-        expectedAfter: '<Esc>',
-        expectedAfterMode: Mode.Normal,
-      },
-      {
-        // able to match with preceding keystrokes in insert mode
-        before: 'jj',
-        after: '<Esc>',
-        input: 'ifoo<Esc>ciwjj',
         mode: Mode.Insert,
         expectedAfter: '<Esc>',
         expectedAfterMode: Mode.Normal,

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
-import { Position, PositionDiff, sorted } from './../../common/motion/position';
+import { PositionDiff, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
@@ -26,7 +26,8 @@ import {
   SelectInnerSentence,
   SelectInnerWord,
   TextObjectMovement,
-} from './../textobject';
+} from '../../textobject/textobject';
+import { Position } from 'vscode';
 
 export interface SurroundState {
   /** The operator paired with the surround action. "yank" is really "add", but it uses 'y' */
@@ -340,8 +341,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     const firstRange = new Range(firstRangeStart, firstRangeEnd);
     const secondRange = new Range(secondRangeStart, secondRangeEnd);
 
-    vimState.recordedState.transformations.push({ type: 'deleteRange', range: firstRange });
-    vimState.recordedState.transformations.push({ type: 'deleteRange', range: secondRange });
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteRange',
+      range: firstRange,
+    });
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteRange',
+      range: secondRange,
+    });
   }
 
   private static getStartAndEndReplacements(
@@ -416,8 +423,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         return false;
       }
 
-      const start = Position.FromVSCodePosition(vimState.surround.range.start);
-      let end = Position.FromVSCodePosition(vimState.surround.range.end);
+      const start = vimState.surround.range.start;
+      let end = vimState.surround.range.end;
 
       if (TextEditor.getCharAt(end) !== ' ') {
         end = end.getRight();
@@ -428,14 +435,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         endReplace = '\n' + endReplace;
       }
 
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
         text: startReplace,
         position: start,
         // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
         diff: new PositionDiff({ character: -startReplace.length }),
       });
-      vimState.recordedState.transformations.push({
+      vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
         text: endReplace,
         position: end,
@@ -541,12 +548,12 @@ class CommandSurroundAddToReplacement extends BaseCommand {
           startReplace += '\n';
         }
 
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: startReplace,
           position: start,
         });
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: endReplace,
           position: stop,
@@ -565,12 +572,12 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     if (operator === 'change') {
       if (replaceRanges) {
         const [startReplaceRange, endReplaceRange] = replaceRanges;
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: startReplace,
           range: startReplaceRange,
         });
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: endReplace,
           range: endReplaceRange,
@@ -583,11 +590,11 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     if (operator === 'delete') {
       if (replaceRanges) {
         const [startReplaceRange, endReplaceRange] = replaceRanges;
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'deleteRange',
           range: startReplaceRange,
         });
-        vimState.recordedState.transformations.push({
+        vimState.recordedState.transformer.addTransformation({
           type: 'deleteRange',
           range: endReplaceRange,
         });

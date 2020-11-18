@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../extension';
-import { Position } from '../src/common/motion/position';
 import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
@@ -14,73 +13,63 @@ import * as os from 'os';
 import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
 import { IConfiguration } from '../src/configuration/iconfiguration';
+import { Position } from 'vscode';
 
-export function getTestingFunctions() {
-  function getNiceStack(stack: string | undefined): string {
-    return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
-  }
-
-  function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
-    testObj: T,
-    testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
-    innerTest: (modeHandler: ModeHandler, testObj: T) => Promise<void>
-  ): void {
-    const stack = new Error().stack;
-    const niceStack = getNiceStack(stack);
-
-    testFunc(testObj.title, async () => {
-      const prevConfig = { ...Globals.mockConfiguration };
-      try {
-        if (testObj.config) {
-          for (const key in testObj.config) {
-            if (testObj.config.hasOwnProperty(key)) {
-              const value = testObj.config[key];
-              Globals.mockConfiguration[key] = value;
-            }
-          }
-          await reloadConfiguration();
-        }
-        const mh = await getAndUpdateModeHandler();
-        await innerTest(mh, testObj);
-      } catch (reason) {
-        reason.stack = niceStack;
-        throw reason;
-      } finally {
-        if (testObj.config) {
-          Globals.mockConfiguration = prevConfig;
-          await reloadConfiguration();
-        }
-      }
-    });
-  }
-
-  const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test, testIt);
-
-  const newTestOnly = (testObj: ITestObject) => {
-    console.warn('!!! Running single test !!!');
-    return newTestGeneric(testObj, test.only, testIt);
-  };
-
-  const newTestSkip = (testObj: ITestObject) => newTestGeneric(testObj, test.skip, testIt);
-
-  const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
-    newTestGeneric(testObj, test, testItWithRemaps);
-  const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) => {
-    console.warn('!!! Running single test !!!');
-    return newTestGeneric(testObj, test.only, testItWithRemaps);
-  };
-  const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
-    newTestGeneric(testObj, test.skip, testItWithRemaps);
-
-  return {
-    newTest,
-    newTestOnly,
-    newTestSkip,
-    newTestWithRemaps,
-    newTestWithRemapsOnly,
-    newTestWithRemapsSkip,
-  };
+function getNiceStack(stack: string | undefined): string {
+  return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
 }
+
+function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
+  testObj: T,
+  testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
+  innerTest: (modeHandler: ModeHandler, testObj: T) => Promise<void>
+): void {
+  const stack = new Error().stack;
+  const niceStack = getNiceStack(stack);
+
+  testFunc(testObj.title, async () => {
+    const prevConfig = { ...Globals.mockConfiguration };
+    try {
+      if (testObj.config) {
+        for (const key in testObj.config) {
+          if (testObj.config.hasOwnProperty(key)) {
+            const value = testObj.config[key];
+            Globals.mockConfiguration[key] = value;
+          }
+        }
+        await reloadConfiguration();
+      }
+      const mh = (await getAndUpdateModeHandler())!;
+      await innerTest(mh, testObj);
+    } catch (reason) {
+      reason.stack = niceStack;
+      throw reason;
+    } finally {
+      if (testObj.config) {
+        Globals.mockConfiguration = prevConfig;
+        await reloadConfiguration();
+      }
+    }
+  });
+}
+
+export const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test, testIt);
+
+export const newTestOnly = (testObj: ITestObject) => {
+  console.warn('!!! Running single test !!!');
+  return newTestGeneric(testObj, test.only, testIt);
+};
+
+export const newTestSkip = (testObj: ITestObject) => newTestGeneric(testObj, test.skip, testIt);
+
+export const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
+  newTestGeneric(testObj, test, testItWithRemaps);
+export const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) => {
+  console.warn('!!! Running single test !!!');
+  return newTestGeneric(testObj, test.only, testItWithRemaps);
+};
+export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
+  newTestGeneric(testObj, test.skip, testItWithRemaps);
 
 interface ITestObject {
   title: string;

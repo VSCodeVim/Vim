@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { VimState } from '../state/vimState';
 
 /**
@@ -41,7 +41,7 @@ export class Jump {
   public static fromStateNow(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: vimState.cursorStopPosition,
     });
   }
@@ -54,7 +54,7 @@ export class Jump {
   public static fromStateBefore(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: vimState.cursorsInitialState[0].stop,
     });
   }

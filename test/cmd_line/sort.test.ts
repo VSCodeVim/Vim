@@ -10,7 +10,7 @@ suite('Basic sort', () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   });
 

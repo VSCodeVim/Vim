@@ -21,6 +21,7 @@ suite('Notation', () => {
       '<EnTeR>': '\n',
       '<space>': ' ',
       '<uP>': '<up>',
+      '<Shift+Tab>': '<S-tab>',
     };
 
     for (const test in testCases) {

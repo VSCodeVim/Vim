@@ -1,6 +1,6 @@
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { IConfiguration } from '../iconfiguration';
-import { existsAsync } from '../../util/fs';
+import { existsAsync } from 'platform/fs';
 import { Globals } from '../../globals';
 import { configurationValidator } from '../configurationValidator';
 
