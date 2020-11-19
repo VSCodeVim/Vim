@@ -32,7 +32,7 @@ export async function getAndUpdateModeHandler(
   forceSyncAndUpdate = false
 ): Promise<ModeHandler | undefined> {
   const activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor === undefined) {
+  if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
     return undefined;
   }
 
