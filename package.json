@@ -1035,11 +1035,6 @@
     "test": "node ./out/test/runTest.js",
     "forceprettier": "gulp forceprettier"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "dependencies": {
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.20",
@@ -1067,12 +1062,10 @@
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "husky": "4.3.0",
     "minimist": "1.2.5",
     "mocha": "8.2.1",
     "plugin-error": "1.0.1",
     "prettier": "2.2.0",
-    "pretty-quick": "3.1.0",
     "sinon": "9.2.1",
     "ts-loader": "8.0.9",
     "tslint": "6.1.3",
