@@ -33,7 +33,7 @@ export abstract class TextObjectMovement extends BaseMovement {
     return res;
   }
 
-  public abstract async execAction(position: Position, vimState: VimState): Promise<IMovement>;
+  public abstract execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction
