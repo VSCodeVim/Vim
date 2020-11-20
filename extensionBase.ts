@@ -11,7 +11,7 @@ import { Mode } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
 import { StatusBar } from './src/statusBar';
-import { VsCodeContext } from './src/util/vscode-context';
+import { VSCodeContext } from './src/util/vscodeContext';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
@@ -32,7 +32,7 @@ export async function getAndUpdateModeHandler(
   forceSyncAndUpdate = false
 ): Promise<ModeHandler | undefined> {
   const activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor === undefined) {
+  if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
     return undefined;
   }
 
@@ -451,14 +451,17 @@ export async function activate(
   );
 
   for (const boundKey of configuration.boundKeyCombinations) {
-    registerCommand(context, boundKey.command, () => {
-      if (['<Esc>', '<C-c>'].includes(boundKey.key)) {
-        checkIfRecursiveRemapping(`${boundKey.key}`);
-        handleKeyEvent(`${boundKey.key}`);
-      } else {
-        handleKeyEvent(`${boundKey.key}`);
-      }
-    });
+    const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
+      ? async () => {
+          const didStopRemap = await forceStopRecursiveRemap();
+          if (!didStopRemap) {
+            handleKeyEvent(`${boundKey.key}`);
+          }
+        }
+      : () => {
+          handleKeyEvent(`${boundKey.key}`);
+        };
+    registerCommand(context, boundKey.command, command);
   }
 
   {
@@ -472,7 +475,7 @@ export async function activate(
 
   // Disable automatic keyboard navigation in lists, so it doesn't interfere
   // with our list navigation keybindings
-  await VsCodeContext.Set('listAutomaticKeyboardNavigation', false);
+  await VSCodeContext.set('listAutomaticKeyboardNavigation', false);
 
   await toggleExtension(configuration.disableExtension, compositionState);
 
@@ -486,12 +489,7 @@ export async function activate(
  * @param isDisabled if true, sets VSCodeVim to Disabled mode; else sets to enabled mode
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
-  await VsCodeContext.Set('vim.active', !isDisabled);
-  if (!vscode.window.activeTextEditor) {
-    // This was happening in unit tests.
-    // If activate was called and no editor window is open, we can't properly initialize.
-    return;
-  }
+  await VSCodeContext.set('vim.active', !isDisabled);
   const mh = await getAndUpdateModeHandler();
   if (mh) {
     if (isDisabled) {
@@ -576,15 +574,17 @@ async function handleKeyEvent(key: string): Promise<void> {
   }
 }
 
-async function checkIfRecursiveRemapping(key: string): Promise<void> {
+/**
+ * @returns true if there was a remap being executed to stop
+ */
+async function forceStopRecursiveRemap(): Promise<boolean> {
   const mh = await getAndUpdateModeHandler();
-  if (mh) {
-    if (mh.vimState.isCurrentlyPerformingRecursiveRemapping) {
-      mh.vimState.forceStopRecursiveRemapping = true;
-    } else {
-      handleKeyEvent(key);
-    }
+  if (mh?.vimState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.vimState.forceStopRecursiveRemapping = true;
+    return true;
   }
+
+  return false;
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {

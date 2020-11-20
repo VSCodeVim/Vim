@@ -2334,6 +2334,20 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  newTest({
+    title: '/ search $, walk over matches',
+    start: ['|start', '', '', 'end'],
+    keysPressed: '/$\nnnn',
+    end: ['start', '', '', 'en|d'],
+  });
+
+  newTest({
+    title: '?, match at EOL, walk over matches',
+    start: ['x end', 'x', 'x', '|start'],
+    keysPressed: '?x\nnn',
+    end: ['|x end', 'x', 'x', 'start'],
+  });
+
   /**
    * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
    */
@@ -2365,27 +2379,21 @@ suite('Mode Normal', () => {
     end: ['__ASDF', '|asdf'],
   });
 
-  newTest({
-    title: '<BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
+  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
+    newTest({
+      title: `${backspace} deletes the last character in search in progress mode`,
+      start: ['|foo', 'bar', 'abd'],
+      keysPressed: `/abc${backspace}d\n`,
+      end: ['foo', 'bar', '|abd'],
+      endMode: Mode.Normal,
+    });
+  }
 
   newTest({
-    title: '<S-BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<shift+BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '<C-h> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<C-h>d\n',
-    end: ['foo', 'bar', '|abd'],
+    title: '<C-l> adds the next character in the first match to search term',
+    start: ['|foo', 'bar', 'abcd'],
+    keysPressed: '/ab<C-l>d\n',
+    end: ['foo', 'bar', '|abcd'],
     endMode: Mode.Normal,
   });
 

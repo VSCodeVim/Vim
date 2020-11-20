@@ -47,8 +47,12 @@ export class TextEditor {
   /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
-  static async insertAt(text: string, position: Position): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit((editBuilder) => {
+  static async insertAt(
+    editor: vscode.TextEditor,
+    text: string,
+    position: Position
+  ): Promise<boolean> {
+    return editor.edit((editBuilder) => {
       editBuilder.insert(position, text);
     });
   }
@@ -65,12 +69,17 @@ export class TextEditor {
   /**
    * @deprecated. Use ReplaceTextTransformation instead.
    */
-  static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit((editBuilder) => {
+  static async replace(
+    editor: vscode.TextEditor,
+    range: vscode.Range,
+    text: string
+  ): Promise<boolean> {
+    return editor.edit((editBuilder) => {
       editBuilder.replace(range, text);
     });
   }
 
+  /** @deprecated Use vimState.document.lineAt().text directly */
   static readLineAt(lineNo: number): string {
     if (lineNo === null) {
       lineNo = vscode.window.activeTextEditor!.selection.active.line;
@@ -83,6 +92,7 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.lineAt(lineNo).text;
   }
 
+  /** @deprecated Use vimState.document.lineCount */
   static getLineCount(textEditor?: vscode.TextEditor): number {
     textEditor ??= vscode.window.activeTextEditor;
     return textEditor?.document.lineCount ?? -1;
@@ -96,10 +106,12 @@ export class TextEditor {
     return TextEditor.readLineAt(line).length;
   }
 
+  /** @deprecated Use `vimState.document.lineAt()` directly */
   static getLine(lineNumber: number): vscode.TextLine {
     return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
   }
 
+  /** @deprecated Use `vimState.document.lineAt()` directly */
   static getLineAt(position: Position): vscode.TextLine {
     return vscode.window.activeTextEditor!.document.lineAt(position);
   }
@@ -115,6 +127,7 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.selection;
   }
 
+  /** @deprecated Use vimState.document.getText() */
   static getText(selection?: vscode.Range): string {
     return vscode.window.activeTextEditor!.document.getText(selection);
   }
@@ -182,6 +195,7 @@ export class TextEditor {
     return position.line === 0;
   }
 
+  /** @deprecated Use position.line === vimState.document.lineCount - 1 */
   static isLastLine(position: Position): boolean {
     return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
   }
@@ -222,14 +236,6 @@ export class TextEditor {
       : '\t'.repeat(screenCharacters / tabSize) + ' '.repeat(screenCharacters % tabSize);
 
     return line.replace(/^\s*/, indentString);
-  }
-
-  static getPositionAt(offset: number): Position {
-    return vscode.window.activeTextEditor!.document.positionAt(offset);
-  }
-
-  static getOffsetAt(position: Position): number {
-    return vscode.window.activeTextEditor!.document.offsetAt(position);
   }
 
   static getDocumentBegin(): Position {
@@ -281,7 +287,7 @@ export class TextEditor {
       reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd;
       reverse ? lineIndex-- : lineIndex++
     ) {
-      const line = TextEditor.getLine(lineIndex).text;
+      const line = vimState.document.lineAt(lineIndex).text;
       const endCharacter = runToLineEnd
         ? line.length + 1
         : Math.min(line.length, bottomRight.character + 1);

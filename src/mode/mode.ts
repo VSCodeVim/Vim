@@ -27,6 +27,7 @@ export enum VSCodeVimCursorType {
   Underline,
   TextDecoration,
   Native,
+  UnderlineThin,
 }
 
 /**
@@ -164,6 +165,8 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Underline:
       return vscode.TextEditorCursorStyle.Underline;
+    case VSCodeVimCursorType.UnderlineThin:
+      return vscode.TextEditorCursorStyle.UnderlineThin;
     case VSCodeVimCursorType.TextDecoration:
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Native:

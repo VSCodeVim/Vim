@@ -30,8 +30,8 @@ export class SearchState {
   /**
    * Every range in the document that matches the search string.
    */
-  public getMatchRanges(document: vscode.TextDocument): vscode.Range[] {
-    return this.recalculateSearchRanges(document);
+  public getMatchRanges(editor: vscode.TextEditor): vscode.Range[] {
+    return this.recalculateSearchRanges(editor);
   }
   private matchRanges: Map<string, { version: number; ranges: Array<vscode.Range> }> = new Map();
 
@@ -161,10 +161,12 @@ export class SearchState {
     return this._needleRegex;
   }
 
-  private recalculateSearchRanges(document: vscode.TextDocument): vscode.Range[] {
+  private recalculateSearchRanges(editor: vscode.TextEditor): vscode.Range[] {
     if (this.needle === '') {
       return [];
     }
+
+    const document = editor.document;
 
     const cached = this.matchRanges.get(document.fileName);
     if (cached?.version === document.version) {
@@ -174,7 +176,7 @@ export class SearchState {
     // We store the entire text file as a string inside text, and run the
     // regex against it many times to find all of our matches.
     const text = document.getText();
-    const selection = vscode.window.activeTextEditor!.selection;
+    const selection = editor.selection;
     const startOffset = document.offsetAt(selection.active);
     const regex = this.needleRegex;
     regex.lastIndex = startOffset;
@@ -231,10 +233,11 @@ export class SearchState {
    * Pass in -1 as direction to reverse the direction we search.
    */
   public getNextSearchMatchPosition(
+    editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { pos: Position; match: boolean; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(startPosition, direction);
+    const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -263,13 +266,11 @@ export class SearchState {
    * end is exclusive; which means the index is start + matchedString.length
    */
   public getNextSearchMatchRange(
+    editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { start: Position; end: Position; match: boolean; index: number } | undefined {
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-    const matchRanges = this.recalculateSearchRanges(vscode.window.activeTextEditor.document);
+    const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
       // TODO(bell)
@@ -331,12 +332,10 @@ export class SearchState {
   }
 
   public getSearchMatchRangeOf(
+    editor: vscode.TextEditor,
     pos: Position
   ): { start: Position; end: Position; match: boolean; index: number } {
-    if (!vscode.window.activeTextEditor) {
-      return { start: pos, end: pos, match: false, index: -1 };
-    }
-    const matchRanges = this.recalculateSearchRanges(vscode.window.activeTextEditor.document);
+    const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
       // TODO(bell)

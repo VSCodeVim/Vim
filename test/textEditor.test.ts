@@ -27,7 +27,7 @@ suite('text editor', () => {
     const end = new vscode.Position(0, 11);
     const range: vscode.Range = new vscode.Range(start, end);
 
-    await TextEditor.replace(range, newText);
+    await TextEditor.replace(vscode.window.activeTextEditor!, range, newText);
     assert.strictEqual(vscode.window.activeTextEditor!.document.lineCount, 1);
 
     const actualText = TextEditor.readLineAt(0);

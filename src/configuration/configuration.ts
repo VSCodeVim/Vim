@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
-import { VsCodeContext } from '../util/vscode-context';
+import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
 import { vimrc } from './vimrc';
@@ -143,20 +143,18 @@ class Configuration implements IConfiguration {
         }
       }
 
-      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
+      VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
     }
 
-    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
-    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+    VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
+    VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
     return validatorResults;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor
-      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
-      : null;
+    const document = vscode.window.activeTextEditor?.document;
+    const resource = document ? { uri: document.uri, languageId: document.languageId } : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 

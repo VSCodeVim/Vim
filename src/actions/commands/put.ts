@@ -121,7 +121,7 @@ export class PutCommand extends BaseCommand {
     let text = await PutCommand.getText(vimState, register, this.multicursorIndex);
 
     const noPrevLine = vimState.cursorStartPosition.line === 0;
-    const noNextLine = vimState.cursorStopPosition.line === TextEditor.getLineCount() - 1;
+    const noNextLine = vimState.cursorStopPosition.line === vimState.document.lineCount - 1;
 
     let textToAdd: string;
     let whereToAddText: Position;
@@ -143,7 +143,9 @@ export class PutCommand extends BaseCommand {
     } else {
       if (options.adjustIndent) {
         // Adjust indent to current line
-        let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
+        let indentationWidth = TextEditor.getIndentationLevel(
+          vimState.document.lineAt(position).text
+        );
         let firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
 
         text = text
@@ -192,7 +194,7 @@ export class PutCommand extends BaseCommand {
     // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
     const numNewlines = text.split('\n').length - 1;
-    const currentLineLength = TextEditor.getLineAt(position).text.length;
+    const currentLineLength = vimState.document.lineAt(position).text.length;
 
     let diff: PositionDiff;
     if (vimState.currentMode === Mode.VisualLine) {
@@ -300,14 +302,17 @@ export class PutCommand extends BaseCommand {
     }
 
     // Add empty lines at the end of the document, if necessary.
-    let linesToAdd = Math.max(0, block.length - (TextEditor.getLineCount() - position.line) + 1);
-
+    const linesToAdd = Math.max(
+      0,
+      block.length - (vimState.document.lineCount - position.line) + 1
+    );
     if (linesToAdd > 0) {
       await TextEditor.insertAt(
+        vimState.editor,
         Array(linesToAdd).join('\n'),
         new Position(
-          TextEditor.getLineCount() - 1,
-          TextEditor.getLineLength(TextEditor.getLineCount() - 1)
+          vimState.document.lineCount - 1,
+          TextEditor.getLineLength(vimState.document.lineCount - 1)
         )
       );
     }
@@ -320,7 +325,7 @@ export class PutCommand extends BaseCommand {
         Math.min(position.character, TextEditor.getLineLength(lineIndex))
       );
 
-      await TextEditor.insertAt(line, insertPos);
+      await TextEditor.insertAt(vimState.editor, line, insertPos);
     }
 
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;

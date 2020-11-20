@@ -105,7 +105,7 @@ export class SelectABigWord extends TextObjectMovement {
     let start: Position;
     let stop: Position;
 
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
       start = position.getLastBigWordEnd().getRight();
@@ -269,7 +269,7 @@ export class SelectInnerWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
       start = position.getLastWordEnd().getRight();
@@ -310,7 +310,7 @@ export class SelectInnerBigWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
       start = position.getLastBigWordEnd().getRight();
@@ -453,7 +453,7 @@ export class SelectParagraph extends TextObjectMovement {
     let start: Position;
     const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
 
-    if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
+    if (vimState.document.lineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
       start = getCurrentParagraphEnd(getCurrentParagraphBeginning(position, true), true);
     } else {
@@ -467,8 +467,8 @@ export class SelectParagraph extends TextObjectMovement {
     // Include additional blank lines.
     let stop = getCurrentParagraphEnd(position, true);
     while (
-      stop.line < TextEditor.getLineCount() - 1 &&
-      TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
+      stop.line < vimState.document.lineCount - 1 &&
+      vimState.document.lineAt(stop.getDown()).isEmptyOrWhitespace
     ) {
       stop = stop.getDownWithDesiredColumn(0);
     }
@@ -490,30 +490,30 @@ export class SelectInnerParagraph extends TextObjectMovement {
     let start: Position;
     let stop: Position;
 
-    if (TextEditor.getLineAt(position).isEmptyOrWhitespace) {
+    if (vimState.document.lineAt(position).isEmptyOrWhitespace) {
       // The cursor is at an empty line, so white lines are the paragraph.
       start = position.getLineBegin();
       stop = position.getLineEnd();
-      while (start.line > 0 && TextEditor.getLineAt(start.getUp()).isEmptyOrWhitespace) {
+      while (start.line > 0 && vimState.document.lineAt(start.getUp()).isEmptyOrWhitespace) {
         start = start.getUpWithDesiredColumn(0);
       }
       while (
-        stop.line < TextEditor.getLineCount() - 1 &&
-        TextEditor.getLineAt(stop.getDown()).isEmptyOrWhitespace
+        stop.line < vimState.document.lineCount - 1 &&
+        vimState.document.lineAt(stop.getDown()).isEmptyOrWhitespace
       ) {
         stop = stop.getDownWithDesiredColumn(0);
       }
     } else {
       const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
       stop = getCurrentParagraphEnd(position, true);
-      if (TextEditor.getLineAt(currentParagraphBegin).isEmptyOrWhitespace) {
+      if (vimState.document.lineAt(currentParagraphBegin).isEmptyOrWhitespace) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {
         start = currentParagraphBegin;
       }
 
       // Exclude additional blank lines.
-      while (stop.line > 0 && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
+      while (stop.line > 0 && vimState.document.lineAt(stop).isEmptyOrWhitespace) {
         stop = stop.getUpWithDesiredColumn(0).getLineEnd();
       }
     }
@@ -545,11 +545,11 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
     let start: Position = TextEditor.getDocumentBegin();
     let stop: Position = TextEditor.getDocumentEnd();
 
-    while (start.line < stop.line && TextEditor.getLineAt(start).isEmptyOrWhitespace) {
+    while (start.line < stop.line && vimState.document.lineAt(start).isEmptyOrWhitespace) {
       start = start.getDown();
     }
 
-    while (stop.line > start.line && TextEditor.getLineAt(stop).isEmptyOrWhitespace) {
+    while (stop.line > start.line && vimState.document.lineAt(stop).isEmptyOrWhitespace) {
       stop = stop.getUp();
     }
     stop = stop.getLineEnd();
@@ -570,7 +570,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
     const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
-    const firstValidLine = TextEditor.getLine(firstValidLineNumber);
+    const firstValidLine = vimState.document.lineAt(firstValidLineNumber);
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
@@ -598,21 +598,21 @@ abstract class IndentObjectMatch extends TextObjectMovement {
       endLineNumber += 1;
     }
     // Check for OOB.
-    if (endLineNumber > TextEditor.getLineCount() - 1) {
-      endLineNumber = TextEditor.getLineCount() - 1;
+    if (endLineNumber > vimState.document.lineCount - 1) {
+      endLineNumber = vimState.document.lineCount - 1;
     }
 
     // If initiated by a change operation, adjust the cursor to the indent level
     // of the block.
     let startCharacter = 0;
     if (isChangeOperator) {
-      startCharacter = TextEditor.getLine(startLineNumber).firstNonWhitespaceCharacterIndex;
+      startCharacter = vimState.document.lineAt(startLineNumber).firstNonWhitespaceCharacterIndex;
     }
     // TextEditor.getLineMaxColumn throws when given line 0, which we don't
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
     let endCharacter: number;
-    if (endLineNumber === TextEditor.getLineCount() - 1 || vimState.currentMode === Mode.Visual) {
+    if (endLineNumber === vimState.document.lineCount - 1 || vimState.currentMode === Mode.Visual) {
       endCharacter = TextEditor.getLineLength(endLineNumber);
     } else {
       endCharacter = 0;

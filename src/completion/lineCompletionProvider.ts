@@ -118,7 +118,7 @@ export const getCompletionsForCurrentLine = (
   position: Position,
   document: vscode.TextDocument
 ): string[] | null => {
-  const currentLineText = TextEditor.getText(
+  const currentLineText = document.getText(
     new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
   );
 

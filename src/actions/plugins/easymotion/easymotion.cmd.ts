@@ -116,19 +116,25 @@ function getMatchesForString(
       return [];
     case ' ':
       // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
+      return vimState.easyMotion.sortedSearch(
+        vimState,
+        position,
+        new RegExp(' {1,}', 'g'),
+        options
+      );
     default:
       // Search all occurences of the character pressed
 
       // If the input is not a letter, treating it as regex can cause issues
       if (!/[a-zA-Z]/.test(searchString)) {
-        return vimState.easyMotion.sortedSearch(position, searchString, options);
+        return vimState.easyMotion.sortedSearch(vimState, position, searchString, options);
       }
 
       const ignorecase =
         configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
       return vimState.easyMotion.sortedSearch(
+        vimState,
         position,
         new RegExp(searchString, regexFlags),
         options
@@ -305,7 +311,7 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
     const regex = this._options.jumpToAnywhere
       ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
       : new RegExp('\\w{1,}', 'g');
-    return vimState.easyMotion.sortedSearch(position, regex, options);
+    return vimState.easyMotion.sortedSearch(vimState, position, regex, options);
   }
 }
 
@@ -331,7 +337,12 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
     options?: EasyMotion.SearchOptions
   ): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor
-    const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
+    const matches = vimState.easyMotion.sortedSearch(
+      vimState,
+      position,
+      new RegExp('^.', 'gm'),
+      options
+    );
     for (const match of matches) {
       match.position = TextEditor.getFirstNonWhitespaceCharOnLine(match.position.line);
     }
@@ -349,7 +360,7 @@ class EasyMotionCharInputMode extends BaseCommand {
     const action = vimState.easyMotion.searchAction;
     const oldSearchString = action.getSearchString();
     const newSearchString =
-      key === '<BS>' || key === '<shift+BS>' ? oldSearchString.slice(0, -1) : oldSearchString + key;
+      key === '<BS>' || key === '<S-bs>' ? oldSearchString.slice(0, -1) : oldSearchString + key;
     action.updateSearchString(newSearchString);
     if (action.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it
