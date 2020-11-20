@@ -393,12 +393,10 @@ class PutCommandVisual extends BaseCommand {
       const replaceRegisterName = vimState.recordedState.registerName;
       const replaceRegister = (await Register.get(vimState, replaceRegisterName))!;
       vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      await new operator.DeleteOperator(this.multicursorIndex).run(
-        vimState,
-        start,
-        end,
-        !vimState.isMultiCursor
-      );
+      // visual paste breaks for multicursor as of november 2020 because of the yank part
+      // so we disable it for now, see: https://github.com/VSCodeVim/Vim/issues/5493#issuecomment-731147687
+      const yank = !vimState.isMultiCursor;
+      await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, yank);
       const deletedRegisterName = vimState.recordedState.registerName;
       const deletedRegister = (await Register.get(vimState, deletedRegisterName))!;
       if (replaceRegisterName === deletedRegisterName) {
@@ -429,6 +427,7 @@ class PutCommandVisual extends BaseCommand {
     vimState.currentRegisterMode =
       oldMode === Mode.VisualLine ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+    // see above
     if (!vimState.isMultiCursor) {
       await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
     }
