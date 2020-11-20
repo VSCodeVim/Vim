@@ -393,7 +393,12 @@ class PutCommandVisual extends BaseCommand {
       const replaceRegisterName = vimState.recordedState.registerName;
       const replaceRegister = (await Register.get(vimState, replaceRegisterName))!;
       vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, true);
+      await new operator.DeleteOperator(this.multicursorIndex).run(
+        vimState,
+        start,
+        end,
+        !vimState.isMultiCursor
+      );
       const deletedRegisterName = vimState.recordedState.registerName;
       const deletedRegister = (await Register.get(vimState, deletedRegisterName))!;
       if (replaceRegisterName === deletedRegisterName) {
@@ -424,7 +429,9 @@ class PutCommandVisual extends BaseCommand {
     vimState.currentRegisterMode =
       oldMode === Mode.VisualLine ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-    await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
+    if (!vimState.isMultiCursor) {
+      await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
+    }
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
