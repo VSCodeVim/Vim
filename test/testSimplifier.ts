@@ -577,7 +577,7 @@ async function testItWithRemaps(
     };
 
     const p2 = () => {
-      return new Promise<ResultType>((p2Resolve, p2Reject) => {
+      return new Promise<ResultType | undefined>((p2Resolve, p2Reject) => {
         if (waitsForTimeout) {
           setTimeout(async () => {
             if (modeHandler.vimState.isCurrentlyPerformingRemapping) {
@@ -604,7 +604,7 @@ async function testItWithRemaps(
             });
           }, timeout + timeoutOffset);
         } else {
-          p2Resolve();
+          p2Resolve(undefined);
         }
       });
     };
@@ -648,7 +648,7 @@ async function testItWithRemaps(
       );
     }
 
-    if (waitsForTimeout) {
+    if (result2) {
       // After the timeout finishes (plus an offset to be sure it finished)
       assert.notStrictEqual(result2, undefined);
 
