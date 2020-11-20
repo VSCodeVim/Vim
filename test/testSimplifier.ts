@@ -555,95 +555,80 @@ async function testItWithRemaps(
     jumpTracker.clearJumps();
 
     // Checks if this step should wait for timeout or not
-    let waitsForTimeout = step.stepResult.endAfterTimeout !== undefined;
+    const waitsForTimeout = step.stepResult.endAfterTimeout !== undefined;
 
-    let result1: { lines: string; position: vscode.Position; endMode: Mode }[] = await new Promise(
-      async (r1Resolve, r1Reject) => {
-        let p1: Promise<{ lines: string; position: vscode.Position; endMode: Mode }> | undefined;
-        let p2: Promise<{ lines: string; position: vscode.Position; endMode: Mode }> | undefined;
+    type ResultType = {
+      lines: string;
+      position: vscode.Position;
+      endMode: Mode;
+    };
 
-        let p1Start = () => {
-          return new Promise<{ lines: string; position: vscode.Position; endMode: Mode }>(
-            (p1Resolve, p1Reject) => {
-              setTimeout(() => {
-                // get lines, position and mode after half timeout finishes
-                const currentLines = TextEditor.getText();
-                const currentPosition = TextEditor.getSelection().start;
-                const currentMode = modeHandler.currentMode;
-                p1Resolve({ lines: currentLines, position: currentPosition, endMode: currentMode });
-              }, timeoutOffset);
-            }
-          );
-        };
-        let p2Start = () => {
-          return new Promise<{ lines: string; position: vscode.Position; endMode: Mode }>(
-            (p2Resolve, p2Reject) => {
-              if (waitsForTimeout) {
-                setTimeout(async () => {
-                  if (modeHandler.vimState.isCurrentlyPerformingRemapping) {
-                    // Performing a remapping, which means it started at the right time but it has not
-                    // finished yet (maybe the remapping has a lot of keys to handle) so we wait for the
-                    // remapping to finish
-                    const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-                    while (modeHandler.vimState.isCurrentlyPerformingRemapping) {
-                      // Wait a little bit longer here because the currently performing remap might have
-                      // some remaining keys to handle after it finishes performing the remap and there
-                      // might even be there some keys still to be sent that might create another remap.
-                      // Example: if you have and ambiguous remap like 'ab -> abcd' and 'abc -> abcdef'
-                      // and an insert remap like 'jj -> <Esc>' and you press 'abjj' the first 'j' breaks
-                      // the ambiguity and makes the remap start performing, but when the remap finishes
-                      // performing there is still the 'jj' to be handled and remapped.
-                      await wait(10);
-                    }
-                  }
-                  // get lines, position and mode after timeout + offset finishes
-                  const currentLines = TextEditor.getText();
-                  const currentPosition = TextEditor.getSelection().start;
-                  const currentMode = modeHandler.currentMode;
-                  p2Resolve({
-                    lines: currentLines,
-                    position: currentPosition,
-                    endMode: currentMode,
-                  });
-                }, timeout + timeoutOffset);
-              } else {
-                p2Resolve();
+    const p1 = () => {
+      return new Promise<ResultType>((p1Resolve, p1Reject) => {
+        setTimeout(() => {
+          // Get lines, position and mode after half timeout finishes
+          p1Resolve({
+            lines: TextEditor.getText(),
+            position: TextEditor.getSelection().start,
+            endMode: modeHandler.currentMode,
+          });
+        }, timeoutOffset);
+      });
+    };
+
+    const p2 = () => {
+      return new Promise<ResultType>((p2Resolve, p2Reject) => {
+        if (waitsForTimeout) {
+          setTimeout(async () => {
+            if (modeHandler.vimState.isCurrentlyPerformingRemapping) {
+              // Performing a remapping, which means it started at the right time but it has not
+              // finished yet (maybe the remapping has a lot of keys to handle) so we wait for the
+              // remapping to finish
+              const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+              while (modeHandler.vimState.isCurrentlyPerformingRemapping) {
+                // Wait a little bit longer here because the currently performing remap might have
+                // some remaining keys to handle after it finishes performing the remap and there
+                // might even be there some keys still to be sent that might create another remap.
+                // Example: if you have and ambiguous remap like 'ab -> abcd' and 'abc -> abcdef'
+                // and an insert remap like 'jj -> <Esc>' and you press 'abjj' the first 'j' breaks
+                // the ambiguity and makes the remap start performing, but when the remap finishes
+                // performing there is still the 'jj' to be handled and remapped.
+                await wait(10);
               }
             }
-          );
-        };
-        let p3: Promise<{ lines: string; position: vscode.Position; endMode: Mode }> = new Promise(
-          async (p3Resolve, p3Reject) => {
-            // Assumes key presses are single characters for now
-            await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+            // Get lines, position and mode after timeout + offset finishes
+            p2Resolve({
+              lines: TextEditor.getText(),
+              position: TextEditor.getSelection().start,
+              endMode: modeHandler.currentMode,
+            });
+          }, timeout + timeoutOffset);
+        } else {
+          p2Resolve();
+        }
+      });
+    };
 
-            // Only start the end check promises after the keys were handled to make sure they don't
-            // finish before all the keys are pressed. The keys handler above will resolve when the
-            // keys are handled even if it buffered some keys to wait for a timeout.
-            p1 = p1Start();
-            p2 = p2Start();
-            p3Resolve();
-          }
-        );
-        await p3;
-        await Promise.all([p1!, p2!]).then((results) => {
-          r1Resolve(results);
-        });
-      }
-    );
+    // Assumes key presses are single characters for now
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+
+    // Only start the end check promises after the keys were handled to make sure they don't
+    // finish before all the keys are pressed. The keys handler above will resolve when the
+    // keys are handled even if it buffered some keys to wait for a timeout.
+    const [result1, result2] = await Promise.all([p1(), p2()]);
 
     // Lines after keys pressed but before any timeout
 
     // Check given end output is correct
     const endLines = helper.asVimOutputText(false);
     assert.strictEqual(
-      result1[0].lines,
+      result1.lines,
       endLines.join(os.EOL),
       `Document content does not match on step ${stepTitleOrIndex}.`
     );
 
     // Check end cursor position
-    const actualEndPosition = result1[0].position;
+    const actualEndPosition = result1.position;
     const expectedEndPosition = helper.currentStepEndPosition;
     assert.deepStrictEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
@@ -654,7 +639,7 @@ async function testItWithRemaps(
     // endMode: check end mode is correct if given
     const expectedEndMode = step.stepResult.endMode;
     if (expectedEndMode !== undefined) {
-      const actualMode = Mode[result1[0].endMode].toUpperCase();
+      const actualMode = Mode[result1.endMode].toUpperCase();
       const expectedMode = Mode[expectedEndMode].toUpperCase();
       assert.strictEqual(
         actualMode,
@@ -665,18 +650,18 @@ async function testItWithRemaps(
 
     if (waitsForTimeout) {
       // After the timeout finishes (plus an offset to be sure it finished)
-      assert.notStrictEqual(result1[1], undefined);
+      assert.notStrictEqual(result2, undefined);
 
       // Check given endAfterTimeout output is correct
       const endAfterTimeoutLines = helper.asVimOutputText(true);
       assert.strictEqual(
-        result1[1].lines,
+        result2.lines,
         endAfterTimeoutLines.join(os.EOL),
         `Document content does not match on step ${stepTitleOrIndex} after timeout.`
       );
 
       // Check endAfterTimeout cursor position
-      const actualEndAfterTimeoutPosition = result1[1].position;
+      const actualEndAfterTimeoutPosition = result2.position;
       const expectedEndAfterTimeoutPosition = helper.currentStepEndAfterTimeoutPosition!;
       assert.deepStrictEqual(
         {
@@ -693,7 +678,7 @@ async function testItWithRemaps(
       // endMode: check end mode is correct if given
       const expectedEndAfterTimeoutMode = step.stepResult.endModeAfterTimeout;
       if (expectedEndAfterTimeoutMode !== undefined) {
-        const actualMode = Mode[result1[1].endMode].toUpperCase();
+        const actualMode = Mode[result2.endMode].toUpperCase();
         const expectedMode = Mode[expectedEndAfterTimeoutMode].toUpperCase();
         assert.strictEqual(
           actualMode,
