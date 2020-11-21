@@ -468,8 +468,23 @@ export async function activate(
     // Initialize mode handler for current active Text Editor at startup.
     const modeHandler = await getAndUpdateModeHandler();
     if (modeHandler) {
+      if (!configuration.startInInsertMode) {
+        const vimState = modeHandler.vimState;
+
+        // Make sure no cursors start on the EOL character (which is invalid in normal mode)
+        // This can happen if we quit last session in insert mode at the end of the line
+        vimState.cursors = vimState.cursors.map((cursor) => {
+          const eolColumn = vimState.document.lineAt(cursor.stop).text.length;
+          if (cursor.stop.character >= eolColumn) {
+            return cursor.withNewStop(cursor.stop.with({ character: eolColumn - 1 }));
+          } else {
+            return cursor;
+          }
+        });
+      }
+
       // This is called last because getAndUpdateModeHandler() will change cursor
-      modeHandler.updateView({ drawSelection: false, revealRange: false });
+      modeHandler.updateView({ drawSelection: true, revealRange: false });
     }
   }
 
