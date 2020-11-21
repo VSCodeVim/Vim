@@ -113,7 +113,7 @@ export async function activate(
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
-  Register.loadFromDisk(extensionContext);
+  Register.loadFromDisk();
   await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
 
   if (vscode.window.activeTextEditor) {
