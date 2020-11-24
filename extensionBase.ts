@@ -476,7 +476,8 @@ export async function activate(
         vimState.cursors = vimState.cursors.map((cursor) => {
           const eolColumn = vimState.document.lineAt(cursor.stop).text.length;
           if (cursor.stop.character >= eolColumn) {
-            return cursor.withNewStop(cursor.stop.with({ character: eolColumn - 1 }));
+            const character = Math.max(eolColumn - 1, 0);
+            return cursor.withNewStop(cursor.stop.with({ character }));
           } else {
             return cursor;
           }
