@@ -29,7 +29,7 @@ export class Transformer {
   private logger = Logger.get('Transformer');
 
   public addTransformation(transformation: Transformation) {
-    this.logger.debug(`Adding Transformation ${transformation}`);
+    this.logger.debug(`Adding Transformation ${JSON.stringify(transformation)}`);
     this.transformations.push(transformation);
   }
 
