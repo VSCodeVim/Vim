@@ -5,37 +5,43 @@ import { TextEditor } from '../textEditor';
  * Get the end of the current paragraph.
  */
 export function getCurrentParagraphEnd(pos: Position, trimWhite: boolean = false): Position {
+  const lastLine = TextEditor.getLineCount() - 1;
+
+  let line = pos.line;
+
   // If we're not in a paragraph yet, go down until we are.
-  while (isLineBlank(pos, trimWhite) && !TextEditor.isLastLine(pos)) {
-    pos = pos.getDownWithDesiredColumn(0);
+  while (line < lastLine && isLineBlank(line, trimWhite)) {
+    line++;
   }
 
   // Go until we're outside of the paragraph, or at the end of the document.
-  while (!isLineBlank(pos, trimWhite) && pos.line < TextEditor.getLineCount() - 1) {
-    pos = pos.getDownWithDesiredColumn(0);
+  while (line < lastLine && !isLineBlank(line, trimWhite)) {
+    line++;
   }
 
-  return pos.getLineEnd();
+  return pos.with({ line }).getLineEnd();
 }
 
 /**
  * Get the beginning of the current paragraph.
  */
 export function getCurrentParagraphBeginning(pos: Position, trimWhite: boolean = false): Position {
+  let line = pos.line;
+
   // If we're not in a paragraph yet, go up until we are.
-  while (isLineBlank(pos, trimWhite) && !TextEditor.isFirstLine(pos)) {
-    pos = pos.getUpWithDesiredColumn(0);
+  while (line > 0 && isLineBlank(line, trimWhite)) {
+    line--;
   }
 
   // Go until we're outside of the paragraph, or at the beginning of the document.
-  while (pos.line > 0 && !isLineBlank(pos, trimWhite)) {
-    pos = pos.getUpWithDesiredColumn(0);
+  while (line > 0 && !isLineBlank(line, trimWhite)) {
+    line--;
   }
 
-  return pos.getLineBegin();
+  return new Position(line, 0);
 }
 
-function isLineBlank(pos: Position, trimWhite: boolean = false): boolean {
-  let text = TextEditor.getLineAt(pos).text;
+function isLineBlank(line: number, trimWhite: boolean = false): boolean {
+  const text = TextEditor.getLine(line).text;
   return (trimWhite ? text.trim() : text) === '';
 }

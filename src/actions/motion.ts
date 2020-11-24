@@ -292,12 +292,17 @@ class MoveDown extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+
+    if (position.line < vimState.document.lineCount - 1) {
+      return position.with({ character: vimState.desiredColumn }).getDown();
+    } else {
+      return position;
+    }
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown();
   }
 }
 
@@ -317,12 +322,17 @@ class MoveUp extends BaseMovement {
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+
+    if (position.line > 0) {
+      return position.with({ character: vimState.desiredColumn }).getUp();
+    } else {
+      return position;
+    }
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp();
   }
 }
 
@@ -1052,12 +1062,16 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getUpWithDesiredColumn(vimState.desiredColumn);
+    if (position.line > 0) {
+      return position.with({ character: vimState.desiredColumn }).getUp();
+    } else {
+      return position;
+    }
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUpWithDesiredColumn(position.getLineEnd().character);
+    return position.getUp();
   }
 }
 
@@ -1073,12 +1087,16 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    return position.getDownWithDesiredColumn(vimState.desiredColumn);
+    if (position.line < vimState.document.lineCount - 1) {
+      return position.with({ character: vimState.desiredColumn }).getDown();
+    } else {
+      return position;
+    }
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDownWithDesiredColumn(position.getLineEnd().character);
+    return position.getDown();
   }
 }
 
@@ -1491,30 +1509,30 @@ abstract class MoveSectionBoundary extends BaseMovement {
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    let line = position.line;
+
     if (
-      (this.forward && position.line === vimState.document.lineCount - 1) ||
-      (!this.forward && position.line === 0)
+      (this.forward && line === vimState.document.lineCount - 1) ||
+      (!this.forward && line === 0)
     ) {
-      return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+      return TextEditor.getFirstNonWhitespaceCharOnLine(line);
     }
 
-    position = this.forward
-      ? position.getDownWithDesiredColumn(0)
-      : position.getUpWithDesiredColumn(0);
+    line = this.forward ? line + 1 : line - 1;
 
-    while (!vimState.document.lineAt(position).text.startsWith(this.boundary)) {
+    while (!vimState.document.lineAt(line).text.startsWith(this.boundary)) {
       if (this.forward) {
-        if (position.line === vimState.document.lineCount - 1) {
+        if (line === vimState.document.lineCount - 1) {
           break;
         }
 
-        position = position.getDownWithDesiredColumn(0);
+        line++;
       } else {
-        if (position.line === 0) {
+        if (line === 0) {
           break;
         }
 
-        position = position.getUpWithDesiredColumn(0);
+        line--;
       }
     }
 
