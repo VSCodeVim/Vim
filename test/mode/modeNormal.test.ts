@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -3002,8 +3001,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3018,8 +3016,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3050,7 +3047,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
+      const selection = modeHandler.vimState.editor.selection;
 
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 2);
@@ -3168,8 +3165,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3184,8 +3180,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3216,8 +3211,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);

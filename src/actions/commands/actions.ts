@@ -107,7 +107,7 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
 
       if (replaceRange.start.isEqual(replaceRange.stop)) {
-        await TextEditor.insert(change.text, replaceRange.start);
+        await TextEditor.insert(vimState.editor, change.text, replaceRange.start);
       } else {
         await TextEditor.replace(vimState.editor, vimState.editor.selection, change.text);
       }
@@ -787,7 +787,7 @@ class CommandCmdA extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
     vimState.cursorStopPosition = new Position(
-      TextEditor.getLineCount() - 1,
+      vimState.document.lineCount - 1,
       vimState.desiredColumn
     );
     await vimState.setCurrentMode(Mode.VisualLine);
@@ -1606,7 +1606,7 @@ class CommandReselectVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     // Try to restore selection only if valid
     if (vimState.lastVisualSelection !== undefined) {
-      if (vimState.lastVisualSelection.end.line <= TextEditor.getLineCount() - 1) {
+      if (vimState.lastVisualSelection.end.line <= vimState.document.lineCount - 1) {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
@@ -2377,7 +2377,7 @@ class ActionJoin extends BaseCommand {
       columnDeltaOffset: number = 0;
 
     if (startPosition.isEqual(position) || startPosition.line === position.line) {
-      if (position.line + 1 < TextEditor.getLineCount()) {
+      if (position.line + 1 < vimState.document.lineCount) {
         startLineNumber = position.line;
         startColumn = 0;
         endLineNumber = position.getDown(count).line;
@@ -2538,7 +2538,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   // gJ is essentially J without the edge cases. ;-)
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.line === TextEditor.getLineCount() - 1) {
+    if (position.line === vimState.document.lineCount - 1) {
       return; // TODO: bell
     }
 
@@ -2547,7 +2547,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   }
 
   public async execJoin(count: number, position: Position, vimState: VimState): Promise<void> {
-    const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
+    const lastLine = Math.min(position.line + count, vimState.document.lineCount - 1);
     const lines: string[] = [];
     for (let i = position.line + 1; i <= lastLine; i++) {
       lines.push(vimState.document.lineAt(i).text);

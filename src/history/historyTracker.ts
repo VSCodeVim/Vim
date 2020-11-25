@@ -45,19 +45,19 @@ class DocumentChange {
   /**
    * Run this change.
    */
-  public async do(undo = false): Promise<void> {
+  public async do(editor: vscode.TextEditor, undo = false): Promise<void> {
     if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
-      await TextEditor.insert(this.text, this.start, false);
+      await TextEditor.insert(editor, this.text, this.start, false);
     } else {
-      await TextEditor.delete(new vscode.Range(this.start, this.end));
+      await TextEditor.delete(editor, new vscode.Range(this.start, this.end));
     }
   }
 
   /**
    * Run this change in reverse.
    */
-  public async undo(): Promise<void> {
-    return this.do(true);
+  public async undo(editor: vscode.TextEditor): Promise<void> {
+    return this.do(editor, true);
   }
 
   /**
@@ -694,7 +694,7 @@ export class HistoryTracker {
     const step = this.currentHistoryStep;
 
     for (const change of step.changes.slice(0).reverse()) {
-      await change.undo();
+      await change.undo(this.vimState.editor);
     }
 
     // TODO: if there are more/fewer lines after undoing the change, it should say so
@@ -789,7 +789,7 @@ export class HistoryTracker {
 
     // Note that reverse() is call-by-reference, so the changes are already in reverse order
     for (const change of changesToUndo) {
-      await change.undo();
+      await change.undo(this.vimState.editor);
       change.isAdd = !change.isAdd;
     }
 
@@ -832,7 +832,7 @@ export class HistoryTracker {
 
     // TODO: do these transformations in a bacth
     for (const change of step.changes) {
-      await change.do();
+      await change.do(this.vimState.editor);
     }
 
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;

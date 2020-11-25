@@ -19,6 +19,7 @@ import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { Position } from 'vscode';
+import { TextDocument } from 'vscode';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -569,16 +570,18 @@ abstract class IndentObjectMatch extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
-    const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
+    const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(vimState.document, position);
     const firstValidLine = vimState.document.lineAt(firstValidLineNumber);
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
     let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
+      vimState.document,
       firstValidLineNumber,
       cursorIndent,
       -1
     );
     let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(
+      vimState.document,
       firstValidLineNumber,
       cursorIndent,
       1
@@ -631,9 +634,9 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   /**
    * Searches up from the cursor for the first non-empty line.
    */
-  public static findFirstValidLine(cursorPosition: Position): number {
+  public static findFirstValidLine(document: TextDocument, cursorPosition: Position): number {
     for (let i = cursorPosition.line; i >= 0; i--) {
-      if (!TextEditor.getLine(i).isEmptyOrWhitespace) {
+      if (!document.lineAt(i).isEmptyOrWhitespace) {
         return i;
       }
     }
@@ -645,20 +648,18 @@ abstract class IndentObjectMatch extends TextObjectMovement {
    * Searches up or down from a line finding the first with a lower indent level.
    */
   public static findRangeStartOrEnd(
+    document: TextDocument,
     startIndex: number,
     cursorIndent: number,
     step: -1 | 1
   ): number {
     let i = startIndex;
     let ret = startIndex;
-    const end = step === 1 ? TextEditor.getLineCount() : -1;
+    const end = step === 1 ? document.lineCount : -1;
 
     for (; i !== end; i += step) {
-      const line = TextEditor.getLine(i);
-      const isLineEmpty = line.isEmptyOrWhitespace;
-      const lineIndent = line.firstNonWhitespaceCharacterIndex;
-
-      if (lineIndent < cursorIndent && !isLineEmpty) {
+      const line = document.lineAt(i);
+      if (line.firstNonWhitespaceCharacterIndex < cursorIndent && !line.isEmptyOrWhitespace) {
         break;
       }
 

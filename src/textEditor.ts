@@ -20,6 +20,7 @@ export class TextEditor {
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
   static async insert(
+    editor: vscode.TextEditor,
     text: string,
     at: Position | undefined = undefined,
     letVSCodeHandleKeystrokes: boolean | undefined = undefined
@@ -29,18 +30,18 @@ export class TextEditor {
     letVSCodeHandleKeystrokes ??= text.length === 1;
 
     if (!letVSCodeHandleKeystrokes) {
-      // const selections = vscode.window.activeTextEditor!.selections.slice(0);
+      // const selections = editor.selections.slice(0);
 
-      await vscode.window.activeTextEditor!.edit((editBuilder) => {
+      await editor.edit((editBuilder) => {
         if (!at) {
-          at = vscode.window.activeTextEditor!.selection.active;
+          at = editor.selection.active;
         }
 
         editBuilder.insert(at, text);
       });
 
       // maintain all selections in multi-cursor mode.
-      // vscode.window.activeTextEditor!.selections = selections;
+      // editor.selections = selections;
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
@@ -62,8 +63,8 @@ export class TextEditor {
   /**
    * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
    */
-  static async delete(range: vscode.Range): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit((editBuilder) => {
+  static async delete(editor: vscode.TextEditor, range: vscode.Range): Promise<boolean> {
+    return editor.edit((editBuilder) => {
       editBuilder.delete(range);
     });
   }
@@ -81,19 +82,6 @@ export class TextEditor {
     });
   }
 
-  /** @deprecated Use vimState.document.lineAt().text directly */
-  static readLineAt(lineNo: number): string {
-    if (lineNo === null) {
-      lineNo = vscode.window.activeTextEditor!.selection.active.line;
-    }
-
-    if (lineNo >= vscode.window.activeTextEditor!.document.lineCount) {
-      throw new RangeError();
-    }
-
-    return vscode.window.activeTextEditor!.document.lineAt(lineNo).text;
-  }
-
   /** @deprecated Use vimState.document.lineCount */
   static getLineCount(textEditor?: vscode.TextEditor): number {
     textEditor ??= vscode.window.activeTextEditor;
@@ -106,7 +94,7 @@ export class TextEditor {
       return 0;
     }
 
-    return TextEditor.readLineAt(line).length;
+    return vscode.window.activeTextEditor!.document.lineAt(line).text.length;
   }
 
   /** @deprecated Use `vimState.document.lineAt()` directly */
@@ -114,20 +102,10 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
   }
 
-  /** @deprecated Use `vimState.document.lineAt()` directly */
-  static getLineAt(position: Position): vscode.TextLine {
-    return vscode.window.activeTextEditor!.document.lineAt(position);
-  }
-
   static getCharAt(position: Position): string {
-    const line = TextEditor.getLineAt(position);
+    const line = vscode.window.activeTextEditor!.document.lineAt(position);
 
     return line.text[position.character];
-  }
-
-  /** @deprecated Only used in tests. Remove ASAP. */
-  static getSelection(): vscode.Range {
-    return vscode.window.activeTextEditor!.selection;
   }
 
   /** @deprecated Use vimState.document.getText() */
@@ -143,7 +121,7 @@ export class TextEditor {
    *    - Will settle for a "fake" word only if it hits the line end
    */
   static getWord(position: Position): string | undefined {
-    const line = TextEditor.getLineAt(position).text;
+    const line = vscode.window.activeTextEditor!.document.lineAt(position).text;
 
     // Skip over whitespace
     let firstNonBlank = position.character;
@@ -258,7 +236,10 @@ export class TextEditor {
    * If it's all whitespace, will return the Position of the EOL character.
    */
   public static getFirstNonWhitespaceCharOnLine(line: number): Position {
-    return new Position(line, TextEditor.getLine(line).firstNonWhitespaceCharacterIndex);
+    return new Position(
+      line,
+      vscode.window.activeTextEditor!.document.lineAt(line).firstNonWhitespaceCharacterIndex
+    );
   }
 
   /**
@@ -309,7 +290,7 @@ export class TextEditor {
   public static *iterateWords(
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
-    const text = TextEditor.getLineAt(start).text;
+    const text = vscode.window.activeTextEditor!.document.lineAt(start).text;
     if (/\s/.test(text[start.character])) {
       start = start.getWordRight();
     }

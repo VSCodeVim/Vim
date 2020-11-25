@@ -440,7 +440,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   assertEqualLines(lines);
 
   // Check final cursor position
-  const actualPosition = TextEditor.getSelection().start;
+  const actualPosition = modeHandler.vimState.editor.selection.start;
   const expectedPosition = helper.endPosition;
   assert.deepStrictEqual(
     { line: actualPosition.line, character: actualPosition.character },
@@ -569,7 +569,7 @@ async function testItWithRemaps(
           // Get lines, position and mode after half timeout finishes
           p1Resolve({
             lines: TextEditor.getText(),
-            position: TextEditor.getSelection().start,
+            position: modeHandler.vimState.editor.selection.start,
             endMode: modeHandler.currentMode,
           });
         }, timeoutOffset);
@@ -599,7 +599,7 @@ async function testItWithRemaps(
             // Get lines, position and mode after timeout + offset finishes
             p2Resolve({
               lines: TextEditor.getText(),
-              position: TextEditor.getSelection().start,
+              position: modeHandler.vimState.editor.selection.start,
               endMode: modeHandler.currentMode,
             });
           }, timeout + timeoutOffset);

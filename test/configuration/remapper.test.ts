@@ -618,14 +618,14 @@ suite('Remapper', () => {
       let p1: Promise<string> = new Promise((p1Resolve, p1Reject) => {
         setTimeout(() => {
           // get line after half timeout finishes
-          const currentLine = TextEditor.readLineAt(0);
+          const currentLine = modeHandler.vimState.document.lineAt(0).text;
           p1Resolve(currentLine);
         }, timeout / 2);
       });
       let p2: Promise<string> = new Promise((p2Resolve, p2Reject) => {
         setTimeout(() => {
           // get line after timeout + offset finishes
-          const currentLine = TextEditor.readLineAt(0);
+          const currentLine = modeHandler.vimState.document.lineAt(0).text;
           p2Resolve(currentLine);
         }, timeout + timeoutOffset);
       });
@@ -653,7 +653,7 @@ suite('Remapper', () => {
         let p1: Promise<{ line: string; position: number }> = new Promise((p1Resolve, p1Reject) => {
           setTimeout(() => {
             // get line and cursor character after half timeout finishes
-            const currentLine = TextEditor.readLineAt(0);
+            const currentLine = modeHandler.vimState.document.lineAt(0).text;
             const cursorCharacter = modeHandler.vimState.cursorStopPosition.character;
             p1Resolve({ line: currentLine, position: cursorCharacter });
           }, timeout / 2);
@@ -661,7 +661,7 @@ suite('Remapper', () => {
         let p2: Promise<{ line: string; position: number }> = new Promise((p2Resolve, p2Reject) => {
           setTimeout(() => {
             // get line and cursor character after timeout + offset finishes
-            const currentLine = TextEditor.readLineAt(0);
+            const currentLine = modeHandler.vimState.document.lineAt(0).text;
             const cursorCharacter = modeHandler.vimState.cursorStopPosition.character;
             p2Resolve({ line: currentLine, position: cursorCharacter });
           }, timeout + timeoutOffset);
