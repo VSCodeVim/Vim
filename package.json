@@ -1065,7 +1065,7 @@
     "minimist": "1.2.5",
     "mocha": "8.2.1",
     "plugin-error": "1.0.1",
-    "prettier": "2.2.0",
+    "prettier": "2.2.1",
     "sinon": "9.2.1",
     "ts-loader": "8.0.9",
     "tslint": "6.1.3",
