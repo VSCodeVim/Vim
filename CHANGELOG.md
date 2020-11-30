@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.17.2](https://github.com/vscodevim/vim/tree/v1.17.2) (2020-11-30)
+
+**Enhancement**
+
+- Updated Vim extension's `extensionKind` and it will run in Web worker when VS Code is running in Web.
+
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.0...v1.17.1)
@@ -20,7 +26,6 @@
 - in 1.17.0, unable to find imselect.exe [\#5229](https://github.com/VSCodeVim/Vim/issues/5229)
 - Mouse clicked position isn't registered after navigating only with `hjkl` [\#5212](https://github.com/VSCodeVim/Vim/issues/5212)
 - Cannot trigger Esc with `jk` after typing whitespace [\#5142](https://github.com/VSCodeVim/Vim/issues/5142)
-- Iskeyword does not respect language specific editor overrides [\#4503](https://github.com/VSCodeVim/Vim/issues/4503)
 
 **Merged pull requests:**
 
@@ -34,20 +39,11 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.16.0...beta)
 
-**Enhancements:**
-
-- Save registers between restarts [\#4704](https://github.com/VSCodeVim/Vim/issues/4704)
-
 **Fixed Bugs:**
 
 - Muted colors after easymotion use [\#5092](https://github.com/VSCodeVim/Vim/issues/5092)
 - TaskQueue: Error running task. getLineLength\(\) called with out-of-bounds line 236. [\#5086](https://github.com/VSCodeVim/Vim/issues/5086)
 - It is not possible to execute global + normal commands that end on an space [\#5039](https://github.com/VSCodeVim/Vim/issues/5039)
-- Visual line -\> \<C-d\> -\> h/l -\> cursor jumps to end [\#4892](https://github.com/VSCodeVim/Vim/issues/4892)
-- Cursor position after surround in visual mode is wrong [\#4869](https://github.com/VSCodeVim/Vim/issues/4869)
-- VIM forbids multiple cursors across pages [\#4834](https://github.com/VSCodeVim/Vim/issues/4834)
-- gk/gj do not work properly in visual mode [\#4544](https://github.com/VSCodeVim/Vim/issues/4544)
-- Failed "f" Command in Visual Mode Resets Selection [\#4512](https://github.com/VSCodeVim/Vim/issues/4512)
 
 **Closed issues:**
 
@@ -74,17 +70,6 @@
 - I screwed up CHANGELOG.md [\#5054](https://github.com/VSCodeVim/Vim/issues/5054)
 - Ex command 'put' is not working properly [\#5052](https://github.com/VSCodeVim/Vim/issues/5052)
 - Visual mode doesn't keep desiredColumn correctly [\#5048](https://github.com/VSCodeVim/Vim/issues/5048)
-- CamelCase motion not working [\#5031](https://github.com/VSCodeVim/Vim/issues/5031)
-- EasyMotion issues with specific two character marker 'dj' on certain text structure/amount [\#5022](https://github.com/VSCodeVim/Vim/issues/5022)
-- Auto Switch Input Method configuration could not call external binary. [\#5017](https://github.com/VSCodeVim/Vim/issues/5017)
-- Mapping to 2 keys is not working in Visual mode [\#5016](https://github.com/VSCodeVim/Vim/issues/5016)
-- Remap in Visual Mode for `s` and `d` doesn't work for fast keypresses. [\#4883](https://github.com/VSCodeVim/Vim/issues/4883)
-- Vim causes VS Code "Multiple Cursor or Selection" Malfunction [\#4770](https://github.com/VSCodeVim/Vim/issues/4770)
-- Remapping `,` doesn't work [\#4756](https://github.com/VSCodeVim/Vim/issues/4756)
-- Remap ciw cio \<esc\>\<esc\> [\#4674](https://github.com/VSCodeVim/Vim/issues/4674)
-- Camel case motion breaks some leader+key+key combinations [\#4563](https://github.com/VSCodeVim/Vim/issues/4563)
-- Remap 's' to easymotion on visualmode not working [\#4532](https://github.com/VSCodeVim/Vim/issues/4532)
-- Can't remap to a sequence of keys that includes an i letter on the after part [\#4530](https://github.com/VSCodeVim/Vim/issues/4530)
 
 **Merged pull requests:**
 
@@ -97,9 +82,6 @@
 - Enable neovim capability for bang command [\#5062](https://github.com/VSCodeVim/Vim/pull/5062) ([tagniam](https://github.com/tagniam))
 - Fix some commands not ignoring whitespace properly [\#5061](https://github.com/VSCodeVim/Vim/pull/5061) ([berknam](https://github.com/berknam))
 - Fix visual mode not preserving desiredColumn [\#5049](https://github.com/VSCodeVim/Vim/pull/5049) ([berknam](https://github.com/berknam))
-- Implement better synchronization of selections [\#5015](https://github.com/VSCodeVim/Vim/pull/5015) ([berknam](https://github.com/berknam))
-- Add support for smartRelativeLine [\#5010](https://github.com/VSCodeVim/Vim/pull/5010) ([aymanbagabas](https://github.com/aymanbagabas))
-- Refactor Remapper [\#4735](https://github.com/VSCodeVim/Vim/pull/4735) ([berknam](https://github.com/berknam))
 
 ## [v1.11.0](https://github.com/vscodevim/vim/tree/v1.11.0) (2019-09-28)
 
