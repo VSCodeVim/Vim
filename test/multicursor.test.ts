@@ -104,6 +104,20 @@ suite('Multicursor', () => {
     assertEqualLines(['<div></div> asd', '<div></div>']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
   });
+
+  newTest({
+    title: 'Can use "/" search with multicursors',
+    start: ['|line 1', 'line 2', 'line 3', 'line 4', 'line 5'],
+    keysPressed: '3<C-alt+down>v/ne \nd<Esc>',
+    end: ['|e 1', 'e 2', 'e 3', 'e 4', 'line 5'],
+  });
+
+  newTest({
+    title: 'Can use "?" search with multicursors',
+    start: ['line 1', 'line 2', 'line 3', 'line 4', 'line |5'],
+    keysPressed: '3<C-alt+up>v?ine\nd<Esc>',
+    end: ['line 1', '|l', 'l', 'l', 'l'],
+  });
 });
 
 suite('Multicursor with remaps', () => {
