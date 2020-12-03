@@ -4,7 +4,6 @@ import { FileCommand } from './../cmd_line/commands/file';
 import { VimState } from '../state/vimState';
 
 import { Jump } from './jump';
-import { getCursorsAfterSync } from '../util/util';
 import { existsAsync } from 'platform/fs';
 import { Position } from 'vscode';
 
@@ -169,7 +168,6 @@ export class JumpTracker {
 
     if (jumpedFiles) {
       await this.performFileJump(jump, vimState);
-      vimState.cursors = getCursorsAfterSync();
     } else {
       vimState.cursorStopPosition = jump.position;
     }
