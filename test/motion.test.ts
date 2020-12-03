@@ -56,7 +56,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 1);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDownWithDesiredColumn(0);
+    motion = motion.getDown();
     assert.strictEqual(motion.line, 2);
     assert.strictEqual(motion.character, 0);
   });
@@ -66,7 +66,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDownWithDesiredColumn(3);
+    motion = motion.getDown();
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
   });
@@ -77,7 +77,7 @@ suite('basic motion', () => {
       assert.strictEqual(position.line, 1);
       assert.strictEqual(position.character, 0);
 
-      position = position.getUpWithDesiredColumn(0);
+      position = position.getUp();
       assert.strictEqual(position.line, 0);
       assert.strictEqual(position.character, 0);
     });
@@ -87,7 +87,7 @@ suite('basic motion', () => {
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
 
-      motion = motion.getUpWithDesiredColumn(0);
+      motion = motion.getUp(0);
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
     });

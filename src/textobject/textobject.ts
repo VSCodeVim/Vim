@@ -33,7 +33,7 @@ export abstract class TextObjectMovement extends BaseMovement {
     return res;
   }
 
-  public abstract async execAction(position: Position, vimState: VimState): Promise<IMovement>;
+  public abstract execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction
@@ -470,7 +470,7 @@ export class SelectParagraph extends TextObjectMovement {
       stop.line < vimState.document.lineCount - 1 &&
       vimState.document.lineAt(stop.getDown()).isEmptyOrWhitespace
     ) {
-      stop = stop.getDownWithDesiredColumn(0);
+      stop = stop.with({ character: 0 }).getDown();
     }
 
     return {
@@ -495,13 +495,13 @@ export class SelectInnerParagraph extends TextObjectMovement {
       start = position.getLineBegin();
       stop = position.getLineEnd();
       while (start.line > 0 && vimState.document.lineAt(start.getUp()).isEmptyOrWhitespace) {
-        start = start.getUpWithDesiredColumn(0);
+        start = start.getUp();
       }
       while (
         stop.line < vimState.document.lineCount - 1 &&
         vimState.document.lineAt(stop.getDown()).isEmptyOrWhitespace
       ) {
-        stop = stop.getDownWithDesiredColumn(0);
+        stop = stop.with({ character: 0 }).getDown();
       }
     } else {
       const currentParagraphBegin = getCurrentParagraphBeginning(position, true);
@@ -514,7 +514,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
 
       // Exclude additional blank lines.
       while (stop.line > 0 && vimState.document.lineAt(stop).isEmptyOrWhitespace) {
-        stop = stop.getUpWithDesiredColumn(0).getLineEnd();
+        stop = stop.getUp().getLineEnd();
       }
     }
 

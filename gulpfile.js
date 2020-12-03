@@ -213,12 +213,13 @@ gulp.task('tslint', function () {
 });
 
 gulp.task('prettier', function (done) {
-  // files changed
-  runPrettier('git diff --name-only HEAD', done);
+  // Files changed
+  runPrettier('git diff --diff-filter=d --name-only HEAD', done);
 });
 
 gulp.task('forceprettier', function (done) {
-  // files managed by git
+  // Files managed by git
+  // TODO: if any file is deleted, but not yet staged, this will fail
   runPrettier('git ls-files', done);
 });
 

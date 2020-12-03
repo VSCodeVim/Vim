@@ -384,6 +384,7 @@ class CommandEscEasyMotionCharInputMode extends BaseCommand {
 class MoveEasyMotion extends BaseCommand {
   modes = [Mode.EasyMotionMode];
   keys = ['<character>'];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];

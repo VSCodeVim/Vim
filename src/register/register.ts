@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { Clipboard } from './../util/clipboard';
 import {
@@ -10,8 +11,9 @@ import {
 import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-
-let extensionContext: vscode.ExtensionContext;
+import { readFileAsync, writeFileAsync } from 'platform/fs';
+import { globalState } from '../state/globalState';
+import { Globals } from '../globals';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -81,8 +83,6 @@ export class Register {
         Register.putNormalRegister(content, register, vimState);
       }
     }
-
-    Register.saveToDisk();
   }
 
   public static isValidRegister(register: string): boolean {
@@ -302,8 +302,6 @@ export class Register {
       text: content,
       registerMode: registerMode || RegisterMode.AscertainFromCurrentMode,
     });
-
-    Register.saveToDisk();
   }
 
   /**
@@ -409,21 +407,27 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
-  private static async saveToDisk(): Promise<void> {
-    const serializable = new Map<string, IRegisterContent>();
+  public static async saveToDisk(): Promise<void> {
+    const serializable = new Array<[string, IRegisterContent]>();
     for (const [key, content] of Register.registers) {
       if (typeof content.text === 'string' || Array.isArray(content.text)) {
-        serializable.set(key, content);
+        serializable.push([key, content]);
       }
     }
-    extensionContext.globalState.update('registers', [...serializable]);
+
+    await writeFileAsync(
+      path.join(Globals.extensionStoragePath, '.registers'),
+      JSON.stringify(serializable),
+      'utf8'
+    );
   }
 
-  public static loadFromDisk(context: vscode.ExtensionContext): void {
-    extensionContext = context;
-    const savedRegisters = extensionContext.globalState.get<Array<[string, IRegisterContent]>>(
-      'registers'
+  public static loadFromDisk(): void {
+    Register.registers = new Map();
+    readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
+      (savedRegisters) => {
+        Register.registers = new Map(JSON.parse(savedRegisters));
+      }
     );
-    Register.registers = savedRegisters ? new Map(savedRegisters) : new Map();
   }
 }

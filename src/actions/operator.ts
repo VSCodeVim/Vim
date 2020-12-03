@@ -138,10 +138,12 @@ export class DeleteOperator extends BaseOperator {
     // the newline character, which it places 1 past the last character
     // in the line. Here we interpret a character position 1 past the end
     // as selecting the newline character. Don't allow this in visual block mode
-    if (vimState.currentMode !== Mode.VisualBlock) {
-      if (end.character === vimState.document.lineAt(end).text.length + 1) {
-        end = end.getDownWithDesiredColumn(0);
-      }
+    if (
+      vimState.currentMode !== Mode.VisualBlock &&
+      !isOnLastLine &&
+      end.character === vimState.document.lineAt(end).text.length + 1
+    ) {
+      end = end.with({ character: 0 }).getDown();
     }
 
     let text = vimState.document.getText(new vscode.Range(start, end));

@@ -124,9 +124,6 @@ declare module 'vscode' {
     getRightThroughLineBreaks(includeEol?: boolean): Position;
     getOffsetThroughLineBreaks(offset: number): Position;
 
-    getDownWithDesiredColumn(desiredColumn: number): Position;
-    getUpWithDesiredColumn(desiredColumn: number): Position;
-
     getWordLeft(inclusive?: boolean): Position;
     getWordRight(inclusive?: boolean): Position;
     getCurrentWordEnd(inclusive?: boolean): Position;
@@ -317,9 +314,9 @@ Position.prototype.getLeftThroughLineBreaks = function (
   }
 
   if (includeEol) {
-    return this.getUpWithDesiredColumn(0).getLineEnd();
+    return this.getUp().getLineEnd();
   } else {
-    return this.getUpWithDesiredColumn(0).getLineEnd().getLeft();
+    return this.getUp().getLineEnd().getLeft();
   }
 };
 
@@ -328,16 +325,17 @@ Position.prototype.getRightThroughLineBreaks = function (
   includeEol = false
 ): Position {
   if (this.isAtDocumentEnd()) {
-    // TODO(bell)
     return this;
   }
 
-  if (this.isLineEnd()) {
-    return this.getDownWithDesiredColumn(0);
-  }
-
-  if (!includeEol && this.getRight().isLineEnd()) {
-    return this.getDownWithDesiredColumn(0);
+  if (this.line < TextEditor.getLineCount() - 1) {
+    const pos = includeEol ? this : this.getRight();
+    if (pos.isLineEnd()) {
+      return this.with({ character: 0 }).getDown();
+    }
+  } else if (!includeEol && this.character === TextEditor.getLineLength(this.line) - 1) {
+    // Last character of document, don't go on to non-existent EOL
+    return this;
   }
 
   return this.getRight();
@@ -360,40 +358,6 @@ Position.prototype.getOffsetThroughLineBreaks = function (
   }
 
   return pos;
-};
-
-/**
- * Get the position of the line directly below the current line.
- */
-Position.prototype.getDownWithDesiredColumn = function (
-  this: Position,
-  desiredColumn: number
-): Position {
-  if (TextEditor.getDocumentEnd().line !== this.line) {
-    let nextLine = this.line + 1;
-    let nextLineLength = TextEditor.getLineLength(nextLine);
-
-    return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
-  }
-
-  return this;
-};
-
-/**
- * Get the position of the line directly above the current line.
- */
-Position.prototype.getUpWithDesiredColumn = function (
-  this: Position,
-  desiredColumn: number
-): Position {
-  if (TextEditor.getDocumentBegin().line !== this.line) {
-    let prevLine = this.line - 1;
-    let prevLineLength = TextEditor.getLineLength(prevLine);
-
-    return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
-  }
-
-  return this;
 };
 
 /**
