@@ -2072,7 +2072,7 @@ find-cache-dir@^2.1.0:
     make-dir "^2.0.0"
     pkg-dir "^3.0.0"
 
-find-up@5.0.0:
+find-up@5.0.0, find-up@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/find-up/-/find-up-5.0.0.tgz#4c92819ecb7083561e4f4a240a86be5198f536fc"
   integrity sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==
@@ -4034,6 +4034,13 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
+pkg-dir@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/pkg-dir/-/pkg-dir-5.0.0.tgz#a02d6aebe6ba133a928f74aec20bafdfe6b8e760"
+  integrity sha512-NPE8TDbzl/3YQYY7CSS228s3g2ollTFnc+Qi3tqmqJp9Vg2ovUpixcJEo2HJScN2Ez+kEaal6y70c0ehqJBJeA==
+  dependencies:
+    find-up "^5.0.0"
+
 plugin-error@1.0.1, plugin-error@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/plugin-error/-/plugin-error-1.0.1.tgz#77016bd8919d0ac377fdcdd0322328953ca5781c"
@@ -5470,10 +5477,10 @@ webpack-stream@6.1.1:
     vinyl "^2.1.0"
     webpack "^4.26.1"
 
-webpack@5.9.0:
-  version "5.9.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.9.0.tgz#af2e9cf9d6c7867cdcf214ea3bb5eb77aece6895"
-  integrity sha512-YnnqIV/uAS5ZrNpctSv378qV7HmbJ74DL+XfvMxzbX1bV9e7eeT6eEWU4wuUw33CNr/HspBh7R/xQlVjTEyAeA==
+webpack@5.10.0:
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.10.0.tgz#6f77c31522a2c525152d9c344f9765d168b3df08"
+  integrity sha512-P0bHAXmIz0zsNcHNLqFmLY1ZtrT+jtBr7FqpuDtA2o7GiHC+zBsfhgK7SmJ1HG7BAEb3G9JoMdSVi7mEDvG3Zg==
   dependencies:
     "@types/eslint-scope" "^3.7.0"
     "@types/estree" "^0.0.45"
@@ -5493,7 +5500,7 @@ webpack@5.9.0:
     loader-runner "^4.1.0"
     mime-types "^2.1.27"
     neo-async "^2.6.2"
-    pkg-dir "^4.2.0"
+    pkg-dir "^5.0.0"
     schema-utils "^3.0.0"
     tapable "^2.1.1"
     terser-webpack-plugin "^5.0.3"
