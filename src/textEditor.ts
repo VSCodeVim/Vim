@@ -5,12 +5,14 @@ import { VimState } from './state/vimState';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
 import { Range } from './common/motion/range';
 import { Position } from 'vscode';
+import { Logger } from './util/logger';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
  */
 export class TextEditor {
   static readonly whitespaceRegExp = new RegExp('\\s+');
+  private static readonly logger = Logger.get('TextEditor');
 
   // TODO: Refactor args
 
@@ -99,8 +101,9 @@ export class TextEditor {
   }
 
   public static getLineLength(line: number): number {
-    if (line < 0 || line > TextEditor.getLineCount()) {
-      throw new Error(`getLineLength() called with out-of-bounds line ${line}`);
+    if (line < 0 || line >= TextEditor.getLineCount()) {
+      this.logger.warn(`getLineLength() called with out-of-bounds line ${line}`);
+      return 0;
     }
 
     return TextEditor.readLineAt(line).length;
