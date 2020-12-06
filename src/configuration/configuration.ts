@@ -229,6 +229,7 @@ class Configuration implements IConfiguration {
     defaultIM: '',
     obtainIMCmd: '',
     switchIMCmd: '',
+    insertmodeInitialIM: '',
   };
 
   timeout = 1000;

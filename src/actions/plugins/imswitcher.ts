@@ -28,7 +28,7 @@ function executeShell(cmd: string): Promise<string> {
 export class InputMethodSwitcher {
   private static readonly logger = Logger.get('IMSwitcher');
   private execute: (cmd: string) => Promise<string>;
-  private savedIMKey = '';
+  private savedIMKey = configuration.autoSwitchInputMethod.insertmodeInitialIM;
 
   constructor(execute: (cmd: string) => Promise<string> = executeShell) {
     this.execute = execute;
