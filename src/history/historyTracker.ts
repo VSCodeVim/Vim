@@ -33,12 +33,12 @@ class DocumentChange {
   // TODO: support replacement, which would cut the number of changes for :s/foo/bar in half
   public isAdd: boolean;
 
-  private _end: Position;
+  private _end: Position | undefined;
   private _text: string;
 
   constructor(start: Position, text: string, isAdd: boolean) {
     this.start = start;
-    this.text = text;
+    this._text = text;
     this.isAdd = isAdd;
   }
 
@@ -64,6 +64,9 @@ class DocumentChange {
    * The position after advancing start by text
    */
   public get end(): Position {
+    if (this._end === undefined) {
+      this._end = this.start.advancePositionByText(this._text);
+    }
     return this._end;
   }
 
@@ -73,7 +76,7 @@ class DocumentChange {
 
   public set text(text: string) {
     this._text = text;
-    this._end = this.start.advancePositionByText(this.text);
+    this._end = undefined;
   }
 }
 
@@ -263,9 +266,10 @@ export class HistoryTracker {
    * We add an initial, unrevertable step, which inserts the entire document.
    */
   private _initialize() {
+    const documentText = this._getDocumentText();
     this.historySteps.push(
       new HistoryStep({
-        changes: [new DocumentChange(new Position(0, 0), this._getDocumentText(), true)],
+        changes: [new DocumentChange(new Position(0, 0), documentText, true)],
         isFinished: true,
         cursorStart: [new Position(0, 0)],
         cursorEnd: [new Position(0, 0)],
@@ -275,7 +279,7 @@ export class HistoryTracker {
     this.finishCurrentStep();
 
     this.previousDocumentState = {
-      text: this._getDocumentText(),
+      text: documentText,
       versionNumber: this._getDocumentVersion(),
     };
     this.currentContentChanges = [];

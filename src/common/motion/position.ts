@@ -492,14 +492,21 @@ Position.prototype.getLeftIfEOL = function (this: Position): Position {
  * @returns the position that the cursor would be at if you pasted *text* at the current position.
  */
 Position.prototype.advancePositionByText = function (this: Position, text: string): Position {
-  const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
+  const newlines: number[] = [];
+  let idx = text.indexOf('\n', 0);
+  while (idx >= 0) {
+    newlines.push(idx);
+    idx = text.indexOf('\n', idx + 1);
+  }
 
-  return new Position(
-    this.line + numberOfLinesSpanned,
-    numberOfLinesSpanned === 0
-      ? this.character + text.length
-      : text.length - (text.lastIndexOf('\n') + 1)
-  );
+  if (newlines.length === 0) {
+    return new Position(this.line, this.character + text.length);
+  } else {
+    return new Position(
+      this.line + newlines.length,
+      text.length - (newlines[newlines.length - 1] + 1)
+    );
+  }
 };
 
 /**
