@@ -120,7 +120,7 @@ function createGitTag() {
 
 function createGitCommit() {
   return gulp
-    .src(['./package.json', './package-lock.json', 'CHANGELOG.md'])
+    .src(['./package.json', './yarn.lock', 'CHANGELOG.md'])
     .pipe(git.commit('bump version'));
 }
 
@@ -128,7 +128,7 @@ function updateVersion(done) {
   var options = minimist(process.argv.slice(2), releaseOptions);
 
   return gulp
-    .src(['./package.json', './package-lock.json'])
+    .src(['./package.json', './yarn.lock'])
     .pipe(bump({ type: options.semver }))
     .pipe(gulp.dest('./'))
     .on('end', () => {
