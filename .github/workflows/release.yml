@@ -32,7 +32,7 @@ jobs:
           xvfb-run -a yarn test
 
       - name: Install VSCE
-        run: yarn install -g vsce
+        run: yarn global add vsce
 
       - name: Build extension package
         id: build_vsix
