@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: build
 
 on: [push, pull_request]
 
