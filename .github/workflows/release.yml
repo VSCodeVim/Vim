@@ -31,13 +31,10 @@ jobs:
           gulp prepare-test
           xvfb-run -a yarn test
 
-      - name: Install VSCE
-        run: yarn global add vsce
-
       - name: Build extension package
         id: build_vsix
         run: |
-          vsce package;
+          yarn run vsce package;
           echo ::set-output name=vsix_path::$(ls *.vsix);
 
       - name: Create release on GitHub
@@ -62,6 +59,6 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish to VSCode Extension Marketplace
-        run: vsce publish --yarn
+        run: yarn run vsce publish --yarn
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
