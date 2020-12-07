@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.18.0",
+  "version": "1.18.4",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -32,8 +32,8 @@
   ],
   "extensionKind": [
     "ui",
-    "workspace",
-    "web"
+    "web",
+    "workspace"
   ],
   "sideEffects": false,
   "activationEvents": [
