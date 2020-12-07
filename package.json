@@ -32,8 +32,8 @@
   ],
   "extensionKind": [
     "ui",
-    "workspace",
-    "web"
+    "web",
+    "workspace"
   ],
   "sideEffects": false,
   "activationEvents": [
