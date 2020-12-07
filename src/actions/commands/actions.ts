@@ -1754,10 +1754,13 @@ class CommandReselectVisual extends BaseCommand {
       if (vimState.lastVisualSelection.end.line <= vimState.document.lineCount - 1) {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
-        vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
+        vimState.cursorStopPosition = vimState.lastVisualSelection.end;
+        if (vimState.lastVisualSelection.mode === Mode.Visual) {
+          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
       }
     }
   }
+}
 }
 
 async function selectLastSearchWord(vimState: VimState, direction: SearchDirection): Promise<void> {
