@@ -1,5 +1,18 @@
 # Change Log
 
+## [v1.18.3](https://github.com/vscodevim/vim/tree/v1.18.3) (2020-12-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.2...v1.18.3)
+
+**Fixed Bugs:**
+
+- Forced by user [\#5800](https://github.com/VSCodeVim/Vim/issues/5800)
+
+**Closed issues:**
+
+- Cursor jumps back to previous position when moving after clicking in editor [\#5795](https://github.com/VSCodeVim/Vim/issues/5795)
+- Vim cursor does not move with "Go to Next Problem" [\#5746](https://github.com/VSCodeVim/Vim/issues/5746)
+
 ## [v1.18.2](https://github.com/vscodevim/vim/tree/v1.18.2) (2020-12-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.0...v1.18.2)
@@ -128,7 +141,6 @@
 **Merged pull requests:**
 
 - Fix key binding typo in README [\#5183](https://github.com/VSCodeVim/Vim/pull/5183) ([Risto-Mcintosh](https://github.com/Risto-Mcintosh))
-- Refactor folding. [\#5169](https://github.com/VSCodeVim/Vim/pull/5169) ([sql-koala](https://github.com/sql-koala))
 
 ## [v1.11.0](https://github.com/vscodevim/vim/tree/v1.11.0) (2019-09-28)
 
