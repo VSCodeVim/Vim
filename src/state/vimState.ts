@@ -277,11 +277,17 @@ export class VimState implements vscode.Disposable {
           return previous === 'insert' ? Mode.InsertVisualLine : Mode.ReplaceVisualLine;
         case Mode.VisualBlock:
           return previous === 'insert' ? Mode.InsertVisualBlock : Mode.ReplaceVisualBlock;
+        case Mode.Select:
+          return previous === 'insert' ? Mode.InsertSelect : Mode.ReplaceSelect;
+        case Mode.SelectLine:
+          return previous === 'insert' ? Mode.InsertSelectLine : Mode.ReplaceSelectLine;
+        case Mode.SelectBlock:
+          return previous === 'insert' ? Mode.InsertSelectBlock : Mode.ReplaceSelectBlock;
         default:
           // This shouldn't happen but in case it does we can exit gracefully with
           // the currentMode
           return this._currentMode;
-  }
+      }
     } else {
       return this._currentMode;
     }

@@ -94,10 +94,13 @@ export class VimrcImpl {
         case 'vmap':
         case 'vma':
         case 'vm':
+          return [config.allVisualModeKeyBindings];
         case 'xmap':
         case 'xma':
         case 'xm':
           return [config.visualModeKeyBindings];
+        case 'smap':
+          return [config.selectModeKeyBindings];
         case 'imap':
         case 'ima':
         case 'im':
@@ -141,6 +144,7 @@ export class VimrcImpl {
         case 'vnor':
         case 'vno':
         case 'vn':
+          return [config.allVisualModeKeyBindingsNonRecursive];
         case 'xnoremap':
         case 'xnorema':
         case 'xnorem':
@@ -149,6 +153,12 @@ export class VimrcImpl {
         case 'xno':
         case 'xn':
           return [config.visualModeKeyBindingsNonRecursive];
+        case 'snoremap':
+        case 'snorema':
+        case 'snorem':
+        case 'snore':
+        case 'snor':
+          return [config.selectModeKeyBindingsNonRecursive];
         case 'inoremap':
         case 'inorema':
         case 'inorem':
@@ -228,12 +238,17 @@ export class VimrcImpl {
         case 'vunm':
         case 'vun':
         case 'vu':
+          return [config.allVisualModeKeyBindings, config.allVisualModeKeyBindingsNonRecursive];
         case 'xunmap':
         case 'xunma':
         case 'xunm':
         case 'xun':
         case 'xu':
           return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
+        case 'sunmap':
+        case 'sunma':
+        case 'sunm':
+          return [config.selectModeKeyBindings, config.selectModeKeyBindingsNonRecursive];
         case 'iunmap':
         case 'iunma':
         case 'iunm':
@@ -318,12 +333,19 @@ export class VimrcImpl {
         case 'vmapcle':
         case 'vmapcl':
         case 'vmapc':
+          return [config.allVisualModeKeyBindings, config.allVisualModeKeyBindingsNonRecursive];
         case 'xmapclear':
         case 'xmapclea':
         case 'xmapcle':
         case 'xmapcl':
         case 'xmapc':
           return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
+        case 'smapclear':
+        case 'smapclea':
+        case 'smapcle':
+        case 'smapcl':
+        case 'smapc':
+          return [config.selectModeKeyBindings, config.selectModeKeyBindingsNonRecursive];
         case 'imapclear':
         case 'imapclea':
         case 'imapcle':
@@ -384,11 +406,15 @@ export class VimrcImpl {
       config.normalModeKeyBindings,
       config.operatorPendingModeKeyBindings,
       config.visualModeKeyBindings,
+      config.allVisualModeKeyBindings,
+      config.selectModeKeyBindings,
       config.insertModeKeyBindings,
       config.commandLineModeKeyBindings,
       config.normalModeKeyBindingsNonRecursive,
       config.operatorPendingModeKeyBindingsNonRecursive,
       config.visualModeKeyBindingsNonRecursive,
+      config.allVisualModeKeyBindingsNonRecursive,
+      config.selectModeKeyBindingsNonRecursive,
       config.insertModeKeyBindingsNonRecursive,
       config.commandLineModeKeyBindingsNonRecursive,
     ];

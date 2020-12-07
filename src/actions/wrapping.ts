@@ -14,6 +14,9 @@ modes[Mode.Normal] = {
 modes[Mode.Visual] = modes[Mode.Normal];
 modes[Mode.VisualLine] = modes[Mode.Normal];
 modes[Mode.VisualBlock] = modes[Mode.Normal];
+modes[Mode.Select] = modes[Mode.Normal];
+modes[Mode.SelectLine] = modes[Mode.Normal];
+modes[Mode.SelectBlock] = modes[Mode.Normal];
 
 modes[Mode.Insert] = {
   '<left>': '[',

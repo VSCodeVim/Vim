@@ -309,12 +309,21 @@ class MoveDown extends BaseMovement {
 @RegisterAction
 class MoveDownArrow extends MoveDown {
   keys = ['<down>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
       const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
       await vimState.setCurrentMode(newMode);
-}
+    }
     return super.execAction(position, vimState);
   }
 }
@@ -373,12 +382,21 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 @RegisterAction
 class MoveUpArrow extends MoveUp {
   keys = ['<up>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
       const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
       await vimState.setCurrentMode(newMode);
-}
+    }
     return super.execAction(position, vimState);
   }
 }
@@ -607,14 +625,22 @@ export class MoveLeft extends BaseMovement {
 
 @RegisterAction
 class MoveLeftArrow extends MoveLeft {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
   keys = ['<left>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
       const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
       await vimState.setCurrentMode(newMode);
-}
+    }
     return super.execAction(position, vimState);
   }
 }
@@ -656,7 +682,15 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveRightArrow extends MoveRight {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
   keys = ['<right>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -676,6 +710,9 @@ class MoveShiftRightArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -684,7 +721,11 @@ class MoveShiftRightArrow extends BaseMovement {
     const isVisual = isVisualMode(vimState.currentMode);
     if (configuration.keymodelStartsSelection) {
       if (!isVisual) {
+        if (configuration.selectmodeKey) {
+          await vimState.setCurrentMode(Mode.Select);
+        } else {
           await vimState.setCurrentMode(Mode.Visual);
+        }
       }
       return new MoveRight(this.keysPressed, this.isRepeat).execAction(position, vimState);
     } else {
@@ -701,6 +742,9 @@ class MoveShiftLeftArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -709,7 +753,11 @@ class MoveShiftLeftArrow extends BaseMovement {
     const isVisual = isVisualMode(vimState.currentMode);
     if (configuration.keymodelStartsSelection) {
       if (!isVisual) {
+        if (configuration.selectmodeKey) {
+          await vimState.setCurrentMode(Mode.Select);
+        } else {
           await vimState.setCurrentMode(Mode.Visual);
+        }
       }
       return new MoveLeft(this.keysPressed, this.isRepeat).execAction(position, vimState);
     } else {
@@ -726,6 +774,9 @@ class MoveUpShifted extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -733,7 +784,11 @@ class MoveUpShifted extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const isVisual = isVisualMode(vimState.currentMode);
     if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveUp(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
@@ -755,6 +810,9 @@ class MoveDownShifted extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -762,7 +820,11 @@ class MoveDownShifted extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const isVisual = isVisualMode(vimState.currentMode);
     if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveDown(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
@@ -784,6 +846,9 @@ class MoveShiftHome extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -791,7 +856,11 @@ class MoveShiftHome extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const isVisual = isVisualMode(vimState.currentMode);
     if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveLineBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
@@ -805,6 +874,9 @@ class MoveShiftEnd extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -816,7 +888,11 @@ class MoveShiftEnd extends BaseMovement {
   ): Promise<Position | IMovement> {
     const isVisual = isVisualMode(vimState.currentMode);
     if (!isVisual && configuration.keymodelStartsSelection) {
-          await vimState.setCurrentMode(Mode.Visual);
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveLineEnd(this.keysPressed, this.isRepeat).execActionWithCount(
       position,
@@ -834,6 +910,9 @@ class MoveCtrlRightArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -855,6 +934,9 @@ class MoveCtrlLeftArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -879,6 +961,9 @@ class MoveCtrlHome extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -908,6 +993,9 @@ class MoveCtrlEnd extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -939,13 +1027,20 @@ class MoveCtrlShiftRightArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveWordBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
@@ -959,13 +1054,20 @@ class MoveCtrlShiftLeftArrow extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveBeginningWord(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
@@ -979,6 +1081,9 @@ class MoveCtrlShiftHome extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -989,7 +1094,11 @@ class MoveCtrlShiftHome extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     return new MoveNonBlankFirst(this.keysPressed, this.isRepeat).execActionWithCount(
       position,
@@ -1007,6 +1116,9 @@ class MoveCtrlShiftEnd extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];
@@ -1017,7 +1129,11 @@ class MoveCtrlShiftEnd extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
         await vimState.setCurrentMode(Mode.Visual);
+      }
     }
     const linePos = await new MoveNonBlankLast(this.keysPressed, this.isRepeat).execActionWithCount(
       position,
@@ -1350,6 +1466,18 @@ class MoveLineBegin extends BaseMovement {
     }
     return position.getLineBegin();
   }
+}
+
+@RegisterAction
+class MoveLineBeginSelectMode extends MoveLineBegin {
+  keys = [['<Home>'], ['<D-left>']];
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+}
+
+@RegisterAction
+class MoveLineEndSelectMode extends MoveLineEnd {
+  keys = [['<End>'], ['<D-right>']];
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
 }
 
 @RegisterAction
@@ -2574,6 +2702,9 @@ class MoveLeftMouse extends BaseMovement {
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
     Mode.Replace,
     Mode.Insert,
   ];

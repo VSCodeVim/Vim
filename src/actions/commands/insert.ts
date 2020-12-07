@@ -6,7 +6,7 @@ import { VimState } from '../../state/vimState';
 import { PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
-import { Mode } from './../../mode/mode';
+import { isSelectMode, Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction, BaseCommand } from './../base';
@@ -24,6 +24,8 @@ import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
+import { DeleteOperator } from '../operator';
+import { getAndUpdateModeHandler } from '../../../extensionBase';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -236,6 +238,10 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
     const line = vimState.document.lineAt(position).text;
     const selection = vimState.editor.selections.find((s) => s.contains(position));
 
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
+
     if (selection && !selection.isEmpty) {
       // If a selection is active, delete it
       vimState.recordedState.transformer.addTransformation({
@@ -274,13 +280,21 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+export class CommandBackspaceInSelectMode extends CommandBackspaceInInsertMode {
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+}
+
+@RegisterAction
 export class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const selection = vimState.editor.selection;
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
 
+    const selection = vimState.editor.selection;
     if (!selection.isEmpty) {
       // If a selection is active, delete it
       vimState.recordedState.transformer.addTransformation({
@@ -298,6 +312,11 @@ export class CommandDeleteInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+export class CommandDeleteInSelectMode extends CommandDeleteInInsertMode {
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+}
+
+@RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
@@ -310,6 +329,53 @@ export class CommandInsertInInsertMode extends BaseCommand {
       text: char,
       isMultiCursor: vimState.isMultiCursor,
     });
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return (
+      !vimState.recordedState.waitingForRegisterKeyAfterCtrlR &&
+      super.doesActionApply(vimState, keysPressed)
+    );
+  }
+
+  public toString(): string {
+    return this.keysPressed[this.keysPressed.length - 1];
+  }
+}
+
+@RegisterAction
+export class CommandInsertInSelectMode extends BaseCommand {
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+  keys = ['<character>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const char = this.keysPressed[this.keysPressed.length - 1];
+
+    await vimState.setCurrentMode(Mode.Insert);
+
+    const mh = await getAndUpdateModeHandler();
+    if (mh) {
+      const selection = vimState.editor.selection;
+      if (!selection.isEmpty) {
+        // If a selection is active, delete it
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new Range(selection.start, selection.end),
+        });
+      }
+      vimState.recordedState.resetCommandList();
+      vimState.recordedState.actionKeys = [];
+
+      // We need to resend the key so that it goes through the insertMode remapper
+      // like stated in help documentation (:help select-mode-mapping)
+      await mh.handleMultipleKeyEvents(this.keysPressed);
+    } else {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertTextVSCode',
+        text: char,
+        isMultiCursor: vimState.isMultiCursor,
+      });
+    }
   }
 
   public toString(): string {
@@ -377,15 +443,33 @@ class CommandInsertDigraph extends BaseCommand {
 @RegisterAction
 class CommandInsertRegisterContent extends BaseCommand {
   modes = [Mode.Insert];
-  keys = ['<C-r>', '<character>'];
+  keys = ['<character>'];
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.registerName = this.keysPressed[1];
+    vimState.recordedState.waitingForRegisterKeyAfterCtrlR = false;
+    vimState.recordedState.registerName = this.keysPressed[0];
     const register = await Register.get(vimState);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
+    }
+
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
+
+    const selection = vimState.editor.selection;
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      position = await new DeleteOperator(this.multicursorIndex).delete(
+        selection.start,
+        selection.end.getLeft(),
+        vimState.currentMode,
+        vimState.currentRegisterMode,
+        vimState,
+        false
+      );
     }
 
     let text: string;
@@ -407,17 +491,72 @@ class CommandInsertRegisterContent extends BaseCommand {
       text += '\n';
     }
 
-    await TextEditor.insertAt(vimState.editor, text, position);
+    if (vimState.isMultiCursor) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text: text,
+        position: position,
+      });
+    } else {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertTextVSCode',
+        text: text,
+      });
+    }
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = vimState.editor.selection.start;
     vimState.cursorStopPosition = vimState.editor.selection.start;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
+    const register = keysPressed[0];
 
-    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+    return (
+      vimState.recordedState.waitingForRegisterKeyAfterCtrlR &&
+      super.doesActionApply(vimState, keysPressed) &&
+      Register.isValidRegister(register)
+    );
   }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return (
+      vimState.recordedState.waitingForRegisterKeyAfterCtrlR &&
+      super.couldActionApply(vimState, keysPressed)
+    );
+  }
+
+}
+
+@RegisterAction
+class CommandCtrlR extends BaseCommand {
+  modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+  keys = ['<C-r>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
+
+    const selection = vimState.editor.selection;
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      position = await new DeleteOperator(this.multicursorIndex).delete(
+        selection.start,
+        selection.end.getLeft(),
+        vimState.currentMode,
+        vimState.currentRegisterMode,
+        vimState,
+        false
+      );
+  }
+
+    // Setup 'recordedState.waitingForRegisterKeyAfterCtrlR' so that the modeHandler
+    // knows that the next key needs to be a register key (otherwise it should fail)
+    // and for 'updateView' to know that it should create the virtual key `"` to give
+    // feedback to the user that it is waiting for a register key.
+    vimState.recordedState.waitingForRegisterKeyAfterCtrlR = true;
+}
 }
 
 @RegisterAction
@@ -531,15 +670,32 @@ class CommandInsertAboveChar extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlHInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
+  modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = ['<C-h>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
+
+    const selection = vimState.editor.selection;
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      position = await new DeleteOperator(this.multicursorIndex).delete(
+        selection.start,
+        selection.end.getLeft(),
+        vimState.currentMode,
+        vimState.currentRegisterMode,
+        vimState,
+        true
+      );
+    } else {
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteText',
       position: position,
     });
   }
+}
 }
 
 @RegisterAction
@@ -614,11 +770,15 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlVInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
+  modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const textFromClipboard = await Clipboard.Paste();
+
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
@@ -655,10 +815,26 @@ class CommandShowLineAutocomplete extends BaseCommand {
 
 @RegisterAction
 class NewLineInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
+  modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = [['<C-j>'], ['<C-m>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (isSelectMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Insert);
+    }
+
+    const selection = vimState.editor.selection;
+    if (!selection.isEmpty) {
+      // If a selection is active, delete it
+      position = await new DeleteOperator(this.multicursorIndex).delete(
+        selection.start,
+        selection.end.getLeft(),
+        vimState.currentMode,
+        vimState.currentRegisterMode,
+        vimState,
+        true
+      );
+    }
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: '\n',

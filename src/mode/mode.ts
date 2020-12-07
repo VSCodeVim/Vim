@@ -10,6 +10,9 @@ export enum Mode {
   Visual,
   VisualBlock,
   VisualLine,
+  Select,
+  SelectBlock,
+  SelectLine,
   SearchInProgressMode,
   CommandlineInProgress,
   Replace,
@@ -29,6 +32,12 @@ export enum Mode {
   ReplaceVisual,
   ReplaceVisualBlock,
   ReplaceVisualLine,
+  InsertSelect,
+  InsertSelectBlock,
+  InsertSelectLine,
+  ReplaceSelect,
+  ReplaceSelectBlock,
+  ReplaceSelectLine,
 }
 
 export enum VSCodeVimCursorType {
@@ -42,10 +51,24 @@ export enum VSCodeVimCursorType {
 }
 
 /**
- * Is the given mode visual, visual line, or visual block?
+ * Is the given mode visual, visual line, visual block, select, select line or select block?
  */
 export function isVisualMode(mode: Mode) {
-  return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
+  return [
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ].includes(mode);
+}
+
+/**
+ * Is the given mode select, select line or select block?
+ */
+export function isSelectMode(mode: Mode) {
+  return [Mode.Select, Mode.SelectLine, Mode.SelectBlock].includes(mode);
 }
 
 /**
@@ -70,6 +93,12 @@ export function isPseudoMode(mode: Mode) {
     Mode.ReplaceVisual,
     Mode.ReplaceVisualLine,
     Mode.ReplaceVisualBlock,
+    Mode.InsertSelect,
+    Mode.InsertSelectLine,
+    Mode.InsertSelectBlock,
+    Mode.ReplaceSelect,
+    Mode.ReplaceSelectLine,
+    Mode.ReplaceSelectBlock,
   ].includes(mode);
 }
 
@@ -84,7 +113,7 @@ export function statusBarText(vimState: VimState) {
     case Mode.OperatorPendingMode:
       if (vimState.modeToReturnToAfterNormalCommand) {
         switch (vimState.modeToReturnToAfterNormalCommand) {
-    case Mode.Insert:
+          case Mode.Insert:
             return '-- (insert) --';
           case Mode.Replace:
             return '-- (replace) --';
@@ -119,6 +148,24 @@ export function statusBarText(vimState: VimState) {
       return '-- (replace) VISUAL BLOCK --';
     case Mode.ReplaceVisualLine:
       return '-- (replace) VISUAL LINE --';
+    case Mode.Select:
+      return '-- SELECT --';
+    case Mode.SelectBlock:
+      return '-- SELECT BLOCK --';
+    case Mode.SelectLine:
+      return '-- SELECT LINE --';
+    case Mode.InsertSelect:
+      return '-- (insert) SELECT --';
+    case Mode.InsertSelectBlock:
+      return '-- (insert) SELECT BLOCK --';
+    case Mode.InsertSelectLine:
+      return '-- (insert) SELECT LINE --';
+    case Mode.ReplaceSelect:
+      return '-- (replace) SELECT --';
+    case Mode.ReplaceSelectBlock:
+      return '-- (replace) SELECT BLOCK --';
+    case Mode.ReplaceSelectLine:
+      return '-- (replace) SELECT LINE --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:

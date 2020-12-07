@@ -587,6 +587,22 @@
           "type": "array",
           "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
+        "vim.allVisualModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in Visual and Select mode. When using these mappings in Select mode, vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.allVisualModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual and Select mode. When using these mappings in Select mode, vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.selectModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in Select mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.selectModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive keybinding overrides to use for Select mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
         "vim.commandLineModeKeyBindings": {
           "type": "array",
           "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
@@ -955,6 +971,12 @@
             "startsel,stopsel"
           ],
           "default": "startsel"
+        },
+        "vim.selectmode": {
+          "type": "string",
+          "markdownDescription": "This is a comma separated list of words, which specifies when to start Select mode instead of Visual mode, when a selection is started.\nPossible values:\n\t `mouse`\t -> when using the mouse\n\t `key`\t -> when using shifted special keys\n\t `cmd`\t -> when using 'v', 'V' or 'CTRL-V'",
+          "pattern": "^(?:mouse(?:,\\s*|\\b)|key(?:,\\s*|\\b)|cmd(?:,\\s*|\\b)){1,3}$",
+          "default": "mouse,key"
         },
         "vim.disableExtension": {
           "type": "boolean",
