@@ -3353,8 +3353,9 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
       // Start looking to the right for the next word to increment, unless we're
       // already on a word to increment, in which case start at the beginning of
-      // that word.
-      const whereToStart = text[position.character].match(/\s/)
+      // that word, except in visual modes, in those modes the range is strict.
+      const whereToStart =
+        text[position.character].match(/\s/) || isVisualMode(vimState.currentMode)
         ? position
         : position.getWordLeft(true);
 
@@ -3363,9 +3364,20 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           break;
         }
 
+        // Word needs to be within range
+        if (end.isAfter(range.stop)) {
+          word = word.substring(0, 1 + range.stop.character - start.character);
+          end = range.stop;
+        }
+
         // '-' doesn't count as a word, but is important to include in parsing
         // the number, as long as it is not just part of the word (-foo2 for example)
-        if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
+        // or it is not outside the range in visual modes.
+        if (
+          (!isVisualMode(vimState.currentMode) || start.getLeft().isAfterOrEqual(range.start)) &&
+          text[start.character - 1] === '-' &&
+          /\d/.test(text[start.character])
+        ) {
           start = start.getLeft();
           word = text[start.character] + word;
         }
@@ -3449,13 +3461,16 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         break;
       }
 
-      case Mode.Visual: {
+        if (start.line === stop.line) {
+          ranges.push(new Range(start, stop));
+        } else {
         ranges.push(new Range(start, start.getLineEnd()));
         for (let line = start.line + 1; line < stop.line; line++) {
           const lineStart = new Position(line, 0);
           ranges.push(new Range(lineStart, lineStart.getLineEnd()));
         }
         ranges.push(new Range(stop.getLineBegin(), stop));
+        }
         break;
       }
 
@@ -3482,7 +3497,11 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       }
 
       default:
-        throw new Error('Unexpected mode in IncrementDecrementNumberAction.getPositions()');
+        throw new Error(
+          `Unexpected mode "${
+            Mode[vimState.currentMode]
+          }" in IncrementDecrementNumberAction.getPositions()`
+        );
     }
     return ranges;
   }
