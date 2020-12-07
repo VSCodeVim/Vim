@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { Clipboard } from './../util/clipboard';
 import {
@@ -12,7 +11,6 @@ import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { readFileAsync, writeFileAsync } from 'platform/fs';
-import { globalState } from '../state/globalState';
 import { Globals } from '../globals';
 
 /**
@@ -407,27 +405,37 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
-  public static async saveToDisk(): Promise<void> {
-    const serializable = new Array<[string, IRegisterContent]>();
-    for (const [key, content] of Register.registers) {
-      if (typeof content.text === 'string' || Array.isArray(content.text)) {
-        serializable.push([key, content]);
+  public static async saveToDisk(supportNode: boolean): Promise<void> {
+    if (supportNode) {
+      const serializable = new Array<[string, IRegisterContent]>();
+      for (const [key, content] of Register.registers) {
+        if (typeof content.text === 'string' || Array.isArray(content.text)) {
+          serializable.push([key, content]);
+        }
       }
-    }
 
-    await writeFileAsync(
-      path.join(Globals.extensionStoragePath, '.registers'),
-      JSON.stringify(serializable),
-      'utf8'
-    );
+      return import('path').then((path) => {
+        return writeFileAsync(
+          path.join(Globals.extensionStoragePath, '.registers'),
+          JSON.stringify(serializable),
+          'utf8'
+        );
+      });
+    }
   }
 
-  public static loadFromDisk(): void {
-    Register.registers = new Map();
-    readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
-      (savedRegisters) => {
-        Register.registers = new Map(JSON.parse(savedRegisters));
-      }
-    );
+  public static loadFromDisk(supportNode: boolean): void {
+    if (supportNode) {
+      Register.registers = new Map();
+      import('path').then((path) => {
+        readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
+          (savedRegisters) => {
+            Register.registers = new Map(JSON.parse(savedRegisters));
+          }
+        );
+      });
+    } else {
+      Register.registers = new Map();
+    }
   }
 }

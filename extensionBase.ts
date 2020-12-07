@@ -99,10 +99,7 @@ async function loadConfiguration() {
 /**
  * The extension's entry point
  */
-export async function activate(
-  context: vscode.ExtensionContext,
-  handleLocalDiskChangeEvent: boolean = true
-) {
+export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
@@ -113,7 +110,7 @@ export async function activate(
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
-  Register.loadFromDisk();
+  Register.loadFromDisk(handleLocal);
   await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
 
   if (vscode.window.activeTextEditor) {
@@ -180,7 +177,7 @@ export async function activate(
         });
     }
 
-    if (handleLocalDiskChangeEvent) {
+    if (handleLocal) {
       setTimeout(() => {
         if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
           handleContentChangedFromDisk(event.document);
