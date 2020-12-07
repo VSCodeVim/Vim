@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.18.2](https://github.com/vscodevim/vim/tree/v1.18.2) (2020-12-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.0...v1.18.2)
+
+**Fixed Bugs:**
+
+- Key Remapping, how to access "up"/"down" arrow key [\#5839](https://github.com/VSCodeVim/Vim/issues/5839)
+
 ## [v1.18.0](https://github.com/vscodevim/vim/tree/v1.18.0) (2020-12-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.1...v1.18.0)
@@ -43,7 +51,7 @@
 - Keymappings aren't ported. [\#5527](https://github.com/VSCodeVim/Vim/issues/5527)
 - Broken jsx autocomplete [\#5474](https://github.com/VSCodeVim/Vim/issues/5474)
 - Glitch after paste multiple lines [\#5442](https://github.com/VSCodeVim/Vim/issues/5442)
-- 'C' in Visual Mode doesn't count as selected text for snippets with $TM_SELECTED_TEXT [\#5418](https://github.com/VSCodeVim/Vim/issues/5418)
+- 'C' in Visual Mode doesn't count as selected text for snippets with \$TM_SELECTED_TEXT [\#5418](https://github.com/VSCodeVim/Vim/issues/5418)
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///e:/hc_client_1/Assets/Scripts/Rhythm/MusicScriptEditor.cs". [\#5412](https://github.com/VSCodeVim/Vim/issues/5412)
 - Line down lagging when in visual line selection mode [\#5401](https://github.com/VSCodeVim/Vim/issues/5401)
 - Autocomplete behaving badly [\#5390](https://github.com/VSCodeVim/Vim/issues/5390)
@@ -116,12 +124,6 @@
 ## [beta](https://github.com/vscodevim/vim/tree/beta) (2020-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.16.0...beta)
-
-**Closed issues:**
-
-- Folding: zc and zo handle a count wrong [\#5168](https://github.com/VSCodeVim/Vim/issues/5168)
-- Folding: closed folds with zM, zC will reopen [\#5167](https://github.com/VSCodeVim/Vim/issues/5167)
-- Delete lines without copying to buffer [\#5162](https://github.com/VSCodeVim/Vim/issues/5162)
 
 **Merged pull requests:**
 
