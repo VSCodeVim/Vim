@@ -1730,7 +1730,17 @@ export class CommandVisualMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Visual);
+    if (vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getRight(
+        vimState.recordedState.count - 1
+      );
+    }
   }
+    if (vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getRight(
+        vimState.recordedState.count - 1
+      );
+    }
 }
 
 @RegisterAction
@@ -1834,7 +1844,12 @@ class CommandVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.VisualBlock);
+    if (vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getRight(
+        vimState.recordedState.count - 1
+      );
   }
+}
 }
 
 @RegisterAction
