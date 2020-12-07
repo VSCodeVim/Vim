@@ -2565,3 +2565,23 @@ class LeftArrowInInsertMode extends ArrowsInInsertMode {
 class RightArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<right>'];
 }
+
+@RegisterAction
+class MoveLeftMouse extends BaseMovement {
+  keys = ['<LeftMouse>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
+    return vimState.editor.selection.active;
+  }
+}

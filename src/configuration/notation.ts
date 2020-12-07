@@ -13,6 +13,7 @@ export class Notation {
     [/end/gi, 'End'],
     [/pageup/gi, 'PageUp'],
     [/pagedown/gi, 'PageDown'],
+    [/leftmouse/gi, 'LeftMouse'],
     [/insert/gi, 'Insert'],
     [/<space>/gi, ' '],
     [/<cr>|<enter>/gi, '\n'],

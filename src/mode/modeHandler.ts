@@ -294,9 +294,8 @@ export class ModeHandler implements vscode.Disposable {
           newPosition = newPosition.withColumn(Math.max(newPosition.getLineEnd().character - 1, 0));
 
           // Switch back to normal mode since it was a click not a selection
-          await this.setCurrentMode(Mode.Normal);
-
-          toDraw = true;
+          await this.handleKeyEvent('<LeftMouse>');
+          return;
         }
       } else if (selection.isEmpty) {
         this.vimState.lastClickWasPastEol = false;
@@ -343,8 +342,9 @@ export class ModeHandler implements vscode.Disposable {
 
           // double click mouse selection causes an extra character to be selected so take one less character
         }
-      } else if (this.vimState.currentMode !== Mode.Insert) {
-        await this.setCurrentMode(Mode.Normal);
+      } else {
+        await this.handleKeyEvent('<LeftMouse>');
+        return;
       }
 
       this.updateView({ drawSelection: toDraw, revealRange: false });
