@@ -153,10 +153,7 @@ export class ModeHandler implements vscode.Disposable {
       });
     };
 
-    if (
-      e.selections.length !== this.vimState.cursors.length ||
-      this.vimState.isMultiCursor
-    ) {
+    if (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) {
       let allowedModes = [
         Mode.Normal,
         Mode.Visual,
@@ -360,7 +357,7 @@ export class ModeHandler implements vscode.Disposable {
           if (configuration.selectmodeMouse) {
             await this.setCurrentMode(Mode.Select);
           } else {
-          await this.setCurrentMode(Mode.Visual);
+            await this.setCurrentMode(Mode.Visual);
           }
 
           // double click mouse selection causes an extra character to be selected so take one less character
@@ -734,6 +731,7 @@ export class ModeHandler implements vscode.Disposable {
 
       if (action.isCompleteAction) {
         ranAction = true;
+        this.vimState.recordedState.count = 0;
       }
 
       if (action.canBeRepeatedWithDot) {
@@ -1089,6 +1087,9 @@ export class ModeHandler implements vscode.Disposable {
       // Keep track of all cursors (in the case of multi-cursor).
       this.vimState.cursors = resultingCursors;
     }
+
+    this.vimState.recordedState.count = 0;
+    this.vimState.recordedState.operatorCount = 0;
   }
 
   public async rerunRecordedState(recordedState: RecordedState): Promise<void> {

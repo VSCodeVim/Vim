@@ -136,6 +136,7 @@ class CommandTabInCommandline extends BaseCommand {
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['\n'], ['<C-m>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -426,6 +427,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     ) {
       vimState.statusBarCursorCharacterPos = searchState.searchString.length;
     } else if (key === '\n' || key === '<C-m>') {
+      this.isCompleteAction = true;
       await vimState.setCurrentMode(searchState.previousMode);
 
       // Repeat the previous search if no new string is entered
@@ -528,6 +530,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 class CommandEscInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -545,6 +548,7 @@ class CommandEscInCommandline extends BaseCommand {
 class CommandEscInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }

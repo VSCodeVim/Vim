@@ -31,6 +31,7 @@ import { getAndUpdateModeHandler } from '../../../extensionBase';
 class CommandEscInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  isCompleteAction = true;
 
   runsOnceForEveryCursor() {
     return false;
@@ -116,6 +117,7 @@ class CommandEscInsertMode extends BaseCommand {
 export class CommandInsertPreviousText extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-a>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState, '.');
@@ -159,6 +161,7 @@ export class CommandInsertPreviousText extends BaseCommand {
 class CommandInsertPreviousTextAndQuit extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-shift+2>']; // <C-@>
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await new CommandInsertPreviousText().exec(position, vimState);
@@ -170,6 +173,7 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
 class CommandInsertBelowChar extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-e>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (position.line === vimState.document.lineCount - 1) {
@@ -196,6 +200,7 @@ class CommandInsertBelowChar extends BaseCommand {
 class CommandInsertIndentInCurrentLine extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-t>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const originalText = vimState.document.lineAt(position).text;
@@ -233,6 +238,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-BS>'], ['<S-BS>']];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const line = vimState.document.lineAt(position).text;
@@ -288,6 +294,7 @@ export class CommandBackspaceInSelectMode extends CommandBackspaceInInsertMode {
 export class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (isSelectMode(vimState.currentMode)) {
@@ -320,6 +327,7 @@ export class CommandDeleteInSelectMode extends CommandDeleteInInsertMode {
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<character>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[this.keysPressed.length - 1];
@@ -347,6 +355,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 export class CommandInsertInSelectMode extends BaseCommand {
   modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = ['<character>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[this.keysPressed.length - 1];
@@ -524,7 +533,6 @@ class CommandInsertRegisterContent extends BaseCommand {
       super.couldActionApply(vimState, keysPressed)
     );
   }
-
 }
 
 @RegisterAction
@@ -549,20 +557,21 @@ class CommandCtrlR extends BaseCommand {
         vimState,
         false
       );
-  }
+    }
 
     // Setup 'recordedState.waitingForRegisterKeyAfterCtrlR' so that the modeHandler
     // knows that the next key needs to be a register key (otherwise it should fail)
     // and for 'updateView' to know that it should create the virtual key `"` to give
     // feedback to the user that it is waiting for a register key.
     vimState.recordedState.waitingForRegisterKeyAfterCtrlR = true;
-}
+  }
 }
 
 @RegisterAction
 export class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
+  isCompleteAction = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.modeToReturnToAfterNormalCommand = Mode.Insert;
@@ -575,6 +584,7 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
 export class CommandOneNormalCommandInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<C-o>'];
+  isCompleteAction = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.modeToReturnToAfterNormalCommand = Mode.Replace;
@@ -587,6 +597,7 @@ export class CommandOneNormalCommandInReplaceMode extends BaseCommand {
 class CommandCtrlW extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-w>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let wordBegin: Position;
@@ -611,6 +622,7 @@ class CommandCtrlW extends BaseCommand {
 class CommandDeleteIndentInCurrentLine extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-d>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const originalText = vimState.document.lineAt(position).text;
@@ -646,6 +658,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 class CommandInsertAboveChar extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-y>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (TextEditor.isFirstLine(position)) {
@@ -672,6 +685,7 @@ class CommandInsertAboveChar extends BaseCommand {
 class CommandCtrlHInInsertMode extends BaseCommand {
   modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = ['<C-h>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (isSelectMode(vimState.currentMode)) {
@@ -690,18 +704,19 @@ class CommandCtrlHInInsertMode extends BaseCommand {
         true
       );
     } else {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteText',
-      position: position,
-    });
+      vimState.recordedState.transformer.addTransformation({
+        type: 'deleteText',
+        position: position,
+      });
+    }
   }
-}
 }
 
 @RegisterAction
 class CommandCtrlUInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-u>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const start = position.isInLeadingWhitespace()
@@ -772,6 +787,7 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
 class CommandCtrlVInInsertMode extends BaseCommand {
   modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = ['<C-v>'];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const textFromClipboard = await Clipboard.Paste();
@@ -817,6 +833,7 @@ class CommandShowLineAutocomplete extends BaseCommand {
 class NewLineInsertMode extends BaseCommand {
   modes = [Mode.Insert, Mode.Select, Mode.SelectLine, Mode.SelectBlock];
   keys = [['<C-j>'], ['<C-m>']];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (isSelectMode(vimState.currentMode)) {
