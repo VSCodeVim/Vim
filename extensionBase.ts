@@ -411,11 +411,16 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
+      if (!args) {
+        throw new Error(
+          "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'"
+        );
+      }
+
       if (args.after) {
         for (const key of args.after) {
           await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
         }
-        return;
       }
 
       if (args.commands) {

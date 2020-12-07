@@ -46,10 +46,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
-      },
-      {
         "command": "toggleVim",
         "title": "Vim: Toggle Vim Mode"
       },
