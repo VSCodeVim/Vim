@@ -1012,6 +1012,9 @@ export class CommandSearchForwards extends BaseCommand {
   keys = ['/'];
   isMotion = true;
   isJump = true;
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
@@ -1034,6 +1037,9 @@ export class CommandSearchBackwards extends BaseCommand {
   keys = ['?'];
   isMotion = true;
   isJump = true;
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
