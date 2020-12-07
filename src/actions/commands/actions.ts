@@ -2050,6 +2050,7 @@ class CommandInsertAtLastChange extends BaseCommand {
     const lastPos = vimState.historyTracker.getLastChangeEndPosition();
 
     if (lastPos !== undefined) {
+      vimState.cursorStartPosition = lastPos;
       vimState.cursorStopPosition = lastPos;
       await vimState.setCurrentMode(Mode.Insert);
     }
@@ -2063,6 +2064,7 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
+    vimState.cursorStartPosition = TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
   }
 }
@@ -2075,6 +2077,7 @@ class CommandInsertAtLineBegin extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
+    vimState.cursorStartPosition = position.getLineBegin();
     vimState.cursorStopPosition = position.getLineBegin();
   }
 }
@@ -2086,6 +2089,7 @@ export class CommandInsertAfterCursor extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
+    vimState.cursorStartPosition = position.getRight();
     vimState.cursorStopPosition = position.getRight();
   }
 
@@ -2106,6 +2110,7 @@ export class CommandInsertAtLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
+    vimState.cursorStartPosition = position.getLineEnd();
     vimState.cursorStopPosition = position.getLineEnd();
   }
 }
