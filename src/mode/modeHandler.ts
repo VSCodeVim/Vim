@@ -389,12 +389,7 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (key === '<C-c>' && process.platform !== 'darwin') {
-        if (
-          !configuration.useCtrlKeys ||
-          this.vimState.currentMode === Mode.Visual ||
-          this.vimState.currentMode === Mode.VisualBlock ||
-          this.vimState.currentMode === Mode.VisualLine
-        ) {
+        if (!configuration.useCtrlKeys || isVisualMode(this.vimState.currentMode)) {
           key = '<copy>';
         }
       }
@@ -795,10 +790,10 @@ export class ModeHandler implements vscode.Disposable {
     if (ranAction) {
       this.vimState.recordedState = new RecordedState();
 
-      // Return to insert mode after 1 command in this case for <C-o>
-      if (this.vimState.returnToInsertAfterCommand) {
+      // Return to insert/replace mode after 1 command in this case for <C-o>
+      if (this.vimState.modeToReturnToAfterNormalCommand) {
         if (this.vimState.actionCount > 0) {
-          await this.setCurrentMode(Mode.Insert);
+          await this.setCurrentMode(this.vimState.modeToReturnToAfterNormalCommand);
         } else {
           this.vimState.actionCount++;
         }
@@ -940,7 +935,7 @@ export class ModeHandler implements vscode.Disposable {
       if (result instanceof Position) {
         this.vimState.cursors[i] = this.vimState.cursors[i].withNewStop(result);
 
-        if (!isVisualMode(this.currentMode) && !this.vimState.recordedState.operator) {
+        if (!isVisualMode(this.vimState.currentMode) && !this.vimState.recordedState.operator) {
           this.vimState.cursors[i] = this.vimState.cursors[i].withNewStart(result);
         }
       } else {
@@ -1624,29 +1619,31 @@ export class ModeHandler implements vscode.Disposable {
 function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
+    case Mode.InsertNormal:
+    case Mode.ReplaceNormal:
+    case Mode.EasyMotionMode:
+    case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.Insert:
       return VSCodeVimCursorType.Native;
     case Mode.Visual:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualLine:
+    case Mode.InsertVisual:
+    case Mode.InsertVisualBlock:
+    case Mode.InsertVisualLine:
+    case Mode.ReplaceVisual:
+    case Mode.ReplaceVisualBlock:
+    case Mode.ReplaceVisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
+    case Mode.OperatorPendingMode:
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case Mode.EasyMotionMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.EasyMotionInputMode:
-      return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
-    case Mode.OperatorPendingMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;

@@ -536,7 +536,14 @@ class CommandCtrlY extends CommandEditorScroll {
  * your cursor down and put it on the first non-whitespace character of the line.
  */
 abstract class CommandScrollAndMoveCursor extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
   runsOnceForEachCountPrefix = false;
   abstract to: EditorScrollDirection;
 
@@ -591,29 +598,141 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
 
 @RegisterAction
 class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
-  keys = ['<C-b>'];
+  keys = [['<PageUp>'], ['<S-up>']];
   to: EditorScrollDirection = 'up';
 
   protected getNumLines(vimState: VimState) {
     const visible = vimState.editor.visibleRanges[0];
     return visible.end.line - visible.start.line;
   }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    // We check if the keypressed was not '<S-up>' or '<S-PageUp>' because if the user
+    // only has `keymodel=stopsel` then this action is called but it shouldn't stop the
+    // selection.
+    if (
+      isVisualMode(vimState.currentMode) &&
+      configuration.keymodelStopsSelection &&
+      !this.keysPressed.includes('<S-up>') &&
+      !this.keysPressed.includes('<S-PageUp>')
+    ) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return super.exec(position, vimState);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (keysPressed.includes('<S-up>') && configuration.keymodelStartsSelection) {
+      return false;
+    }
+    return super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (keysPressed.includes('<S-up>') && configuration.keymodelStartsSelection) {
+      return false;
+    }
+    return super.couldActionApply(vimState, keysPressed);
+}
+}
+
+@RegisterAction
+class CommandMoveFullPageUpCtrlB extends CommandMoveFullPageUp {
+  keys = [['<C-b>']];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
+}
+
+@RegisterAction
+class CommandMoveFullPageUpShifted extends CommandMoveFullPageUp {
+  keys = [['<S-PageUp>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+        await vimState.setCurrentMode(Mode.Visual);
+    }
+    return super.exec(position, vimState);
+  }
 }
 
 @RegisterAction
 class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
-  keys = ['<C-f>'];
+  keys = [['<PageDown>'], ['<S-down>']];
   to: EditorScrollDirection = 'down';
 
   protected getNumLines(vimState: VimState) {
     const visible = vimState.editor.visibleRanges[0];
     return visible.end.line - visible.start.line;
   }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    // We check if the keypressed was not '<S-down>' or '<S-PageDown>' because if the user
+    // only has `keymodel=stopsel` then this action is called but it shouldn't stop the
+    // selection.
+    if (
+      isVisualMode(vimState.currentMode) &&
+      configuration.keymodelStopsSelection &&
+      !this.keysPressed.includes('<S-down>') &&
+      !this.keysPressed.includes('<S-PageDown>')
+    ) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+}
+    return super.exec(position, vimState);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (keysPressed.includes('<S-down>') && configuration.keymodelStartsSelection) {
+      return false;
+    }
+    return super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (keysPressed.includes('<S-down>') && configuration.keymodelStartsSelection) {
+      return false;
+    }
+    return super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterAction
+class CommandMoveFullPageDownCtrlF extends CommandMoveFullPageDown {
+  keys = [['<C-f>']];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
+}
+
+@RegisterAction
+class CommandMoveFullPageDownShifted extends CommandMoveFullPageDown {
+  keys = [['<S-PageDown>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+        await vimState.setCurrentMode(Mode.Visual);
+    }
+    return super.exec(position, vimState);
+  }
 }
 
 @RegisterAction
 class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
   to: EditorScrollDirection = 'down';
 
   protected getNumLines(vimState: VimState) {
@@ -624,6 +743,12 @@ class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
 @RegisterAction
 class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+  ];
   to: EditorScrollDirection = 'up';
 
   protected getNumLines(vimState: VimState) {
@@ -1592,7 +1717,8 @@ class CommandExitVisualMode extends BaseCommand {
   keys = ['v'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(Mode.Normal);
+    const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+    await vimState.setCurrentMode(newMode);
   }
 }
 
@@ -1717,7 +1843,8 @@ class CommandExitVisualBlockMode extends BaseCommand {
   keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(Mode.Normal);
+    const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+    await vimState.setCurrentMode(newMode);
   }
 }
 
@@ -1743,7 +1870,8 @@ class CommandExitVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(Mode.Normal);
+    const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+    await vimState.setCurrentMode(newMode);
   }
 }
 
@@ -2610,11 +2738,11 @@ class ActionReplaceCharacter extends BaseCommand {
     const toReplace = this.keysPressed[1];
 
     /**
-     * <character> includes <BS>, <S-BS> and <TAB> but not any control keys,
-     * so we ignore the former two keys and have a special handle for <tab>.
+     * <character> includes <BS>, <C-BS>, <S-BS> and <TAB> but not any control keys,
+     * so we ignore the former three keys and have a special handle for <tab>.
      */
 
-    if (['<BS>', '<S-BS>'].includes(toReplace.toUpperCase())) {
+    if (['<BS>', '<C-BS>', '<S-BS>'].includes(toReplace.toUpperCase())) {
       return;
     }
 

@@ -16,8 +16,19 @@ export enum Mode {
   EasyMotionMode,
   EasyMotionInputMode,
   SurroundInputMode,
-  OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
+  // The following modes are Pseudo-Modes, used only when remapping or for 'showmode'
+  // to give feedback to user.
+  // DON'T SET TO THIS MODES!!!
+  OperatorPendingMode,
+  InsertNormal,
+  ReplaceNormal,
+  InsertVisual,
+  InsertVisualBlock,
+  InsertVisualLine,
+  ReplaceVisual,
+  ReplaceVisualBlock,
+  ReplaceVisualLine,
 }
 
 export enum VSCodeVimCursorType {
@@ -45,24 +56,69 @@ export function isStatusBarMode(mode: Mode): boolean {
   return [Mode.SearchInProgressMode, Mode.CommandlineInProgress].includes(mode);
 }
 
+/**
+ * Is the given mode a pseudo mode?
+ */
+export function isPseudoMode(mode: Mode) {
+  return [
+    Mode.OperatorPendingMode,
+    Mode.InsertNormal,
+    Mode.ReplaceNormal,
+    Mode.InsertVisual,
+    Mode.InsertVisualLine,
+    Mode.InsertVisualBlock,
+    Mode.ReplaceVisual,
+    Mode.ReplaceVisualLine,
+    Mode.ReplaceVisualBlock,
+  ].includes(mode);
+}
+
 export function statusBarText(vimState: VimState) {
   const cursorChar =
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  switch (vimState.currentMode) {
+  switch (vimState.currentModeIncludingPseudoModes) {
     case Mode.Normal:
+      return '-- NORMAL --';
+    case Mode.OperatorPendingMode:
+      if (vimState.modeToReturnToAfterNormalCommand) {
+        switch (vimState.modeToReturnToAfterNormalCommand) {
+    case Mode.Insert:
+            return '-- (insert) --';
+          case Mode.Replace:
+            return '-- (replace) --';
+          default:
+            return '';
+        }
+      }
       return '-- NORMAL --';
     case Mode.Insert:
       return '-- INSERT --';
+    case Mode.InsertNormal:
+      return '-- (insert) --';
+    case Mode.Replace:
+      return '-- REPLACE --';
+    case Mode.ReplaceNormal:
+      return '-- (replace) --';
     case Mode.Visual:
       return '-- VISUAL --';
     case Mode.VisualBlock:
       return '-- VISUAL BLOCK --';
     case Mode.VisualLine:
       return '-- VISUAL LINE --';
-    case Mode.Replace:
-      return '-- REPLACE --';
+    case Mode.InsertVisual:
+      return '-- (insert) VISUAL --';
+    case Mode.InsertVisualBlock:
+      return '-- (insert) VISUAL BLOCK --';
+    case Mode.InsertVisualLine:
+      return '-- (insert) VISUAL LINE --';
+    case Mode.ReplaceVisual:
+      return '-- (replace) VISUAL --';
+    case Mode.ReplaceVisualBlock:
+      return '-- (replace) VISUAL BLOCK --';
+    case Mode.ReplaceVisualLine:
+      return '-- (replace) VISUAL LINE --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:

@@ -7,14 +7,20 @@ const modes = {};
 modes[Mode.Normal] = {
   '<left>': '<',
   '<right>': '>',
+  '<space>': 's',
+  '<BS>': 'b',
 };
 
 modes[Mode.Visual] = modes[Mode.Normal];
+modes[Mode.VisualLine] = modes[Mode.Normal];
+modes[Mode.VisualBlock] = modes[Mode.Normal];
 
 modes[Mode.Insert] = {
   '<left>': '[',
   '<right>': ']',
 };
+
+modes[Mode.Replace] = modes[Mode.Insert];
 
 const translateMovementKey = (mode: Mode, key: string) => {
   return (modes[mode] || {})[key] || key;

@@ -38,7 +38,7 @@ class CommandEscInsertMode extends BaseCommand {
     vscode.commands.executeCommand('closeParameterHints');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
-    if (vimState.returnToInsertAfterCommand && position.character !== 0) {
+    if (vimState.modeToReturnToAfterNormalCommand && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
     }
 
@@ -230,7 +230,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 @RegisterAction
 export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
-  keys = ['<BS>'];
+  keys = [['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const line = vimState.document.lineAt(position).text;
@@ -426,7 +426,19 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
   keys = ['<C-o>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.returnToInsertAfterCommand = true;
+    vimState.modeToReturnToAfterNormalCommand = Mode.Insert;
+    vimState.actionCount = 0;
+    await new CommandEscInsertMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
+export class CommandOneNormalCommandInReplaceMode extends BaseCommand {
+  modes = [Mode.Replace];
+  keys = ['<C-o>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.modeToReturnToAfterNormalCommand = Mode.Replace;
     vimState.actionCount = 0;
     await new CommandEscInsertMode().exec(position, vimState);
   }

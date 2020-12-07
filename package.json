@@ -75,6 +75,16 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
+        "key": "pageup",
+        "command": "extension.vim_pageup",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "pagedown",
+        "command": "extension.vim_pagedown",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
         "key": "Insert",
         "command": "extension.vim_insert",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
@@ -118,6 +128,96 @@
         "key": "down",
         "command": "extension.vim_down",
         "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "shift+left",
+        "command": "extension.vim_shift+left",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "shift+right",
+        "command": "extension.vim_shift+right",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "shift+up",
+        "command": "extension.vim_shift+up",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "shift+down",
+        "command": "extension.vim_shift+down",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "shift+home",
+        "command": "extension.vim_shift+home",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "shift+end",
+        "command": "extension.vim_shift+end",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "shift+pageup",
+        "command": "extension.vim_shift+pageup",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "shift+pagedown",
+        "command": "extension.vim_shift+pagedown",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+left",
+        "command": "extension.vim_ctrl+left",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+right",
+        "command": "extension.vim_ctrl+right",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+shift+left",
+        "command": "extension.vim_ctrl+shift+left",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+shift+right",
+        "command": "extension.vim_ctrl+shift+right",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+shift+up",
+        "command": "extension.vim_ctrl+shift+up",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "ctrl+shift+down",
+        "command": "extension.vim_ctrl+shift+down",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "ctrl+Home",
+        "command": "extension.vim_ctrl+home",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+End",
+        "command": "extension.vim_ctrl+end",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+shift+home",
+        "command": "extension.vim_ctrl+shift+home",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+shift+end",
+        "command": "extension.vim_ctrl+shift+end",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "g g",
@@ -322,12 +422,12 @@
       {
         "key": "ctrl+backspace",
         "command": "extension.vim_ctrl+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-BS> && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "cmd+left",
@@ -844,6 +944,17 @@
           "type": "boolean",
           "description": "If enabled, dragging with the mouse activates Visual mode.",
           "default": true
+        },
+        "vim.keymodel": {
+          "type": "string",
+          "markdownDescription": "Defines the behavior of shifted arrow keys and List of comma separated words, which enable special things that keys can do. These values can be used:\n\t `startsel` -> Using a shifted special key starts selection (either Select mode or Visual mode, depending on 'key' being present in 'selectmode').\n\t `stopsel` -> Using a not-shifted special key stops selection.\nSpecial keys in this context are the cursor keys, `<End>`, `<Home>`, `<PageUp>` and `<PageDown>`.",
+          "enum": [
+            "",
+            "startsel",
+            "stopsel",
+            "startsel,stopsel"
+          ],
+          "default": "startsel"
         },
         "vim.disableExtension": {
           "type": "boolean",

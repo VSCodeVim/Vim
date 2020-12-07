@@ -11,6 +11,8 @@ export class Notation {
     [/delete|del/gi, 'Del'],
     [/home/gi, 'Home'],
     [/end/gi, 'End'],
+    [/pageup/gi, 'PageUp'],
+    [/pagedown/gi, 'PageDown'],
     [/insert/gi, 'Insert'],
     [/<space>/gi, ' '],
     [/<cr>|<enter>/gi, '\n'],
@@ -30,7 +32,11 @@ export class Notation {
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
     return (
-      this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<S-BS>' && key !== '<TAB>'
+      this.isSurroundedByAngleBrackets(key) &&
+      key !== '<BS>' &&
+      key !== '<C-BS>' &&
+      key !== '<S-BS>' &&
+      key !== '<TAB>'
     );
   }
 
