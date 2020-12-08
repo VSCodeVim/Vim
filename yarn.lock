@@ -5716,10 +5716,10 @@ webpack-cli@4.2.0:
     v8-compile-cache "^2.2.0"
     webpack-merge "^4.2.2"
 
-webpack-merge@5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-5.4.0.tgz#81bef0a7d23fc1e6c24b06ad8bf22ddeb533a3a3"
-  integrity sha512-/scBgu8LVPlHDgqH95Aw1xS+L+PHrpHKOwYVGFaNOQl4Q4wwwWDarwB1WdZAbLQ24SKhY3Awe7VZGYAdp+N+gQ==
+webpack-merge@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-5.4.1.tgz#1cfd7386b1876b69c17bbf72abc4325604decefc"
+  integrity sha512-ubwNFcKJjm5BwPH1U8ZHTMaq2+XJqyvcfWXXU6yv4IIWWPWAFvgicok8VK1OiA7iYhl33aJxL5hvwTuZuNBIHw==
   dependencies:
     clone-deep "^4.0.1"
     wildcard "^2.0.0"
