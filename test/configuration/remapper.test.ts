@@ -258,7 +258,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey(['j', 'j'], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey(['j', 'j'], modeHandler);
     } catch (e) {
       assert.fail(e);
     }
@@ -284,7 +284,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey(['0'], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey(['0'], modeHandler);
     } catch (e) {
       assert.fail(e);
     }
@@ -321,7 +321,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey(['<C-e>'], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey(['<C-e>'], modeHandler);
     } catch (e) {
       assert.fail(e);
     }
@@ -347,7 +347,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey([leaderKey, 'w'], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey([leaderKey, 'w'], modeHandler);
     } catch (e) {
       assert.fail(e);
     }
@@ -375,7 +375,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey([leaderKey, 'c'], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey([leaderKey, 'c'], modeHandler);
     } catch (e) {
       assert.fail(e);
     }

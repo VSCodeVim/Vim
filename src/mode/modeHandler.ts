@@ -437,8 +437,7 @@ export class ModeHandler implements vscode.Disposable {
       ) {
         handledAsRemap = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
-          this,
-          this.vimState
+          this
         );
       }
 

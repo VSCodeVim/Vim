@@ -14,7 +14,7 @@ interface IRemapper {
   /**
    * Send keys to remapper
    */
-  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
+  sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean>;
 
   /**
    * Given keys pressed thus far, denotes if it is a potential remap
@@ -39,15 +39,11 @@ export class Remappers implements IRemapper {
     return this.remappers.some((r) => r.isPotentialRemap);
   }
 
-  public async sendKey(
-    keys: string[],
-    modeHandler: ModeHandler,
-    vimState: VimState
-  ): Promise<boolean> {
+  public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
     let handled = false;
 
     for (let remapper of this.remappers) {
-      handled = handled || (await remapper.sendKey(keys, modeHandler, vimState));
+      handled = handled || (await remapper.sendKey(keys, modeHandler));
     }
     return handled;
   }
@@ -102,11 +98,9 @@ export class Remapper implements IRemapper {
     this._remappedModes = remappedModes;
   }
 
-  public async sendKey(
-    keys: string[],
-    modeHandler: ModeHandler,
-    vimState: VimState
-  ): Promise<boolean> {
+  public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
+    const vimState = modeHandler.vimState;
+
     this._isPotentialRemap = false;
     const allowPotentialRemapOnFirstKey = vimState.recordedState.allowPotentialRemapOnFirstKey;
     let remainingKeys: string[] = [];
