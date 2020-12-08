@@ -348,6 +348,18 @@ class Configuration implements IConfiguration {
   })
   iskeyword: string;
 
+  @overlapSetting({
+    settingName: 'wordWrap',
+    defaultValue: false,
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['wordWrapColumn', true],
+      ['bounded', true],
+    ]),
+  })
+  wrap: boolean;
+
   boundKeyCombinations: IKeyBinding[] = [];
 
   visualstar = false;
