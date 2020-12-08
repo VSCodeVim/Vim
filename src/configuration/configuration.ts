@@ -20,6 +20,34 @@ import * as packagejson from '../../package.json';
 
 export const extensionVersion = packagejson.version;
 
+/**
+ * Most options supported by Vim have a short alias. They are provided here.
+ * Please keep this list up to date and sorted alphabetically.
+ */
+export const optionAliases = new Map<string, string>([
+  ['ai', 'autoindent'],
+  ['et', 'expandtab'],
+  ['gd', 'gdefault'],
+  ['hi', 'history'],
+  ['hls', 'hlsearch'],
+  ['ic', 'ignorecase'],
+  ['is', 'incsearch'],
+  ['isk', 'iskeyword'],
+  ['mmd', 'maxmapdepth'],
+  ['nu', 'number'],
+  ['rnu', 'relativenumber'],
+  ['sc', 'showcmd'],
+  ['scr', 'scroll'],
+  ['scs', 'smartcase'],
+  ['smd', 'showmode'],
+  ['sol', 'startofline'],
+  ['to', 'timeout'],
+  ['ts', 'tabstop'],
+  ['tw', 'textwidth'],
+  ['ws', 'wrapscan'],
+  ['ww', 'whichwrap'],
+]);
+
 type OptionValue = number | string | boolean;
 
 interface VSCodeKeybinding {
