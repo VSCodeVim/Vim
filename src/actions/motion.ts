@@ -41,7 +41,7 @@ export abstract class ExpandingSelection extends BaseMovement {
 
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  movementType: CursorMovePosition;
+  abstract movementType: CursorMovePosition;
   by: CursorMoveByUnit;
   value: number = 1;
 
@@ -154,7 +154,7 @@ abstract class MoveByScreenLine extends BaseMovement {
   }
 }
 
-export class MoveUpByScreenLine extends MoveByScreenLine {
+class MoveUpByScreenLine extends MoveByScreenLine {
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -1504,8 +1504,8 @@ class MoveParagraphBegin extends BaseMovement {
 
 abstract class MoveSectionBoundary extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  boundary: string;
-  forward: boolean;
+  abstract boundary: string;
+  abstract forward: boolean;
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1654,7 +1654,7 @@ class MoveToMatchingBracket extends BaseMovement {
 
 export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  protected charToMatch: string;
+  protected abstract charToMatch: string;
   protected includeSurrounding = false;
   isJump = true;
 
@@ -1863,7 +1863,7 @@ class MoveAClosingSquareBracket extends MoveInsideCharacter {
 
 export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
-  protected charToMatch: string;
+  protected abstract charToMatch: string;
   protected includeSurrounding = false;
   isJump = true;
 
@@ -2102,7 +2102,6 @@ export class MoveAroundTag extends MoveTagMatch {
 
 export abstract class ArrowsInInsertMode extends BaseMovement {
   modes = [Mode.Insert];
-  keys: string[];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.

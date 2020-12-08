@@ -38,6 +38,8 @@ import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
 
 export class DocumentContentChangeAction extends BaseAction {
+  modes: [];
+
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
   public addChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
@@ -471,8 +473,8 @@ abstract class CommandEditorScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
   keys: string[];
-  to: EditorScrollDirection;
-  by: EditorScrollByUnit;
+  abstract to: EditorScrollDirection;
+  abstract by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const timesToRepeat = vimState.recordedState.count || 1;
@@ -535,7 +537,7 @@ class CommandCtrlY extends CommandEditorScroll {
 abstract class CommandScrollAndMoveCursor extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
-  to: EditorScrollDirection;
+  abstract to: EditorScrollDirection;
 
   /**
    * @returns the number of lines this command should move the cursor
@@ -1187,8 +1189,8 @@ class CommandRepeatSubstitution extends BaseCommand {
 type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  commandName: string;
-  direction: FoldDirection;
+  abstract commandName: string;
+  direction: FoldDirection | undefined;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -3179,8 +3181,8 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   canBeRepeatedWithDot = true;
-  offset: number;
-  staircase: boolean;
+  abstract offset: number;
+  abstract staircase: boolean;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const ranges = this.getSearchRanges(vimState);
