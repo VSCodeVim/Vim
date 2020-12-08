@@ -1,9 +1,8 @@
 import { Globals } from '../../src/globals';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from '../testUtils';
 
 suite('replaceWithRegister plugin', () => {
-  const { newTest } = getTestingFunctions();
   const YankInnerWord = 'yiw';
   const ReplaceOperator = 'gr';
 

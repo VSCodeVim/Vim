@@ -59,41 +59,41 @@ function parseSubstituteFlags(scanner: Scanner): number {
     switch (c) {
       case '&':
         if (index === 0) {
-          flags = flags | node.SubstituteFlags.KeepPreviousFlags;
+          flags |= node.SubstituteFlags.KeepPreviousFlags;
         } else {
           // Raise Error
           return node.SubstituteFlags.None;
         }
         break;
       case 'c':
-        flags = flags | node.SubstituteFlags.ConfirmEach;
+        flags |= node.SubstituteFlags.ConfirmEach;
         break;
       case 'e':
-        flags = flags | node.SubstituteFlags.SuppressError;
+        flags |= node.SubstituteFlags.SuppressError;
         break;
       case 'g':
-        flags = flags | node.SubstituteFlags.ReplaceAll;
+        flags |= node.SubstituteFlags.ReplaceAll;
         break;
       case 'i':
-        flags = flags | node.SubstituteFlags.IgnoreCase;
+        flags |= node.SubstituteFlags.IgnoreCase;
         break;
       case 'I':
-        flags = flags | node.SubstituteFlags.NoIgnoreCase;
+        flags |= node.SubstituteFlags.NoIgnoreCase;
         break;
       case 'n':
-        flags = flags | node.SubstituteFlags.PrintCount;
+        flags |= node.SubstituteFlags.PrintCount;
         break;
       case 'p':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLine;
+        flags |= node.SubstituteFlags.PrintLastMatchedLine;
         break;
       case '#':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithNumber;
+        flags |= node.SubstituteFlags.PrintLastMatchedLineWithNumber;
         break;
       case 'l':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithList;
+        flags |= node.SubstituteFlags.PrintLastMatchedLineWithList;
         break;
       case 'r':
-        flags = flags | node.SubstituteFlags.UsePreviousPattern;
+        flags |= node.SubstituteFlags.UsePreviousPattern;
         break;
       default:
         scanner.backup();
@@ -134,7 +134,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     let flags: number;
     let count: number;
 
-    if (!args) {
+    if (!args || !args.trim()) {
       // special case for :s
       return new node.SubstituteCommand({
         pattern: undefined,

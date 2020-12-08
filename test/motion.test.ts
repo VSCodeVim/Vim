@@ -1,5 +1,6 @@
 import * as assert from 'assert';
-import { Position } from './../src/common/motion/position';
+import { Position, window } from 'vscode';
+import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/textobject/paragraph';
 import { TextEditor } from './../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
@@ -8,7 +9,7 @@ suite('basic motion', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    await TextEditor.insert(text.join('\n'));
+    await TextEditor.insert(window.activeTextEditor!, text.join('\n'));
   });
 
   suiteTeardown(cleanUpWorkspace);
@@ -55,7 +56,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 1);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDownWithDesiredColumn(0);
+    motion = motion.getDown();
     assert.strictEqual(motion.line, 2);
     assert.strictEqual(motion.character, 0);
   });
@@ -65,7 +66,7 @@ suite('basic motion', () => {
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
 
-    motion = motion.getDownWithDesiredColumn(3);
+    motion = motion.getDown();
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 0);
   });
@@ -76,7 +77,7 @@ suite('basic motion', () => {
       assert.strictEqual(position.line, 1);
       assert.strictEqual(position.character, 0);
 
-      position = position.getUpWithDesiredColumn(0);
+      position = position.getUp();
       assert.strictEqual(position.line, 0);
       assert.strictEqual(position.character, 0);
     });
@@ -86,7 +87,7 @@ suite('basic motion', () => {
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
 
-      motion = motion.getUpWithDesiredColumn(0);
+      motion = motion.getUp(0);
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 1);
     });
@@ -146,7 +147,7 @@ suite('word motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -362,7 +363,7 @@ suite('unicode word motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -465,7 +466,7 @@ suite('sentence motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -545,7 +546,7 @@ suite('paragraph motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -553,25 +554,25 @@ suite('paragraph motion', () => {
 
   suite('paragraph down', () => {
     test('move down normally', () => {
-      const motion = new Position(0, 0).getCurrentParagraphEnd();
+      const motion = getCurrentParagraphEnd(new Position(0, 0));
       assert.strictEqual(motion.line, 1);
       assert.strictEqual(motion.character, 0);
     });
 
     test('move down longer paragraph', () => {
-      const motion = new Position(2, 0).getCurrentParagraphEnd();
+      const motion = getCurrentParagraphEnd(new Position(2, 0));
       assert.strictEqual(motion.line, 4);
       assert.strictEqual(motion.character, 0);
     });
 
     test('move down starting inside empty line', () => {
-      const motion = new Position(4, 0).getCurrentParagraphEnd();
+      const motion = getCurrentParagraphEnd(new Position(4, 0));
       assert.strictEqual(motion.line, 7);
       assert.strictEqual(motion.character, 0);
     });
 
     test('paragraph at end of document', () => {
-      const motion = new Position(7, 0).getCurrentParagraphEnd();
+      const motion = getCurrentParagraphEnd(new Position(7, 0));
       assert.strictEqual(motion.line, 8);
       assert.strictEqual(motion.character, 3);
     });
@@ -579,19 +580,19 @@ suite('paragraph motion', () => {
 
   suite('paragraph up', () => {
     test('move up short paragraph', () => {
-      const motion = new Position(1, 0).getCurrentParagraphBeginning();
+      const motion = getCurrentParagraphBeginning(new Position(1, 0));
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 0);
     });
 
     test('move up longer paragraph', () => {
-      const motion = new Position(3, 0).getCurrentParagraphBeginning();
+      const motion = getCurrentParagraphBeginning(new Position(3, 0));
       assert.strictEqual(motion.line, 1);
       assert.strictEqual(motion.character, 0);
     });
 
     test('move up starting inside empty line', () => {
-      const motion = new Position(5, 0).getCurrentParagraphBeginning();
+      const motion = getCurrentParagraphBeginning(new Position(5, 0));
       assert.strictEqual(motion.line, 1);
       assert.strictEqual(motion.character, 0);
     });

@@ -36,36 +36,19 @@
     "no-string-literal": true,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
+    "no-unnecessary-type-assertion": true,
     "no-unused-expression": true,
     "no-use-before-declare": false,
     "no-var-keyword": true,
     "no-var-requires": false,
     "object-literal-sort-keys": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-finally",
-      "check-whitespace"
-    ],
     "prefer-for-of": true,
     "quotemark": false,
     "radix": true,
     "semicolon": [true, "always"],
     "switch-default": false,
-    "trailing-comma": false,
     "triple-equals": [true, "allow-null-check"],
     "typedef": false,
-    "typedef-whitespace": false,
-    "variable-name": false,
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type"
-    ]
+    "variable-name": false
   }
 }

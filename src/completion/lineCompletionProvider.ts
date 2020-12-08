@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
 import { Range } from '../common/motion/range';
+import { Position } from 'vscode';
 
 /**
  * Return open text documents, with a given file at the top of the list.
@@ -118,7 +118,7 @@ export const getCompletionsForCurrentLine = (
   position: Position,
   document: vscode.TextDocument
 ): string[] | null => {
-  const currentLineText = TextEditor.getText(
+  const currentLineText = document.getText(
     new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
   );
 
@@ -145,23 +145,20 @@ export const lineCompletionProvider = {
    * a space character (such that it shows almost any symbol in the list).
    * Quick Pick also allows for searching, which is a nice bonus.
    */
-  showLineCompletionsQuickPick: async (
-    position: Position,
-    vimState: VimState
-  ): Promise<VimState> => {
-    const completions = getCompletionsForCurrentLine(position, vimState.editor.document);
+  showLineCompletionsQuickPick: async (position: Position, vimState: VimState): Promise<void> => {
+    const completions = getCompletionsForCurrentLine(position, vimState.document);
 
     if (!completions) {
-      return vimState;
+      return;
     }
 
     const selectedCompletion = await vscode.window.showQuickPick(completions);
 
     if (!selectedCompletion) {
-      return vimState;
+      return;
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
@@ -169,11 +166,9 @@ export const lineCompletionProvider = {
       ),
     });
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',
       text: selectedCompletion,
     });
-
-    return vimState;
   },
 };

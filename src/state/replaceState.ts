@@ -1,5 +1,6 @@
-import { Position } from './../common/motion/position';
+import { Position } from 'vscode';
 import { TextEditor } from './../textEditor';
+import { VimState } from './vimState';
 
 /**
  * State involved with entering Replace mode (R).
@@ -23,11 +24,11 @@ export class ReplaceState {
    */
   public timesToRepeat: number;
 
-  constructor(startPosition: Position, timesToRepeat: number = 1) {
+  constructor(vimState: VimState, startPosition: Position, timesToRepeat: number = 1) {
     this.replaceCursorStartPosition = startPosition;
     this.timesToRepeat = timesToRepeat;
 
-    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
+    const text = vimState.document.lineAt(startPosition).text.substring(startPosition.character);
     for (let [key, value] of text.split('').entries()) {
       this.originalChars[key + startPosition.character] = value;
     }

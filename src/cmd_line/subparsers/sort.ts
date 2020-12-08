@@ -2,7 +2,7 @@ import * as node from '../commands/sort';
 import { Scanner } from '../scanner';
 
 export function parseSortCommandArgs(args: string): node.SortCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     return new node.SortCommand({ reverse: false, ignoreCase: false, unique: false });
   }
 

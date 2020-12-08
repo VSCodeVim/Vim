@@ -9,7 +9,7 @@ suite('cmd_line tabComplete', () => {
   let modeHandler: ModeHandler;
   suiteSetup(async () => {
     await t.setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   suiteTeardown(t.cleanUpWorkspace);
@@ -34,7 +34,7 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleKeyEvent('<tab>');
     const secondTab = StatusBar.getText();
 
-    await modeHandler.handleKeyEvent('<shift+tab>');
+    await modeHandler.handleKeyEvent('<S-tab>');
     const actual = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');

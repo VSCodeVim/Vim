@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { VimState } from '../../state/vimState';
 
 import * as node from '../node';
 
@@ -44,7 +45,7 @@ export class TabCommand extends node.CommandBase {
     }
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     switch (this._arguments.tab) {
       case Tab.Absolute:
         if (this._arguments.count !== undefined && this._arguments.count >= 0) {

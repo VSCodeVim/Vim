@@ -27,6 +27,7 @@ suite('base action', () => {
   suiteSetup(async () => {
     await setupWorkspace();
     vimState = new VimState(vscode.window.activeTextEditor!);
+    await vimState.load();
   });
 
   suiteTeardown(cleanUpWorkspace);

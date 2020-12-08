@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 
-import { TextEditor } from './../../textEditor';
-import { Position } from './../motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
+import { Position } from 'vscode';
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -43,22 +42,23 @@ export class PairMatcher {
     charToStack: string,
     stackHeight: number,
     isNextMatchForward: boolean,
-    vimState?: VimState
+    vimState: VimState,
+    allowCurrentPosition: boolean
   ): Position | undefined {
     let lineNumber = position.line;
-    let linePosition = position.character;
-    let lineCount = TextEditor.getLineCount();
-    let cursorChar = TextEditor.getCharAt(position);
-    if (vimState) {
-      let startPos = vimState.cursorStartPosition;
-      let endPos = vimState.cursorStopPosition;
-      if (startPos.isEqual(endPos) && cursorChar === charToFind) {
-        return position;
-      }
+    const linePosition = position.character;
+    const lineCount = vimState.document.lineCount;
+    const cursorChar = vimState.document.lineAt(position).text[position.character];
+    if (
+      allowCurrentPosition &&
+      vimState.cursorStartPosition.isEqual(vimState.cursorStopPosition) &&
+      cursorChar === charToFind
+    ) {
+      return position;
     }
 
     while (PairMatcher.keepSearching(lineNumber, lineCount, isNextMatchForward)) {
-      let lineText = TextEditor.getLine(lineNumber).text.split('');
+      let lineText = vimState.document.lineAt(lineNumber).text.split('');
       const originalLineLength = lineText.length;
       if (lineNumber === position.line) {
         if (isNextMatchForward) {
@@ -119,7 +119,8 @@ export class PairMatcher {
   static nextPairedChar(
     position: Position,
     charToMatch: string,
-    vimState?: VimState
+    vimState: VimState,
+    allowCurrentPosition: boolean
   ): Position | undefined {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
@@ -149,7 +150,8 @@ export class PairMatcher {
       charToStack,
       stackHeight,
       pairing.isNextMatchForward,
-      vimState
+      vimState,
+      allowCurrentPosition
     );
 
     if (matchedPos) {
@@ -179,7 +181,10 @@ export class PairMatcher {
    * no matching bracket is found immediately following the opening bracket, return undefined.
    * This is intended for the deletion of such pairs, so it respects `editor.autoClosingBrackets`.
    */
-  static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
+  static immediateMatchingBracket(
+    vimState: VimState,
+    currentPosition: Position
+  ): vscode.Range | undefined {
     if (currentPosition.isLineEnd()) {
       return undefined;
     }
@@ -191,7 +196,7 @@ export class PairMatcher {
       currentPosition,
       currentPosition.getLeftThroughLineBreaks()
     );
-    const deleteText = vscode.window.activeTextEditor!.document.getText(deleteRange);
+    const deleteText = vimState.document.getText(deleteRange);
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
@@ -199,8 +204,7 @@ export class PairMatcher {
       const matchPosition = currentPosition.getRight();
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
       isNextMatch =
-        vscode.window.activeTextEditor!.document.getText(matchRange) ===
-        PairMatcher.pairings[deleteText].match;
+        vimState.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
     }
 
     if (isNextMatch && matchRange) {

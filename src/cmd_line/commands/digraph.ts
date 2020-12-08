@@ -50,7 +50,7 @@ export class DigraphsCommand extends node.CommandBase {
     vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
       if (val) {
         const char = String.fromCharCode(...val.charCodes);
-        await TextEditor.insert(char);
+        await TextEditor.insert(vimState.editor, char);
       }
     });
   }

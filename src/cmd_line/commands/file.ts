@@ -1,26 +1,10 @@
-import * as fs from 'fs';
-import * as util from 'util';
 import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import * as node from '../node';
+import { doesFileExist } from 'platform/fs';
 import untildify = require('untildify');
-
-async function doesFileExist(fileUri: vscode.Uri) {
-  const activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor) {
-    try {
-      await vscode.workspace.fs.stat(fileUri);
-      return true;
-    } catch {
-      return false;
-    }
-  } else {
-    // fallback to local fs
-    const fsExists = util.promisify(fs.exists);
-    return fsExists(fileUri.fsPath);
-  }
-}
+import { VimState } from '../../state/vimState';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -48,7 +32,7 @@ export class FileCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (this.arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
@@ -87,7 +71,7 @@ export class FileCommand extends node.CommandBase {
 
     // Only untidify when the currently open page and file completion is local
     if (this.arguments.name && editorFileUri.scheme === 'file') {
-      this._arguments.name = <string>untildify(this.arguments.name);
+      this._arguments.name = untildify(this.arguments.name);
     }
 
     let fileUri = editorFileUri;

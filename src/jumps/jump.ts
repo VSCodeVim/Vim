@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { VimState } from '../state/vimState';
 
 /**
@@ -12,7 +12,6 @@ export class Jump {
   public readonly editor: vscode.TextEditor | null;
   public readonly fileName: string;
   public readonly position: Position;
-  public number?: number;
 
   /**
    *
@@ -42,7 +41,7 @@ export class Jump {
   public static fromStateNow(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: vimState.cursorStopPosition,
     });
   }
@@ -55,7 +54,7 @@ export class Jump {
   public static fromStateBefore(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
+      fileName: vimState.document.fileName,
       position: vimState.cursorsInitialState[0].stop,
     });
   }
@@ -64,12 +63,7 @@ export class Jump {
    * Determine whether another jump matches the same file path, line number, and character column.
    * @param other - Another Jump to compare against
    */
-  public isSamePosition(other: Jump | null | undefined): boolean {
-    return (
-      !other ||
-      (this.fileName === other.fileName &&
-        this.position.line === other.position.line &&
-        this.position.character === other.position.character)
-    );
+  public isSamePosition(other: Jump): boolean {
+    return this.fileName === other.fileName && this.position.isEqual(other.position);
   }
 }

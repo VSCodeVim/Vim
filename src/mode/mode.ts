@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
-import { Position } from '../common/motion/position';
+import { Position } from 'vscode';
 
 export enum Mode {
   Normal,
@@ -16,6 +16,7 @@ export enum Mode {
   EasyMotionMode,
   EasyMotionInputMode,
   SurroundInputMode,
+  OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
 }
 
@@ -26,6 +27,7 @@ export enum VSCodeVimCursorType {
   Underline,
   TextDecoration,
   Native,
+  UnderlineThin,
 }
 
 /**
@@ -77,7 +79,7 @@ export function statusBarText(vimState: VimState) {
       const leadingChar =
         globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
 
-      let searchWithCursor = globalState.searchState!.searchString.split('');
+      let searchWithCursor = globalState.searchState.searchString.split('');
       searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
       return `${leadingChar}${searchWithCursor.join('')}`;
@@ -109,7 +111,7 @@ export function statusBarCommandText(vimState: VimState): string {
         searchCharCount > 0
           ? `Search for ${searchCharCount} character(s): `
           : 'Search for characters: ';
-      return message + vimState.easyMotion.searchAction.getSearchString();
+      return message + vimState.easyMotion.searchAction.searchString;
     case Mode.Visual: {
       // TODO: holy shit, this is SO much more complicated than it should be because
       // our representation of a visual selection is so weird and inconsistent
@@ -124,26 +126,28 @@ export function statusBarCommandText(vimState: VimState): string {
       }
       const lines = end.line - start.line + 1;
       if (lines > 1) {
-        return `${lines}`;
+        return `${lines} ${vimState.recordedState.pendingCommandString}`;
       } else {
         const chars = Math.max(end.character - start.character, 1) + (wentOverEOL ? 1 : 0);
-        return `${chars}`;
+        return `${chars} ${vimState.recordedState.pendingCommandString}`;
       }
     }
     case Mode.VisualLine:
       return `${
         Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1
-      }`;
+      } ${vimState.recordedState.pendingCommandString}`;
     case Mode.VisualBlock: {
       const lines =
         Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1;
       const chars =
         Math.abs(vimState.cursorStopPosition.character - vimState.cursorStartPosition.character) +
         1;
-      return `${lines}x${chars}`;
+      return `${lines}x${chars} ${vimState.recordedState.pendingCommandString}`;
     }
-    case Mode.Normal:
+    case Mode.Insert:
     case Mode.Replace:
+      return vimState.recordedState.pendingCommandString;
+    case Mode.Normal:
     case Mode.Disabled:
       return vimState.recordedState.commandString;
     default:
@@ -161,6 +165,8 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Underline:
       return vscode.TextEditorCursorStyle.Underline;
+    case VSCodeVimCursorType.UnderlineThin:
+      return vscode.TextEditorCursorStyle.UnderlineThin;
     case VSCodeVimCursorType.TextDecoration:
       return vscode.TextEditorCursorStyle.LineThin;
     case VSCodeVimCursorType.Native:

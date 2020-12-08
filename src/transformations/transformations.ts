@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
-import { Position, PositionDiff } from './../common/motion/position';
+import { PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 
 /**
  * This file contains definitions of objects that represent text
  * additions/deletions/replacements on the document. You'll add them
- * to vimState.recordedState.transformations and then they will be applied
+ * to vimState.recordedState.transformer.transformations and then they will be applied
  * later on.
  *
  * We do it in this way so they can all be processed in parallel and merged
@@ -58,14 +59,9 @@ export interface ReplaceTextTransformation {
   text: string;
 
   /**
-   * Start of location to replace.
+   * Range of characters to replace.
    */
-  start: Position;
-
-  /**
-   * End of location to replace.
-   */
-  end: Position;
+  range: Range;
 
   /**
    * The index of the cursor that this transformation applies to.
@@ -305,7 +301,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
     case 'insertText':
       return new Range(transformation.position, transformation.position);
     case 'replaceText':
-      return new Range(transformation.start, transformation.end);
+      return transformation.range;
     case 'deleteText':
       return new Range(transformation.position, transformation.position);
     case 'deleteRange':
