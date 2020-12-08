@@ -597,8 +597,8 @@ async function handleKeyEvent(key: string): Promise<void> {
  */
 async function forceStopRecursiveRemap(): Promise<boolean> {
   const mh = await getAndUpdateModeHandler();
-  if (mh?.vimState.isCurrentlyPerformingRecursiveRemapping) {
-    mh.vimState.forceStopRecursiveRemapping = true;
+  if (mh?.remapState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.remapState.forceStopRecursiveRemapping = true;
     return true;
   }
 
