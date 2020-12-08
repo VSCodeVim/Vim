@@ -111,7 +111,7 @@ export function statusBarCommandText(vimState: VimState): string {
         searchCharCount > 0
           ? `Search for ${searchCharCount} character(s): `
           : 'Search for characters: ';
-      return message + vimState.easyMotion.searchAction.getSearchString();
+      return message + vimState.easyMotion.searchAction.searchString;
     case Mode.Visual: {
       // TODO: holy shit, this is SO much more complicated than it should be because
       // our representation of a visual selection is so weird and inconsistent
