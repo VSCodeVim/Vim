@@ -975,7 +975,7 @@
         "vim.selectmode": {
           "type": "string",
           "markdownDescription": "This is a comma separated list of words, which specifies when to start Select mode instead of Visual mode, when a selection is started.\nPossible values:\n\t `mouse`\t -> when using the mouse\n\t `key`\t -> when using shifted special keys\n\t `cmd`\t -> when using 'v', 'V' or 'CTRL-V'",
-          "pattern": "^(?:mouse(?:,\\s*|\\b)|key(?:,\\s*|\\b)|cmd(?:,\\s*|\\b)){1,3}$",
+          "pattern": "^(?:mouse(?:,\\s*|\\b)|key(?:,\\s*|\\b)|cmd(?:,\\s*|\\b)){0,3}$",
           "default": "mouse,key"
         },
         "vim.disableExtension": {
