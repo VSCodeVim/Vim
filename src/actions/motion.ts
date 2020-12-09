@@ -1536,7 +1536,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
       }
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(line);
   }
 }
 
