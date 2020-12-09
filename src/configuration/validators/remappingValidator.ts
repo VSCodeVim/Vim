@@ -119,12 +119,17 @@ export class RemappingValidator implements IConfigurationValidator {
 
         if (typeof command === 'string') {
           cmd = command;
-        } else {
+        } else if (command.command) {
           cmd = command.command;
-        }
 
-        if (!(await this.isCommandValid(cmd))) {
-          result.append({ level: 'warning', message: `${cmd} does not exist.` });
+          if (!(await this.isCommandValid(cmd))) {
+            result.append({ level: 'warning', message: `${cmd} does not exist.` });
+          }
+        } else {
+          result.append({
+            level: 'error',
+            message: `Remapping of '${remapping.before}' has wrong "commands" structure. Should be 'string[] | { "command": string, "args": any[] }[]'.`,
+          });
         }
       }
     }
