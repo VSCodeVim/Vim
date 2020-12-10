@@ -24,7 +24,7 @@ export const extensionVersion = packagejson.version;
  * Most options supported by Vim have a short alias. They are provided here.
  * Please keep this list up to date and sorted alphabetically.
  */
-export const optionAliases = new Map<string, string>([
+export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
   ['ai', 'autoindent'],
   ['et', 'expandtab'],
   ['gd', 'gdefault'],
