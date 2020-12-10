@@ -199,6 +199,10 @@ suite('put operator', () => {
 
   newTest({
     title: "Can handle ']p' after 'Nyy' and indent with tabs first",
+    config: {
+      tabstop: 4,
+      expandtab: false,
+    },
     start: [' |one', '  two', '   three'],
     keysPressed: '2yyjj]p',
     end: [' one', '  two', '   three', '   |one', '\ttwo'],
@@ -227,6 +231,10 @@ suite('put operator', () => {
 
   newTest({
     title: "Can handle '[p' after 'Nyy' and indent with tabs first",
+    config: {
+      tabstop: 4,
+      expandtab: false,
+    },
     start: ['   three', '| one', '  two'],
     keysPressed: '2yyk[p',
     end: ['   |one', '\ttwo', '   three', ' one', '  two'],
