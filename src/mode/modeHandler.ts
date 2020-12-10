@@ -1538,7 +1538,7 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.editor.setDecorations(decoration.easyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
-      vscode.commands.executeCommand(viewChange.command, viewChange.args);
+      await vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
     this.vimState.postponedCodeViewChanges = [];
 
