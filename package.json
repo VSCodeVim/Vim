@@ -1068,7 +1068,7 @@
     "typescript": "4.1.2",
     "vsce": "1.81.1",
     "vscode-test": "1.4.1",
-    "webpack": "5.10.0",
+    "webpack": "5.10.1",
     "webpack-cli": "4.2.0",
     "webpack-merge": "5.6.1",
     "webpack-stream": "6.1.1"
