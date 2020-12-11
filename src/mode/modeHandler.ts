@@ -411,7 +411,6 @@ export class ModeHandler implements vscode.Disposable {
 
     const oldMode = this.vimState.currentMode;
     const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
-    const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
     const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
@@ -491,7 +490,6 @@ export class ModeHandler implements vscode.Disposable {
       // or it is recording a Macro
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
         this.vimState.macro !== undefined;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
@@ -1334,7 +1332,11 @@ export class ModeHandler implements vscode.Disposable {
         ? vscode.TextEditorRevealType.InCenter
         : vscode.TextEditorRevealType.Default;
 
-      if (this.vimState.currentMode === Mode.SearchInProgressMode && globalState.searchState) {
+      if (
+        this.vimState.currentMode === Mode.SearchInProgressMode &&
+        globalState.searchState &&
+        configuration.incsearch
+      ) {
         const nextMatch = globalState.searchState.getNextSearchMatchPosition(
           this.vimState.editor,
           this.vimState.cursorStopPosition

@@ -340,6 +340,18 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     false
   );
 
+  registerEventListener(
+    context,
+    vscode.window.onDidChangeTextEditorVisibleRanges,
+    async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        // Scrolling the viewport clears any status bar message, even errors.
+        StatusBar.clear(mh.vimState, true);
+      }
+    }
+  );
+
   const compositionState = new CompositionState();
 
   // Override VSCode commands

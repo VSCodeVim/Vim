@@ -1,5 +1,34 @@
 # Change Log
 
+## [v1.18.5](https://github.com/vscodevim/vim/tree/v1.18.5) (2020-12-10)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.4...v1.18.5)
+
+**Enhancements:**
+
+- :set tabstop=x works but :set ts=x does not. [\#5368](https://github.com/VSCodeVim/Vim/issues/5368)
+- Implement :set wrap :set nowrap [\#5258](https://github.com/VSCodeVim/Vim/issues/5258)
+
+**Fixed Bugs:**
+
+- Double brackets shortcuts don't work \(i.e., "\[\[" & "\]\]"\) [\#5857](https://github.com/VSCodeVim/Vim/issues/5857)
+
+**Closed issues:**
+
+- Failed to handle key=/. Maximum call stack size exceeded [\#5844](https://github.com/VSCodeVim/Vim/issues/5844)
+- Cannot read property 'after' of undefined [\#5841](https://github.com/VSCodeVim/Vim/issues/5841)
+- C-f and C-b keys should page up and down like real Vim [\#5822](https://github.com/VSCodeVim/Vim/issues/5822)
+- exiting insert mode moves cursor to previous non-blank line [\#5726](https://github.com/VSCodeVim/Vim/issues/5726)
+
+**Merged pull requests:**
+
+- Fix CommandSearch throwing error in multicursor [\#5845](https://github.com/VSCodeVim/Vim/pull/5845) ([berknam](https://github.com/berknam))
+- Remove "vim.remap" from the command palette [\#5843](https://github.com/VSCodeVim/Vim/pull/5843) ([berknam](https://github.com/berknam))
+
+## [v1.18.4](https://github.com/vscodevim/vim/tree/v1.18.4) (2020-12-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.3...v1.18.4)
+
 ## [v1.18.3](https://github.com/vscodevim/vim/tree/v1.18.3) (2020-12-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.2...v1.18.3)
@@ -28,7 +57,6 @@
 **Enhancements:**
 
 - \<C-l\> in search mode [\#5675](https://github.com/VSCodeVim/Vim/issues/5675)
-- Cursor should disappear in command mode [\#5198](https://github.com/VSCodeVim/Vim/issues/5198)
 
 **Fixed Bugs:**
 
@@ -44,14 +72,12 @@
 - Snippet is not working Properly [\#5240](https://github.com/VSCodeVim/Vim/issues/5240)
 - Failed to handle key=p. v.split is not a function [\#5239](https://github.com/VSCodeVim/Vim/issues/5239)
 - Failed to handle key=\<Esc\>. Illegal argument: line must be non-negative [\#5226](https://github.com/VSCodeVim/Vim/issues/5226)
-- getLineLength\(\) called with out-of-bounds line 223 [\#5180](https://github.com/VSCodeVim/Vim/issues/5180)
 
 **Closed issues:**
 
 - Visual mode keybinding overwrite [\#5832](https://github.com/VSCodeVim/Vim/issues/5832)
 - Failed to handle key=\<C-a\>. Illegal value for `line` [\#5828](https://github.com/VSCodeVim/Vim/issues/5828)
 - \<C-o\> \<C-i\> will mess up cursor movement with left and right keys [\#5813](https://github.com/VSCodeVim/Vim/issues/5813)
-- Failed to handle key=\<Esc\>. Cannot read property 'stop' of undefined [\#5736](https://github.com/VSCodeVim/Vim/issues/5736)
 - Migrate from Travis CI to GitHub Actions [\#5720](https://github.com/VSCodeVim/Vim/issues/5720)
 - Extremely slow rendering introduced in v1.17 with long text in register [\#5707](https://github.com/VSCodeVim/Vim/issues/5707)
 - Cannot read property 'visibleRanges' of undefined [\#5655](https://github.com/VSCodeVim/Vim/issues/5655)
@@ -64,7 +90,7 @@
 - Keymappings aren't ported. [\#5527](https://github.com/VSCodeVim/Vim/issues/5527)
 - Broken jsx autocomplete [\#5474](https://github.com/VSCodeVim/Vim/issues/5474)
 - Glitch after paste multiple lines [\#5442](https://github.com/VSCodeVim/Vim/issues/5442)
-- 'C' in Visual Mode doesn't count as selected text for snippets with \$TM_SELECTED_TEXT [\#5418](https://github.com/VSCodeVim/Vim/issues/5418)
+- 'C' in Visual Mode doesn't count as selected text for snippets with $TM_SELECTED_TEXT [\#5418](https://github.com/VSCodeVim/Vim/issues/5418)
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///e:/hc_client_1/Assets/Scripts/Rhythm/MusicScriptEditor.cs". [\#5412](https://github.com/VSCodeVim/Vim/issues/5412)
 - Line down lagging when in visual line selection mode [\#5401](https://github.com/VSCodeVim/Vim/issues/5401)
 - Autocomplete behaving badly [\#5390](https://github.com/VSCodeVim/Vim/issues/5390)
@@ -73,7 +99,6 @@
 - gd Goto Defination doesn't work [\#5358](https://github.com/VSCodeVim/Vim/issues/5358)
 - Forced by user [\#5347](https://github.com/VSCodeVim/Vim/issues/5347)
 - Cannot read property 'startsWith' of undefined [\#5346](https://github.com/VSCodeVim/Vim/issues/5346)
-- Relative Line Numbers: an option to have 0 as the current line number. [\#5304](https://github.com/VSCodeVim/Vim/issues/5304)
 - Vim extension make "Filtering document tree" unusable [\#5301](https://github.com/VSCodeVim/Vim/issues/5301)
 - Failed to handle key=p. v.split is not a function [\#5291](https://github.com/VSCodeVim/Vim/issues/5291)
 - Mapping "vv" to "V" stopped working in 1.15.0 and hasn't worked since [\#5278](https://github.com/VSCodeVim/Vim/issues/5278)
@@ -83,7 +108,6 @@
 - Mapping error [\#5237](https://github.com/VSCodeVim/Vim/issues/5237)
 - Cursor location doesn't update on VSCode search / click on line [\#5221](https://github.com/VSCodeVim/Vim/issues/5221)
 - Switches to VIM mode unexpectly \(ctrl+f search & multi-cursor\) [\#5218](https://github.com/VSCodeVim/Vim/issues/5218)
-- `\<\<` substantially slower than `\>\>` [\#5188](https://github.com/VSCodeVim/Vim/issues/5188)
 
 **Merged pull requests:**
 
@@ -110,10 +134,6 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.0...v1.17.1)
 
-**Enhancements:**
-
-- Make an interactive/incremental version of easy motion [\#5201](https://github.com/VSCodeVim/Vim/issues/5201)
-
 **Fixed Bugs:**
 
 - "No .vimrc found. Please set `vim.vimrc.path.`" reported with v1.17.0 [\#5220](https://github.com/VSCodeVim/Vim/issues/5220)
@@ -137,10 +157,6 @@
 ## [beta](https://github.com/vscodevim/vim/tree/beta) (2020-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.16.0...beta)
-
-**Merged pull requests:**
-
-- Fix key binding typo in README [\#5183](https://github.com/VSCodeVim/Vim/pull/5183) ([Risto-Mcintosh](https://github.com/Risto-Mcintosh))
 
 ## [v1.11.0](https://github.com/vscodevim/vim/tree/v1.11.0) (2019-09-28)
 

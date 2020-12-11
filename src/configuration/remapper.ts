@@ -518,7 +518,7 @@ export class Remapper implements IRemapper {
             await vscode.commands.executeCommand(commandString);
           }
 
-          StatusBar.setText(vimState, `${commandString} ${commandArgs}`);
+          StatusBar.setText(vimState, `${commandString} ${commandArgs ?? ''}`);
         }
       }
     }
@@ -561,7 +561,7 @@ export class Remapper implements IRemapper {
    * @param remappings
    */
   protected static getRemappedKeysLengthRange(
-    remappings: Map<string, IKeyRemapping>
+    remappings: ReadonlyMap<string, IKeyRemapping>
   ): [number, number] {
     if (remappings.size === 0) {
       return [0, 0];
@@ -578,7 +578,7 @@ export class Remapper implements IRemapper {
    */
   protected static hasPotentialRemap(
     keys: string[],
-    remappings: Map<string, IKeyRemapping>,
+    remappings: ReadonlyMap<string, IKeyRemapping>,
     countRemapAsPotential: boolean = false
   ): boolean {
     const keysAsString = keys.join('');
