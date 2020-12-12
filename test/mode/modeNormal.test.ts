@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -1376,185 +1375,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'P' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyP',
-    end: ['one', '|two', 'two'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyp',
-    end: ['one', 'two', '|two'],
-  });
-
-  newTest({
-    title: "Can handle 'P' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyP',
-    end: ['|one', 'two', 'three', 'one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyp',
-    end: ['one', '|one', 'two', 'three', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'yy' with correct cursor position",
-    start: ['|  one', 'two'],
-    keysPressed: 'yyjp',
-    end: ['  one', 'two', '  |one'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygp',
-    end: ['one', 'two', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjgp',
-    end: ['one', 'two', 'one', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yyGgp',
-    end: ['one', 'two', 'three', 'four', 'one', 'two', 'three', '|four'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjjgp',
-    end: ['one', 'two', 'three', 'one', '|two'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygP',
-    end: ['one', 'two', '|two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yygP',
-    end: ['one', 'two', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yygP',
-    end: ['one', 'two', 'three', 'four', '|one', 'two', 'three', 'four'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after yy",
-    start: ['  |one', '   two'],
-    keysPressed: 'yyj]p',
-    end: ['  one', '   two', '   |one'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy'",
-    start: [' |one', '  two', '  three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '  three', '  |one', '   two'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and indent with tabs first",
-    start: [' |one', '  two', '   three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '   three', '   |one', '\ttwo'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and decrease indents if possible",
-    start: ['    |one', ' two', ' three'],
-    keysPressed: '2yyjj]p',
-    end: ['    one', ' two', ' three', ' |one', 'two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after yy",
-    start: ['   two', '  |one'],
-    keysPressed: 'yyk[p',
-    end: ['   |one', '   two', '  one'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy'",
-    start: ['  three', '|one', ' two'],
-    keysPressed: '2yyk[p',
-    end: ['  |one', '   two', '  three', 'one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and indent with tabs first",
-    start: ['   three', '| one', '  two'],
-    keysPressed: '2yyk[p',
-    end: ['   |one', '\ttwo', '   three', ' one', '  two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and decrease indents if possible",
-    start: [' three', '    |one', ' two'],
-    keysPressed: '2yyk[p',
-    end: [' |one', 'two', ' three', '    one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after y'a",
-    start: ['|one', 'two', 'three'],
-    keysPressed: "majjy'ap",
-    end: ['one', 'two', 'three', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y])' without including closing parenthesis",
-    start: ['(hello, |world)'],
-    keysPressed: 'y])$p',
-    end: ['(hello, world)worl|d'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y]}' without including closing bracket",
-    start: ['{hello, |world}'],
-    keysPressed: 'y]}$p',
-    end: ['{hello, world}worl|d'],
-  });
-
-  newTest({
-    title: 'Can handle pasting in visual mode over selection',
-    start: ['|foo', 'bar', 'fun'],
-    keysPressed: 'Yjvll"ayjV"app',
-    end: ['foo', 'bar', 'bar', '|fun'],
-  });
-
-  newTest({
     title: 'Can repeat w',
     start: ['|one two three four'],
     keysPressed: '2w',
     end: ['one two |three four'],
-  });
-
-  newTest({
-    title: 'Can repeat p',
-    start: ['|one'],
-    keysPressed: 'yy2p',
-    end: ['one', '|one', 'one'],
   });
 
   newTest({
@@ -1892,35 +1716,6 @@ suite('Mode Normal', () => {
     start: ['|abc def ghi'],
     keysPressed: 'vwshi <Esc>',
     end: ['hi| ef ghi'],
-  });
-
-  newTest({
-    title: 'can handle p with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwp',
-    end: ['abc abc |dhi'],
-  });
-
-  // test works when run manually
-  // newTest({
-  //   title: "can handle p with selection",
-  //   start: ["one", "two", "|three"],
-  //   keysPressed: "yykVp",
-  //   end: ["|three", "three"]
-  // });
-
-  newTest({
-    title: 'can handle P with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwP',
-    end: ['abc abc |dhi'],
-  });
-
-  newTest({
-    title: 'can handle p in visual to end of line',
-    start: ['1234 |5678', 'test test'],
-    keysPressed: 'vllllyjvllllp',
-    end: ['1234 5678', 'test |5678', ''],
   });
 
   newTest({
@@ -2334,6 +2129,20 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  newTest({
+    title: '/ search $, walk over matches',
+    start: ['|start', '', '', 'end'],
+    keysPressed: '/$\nnnn',
+    end: ['start', '', '', 'en|d'],
+  });
+
+  newTest({
+    title: '?, match at EOL, walk over matches',
+    start: ['x end', 'x', 'x', '|start'],
+    keysPressed: '?x\nnn',
+    end: ['|x end', 'x', 'x', 'start'],
+  });
+
   /**
    * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
    */
@@ -2365,27 +2174,21 @@ suite('Mode Normal', () => {
     end: ['__ASDF', '|asdf'],
   });
 
-  newTest({
-    title: '<BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
+  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
+    newTest({
+      title: `${backspace} deletes the last character in search in progress mode`,
+      start: ['|foo', 'bar', 'abd'],
+      keysPressed: `/abc${backspace}d\n`,
+      end: ['foo', 'bar', '|abd'],
+      endMode: Mode.Normal,
+    });
+  }
 
   newTest({
-    title: '<S-BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<shift+BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '<C-h> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<C-h>d\n',
-    end: ['foo', 'bar', '|abd'],
+    title: '<C-l> adds the next character in the first match to search term',
+    start: ['|foo', 'bar', 'abcd'],
+    keysPressed: '/ab<C-l>d\n',
+    end: ['foo', 'bar', '|abcd'],
     endMode: Mode.Normal,
   });
 
@@ -2994,8 +2797,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3010,8 +2812,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3042,7 +2843,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
+      const selection = modeHandler.vimState.editor.selection;
 
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 2);
@@ -3160,8 +2961,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3176,8 +2976,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3208,8 +3007,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);

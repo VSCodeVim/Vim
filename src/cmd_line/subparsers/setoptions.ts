@@ -1,8 +1,8 @@
 import * as node from '../commands/setoptions';
 import { Scanner } from '../scanner';
 
-export function parseOption(args: string): node.IOptionArgs {
-  let scanner = new Scanner(args);
+export function parseOption(args?: string): node.IOptionArgs {
+  let scanner = new Scanner(args ?? '');
   scanner.skipWhiteSpace();
 
   if (scanner.isAtEof) {

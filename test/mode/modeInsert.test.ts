@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
@@ -45,7 +46,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o', '<Esc>']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       4,
       '<Esc> moved cursor position.'
     );
@@ -171,7 +172,7 @@ suite('Mode Insert', () => {
     assertEqualLines(['onetwo']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       3,
       '<BS> moved cursor to correct position'
     );

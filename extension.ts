@@ -18,6 +18,7 @@ import './src/configuration/validators/vimrcValidator';
 import * as vscode from 'vscode';
 import { activate as activateFunc } from './extensionBase';
 import { Globals } from './src/globals';
+import { Register } from './src/register/register';
 
 export { getAndUpdateModeHandler } from './extensionBase';
 
@@ -26,4 +27,8 @@ export async function activate(context: vscode.ExtensionContext) {
   Globals.extensionStoragePath = context.globalStoragePath;
 
   activateFunc(context);
+}
+
+export async function deactivate() {
+  await Register.saveToDisk(true);
 }

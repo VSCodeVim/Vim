@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.17.1",
+  "version": "1.18.5",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -32,8 +32,8 @@
   ],
   "extensionKind": [
     "ui",
-    "workspace",
-    "web"
+    "web",
+    "workspace"
   ],
   "sideEffects": false,
   "activationEvents": [
@@ -45,10 +45,6 @@
   "browser": "./out/extensionWeb",
   "contributes": {
     "commands": [
-      {
-        "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
-      },
       {
         "command": "toggleVim",
         "title": "Vim: Toggle Vim Mode"
@@ -361,7 +357,7 @@
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.overrideCmdV && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
@@ -1035,11 +1031,6 @@
     "test": "node ./out/test/runTest.js",
     "forceprettier": "gulp forceprettier"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "dependencies": {
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.20",
@@ -1054,9 +1045,9 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.3",
     "@types/lodash": "4.14.165",
-    "@types/mocha": "8.0.4",
+    "@types/mocha": "8.2.0",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.8",
+    "@types/sinon": "9.0.9",
     "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
@@ -1067,20 +1058,19 @@
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "husky": "4.3.0",
     "minimist": "1.2.5",
     "mocha": "8.2.1",
     "plugin-error": "1.0.1",
-    "prettier": "2.1.2",
-    "pretty-quick": "3.1.0",
-    "sinon": "9.2.1",
+    "prettier": "2.2.1",
+    "sinon": "9.2.2",
     "ts-loader": "8.0.9",
     "tslint": "6.1.3",
-    "typescript": "4.0.5",
+    "typescript": "4.1.3",
+    "vsce": "1.81.1",
     "vscode-test": "1.4.1",
-    "webpack": "5.4.0",
+    "webpack": "5.10.1",
     "webpack-cli": "4.2.0",
-    "webpack-merge": "5.4.0",
+    "webpack-merge": "5.6.1",
     "webpack-stream": "6.1.1"
   }
 }

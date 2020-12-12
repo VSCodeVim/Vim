@@ -132,16 +132,18 @@ export class DeleteOperator extends BaseOperator {
 
     end = new Position(end.line, end.character + 1);
 
-    const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
+    const isOnLastLine = end.line === vimState.document.lineCount - 1;
 
     // Vim does this weird thing where it allows you to select and delete
     // the newline character, which it places 1 past the last character
     // in the line. Here we interpret a character position 1 past the end
     // as selecting the newline character. Don't allow this in visual block mode
-    if (vimState.currentMode !== Mode.VisualBlock) {
-      if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-        end = end.getDownWithDesiredColumn(0);
-      }
+    if (
+      vimState.currentMode !== Mode.VisualBlock &&
+      !isOnLastLine &&
+      end.character === vimState.document.lineAt(end).text.length + 1
+    ) {
+      end = end.with({ character: 0 }).getDown();
     }
 
     let text = vimState.document.getText(new vscode.Range(start, end));
@@ -182,7 +184,7 @@ export class DeleteOperator extends BaseOperator {
       resultingPosition = earlierOf(start, end);
     }
 
-    if (start.character > TextEditor.getLineAt(start).text.length) {
+    if (start.character > vimState.document.lineAt(start).text.length) {
       resultingPosition = start.getLeft();
       diff = new PositionDiff({ character: -1 });
     } else {
@@ -267,12 +269,12 @@ export class YankOperator extends BaseOperator {
     }
 
     const range = new vscode.Range(start, extendedEnd);
-    let text = TextEditor.getText(range);
+    let text = vimState.document.getText(range);
 
     // If we selected the newline character, add it as well.
     if (
       vimState.currentMode === Mode.Visual &&
-      extendedEnd.character === TextEditor.getLineAt(extendedEnd).text.length + 1
+      extendedEnd.character === vimState.document.lineAt(extendedEnd).text.length + 1
     ) {
       text = text + '\n';
     }
@@ -417,7 +419,7 @@ export class UpperCaseOperator extends BaseOperator {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     let text = vimState.document.getText(range);
 
-    await TextEditor.replace(range, text.toUpperCase());
+    await TextEditor.replace(vimState.editor, range, text.toUpperCase());
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
@@ -439,7 +441,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.document.getText(range);
-      await TextEditor.replace(range, text.toUpperCase());
+      await TextEditor.replace(vimState.editor, range, text.toUpperCase());
     }
 
     const cursorPosition = earlierOf(startPos, endPos);
@@ -458,7 +460,7 @@ export class LowerCaseOperator extends BaseOperator {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     let text = vimState.document.getText(range);
 
-    await TextEditor.replace(range, text.toLowerCase());
+    await TextEditor.replace(vimState.editor, range, text.toLowerCase());
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
@@ -480,7 +482,7 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
       let text = vimState.document.getText(range);
-      await TextEditor.replace(range, text.toLowerCase());
+      await TextEditor.replace(vimState.editor, range, text.toLowerCase());
     }
 
     const cursorPosition = earlierOf(startPos, endPos);
@@ -601,10 +603,7 @@ export class ChangeOperator extends BaseOperator {
     // which means the insert cursor would be one to the left of the end of
     // the line. We do want to run delete if it is a multiline change though ex. c}
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    if (
-      TextEditor.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
-      end.line !== start.line
-    ) {
+    if (TextEditor.getLineLength(start.line) !== 0 || end.line !== start.line) {
       if (isLineWise) {
         await new DeleteOperator(this.multicursorIndex).run(
           vimState,
@@ -713,7 +712,7 @@ export class ToggleCaseOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range = new vscode.Range(start, end.getRight());
 
-    await ToggleCaseOperator.toggleCase(range);
+    await ToggleCaseOperator.toggleCase(vimState, range);
 
     const cursorPosition = earlierOf(start, end);
     vimState.cursorStopPosition = cursorPosition;
@@ -721,8 +720,8 @@ export class ToggleCaseOperator extends BaseOperator {
     await vimState.setCurrentMode(Mode.Normal);
   }
 
-  static async toggleCase(range: vscode.Range) {
-    const text = TextEditor.getText(range);
+  static async toggleCase(vimState: VimState, range: vscode.Range) {
+    const text = vimState.document.getText(range);
 
     let newText = '';
     for (const char of text) {
@@ -734,7 +733,7 @@ export class ToggleCaseOperator extends BaseOperator {
       }
       newText += toggled;
     }
-    await TextEditor.replace(range, newText);
+    await TextEditor.replace(vimState.editor, range, newText);
   }
 }
 
@@ -746,7 +745,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       const range = new vscode.Range(start, end);
-      await ToggleCaseOperator.toggleCase(range);
+      await ToggleCaseOperator.toggleCase(vimState, range);
     }
 
     const cursorPosition = earlierOf(startPos, endPos);
@@ -792,7 +791,7 @@ export class ROT13Operator extends BaseOperator {
     }
 
     for (const range of selections) {
-      const original = TextEditor.getText(range);
+      const original = vimState.document.getText(range);
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
@@ -1082,7 +1081,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     start = start.getLineBegin();
     end = end.getLineEnd();
 
-    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
+    let textToReflow = vimState.document.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
     vimState.recordedState.transformer.addTransformation({

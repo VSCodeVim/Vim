@@ -90,7 +90,7 @@ class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
       start = getLastWordEnd(position, WordType.CamelCase).getRight();

@@ -2,9 +2,10 @@ import { configuration } from './configuration';
 
 export class Notation {
   // Mapping from a regex to the normalized string that it should be converted to.
-  private static readonly _notationMap: Array<[RegExp, string]> = [
+  private static readonly _notationMap: ReadonlyArray<[RegExp, string]> = [
     [/ctrl\+|c\-/gi, 'C-'],
     [/cmd\+|d\-/gi, 'D-'],
+    [/shift\+|s\-/gi, 'S-'],
     [/escape|esc/gi, 'Esc'],
     [/backspace|bs/gi, 'BS'],
     [/delete|del/gi, 'Del'],
@@ -29,10 +30,7 @@ export class Notation {
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
     return (
-      this.isSurroundedByAngleBrackets(key) &&
-      key !== '<BS>' &&
-      key !== '<SHIFT+BS>' &&
-      key !== '<TAB>'
+      this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<S-BS>' && key !== '<TAB>'
     );
   }
 
