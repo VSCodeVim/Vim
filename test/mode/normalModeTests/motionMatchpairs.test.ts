@@ -1,8 +1,6 @@
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { Configuration } from '../../testConfiguration';
-
-const { newTest } = getTestingFunctions();
 
 suite('matchpair empty', () => {
   setup(async () => {
