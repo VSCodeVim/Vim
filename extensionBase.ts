@@ -402,7 +402,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh) {
         const text = compositionState.composingText;
         compositionState.reset();
-        mh.handleMultipleKeyEvents(text.split(''));
+        await mh.handleMultipleKeyEvents(text.split(''));
       }
     });
   });
