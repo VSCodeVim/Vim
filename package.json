@@ -1035,6 +1035,7 @@
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.20",
     "neovim": "4.9.0",
+    "path-browserify": "1.0.1",
     "untildify": "4.0.0",
     "winston": "3.3.3",
     "winston-console-for-electron": "0.0.6",
