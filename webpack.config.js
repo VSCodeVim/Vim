@@ -28,6 +28,7 @@ const config = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     alias: {
+      path: 'path-browserify',
       platform: path.resolve(__dirname, 'src', 'platform', 'node'),
     },
   },
@@ -68,6 +69,7 @@ const nodelessConfig = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     alias: {
+      path: 'path-browserify',
       platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
     },
   },
