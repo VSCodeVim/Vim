@@ -1008,7 +1008,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       // don't want to add an extra space. In addition, when there's a blank
       // line, this needs to be reset.
       let curIndex = 0;
-      for (const line of content.trim().split('\n')) {
+      for (const line of content.split('\n')) {
         // Preserve newlines.
 
         if (line.trim() === '') {
