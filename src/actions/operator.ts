@@ -923,7 +923,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       let commentType: CommentType | undefined;
 
       for (const type of ActionVisualReflowParagraph.CommentTypes) {
-        if (line.trim().startsWith(type.start)) {
+        if (trimmedLine.startsWith(type.start)) {
           commentType = type;
 
           break;
@@ -931,13 +931,13 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
         // If they're currently in a multiline comment, see if they continued it.
         if (lastChunk && type.start === lastChunk.commentType.start && !type.singleLine) {
-          if (line.trim().startsWith(type.inner)) {
+          if (trimmedLine.startsWith(type.inner)) {
             commentType = type;
 
             break;
           }
 
-          if (line.trim().endsWith(type.final)) {
+          if (trimmedLine.endsWith(type.final)) {
             commentType = type;
 
             break;
