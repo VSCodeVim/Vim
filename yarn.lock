@@ -5866,10 +5866,10 @@ webpack-cli@4.2.0:
     v8-compile-cache "^2.2.0"
     webpack-merge "^4.2.2"
 
-webpack-merge@5.7.0:
-  version "5.7.0"
-  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-5.7.0.tgz#004dec31f7a875e590c9731e5bdcd3efad0f2715"
-  integrity sha512-UryoMJGRMwOOh/ie4NXZC1OtT0mkA7Ny2+C/MkWOwTRG+jVNEwChVV/+x8rd+ga2mVLeQ0m+QmzLAg7N36+oag==
+webpack-merge@5.7.1:
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-5.7.1.tgz#61fbd4bd754e40d7cf5e77b6c72117a13ac119fc"
+  integrity sha512-0oU4fWXTSRaZ+ePos9eMeCprmfDFOQgfbEa9fzeX2HAAUuILjj/eI1H+j62YdaCwTMIgE5DHctIhTVrKA6aDyw==
   dependencies:
     clone-deep "^4.0.1"
     wildcard "^2.0.0"
