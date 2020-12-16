@@ -33,6 +33,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['ic', 'ignorecase'],
   ['is', 'incsearch'],
   ['isk', 'iskeyword'],
+  ['js', 'joinspaces'],
   ['mmd', 'maxmapdepth'],
   ['nu', 'number'],
   ['rnu', 'relativenumber'],
@@ -216,6 +217,8 @@ class Configuration implements IConfiguration {
   smartcase = true;
 
   autoindent = true;
+
+  joinspaces = true;
 
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,

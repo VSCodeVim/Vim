@@ -122,6 +122,11 @@ export interface IConfiguration {
   autoindent: boolean;
 
   /**
+   * Add two spaces after '.', '?', and '!' when joining or formatting?
+   */
+  joinspaces: boolean;
+
+  /**
    * CamelCaseMotion plugin options
    */
   camelCaseMotion: ICamelCaseMotionConfiguration;
