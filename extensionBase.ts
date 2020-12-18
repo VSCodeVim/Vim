@@ -361,6 +361,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh) {
         if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
+          vscode.commands.executeCommand('default:type', { text: args.text });
         } else {
           await mh.handleKeyEvent(args.text);
         }
@@ -369,6 +370,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   });
 
   overrideCommand(context, 'replacePreviousChar', async (args) => {
+    // vscode.commands.executeCommand('default:replacePreviousChar', {
+    //   text: args.text,
+    //   replaceCharCnt: args.replaceCharCnt,
+    // });
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
@@ -378,13 +383,39 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
               0,
               compositionState.composingText.length - args.replaceCharCnt
             ) + args.text;
-        } else {
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: args.text,
             replaceCharCnt: args.replaceCharCnt,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+        } else {
+          if (
+            mh.vimState.recordedState.bufferedKeysTimeoutObj &&
+            mh.vimState.recordedState.bufferedKeys.length > 90
+          ) {
+            const countToReplace = Math.max(
+              args.replaceCharCnt - mh.vimState.recordedState.bufferedKeys.length,
+              0
+            );
+            mh.vimState.recordedState.bufferedKeys = [];
+            clearTimeout(mh.vimState.recordedState.bufferedKeysTimeoutObj);
+            mh.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
+            mh.updateView({ drawSelection: false, revealRange: false });
+            await vscode.commands.executeCommand('default:replacePreviousChar', {
+              text: args.text,
+              replaceCharCnt: countToReplace,
+            });
+            mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+            mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+          } else {
+            await vscode.commands.executeCommand('default:replacePreviousChar', {
+              text: args.text,
+              replaceCharCnt: args.replaceCharCnt,
+            });
+            mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+            mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+          }
         }
       }
     });
@@ -392,18 +423,38 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
+      // const mh = await getAndUpdateModeHandler();
+      // if (mh && mh.vimState.currentMode !== Mode.Insert) {
       compositionState.isInComposition = true;
+      // }
     });
+    // const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+    // while (compositionState.isEnding) {
+    //   await wait(0);
+    // }
+    // await vscode.commands.executeCommand('default:compositionStart');
   });
 
   overrideCommand(context, 'compositionEnd', async () => {
+    // await vscode.commands.executeCommand('default:type', { text: compositionState.composingText });
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
+      // if (mh && compositionState.isInComposition && compositionState.composingText.length > 0) {
       if (mh) {
+        // && mh.vimState.currentMode !== Mode.Insert) {
+        mh.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+        await vscode.commands.executeCommand('default:replacePreviousChar', {
+          text: '',
+          replaceCharCnt: compositionState.composingText.length,
+        });
+        mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
+        mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
+        mh.vimState.selectionsChanged.ignoreIntermediateSelections = false;
         const text = compositionState.composingText;
-        compositionState.reset();
+        // compositionState.reset();
         await mh.handleMultipleKeyEvents(text.split(''));
       }
+      compositionState.reset();
     });
   });
 
