@@ -398,4 +398,9 @@ export interface IConfiguration {
    * and `>>` with a linewise operator.
    */
   startofline: boolean;
+
+  /**
+   * Enable showing marks in the gutter.
+   */
+  showMarksInGutter: boolean;
 }
