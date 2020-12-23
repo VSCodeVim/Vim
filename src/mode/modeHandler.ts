@@ -1510,13 +1510,13 @@ export class ModeHandler implements vscode.Disposable {
       opCursorCharDecorations
     );
 
-    // TODO: loop over marks and pass along
-    const markRanges = this.vimState.historyTracker.getMarks().map((mark) => {
-      const position = mark.position.getLineBegin();
-      return new vscode.Range(position, position);
-    });
+    for (const { position, name } of this.vimState.historyTracker.getMarks()) {
+      const markLine = position.getLineBegin();
+      const markRange = new vscode.Range(markLine, markLine);
+      const markDecoration = decoration.marks[name];
 
-    this.vimState.editor.setDecorations(decoration.mark, markRanges);
+      this.vimState.editor.setDecorations(markDecoration, [markRange]);
+    }
 
     const showHighlights =
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||

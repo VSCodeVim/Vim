@@ -1,30 +1,34 @@
 import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
-// TODO: move this to a helper file?
-const getMarkUri = (text: string) => {
-  const svg = [
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
-    '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
-    '<circle cx="15" cy="15" r="9" fill="rgb(3,102,214)" />',
-    `<text x="50%" y="50%" fill="rgb(255,255,255)" text-anchor="middle" dominant-baseline="middle">${text}</text>`,
-    '</svg>',
-  ].join('');
-
-  const uri = `data:image/svg+xml;utf8,${encodeURI(svg)}`;
-
-  return vscode.Uri.parse(uri, true);
-};
+interface IMarks {
+  [key: string]: vscode.TextEditorDecorationType;
+}
 
 class DecorationImpl {
   private _default: vscode.TextEditorDecorationType;
-  private _mark: vscode.TextEditorDecorationType;
+  private _marks: IMarks;
   private _searchHighlight: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch: vscode.TextEditorDecorationType;
   private _easyMotionDimIncSearch: vscode.TextEditorDecorationType;
   private _insertModeVirtualCharacter: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
+
+  private _markNames = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+
+  private getMarkUri(text: string) {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
+      '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
+      '<circle cx="15" cy="15" r="9" fill="rgb(3,102,214)" />',
+      `<text x="50%" y="50%" fill="rgb(255,255,255)" text-anchor="middle" dominant-baseline="middle">${text}</text>`,
+      '</svg>',
+    ].join('');
+    const uri = `data:image/svg+xml;utf8,${encodeURI(svg)}`;
+
+    return vscode.Uri.parse(uri, true);
+  }
 
   public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -37,12 +41,12 @@ class DecorationImpl {
     return this._default;
   }
 
-  public set mark(value: vscode.TextEditorDecorationType) {
-    this._mark = value;
+  public set marks(value: IMarks) {
+    this._marks = value;
   }
 
-  public get mark() {
-    return this._mark;
+  public get marks() {
+    return this._marks;
   }
 
   public set searchHighlight(value: vscode.TextEditorDecorationType) {
@@ -126,12 +130,17 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
-    // TODO: convert this to a function that passes along the mark name
-    this.mark = vscode.window.createTextEditorDecorationType({
-      isWholeLine: false,
-      gutterIconPath: getMarkUri('m'),
-      gutterIconSize: 'cover',
-    });
+    this.marks = this._markNames.reduce(
+      (marks, name) => ({
+        ...marks,
+        [name]: vscode.window.createTextEditorDecorationType({
+          isWholeLine: false,
+          gutterIconPath: this.getMarkUri(name),
+          gutterIconSize: 'cover',
+        }),
+      }),
+      {}
+    );
 
     const searchHighlightColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
