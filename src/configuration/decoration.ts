@@ -21,8 +21,8 @@ class DecorationImpl {
     const svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
       '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
-      '<circle cx="15" cy="15" r="9" fill="rgb(3,102,214)" />',
-      `<text x="50%" y="50%" fill="rgb(255,255,255)" text-anchor="middle" dominant-baseline="middle">${text}</text>`,
+      '<path fill="rgb(3,102,214)" d="M23,27l-8-7l-8,7V5c0-1.105,0.895-2,2-2h12c1.105,0,2,0.895,2,2V27z"/>',
+      `<text x="50%" y="40%" fill="rgb(255,255,255)" text-anchor="middle" dominant-baseline="middle">${text}</text>`,
       '</svg>',
     ].join('');
     const uri = `data:image/svg+xml;utf8,${encodeURI(svg)}`;
