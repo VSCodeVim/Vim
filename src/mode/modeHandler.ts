@@ -1516,7 +1516,9 @@ export class ModeHandler implements vscode.Disposable {
         const markRange = new vscode.Range(markLine, markLine);
         const markDecoration = decoration.marks[name];
 
-        this.vimState.editor.setDecorations(markDecoration, [markRange]);
+        if (this.vimState.editor.hasOwnProperty('setDecorations')) {
+          this.vimState.editor.setDecorations(markDecoration, [markRange]);
+        }
       }
     }
 
