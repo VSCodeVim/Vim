@@ -400,7 +400,7 @@ export interface IConfiguration {
   startofline: boolean;
 
   /**
-   * Enable showing marks in the gutter.
+   * Enable showing mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
 }

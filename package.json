@@ -1008,7 +1008,7 @@
         },
         "vim.showMarksInGutter": {
           "type": "boolean",
-          "description": "Show the currently set marks in the gutter.",
+          "description": "Show the currently set mark(s) in the gutter.",
           "default": false
         }
       }
