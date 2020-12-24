@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
-interface IMarks {
+interface IMarkDecorations {
   [key: string]: vscode.TextEditorDecorationType;
 }
 
 class DecorationImpl {
   private _default: vscode.TextEditorDecorationType;
-  private _marks: IMarks;
   private _searchHighlight: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch: vscode.TextEditorDecorationType;
   private _easyMotionDimIncSearch: vscode.TextEditorDecorationType;
@@ -15,19 +14,24 @@ class DecorationImpl {
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
 
-  private _markNames = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+  private _markDecorationCache: IMarkDecorations = {};
 
-  private getMarkUri(text: string) {
+  private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
     const svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
       '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
       '<path fill="rgb(3,102,214)" d="M23,27l-8-7l-8,7V5c0-1.105,0.895-2,2-2h12c1.105,0,2,0.895,2,2V27z"/>',
-      `<text x="50%" y="40%" fill="rgb(200,200,200)" text-anchor="middle" dominant-baseline="middle">${text}</text>`,
+      `<text x="50%" y="40%" fill="rgb(200,200,200)" text-anchor="middle" dominant-baseline="middle">${name}</text>`,
       '</svg>',
     ].join('');
-    const uri = `data:image/svg+xml;utf8,${encodeURI(svg)}`;
 
-    return vscode.Uri.parse(uri, true);
+    const uri = vscode.Uri.parse(`data:image/svg+xml;utf8,${encodeURI(svg)}`, true);
+
+    return vscode.window.createTextEditorDecorationType({
+      isWholeLine: false,
+      gutterIconPath: uri,
+      gutterIconSize: 'cover',
+    });
   }
 
   public set default(value: vscode.TextEditorDecorationType) {
@@ -39,14 +43,6 @@ class DecorationImpl {
 
   public get default() {
     return this._default;
-  }
-
-  public set marks(value: IMarks) {
-    this._marks = value;
-  }
-
-  public get marks() {
-    return this._marks;
   }
 
   public set searchHighlight(value: vscode.TextEditorDecorationType) {
@@ -80,6 +76,18 @@ class DecorationImpl {
 
   public get easyMotionDimIncSearch() {
     return this._easyMotionDimIncSearch;
+  }
+
+  public getMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const cache = this._markDecorationCache[name];
+
+    if (cache) {
+      return cache;
+    } else {
+      const type = this._createMarkDecoration(name);
+      this._markDecorationCache[name] = type;
+      return type;
+    }
   }
 
   public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
@@ -129,18 +137,6 @@ class DecorationImpl {
       borderStyle: 'solid',
       borderWidth: '1px',
     });
-
-    this.marks = this._markNames.reduce(
-      (marks, name) => ({
-        ...marks,
-        [name]: vscode.window.createTextEditorDecorationType({
-          isWholeLine: false,
-          gutterIconPath: this.getMarkUri(name),
-          gutterIconSize: 'cover',
-        }),
-      }),
-      {}
-    );
 
     const searchHighlightColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
