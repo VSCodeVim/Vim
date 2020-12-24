@@ -1047,13 +1047,13 @@
     "winston-transport": "4.4.0"
   },
   "devDependencies": {
-    "@types/diff": "4.0.2",
+    "@types/diff": "5.0.0",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.3",
-    "@types/lodash": "4.14.165",
+    "@types/lodash": "4.14.166",
     "@types/mocha": "8.2.0",
     "@types/node": "12.12.31",
-    "@types/sinon": "9.0.9",
+    "@types/sinon": "9.0.10",
     "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
