@@ -1511,15 +1511,18 @@ export class ModeHandler implements vscode.Disposable {
     );
 
     for (const { position, name } of this.vimState.historyTracker.getMarks()) {
-      const markDecoration = decoration.getMarkDecoration(name);
-
       if (configuration.showMarksInGutter) {
+        const markDecoration = decoration.getOrCreateMarkDecoration(name);
+
         const markLine = position.getLineBegin();
         const markRange = new vscode.Range(markLine, markLine);
 
         this.vimState.editor.setDecorations(markDecoration, [markRange]);
       } else {
-        this.vimState.editor.setDecorations(markDecoration, []);
+        const markDecoration = decoration.getMarkDecoration(name);
+        if (markDecoration) {
+          this.vimState.editor.setDecorations(markDecoration, []);
+        }
       }
     }
 

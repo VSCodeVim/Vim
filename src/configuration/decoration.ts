@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
-interface IMarkDecorations {
-  [key: string]: vscode.TextEditorDecorationType;
-}
-
 class DecorationImpl {
   private _default: vscode.TextEditorDecorationType;
   private _searchHighlight: vscode.TextEditorDecorationType;
@@ -14,7 +10,7 @@ class DecorationImpl {
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
 
-  private _markDecorationCache: IMarkDecorations = {};
+  private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
 
   private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
     const svg = [
@@ -78,16 +74,20 @@ class DecorationImpl {
     return this._easyMotionDimIncSearch;
   }
 
-  public getMarkDecoration(name: string): vscode.TextEditorDecorationType {
-    const cache = this._markDecorationCache[name];
+  public getOrCreateMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const decorationType = this.getMarkDecoration(name);
 
-    if (cache) {
-      return cache;
+    if (decorationType) {
+      return decorationType;
     } else {
       const type = this._createMarkDecoration(name);
-      this._markDecorationCache[name] = type;
+      this._markDecorationCache.set(name, type);
       return type;
     }
+  }
+
+  public getMarkDecoration(name: string): vscode.TextEditorDecorationType | undefined {
+    return this._markDecorationCache.get(name);
   }
 
   public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
