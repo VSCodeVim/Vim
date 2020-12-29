@@ -149,12 +149,7 @@ export function getLastWordEnd(pos: Position, wordType: WordType): Position {
     // reverse the list to find the biggest element smaller than pos.character
     positions = positions.reverse();
     let index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
-    console.log({
-      'pos.character': pos.character,
-      currentLine,
-      positions,
-      index,
-    });
+
     let newCharacter = 0;
     if (index === -1) {
       if (currentLine > -1) {
@@ -334,10 +329,7 @@ function makeUnicodeWordRegex(keywordChars: string): RegExp {
   // - a keyword (vim.iskeyword)
   const wordSegment = `([^\\s${codePointRanges.join('')}]+)`;
 
-  const lineLeadingWhitespace = '^\\s*';
-
-  // https://regex101.com/r/X1agK6/2
-  // TODO: update regex
-  const segments = symbolSegments.concat(wordSegment, '$^', lineLeadingWhitespace);
+  // https://regex101.com/r/ZBoapq/1
+  const segments = symbolSegments.concat(wordSegment, '$^', '^\\s*');
   return new RegExp(segments.join('|'), 'ug');
 }

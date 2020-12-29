@@ -273,7 +273,7 @@ export class SelectInnerWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastWordEnd().getRight();
+      start = position.getWordLeft(true);
       stop = position.getWordRight().getLeftThroughLineBreaks();
     } else {
       start = position.getWordLeft(true);
