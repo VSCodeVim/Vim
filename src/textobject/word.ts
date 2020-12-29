@@ -149,7 +149,6 @@ export function getLastWordEnd(pos: Position, wordType: WordType): Position {
     // reverse the list to find the biggest element smaller than pos.character
     positions = positions.reverse();
     let index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
-
     let newCharacter = 0;
     if (index === -1) {
       if (currentLine > -1) {
