@@ -1713,4 +1713,20 @@ suite('Mode Visual', () => {
       endMode: Mode.Normal,
     });
   });
+
+  suite('Can handle viw', () => {
+    newTest({
+      title: 'viw at whitespace at the begining of a line',
+      start: [' | foo'],
+      keysPressed: 'viwx',
+      end: ['|foo']
+    });
+
+    newTest({
+      title: 'viw at whitespace within an indented block',
+      start: ['foo:', ' | bar'],
+      keysPressed: 'viwx',
+      end: ['foo:', '|bar'],
+    });
+  });
 });
