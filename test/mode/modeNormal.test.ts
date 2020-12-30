@@ -1495,6 +1495,69 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gq preserves newlines',
+    start: ['|abc', '', '', '', 'def'],
+    keysPressed: 'gqG',
+    end: ['|abc', '', '', '', 'def'],
+  });
+
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with start and final on same line',
+    start: ['|/* abc def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def */'],
+  });
+
+  newTest({
+    title: 'gq preserves blank lines in multiline comments',
+    start: ['|/* abc', ' *', ' *', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' *', ' *', ' * def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
+  });
+
+  newTest({
     title: 'Can handle space',
     start: ['|abc', 'def'],
     keysPressed: '  ',
