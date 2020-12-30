@@ -385,16 +385,17 @@ class PutCommandVisual extends BaseCommand {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
     }
+    const putRegisterIsLineWise = register.registerMode === RegisterMode.LineWise;
 
     let [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     if (vimState.currentMode === Mode.VisualLine) {
       [start, end] = [start.getLineBegin(), end.getLineEnd()];
     }
 
-    // If the to-be-inserted text is linewise, we have separate logic:
-    // first delete the selection, then insert
     const oldMode = vimState.currentMode;
-    if (register.registerMode === RegisterMode.LineWise) {
+    if (putRegisterIsLineWise) {
+      // If the to-be-inserted text is linewise, we have separate logic:
+      // first delete the selection, then insert
       const replaceRegisterName = vimState.recordedState.registerName;
       const replaceRegister = (await Register.get(vimState, replaceRegisterName))!;
       vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
@@ -420,30 +421,29 @@ class PutCommandVisual extends BaseCommand {
       if (replaceRegisterName === deletedRegisterName) {
         Register.putByKey(deletedRegister.text, deletedRegisterName, deletedRegister.registerMode);
       }
-      return;
+    } else {
+      // The reason we need to handle Delete and Yank separately is because of
+      // linewise mode. If we're in visualLine mode, then we want to copy
+      // linewise but not necessarily delete linewise.
+      await new PutCommand(this.multicursorIndex).exec(start, vimState, {
+        pasteBeforeCursor: true,
+      });
+      vimState.currentRegisterMode =
+        oldMode === Mode.VisualLine ? RegisterMode.LineWise : RegisterMode.CharacterWise;
+      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+      // see above
+      if (!vimState.isMultiCursor) {
+        await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
+      }
+      vimState.currentRegisterMode = RegisterMode.CharacterWise;
+      await new operator.DeleteOperator(this.multicursorIndex).run(
+        vimState,
+        start,
+        end.getLeftIfEOL(),
+        false
+      );
+      vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
     }
-
-    // The reason we need to handle Delete and Yank separately is because of
-    // linewise mode. If we're in visualLine mode, then we want to copy
-    // linewise but not necessarily delete linewise.
-    await new PutCommand(this.multicursorIndex).exec(start, vimState, {
-      pasteBeforeCursor: true,
-    });
-    vimState.currentRegisterMode =
-      oldMode === Mode.VisualLine ? RegisterMode.LineWise : RegisterMode.CharacterWise;
-    vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-    // see above
-    if (!vimState.isMultiCursor) {
-      await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
-    }
-    vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    await new operator.DeleteOperator(this.multicursorIndex).run(
-      vimState,
-      start,
-      end.getLeftIfEOL(),
-      false
-    );
-    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
   }
 }
 
