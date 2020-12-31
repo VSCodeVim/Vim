@@ -1719,7 +1719,7 @@ suite('Mode Visual', () => {
       title: 'viw at whitespace at the begining of a line',
       start: [' | foo'],
       keysPressed: 'viwx',
-      end: ['|foo']
+      end: ['|foo'],
     });
 
     newTest({
