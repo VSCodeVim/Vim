@@ -47,11 +47,15 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
     # Alternatively, build and run tests through gulp and npm scripts
     npx gulp build                  # build
-    yarn test                        # test (must close all instances of VSCode)
+    npx gulp prepare-test           # build tests
+    yarn test                       # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running
     npx gulp test                   # run tests inside Docker container
     npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+
+    # Alternatively, build .vsix extension and load it into VSCode for manual testing
+    yarn run vsce package --web     # build vim-xxx.vsix
     ```
 
 ## Code Architecture
