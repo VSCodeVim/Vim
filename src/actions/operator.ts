@@ -869,6 +869,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: false, start: '/**', inner: '*', final: '*/' },
     { singleLine: false, start: '/*', inner: '*', final: '*/' },
     { singleLine: false, start: '{-', inner: '-', final: '-}' },
+    { singleLine: false, start: '%%', inner: '%%', final: '%%' },
     { singleLine: true, start: '///' },
     { singleLine: true, start: '//!' },
     { singleLine: true, start: '//' },
@@ -876,6 +877,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: true, start: '#' },
     { singleLine: true, start: ';' },
     { singleLine: true, start: '*' },
+    { singleLine: true, start: '%' },
 
     // Needs to come last, since everything starts with the empty string!
     { singleLine: true, start: '' },
