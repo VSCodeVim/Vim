@@ -5887,10 +5887,10 @@ webpack-stream@6.1.1:
     vinyl "^2.1.0"
     webpack "^4.26.1"
 
-webpack@5.12.0:
-  version "5.12.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.12.0.tgz#aba0fae329b4f50d470bc8681f6443962b019c7e"
-  integrity sha512-ZpXT2XxASdcD/+NOxfJh27GhepQSZvZd04etjza608meOneUhFWBouqLb6bV03HYMf3Z+y4Q5yg95ZSVxi+z6Q==
+webpack@5.12.1:
+  version "5.12.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.12.1.tgz#e81b916d17ea1c6be33c7b486aeebd5e8c235aac"
+  integrity sha512-Bh6hPzUvTLuGZg33xsZLEtAkaEJf9ux29WwGj4IeAGUCy7RE8zhqe4aHN4UqA8yHmHzvhORFH2p9ohB6h6R3yg==
   dependencies:
     "@types/eslint-scope" "^3.7.0"
     "@types/estree" "^0.0.45"
