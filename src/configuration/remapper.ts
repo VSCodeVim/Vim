@@ -487,14 +487,11 @@ export class Remapper implements IRemapper {
       let selectedRange: vscode.Range | undefined;
       let selectedText: string | undefined;
       if (this._configKey === 'allVisualModeKeyBindingsMap' && isSelectMode(vimState.currentMode)) {
-        // Remaps from 'allVisualModeKeyBindingsMap' (VIM's vmap) when ran in select modes temporarely
+        // Remaps from 'allVisualModeKeyBindingsMap' (VIM's vmap) when ran in select modes temporarily
         // change to visual mode so that the execution is similar to the visual mode
         // (:help select-mode-mapping)
         changeToVisualForRemap = vimState.currentMode;
-        selectedRange = new vscode.Range(
-          vimState.editor.selection.start,
-          vimState.editor.selection.end
-        );
+        selectedRange = vimState.editor.selection;
         selectedText = vimState.document.getText(selectedRange);
         await new CommandSwapVisualSelectModes().exec(vimState.cursorStopPosition, vimState);
       }

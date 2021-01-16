@@ -60,17 +60,17 @@
     ],
     "keybindings": [
       {
-        "key": "Escape",
+        "key": "escape",
         "command": "extension.vim_escape",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
-        "key": "Home",
+        "key": "home",
         "command": "extension.vim_home",
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
-        "key": "End",
+        "key": "end",
         "command": "extension.vim_end",
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
@@ -85,17 +85,17 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
-        "key": "Insert",
+        "key": "insert",
         "command": "extension.vim_insert",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
-        "key": "Backspace",
+        "key": "backspace",
         "command": "extension.vim_backspace",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
-        "key": "Delete",
+        "key": "delete",
         "command": "extension.vim_delete",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
@@ -200,12 +200,12 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
-        "key": "ctrl+Home",
+        "key": "ctrl+home",
         "command": "extension.vim_ctrl+home",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
-        "key": "ctrl+End",
+        "key": "ctrl+end",
         "command": "extension.vim_ctrl+end",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
@@ -589,11 +589,11 @@
         },
         "vim.allVisualModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Visual and Select mode. When using these mappings in Select mode, vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Visual and Select mode. When using these mappings in Select mode, Vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.allVisualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Visual and Select mode. When using these mappings in Select mode, vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual and Select mode. When using these mappings in Select mode, Vim temporarily switches to Visual mode, so that the same behavior as in Visual mode is effective. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.selectModeKeyBindings": {
           "type": "array",
@@ -963,7 +963,7 @@
         },
         "vim.keymodel": {
           "type": "string",
-          "markdownDescription": "Defines the behavior of shifted arrow keys and List of comma separated words, which enable special things that keys can do. These values can be used:\n\t `startsel` -> Using a shifted special key starts selection (either Select mode or Visual mode, depending on 'key' being present in 'selectmode').\n\t `stopsel` -> Using a not-shifted special key stops selection.\nSpecial keys in this context are the cursor keys, `<End>`, `<Home>`, `<PageUp>` and `<PageDown>`.",
+          "markdownDescription": "Defines the behavior of shifted arrow keys. List of comma separated words, which enable special things that keys can do. These values can be used:\n- `startsel` -> Using a shifted special key starts selection (either Select mode or Visual mode, depending on 'key' being present in 'selectmode').\n- `stopsel` -> Using a not-shifted special key stops selection.\n\nSpecial keys in this context are the cursor keys, `<End>`, `<Home>`, `<PageUp>` and `<PageDown>`.",
           "enum": [
             "",
             "startsel",
@@ -974,7 +974,7 @@
         },
         "vim.selectmode": {
           "type": "string",
-          "markdownDescription": "This is a comma separated list of words, which specifies when to start Select mode instead of Visual mode, when a selection is started.\nPossible values:\n\t `mouse`\t -> when using the mouse\n\t `key`\t -> when using shifted special keys\n\t `cmd`\t -> when using 'v', 'V' or 'CTRL-V'",
+          "markdownDescription": "This is a comma separated list of words, which specifies when to start Select mode instead of Visual mode, when a selection is started.\nPossible values:\n- `mouse` -> when using the mouse\n- `key` -> when using shifted special keys\n- `cmd` -> when using 'v', 'V' or 'CTRL-V'",
           "pattern": "^(?:mouse(?:,\\s*|\\b)|key(?:,\\s*|\\b)|cmd(?:,\\s*|\\b)){0,3}$",
           "default": "mouse,key"
         },

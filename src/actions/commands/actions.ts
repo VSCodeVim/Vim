@@ -1921,7 +1921,12 @@ export class CommandSwapVisualSelectModes extends BaseCommand {
         newMode = Mode.VisualBlock;
         break;
       default:
-        // This shouldn't happen! Should we throw an error here???
+        // This shouldn't happen!
+        throw new Error(
+          `Invalid Mode '${
+            Mode[vimState.currentMode]
+          }'! Should be one of the visual modes or one of the select modes`
+        );
         return;
     }
     await vimState.setCurrentMode(newMode);

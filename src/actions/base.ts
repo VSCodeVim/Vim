@@ -174,7 +174,7 @@ export abstract class BaseAction {
 export abstract class BaseCommand extends BaseAction {
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
-   * that means that after the command is ran we can clear recordedState.count because
+   * that means that after the command is run we can clear recordedState.count because
    * it will have been handled already.
    */
   isCompleteAction = false;

@@ -22,7 +22,7 @@ export enum Mode {
   Disabled,
   // The following modes are Pseudo-Modes, used only when remapping or for 'showmode'
   // to give feedback to user.
-  // DON'T SET TO THIS MODES!!!
+  // DON'T SET TO THESE MODES!!!
   OperatorPendingMode,
   InsertNormal,
   ReplaceNormal,

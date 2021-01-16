@@ -300,10 +300,10 @@ export interface IConfiguration {
    * Defines the behavior of shifted arrow keys and
    * List of comma separated words, which enable special things that keys
    * can do. These values can be used:
-   *    startsel    Using a shifted special key starts selection (either
+   * - `startsel`    Using a shifted special key starts selection (either
    * Select mode or Visual mode, depending on "key" being present in
    * 'selectmode').
-   *    stopsel	    Using a not-shifted special key stops selection.
+   * - `stopsel`	    Using a not-shifted special key stops selection.
    * Special keys in this context are the cursor keys, <End>, <Home>,
    * <PageUp> and <PageDown>.
    */
@@ -313,9 +313,9 @@ export interface IConfiguration {
    * This is a comma separated list of words, which specifies when to start
    * Select mode instead of Visual mode, when a selection is started.
    * Possible values:
-   *   mouse	when using the mouse
-   *   key		when using shifted special keys
-   *   cmd		when using "v", "V" or CTRL-V
+   * - `mouse`	when using the mouse
+   * - `key`		when using shifted special keys
+   * - `cmd`		when using "v", "V" or CTRL-V
    */
   selectmode: string;
 
