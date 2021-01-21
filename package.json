@@ -65,6 +65,11 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
+        "key": "Escape",
+        "command": "notebook.cell.quitEdit",
+        "when": "inputFocus && notebookEditorFocused && !editorHasSelection && !editorHoverVisible && vim.active && vim.mode == 'Normal'"
+      },
+      {
         "key": "Home",
         "command": "extension.vim_home",
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
