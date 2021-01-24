@@ -183,7 +183,7 @@ class CommandInsertBelowChar extends BaseCommand {
     const char = vimState.document.getText(
       new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight())
     );
-    await TextEditor.insert(char, position);
+    await TextEditor.insert(vimState.editor, char, position);
 
     vimState.cursorStartPosition = vimState.editor.selection.start;
     vimState.cursorStopPosition = vimState.editor.selection.start;
@@ -510,7 +510,7 @@ class CommandInsertAboveChar extends BaseCommand {
     const char = vimState.document.getText(
       new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight())
     );
-    await TextEditor.insert(char, position);
+    await TextEditor.insert(vimState.editor, char, position);
 
     vimState.cursorStartPosition = vimState.editor.selection.start;
     vimState.cursorStopPosition = vimState.editor.selection.start;

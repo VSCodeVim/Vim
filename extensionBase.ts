@@ -99,10 +99,7 @@ async function loadConfiguration() {
 /**
  * The extension's entry point
  */
-export async function activate(
-  context: vscode.ExtensionContext,
-  handleLocalDiskChangeEvent: boolean = true
-) {
+export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
@@ -113,7 +110,7 @@ export async function activate(
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
-  Register.loadFromDisk();
+  Register.loadFromDisk(handleLocal);
   await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
 
   if (vscode.window.activeTextEditor) {
@@ -180,7 +177,7 @@ export async function activate(
         });
     }
 
-    if (handleLocalDiskChangeEvent) {
+    if (handleLocal) {
       setTimeout(() => {
         if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
           handleContentChangedFromDisk(event.document);
@@ -343,6 +340,18 @@ export async function activate(
     false
   );
 
+  registerEventListener(
+    context,
+    vscode.window.onDidChangeTextEditorVisibleRanges,
+    async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        // Scrolling the viewport clears any status bar message, even errors.
+        StatusBar.clear(mh.vimState, true);
+      }
+    }
+  );
+
   const compositionState = new CompositionState();
 
   // Override VSCode commands
@@ -393,7 +402,7 @@ export async function activate(
       if (mh) {
         const text = compositionState.composingText;
         compositionState.reset();
-        mh.handleMultipleKeyEvents(text.split(''));
+        await mh.handleMultipleKeyEvents(text.split(''));
       }
     });
   });
@@ -414,11 +423,16 @@ export async function activate(
         return;
       }
 
+      if (!args) {
+        throw new Error(
+          "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'"
+        );
+      }
+
       if (args.after) {
         for (const key of args.after) {
           await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
         }
-        return;
       }
 
       if (args.commands) {
@@ -595,8 +609,8 @@ async function handleKeyEvent(key: string): Promise<void> {
  */
 async function forceStopRecursiveRemap(): Promise<boolean> {
   const mh = await getAndUpdateModeHandler();
-  if (mh?.vimState.isCurrentlyPerformingRecursiveRemapping) {
-    mh.vimState.forceStopRecursiveRemapping = true;
+  if (mh?.remapState.isCurrentlyPerformingRecursiveRemapping) {
+    mh.remapState.forceStopRecursiveRemapping = true;
     return true;
   }
 

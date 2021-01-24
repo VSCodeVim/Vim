@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Position } from 'vscode';
+import { Position, window } from 'vscode';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/textobject/paragraph';
 import { TextEditor } from './../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
@@ -9,7 +9,7 @@ suite('basic motion', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    await TextEditor.insert(text.join('\n'));
+    await TextEditor.insert(window.activeTextEditor!, text.join('\n'));
   });
 
   suiteTeardown(cleanUpWorkspace);
@@ -147,7 +147,7 @@ suite('word motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -363,7 +363,7 @@ suite('unicode word motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -466,7 +466,7 @@ suite('sentence motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 
@@ -546,7 +546,7 @@ suite('paragraph motion', () => {
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
-      return TextEditor.insert(text.join('\n'));
+      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
     });
   });
 

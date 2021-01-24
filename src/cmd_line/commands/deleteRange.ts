@@ -49,7 +49,7 @@ export class DeleteRangeCommand extends node.CommandBase {
       // Remove leading or trailing newline
       .replace(/^\r?\n/, '')
       .replace(/\r?\n$/, '');
-    await TextEditor.delete(range);
+    await TextEditor.delete(vimState.editor, range);
 
     vimState.cursorStopPosition = start.getLineBegin();
     return text;

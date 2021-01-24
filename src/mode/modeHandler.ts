@@ -36,6 +36,7 @@ import { SpecialKeys } from '../util/specialKeys';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 import { Position } from 'vscode';
+import { RemapState } from '../state/remapState';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -45,6 +46,7 @@ import { Position } from 'vscode';
  */
 export class ModeHandler implements vscode.Disposable {
   public readonly vimState: VimState;
+  public readonly remapState: RemapState;
 
   private _disposables: vscode.Disposable[] = [];
   private _remappers: Remappers;
@@ -74,6 +76,7 @@ export class ModeHandler implements vscode.Disposable {
     this._remappers = new Remappers();
 
     this.vimState = new VimState(textEditor);
+    this.remapState = new RemapState();
     this._disposables.push(this.vimState);
   }
 
@@ -359,7 +362,7 @@ export class ModeHandler implements vscode.Disposable {
     const printableKey = Notation.printableKey(key);
 
     // Check forceStopRemapping
-    if (this.vimState.forceStopRecursiveRemapping) {
+    if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
 
@@ -408,7 +411,6 @@ export class ModeHandler implements vscode.Disposable {
 
     const oldMode = this.vimState.currentMode;
     const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
-    const oldVisibleRange = this.vimState.editor.visibleRanges[0];
     const oldStatusBarText = StatusBar.getText();
     const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
@@ -431,14 +433,13 @@ export class ModeHandler implements vscode.Disposable {
       //             for actions with multiple keys like 'gg' or 'fx' the second character
       //           shouldn't be mapped
       if (
-        !this.vimState.isCurrentlyPerformingNonRecursiveRemapping &&
+        !this.remapState.isCurrentlyPerformingNonRecursiveRemapping &&
         !preventZeroRemap &&
         !this.vimState.recordedState.waitingForAnotherActionKey
       ) {
         handledAsRemap = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
-          this,
-          this.vimState
+          this
         );
       }
 
@@ -462,7 +463,7 @@ export class ModeHandler implements vscode.Disposable {
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
         this.vimState.recordedState = new RecordedState();
-        if (this.vimState.isCurrentlyPerformingRemapping) {
+        if (this.remapState.isCurrentlyPerformingRemapping) {
           // If we are handling a remap and we got a VimError stop handling the remap
           // and discard the rest of the keys. We throw an Exception here to stop any other
           // remapping handling steps and go straight to the 'finally' step of the remapper.
@@ -479,7 +480,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this.vimState.lastKeyPressedTimestamp = now;
+    this.remapState.lastKeyPressedTimestamp = now;
 
     StatusBar.updateShowCmd(this.vimState);
 
@@ -489,7 +490,6 @@ export class ModeHandler implements vscode.Disposable {
       // or it is recording a Macro
       const forceClearStatusBar =
         (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.editor.visibleRanges[0] !== oldVisibleRange ||
         this.vimState.macro !== undefined;
       StatusBar.clear(this.vimState, forceClearStatusBar);
     }
@@ -510,7 +510,7 @@ export class ModeHandler implements vscode.Disposable {
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
     // remapping handling steps and go straight to the 'finally' step of the remapper.
-    if (this.vimState.isCurrentlyPerformingRemapping && this.vimState.lastMovementFailed) {
+    if (this.remapState.isCurrentlyPerformingRemapping && this.vimState.lastMovementFailed) {
       this.vimState.lastMovementFailed = false;
       throw new ForceStopRemappingError('Last movement failed');
     }
@@ -572,12 +572,12 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (
-      !this.vimState.remapUsedACharacter &&
-      this.vimState.isCurrentlyPerformingRecursiveRemapping
+      !this.remapState.remapUsedACharacter &&
+      this.remapState.isCurrentlyPerformingRecursiveRemapping
     ) {
       // Used a character inside a recursive remapping so we reset the mapDepth.
-      this.vimState.remapUsedACharacter = true;
-      this.vimState.mapDepth = 0;
+      this.remapState.remapUsedACharacter = true;
+      this.remapState.mapDepth = 0;
     }
 
     // Since we got an action we are no longer waiting any action keys
@@ -825,7 +825,7 @@ export class ModeHandler implements vscode.Disposable {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
-      !this.vimState.isCurrentlyPerformingRemapping
+      !this.remapState.isCurrentlyPerformingRemapping
     ) {
       this.vimState.historyTracker.finishCurrentStep();
     }
@@ -1332,7 +1332,11 @@ export class ModeHandler implements vscode.Disposable {
         ? vscode.TextEditorRevealType.InCenter
         : vscode.TextEditorRevealType.Default;
 
-      if (this.vimState.currentMode === Mode.SearchInProgressMode && globalState.searchState) {
+      if (
+        this.vimState.currentMode === Mode.SearchInProgressMode &&
+        globalState.searchState &&
+        configuration.incsearch
+      ) {
         const nextMatch = globalState.searchState.getNextSearchMatchPosition(
           this.vimState.editor,
           this.vimState.cursorStopPosition
@@ -1506,7 +1510,21 @@ export class ModeHandler implements vscode.Disposable {
       opCursorCharDecorations
     );
 
-    // TODO: draw marks (#3963)
+    for (const { position, name } of this.vimState.historyTracker.getMarks()) {
+      if (configuration.showMarksInGutter) {
+        const markDecoration = decoration.getOrCreateMarkDecoration(name);
+
+        const markLine = position.getLineBegin();
+        const markRange = new vscode.Range(markLine, markLine);
+
+        this.vimState.editor.setDecorations(markDecoration, [markRange]);
+      } else {
+        const markDecoration = decoration.getMarkDecoration(name);
+        if (markDecoration) {
+          this.vimState.editor.setDecorations(markDecoration, []);
+        }
+      }
+    }
 
     const showHighlights =
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
@@ -1532,7 +1550,7 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.editor.setDecorations(decoration.easyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
-      await vscode.commands.executeCommand(viewChange.command, viewChange.args);
+      vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
     this.vimState.postponedCodeViewChanges = [];
 

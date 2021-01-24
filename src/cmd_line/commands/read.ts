@@ -33,7 +33,7 @@ export class ReadCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     const textToInsert = await this.getTextToInsert();
     if (textToInsert) {
-      await TextEditor.insert(textToInsert);
+      await TextEditor.insert(vimState.editor, textToInsert);
     }
   }
 

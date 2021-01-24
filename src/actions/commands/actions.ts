@@ -36,8 +36,11 @@ import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
 import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 
 export class DocumentContentChangeAction extends BaseAction {
+  modes: [];
+
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
   public addChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
@@ -107,7 +110,7 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
 
       if (replaceRange.start.isEqual(replaceRange.stop)) {
-        await TextEditor.insert(change.text, replaceRange.start);
+        await TextEditor.insert(vimState.editor, change.text, replaceRange.start);
       } else {
         await TextEditor.replace(vimState.editor, vimState.editor.selection, change.text);
       }
@@ -471,8 +474,8 @@ abstract class CommandEditorScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
   keys: string[];
-  to: EditorScrollDirection;
-  by: EditorScrollByUnit;
+  abstract to: EditorScrollDirection;
+  abstract by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const timesToRepeat = vimState.recordedState.count || 1;
@@ -535,7 +538,7 @@ class CommandCtrlY extends CommandEditorScroll {
 abstract class CommandScrollAndMoveCursor extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
-  to: EditorScrollDirection;
+  abstract to: EditorScrollDirection;
 
   /**
    * @returns the number of lines this command should move the cursor
@@ -787,7 +790,7 @@ class CommandCmdA extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
     vimState.cursorStopPosition = new Position(
-      TextEditor.getLineCount() - 1,
+      vimState.document.lineCount - 1,
       vimState.desiredColumn
     );
     await vimState.setCurrentMode(Mode.VisualLine);
@@ -1012,6 +1015,9 @@ export class CommandSearchForwards extends BaseCommand {
   keys = ['/'];
   isMotion = true;
   isJump = true;
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
@@ -1034,6 +1040,9 @@ export class CommandSearchBackwards extends BaseCommand {
   keys = ['?'];
   isMotion = true;
   isJump = true;
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
@@ -1181,8 +1190,8 @@ class CommandRepeatSubstitution extends BaseCommand {
 type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  commandName: string;
-  direction: FoldDirection;
+  abstract commandName: string;
+  direction: FoldDirection | undefined;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1606,7 +1615,7 @@ class CommandReselectVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     // Try to restore selection only if valid
     if (vimState.lastVisualSelection !== undefined) {
-      if (vimState.lastVisualSelection.end.line <= TextEditor.getLineCount() - 1) {
+      if (vimState.lastVisualSelection.end.line <= vimState.document.lineCount - 1) {
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
         vimState.cursorStartPosition = vimState.lastVisualSelection.start;
         vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
@@ -2377,7 +2386,7 @@ class ActionJoin extends BaseCommand {
       columnDeltaOffset: number = 0;
 
     if (startPosition.isEqual(position) || startPosition.line === position.line) {
-      if (position.line + 1 < TextEditor.getLineCount()) {
+      if (position.line + 1 < vimState.document.lineCount) {
         startLineNumber = position.line;
         startColumn = 0;
         endLineNumber = position.getDown(count).line;
@@ -2538,7 +2547,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   // gJ is essentially J without the edge cases. ;-)
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.line === TextEditor.getLineCount() - 1) {
+    if (position.line === vimState.document.lineCount - 1) {
       return; // TODO: bell
     }
 
@@ -2547,7 +2556,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   }
 
   public async execJoin(count: number, position: Position, vimState: VimState): Promise<void> {
-    const lastLine = Math.min(position.line + count, TextEditor.getLineCount() - 1);
+    const lastLine = Math.min(position.line + count, vimState.document.lineCount - 1);
     const lines: string[] = [];
     for (let i = position.line + 1; i <= lastLine; i++) {
       lines.push(vimState.document.lineAt(i).text);
@@ -3173,8 +3182,8 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   canBeRepeatedWithDot = true;
-  offset: number;
-  staircase: boolean;
+  abstract offset: number;
+  abstract staircase: boolean;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const ranges = this.getSearchRanges(vimState);
@@ -3503,5 +3512,33 @@ class ActionShowFileInfo extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     reportFileInfo(position, vimState);
+  }
+}
+
+@RegisterAction
+class WriteQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Z']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new WriteQuitCommand({}).execute(vimState);
+  }
+}
+
+@RegisterAction
+class Quit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Q']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new QuitCommand({ bang: true }).execute(vimState);
   }
 }

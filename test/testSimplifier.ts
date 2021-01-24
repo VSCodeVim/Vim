@@ -440,7 +440,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   assertEqualLines(lines);
 
   // Check final cursor position
-  const actualPosition = TextEditor.getSelection().start;
+  const actualPosition = modeHandler.vimState.editor.selection.start;
   const expectedPosition = helper.endPosition;
   assert.deepStrictEqual(
     { line: actualPosition.line, character: actualPosition.character },
@@ -569,7 +569,7 @@ async function testItWithRemaps(
           // Get lines, position and mode after half timeout finishes
           p1Resolve({
             lines: TextEditor.getText(),
-            position: TextEditor.getSelection().start,
+            position: modeHandler.vimState.editor.selection.start,
             endMode: modeHandler.currentMode,
           });
         }, timeoutOffset);
@@ -580,12 +580,12 @@ async function testItWithRemaps(
       return new Promise<ResultType | undefined>((p2Resolve, p2Reject) => {
         if (waitsForTimeout) {
           setTimeout(async () => {
-            if (modeHandler.vimState.isCurrentlyPerformingRemapping) {
+            if (modeHandler.remapState.isCurrentlyPerformingRemapping) {
               // Performing a remapping, which means it started at the right time but it has not
               // finished yet (maybe the remapping has a lot of keys to handle) so we wait for the
               // remapping to finish
               const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-              while (modeHandler.vimState.isCurrentlyPerformingRemapping) {
+              while (modeHandler.remapState.isCurrentlyPerformingRemapping) {
                 // Wait a little bit longer here because the currently performing remap might have
                 // some remaining keys to handle after it finishes performing the remap and there
                 // might even be there some keys still to be sent that might create another remap.
@@ -599,7 +599,7 @@ async function testItWithRemaps(
             // Get lines, position and mode after timeout + offset finishes
             p2Resolve({
               lines: TextEditor.getText(),
-              position: TextEditor.getSelection().start,
+              position: modeHandler.vimState.editor.selection.start,
               endMode: modeHandler.currentMode,
             });
           }, timeout + timeoutOffset);

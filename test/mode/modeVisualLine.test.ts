@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import { newTest } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -39,8 +38,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
 
-    const sel = TextEditor.getSelection();
-
+    const sel = modeHandler.vimState.editor.selection;
     assert.strictEqual(sel.start.character, 0);
     assert.strictEqual(sel.start.line, 0);
 
@@ -386,8 +384,7 @@ suite('Mode Visual Line', () => {
       assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'with me' at the first line
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);
@@ -415,8 +412,7 @@ suite('Mode Visual Line', () => {
         'or with me longer than the target',
       ]);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'or with me longer than the target' at the first line
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);
@@ -438,8 +434,7 @@ suite('Mode Visual Line', () => {
       assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'foo\nbar\n'
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);

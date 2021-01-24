@@ -2,7 +2,7 @@ import { configuration } from './configuration';
 
 export class Notation {
   // Mapping from a regex to the normalized string that it should be converted to.
-  private static readonly _notationMap: Array<[RegExp, string]> = [
+  private static readonly _notationMap: ReadonlyArray<[RegExp, string]> = [
     [/ctrl\+|c\-/gi, 'C-'],
     [/cmd\+|d\-/gi, 'D-'],
     [/shift\+|s\-/gi, 'S-'],

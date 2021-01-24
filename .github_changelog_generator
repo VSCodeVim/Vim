@@ -5,6 +5,6 @@ bugs-label=**Fixed Bugs:**
 bug-labels=kind/bug
 enhancement-label=**Enhancements:**
 enhancement-labels=kind/enhancement,kind/feature
-exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion,pr/dependency
+exclude-labels=status/by-design,status/duplicate,status/user-error,status/already-resolved,kind/question,kind/discussion,pr/dependency,upstream/different-plugin,upstream/vscode
 since-tag=v1.16.0
 max-issues=500

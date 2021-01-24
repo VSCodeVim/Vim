@@ -26,6 +26,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1.  Install prerequisites:
     - latest [Visual Studio Code](https://code.visualstudio.com/)
     - [Node.js](https://nodejs.org/) v12.0.0 or higher
+    - [Yarn](https://classic.yarnpkg.com/) v1.x
     - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 1.  In a terminal:
 
@@ -35,7 +36,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     cd Vim
 
     # Install the dependencies
-    npm install
+    yarn install
 
     # Open in VSCode
     code .
@@ -46,11 +47,15 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
     # Alternatively, build and run tests through gulp and npm scripts
     npx gulp build                  # build
-    npm test                        # test (must close all instances of VSCode)
+    npx gulp prepare-test           # build tests
+    yarn test                       # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running
     npx gulp test                   # run tests inside Docker container
     npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+
+    # Alternatively, build .vsix extension and load it into VSCode for manual testing
+    yarn run vsce package --web     # build vim-xxx.vsix
     ```
 
 ## Code Architecture
@@ -110,7 +115,7 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### Visual Studio Code Slowdown
 
-If you notice a slowdown and have ever run `npm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
+If you notice a slowdown and have ever run `yarn test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
 
 ```bash
 $ rm -rf .vscode-test/
