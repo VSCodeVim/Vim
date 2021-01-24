@@ -27,7 +27,7 @@ jobs:
         run: yarn install
 
       - name: Prettier
-        uses: creyD/prettier_action@v3.2
+        uses: creyD/prettier_action@v3.3
         with:
           prettier_options: '--write **/*.{ts,js,json,md,yml}'
           same_commit: true

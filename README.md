@@ -207,19 +207,6 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `ZZ` to the vim command `:wq` (save and close the current file):
-
-```json
-    "vim.normalModeKeyBindings": [
-        {
-            "before": ["Z", "Z"],
-            "commands": [
-                ":wq"
-            ]
-        }
-    ]
-```
-
 - Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
 
 ```json
