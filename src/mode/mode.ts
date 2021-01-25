@@ -3,6 +3,7 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from 'vscode';
+import { Logger } from '../util/logger';
 
 export enum Mode {
   Normal,
@@ -73,7 +74,8 @@ export function statusBarText(vimState: VimState) {
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
       if (globalState.searchState === undefined) {
-        this._logger.warn(`globalState.searchState is undefined.`);
+        const logger = Logger.get('StatusBar');
+        logger.warn(`globalState.searchState is undefined in SearchInProgressMode.`);
         return '';
       }
       const leadingChar =

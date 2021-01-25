@@ -5,6 +5,7 @@
     "target": "ES2019",
     "outDir": "out",
     "noImplicitReturns": true,
+    "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
