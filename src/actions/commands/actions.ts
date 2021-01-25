@@ -36,6 +36,7 @@ import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
 import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 
 export class DocumentContentChangeAction extends BaseAction {
   modes: [];
@@ -3512,5 +3513,33 @@ class ActionShowFileInfo extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     reportFileInfo(position, vimState);
+  }
+}
+
+@RegisterAction
+class WriteQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Z']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new WriteQuitCommand({}).execute(vimState);
+  }
+}
+
+@RegisterAction
+class Quit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Q']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new QuitCommand({ bang: true }).execute(vimState);
   }
 }

@@ -393,6 +393,8 @@ class Configuration implements IConfiguration {
 
   startofline = true;
 
+  showMarksInGutter = false;
+
   report = 2;
   wrapscan = true;
 
