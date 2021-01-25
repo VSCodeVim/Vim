@@ -250,6 +250,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'cw' on white space",
+    start: ['|  const a = 1;'],
+    keysPressed: '0cw',
+    end: ['|const a = 1;'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c2w'",
     start: ['|const a = 1;'],
     keysPressed: 'c2w',
