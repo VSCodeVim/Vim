@@ -4,6 +4,7 @@
     "module": "commonjs",
     "target": "ES2019",
     "outDir": "out",
+    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": false,

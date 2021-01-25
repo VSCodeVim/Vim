@@ -16,7 +16,7 @@ import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 
 interface IInputMethodSwitcher {
-  switchInputMethod(prevMode: Mode, newMode: Mode);
+  switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
 }
 
 interface INVim {
