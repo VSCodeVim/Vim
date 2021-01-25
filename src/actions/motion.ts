@@ -1287,7 +1287,7 @@ export class MoveWordBegin extends BaseMovement {
         return position;
       }
 
-      const char = line[position.character];
+      const char = line.text[position.character];
 
       /*
       From the Vim manual:
