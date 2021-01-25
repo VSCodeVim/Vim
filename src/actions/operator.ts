@@ -1060,7 +1060,6 @@ class ActionVisualReflowParagraph extends BaseOperator {
         lines.pop();
       }
 
-      console.log('before', lines, commentType.singleLine);
       for (let i = 0; i < lines.length; i++) {
         if (commentType.singleLine) {
           lines[i] = `${indent}${commentType.start}${indentAfterComment}${lines[i]}`;
@@ -1089,7 +1088,6 @@ class ActionVisualReflowParagraph extends BaseOperator {
           }
         }
       }
-      console.log('after', lines);
 
       result.push(...lines);
     }
