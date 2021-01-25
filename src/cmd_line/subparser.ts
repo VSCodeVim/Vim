@@ -343,7 +343,7 @@ export const commandParsers = {
  * Returns a command parser for the given `input`, if one exists.
  * Resolves `q`, `qu`, `qui`, and `quit` the same.
  */
-export function getParser(input: string): ((args?: string) => CommandBase) | undefined {
+export function getParser(input: string): ((args: string) => CommandBase) | undefined {
   if (input === '') {
     return undefined;
   }

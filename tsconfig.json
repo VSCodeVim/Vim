@@ -11,6 +11,8 @@
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
     "strictNullChecks": true,
     "experimentalDecorators": true,
     "alwaysStrict": true,
