@@ -38,13 +38,28 @@ export type CommandParserMapping = {
 };
 
 // Keep this sorted, please :)
-export const commandParsers = {
+export const commandParsers: { [index: string]: CommandParserMapping } = {
   '!': {
     parser: parseBangCommand,
   },
 
   bdelete: {
     abbrev: 'bd',
+    parser: undefined,
+  },
+
+  bfirst: {
+    abbrev: 'bf',
+    parser: undefined,
+  },
+
+  blast: {
+    abbrev: 'bl',
+    parser: undefined,
+  },
+
+  bmodified: {
+    abbrev: 'bm',
     parser: undefined,
   },
 
@@ -61,6 +76,11 @@ export const commandParsers = {
   bprevious: {
     abbrev: 'bp',
     parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  brewind: {
+    abbrev: 'br',
+    parser: undefined,
   },
 
   buffers: {
@@ -90,6 +110,11 @@ export const commandParsers = {
   delete: {
     abbrev: 'd',
     parser: parseDeleteRangeLinesCommandArgs,
+  },
+
+  delmarks: {
+    abbrev: 'delm',
+    parser: undefined,
   },
 
   digraphs: {
@@ -232,6 +257,11 @@ export const commandParsers = {
     parser: parseSortCommandArgs,
   },
 
+  source: {
+    abbrev: 'so',
+    parser: undefined,
+  },
+
   split: {
     abbrev: 'sp',
     parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
@@ -300,6 +330,11 @@ export const commandParsers = {
     parser: () => new UndoCommand({}),
   },
 
+  vglobal: {
+    abbrev: 'v',
+    parser: undefined,
+  },
+
   vnew: {
     abbrev: 'vne',
     parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
@@ -336,6 +371,11 @@ export const commandParsers = {
   xall: {
     abbrev: 'xa',
     parser: parseWriteQuitAllCommandArgs,
+  },
+
+  yank: {
+    abbrev: 'y',
+    parser: undefined,
   },
 };
 
