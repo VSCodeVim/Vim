@@ -38,7 +38,7 @@ export type CommandParserMapping = {
 };
 
 // Keep this sorted, please :)
-export const commandParsers: { [index: string]: CommandParserMapping } = {
+export const commandParsers = {
   '!': {
     parser: parseBangCommand,
   },
