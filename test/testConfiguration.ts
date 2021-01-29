@@ -127,4 +127,5 @@ export class Configuration implements IConfiguration {
   wrapscan = true;
   scroll = 20;
   startofline = true;
+  showMarksInGutter = true;
 }
