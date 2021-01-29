@@ -94,6 +94,9 @@ const nodelessConfig = {
       resourceRegExp: /\/imswitcher$/,
     }),
     new webpack.IgnorePlugin({
+      resourceRegExp: /\/vimrc$/,
+    }),
+    new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,
     }),
   ],

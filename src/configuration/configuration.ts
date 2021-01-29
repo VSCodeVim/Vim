@@ -5,7 +5,6 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -17,6 +16,7 @@ import {
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
 
 export const extensionVersion = packagejson.version;
 
@@ -113,8 +113,10 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
