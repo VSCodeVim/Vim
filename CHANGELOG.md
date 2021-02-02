@@ -1,5 +1,14 @@
 # Change Log
 
+## [v1.18.8](https://github.com/vscodevim/vim/tree/v1.18.8) (2021-02-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.7...v1.18.8)
+
+**Merged pull requests:**
+
+- Polyfill OS/Process/setImmediate [\#6081](https://github.com/VSCodeVim/Vim/pull/6081) ([rebornix](https://github.com/rebornix))
+- no look behind for safari [\#6080](https://github.com/VSCodeVim/Vim/pull/6080) ([rebornix](https://github.com/rebornix))
+
 ## [v1.18.7](https://github.com/vscodevim/vim/tree/v1.18.7) (2021-02-01)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.5...v1.18.7)
@@ -97,7 +106,6 @@
 - \<Backspace\> while typing ex command deletes text in file [\#5584](https://github.com/VSCodeVim/Vim/issues/5584)
 - Failed to handle key=p. No multi-cursor index when calling PutCommand [\#5448](https://github.com/VSCodeVim/Vim/issues/5448)
 - Forced by user [\#5419](https://github.com/VSCodeVim/Vim/issues/5419)
-- Failed to handle key=l. Cannot read property 'searchString' of undefined [\#5351](https://github.com/VSCodeVim/Vim/issues/5351)
 
 **Closed issues:**
 
