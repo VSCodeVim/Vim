@@ -5,6 +5,8 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
