@@ -15,6 +15,8 @@ import './src/configuration/validators/remappingValidator';
 import * as vscode from 'vscode';
 import { activate as activateFunc } from './extensionBase';
 
+require('setimmediate');
+
 export async function activate(context: vscode.ExtensionContext) {
   activateFunc(context, false);
 }

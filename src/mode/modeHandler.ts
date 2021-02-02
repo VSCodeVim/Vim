@@ -37,6 +37,7 @@ import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 import { Position } from 'vscode';
 import { RemapState } from '../state/remapState';
+import * as process from 'process';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -86,7 +87,7 @@ export class ModeHandler implements vscode.Disposable {
    */
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
-    setImmediate(() => {
+    global.setImmediate(() => {
       if (this.vimState.editor) {
         const { selections } = this.vimState.editor;
         if (

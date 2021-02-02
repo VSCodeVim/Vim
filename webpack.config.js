@@ -70,6 +70,8 @@ const nodelessConfig = {
     extensions: ['.ts', '.js'],
     alias: {
       path: 'path-browserify',
+      os: 'os-browserify',
+      process: 'process/browser',
       platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
     },
   },
