@@ -732,10 +732,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
-      if (this.vimState.recordedState.operator) {
+      const operator = this.vimState.recordedState.operator;
+      if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = this.vimState.recordedState.operator.canBeRepeatedWithDot;
+        ranRepeatableAction = operator.canBeRepeatedWithDot;
         ranAction = true;
       }
     }
@@ -994,7 +995,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeOperator(): Promise<void> {
-    let recordedState = this.vimState.recordedState;
+    const recordedState = this.vimState.recordedState;
     const operator = recordedState.operator!;
 
     // TODO - if actions were more pure, this would be unnecessary.
