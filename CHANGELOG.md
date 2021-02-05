@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.8...v1.18.9)
+
+**Fixed Bugs:**
+
+- Failed to handle key=\<BS\>. Cannot read property 'canBeRepeatedWithDot' of undefined [\#5468](https://github.com/VSCodeVim/Vim/issues/5468)
+
+**Closed issues:**
+
+- Failed to handle key=i. Cannot read property 'start' of undefined [\#6042](https://github.com/VSCodeVim/Vim/issues/6042)
+
 ## [v1.18.8](https://github.com/vscodevim/vim/tree/v1.18.8) (2021-02-02)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.7...v1.18.8)
@@ -44,10 +56,6 @@
 ## [v1.18.5](https://github.com/vscodevim/vim/tree/v1.18.5) (2020-12-10)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.4...v1.18.5)
-
-**Enhancements:**
-
-- :set tabstop=x works but :set ts=x does not. [\#5368](https://github.com/VSCodeVim/Vim/issues/5368)
 
 **Fixed Bugs:**
 
@@ -128,9 +136,6 @@
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///e:/hc_client_1/Assets/Scripts/Rhythm/MusicScriptEditor.cs". [\#5412](https://github.com/VSCodeVim/Vim/issues/5412)
 - Line down lagging when in visual line selection mode [\#5401](https://github.com/VSCodeVim/Vim/issues/5401)
 - Autocomplete behaving badly [\#5390](https://github.com/VSCodeVim/Vim/issues/5390)
-- Cursor stay on initial position after CTRL+arrows [\#5380](https://github.com/VSCodeVim/Vim/issues/5380)
-- alt+double-click to select multiple words with multiple cursors only selects to left of cursor [\#5366](https://github.com/VSCodeVim/Vim/issues/5366)
-- gd Goto Defination doesn't work [\#5358](https://github.com/VSCodeVim/Vim/issues/5358)
 
 **Merged pull requests:**
 
@@ -145,7 +150,6 @@
 - Stop snippet insertion from going to visual mode [\#5540](https://github.com/VSCodeVim/Vim/pull/5540) ([berknam](https://github.com/berknam))
 - Fixes \#5442 - \[X\]p does not work in visual line mode [\#5504](https://github.com/VSCodeVim/Vim/pull/5504) ([rickythefox](https://github.com/rickythefox))
 - Stop user forced stop remap from throwing error [\#5425](https://github.com/VSCodeVim/Vim/pull/5425) ([berknam](https://github.com/berknam))
-- Fix Alt+DoubleClick wrong selection after the first one [\#5367](https://github.com/VSCodeVim/Vim/pull/5367) ([berknam](https://github.com/berknam))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
