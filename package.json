@@ -377,6 +377,16 @@
         "mac": "cmd+alt+up",
         "command": "extension.vim_cmd+alt+up",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "j",
+        "command": "notebook.focusNextEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'none' && notebookEditorCursorAtBoundary != 'top'"
+      },
+      {
+        "key": "k",
+        "command": "notebook.focusPreviousEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'bottom' && notebookEditorCursorAtBoundary != 'none'"
       }
     ],
     "configuration": {

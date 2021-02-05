@@ -141,7 +141,7 @@ class Configuration implements IConfiguration {
         continue;
       }
 
-      if (keybinding.command === 'notebook.cell.quitEdit') {
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
