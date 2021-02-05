@@ -141,6 +141,10 @@ class Configuration implements IConfiguration {
         continue;
       }
 
+      if (keybinding.command === 'notebook.cell.quitEdit') {
+        continue;
+      }
+
       let key = keybinding.key;
       if (process.platform === 'darwin') {
         key = keybinding.mac || key;
