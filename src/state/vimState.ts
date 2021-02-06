@@ -291,6 +291,8 @@ export class VimState implements vscode.Disposable {
   /** The macro currently being recorded, if one exists. */
   public macro: RecordedState | undefined;
 
+  public lastInvokedMacro: RecordedState | undefined;
+
   public nvim?: INVim;
 
   public constructor(editor: vscode.TextEditor) {

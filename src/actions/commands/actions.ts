@@ -366,7 +366,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const { lastInvokedMacro } = vimState.historyTracker;
+    const { lastInvokedMacro } = vimState;
 
     if (lastInvokedMacro) {
       vimState.recordedState.transformer.addTransformation({
