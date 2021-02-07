@@ -43,11 +43,11 @@ class TaskQueue {
           vscode.window
             .showErrorMessage(e.message, reportButton)
             .then((picked: string | undefined) => {
-              let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
-              if (stack) {
-                body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
-              }
               if (picked === reportButton) {
+                let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
+                if (stack) {
+                  body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+                }
                 vscode.commands.executeCommand(
                   'vscode.open',
                   vscode.Uri.parse(
