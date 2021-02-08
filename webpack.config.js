@@ -32,6 +32,9 @@ const config = {
       platform: path.resolve(__dirname, 'src', 'platform', 'node'),
     },
   },
+  optimization: {
+    minimize: true,
+  },
   module: {
     rules: [
       {
@@ -74,6 +77,9 @@ const nodelessConfig = {
       process: 'process/browser',
       platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
     },
+  },
+  optimization: {
+    minimize: true,
   },
   module: {
     rules: [
