@@ -4,18 +4,20 @@ import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 
+export type Pairing = {
+  match: string;
+  isNextMatchForward: boolean;
+  directionless?: boolean;
+  matchesWithPercentageMotion?: boolean;
+};
+
 /**
  * PairMatcher finds the position matching the given character, respecting nested
  * instances of the pair.
  */
 export class PairMatcher {
   static pairings: {
-    [key: string]: {
-      match: string;
-      isNextMatchForward: boolean;
-      directionless?: boolean;
-      matchesWithPercentageMotion?: boolean;
-    };
+    [key: string]: Pairing;
   } = {
     '(': { match: ')', isNextMatchForward: true, matchesWithPercentageMotion: true },
     '{': { match: '}', isNextMatchForward: true, matchesWithPercentageMotion: true },
@@ -113,6 +115,17 @@ export class PairMatcher {
       return lineNumber <= lineCount - 1;
     } else {
       return lineNumber >= 0;
+    }
+  }
+
+  static getPairing(pair: string): Pairing {
+    let pairing = this.pairings[pair];
+    if (pairing !== undefined && pairing.matchesWithPercentageMotion === false) {
+      // we look up config if it overwrites matchesWithPercentageMotion setting
+      pairing.matchesWithPercentageMotion = configuration.matchpairs.includes(pair);
+      return pairing;
+    } else {
+      return pairing;
     }
   }
 
