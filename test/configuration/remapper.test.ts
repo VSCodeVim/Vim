@@ -10,7 +10,6 @@ import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
 import { VimState } from '../../src/state/vimState';
-import { TextEditor } from '../../src/textEditor';
 import { StatusBar } from '../../src/statusBar';
 
 /* tslint:disable:no-string-literal */
@@ -219,7 +218,7 @@ suite('Remapper', () => {
             Mode[testCase.mode]
           }.`
         );
-        assert.deepStrictEqual(actual!.after, testCase.expectedAfter.split(''));
+        assert.deepStrictEqual(actual.after, testCase.expectedAfter.split(''));
       } else {
         assert.strictEqual(actual, undefined);
       }
