@@ -495,14 +495,14 @@ Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is us
 | ------------ | --------------------------- | ------- | ------------- |
 | vim.surround | Enable/disable vim-surround | Boolean | true          |
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
+`t` or `<` as `<desired>` or `<existing>` will enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
 
-| Surround Command                     | Description                                                           |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| `d s <existing char>`                | Delete existing surround                                              |
-| `c s <existing char> <desired char>` | Change surround existing to desired                                   |
-| `y s <motion> <desired char>`        | Surround something with something using motion (as in "you surround") |
-| `S <desired char>`                   | Surround when in visual modes (surrounds full selection)              |
+| Surround Command           | Description                                              |
+| -------------------------- | -------------------------------------------------------- |
+| `y s <motion> <desired>`   | Add `desired` surround around text defined by `<motion>` |
+| `d s <existing>`           | Delete `existing` surround                               |
+| `c s <existing> <desired>` | Change `existing` surround to `desired`                  |
+| `S <desired>`              | Surround when in visual modes (surrounds full selection) |
 
 Some examples:
 
