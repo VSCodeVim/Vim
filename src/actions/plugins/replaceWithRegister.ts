@@ -35,7 +35,7 @@ export class ReplaceOperator extends BaseOperator {
     }
 
     const replaceWith = register.text as string;
-    await TextEditor.replace(range, replaceWith);
+    await TextEditor.replace(vimState.editor, range, replaceWith);
     await vimState.setCurrentMode(Mode.Normal);
     updateCursorPosition(vimState, range, replaceWith);
   }

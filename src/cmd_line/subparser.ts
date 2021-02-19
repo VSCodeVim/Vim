@@ -48,6 +48,41 @@ export const commandParsers = {
     parser: undefined,
   },
 
+  bfirst: {
+    abbrev: 'bf',
+    parser: undefined,
+  },
+
+  blast: {
+    abbrev: 'bl',
+    parser: undefined,
+  },
+
+  bmodified: {
+    abbrev: 'bm',
+    parser: undefined,
+  },
+
+  bnext: {
+    abbrev: 'bn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  bNext: {
+    abbrev: 'bN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  bprevious: {
+    abbrev: 'bp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  brewind: {
+    abbrev: 'br',
+    parser: undefined,
+  },
+
   buffers: {
     parser: undefined,
   },
@@ -75,6 +110,11 @@ export const commandParsers = {
   delete: {
     abbrev: 'd',
     parser: parseDeleteRangeLinesCommandArgs,
+  },
+
+  delmarks: {
+    abbrev: 'delm',
+    parser: undefined,
   },
 
   digraphs: {
@@ -217,6 +257,11 @@ export const commandParsers = {
     parser: parseSortCommandArgs,
   },
 
+  source: {
+    abbrev: 'so',
+    parser: undefined,
+  },
+
   split: {
     abbrev: 'sp',
     parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
@@ -285,6 +330,11 @@ export const commandParsers = {
     parser: () => new UndoCommand({}),
   },
 
+  vglobal: {
+    abbrev: 'v',
+    parser: undefined,
+  },
+
   vnew: {
     abbrev: 'vne',
     parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
@@ -322,13 +372,18 @@ export const commandParsers = {
     abbrev: 'xa',
     parser: parseWriteQuitAllCommandArgs,
   },
+
+  yank: {
+    abbrev: 'y',
+    parser: undefined,
+  },
 };
 
 /**
  * Returns a command parser for the given `input`, if one exists.
  * Resolves `q`, `qu`, `qui`, and `quit` the same.
  */
-export function getParser(input: string): ((args?: string) => CommandBase) | undefined {
+export function getParser(input: string): ((args: string) => CommandBase) | undefined {
   if (input === '') {
     return undefined;
   }

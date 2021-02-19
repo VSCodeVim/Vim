@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -247,6 +246,14 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'cw',
     end: ['| a = 1;'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cw' on white space",
+    start: ['|  const a = 1;'],
+    keysPressed: '0cw',
+    end: ['|const a = 1;'],
     endMode: Mode.Insert,
   });
 
@@ -1376,185 +1383,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'P' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyP',
-    end: ['one', '|two', 'two'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyp',
-    end: ['one', 'two', '|two'],
-  });
-
-  newTest({
-    title: "Can handle 'P' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyP',
-    end: ['|one', 'two', 'three', 'one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyp',
-    end: ['one', '|one', 'two', 'three', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'yy' with correct cursor position",
-    start: ['|  one', 'two'],
-    keysPressed: 'yyjp',
-    end: ['  one', 'two', '  |one'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygp',
-    end: ['one', 'two', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjgp',
-    end: ['one', 'two', 'one', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yyGgp',
-    end: ['one', 'two', 'three', 'four', 'one', 'two', 'three', '|four'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjjgp',
-    end: ['one', 'two', 'three', 'one', '|two'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygP',
-    end: ['one', 'two', '|two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yygP',
-    end: ['one', 'two', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yygP',
-    end: ['one', 'two', 'three', 'four', '|one', 'two', 'three', 'four'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after yy",
-    start: ['  |one', '   two'],
-    keysPressed: 'yyj]p',
-    end: ['  one', '   two', '   |one'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy'",
-    start: [' |one', '  two', '  three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '  three', '  |one', '   two'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and indent with tabs first",
-    start: [' |one', '  two', '   three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '   three', '   |one', '\ttwo'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and decrease indents if possible",
-    start: ['    |one', ' two', ' three'],
-    keysPressed: '2yyjj]p',
-    end: ['    one', ' two', ' three', ' |one', 'two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after yy",
-    start: ['   two', '  |one'],
-    keysPressed: 'yyk[p',
-    end: ['   |one', '   two', '  one'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy'",
-    start: ['  three', '|one', ' two'],
-    keysPressed: '2yyk[p',
-    end: ['  |one', '   two', '  three', 'one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and indent with tabs first",
-    start: ['   three', '| one', '  two'],
-    keysPressed: '2yyk[p',
-    end: ['   |one', '\ttwo', '   three', ' one', '  two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and decrease indents if possible",
-    start: [' three', '    |one', ' two'],
-    keysPressed: '2yyk[p',
-    end: [' |one', 'two', ' three', '    one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after y'a",
-    start: ['|one', 'two', 'three'],
-    keysPressed: "majjy'ap",
-    end: ['one', 'two', 'three', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y])' without including closing parenthesis",
-    start: ['(hello, |world)'],
-    keysPressed: 'y])$p',
-    end: ['(hello, world)worl|d'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y]}' without including closing bracket",
-    start: ['{hello, |world}'],
-    keysPressed: 'y]}$p',
-    end: ['{hello, world}worl|d'],
-  });
-
-  newTest({
-    title: 'Can handle pasting in visual mode over selection',
-    start: ['|foo', 'bar', 'fun'],
-    keysPressed: 'Yjvll"ayjV"app',
-    end: ['foo', 'bar', 'bar', '|fun'],
-  });
-
-  newTest({
     title: 'Can repeat w',
     start: ['|one two three four'],
     keysPressed: '2w',
     end: ['one two |three four'],
-  });
-
-  newTest({
-    title: 'Can repeat p',
-    start: ['|one'],
-    keysPressed: 'yy2p',
-    end: ['one', '|one', 'one'],
   });
 
   newTest({
@@ -1668,6 +1500,69 @@ suite('Mode Normal', () => {
       '// hard. We choose to write a vim extension, not because it is easy, but because',
       '// it is hard.',
     ],
+  });
+
+  newTest({
+    title: 'gq preserves newlines',
+    start: ['|abc', '', '', '', 'def'],
+    keysPressed: 'gqG',
+    end: ['|abc', '', '', '', 'def'],
+  });
+
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with start and final on same line',
+    start: ['|/* abc def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def */'],
+  });
+
+  newTest({
+    title: 'gq preserves blank lines in multiline comments',
+    start: ['|/* abc', ' *', ' *', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' *', ' *', ' * def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
   });
 
   newTest({
@@ -1892,35 +1787,6 @@ suite('Mode Normal', () => {
     start: ['|abc def ghi'],
     keysPressed: 'vwshi <Esc>',
     end: ['hi| ef ghi'],
-  });
-
-  newTest({
-    title: 'can handle p with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwp',
-    end: ['abc abc |dhi'],
-  });
-
-  // test works when run manually
-  // newTest({
-  //   title: "can handle p with selection",
-  //   start: ["one", "two", "|three"],
-  //   keysPressed: "yykVp",
-  //   end: ["|three", "three"]
-  // });
-
-  newTest({
-    title: 'can handle P with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwP',
-    end: ['abc abc |dhi'],
-  });
-
-  newTest({
-    title: 'can handle p in visual to end of line',
-    start: ['1234 |5678', 'test test'],
-    keysPressed: 'vllllyjvllllp',
-    end: ['1234 5678', 'test |5678', ''],
   });
 
   newTest({
@@ -3002,8 +2868,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3018,8 +2883,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3050,7 +2914,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
+      const selection = modeHandler.vimState.editor.selection;
 
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 2);
@@ -3168,8 +3032,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3184,8 +3047,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3216,8 +3078,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);

@@ -19,7 +19,7 @@ suite('Provide line completions', () => {
 
   teardown(cleanUpWorkspace);
 
-  const setupTestWithLines = async (lines) => {
+  const setupTestWithLines = async (lines: string[]) => {
     vimState.cursorStopPosition = new Position(0, 0);
 
     await modeHandler.handleKeyEvent('<Esc>');

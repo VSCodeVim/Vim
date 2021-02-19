@@ -8,6 +8,7 @@ var gulp = require('gulp'),
   PluginError = require('plugin-error'),
   minimist = require('minimist'),
   path = require('path'),
+  webpack = require('webpack'),
   webpack_stream = require('webpack-stream'),
   webpack_config = require('./webpack.config.js'),
   es = require('event-stream');
@@ -120,7 +121,7 @@ function createGitTag() {
 
 function createGitCommit() {
   return gulp
-    .src(['./package.json', './package-lock.json', 'CHANGELOG.md'])
+    .src(['./package.json', './yarn.lock', 'CHANGELOG.md'])
     .pipe(git.commit('bump version'));
 }
 
@@ -128,7 +129,7 @@ function updateVersion(done) {
   var options = minimist(process.argv.slice(2), releaseOptions);
 
   return gulp
-    .src(['./package.json', './package-lock.json'])
+    .src(['./package.json', './yarn.lock'])
     .pipe(bump({ type: options.semver }))
     .pipe(gulp.dest('./'))
     .on('end', () => {
@@ -186,17 +187,23 @@ gulp.task('tsc', function () {
 });
 
 gulp.task('webpack', function () {
-  return webpack_stream({
-    config: webpack_config,
-    entry: ['./extension.ts', './extensionWeb.ts'],
-  }).pipe(gulp.dest('out'));
+  return webpack_stream(
+    {
+      config: webpack_config,
+      entry: ['./extension.ts', './extensionWeb.ts'],
+    },
+    webpack
+  ).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack-dev', function () {
-  return webpack_stream({
-    config: webpack_dev_config,
-    entry: ['./extension.ts', './extensionWeb.ts'],
-  }).pipe(gulp.dest('out'));
+  return webpack_stream(
+    {
+      config: webpack_dev_config,
+      entry: ['./extension.ts', './extensionWeb.ts'],
+    },
+    webpack
+  ).pipe(gulp.dest('out'));
 });
 
 gulp.task('tslint', function () {
@@ -213,12 +220,13 @@ gulp.task('tslint', function () {
 });
 
 gulp.task('prettier', function (done) {
-  // files changed
-  runPrettier('git diff --name-only HEAD', done);
+  // Files changed
+  runPrettier('git diff --diff-filter=d --name-only HEAD', done);
 });
 
 gulp.task('forceprettier', function (done) {
-  // files managed by git
+  // Files managed by git
+  // TODO: if any file is deleted, but not yet staged, this will fail
   runPrettier('git ls-files', done);
 });
 

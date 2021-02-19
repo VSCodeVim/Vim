@@ -3,6 +3,7 @@ import { VimState } from '../state/vimState';
 import { globalState } from '../state/globalState';
 import { SearchDirection } from '../state/searchState';
 import { Position } from 'vscode';
+import { Logger } from '../util/logger';
 
 export enum Mode {
   Normal,
@@ -73,7 +74,8 @@ export function statusBarText(vimState: VimState) {
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
       if (globalState.searchState === undefined) {
-        this._logger.warn(`globalState.searchState is undefined.`);
+        const logger = Logger.get('StatusBar');
+        logger.warn(`globalState.searchState is undefined in SearchInProgressMode.`);
         return '';
       }
       const leadingChar =
@@ -111,7 +113,7 @@ export function statusBarCommandText(vimState: VimState): string {
         searchCharCount > 0
           ? `Search for ${searchCharCount} character(s): `
           : 'Search for characters: ';
-      return message + vimState.easyMotion.searchAction.getSearchString();
+      return message + vimState.easyMotion.searchAction.searchString;
     case Mode.Visual: {
       // TODO: holy shit, this is SO much more complicated than it should be because
       // our representation of a visual selection is so weird and inconsistent

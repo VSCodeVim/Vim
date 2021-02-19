@@ -12,6 +12,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { attach } from 'neovim/lib/attach';
 import { Neovim } from 'neovim/lib/api/Neovim';
 import { Position } from 'vscode';
+import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
@@ -24,7 +25,7 @@ export class NeovimWrapper implements vscode.Disposable {
     command: string
   ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
-      this.nvim = await this.startNeovim();
+      this.nvim = await this.startNeovim(vimState.document);
 
       try {
         const nvimAttach = this.nvim.uiAttach(80, 20, {
@@ -86,13 +87,26 @@ export class NeovimWrapper implements vscode.Disposable {
     return { statusBarText, error };
   }
 
-  private async startNeovim() {
+  private async startNeovim(document: TextDocument) {
     NeovimWrapper.logger.debug('Spawning Neovim process...');
-    let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
+    let dir = dirname(document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-n', '--embed'], {
+    let neovimArgs: Array<string> = [];
+    // '-u' flag is only added if user wants to use a custom path for
+    // their config file OR they want no config file to be loaded at all.
+    // '-u' flag is omitted altogether if user wants Neovim to look for a
+    // config in its default location.
+    if (configuration.neovimUseConfigFile) {
+      if (configuration.neovimConfigPath !== '') {
+        neovimArgs.push('-u', configuration.neovimConfigPath);
+      }
+    } else {
+      neovimArgs.push('-u', 'NONE');
+    }
+    neovimArgs.push('-i', 'NONE', '-n', '--embed');
+    this.process = spawn(configuration.neovimPath, neovimArgs, {
       cwd: dir,
     });
 
@@ -167,15 +181,16 @@ export class NeovimWrapper implements vscode.Disposable {
     // we don't need to add it here because the replace() function
     // will change '\n' to '\r\n' if necessary
     await TextEditor.replace(
+      vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
       lines.join('\n')
     );
 
     NeovimWrapper.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
-    let [newCursorLine, newCursorCol] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<
-      number
-    >).slice(1, 3);
+    let [newCursorLine, newCursorCol] = ((await this.nvim.callFunction('getpos', [
+      '.',
+    ])) as Array<number>).slice(1, 3);
     vimState.cursorStartPosition = new Position(newCursorLine - 1, newCursorCol - 1);
     vimState.cursorStopPosition = new Position(newCursorLine - 1, newCursorCol - 1);
 

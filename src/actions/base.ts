@@ -36,7 +36,7 @@ export abstract class BaseAction {
   /**
    * Modes that this action can be run in.
    */
-  public modes: Mode[];
+  public abstract modes: Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.

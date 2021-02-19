@@ -374,7 +374,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       globalState.addSearchStateToHistory(searchState);
       globalState.hl = true;
 
-      if (searchState.getMatchRanges(vimState.document).length === 0) {
+      if (searchState.getMatchRanges(vimState.editor).length === 0) {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -387,7 +387,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       let nextMatch: { pos: Position; match: boolean; index: number } | undefined;
       for (let i = 0; i < count; i++) {
         // Move cursor to next match
-        nextMatch = searchState.getNextSearchMatchPosition(searchPos);
+        nextMatch = searchState.getNextSearchMatchPosition(vimState.editor, searchPos);
         if (nextMatch === undefined) {
           break;
         }
@@ -408,7 +408,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       vimState.cursorStopPosition = nextMatch.pos;
 
-      reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.document).length, vimState);
+      reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
 
       return;
     } else if (key === '<up>' || key === '<C-p>') {
@@ -699,7 +699,7 @@ class CommandCtrlLInSearchMode extends BaseCommand {
       return;
     }
 
-    const nextMatch = globalState.searchState.getNextSearchMatchRange(position);
+    const nextMatch = globalState.searchState.getNextSearchMatchRange(vimState.editor, position);
     if (nextMatch?.match) {
       const line = vimState.document.lineAt(nextMatch.end).text;
       if (nextMatch.end.character < line.length) {

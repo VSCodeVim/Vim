@@ -5,7 +5,7 @@ import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { Position } from 'vscode';
-import { newTest } from './testSimplifier';
+import { ITestObject, newTest } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
   setup(async () => {
@@ -14,7 +14,7 @@ suite('Record and navigate jumps', () => {
 
   teardown(cleanUpWorkspace);
 
-  const newJumpTest = (options) => {
+  const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({
       title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,
       ...options,
@@ -22,7 +22,7 @@ suite('Record and navigate jumps', () => {
   };
 
   suite('Jump Tracker unit tests', () => {
-    const jump = (lineNumber, columnNumber, fileName?) =>
+    const jump = (lineNumber: number, columnNumber: number, fileName?: string) =>
       new Jump({
         editor: null,
         fileName: fileName || 'Untitled',

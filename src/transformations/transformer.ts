@@ -29,7 +29,7 @@ export class Transformer {
   private logger = Logger.get('Transformer');
 
   public addTransformation(transformation: Transformation) {
-    this.logger.debug(`Adding Transformation ${transformation}`);
+    this.logger.debug(`Adding Transformation ${JSON.stringify(transformation)}`);
     this.transformations.push(transformation);
   }
 
@@ -62,7 +62,7 @@ export class Transformer {
           edit.replace(new vscode.Selection(command.range.start, command.range.stop), command.text);
           break;
         case 'deleteText':
-          let matchRange = PairMatcher.immediateMatchingBracket(command.position);
+          const matchRange = PairMatcher.immediateMatchingBracket(vimState, command.position);
           if (matchRange) {
             edit.delete(matchRange);
           }
@@ -134,7 +134,7 @@ export class Transformer {
         const { text } = multicursorTextTransformations[0];
 
         // await vscode.commands.executeCommand('default:type', { text });
-        await TextEditor.insert(text);
+        await TextEditor.insert(vimState.editor, text);
       } else {
         this.logger.warn(
           `Unhandled multicursor transformations. Not all transformations are the same!`
@@ -145,7 +145,7 @@ export class Transformer {
     for (const transformation of otherTransformations) {
       switch (transformation.type) {
         case 'insertTextVSCode':
-          await TextEditor.insert(transformation.text);
+          await TextEditor.insert(vimState.editor, transformation.text);
           vimState.cursors[0] = Range.FromVSCodeSelection(vimState.editor.selection);
           break;
 
@@ -162,6 +162,7 @@ export class Transformer {
           if (searchState) {
             globalState.searchState = searchState;
             const nextMatch = searchState.getNextSearchMatchPosition(
+              vimState.editor,
               vimState.cursorStartPosition,
               transformation.direction
             );
@@ -177,7 +178,7 @@ export class Transformer {
             modeHandler.updateView();
             reportSearch(
               nextMatch.index,
-              searchState.getMatchRanges(vimState.document).length,
+              searchState.getMatchRanges(vimState.editor).length,
               vimState
             );
           }
@@ -213,7 +214,7 @@ export class Transformer {
           }
 
           vimState.isReplayingMacro = false;
-          vimState.historyTracker.lastInvokedMacro = recordedMacro;
+          vimState.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
@@ -225,7 +226,7 @@ export class Transformer {
 
         case 'contentChange':
           for (const change of transformation.changes) {
-            await TextEditor.insert(change.text);
+            await TextEditor.insert(vimState.editor, change.text);
             vimState.cursorStopPosition = vimState.editor.selection.start;
           }
           const newPos = vimState.cursorStopPosition.add(transformation.diff);
