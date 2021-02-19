@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { configurationValidator } from '../configurationValidator';
+import * as process from 'process';
 
 export class NeovimValidator implements IConfigurationValidator {
   validate(config: IConfiguration): Promise<ValidatorResults> {

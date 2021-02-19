@@ -136,8 +136,8 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }

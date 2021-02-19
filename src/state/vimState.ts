@@ -16,7 +16,7 @@ import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 
 interface IInputMethodSwitcher {
-  switchInputMethod(prevMode: Mode, newMode: Mode);
+  switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
 }
 
 interface INVim {
@@ -149,7 +149,7 @@ export class VimState implements vscode.Disposable {
   }
 
   /**
-   * The position of every cursor.
+   * The position of every cursor. Will never be empty.
    */
   private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
 
@@ -157,6 +157,11 @@ export class VimState implements vscode.Disposable {
     return this._cursors;
   }
   public set cursors(value: Range[]) {
+    if (value.length === 0) {
+      VimState.logger.warn('Tried to set VimState.cursors to an empty array');
+      return;
+    }
+
     const map = new Map<string, Range>();
     for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
@@ -366,6 +371,8 @@ export class VimState implements vscode.Disposable {
 
   /** The macro currently being recorded, if one exists. */
   public macro: RecordedState | undefined;
+
+  public lastInvokedMacro: RecordedState | undefined;
 
   public nvim?: INVim;
 

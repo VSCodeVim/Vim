@@ -18,6 +18,7 @@ import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
+import { HistoryTracker } from './src/history/historyTracker';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | undefined = undefined;
@@ -621,6 +622,6 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   ModeHandlerMap.getAll()
     .filter((modeHandler) => modeHandler.vimState.identity.fileName === document.fileName)
     .forEach((modeHandler) => {
-      modeHandler.vimState.historyTracker.clear();
+      modeHandler.vimState.historyTracker = new HistoryTracker(modeHandler.vimState);
     });
 }

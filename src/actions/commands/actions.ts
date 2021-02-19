@@ -373,7 +373,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const { lastInvokedMacro } = vimState.historyTracker;
+    const { lastInvokedMacro } = vimState;
 
     if (lastInvokedMacro) {
       vimState.recordedState.transformer.addTransformation({
@@ -3363,8 +3363,7 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    vimState.cursors = [];
-
+    const resultingCursors: Range[] = [];
     const cursorsOnBlankLines: Range[] = [];
     for (const selection of vimState.editor.selections) {
       let { start, end } = selection;
@@ -3374,14 +3373,16 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
         const cursorRange = this.getCursorRangeForLine(line, start, end);
         if (!line.isEmptyOrWhitespace) {
-          vimState.cursors.push(cursorRange);
+          resultingCursors.push(cursorRange);
         } else {
           cursorsOnBlankLines.push(cursorRange);
         }
       }
     }
 
-    if (vimState.cursors.length === 0) {
+    if (resultingCursors.length > 0) {
+      vimState.cursors = resultingCursors;
+    } else {
       vimState.cursors = cursorsOnBlankLines;
     }
   }

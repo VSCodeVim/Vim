@@ -8,7 +8,7 @@ import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
-import { CommandNumber } from './commands/actions';
+import { CommandNumber, DocumentContentChangeAction } from './commands/actions';
 import { TextObjectMovement } from '../textobject/textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
@@ -907,15 +907,16 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
     // Chunk the lines by commenting style.
 
-    let chunksToReflow: {
+    interface Chunk {
       commentType: CommentType;
       content: string;
       indentLevelAfterComment: number;
-    }[] = [];
+      final: boolean;
+    }
+    let chunksToReflow: Chunk[] = [];
 
     for (const line of s.split('\n')) {
-      let lastChunk: { commentType: CommentType; content: string } | undefined =
-        chunksToReflow[chunksToReflow.length - 1];
+      let lastChunk: Chunk | undefined = chunksToReflow[chunksToReflow.length - 1];
       const trimmedLine = line.trim();
 
       // See what comment type they are using.
@@ -923,21 +924,26 @@ class ActionVisualReflowParagraph extends BaseOperator {
       let commentType: CommentType | undefined;
 
       for (const type of ActionVisualReflowParagraph.CommentTypes) {
-        if (line.trim().startsWith(type.start)) {
+        if (trimmedLine.startsWith(type.start)) {
           commentType = type;
 
           break;
         }
 
         // If they're currently in a multiline comment, see if they continued it.
-        if (lastChunk && type.start === lastChunk.commentType.start && !type.singleLine) {
-          if (line.trim().startsWith(type.inner)) {
+        if (
+          lastChunk &&
+          !lastChunk.final &&
+          type.start === lastChunk.commentType.start &&
+          !type.singleLine
+        ) {
+          if (trimmedLine.startsWith(type.inner)) {
             commentType = type;
 
             break;
           }
 
-          if (line.trim().endsWith(type.final)) {
+          if (trimmedLine.endsWith(type.final)) {
             commentType = type;
 
             break;
@@ -950,15 +956,22 @@ class ActionVisualReflowParagraph extends BaseOperator {
       } // will never happen, just to satisfy typechecker.
 
       // Did they start a new comment type?
-      if (!lastChunk || commentType.start !== lastChunk.commentType.start) {
+      if (!lastChunk || lastChunk.final || commentType.start !== lastChunk.commentType.start) {
         let chunk = {
           commentType,
           content: `${trimmedLine.substr(commentType.start.length).trim()}`,
           indentLevelAfterComment: 0,
+          final: false,
         };
         if (commentType.singleLine) {
           chunk.indentLevelAfterComment =
             trimmedLine.substr(commentType.start.length).length - chunk.content.length;
+        } else if (chunk.content.endsWith(commentType.final)) {
+          // Multiline comment started and ended on one line
+          chunk.content = chunk.content
+            .substr(0, chunk.content.length - commentType.final.length)
+            .trim();
+          chunk.final = true;
         }
         chunksToReflow.push(chunk);
 
@@ -972,17 +985,16 @@ class ActionVisualReflowParagraph extends BaseOperator {
       if (lastChunk.commentType.singleLine) {
         // is it a continuation of a comment like "//"
         lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.start.length).trim()}`;
-      } else {
+      } else if (!lastChunk.final) {
         // are we in the middle of a multiline comment like "/*"
         if (trimmedLine.endsWith(lastChunk.commentType.final)) {
-          if (trimmedLine.length > lastChunk.commentType.final.length) {
-            lastChunk.content += `\n${trimmedLine
-              .substr(
-                lastChunk.commentType.inner.length,
-                trimmedLine.length - lastChunk.commentType.final.length
-              )
-              .trim()}`;
-          }
+          lastChunk.final = true;
+          const prefix = trimmedLine.startsWith(lastChunk.commentType.inner)
+            ? lastChunk.commentType.inner.length
+            : 0;
+          lastChunk.content += `\n${trimmedLine
+            .substr(prefix, trimmedLine.length - lastChunk.commentType.final.length - prefix)
+            .trim()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.inner)) {
           lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.inner.length).trim()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.start)) {
@@ -998,25 +1010,27 @@ class ActionVisualReflowParagraph extends BaseOperator {
       let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
 
-      if (commentType.singleLine) {
-        lines = [``];
-      } else {
-        lines = [``, ``];
-      }
+      // Start with a single empty content line.
+      lines = [``];
 
       // This tracks if we're pushing the first line of a chunk. If so, then we
       // don't want to add an extra space. In addition, when there's a blank
       // line, this needs to be reset.
       let curIndex = 0;
-      for (const line of content.trim().split('\n')) {
-        // Preserve newlines.
-
+      for (const line of content.split('\n')) {
+        // Preserve blank lines in output.
         if (line.trim() === '') {
-          for (let i = 0; i < 2; i++) {
-            lines.push(``);
+          // Replace empty content line with blank line.
+          if (lines[lines.length - 1] === '') {
+            lines.pop();
           }
-          curIndex = 0;
 
+          lines.push(line);
+
+          // Add new empty content line for remaining content.
+          lines.push(``);
+
+          curIndex = 0;
           continue;
         }
 
@@ -1041,17 +1055,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
         curIndex++;
       }
 
-      if (!commentType.singleLine) {
-        lines.push(``);
-      }
-
-      if (commentType.singleLine) {
-        if (lines.length > 1 && lines[0].trim() === '') {
-          lines = lines.slice(1);
-        }
-        if (lines.length > 1 && lines[lines.length - 1].trim() === '') {
-          lines = lines.slice(0, -1);
-        }
+      // Drop final empty content line.
+      if (lines[lines.length - 1] === '') {
+        lines.pop();
       }
 
       for (let i = 0; i < lines.length; i++) {
@@ -1059,19 +1065,33 @@ class ActionVisualReflowParagraph extends BaseOperator {
           lines[i] = `${indent}${commentType.start}${indentAfterComment}${lines[i]}`;
         } else {
           if (i === 0) {
-            lines[i] = `${indent}${commentType.start} ${lines[i]}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent}${commentType.start}`;
+            } else {
+              lines[i] = `${indent}${commentType.start} ${lines[i]}`;
+            }
+            if (i === lines.length - 1) {
+              lines[i] += ` ${commentType.final}`;
+            }
           } else if (i === lines.length - 1) {
-            lines[i] = `${indent} ${commentType.final}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent} ${commentType.final}`;
+            } else {
+              lines[i] = `${indent} ${commentType.inner} ${lines[i]} ${commentType.final}`;
+            }
           } else {
-            lines[i] = `${indent} ${commentType.inner} ${lines[i]}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent} ${commentType.inner}`;
+            } else {
+              lines[i] = `${indent} ${commentType.inner} ${lines[i]}`;
+            }
           }
         }
       }
 
-      result = result.concat(lines);
+      result.push(...lines);
     }
 
-    // Gather up multiple empty lines into single empty lines.
     return result.join('\n');
   }
 

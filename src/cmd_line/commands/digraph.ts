@@ -26,7 +26,8 @@ export class DigraphsCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  private makeQuickPicks(digraphs): Array<DigraphQuickPickItem> {
+  // TODO: replace 'any' with sensible index signature
+  private makeQuickPicks(digraphs: any): Array<DigraphQuickPickItem> {
     const quickPicks = new Array<DigraphQuickPickItem>();
     for (let digraphKey of Object.keys(digraphs)) {
       let [charDesc, charCodes] = digraphs[digraphKey];

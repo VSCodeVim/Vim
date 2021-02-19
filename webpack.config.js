@@ -32,6 +32,9 @@ const config = {
       platform: path.resolve(__dirname, 'src', 'platform', 'node'),
     },
   },
+  optimization: {
+    minimize: true,
+  },
   module: {
     rules: [
       {
@@ -70,8 +73,13 @@ const nodelessConfig = {
     extensions: ['.ts', '.js'],
     alias: {
       path: 'path-browserify',
+      os: 'os-browserify',
+      process: 'process/browser',
       platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
     },
+  },
+  optimization: {
+    minimize: true,
   },
   module: {
     rules: [
@@ -92,6 +100,9 @@ const nodelessConfig = {
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /\/imswitcher$/,
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /\/vimrc$/,
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,

@@ -24,6 +24,7 @@ import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
+import { PutCommand } from './put';
 import { DeleteOperator } from '../operator';
 import { getAndUpdateModeHandler } from '../../../extensionBase';
 
@@ -483,7 +484,11 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     let text: string;
     if (register.text instanceof Array) {
-      text = register.text.join('\n');
+      text =
+        // when we yanked with MC and insert with MC, we insert register[i] at cusor[i]
+        vimState.isMultiCursor && vimState.cursors.length === register.text.length
+          ? await PutCommand.getText(vimState, register, this.multicursorIndex)
+          : register.text.join('\n');
     } else if (register.text instanceof RecordedState) {
       vimState.recordedState.transformer.addTransformation({
         type: 'macro',
@@ -496,7 +501,7 @@ class CommandInsertRegisterContent extends BaseCommand {
       text = register.text;
     }
 
-    if (register.registerMode === RegisterMode.LineWise) {
+    if (register.registerMode === RegisterMode.LineWise && !vimState.isMultiCursor) {
       text += '\n';
     }
 
