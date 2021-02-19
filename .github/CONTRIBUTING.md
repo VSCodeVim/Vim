@@ -15,6 +15,7 @@ When creating a new bug report do:
 - Fill out the issue template.
 
 ### Improve Existing Issues
+
 - Search for [duplicate issues](https://github.com/VSCodeVim/Vim/issues?q=is%3Aissue+is%3Aopen+cursor). See which thread(s) are more mature, and recommend the duplicate be closed, or just provide links to related issues.
 - Find [old issues](https://github.com/VSCodeVim/Vim/issues?page=25&q=is%3Aissue+is%3Aopen) and test them in the latest version of VSCodeVim. If the issue has been resolved, comment & recommend OP to close (or provide more information if not resolved).
 - Give thumbs up / thumbs down to existing issues, to indicate your support (or not)
