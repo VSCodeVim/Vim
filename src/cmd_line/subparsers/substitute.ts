@@ -29,6 +29,9 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
             case 'n':
               pattern += '\n';
               break;
+            case 't':
+              pattern += '\t';
+              break;
             default:
               pattern += '\\';
               pattern += currentChar;

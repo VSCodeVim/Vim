@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
-import { VsCodeContext } from '../util/vscode-context';
+import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
@@ -17,8 +18,37 @@ import {
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
 
 export const extensionVersion = packagejson.version;
+
+/**
+ * Most options supported by Vim have a short alias. They are provided here.
+ * Please keep this list up to date and sorted alphabetically.
+ */
+export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
+  ['ai', 'autoindent'],
+  ['et', 'expandtab'],
+  ['gd', 'gdefault'],
+  ['hi', 'history'],
+  ['hls', 'hlsearch'],
+  ['ic', 'ignorecase'],
+  ['is', 'incsearch'],
+  ['isk', 'iskeyword'],
+  ['mmd', 'maxmapdepth'],
+  ['nu', 'number'],
+  ['rnu', 'relativenumber'],
+  ['sc', 'showcmd'],
+  ['scr', 'scroll'],
+  ['scs', 'smartcase'],
+  ['smd', 'showmode'],
+  ['sol', 'startofline'],
+  ['to', 'timeout'],
+  ['ts', 'tabstop'],
+  ['tw', 'textwidth'],
+  ['ws', 'wrapscan'],
+  ['ww', 'whichwrap'],
+]);
 
 type OptionValue = number | string | boolean;
 
@@ -85,8 +115,10 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
@@ -106,6 +138,10 @@ class Configuration implements IConfiguration {
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.includes('listFocus')) {
+        continue;
+      }
+
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
@@ -143,20 +179,18 @@ class Configuration implements IConfiguration {
         }
       }
 
-      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
+      VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
     }
 
-    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
-    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+    VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
+    VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
     return validatorResults;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor
-      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
-      : null;
+    const document = vscode.window.activeTextEditor?.document;
+    const resource = document ? { uri: document.uri, languageId: document.languageId } : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -322,6 +356,18 @@ class Configuration implements IConfiguration {
   })
   iskeyword: string;
 
+  @overlapSetting({
+    settingName: 'wordWrap',
+    defaultValue: false,
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['wordWrapColumn', true],
+      ['bounded', true],
+    ]),
+  })
+  wrap: boolean;
+
   boundKeyCombinations: IKeyBinding[] = [];
 
   visualstar = false;
@@ -353,6 +399,8 @@ class Configuration implements IConfiguration {
   wrapKeys = {};
 
   startofline = true;
+
+  showMarksInGutter = false;
 
   report = 2;
   wrapscan = true;

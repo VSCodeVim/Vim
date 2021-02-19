@@ -148,6 +148,20 @@ suite('Basic substitute', () => {
     end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
   });
 
+  newTest({
+    title: 'Replace with \\n',
+    start: ['one |two three'],
+    keysPressed: ':s/t/\\n/g\n',
+    end: ['one| ', 'wo ', 'hree'],
+  });
+
+  newTest({
+    title: 'Replace with \\t',
+    start: ['one |two three'],
+    keysPressed: ':s/t/\\t/g\n',
+    end: ['one |\two \three'],
+  });
+
   test('Replace specific single equal lines', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
     await commandLine.Run('1,1s/a/d/g', modeHandler.vimState);

@@ -47,7 +47,7 @@ export class BangCommand extends node.CommandBase {
     const end = new Position(endLine, 0).getLineEnd();
 
     // pipe in stdin from lines in range
-    const input = TextEditor.getText(new vscode.Range(start, end));
+    const input = vimState.document.getText(new vscode.Range(start, end));
     const output = await externalCommand.run(this._arguments.command, input);
 
     // place cursor at the start of the replaced text and first non-whitespace character

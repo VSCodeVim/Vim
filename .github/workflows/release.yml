@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v1.[0-9]+.[0-9]+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Lint
+        run: npx tslint -c tslint.json -p tsconfig.json
+
+      - name: Build
+        run: gulp webpack
+
+      - name: Test
+        run: |
+          gulp prepare-test
+          xvfb-run -a yarn test
+
+      - name: Build extension package
+        id: build_vsix
+        run: |
+          yarn run vsce package --web;
+          echo ::set-output name=vsix_path::$(ls *.vsix);
+
+      - name: Create release on GitHub
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload .vsix as release asset to GitHub
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.build_vsix.outputs.vsix_path }}
+          asset_name: ${{ steps.build_vsix.outputs.vsix_path }}
+          asset_content_type: application/zip
+
+      - name: Publish to VSCode Extension Marketplace
+        run: yarn run vsce publish --yarn --web
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

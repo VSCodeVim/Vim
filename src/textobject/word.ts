@@ -182,7 +182,7 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   let supportsLookbehind = true;
   try {
     // tslint:disable-next-line
-    new RegExp('(<=x)');
+    new RegExp('(?<=x)');
   } catch {
     supportsLookbehind = false;
   }

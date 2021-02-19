@@ -86,7 +86,7 @@ export async function removeDir(fsPath: string) {
  * @param numExpectedEditors Expected number of editors in the window
  */
 export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  const waitForTextEditorsToClose = new Promise((c, e) => {
+  const waitForTextEditorsToClose = new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
@@ -136,8 +136,8 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }
@@ -150,7 +150,7 @@ const mockAndEnable = async () => {
 };
 
 export async function cleanUpWorkspace(): Promise<void> {
-  return new Promise((c, e) => {
+  return new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
     }

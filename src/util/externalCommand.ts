@@ -3,6 +3,7 @@ import { tmpdir } from '../util/os';
 import { join } from '../util/path';
 import { VimError, ErrorCode } from '../error';
 import { promisify } from 'util';
+import * as process from 'process';
 
 class ExternalCommand {
   private previousExternalCommand: string | undefined;

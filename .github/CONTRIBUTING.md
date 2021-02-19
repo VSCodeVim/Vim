@@ -14,6 +14,12 @@ When creating a new bug report do:
 - Search against existing issues to check if somebody else has already reported your problem or requested your idea
 - Fill out the issue template.
 
+### Improve Existing Issues
+
+- Search for [duplicate issues](https://github.com/VSCodeVim/Vim/issues?q=is%3Aissue+is%3Aopen+cursor). See which thread(s) are more mature, and recommend the duplicate be closed, or just provide links to related issues.
+- Find [old issues](https://github.com/VSCodeVim/Vim/issues?page=25&q=is%3Aissue+is%3Aopen) and test them in the latest version of VSCodeVim. If the issue has been resolved, comment & recommend OP to close (or provide more information if not resolved).
+- Give thumbs up / thumbs down to existing issues, to indicate your support (or not)
+
 ## Submitting Pull Requests
 
 Pull requests are _awesome_.
@@ -26,6 +32,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1.  Install prerequisites:
     - latest [Visual Studio Code](https://code.visualstudio.com/)
     - [Node.js](https://nodejs.org/) v12.0.0 or higher
+    - [Yarn](https://classic.yarnpkg.com/) v1.x
     - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 1.  In a terminal:
 
@@ -35,7 +42,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     cd Vim
 
     # Install the dependencies
-    npm install
+    yarn install
 
     # Open in VSCode
     code .
@@ -46,11 +53,15 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
     # Alternatively, build and run tests through gulp and npm scripts
     npx gulp build                  # build
-    npm test                        # test (must close all instances of VSCode)
+    npx gulp prepare-test           # build tests
+    yarn test                       # test (must close all instances of VSCode)
 
     # Only available if Docker is installed and running
     npx gulp test                   # run tests inside Docker container
     npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+
+    # Alternatively, build .vsix extension and load it into VSCode for manual testing
+    yarn run vsce package --web     # build vim-xxx.vsix
     ```
 
 ## Code Architecture
@@ -110,7 +121,7 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### Visual Studio Code Slowdown
 
-If you notice a slowdown and have ever run `npm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
+If you notice a slowdown and have ever run `yarn test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
 
 ```bash
 $ rm -rf .vscode-test/

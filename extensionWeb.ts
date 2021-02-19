@@ -11,10 +11,11 @@ import './src/actions/include-main';
 
 import './src/configuration/validators/inputMethodSwitcherValidator';
 import './src/configuration/validators/remappingValidator';
-import './src/configuration/validators/vimrcValidator';
 
 import * as vscode from 'vscode';
 import { activate as activateFunc } from './extensionBase';
+
+require('setimmediate');
 
 export async function activate(context: vscode.ExtensionContext) {
   activateFunc(context, false);
