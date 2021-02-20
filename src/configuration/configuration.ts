@@ -34,6 +34,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['is', 'incsearch'],
   ['isk', 'iskeyword'],
   ['mmd', 'maxmapdepth'],
+  ['mps', 'matchpairs'],
   ['nu', 'number'],
   ['rnu', 'relativenumber'],
   ['sc', 'showcmd'],

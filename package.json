@@ -545,7 +545,7 @@
         },
         "vim.matchpairs": {
           "type": "string",
-          "markdownDescription": "additional chars to match as pairs. currently only <:>"
+          "markdownDescription": "Characters that form pairs. The % command jumps from one to the other. (currently only <:>)"
         },
         "vim.camelCaseMotion.enable": {
           "type": "boolean",
