@@ -37,6 +37,7 @@ import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 import { Position } from 'vscode';
 import { RemapState } from '../state/remapState';
+import * as process from 'process';
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -86,7 +87,7 @@ export class ModeHandler implements vscode.Disposable {
    */
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
-    setImmediate(() => {
+    global.setImmediate(() => {
       if (this.vimState.editor) {
         const { selections } = this.vimState.editor;
         if (
@@ -731,10 +732,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
-      if (this.vimState.recordedState.operator) {
+      const operator = this.vimState.recordedState.operator;
+      if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = this.vimState.recordedState.operator.canBeRepeatedWithDot;
+        ranRepeatableAction = operator.canBeRepeatedWithDot;
         ranAction = true;
       }
     }
@@ -993,7 +995,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeOperator(): Promise<void> {
-    let recordedState = this.vimState.recordedState;
+    const recordedState = this.vimState.recordedState;
     const operator = recordedState.operator!;
 
     // TODO - if actions were more pure, this would be unnecessary.
@@ -1510,7 +1512,21 @@ export class ModeHandler implements vscode.Disposable {
       opCursorCharDecorations
     );
 
-    // TODO: draw marks (#3963)
+    for (const { position, name } of this.vimState.historyTracker.getMarks()) {
+      if (configuration.showMarksInGutter) {
+        const markDecoration = decoration.getOrCreateMarkDecoration(name);
+
+        const markLine = position.getLineBegin();
+        const markRange = new vscode.Range(markLine, markLine);
+
+        this.vimState.editor.setDecorations(markDecoration, [markRange]);
+      } else {
+        const markDecoration = decoration.getMarkDecoration(name);
+        if (markDecoration) {
+          this.vimState.editor.setDecorations(markDecoration, []);
+        }
+      }
+    }
 
     const showHighlights =
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||

@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { configurationValidator } from '../configurationValidator';
+import * as process from 'process';
 
 export class NeovimValidator implements IConfigurationValidator {
   validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -40,6 +41,17 @@ export class NeovimValidator implements IConfigurationValidator {
           level: 'error',
           message: errorMessage,
         });
+      }
+      // If Neovim config path doesn't exist, default to empty config path.
+      if (config.neovimUseConfigFile && config.neovimConfigPath !== '') {
+        if (!existsSync(config.neovimConfigPath)) {
+          let warningMessage = `No config file found in neovimConfigPath. Neovim will search its default config path.`;
+          config.neovimConfigPath = '';
+          result.append({
+            level: 'warning',
+            message: warningMessage,
+          });
+        }
       }
     }
 

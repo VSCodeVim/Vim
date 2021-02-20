@@ -5,7 +5,8 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
@@ -17,6 +18,7 @@ import {
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
 
 export const extensionVersion = packagejson.version;
 
@@ -114,8 +116,10 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
@@ -135,6 +139,10 @@ class Configuration implements IConfiguration {
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.includes('listFocus')) {
+        continue;
+      }
+
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
@@ -377,6 +385,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
 
   vimrc = {
     enable: false,
@@ -392,6 +402,8 @@ class Configuration implements IConfiguration {
   wrapKeys = {};
 
   startofline = true;
+
+  showMarksInGutter = false;
 
   report = 2;
   wrapscan = true;

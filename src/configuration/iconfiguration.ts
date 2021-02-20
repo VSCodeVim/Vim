@@ -324,6 +324,8 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+  neovimUseConfigFile: boolean;
+  neovimConfigPath: string;
 
   /**
    * .vimrc
@@ -404,4 +406,9 @@ export interface IConfiguration {
    * and `>>` with a linewise operator.
    */
   startofline: boolean;
+
+  /**
+   * Show the currently set mark(s) in the gutter.
+   */
+  showMarksInGutter: boolean;
 }

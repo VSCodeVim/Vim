@@ -36,6 +36,7 @@ import { SpecialKeys } from '../../util/specialKeys';
 import _ = require('lodash');
 import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 
 export class DocumentContentChangeAction extends BaseAction {
   modes: [];
@@ -365,7 +366,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const { lastInvokedMacro } = vimState.historyTracker;
+    const { lastInvokedMacro } = vimState;
 
     if (lastInvokedMacro) {
       vimState.recordedState.transformer.addTransformation({
@@ -2946,8 +2947,7 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    vimState.cursors = [];
-
+    const resultingCursors: Range[] = [];
     const cursorsOnBlankLines: Range[] = [];
     for (const selection of vimState.editor.selections) {
       let { start, end } = selection;
@@ -2957,14 +2957,16 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
         const cursorRange = this.getCursorRangeForLine(line, start, end);
         if (!line.isEmptyOrWhitespace) {
-          vimState.cursors.push(cursorRange);
+          resultingCursors.push(cursorRange);
         } else {
           cursorsOnBlankLines.push(cursorRange);
         }
       }
     }
 
-    if (vimState.cursors.length === 0) {
+    if (resultingCursors.length > 0) {
+      vimState.cursors = resultingCursors;
+    } else {
       vimState.cursors = cursorsOnBlankLines;
     }
   }
@@ -3511,5 +3513,33 @@ class ActionShowFileInfo extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     reportFileInfo(position, vimState);
+  }
+}
+
+@RegisterAction
+class WriteQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Z']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new WriteQuitCommand({}).execute(vimState);
+  }
+}
+
+@RegisterAction
+class Quit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Q']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    await new QuitCommand({ bang: true }).execute(vimState);
   }
 }

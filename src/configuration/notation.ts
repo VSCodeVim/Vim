@@ -16,6 +16,8 @@ export class Notation {
     [/<cr>|<enter>/gi, '\n'],
   ];
 
+  private static shiftedLetterRegex = /<S-[a-zA-Z]>/;
+
   /**
    * Converts keystroke like <tab> to a single control character like \t
    */
@@ -65,6 +67,10 @@ export class Notation {
 
     for (const [regex, standardNotation] of this._notationMap) {
       key = key.replace(regex, standardNotation);
+    }
+
+    if (this.shiftedLetterRegex.test(key)) {
+      key = key[3].toUpperCase();
     }
 
     return key;

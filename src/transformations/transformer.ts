@@ -214,7 +214,7 @@ export class Transformer {
           }
 
           vimState.isReplayingMacro = false;
-          vimState.historyTracker.lastInvokedMacro = recordedMacro;
+          vimState.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
