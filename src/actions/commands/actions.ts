@@ -3208,7 +3208,10 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         ? position
         : position.getWordLeft(true);
 
-      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(vimState.document, whereToStart)) {
+      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(
+        vimState.document,
+        whereToStart
+      )) {
         if (start.isAfter(range.stop)) {
           break;
         }
