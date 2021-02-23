@@ -1907,12 +1907,10 @@ class CommandInsertAtLastChange extends BaseCommand {
   keys = ['g', 'i'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
+    vimState.cursorStopPosition =
+      vimState.historyTracker.getLastChangeEndPosition() ?? new Position(0, 0);
 
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-      await vimState.setCurrentMode(Mode.Insert);
-    }
+    await vimState.setCurrentMode(Mode.Insert);
   }
 }
 
