@@ -116,7 +116,7 @@ suite('basic motion', () => {
   });
 
   test('document end', () => {
-    const motion = TextEditor.getDocumentEnd();
+    const motion = TextEditor.getDocumentEnd(window.activeTextEditor!.document);
     assert.strictEqual(motion.line, text.length - 1);
     assert.strictEqual(motion.character, text[text.length - 1].length);
   });

@@ -435,7 +435,7 @@ export class HistoryTracker {
 
     // Ensure the position of every mark is within the range of the document.
 
-    const docEnd = TextEditor.getDocumentEnd();
+    const docEnd = TextEditor.getDocumentEnd(this.vimState.document);
     for (const mark of newMarks) {
       if (mark.position.isAfter(docEnd)) {
         mark.position = docEnd;

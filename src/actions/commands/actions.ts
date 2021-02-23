@@ -806,7 +806,7 @@ async function searchCurrentWord(
   direction: SearchDirection,
   isExact: boolean
 ): Promise<void> {
-  let currentWord = TextEditor.getWord(position);
+  let currentWord = TextEditor.getWord(vimState.document, position);
 
   if (currentWord) {
     if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
@@ -3208,7 +3208,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         ? position
         : position.getWordLeft(true);
 
-      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
+      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(vimState.document, whereToStart)) {
         if (start.isAfter(range.stop)) {
           break;
         }

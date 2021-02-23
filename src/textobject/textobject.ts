@@ -18,8 +18,7 @@ import {
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -44,7 +43,7 @@ export class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getCharAt(position);
+    const currentChar = TextEditor.getCharAt(vimState.document, position);
 
     if (/\s/.test(currentChar)) {
       start = position.getLastWordEnd().getRight();
@@ -533,7 +532,7 @@ export class SelectEntire extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start: TextEditor.getDocumentBegin(),
-      stop: TextEditor.getDocumentEnd(),
+      stop: TextEditor.getDocumentEnd(vimState.document),
     };
   }
 }
@@ -544,7 +543,7 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position = TextEditor.getDocumentBegin();
-    let stop: Position = TextEditor.getDocumentEnd();
+    let stop: Position = TextEditor.getDocumentEnd(vimState.document);
 
     while (start.line < stop.line && vimState.document.lineAt(start).isEmptyOrWhitespace) {
       start = start.getDown();
@@ -734,31 +733,40 @@ abstract class SelectArgument extends TextObjectMovement {
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
 
+    const charAtPos = TextEditor.getCharAt(vimState.document, position);
+
     // When the cursor is on a delimiter already, pre-advance the cursor,
     // so that our search actually spans a range. We will advance to the next argument,
     // in case of opening delimiters or separators, and advance to the
     // previous on closing delimiters.
     if (
-      SelectArgument.separatorCharacters().includes(TextEditor.getCharAt(position)) ||
-      SelectArgument.openingDelimiterCharacters().includes(TextEditor.getCharAt(position))
+      SelectArgument.separatorCharacters().includes(charAtPos) ||
+      SelectArgument.openingDelimiterCharacters().includes(charAtPos)
     ) {
       rightSearchStartPosition = position.getRightThroughLineBreaks(true);
-    } else if (
-      SelectArgument.closingDelimiterCharacters().includes(TextEditor.getCharAt(position))
-    ) {
+    } else if (SelectArgument.closingDelimiterCharacters().includes(charAtPos)) {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
     // Early abort, if no delimiters (i.e. (), [], etc.) surround us.
     // This prevents applying the movement to surrounding separators across the buffer.
     if (
-      SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition, true) === undefined ||
-      SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition, true) === undefined
+      SelectInnerArgument.findLeftArgumentBoundary(
+        vimState.document,
+        leftSearchStartPosition,
+        true
+      ) === undefined ||
+      SelectInnerArgument.findRightArgumentBoundary(
+        vimState.document,
+        rightSearchStartPosition,
+        true
+      ) === undefined
     ) {
       return failure;
     }
 
     const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
+      vimState.document,
       leftSearchStartPosition
     );
     if (leftArgumentBoundary === undefined) {
@@ -766,6 +774,7 @@ abstract class SelectArgument extends TextObjectMovement {
     }
 
     const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(
+      vimState.document,
       rightSearchStartPosition
     );
     if (rightArgumentBoundary === undefined) {
@@ -777,10 +786,10 @@ abstract class SelectArgument extends TextObjectMovement {
 
     if (this.selectAround) {
       const isLeftOnOpening: boolean = SelectArgument.openingDelimiterCharacters().includes(
-        TextEditor.getCharAt(leftArgumentBoundary)
+        TextEditor.getCharAt(vimState.document, leftArgumentBoundary)
       );
       const isRightOnClosing: boolean = SelectArgument.closingDelimiterCharacters().includes(
-        TextEditor.getCharAt(rightArgumentBoundary)
+        TextEditor.getCharAt(vimState.document, rightArgumentBoundary)
       );
 
       // Edge-case:
@@ -800,7 +809,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (isInFirstArgument) {
         stop = rightArgumentBoundary.getRight();
         // Walk right until non-whitespace
-        while (/\s/.test(TextEditor.getCharAt(stop.getRight()))) {
+        while (/\s/.test(TextEditor.getCharAt(vimState.document, stop.getRight()))) {
           stop = stop.getRight();
         }
       } else {
@@ -819,13 +828,13 @@ abstract class SelectArgument extends TextObjectMovement {
       // going until the first non whitespace.
       // This ensures that indented argument-lists keep the indentation.
       start = leftArgumentBoundary.getRightThroughLineBreaks(false);
-      while (/\s/.test(TextEditor.getCharAt(start))) {
+      while (/\s/.test(TextEditor.getCharAt(vimState.document, start))) {
         start = start.getRightThroughLineBreaks(false);
       }
 
       // Same procedure for stop.
       stop = rightArgumentBoundary.getLeftThroughLineBreaks(false);
-      while (/\s/.test(TextEditor.getCharAt(stop))) {
+      while (/\s/.test(TextEditor.getCharAt(vimState.document, stop))) {
         stop = stop.getLeftThroughLineBreaks(false);
       }
 
@@ -850,6 +859,7 @@ abstract class SelectArgument extends TextObjectMovement {
   }
 
   private static findLeftArgumentBoundary(
+    document: TextDocument,
     position: Position,
     ignoreSeparators: boolean = false
   ): Position | undefined {
@@ -858,7 +868,7 @@ abstract class SelectArgument extends TextObjectMovement {
     let closedParensCount = 0;
 
     while (true) {
-      const char = TextEditor.getCharAt(walkingPosition);
+      const char = TextEditor.getCharAt(document, walkingPosition);
       if (closedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
@@ -890,6 +900,7 @@ abstract class SelectArgument extends TextObjectMovement {
   }
 
   private static findRightArgumentBoundary(
+    document: TextDocument,
     position: Position,
     ignoreSeparators: boolean = false
   ): Position | undefined {
@@ -898,7 +909,7 @@ abstract class SelectArgument extends TextObjectMovement {
     let openedParensCount = 0;
 
     while (true) {
-      const char = TextEditor.getCharAt(walkingPosition);
+      const char = TextEditor.getCharAt(document, walkingPosition);
       if (openedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {

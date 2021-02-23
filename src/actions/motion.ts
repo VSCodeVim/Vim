@@ -1673,8 +1673,8 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
       if (adjacentPosRight.isLineBeginning()) {
         adjacentPosRight = adjacentPosRight.getLineBeginRespectingIndent();
       }
-      const adjacentCharLeft = TextEditor.getCharAt(adjacentPosLeft);
-      const adjacentCharRight = TextEditor.getCharAt(adjacentPosRight);
+      const adjacentCharLeft = TextEditor.getCharAt(vimState.document, adjacentPosLeft);
+      const adjacentCharRight = TextEditor.getCharAt(vimState.document, adjacentPosRight);
       if (adjacentCharLeft === this.charToMatch && adjacentCharRight === closingChar) {
         cursorStartPos = adjacentPosLeft;
         vimState.cursorStartPosition = adjacentPosLeft;

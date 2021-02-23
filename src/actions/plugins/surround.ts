@@ -322,14 +322,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     while (
       !firstRangeEnd.isEqual(stop) &&
       !firstRangeEnd.isLineEnd() &&
-      TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/)
+      TextEditor.getCharAt(vimState.document, firstRangeEnd).match(/[ \t]/)
     ) {
       firstRangeEnd = firstRangeEnd.getRight();
     }
 
     while (
       !secondRangeStart.isEqual(firstRangeEnd) &&
-      TextEditor.getCharAt(secondRangeStart).match(/[ \t]/) &&
+      TextEditor.getCharAt(vimState.document, secondRangeStart).match(/[ \t]/) &&
       !secondRangeStart.isLineBeginning()
     ) {
       secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
@@ -426,7 +426,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       const start = vimState.surround.range.start;
       let end = vimState.surround.range.end;
 
-      if (TextEditor.getCharAt(end) !== ' ') {
+      if (TextEditor.getCharAt(vimState.document, end) !== ' ') {
         end = end.getRight();
       }
 
