@@ -27,6 +27,7 @@ import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
+import { GotoCommand } from './commands/goto';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -149,6 +150,11 @@ export const commandParsers = {
   global: {
     abbrev: 'g',
     parser: undefined,
+  },
+
+  goto: {
+    abbrev: 'go',
+    parser: GotoCommand.parse,
   },
 
   help: {
