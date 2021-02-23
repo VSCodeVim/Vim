@@ -457,7 +457,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // jumps: check jumps are correct if given
   if (testObj.jumps !== undefined) {
-    assert.deepEqual(
+    assert.deepStrictEqual(
       jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),
       'Incorrect jumps found'
@@ -468,7 +468,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
       (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
     const expectedJumpPosition = stripBar(testObj.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       actualJumpPosition.toString(),
       expectedJumpPosition.toString(),
       'Incorrect jump position found'
@@ -690,7 +690,7 @@ async function testItWithRemaps(
 
     // jumps: check jumps are correct if given
     if (step.stepResult.jumps !== undefined) {
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => endLines[j.position.line] || '<MISSING>'),
         step.stepResult.jumps.map((t) => t.replace('|', '')),
         'Incorrect jumps found'
@@ -702,7 +702,7 @@ async function testItWithRemaps(
       const expectedJumpPosition =
         stripBar(step.stepResult.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         actualJumpPosition.toString(),
         expectedJumpPosition.toString(),
         `Incorrect jump position found on step ${stepTitleOrIndex}`
