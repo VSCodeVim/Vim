@@ -568,7 +568,7 @@ async function testItWithRemaps(
         setTimeout(() => {
           // Get lines, position and mode after half timeout finishes
           p1Resolve({
-            lines: TextEditor.getText(),
+            lines: modeHandler.vimState.document.getText(),
             position: modeHandler.vimState.editor.selection.start,
             endMode: modeHandler.currentMode,
           });
@@ -598,7 +598,7 @@ async function testItWithRemaps(
             }
             // Get lines, position and mode after timeout + offset finishes
             p2Resolve({
-              lines: TextEditor.getText(),
+              lines: modeHandler.vimState.document.getText(),
               position: modeHandler.vimState.editor.selection.start,
               endMode: modeHandler.currentMode,
             });

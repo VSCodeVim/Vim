@@ -1710,7 +1710,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
       startPos = startPlusOne;
 
       // If the closing character is the first on the line, don't swallow it.
-      if (endPos.isInLeadingWhitespace()) {
+      if (endPos.isInLeadingWhitespace(vimState.document)) {
         endPos = endPos.getLineBegin();
       }
 

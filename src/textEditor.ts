@@ -108,11 +108,6 @@ export class TextEditor {
     return line.text[position.character];
   }
 
-  /** @deprecated Use vimState.document.getText() */
-  static getText(selection?: vscode.Range): string {
-    return vscode.window.activeTextEditor!.document.getText(selection);
-  }
-
   /**
    * Retrieves the word at the given position.
    *
@@ -170,15 +165,6 @@ export class TextEditor {
       return ' '.repeat(tabSize);
     }
     return '\t';
-  }
-
-  static isFirstLine(position: Position): boolean {
-    return position.line === 0;
-  }
-
-  /** @deprecated Use position.line === vimState.document.lineCount - 1 */
-  static isLastLine(position: Position): boolean {
-    return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
   }
 
   /**

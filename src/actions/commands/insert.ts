@@ -448,7 +448,7 @@ class CommandCtrlW extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let wordBegin: Position;
-    if (position.isInLeadingWhitespace()) {
+    if (position.isInLeadingWhitespace(vimState.document)) {
       wordBegin = position.getLineBegin();
     } else if (position.isLineBeginning()) {
       wordBegin = position.getPreviousLineBegin().getLineEnd();
@@ -506,7 +506,7 @@ class CommandInsertAboveChar extends BaseCommand {
   keys = ['<C-y>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (TextEditor.isFirstLine(position)) {
+    if (position.line === 0) {
       return;
     }
 
@@ -545,7 +545,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const start = position.isInLeadingWhitespace()
+    const start = position.isInLeadingWhitespace(vimState.document)
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
     vimState.recordedState.transformer.addTransformation({

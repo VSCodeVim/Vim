@@ -195,9 +195,8 @@ declare module 'vscode' {
 
     /**
      * Returns whether the current position is in the leading whitespace of a line
-     * @param allowEmpty : Use true if "" is valid
      */
-    isInLeadingWhitespace(allowEmpty?: boolean): boolean;
+    isInLeadingWhitespace(document: vscode.TextDocument): boolean;
 
     /**
      * If `vim.startofline` is set, get first non-blank character's position.
@@ -541,13 +540,9 @@ Position.prototype.isAtDocumentEnd = function (this: Position): boolean {
  */
 Position.prototype.isInLeadingWhitespace = function (
   this: Position,
-  allowEmpty: boolean = false
+  document: vscode.TextDocument
 ): boolean {
-  if (allowEmpty) {
-    return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  } else {
-    return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  }
+  return /^\s+$/.test(document.getText(new vscode.Range(this.getLineBegin(), this)));
 };
 
 /**
