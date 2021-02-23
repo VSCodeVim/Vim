@@ -103,7 +103,7 @@ export class TextEditor {
   }
 
   static getCharAt(document: vscode.TextDocument, position: Position): string {
-    return document.lineAt(position)[position.character];
+    return document.lineAt(position).text[position.character];
   }
 
   /**
