@@ -2245,7 +2245,7 @@ suite('Mode Normal', () => {
     end: ['__ASDF', '|asdf'],
   });
 
-  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
+  for (const backspace of ['<BS>', '<S-BS>', '<C-h>']) {
     newTest({
       title: `${backspace} deletes the last character in search in progress mode`,
       start: ['|foo', 'bar', 'abd'],

@@ -2,12 +2,13 @@ import * as vscode from 'vscode';
 import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
-import { Mode } from '../mode/mode';
+import { isSelectMode, isVisualMode, Mode } from '../mode/mode';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
 import { SpecialKeys } from '../util/specialKeys';
+import { CommandReselectVisual, CommandSwapVisualSelectModes } from '../actions/commands/actions';
 
 interface IRemapper {
   /**
@@ -29,6 +30,8 @@ export class Remappers implements IRemapper {
       new InsertModeRemapper(),
       new NormalModeRemapper(),
       new VisualModeRemapper(),
+      new AllVisualModeRemapper(),
+      new SelectModeRemapper(),
       new CommandLineModeRemapper(),
       new OperatorPendingModeRemapper(),
     ];
@@ -480,6 +483,18 @@ export class Remapper implements IRemapper {
 
     vimState.recordedState.resetCommandList();
     if (remapping.after) {
+      let changeToVisualForRemap: Mode | undefined;
+      let selectedRange: vscode.Range | undefined;
+      let selectedText: string | undefined;
+      if (this._configKey === 'allVisualModeKeyBindingsMap' && isSelectMode(vimState.currentMode)) {
+        // Remaps from 'allVisualModeKeyBindingsMap' (VIM's vmap) when ran in select modes temporarily
+        // change to visual mode so that the execution is similar to the visual mode
+        // (:help select-mode-mapping)
+        changeToVisualForRemap = vimState.currentMode;
+        selectedRange = vimState.editor.selection;
+        selectedText = vimState.document.getText(selectedRange);
+        await new CommandSwapVisualSelectModes().exec(vimState.cursorStopPosition, vimState);
+      }
       if (skipFirstCharacter) {
         remapState.isCurrentlyPerformingNonRecursiveRemapping = true;
         await modeHandler.handleKeyEvent(remapping.after[0]);
@@ -487,6 +502,28 @@ export class Remapper implements IRemapper {
         await modeHandler.handleMultipleKeyEvents(remapping.after.slice(1));
       } else {
         await modeHandler.handleMultipleKeyEvents(remapping.after);
+      }
+      if (changeToVisualForRemap) {
+        if (!isSelectMode(vimState.currentMode)) {
+          if (isVisualMode(vimState.currentMode)) {
+            await new CommandSwapVisualSelectModes().exec(vimState.cursorStopPosition, vimState);
+          } else {
+            const newSelectedText = vimState.document.getText(selectedRange);
+            if (
+              selectedText &&
+              (newSelectedText.includes(selectedText) || selectedText.includes(newSelectedText))
+            ) {
+              await new CommandReselectVisual().exec(vimState.cursorStopPosition, vimState);
+              vimState.cursorStopPosition = vimState.cursorStopPosition.getRight();
+              if (isVisualMode(vimState.currentMode) && !isSelectMode(vimState.currentMode)) {
+                await new CommandSwapVisualSelectModes().exec(
+                  vimState.cursorStopPosition,
+                  vimState
+                );
+              }
+            }
+          }
+        }
       }
     }
 
@@ -611,7 +648,7 @@ class InsertModeRemapper extends Remapper {
 
 class NormalModeRemapper extends Remapper {
   constructor() {
-    super(keyBindingsConfigKey('normal'), [Mode.Normal]);
+    super(keyBindingsConfigKey('normal'), [Mode.Normal, Mode.InsertNormal, Mode.ReplaceNormal]);
   }
 }
 
@@ -623,7 +660,58 @@ class OperatorPendingModeRemapper extends Remapper {
 
 class VisualModeRemapper extends Remapper {
   constructor() {
-    super(keyBindingsConfigKey('visual'), [Mode.Visual, Mode.VisualLine, Mode.VisualBlock]);
+    super(keyBindingsConfigKey('visual'), [
+      Mode.Visual,
+      Mode.VisualLine,
+      Mode.VisualBlock,
+      Mode.InsertVisual,
+      Mode.InsertVisualLine,
+      Mode.InsertVisualBlock,
+      Mode.ReplaceVisual,
+      Mode.ReplaceVisualLine,
+      Mode.ReplaceVisualBlock,
+    ]);
+  }
+}
+
+class AllVisualModeRemapper extends Remapper {
+  constructor() {
+    super(keyBindingsConfigKey('allVisual'), [
+      Mode.Visual,
+      Mode.VisualLine,
+      Mode.VisualBlock,
+      Mode.InsertVisual,
+      Mode.InsertVisualLine,
+      Mode.InsertVisualBlock,
+      Mode.ReplaceVisual,
+      Mode.ReplaceVisualLine,
+      Mode.ReplaceVisualBlock,
+      Mode.Select,
+      Mode.SelectLine,
+      Mode.SelectBlock,
+      Mode.InsertSelect,
+      Mode.InsertSelectLine,
+      Mode.InsertSelectBlock,
+      Mode.ReplaceSelect,
+      Mode.ReplaceSelectLine,
+      Mode.ReplaceSelectBlock,
+    ]);
+  }
+}
+
+class SelectModeRemapper extends Remapper {
+  constructor() {
+    super(keyBindingsConfigKey('select'), [
+      Mode.Select,
+      Mode.SelectLine,
+      Mode.SelectBlock,
+      Mode.InsertSelect,
+      Mode.InsertSelectLine,
+      Mode.InsertSelectBlock,
+      Mode.ReplaceSelect,
+      Mode.ReplaceSelectLine,
+      Mode.ReplaceSelectBlock,
+    ]);
   }
 }
 

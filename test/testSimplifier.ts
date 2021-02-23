@@ -105,6 +105,10 @@ interface ITestWithRemapsObject {
         insertModeKeyBindingsNonRecursive?: IKeyRemapping[];
         visualModeKeyBindings?: IKeyRemapping[];
         visualModeKeyBindingsNonRecursive?: IKeyRemapping[];
+        allVisualModeKeyBindings?: IKeyRemapping[];
+        allVisualModeKeyBindingsNonRecursive?: IKeyRemapping[];
+        selectModeKeyBindings?: IKeyRemapping[];
+        selectModeKeyBindingsNonRecursive?: IKeyRemapping[];
         operatorPendingModeKeyBindings?: IKeyRemapping[];
         operatorPendingModeKeyBindingsNonRecursive?: IKeyRemapping[];
       }
@@ -522,6 +526,13 @@ async function testItWithRemaps(
       Globals.mockConfiguration.visualModeKeyBindings = testObj.remaps?.visualModeKeyBindings ?? [];
       Globals.mockConfiguration.visualModeKeyBindingsNonRecursive =
         testObj.remaps?.visualModeKeyBindingsNonRecursive ?? [];
+      Globals.mockConfiguration.allVisualModeKeyBindings =
+        testObj.remaps?.allVisualModeKeyBindings ?? [];
+      Globals.mockConfiguration.allVisualModeKeyBindingsNonRecursive =
+        testObj.remaps?.allVisualModeKeyBindingsNonRecursive ?? [];
+      Globals.mockConfiguration.selectModeKeyBindings = testObj.remaps?.selectModeKeyBindings ?? [];
+      Globals.mockConfiguration.selectModeKeyBindingsNonRecursive =
+        testObj.remaps?.selectModeKeyBindingsNonRecursive ?? [];
       Globals.mockConfiguration.operatorPendingModeKeyBindings =
         testObj.remaps?.operatorPendingModeKeyBindings ?? [];
       Globals.mockConfiguration.operatorPendingModeKeyBindingsNonRecursive =

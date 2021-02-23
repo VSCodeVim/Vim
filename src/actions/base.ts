@@ -174,9 +174,10 @@ export abstract class BaseAction {
 export abstract class BaseCommand extends BaseAction {
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
-   * that means that we'll go and try to run it.
+   * that means that after the command is run we can clear recordedState.count because
+   * it will have been handled already.
    */
-  isCompleteAction = true;
+  isCompleteAction = false;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?

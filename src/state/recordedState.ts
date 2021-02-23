@@ -140,6 +140,12 @@ export class RecordedState {
   public waitingForAnotherActionKey: boolean = false;
 
   /**
+   * This is set after using `<C-r>` in InsertMode or any of the Select modes to
+   * signal that we are waiting for a register key to be pressed.
+   */
+  public waitingForRegisterKeyAfterCtrlR: boolean = false;
+
+  /**
    * Every action that has been run.
    */
   public actionsRun: BaseAction[] = [];

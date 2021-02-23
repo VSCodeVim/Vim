@@ -11,14 +11,34 @@ export enum Mode {
   Visual,
   VisualBlock,
   VisualLine,
+  Select,
+  SelectBlock,
+  SelectLine,
   SearchInProgressMode,
   CommandlineInProgress,
   Replace,
   EasyMotionMode,
   EasyMotionInputMode,
   SurroundInputMode,
-  OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
+  // The following modes are Pseudo-Modes, used only when remapping or for 'showmode'
+  // to give feedback to user.
+  // DON'T SET TO THESE MODES!!!
+  OperatorPendingMode,
+  InsertNormal,
+  ReplaceNormal,
+  InsertVisual,
+  InsertVisualBlock,
+  InsertVisualLine,
+  ReplaceVisual,
+  ReplaceVisualBlock,
+  ReplaceVisualLine,
+  InsertSelect,
+  InsertSelectBlock,
+  InsertSelectLine,
+  ReplaceSelect,
+  ReplaceSelectBlock,
+  ReplaceSelectLine,
 }
 
 export enum VSCodeVimCursorType {
@@ -32,10 +52,24 @@ export enum VSCodeVimCursorType {
 }
 
 /**
- * Is the given mode visual, visual line, or visual block?
+ * Is the given mode visual, visual line, visual block, select, select line or select block?
  */
 export function isVisualMode(mode: Mode) {
-  return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
+  return [
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ].includes(mode);
+}
+
+/**
+ * Is the given mode select, select line or select block?
+ */
+export function isSelectMode(mode: Mode) {
+  return [Mode.Select, Mode.SelectLine, Mode.SelectBlock].includes(mode);
 }
 
 /**
@@ -46,24 +80,93 @@ export function isStatusBarMode(mode: Mode): boolean {
   return [Mode.SearchInProgressMode, Mode.CommandlineInProgress].includes(mode);
 }
 
+/**
+ * Is the given mode a pseudo mode?
+ */
+export function isPseudoMode(mode: Mode) {
+  return [
+    Mode.OperatorPendingMode,
+    Mode.InsertNormal,
+    Mode.ReplaceNormal,
+    Mode.InsertVisual,
+    Mode.InsertVisualLine,
+    Mode.InsertVisualBlock,
+    Mode.ReplaceVisual,
+    Mode.ReplaceVisualLine,
+    Mode.ReplaceVisualBlock,
+    Mode.InsertSelect,
+    Mode.InsertSelectLine,
+    Mode.InsertSelectBlock,
+    Mode.ReplaceSelect,
+    Mode.ReplaceSelectLine,
+    Mode.ReplaceSelectBlock,
+  ].includes(mode);
+}
+
 export function statusBarText(vimState: VimState) {
   const cursorChar =
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  switch (vimState.currentMode) {
+  switch (vimState.currentModeIncludingPseudoModes) {
     case Mode.Normal:
+      return '-- NORMAL --';
+    case Mode.OperatorPendingMode:
+      if (vimState.modeToReturnToAfterNormalCommand) {
+        switch (vimState.modeToReturnToAfterNormalCommand) {
+          case Mode.Insert:
+            return '-- (insert) --';
+          case Mode.Replace:
+            return '-- (replace) --';
+          default:
+            return '';
+        }
+      }
       return '-- NORMAL --';
     case Mode.Insert:
       return '-- INSERT --';
+    case Mode.InsertNormal:
+      return '-- (insert) --';
+    case Mode.Replace:
+      return '-- REPLACE --';
+    case Mode.ReplaceNormal:
+      return '-- (replace) --';
     case Mode.Visual:
       return '-- VISUAL --';
     case Mode.VisualBlock:
       return '-- VISUAL BLOCK --';
     case Mode.VisualLine:
       return '-- VISUAL LINE --';
-    case Mode.Replace:
-      return '-- REPLACE --';
+    case Mode.InsertVisual:
+      return '-- (insert) VISUAL --';
+    case Mode.InsertVisualBlock:
+      return '-- (insert) VISUAL BLOCK --';
+    case Mode.InsertVisualLine:
+      return '-- (insert) VISUAL LINE --';
+    case Mode.ReplaceVisual:
+      return '-- (replace) VISUAL --';
+    case Mode.ReplaceVisualBlock:
+      return '-- (replace) VISUAL BLOCK --';
+    case Mode.ReplaceVisualLine:
+      return '-- (replace) VISUAL LINE --';
+    case Mode.Select:
+      return '-- SELECT --';
+    case Mode.SelectBlock:
+      return '-- SELECT BLOCK --';
+    case Mode.SelectLine:
+      return '-- SELECT LINE --';
+    case Mode.InsertSelect:
+      return '-- (insert) SELECT --';
+    case Mode.InsertSelectBlock:
+      return '-- (insert) SELECT BLOCK --';
+    case Mode.InsertSelectLine:
+      return '-- (insert) SELECT LINE --';
+    case Mode.ReplaceSelect:
+      return '-- (replace) SELECT --';
+    case Mode.ReplaceSelectBlock:
+      return '-- (replace) SELECT BLOCK --';
+    case Mode.ReplaceSelectLine:
+      return '-- (replace) SELECT LINE --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:

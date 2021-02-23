@@ -133,6 +133,17 @@ class Configuration implements IConfiguration {
       this.wrapKeys[wrapKey] = true;
     }
 
+    // set keymodel options
+    const km = this.keymodel.split(',');
+    this.keymodelStartsSelection = km.includes('startsel');
+    this.keymodelStopsSelection = km.includes('stopsel');
+
+    // set selectmode options
+    const sm = this.selectmode.split(',');
+    this.selectmodeMouse = sm.includes('mouse');
+    this.selectmodeKey = sm.includes('key');
+    this.selectmodeCmd = sm.includes('cmd');
+
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
@@ -203,6 +214,8 @@ class Configuration implements IConfiguration {
     this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.allVisualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.selectModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
@@ -374,6 +387,15 @@ class Configuration implements IConfiguration {
 
   mouseSelectionGoesIntoVisualMode = true;
 
+  keymodel = '';
+  keymodelStartsSelection = false;
+  keymodelStopsSelection = false;
+
+  selectmode = '';
+  selectmodeMouse = false;
+  selectmodeKey = false;
+  selectmodeCmd = false;
+
   changeWordIncludesWhitespace = false;
 
   foldfix = false;
@@ -439,6 +461,10 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  allVisualModeKeyBindings: IKeyRemapping[] = [];
+  allVisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  selectModeKeyBindings: IKeyRemapping[] = [];
+  selectModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
@@ -446,6 +472,8 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  allVisualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  selectModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {

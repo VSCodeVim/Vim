@@ -136,6 +136,7 @@ class CommandTabInCommandline extends BaseCommand {
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['\n'], ['<C-m>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -206,7 +207,11 @@ class CommandInsertInCommandline extends BaseCommand {
   keys = [
     ['<character>'],
     ['<up>'],
+    ['<S-up>'],
+    ['<C-S-up>'],
     ['<down>'],
+    ['<S-down>'],
+    ['<C-S-down>'],
     ['<C-b>'], // Beginning
     ['<C-e>'], // End
     ['<C-h>'], // Backspace
@@ -215,7 +220,17 @@ class CommandInsertInCommandline extends BaseCommand {
     ['<C-f>'], // Find
     ['<C-u>'], // Delete to beginning
     ['<Home>'],
+    ['<S-Home>'],
+    ['<C-Home>'],
+    ['<C-S-Home>'],
     ['<End>'],
+    ['<S-End>'],
+    ['<C-End>'],
+    ['<C-S-End>'],
+    ['<PageUp>'],
+    ['<S-PageUp>'],
+    ['<PageDown>'],
+    ['<S-PageDown>'],
     ['<Del>'],
   ];
   runsOnceForEveryCursor() {
@@ -226,7 +241,7 @@ class CommandInsertInCommandline extends BaseCommand {
     const key = this.keysPressed[0];
 
     // handle special keys first
-    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<C-BS>' || key === '<S-BS>' || key === '<C-h>') {
       if (vimState.statusBarCursorCharacterPos === 0) {
         await vimState.setCurrentMode(Mode.Normal);
         return;
@@ -247,11 +262,30 @@ class CommandInsertInCommandline extends BaseCommand {
       vimState.currentCommandlineText =
         vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos) +
         vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos + 1);
-    } else if (key === '<Home>' || key === '<C-b>') {
+    } else if (
+      key === '<Home>' ||
+      key === '<S-Home>' ||
+      key === '<C-Home>' ||
+      key === '<C-S-Home>' ||
+      key === '<C-b>'
+    ) {
       vimState.statusBarCursorCharacterPos = 0;
-    } else if (key === '<End>' || key === '<C-e>') {
+    } else if (
+      key === '<End>' ||
+      key === '<S-End>' ||
+      key === '<C-End>' ||
+      key === '<C-S-End>' ||
+      key === '<C-e>'
+    ) {
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key === '<up>' || key === '<C-p>') {
+    } else if (
+      key === '<up>' ||
+      key === '<S-up>' ||
+      key === '<C-S-up>' ||
+      key === '<C-p>' ||
+      key === '<PageUp>' ||
+      key === '<S-PageUp>'
+    ) {
       commandLine.commandLineHistoryIndex -= 1;
 
       // Clamp the history index to stay within bounds of command history length
@@ -262,7 +296,14 @@ class CommandInsertInCommandline extends BaseCommand {
           commandLine.historyEntries[commandLine.commandLineHistoryIndex];
       }
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    } else if (key === '<down>' || key === '<C-n>') {
+    } else if (
+      key === '<down>' ||
+      key === '<S-down>' ||
+      key === '<C-S-down>' ||
+      key === '<C-n>' ||
+      key === '<PageDown>' ||
+      key === '<S-PageDown>'
+    ) {
       commandLine.commandLineHistoryIndex += 1;
 
       // If past the first history item, allow user to enter their own new command string (not using history)
@@ -302,7 +343,11 @@ class CommandInsertInSearchMode extends BaseCommand {
   keys = [
     ['<character>'],
     ['<up>'],
+    ['<S-up>'],
+    ['<C-S-up>'],
     ['<down>'],
+    ['<S-down>'],
+    ['<C-S-down>'],
     ['<C-b>'], // Beginning
     ['<C-e>'], // End
     ['<C-h>'], // Backspace
@@ -312,7 +357,17 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<C-u>'], // Delete to beginning
     ['<C-m>'], // Another way to run search
     ['<Home>'],
+    ['<S-Home>'],
+    ['<C-Home>'],
+    ['<C-S-Home>'],
     ['<End>'],
+    ['<S-End>'],
+    ['<C-End>'],
+    ['<C-S-End>'],
+    ['<PageUp>'],
+    ['<S-PageUp>'],
+    ['<PageDown>'],
+    ['<S-PageDown>'],
     ['<Del>'],
   ];
   isJump = true;
@@ -332,7 +387,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<C-BS>' || key === '<S-BS>' || key === '<C-h>') {
       if (searchState.searchString.length === 0) {
         await new CommandEscInSearchMode().exec(position, vimState);
       }
@@ -355,11 +410,24 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString =
         searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos) +
         searchState.searchString.slice(vimState.statusBarCursorCharacterPos + 1);
-    } else if (key === '<Home>' || key === '<C-b>') {
+    } else if (
+      key === '<Home>' ||
+      key === '<S-Home>' ||
+      key === '<C-Home>' ||
+      key === '<C-S-Home>' ||
+      key === '<C-b>'
+    ) {
       vimState.statusBarCursorCharacterPos = 0;
-    } else if (key === '<End>' || key === '<C-e>') {
+    } else if (
+      key === '<End>' ||
+      key === '<S-End>' ||
+      key === '<C-End>' ||
+      key === '<C-S-End>' ||
+      key === '<C-e>'
+    ) {
       vimState.statusBarCursorCharacterPos = searchState.searchString.length;
     } else if (key === '\n' || key === '<C-m>') {
+      this.isCompleteAction = true;
       await vimState.setCurrentMode(searchState.previousMode);
 
       // Repeat the previous search if no new string is entered
@@ -411,7 +479,14 @@ class CommandInsertInSearchMode extends BaseCommand {
       reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
 
       return;
-    } else if (key === '<up>' || key === '<C-p>') {
+    } else if (
+      key === '<up>' ||
+      key === '<S-up>' ||
+      key === '<C-S-up>' ||
+      key === '<C-p>' ||
+      key === '<PageUp>' ||
+      key === '<S-PageUp>'
+    ) {
       globalState.searchStateIndex -= 1;
 
       // Clamp the history index to stay within bounds of search history length
@@ -421,7 +496,14 @@ class CommandInsertInSearchMode extends BaseCommand {
         searchState.searchString = prevSearchList[globalState.searchStateIndex].searchString;
         vimState.statusBarCursorCharacterPos = searchState.searchString.length;
       }
-    } else if (key === '<down>' || key === '<C-n>') {
+    } else if (
+      key === '<down>' ||
+      key === '<S-down>' ||
+      key === '<C-S-down>' ||
+      key === '<C-n>' ||
+      key === '<PageDown>' ||
+      key === '<S-PageDown>'
+    ) {
       globalState.searchStateIndex += 1;
 
       // If past the first history item, allow user to enter their own search string (not using history)
@@ -448,6 +530,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 class CommandEscInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -465,6 +548,7 @@ class CommandEscInCommandline extends BaseCommand {
 class CommandEscInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  isCompleteAction = true;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -606,7 +690,16 @@ class CommandInsertWord extends BaseCommand {
 @RegisterAction
 class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
-  keys = [['<left>'], ['<right>']];
+  keys = [
+    ['<left>'],
+    ['<right>'],
+    ['<S-left>'],
+    ['<S-right>'],
+    ['<C-left>'],
+    ['<C-right>'],
+    ['<C-S-left>'],
+    ['<C-S-right>'],
+  ];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -630,6 +723,29 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
       );
     } else if (key === '<left>') {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
+    } else if (key === '<S-left>' || key === '<C-left>' || key === '<C-S-left>') {
+      const partialStatusBarText = statusBarText.substring(0, vimState.statusBarCursorCharacterPos);
+      const words = partialStatusBarText.match(/\w+/g);
+      if (words && words.length >= 1) {
+        const lastWord = words[words.length - 1];
+        const idx = partialStatusBarText.lastIndexOf(lastWord);
+        if (idx >= 0 && idx < vimState.statusBarCursorCharacterPos) {
+          vimState.statusBarCursorCharacterPos = idx;
+        }
+      }
+    } else if (key === '<S-right>' || key === '<C-right>' || key === '<C-S-right>') {
+      const partialStatusBarText = statusBarText.substring(vimState.statusBarCursorCharacterPos);
+      const words = partialStatusBarText.match(/\w+/g);
+      if (words && words.length >= 1) {
+        const firstWord = words[0];
+        const idx =
+          vimState.statusBarCursorCharacterPos +
+          partialStatusBarText.indexOf(firstWord) +
+          firstWord.length;
+        if (idx >= vimState.statusBarCursorCharacterPos && idx <= statusBarText.length) {
+          vimState.statusBarCursorCharacterPos = idx;
+        }
+      }
     }
 
     commandLine.lastKeyPressed = key;

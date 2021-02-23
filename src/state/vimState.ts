@@ -6,7 +6,7 @@ import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
-import { Mode } from '../mode/mode';
+import { isPseudoMode, isVisualMode, Mode } from '../mode/mode';
 import { Range } from './../common/motion/range';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
@@ -107,10 +107,10 @@ export class VimState implements vscode.Disposable {
   public surround: SurroundState | undefined = undefined;
 
   /**
-   * Used for `<C-o>` in insert mode, which allows you run one normal mode
-   * command, then go back to insert mode.
+   * Used for `<C-o>` in insert/replace mode, which allows you run one normal mode
+   * command, then go back to insert/replace mode.
    */
-  public returnToInsertAfterCommand = false;
+  public modeToReturnToAfterNormalCommand: Mode.Insert | Mode.Replace | undefined;
   public actionCount = 0;
 
   /**
@@ -190,6 +190,16 @@ export class VimState implements vscode.Disposable {
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
+   * Stores the mode that vimState had before entering the current visual mode.
+   * This is used to create the pseudo modes of Insert/Replace visual modes, like
+   * when you select with `<S-arrowKey>` when in InsertMode, or when you use `<C-o>`
+   * on InsertMode and then enter visual mode with `v`, `V` or `<C-v>`.
+   *
+   * This should be cleared everytime we leave a visual mode.
+   */
+  public modeBeforeEnteringVisualMode?: Mode;
+
+  /**
    * Stores last visual mode as well as what was selected for `gv`
    */
   public lastVisualSelection:
@@ -237,20 +247,91 @@ export class VimState implements vscode.Disposable {
   private _inputMethodSwitcher?: IInputMethodSwitcher;
   /**
    * The mode Vim is currently including pseudo-modes like OperatorPendingMode
-   * This is to be used only by the Remappers when getting the remappings so don't
-   * use it anywhere else.
+   * This is to be used only by the Remappers when getting the remappings or the
+   * 'showmode' to show the mode to user o don't use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.isOperatorPending(this._currentMode)
-      ? Mode.OperatorPendingMode
-      : this._currentMode;
+    if (this.recordedState.isOperatorPending(this._currentMode)) {
+      return Mode.OperatorPendingMode;
+    } else if (this.modeToReturnToAfterNormalCommand && this._currentMode === Mode.Normal) {
+      if (this.modeToReturnToAfterNormalCommand === Mode.Insert) {
+        return Mode.InsertNormal;
+      } else {
+        return Mode.ReplaceNormal;
+      }
+    } else if (
+      isVisualMode(this._currentMode) &&
+      this.modeBeforeEnteringVisualMode !== undefined &&
+      this.modeBeforeEnteringVisualMode !== Mode.Normal
+    ) {
+      let previous = '';
+      if (this.modeBeforeEnteringVisualMode === Mode.Insert) {
+        previous = 'insert';
+      } else if (this.modeBeforeEnteringVisualMode === Mode.Replace) {
+        previous = 'replace';
+      } else {
+        // This shouldn't happen but in case it does we can exit gracefully with
+        // the currentMode
+        return this._currentMode;
+      }
+
+      switch (this._currentMode) {
+        case Mode.Visual:
+          return previous === 'insert' ? Mode.InsertVisual : Mode.ReplaceVisual;
+        case Mode.VisualLine:
+          return previous === 'insert' ? Mode.InsertVisualLine : Mode.ReplaceVisualLine;
+        case Mode.VisualBlock:
+          return previous === 'insert' ? Mode.InsertVisualBlock : Mode.ReplaceVisualBlock;
+        case Mode.Select:
+          return previous === 'insert' ? Mode.InsertSelect : Mode.ReplaceSelect;
+        case Mode.SelectLine:
+          return previous === 'insert' ? Mode.InsertSelectLine : Mode.ReplaceSelectLine;
+        case Mode.SelectBlock:
+          return previous === 'insert' ? Mode.InsertSelectBlock : Mode.ReplaceSelectBlock;
+        default:
+          // This shouldn't happen but in case it does we can exit gracefully with
+          // the currentMode
+          return this._currentMode;
+      }
+    } else {
+      return this._currentMode;
+    }
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
-    await this._inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
-    if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
-      this.returnToInsertAfterCommand = false;
+    if (isPseudoMode(mode)) {
+      throw new Error(`Can't set current mode to a pseudo mode like '${Mode[mode]}'`);
     }
+
+    await this._inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
+
+    if (isVisualMode(mode) && !isVisualMode(this._currentMode)) {
+      // we are changing to a visual mode so we need to store the currentMode or
+      // in case `<C-o>` was used we need to store the mode before the `<C-o>`
+      this.modeBeforeEnteringVisualMode =
+        this.modeToReturnToAfterNormalCommand ?? this._currentMode;
+    } else if (isVisualMode(this._currentMode) && !isVisualMode(mode)) {
+      // Leaving visual mode
+
+      // Check if we had a modeBeforeEnteringVisualMode defined, if we did we
+      // need to force that mode now. We do this here this way so that we didn't
+      // have to insert this logic on every command and operator that can run
+      // on visual modes. Unless we are going to Insert/Replace Mode which should
+      // be the possible modes before, in that case we leave it be, because if
+      // modeBefore was replace but now we used a command that puts us in insert
+      // we do want to be put in InsertMode and not be forced to ReplaceMode, after
+      // exiting we can go back to normal.
+      if (this.modeBeforeEnteringVisualMode && ![Mode.Insert, Mode.Replace].includes(mode)) {
+        mode = this.modeBeforeEnteringVisualMode;
+      }
+      this.modeBeforeEnteringVisualMode = undefined;
+    }
+
+    if (this.modeToReturnToAfterNormalCommand && [Mode.Insert, Mode.Replace].includes(mode)) {
+      this.modeToReturnToAfterNormalCommand = undefined;
+    }
+
+    // Change the mode:
     this._currentMode = mode;
 
     if (configuration.smartRelativeLine) {

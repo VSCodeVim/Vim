@@ -49,6 +49,7 @@ export interface IPutCommandOptions {
 export class PutCommand extends BaseCommand {
   keys = ['p'];
   modes = [Mode.Normal];
+  isCompleteAction = true;
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
@@ -363,6 +364,7 @@ export class PutCommand extends BaseCommand {
 class PutBeforeCommand extends BaseCommand {
   public keys = ['P'];
   public modes = [Mode.Normal];
+  isCompleteAction = true;
   canBeRepeatedWithDot = true;
   runsOnceForEachCountPrefix = true;
 
@@ -377,6 +379,7 @@ class PutBeforeCommand extends BaseCommand {
 class PutCommandVisual extends BaseCommand {
   keys = [['p'], ['P']];
   modes = [Mode.Visual];
+  isCompleteAction = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -445,6 +448,7 @@ class PutCommandVisual extends BaseCommand {
 class PutCommandVisualLine extends BaseCommand {
   keys = [['p'], ['P']];
   modes = [Mode.VisualLine];
+  isCompleteAction = true;
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -479,6 +483,7 @@ class PutCommandVisualLine extends BaseCommand {
 class GPutCommand extends BaseCommand {
   keys = ['g', 'p'];
   modes = [Mode.Normal, Mode.Visual];
+  isCompleteAction = true;
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
@@ -528,6 +533,7 @@ class GPutCommandVisualLine extends PutCommandVisualLine {
     ['g', 'p'],
     ['g', 'P'],
   ];
+  isCompleteAction = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     let repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
@@ -547,6 +553,7 @@ class GPutCommandVisualLine extends PutCommandVisualLine {
 class GPutBeforeCommand extends BaseCommand {
   keys = ['g', 'P'];
   modes = [Mode.Normal];
+  isCompleteAction = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await new PutCommand(this.multicursorIndex).exec(position, vimState, {
@@ -588,6 +595,7 @@ class GPutBeforeCommand extends BaseCommand {
 class PutWithIndentCommand extends BaseCommand {
   keys = [']', 'p'];
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  isCompleteAction = true;
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
@@ -604,6 +612,7 @@ class PutBeforeWithIndentCommand extends BaseCommand {
     ['[', 'p'],
   ];
   modes = [Mode.Normal];
+  isCompleteAction = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await new PutCommand(this.multicursorIndex).exec(position, vimState, {

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
-import { Mode } from './../mode/mode';
+import { isVisualMode, Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
@@ -309,6 +309,23 @@ class MoveDown extends BaseMovement {
 @RegisterAction
 class MoveDownArrow extends MoveDown {
   keys = ['<down>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return super.execAction(position, vimState);
+  }
 }
 
 @RegisterAction
@@ -365,6 +382,23 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 @RegisterAction
 class MoveUpArrow extends MoveUp {
   keys = ['<up>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return super.execAction(position, vimState);
+  }
 }
 
 @RegisterAction
@@ -591,8 +625,24 @@ export class MoveLeft extends BaseMovement {
 
 @RegisterAction
 class MoveLeftArrow extends MoveLeft {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
   keys = ['<left>'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return super.execAction(position, vimState);
+  }
 }
 
 @RegisterAction
@@ -607,7 +657,7 @@ class BackSpaceInNormalMode extends BaseMovement {
 
 @RegisterAction
 class BackSpaceInVisualMode extends BaseMovement {
-  modes = [Mode.Visual, Mode.VisualBlock];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<BS>'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -632,8 +682,467 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveRightArrow extends MoveRight {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+  ];
   keys = ['<right>'];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return super.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveShiftRightArrow extends BaseMovement {
+  keys = ['<S-right>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (configuration.keymodelStartsSelection) {
+      if (!isVisual) {
+        if (configuration.selectmodeKey) {
+          await vimState.setCurrentMode(Mode.Select);
+        } else {
+          await vimState.setCurrentMode(Mode.Visual);
+        }
+      }
+      return new MoveRight(this.keysPressed, this.isRepeat).execAction(position, vimState);
+    } else {
+      return new MoveWordBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
+    }
+  }
+}
+
+@RegisterAction
+class MoveShiftLeftArrow extends BaseMovement {
+  keys = ['<S-left>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (configuration.keymodelStartsSelection) {
+      if (!isVisual) {
+        if (configuration.selectmodeKey) {
+          await vimState.setCurrentMode(Mode.Select);
+        } else {
+          await vimState.setCurrentMode(Mode.Visual);
+        }
+      }
+      return new MoveLeft(this.keysPressed, this.isRepeat).execAction(position, vimState);
+    } else {
+      return new MoveBeginningWord(this.keysPressed, this.isRepeat).execAction(position, vimState);
+    }
+  }
+}
+
+@RegisterAction
+class MoveUpShifted extends BaseMovement {
+  keys = [['<S-up>'], ['<C-S-up>']];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveUp(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.keymodelStartsSelection && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.keymodelStartsSelection && super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterAction
+class MoveDownShifted extends BaseMovement {
+  keys = [['<S-down>'], ['<C-S-down>']];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveDown(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.keymodelStartsSelection && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.keymodelStartsSelection && super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterAction
+class MoveShiftHome extends BaseMovement {
+  keys = ['<S-Home>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveLineBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveShiftEnd extends BaseMovement {
+  keys = ['<S-End>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    const isVisual = isVisualMode(vimState.currentMode);
+    if (!isVisual && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveLineEnd(this.keysPressed, this.isRepeat).execActionWithCount(
+      position,
+      vimState,
+      count
+    );
+  }
+}
+
+@RegisterAction
+class MoveCtrlRightArrow extends BaseMovement {
+  keys = ['<C-right>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return new MoveFullWordBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveCtrlLeftArrow extends BaseMovement {
+  keys = ['<C-left>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return new MoveBeginningFullWord(this.keysPressed, this.isRepeat).execAction(
+      position,
+      vimState
+    );
+  }
+}
+
+@RegisterAction
+class MoveCtrlHome extends BaseMovement {
+  keys = ['<C-Home>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    return new MoveNonBlankFirst(this.keysPressed, this.isRepeat).execActionWithCount(
+      position,
+      vimState,
+      count
+    );
+  }
+}
+
+@RegisterAction
+class MoveCtrlEnd extends BaseMovement {
+  keys = ['<C-End>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    if (isVisualMode(vimState.currentMode) && configuration.keymodelStopsSelection) {
+      const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
+      await vimState.setCurrentMode(newMode);
+    }
+    const linePos = await new MoveNonBlankLast(this.keysPressed, this.isRepeat).execActionWithCount(
+      position,
+      vimState,
+      count
+    );
+    const line = isIMovement(linePos) ? linePos.stop.line : linePos.line;
+    return new Position(line, vimState.document.lineAt(line).text.length);
+  }
+}
+
+@RegisterAction
+class MoveCtrlShiftRightArrow extends BaseMovement {
+  keys = ['<C-S-right>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveWordBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveCtrlShiftLeftArrow extends BaseMovement {
+  keys = ['<C-S-left>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveBeginningWord(this.keysPressed, this.isRepeat).execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveCtrlShiftHome extends BaseMovement {
+  keys = ['<C-S-Home>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    return new MoveNonBlankFirst(this.keysPressed, this.isRepeat).execActionWithCount(
+      position,
+      vimState,
+      count
+    );
+  }
+}
+
+@RegisterAction
+class MoveCtrlShiftEnd extends BaseMovement {
+  keys = ['<C-S-End>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      if (configuration.selectmodeKey) {
+        await vimState.setCurrentMode(Mode.Select);
+      } else {
+        await vimState.setCurrentMode(Mode.Visual);
+      }
+    }
+    const linePos = await new MoveNonBlankLast(this.keysPressed, this.isRepeat).execActionWithCount(
+      position,
+      vimState,
+      count
+    );
+    const line = isIMovement(linePos) ? linePos.stop.line : linePos.line;
+    return new Position(line, vimState.document.lineAt(line).text.length);
+  }
 }
 
 @RegisterAction
@@ -930,6 +1439,14 @@ class MoveLineEnd extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    if (
+      isVisualMode(vimState.currentMode) &&
+      configuration.keymodelStopsSelection &&
+      !this.keysPressed.includes('$') && // the '$' does not stop the selection
+      !this.keysPressed.includes('<S-End>') // the '<S-End>' does not stop the selection
+    ) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
     return position.getDown(Math.max(count - 1, 0)).getLineEnd();
   }
 }
@@ -939,16 +1456,28 @@ class MoveLineBegin extends BaseMovement {
   keys = [['0'], ['<Home>'], ['<D-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (
+      isVisualMode(vimState.currentMode) &&
+      configuration.keymodelStopsSelection &&
+      !this.keysPressed.includes('0') && // the '0' does not stop the selection
+      !this.keysPressed.includes('<S-Home>') // the '<S-Home>' does not stop the selection
+    ) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
     return position.getLineBegin();
   }
+}
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && vimState.recordedState.count === 0;
-  }
+@RegisterAction
+class MoveLineBeginSelectMode extends MoveLineBegin {
+  keys = [['<Home>'], ['<D-left>']];
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
+}
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && vimState.recordedState.count === 0;
-  }
+@RegisterAction
+class MoveLineEndSelectMode extends MoveLineEnd {
+  keys = [['<End>'], ['<D-right>']];
+  modes = [Mode.Select, Mode.SelectLine, Mode.SelectBlock];
 }
 
 @RegisterAction
@@ -1415,6 +1944,18 @@ class MoveBeginningFullWord extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getBigWordLeft();
   }
+}
+
+@RegisterAction
+class MoveBeginningWordShiftBS extends MoveBeginningWord {
+  keys = ['<S-BS>'];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+}
+
+@RegisterAction
+class MoveBeginningFullWordCtrlBS extends MoveBeginningFullWord {
+  keys = ['<C-BS>'];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 }
 
 @RegisterAction
@@ -2151,4 +2692,27 @@ class LeftArrowInInsertMode extends ArrowsInInsertMode {
 @RegisterAction
 class RightArrowInInsertMode extends ArrowsInInsertMode {
   keys = ['<right>'];
+}
+
+@RegisterAction
+class MoveLeftMouse extends BaseMovement {
+  keys = ['<LeftMouse>'];
+  modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Select,
+    Mode.SelectLine,
+    Mode.SelectBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (isVisualMode(vimState.currentMode)) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
+    return vimState.editor.selection.active;
+  }
 }
