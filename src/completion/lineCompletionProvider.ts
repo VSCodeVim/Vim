@@ -119,7 +119,7 @@ export const getCompletionsForCurrentLine = (
   document: vscode.TextDocument
 ): string[] | null => {
   const currentLineText = document.getText(
-    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position)
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -161,7 +161,7 @@ export const lineCompletionProvider = {
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(
-        TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
       ),
     });

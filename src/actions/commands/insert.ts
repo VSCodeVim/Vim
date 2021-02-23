@@ -547,7 +547,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const start = position.isInLeadingWhitespace(vimState.document)
       ? position.getLineBegin()
-      : position.getLineBeginRespectingIndent();
+      : position.getLineBeginRespectingIndent(vimState.document);
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, position),

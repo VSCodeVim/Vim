@@ -192,7 +192,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.obeyStartOfLine();
+      resultingPosition = resultingPosition.obeyStartOfLine(vimState.document);
       diff = new PositionDiff({
         type: PositionDiffType.ObeyStartOfLine,
       });
@@ -403,7 +403,7 @@ export class FormatOperator extends BaseOperator {
       line = vimState.cursorStopPosition.line;
     }
 
-    let newCursorPosition = TextEditor.getFirstNonWhitespaceCharOnLine(line);
+    let newCursorPosition = TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line);
     vimState.cursorStopPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
@@ -503,7 +503,7 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.obeyStartOfLine();
+    vimState.cursorStopPosition = start.obeyStartOfLine(vimState.document);
   }
 }
 
@@ -541,7 +541,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.obeyStartOfLine();
+    vimState.cursorStopPosition = start.obeyStartOfLine(vimState.document);
   }
 }
 
@@ -555,7 +555,10 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      start.line
+    );
   }
 }
 
@@ -587,7 +590,10 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      start.line
+    );
   }
 }
 
@@ -633,7 +639,10 @@ export class ChangeOperator extends BaseOperator {
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
     const thisLineIndent = vimState.document.getText(
-      new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
+      new vscode.Range(
+        position.getLineBegin(),
+        position.getLineBeginRespectingIndent(vimState.document)
+      )
     );
 
     vimState.currentRegisterMode = RegisterMode.LineWise;

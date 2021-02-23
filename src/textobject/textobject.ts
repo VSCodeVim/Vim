@@ -54,7 +54,7 @@ export class SelectWord extends TextObjectMovement {
       // This is because 'aw' has two fundamentally different behaviors distinguished by whether
       // the next word is directly after the current word, as described in the following comment.
       // The only case that's not true is in cases like #1350.
-      if (stop.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line))) {
+      if (stop.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, stop.line))) {
         stop = stop.getLineBegin();
       }
       stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
@@ -65,7 +65,7 @@ export class SelectWord extends TextObjectMovement {
         stop.isEqual(position.getCurrentWordEnd(true)) &&
         !position
           .getWordLeft(true)
-          .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line)) &&
+          .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, stop.line)) &&
         vimState.recordedState.count === 0
       ) {
         start = position.getLastWordEnd().getRight();
@@ -124,7 +124,9 @@ export class SelectABigWord extends TextObjectMovement {
         }
         stop = position.getLineEnd();
       } else if (
-        (nextWord.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(nextWord.line)) ||
+        (nextWord.isEqual(
+          TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, nextWord.line)
+        ) ||
           nextWord.isLineEnd()) &&
         vimState.recordedState.count === 0
       ) {

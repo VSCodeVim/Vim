@@ -323,7 +323,10 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
       options
     );
     for (const match of matches) {
-      match.position = TextEditor.getFirstNonWhitespaceCharOnLine(match.position.line);
+      match.position = TextEditor.getFirstNonWhitespaceCharOnLine(
+        vimState.document,
+        match.position.line
+      );
     }
     return matches;
   }

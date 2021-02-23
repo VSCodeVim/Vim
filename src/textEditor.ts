@@ -216,11 +216,11 @@ export class TextEditor {
    * @returns the Position of the first character on the given line which is not whitespace.
    * If it's all whitespace, will return the Position of the EOL character.
    */
-  public static getFirstNonWhitespaceCharOnLine(line: number): Position {
-    return new Position(
-      line,
-      vscode.window.activeTextEditor!.document.lineAt(line).firstNonWhitespaceCharacterIndex
-    );
+  public static getFirstNonWhitespaceCharOnLine(
+    document: vscode.TextDocument,
+    line: number
+  ): Position {
+    return new Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
   }
 
   /**

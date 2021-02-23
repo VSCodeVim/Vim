@@ -221,7 +221,7 @@ export class CommandLine {
       const [_, end] = this.range.resolve(vimState);
       vimState.cursorStartPosition = vimState.cursorStopPosition = vimState.cursorStopPosition
         .withLine(end)
-        .obeyStartOfLine();
+        .obeyStartOfLine(vimState.document);
     }
   }
 }

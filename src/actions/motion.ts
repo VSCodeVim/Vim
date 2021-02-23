@@ -546,7 +546,7 @@ export class MarkMovementBOL extends BaseMovement {
       await ensureEditorIsActive(mark.editor);
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(mark.position.line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
   }
 }
 
@@ -655,7 +655,10 @@ class MoveDownNonBlank extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown(Math.max(count, 1)).line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      position.getDown(Math.max(count, 1)).line
+    );
   }
 }
 
@@ -669,7 +672,10 @@ class MoveUpNonBlank extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getUp(Math.max(count, 1)).line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      position.getUp(Math.max(count, 1)).line
+    );
   }
 }
 
@@ -683,6 +689,7 @@ class MoveDownUnderscore extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     return TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       position.getDown(Math.max(count - 1, 0)).line
     );
   }
@@ -1196,7 +1203,7 @@ class MoveNonBlank extends BaseMovement {
   keys = ['^'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line);
   }
 }
 
@@ -1216,7 +1223,10 @@ class MoveNextLineNonBlank extends BaseMovement {
       count++;
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(position.getDown(count).line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      position.getDown(count).line
+    );
   }
 }
 
@@ -1233,7 +1243,7 @@ class MoveNonBlankFirst extends BaseMovement {
     const lineNumber = clamp(count, 1, vimState.document.lineCount) - 1;
     return {
       start: vimState.cursorStartPosition,
-      stop: position.withLine(lineNumber).obeyStartOfLine(),
+      stop: position.withLine(lineNumber).obeyStartOfLine(vimState.document),
       registerMode: RegisterMode.LineWise,
     };
   }
@@ -1252,12 +1262,14 @@ class MoveNonBlankLast extends BaseMovement {
     let stop: Position;
 
     if (count === 0) {
-      stop = new Position(vimState.document.lineCount - 1, position.character).obeyStartOfLine();
+      stop = new Position(vimState.document.lineCount - 1, position.character).obeyStartOfLine(
+        vimState.document
+      );
     } else {
       stop = new Position(
         Math.min(count, vimState.document.lineCount) - 1,
         position.character
-      ).obeyStartOfLine();
+      ).obeyStartOfLine(vimState.document);
     }
 
     return {
@@ -1321,7 +1333,7 @@ export class MoveWordBegin extends BaseMovement {
 
     if (
       result.line > position.line + 1 ||
-      (result.line === position.line + 1 && result.isFirstWordOfLine())
+      (result.line === position.line + 1 && result.isFirstWordOfLine(vimState.document))
     ) {
       return position.getLineEnd();
     }
@@ -1515,7 +1527,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
       (this.forward && line === vimState.document.lineCount - 1) ||
       (!this.forward && line === 0)
     ) {
-      return TextEditor.getFirstNonWhitespaceCharOnLine(line);
+      return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line);
     }
 
     line = this.forward ? line + 1 : line - 1;
@@ -1536,7 +1548,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
       }
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(line);
+    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line);
   }
 }
 
@@ -1645,7 +1657,7 @@ class MoveToMatchingBracket extends BaseMovement {
 
       const targetLine = Math.round((count * vimState.document.lineCount) / 100);
 
-      return TextEditor.getFirstNonWhitespaceCharOnLine(targetLine - 1);
+      return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, targetLine - 1);
     } else {
       return super.execActionWithCount(position, vimState, count);
     }
@@ -1671,7 +1683,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
         ? position
         : position.getRightThroughLineBreaks();
       if (adjacentPosRight.isLineBeginning()) {
-        adjacentPosRight = adjacentPosRight.getLineBeginRespectingIndent();
+        adjacentPosRight = adjacentPosRight.getLineBeginRespectingIndent(vimState.document);
       }
       const adjacentCharLeft = TextEditor.getCharAt(vimState.document, adjacentPosLeft);
       const adjacentCharRight = TextEditor.getCharAt(vimState.document, adjacentPosRight);

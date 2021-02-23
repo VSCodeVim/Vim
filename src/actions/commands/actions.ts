@@ -585,7 +585,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     vimState.cursorStopPosition = new Position(
       newPositionLine,
       vimState.desiredColumn
-    ).obeyStartOfLine();
+    ).obeyStartOfLine(vimState.document);
   }
 }
 
@@ -1305,6 +1305,7 @@ class CommandCenterScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1362,6 +1363,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1419,6 +1421,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1920,7 +1923,10 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      position.line
+    );
   }
 }
 
