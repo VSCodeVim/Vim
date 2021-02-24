@@ -846,7 +846,7 @@ export class ModeHandler implements vscode.Disposable {
     ) {
       this.vimState.cursors = this.vimState.cursors.map((cursor: Range) => {
         // adjust start/stop
-        const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.editor);
+        const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.document);
         const documentLineCount = this.vimState.document.lineCount;
         if (cursor.start.line >= documentLineCount) {
           cursor = cursor.withNewStart(documentEndPosition);
@@ -1487,7 +1487,7 @@ export class ModeHandler implements vscode.Disposable {
     const opCursorCharDecorations: vscode.DecorationOptions[] = [];
     if (this.vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode) {
       for (const { stop: cursorStop } of this.vimState.cursors) {
-        let text = TextEditor.getCharAt(cursorStop);
+        let text = TextEditor.getCharAt(this.vimState.document, cursorStop);
         // the ' ' (<space>) needs to be changed to '&nbsp;'
         text = text === ' ' ? '\u00a0' : text;
         const renderOptions: vscode.ThemableDecorationRenderOptions = {
@@ -1539,7 +1539,12 @@ export class ModeHandler implements vscode.Disposable {
       this.currentMode === Mode.EasyMotionInputMode &&
       configuration.easymotionDimBackground &&
       this.vimState.easyMotion.searchAction instanceof SearchByNCharCommand
-        ? [new vscode.Range(TextEditor.getDocumentBegin(), TextEditor.getDocumentEnd())]
+        ? [
+            new vscode.Range(
+              TextEditor.getDocumentBegin(),
+              TextEditor.getDocumentEnd(this.vimState.document)
+            ),
+          ]
         : [];
     const easyMotionHighlightRanges =
       this.currentMode === Mode.EasyMotionInputMode &&

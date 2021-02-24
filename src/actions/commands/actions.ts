@@ -585,7 +585,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     vimState.cursorStopPosition = new Position(
       newPositionLine,
       vimState.desiredColumn
-    ).obeyStartOfLine();
+    ).obeyStartOfLine(vimState.document);
   }
 }
 
@@ -806,7 +806,7 @@ async function searchCurrentWord(
   direction: SearchDirection,
   isExact: boolean
 ): Promise<void> {
-  let currentWord = TextEditor.getWord(position);
+  let currentWord = TextEditor.getWord(vimState.document, position);
 
   if (currentWord) {
     if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
@@ -1305,6 +1305,7 @@ class CommandCenterScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1362,6 +1363,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1419,6 +1421,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStopPosition.line
     );
   }
@@ -1904,12 +1907,10 @@ class CommandInsertAtLastChange extends BaseCommand {
   keys = ['g', 'i'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
+    vimState.cursorStopPosition =
+      vimState.historyTracker.getLastChangeEndPosition() ?? new Position(0, 0);
 
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-      await vimState.setCurrentMode(Mode.Insert);
-    }
+    await vimState.setCurrentMode(Mode.Insert);
   }
 }
 
@@ -1920,7 +1921,10 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(position.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      position.line
+    );
   }
 }
 
@@ -3208,7 +3212,10 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         ? position
         : position.getWordLeft(true);
 
-      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(whereToStart)) {
+      wordLoop: for (let { start, end, word } of TextEditor.iterateWords(
+        vimState.document,
+        whereToStart
+      )) {
         if (start.isAfter(range.stop)) {
           break;
         }

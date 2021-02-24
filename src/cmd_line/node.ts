@@ -66,17 +66,23 @@ export class LineRange {
    * @param vimState
    * @returns Inclusive line number range [start, end]. Will always be in order.
    */
-  public resolve(vimState: VimState): [number, number] {
+  public resolve(vimState: VimState, boundsCheck: boolean = true): [number, number] {
     if (this.left.length > 0 && this.left[0].type === TokenType.Percent) {
       return [0, vimState.document.lineCount - 1];
     }
 
-    const start = LineRange.resolveLineRef(this.left, vimState) ?? vimState.cursorStopPosition.line;
-    const end = LineRange.resolveLineRef(this.right, vimState) ?? start;
+    const start =
+      LineRange.resolveLineRef(this.left, vimState, boundsCheck) ??
+      vimState.cursorStopPosition.line;
+    const end = LineRange.resolveLineRef(this.right, vimState, boundsCheck) ?? start;
     return end < start ? [end, start] : [start, end];
   }
 
-  private static resolveLineRef(toks: Token[], vimState: VimState): number | undefined {
+  private static resolveLineRef(
+    toks: Token[],
+    vimState: VimState,
+    boundsCheck: boolean
+  ): number | undefined {
     if (toks.length === 0) {
       return undefined;
     }
@@ -187,9 +193,11 @@ export class LineRange {
         break;
     }
 
-    // finally, make sure current position is in bounds :)
-    currentLineNum = Math.max(0, currentLineNum);
-    currentLineNum = Math.min(vimState.document.lineCount - 1, currentLineNum);
+    if (boundsCheck) {
+      currentLineNum = Math.max(0, currentLineNum);
+      currentLineNum = Math.min(vimState.document.lineCount - 1, currentLineNum);
+    }
+
     return currentLineNum;
   }
 }
@@ -221,7 +229,7 @@ export class CommandLine {
       const [_, end] = this.range.resolve(vimState);
       vimState.cursorStartPosition = vimState.cursorStopPosition = vimState.cursorStopPosition
         .withLine(end)
-        .obeyStartOfLine();
+        .obeyStartOfLine(vimState.document);
     }
   }
 }

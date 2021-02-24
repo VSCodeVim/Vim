@@ -589,7 +589,7 @@ class CommandInsertWord extends BaseCommand {
       return;
     }
 
-    const word = TextEditor.getWord(position.getLeftIfEOL());
+    const word = TextEditor.getWord(vimState.document, position.getLeftIfEOL());
 
     if (word !== undefined) {
       if (vimState.currentMode === Mode.SearchInProgressMode) {

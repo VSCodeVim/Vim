@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -1404,10 +1404,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'gi works correctly',
+    title: '`gi` enters insert mode at point of last insertion',
     start: ['|'],
     keysPressed: 'ione<Esc>otwo<Esc>0gi',
     end: ['one', 'two|'],
+    endMode: Mode.Insert,
+  });
+
+  // TODO: this gets messed up by test framework inserting start text, I think
+  newTestSkip({
+    title: "`gi` enters insert mode at start of document if there's no prior insertion",
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'gi',
+    end: ['|one', 'two', 'three'],
+    endMode: Mode.Insert,
   });
 
   newTest({
