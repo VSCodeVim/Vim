@@ -1667,6 +1667,8 @@ class MoveToMatchingBracket extends BaseMovement {
 export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
+
+  /** True for "around" actions, such as `a(`, and false for "inside" actions, such as `i(`  */
   protected includeSurrounding = false;
   isJump = true;
 
@@ -1744,131 +1746,81 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
 }
 
 @RegisterAction
-class MoveIParentheses extends MoveInsideCharacter {
-  keys = ['i', '('];
+class MoveInsideParentheses extends MoveInsideCharacter {
+  keys = [
+    ['i', '('],
+    ['i', ')'],
+    ['i', 'b'],
+  ];
   charToMatch = '(';
 }
 
 @RegisterAction
-class MoveIClosingParentheses extends MoveInsideCharacter {
-  keys = ['i', ')'];
-  charToMatch = '(';
-}
-
-@RegisterAction
-class MoveIClosingParenthesesBlock extends MoveInsideCharacter {
-  keys = ['i', 'b'];
-  charToMatch = '(';
-}
-
-@RegisterAction
-export class MoveAParentheses extends MoveInsideCharacter {
-  keys = ['a', '('];
+export class MoveAroundParentheses extends MoveInsideCharacter {
+  keys = [
+    ['a', '('],
+    ['a', ')'],
+    ['a', 'b'],
+  ];
   charToMatch = '(';
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingParentheses extends MoveInsideCharacter {
-  keys = ['a', ')'];
-  charToMatch = '(';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveAParenthesesBlock extends MoveInsideCharacter {
-  keys = ['a', 'b'];
-  charToMatch = '(';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveICurlyBrace extends MoveInsideCharacter {
-  keys = ['i', '{'];
+class MoveInsideCurlyBrace extends MoveInsideCharacter {
+  keys = [
+    ['i', '{'],
+    ['i', '}'],
+    ['i', 'B'],
+  ];
   charToMatch = '{';
 }
 
 @RegisterAction
-class MoveIClosingCurlyBrace extends MoveInsideCharacter {
-  keys = ['i', '}'];
-  charToMatch = '{';
-}
-
-@RegisterAction
-class MoveIClosingCurlyBraceBlock extends MoveInsideCharacter {
-  keys = ['i', 'B'];
-  charToMatch = '{';
-}
-
-@RegisterAction
-export class MoveACurlyBrace extends MoveInsideCharacter {
-  keys = ['a', '{'];
+export class MoveAroundCurlyBrace extends MoveInsideCharacter {
+  keys = [
+    ['a', '{'],
+    ['a', '}'],
+    ['a', 'B'],
+  ];
   charToMatch = '{';
   includeSurrounding = true;
 }
 
 @RegisterAction
-export class MoveAClosingCurlyBrace extends MoveInsideCharacter {
-  keys = ['a', '}'];
-  charToMatch = '{';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveAClosingCurlyBraceBlock extends MoveInsideCharacter {
-  keys = ['a', 'B'];
-  charToMatch = '{';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveICaret extends MoveInsideCharacter {
-  keys = ['i', '<'];
+class MoveInsideCaret extends MoveInsideCharacter {
+  keys = [
+    ['i', '<'],
+    ['i', '>'],
+  ];
   charToMatch = '<';
 }
 
 @RegisterAction
-class MoveIClosingCaret extends MoveInsideCharacter {
-  keys = ['i', '>'];
-  charToMatch = '<';
-}
-
-@RegisterAction
-export class MoveACaret extends MoveInsideCharacter {
-  keys = ['a', '<'];
+export class MoveAroundCaret extends MoveInsideCharacter {
+  keys = [
+    ['a', '<'],
+    ['a', '>'],
+  ];
   charToMatch = '<';
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingCaret extends MoveInsideCharacter {
-  keys = ['a', '>'];
-  charToMatch = '<';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveISquareBracket extends MoveInsideCharacter {
-  keys = ['i', '['];
+class MoveInsideSquareBracket extends MoveInsideCharacter {
+  keys = [
+    ['i', '['],
+    ['i', ']'],
+  ];
   charToMatch = '[';
 }
 
 @RegisterAction
-class MoveIClosingSquareBraket extends MoveInsideCharacter {
-  keys = ['i', ']'];
-  charToMatch = '[';
-}
-
-@RegisterAction
-export class MoveASquareBracket extends MoveInsideCharacter {
-  keys = ['a', '['];
-  charToMatch = '[';
-  includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveAClosingSquareBracket extends MoveInsideCharacter {
-  keys = ['a', ']'];
+export class MoveAroundSquareBracket extends MoveInsideCharacter {
+  keys = [
+    ['a', '['],
+    ['a', ']'],
+  ];
   charToMatch = '[';
   includeSurrounding = true;
 }
@@ -1940,7 +1892,7 @@ class MoveInsideSingleQuotes extends MoveQuoteMatch {
 }
 
 @RegisterAction
-export class MoveASingleQuotes extends MoveQuoteMatch {
+export class MoveAroundSingleQuotes extends MoveQuoteMatch {
   keys = ['a', "'"];
   charToMatch = "'";
   includeSurrounding = true;
@@ -1954,7 +1906,7 @@ class MoveInsideDoubleQuotes extends MoveQuoteMatch {
 }
 
 @RegisterAction
-export class MoveADoubleQuotes extends MoveQuoteMatch {
+export class MoveAroundDoubleQuotes extends MoveQuoteMatch {
   keys = ['a', '"'];
   charToMatch = '"';
   includeSurrounding = true;
@@ -1968,7 +1920,7 @@ class MoveInsideBacktick extends MoveQuoteMatch {
 }
 
 @RegisterAction
-export class MoveABacktick extends MoveQuoteMatch {
+export class MoveAroundBacktick extends MoveQuoteMatch {
   keys = ['a', '`'];
   charToMatch = '`';
   includeSurrounding = true;

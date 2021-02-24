@@ -6,14 +6,14 @@ import { TextEditor } from '../textEditor';
 import { RegisterAction } from '../actions/base';
 import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
-  MoveAClosingCurlyBrace,
-  MoveADoubleQuotes,
-  MoveAParentheses,
-  MoveASingleQuotes,
-  MoveASquareBracket,
-  MoveABacktick,
+  MoveAroundDoubleQuotes,
+  MoveAroundParentheses,
+  MoveAroundSingleQuotes,
+  MoveAroundSquareBracket,
+  MoveAroundBacktick,
   MoveAroundTag,
   ExpandingSelection,
+  MoveAroundCurlyBrace,
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
@@ -175,12 +175,12 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const blocks = [
-      new MoveADoubleQuotes(),
-      new MoveASingleQuotes(),
-      new MoveABacktick(),
-      new MoveAClosingCurlyBrace(),
-      new MoveAParentheses(),
-      new MoveASquareBracket(),
+      new MoveAroundDoubleQuotes(),
+      new MoveAroundSingleQuotes(),
+      new MoveAroundBacktick(),
+      new MoveAroundCurlyBrace(),
+      new MoveAroundParentheses(),
+      new MoveAroundSquareBracket(),
       new MoveAroundTag(),
     ];
     // ideally no state would change as we test each of the possible expansions
