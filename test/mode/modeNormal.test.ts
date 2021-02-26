@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -246,6 +246,14 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'cw',
     end: ['| a = 1;'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cw' on white space",
+    start: ['|  const a = 1;'],
+    keysPressed: '0cw',
+    end: ['|const a = 1;'],
     endMode: Mode.Insert,
   });
 
@@ -1396,10 +1404,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'gi works correctly',
+    title: '`gi` enters insert mode at point of last insertion',
     start: ['|'],
     keysPressed: 'ione<Esc>otwo<Esc>0gi',
     end: ['one', 'two|'],
+    endMode: Mode.Insert,
+  });
+
+  // TODO: this gets messed up by test framework inserting start text, I think
+  newTestSkip({
+    title: "`gi` enters insert mode at start of document if there's no prior insertion",
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'gi',
+    end: ['|one', 'two', 'three'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1492,6 +1510,69 @@ suite('Mode Normal', () => {
       '// hard. We choose to write a vim extension, not because it is easy, but because',
       '// it is hard.',
     ],
+  });
+
+  newTest({
+    title: 'gq preserves newlines',
+    start: ['|abc', '', '', '', 'def'],
+    keysPressed: 'gqG',
+    end: ['|abc', '', '', '', 'def'],
+  });
+
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with start and final on same line',
+    start: ['|/* abc def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def */'],
+  });
+
+  newTest({
+    title: 'gq preserves blank lines in multiline comments',
+    start: ['|/* abc', ' *', ' *', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' *', ' *', ' * def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
   });
 
   newTest({

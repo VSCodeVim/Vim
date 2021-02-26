@@ -107,7 +107,7 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
 
 export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(
-    TextEditor.getText(),
+    vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
     'Document content does not match.'
   );
@@ -136,8 +136,8 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }

@@ -33,8 +33,8 @@ suite('Configuration', () => {
 
     assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
     assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
-    assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
-    assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
+    assert.deepStrictEqual(normalizedKeybinds[0].before, [' ', 'o']);
+    assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {

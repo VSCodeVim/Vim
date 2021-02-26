@@ -61,7 +61,7 @@ function parseCommand(state: ParserState, commandLine: CommandLine): IParseFunct
         }
         // TODO: Pass the args, but keep in mind there could be multiple commands, not just one.
         const argsTok = state.next();
-        const args = argsTok.type === TokenType.CommandArgs ? argsTok.content : undefined;
+        const args = argsTok.type === TokenType.CommandArgs ? argsTok.content : '';
         commandLine.command = commandParser(args);
         return undefined;
       default:

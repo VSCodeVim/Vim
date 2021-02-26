@@ -214,7 +214,7 @@ export class Transformer {
           }
 
           vimState.isReplayingMacro = false;
-          vimState.historyTracker.lastInvokedMacro = recordedMacro;
+          vimState.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
@@ -229,7 +229,7 @@ export class Transformer {
             await TextEditor.insert(vimState.editor, change.text);
             vimState.cursorStopPosition = vimState.editor.selection.start;
           }
-          const newPos = vimState.cursorStopPosition.add(transformation.diff);
+          const newPos = vimState.cursorStopPosition.add(vimState.document, transformation.diff);
           vimState.editor.selection = new vscode.Selection(newPos, newPos);
           break;
 
@@ -293,7 +293,11 @@ export class Transformer {
         }
 
         return diffs.reduce(
-          (cursor, diff) => new Range(cursor.start.add(diff), cursor.stop.add(diff)),
+          (cursor, diff) =>
+            new Range(
+              cursor.start.add(vimState.document, diff),
+              cursor.stop.add(vimState.document, diff)
+            ),
           Range.FromVSCodeSelection(sel)
         );
       });
@@ -301,8 +305,8 @@ export class Transformer {
       vimState.recordedState.operatorPositionDiff = undefined;
     } else if (accumulatedPositionDifferences[0]?.length > 0) {
       const diff = accumulatedPositionDifferences[0][0];
-      vimState.cursorStopPosition = vimState.cursorStopPosition.add(diff);
-      vimState.cursorStartPosition = vimState.cursorStartPosition.add(diff);
+      vimState.cursorStopPosition = vimState.cursorStopPosition.add(vimState.document, diff);
+      vimState.cursorStartPosition = vimState.cursorStartPosition.add(vimState.document, diff);
     }
 
     /**

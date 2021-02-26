@@ -10,6 +10,15 @@ export enum SearchDirection {
   Backward = -1,
 }
 
+// Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
+let supportsLookbehind = true;
+try {
+  // tslint:disable-next-line
+  new RegExp('(?<=x)');
+} catch {
+  supportsLookbehind = false;
+}
+
 /**
  * State involved with beginning a search (/).
  */
@@ -18,8 +27,12 @@ export class SearchState {
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   private static readonly caseOverrideRegex = /\\[Cc]/g;
-  private static readonly notEscapedSlashRegex = /(?<=[^\\])\//g;
-  private static readonly notEscapedQuestionMarkRegex = /(?<=[^\\])\?/g;
+  private static readonly notEscapedSlashRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\/', 'g')
+    : /\//g;
+  private static readonly notEscapedQuestionMarkRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\?', 'g')
+    : /\?/g;
   private static readonly searchOffsetBeginRegex = /b(\+-)?[0-9]*/;
   private static readonly searchOffsetEndRegex = /e(\+-)?[0-9]*/;
 
@@ -246,7 +259,7 @@ export class SearchState {
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
+        pos = start.add(editor.document, PositionDiff.newBOLDiff(this.offset.num));
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {
