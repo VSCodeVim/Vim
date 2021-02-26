@@ -5870,10 +5870,10 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
-vsce@1.85.0:
-  version "1.85.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.85.0.tgz#37c72dd508ec7a94600b6c96b5f614f8211c2716"
-  integrity sha512-YVFwjXWvHRwk75mm3iL4Wr3auCdbBPTv2amtLf97ccqH0hkt0ZVBddu7iOs4HSEbSr9xiiaZwQHUsqMm6Ks0ag==
+vsce@1.85.1:
+  version "1.85.1"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.85.1.tgz#e232563a7aaf0b12af5c2e8ec5df5cac78799b55"
+  integrity sha512-IdfH8OCK+FgQGmihFoh6/17KBl4Ad3q4Sw3NFNI9T9KX6KdMR5az2/GO512cC9IqCjbgJl12CA7X84vYoc0ifg==
   dependencies:
     azure-devops-node-api "^7.2.0"
     chalk "^2.4.2"
