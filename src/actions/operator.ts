@@ -869,7 +869,6 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: false, start: '/**', inner: '*', final: '*/' },
     { singleLine: false, start: '/*', inner: '*', final: '*/' },
     { singleLine: false, start: '{-', inner: '-', final: '-}' },
-    { singleLine: false, start: '%%', inner: '%%', final: '%%' },
     { singleLine: true, start: '///' },
     { singleLine: true, start: '//!' },
     { singleLine: true, start: '//' },
