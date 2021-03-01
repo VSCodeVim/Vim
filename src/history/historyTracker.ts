@@ -18,6 +18,8 @@ import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
 import { Position } from 'vscode';
+import { Jump } from '../jumps/jump';
+import { globalState } from '../state/globalState';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -435,7 +437,7 @@ export class HistoryTracker {
 
     // Ensure the position of every mark is within the range of the document.
 
-    const docEnd = TextEditor.getDocumentEnd();
+    const docEnd = TextEditor.getDocumentEnd(this.vimState.document);
     for (const mark of newMarks) {
       if (mark.position.isAfter(docEnd)) {
         mark.position = docEnd;
@@ -467,6 +469,12 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(position: Position, markName: string): void {
+    // Sets previous context mark (adds current position to jump list).
+
+    if (markName === "'" || markName === '`') {
+      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    }
+
     const isUppercaseMark = markName.toUpperCase() === markName;
     const newMark: IMark = {
       position,

@@ -118,6 +118,7 @@ These settings are specific to VSCodeVim.
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                      | Boolean | false                                     |
 | vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`                           |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
+| vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                     | Boolean | false                                     |
 | vim.searchHighlightColor         | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                                  | String  | `findMatchHighlightBackground` ThemeColor |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                           | Boolean | true                                      |
@@ -135,10 +136,12 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                                                                                                             | Type    | Default Value |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
+| Setting                 | Description                                                                                                                                            | Type    | Default Value |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | ------------- |
+| vim.enableNeovim        | Enable Neovim                                                                                                                                          | Boolean | false         |
+| vim.neovimPath          | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path.                                | String  |               |
+| vim.neovimUseConfigFile | If `true`, Neovim will load a config file specified by `vim.neovimConfigPath`. This is necessary if you want Neovim to be able to use its own plugins. | Boolean | false         |
+| vim.neovimConfigPath    | Path that Neovim will load as config file. If left blank, Neovim will search in its default location.                                                  | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
@@ -492,14 +495,14 @@ Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is us
 | ------------ | --------------------------- | ------- | ------------- |
 | vim.surround | Enable/disable vim-surround | Boolean | true          |
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
+`t` or `<` as `<desired>` or `<existing>` will enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
 
-| Surround Command                     | Description                                                           |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| `d s <existing char>`                | Delete existing surround                                              |
-| `c s <existing char> <desired char>` | Change surround existing to desired                                   |
-| `y s <motion> <desired char>`        | Surround something with something using motion (as in "you surround") |
-| `S <desired char>`                   | Surround when in visual modes (surrounds full selection)              |
+| Surround Command           | Description                                              |
+| -------------------------- | -------------------------------------------------------- |
+| `y s <motion> <desired>`   | Add `desired` surround around text defined by `<motion>` |
+| `d s <existing>`           | Delete `existing` surround                               |
+| `c s <existing> <desired>` | Change `existing` surround to `desired`                  |
+| `S <desired>`              | Surround when in visual modes (surrounds full selection) |
 
 Some examples:
 

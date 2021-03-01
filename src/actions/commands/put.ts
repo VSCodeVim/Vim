@@ -613,6 +613,7 @@ class PutBeforeWithIndentCommand extends BaseCommand {
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+        vimState.document,
         vimState.cursorStopPosition.getUp().line
       );
     }

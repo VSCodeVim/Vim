@@ -382,6 +382,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
 
   vimrc = {
     enable: false,

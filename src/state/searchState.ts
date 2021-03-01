@@ -259,7 +259,7 @@ export class SearchState {
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
+        pos = start.add(editor.document, PositionDiff.newBOLDiff(this.offset.num));
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {

@@ -39,7 +39,7 @@ suite('Provide line completions', () => {
         vimState.document
       )!.slice(0, expectedCompletions.length);
 
-      assert.deepEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
+      assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
     });
 
     test('Can complete lines in file with different indentation', async () => {
@@ -51,7 +51,7 @@ suite('Provide line completions', () => {
         vimState.document
       )!.slice(0, expectedCompletions.length);
 
-      assert.deepEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
+      assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
     });
 
     test('Returns no completions for unmatched line', async () => {

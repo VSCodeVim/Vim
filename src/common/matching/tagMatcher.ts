@@ -77,6 +77,7 @@ export class TagMatcher {
     }
 
     const firstNonWhitespacePositionOnLine = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStartPosition.line
     );
 

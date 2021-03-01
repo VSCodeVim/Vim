@@ -318,6 +318,8 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+  neovimUseConfigFile: boolean;
+  neovimConfigPath: string;
 
   /**
    * .vimrc
