@@ -30,7 +30,6 @@ import {
 import { isTextTransformation } from './../transformations/transformations';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
-import { ModeHandlerMap } from './modeHandlerMap';
 import { EditorIdentity } from '../editorIdentity';
 import { SpecialKeys } from '../util/specialKeys';
 import { BaseOperator } from '../actions/operator';
@@ -38,6 +37,10 @@ import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.c
 import { Position } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
+
+interface IModeHandlerMap {
+  get(editorId: EditorIdentity): ModeHandler | undefined;
+}
 
 /**
  * ModeHandler is the extension's backbone. It listens to events and updates the VimState.
@@ -50,6 +53,7 @@ export class ModeHandler implements vscode.Disposable {
   public readonly remapState: RemapState;
 
   private _disposables: vscode.Disposable[] = [];
+  private _handlerMap: IModeHandlerMap;
   private _remappers: Remappers;
   private static readonly logger = Logger.get('ModeHandler');
 
@@ -65,15 +69,19 @@ export class ModeHandler implements vscode.Disposable {
     this._currentMode = modeName;
   }
 
-  public static async create(textEditor = vscode.window.activeTextEditor!): Promise<ModeHandler> {
-    const modeHandler = new ModeHandler(textEditor);
+  public static async create(
+    handlerMap: IModeHandlerMap,
+    textEditor = vscode.window.activeTextEditor!
+  ): Promise<ModeHandler> {
+    const modeHandler = new ModeHandler(handlerMap, textEditor);
     await modeHandler.vimState.load();
     await modeHandler.setCurrentMode(configuration.startInInsertMode ? Mode.Insert : Mode.Normal);
     modeHandler.syncCursors();
     return modeHandler;
   }
 
-  private constructor(textEditor: vscode.TextEditor) {
+  private constructor(handlerMap: IModeHandlerMap, textEditor: vscode.TextEditor) {
+    this._handlerMap = handlerMap;
     this._remappers = new Remappers();
 
     this.vimState = new VimState(textEditor);
@@ -360,7 +368,7 @@ export class ModeHandler implements vscode.Disposable {
 
   public async handleKeyEvent(key: string): Promise<void> {
     const now = Number(new Date());
-    const printableKey = Notation.printableKey(key);
+    const printableKey = Notation.printableKey(key, configuration.leader);
 
     // Check forceStopRemapping
     if (this.remapState.forceStopRecursiveRemapping) {
@@ -1532,7 +1540,9 @@ export class ModeHandler implements vscode.Disposable {
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      ModeHandlerMap.get(EditorIdentity.fromEditor(editor))?.updateSearchHighlights(showHighlights);
+      this._handlerMap
+        .get(EditorIdentity.fromEditor(editor))
+        ?.updateSearchHighlights(showHighlights);
     }
 
     const easyMotionDimRanges =
