@@ -22,6 +22,7 @@ import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
+import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
@@ -1560,11 +1561,19 @@ class MoveParagraphBegin extends BaseMovement {
 }
 
 abstract class MoveSectionBoundary extends BaseMovement {
-  abstract boundary: string;
+  abstract begin: boolean;
   abstract forward: boolean;
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const document = vimState.document;
+
+    switch (document.languageId) {
+      case 'python':
+        return PythonDocument.moveClassBoundary(document, position, this.forward, this.begin);
+    }
+
+    const boundary = this.begin ? '{' : '}';
     let line = position.line;
 
     if (
@@ -1576,7 +1585,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
 
     line = this.forward ? line + 1 : line - 1;
 
-    while (!vimState.document.lineAt(line).text.startsWith(this.boundary)) {
+    while (!vimState.document.lineAt(line).text.startsWith(boundary)) {
       if (this.forward) {
         if (line === vimState.document.lineCount - 1) {
           break;
@@ -1599,28 +1608,28 @@ abstract class MoveSectionBoundary extends BaseMovement {
 @RegisterAction
 class MoveNextSectionBegin extends MoveSectionBoundary {
   keys = [']', ']'];
-  boundary = '{';
+  begin = true;
   forward = true;
 }
 
 @RegisterAction
 class MoveNextSectionEnd extends MoveSectionBoundary {
   keys = [']', '['];
-  boundary = '}';
+  begin = false;
   forward = true;
 }
 
 @RegisterAction
 class MovePreviousSectionBegin extends MoveSectionBoundary {
   keys = ['[', '['];
-  boundary = '{';
+  begin = true;
   forward = false;
 }
 
 @RegisterAction
 class MovePreviousSectionEnd extends MoveSectionBoundary {
   keys = ['[', ']'];
-  boundary = '}';
+  begin = false;
   forward = false;
 }
 
