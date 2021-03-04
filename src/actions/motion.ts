@@ -596,19 +596,9 @@ class MoveLeftArrow extends MoveLeft {
 }
 
 @RegisterAction
-class BackSpaceInNormalMode extends BaseMovement {
-  modes = [Mode.Normal];
-  keys = ['<BS>'];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLeftThroughLineBreaks();
-  }
-}
-
-@RegisterAction
-class BackSpaceInVisualMode extends BaseMovement {
-  modes = [Mode.Visual, Mode.VisualBlock];
-  keys = ['<BS>'];
+class BackspaceMotion extends BaseMovement {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  keys = [['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return configuration.whichwrap.includes('b')

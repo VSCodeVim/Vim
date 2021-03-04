@@ -1326,19 +1326,30 @@ suite('Mode Normal', () => {
     end: ['|t text'],
   });
 
-  newTest({
-    title: 'Can handle backspace',
-    start: ['text |text'],
-    keysPressed: '<BS><BS>',
-    end: ['tex|t text'],
-  });
+  for (const key of ['<BS>', '<C-BS>', '<S-BS>']) {
+    newTest({
+      title: `${key} moves one character to the left`,
+      start: ['text |text'],
+      keysPressed: key,
+      end: ['text| text'],
+    });
 
-  newTest({
-    title: 'Can handle backspace across lines',
-    start: ['one', '|two'],
-    keysPressed: '<BS><BS>',
-    end: ['o|ne', 'two'],
-  });
+    newTest({
+      title: `${key} goes across line boundaries when 'whichwrap' contains 'b'`,
+      config: { whichwrap: 'b' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['on|e', 'two'],
+    });
+
+    newTest({
+      title: `${key} does not go across line boundaries when 'whichwrap' does not contain 'b'`,
+      config: { whichwrap: '' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['one', '|two'],
+    });
+  }
 
   newTest({
     title: 'Can handle A and backspace',
