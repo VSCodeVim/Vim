@@ -1587,17 +1587,26 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle space',
+    title: '<Space> moves cursor one character right',
     start: ['|abc', 'def'],
-    keysPressed: '  ',
-    end: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['a|bc', 'def'],
   });
 
   newTest({
-    title: 'Can handle space',
-    start: ['|abc', 'def'],
-    keysPressed: '    ',
-    end: ['abc', 'd|ef'],
+    title: "<Space> goes over line break when whichwrap includes 's'",
+    config: { whichwrap: 's' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['abc', '|def'],
+  });
+
+  newTest({
+    title: "<Space> does not go over line break when whichwrap does not include 's'",
+    config: { whichwrap: '' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['ab|c', 'def'],
   });
 
   newTest({

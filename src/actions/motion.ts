@@ -383,10 +383,10 @@ class ArrowsInReplaceMode extends BaseMovement {
         newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
-        newPosition = await new MoveLeftArrow().execAction(position, vimState);
+        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
         break;
       case '<right>':
-        newPosition = await new MoveRightArrow().execAction(position, vimState);
+        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
         break;
       default:
         break;
@@ -579,59 +579,27 @@ async function ensureEditorIsActive(editor: vscode.TextEditor) {
 
 @RegisterAction
 export class MoveLeft extends BaseMovement {
-  keys = ['h'];
+  keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (shouldWrapKey(vimState, this.keysPressed)) {
-      return position.getLeftThroughLineBreaks();
-    }
-    return position.getLeft();
-  }
-}
-
-@RegisterAction
-class MoveLeftArrow extends MoveLeft {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = ['<left>'];
-}
-
-@RegisterAction
-class BackspaceMotion extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [['<BS>'], ['<C-BS>'], ['<S-BS>']];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return configuration.whichwrap.includes('b')
-      ? position.getLeftThroughLineBreaks()
+    return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
+      ? position.getLeftThroughLineBreaks(
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+        )
       : position.getLeft();
   }
 }
 
 @RegisterAction
 class MoveRight extends BaseMovement {
-  keys = ['l'];
+  keys = [['l'], ['<right>'], [' ']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (shouldWrapKey(vimState, this.keysPressed)) {
-      const includeEol = vimState.currentMode === Mode.Insert;
-      return position.getRightThroughLineBreaks(includeEol);
-    }
-    return position.getRight();
-  }
-}
-
-@RegisterAction
-class MoveRightArrow extends MoveRight {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = ['<right>'];
-}
-
-@RegisterAction
-class MoveRightWithSpace extends BaseMovement {
-  keys = [' '];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getRightThroughLineBreaks();
+    return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
+      ? position.getRightThroughLineBreaks(
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+        )
+      : position.getRight();
   }
 }
 
@@ -2074,10 +2042,10 @@ export abstract class ArrowsInInsertMode extends BaseMovement {
         newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
         break;
       case '<left>':
-        newPosition = await new MoveLeftArrow(this.keysPressed).execAction(position, vimState);
+        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
         break;
       case '<right>':
-        newPosition = await new MoveRightArrow(this.keysPressed).execAction(position, vimState);
+        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
         break;
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);

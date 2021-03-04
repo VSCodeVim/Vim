@@ -1009,7 +1009,7 @@
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
-          "default": ""
+          "default": "b,s"
         },
         "vim.report": {
           "type": "number",

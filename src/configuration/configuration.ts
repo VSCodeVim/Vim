@@ -127,12 +127,6 @@ class Configuration implements IConfiguration {
 
     const validatorResults = await configurationValidator.validate(configuration);
 
-    // wrap keys
-    this.wrapKeys = {};
-    for (const wrapKey of this.whichwrap.split(',')) {
-      this.wrapKeys[wrapKey] = true;
-    }
-
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
@@ -395,8 +389,7 @@ class Configuration implements IConfiguration {
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
 
-  whichwrap = '';
-  wrapKeys = {};
+  whichwrap = 'b,s';
 
   startofline = true;
 

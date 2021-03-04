@@ -37,6 +37,7 @@ import _ = require('lodash');
 import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
+import { shouldWrapKey } from '../wrapping';
 
 export class DocumentContentChangeAction extends BaseAction {
   modes: [];
@@ -3180,7 +3181,9 @@ class ToggleCaseAndMoveForward extends BaseCommand {
       vimState.cursorStopPosition
     );
 
-    vimState.cursorStopPosition = vimState.cursorStopPosition.getRight();
+    vimState.cursorStopPosition = shouldWrapKey(vimState.currentMode, '~')
+      ? vimState.cursorStopPosition.getRightThroughLineBreaks()
+      : vimState.cursorStopPosition.getRight();
   }
 }
 
