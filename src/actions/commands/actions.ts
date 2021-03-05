@@ -1443,6 +1443,30 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 }
 
 @RegisterAction
+class CommandGoToOtherSideOfHighlightedText extends BaseCommand {
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  keys = ['O'];
+  isJump = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (vimState.currentMode === Mode.VisualBlock) {
+      [vimState.cursorStartPosition, vimState.cursorStopPosition] = [
+        new vscode.Position(
+          vimState.cursorStartPosition.line,
+          vimState.cursorStopPosition.character
+        ),
+        new vscode.Position(
+          vimState.cursorStopPosition.line,
+          vimState.cursorStartPosition.character
+        ),
+      ];
+    } else {
+      return new CommandGoToOtherEndOfHighlightedText().exec(position, vimState);
+    }
+  }
+}
+
+@RegisterAction
 export class CommandUndo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['u'];
