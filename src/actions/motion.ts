@@ -283,7 +283,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  keys = ['j'];
+  keys = [['j'], ['<down>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -307,13 +307,8 @@ class MoveDown extends BaseMovement {
 }
 
 @RegisterAction
-class MoveDownArrow extends MoveDown {
-  keys = ['<down>'];
-}
-
-@RegisterAction
 class MoveUp extends BaseMovement {
-  keys = ['k'];
+  keys = [['k'], ['<up>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -363,8 +358,38 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 }
 
 @RegisterAction
-class MoveUpArrow extends MoveUp {
-  keys = ['<up>'];
+export class ArrowsInInsertMode extends BaseMovement {
+  modes = [Mode.Insert];
+  keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
+    // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
+    vimState.recordedState.actionsRun = [
+      vimState.recordedState.actionsRun.shift()!,
+      vimState.recordedState.actionsRun.pop()!,
+    ];
+
+    let newPosition: Position;
+    switch (this.keysPressed[0]) {
+      case '<up>':
+        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
+        break;
+      case '<down>':
+        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
+        break;
+      case '<left>':
+        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
+        break;
+      case '<right>':
+        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
+        break;
+      default:
+        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
+    }
+    vimState.replaceState = new ReplaceState(vimState, newPosition);
+    return newPosition;
+  }
 }
 
 @RegisterAction
@@ -377,10 +402,10 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
+        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
         break;
       case '<down>':
-        newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
+        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -389,31 +414,11 @@ class ArrowsInReplaceMode extends BaseMovement {
         newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
         break;
       default:
-        break;
+        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
     vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }
-}
-
-@RegisterAction
-class UpArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = [['<up>']];
-}
-
-@RegisterAction
-class DownArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = [['<down>']];
-}
-
-@RegisterAction
-class LeftArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = [['<left>']];
-}
-
-@RegisterAction
-class RightArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = [['<right>']];
 }
 
 @RegisterAction
@@ -2020,57 +2025,4 @@ export class MoveInsideTag extends MoveTagMatch {
 export class MoveAroundTag extends MoveTagMatch {
   keys = ['a', 't'];
   includeTag = true;
-}
-
-export abstract class ArrowsInInsertMode extends BaseMovement {
-  modes = [Mode.Insert];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
-    // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [
-      vimState.recordedState.actionsRun.shift()!,
-      vimState.recordedState.actionsRun.pop()!,
-    ];
-
-    let newPosition: Position;
-    switch (this.keys[0]) {
-      case '<up>':
-        newPosition = (await new MoveUpArrow().execAction(position, vimState)) as Position;
-        break;
-      case '<down>':
-        newPosition = (await new MoveDownArrow().execAction(position, vimState)) as Position;
-        break;
-      case '<left>':
-        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<right>':
-        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
-        break;
-      default:
-        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
-    }
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
-    return newPosition;
-  }
-}
-
-@RegisterAction
-class UpArrowInInsertMode extends ArrowsInInsertMode {
-  keys = ['<up>'];
-}
-
-@RegisterAction
-class DownArrowInInsertMode extends ArrowsInInsertMode {
-  keys = ['<down>'];
-}
-
-@RegisterAction
-class LeftArrowInInsertMode extends ArrowsInInsertMode {
-  keys = ['<left>'];
-}
-
-@RegisterAction
-class RightArrowInInsertMode extends ArrowsInInsertMode {
-  keys = ['<right>'];
 }
