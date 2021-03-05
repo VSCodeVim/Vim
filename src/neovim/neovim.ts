@@ -126,7 +126,10 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     await this.nvim.setOption('gdefault', configuration.gdefault === true);
-    await buf.setLines(vimState.document.getText().split('\n'), {
+
+    // Only on Windows there will be \r\n at the end of each line
+    const newlineRegex: RegExp = /\r?\n/;
+    await buf.setLines(TextEditor.getText().split(newlineRegex), {
       start: 0,
       end: -1,
       strictIndexing: true,
@@ -138,20 +141,20 @@ export class NeovimWrapper implements vscode.Disposable {
     );
     await this.nvim.callFunction('setpos', [
       '.',
-      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
+      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character + 1, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'<",
-      [0, rangeStart.line + 1, rangeEnd.character, false],
+      [0, rangeStart.line + 1, rangeStart.character + 1, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'>",
-      [0, rangeEnd.line + 1, rangeEnd.character, false],
+      [0, rangeEnd.line + 1, rangeEnd.character + 1, false],
     ]);
     for (const mark of vimState.historyTracker.getLocalMarks()) {
       await this.nvim.callFunction('setpos', [
         `'${mark.name}`,
-        [0, mark.position.line + 1, mark.position.character, false],
+        [0, mark.position.line + 1, mark.position.character + 1, false],
       ]);
     }
 
@@ -172,29 +175,24 @@ export class NeovimWrapper implements vscode.Disposable {
     const buf = await this.nvim.buffer;
     const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 
-    // one Windows, lines that went to nvim and back have a '\r' at the end,
-    // which causes the issues exhibited in #1914
-    const fixedLines =
-      process.platform === 'win32' ? lines.map((line, index) => line.replace(/\r$/, '')) : lines;
+    const lineCount = TextEditor.getLineCount();
 
-    const lineCount = vimState.document.lineCount;
-
+    // Even though VSCode on Windows uses '\r\n' for newlines,
+    // we don't need to add it here because the replace() function
+    // will change '\n' to '\r\n' if necessary
     await TextEditor.replace(
       vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
-      fixedLines.join('\n')
+      lines.join('\n')
     );
 
     NeovimWrapper.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
-    let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
-      1,
-      3
-    );
-    vimState.editor.selection = new vscode.Selection(
-      new Position(row - 1, character),
-      new Position(row - 1, character)
-    );
+    let [newCursorLine, newCursorCol] = ((await this.nvim.callFunction('getpos', [
+      '.',
+    ])) as Array<number>).slice(1, 3);
+    vimState.cursorStartPosition = new Position(newCursorLine - 1, newCursorCol - 1);
+    vimState.cursorStopPosition = new Position(newCursorLine - 1, newCursorCol - 1);
 
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToSpaces');
