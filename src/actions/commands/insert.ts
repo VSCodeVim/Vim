@@ -231,7 +231,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 @RegisterAction
 export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
-  keys = ['<BS>'];
+  keys = [['<BS>'], ['<C-h>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const line = vimState.document.lineAt(position).text;
@@ -523,19 +523,6 @@ class CommandInsertAboveChar extends BaseCommand {
 
     vimState.cursorStartPosition = vimState.editor.selection.start;
     vimState.cursorStopPosition = vimState.editor.selection.start;
-  }
-}
-
-@RegisterAction
-class CommandCtrlHInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-h>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteText',
-      position: position,
-    });
   }
 }
 
