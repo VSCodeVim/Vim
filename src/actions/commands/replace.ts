@@ -40,6 +40,39 @@ class ReplaceModeToInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+class BackspaceInReplaceMode extends BaseCommand {
+  modes = [Mode.Replace];
+  keys = [['<BS>'], ['<C-h>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const replaceState = vimState.replaceState!;
+    if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+      // If you backspace before the beginning of where you started to replace, just move the cursor back.
+
+      vimState.cursorStopPosition = position.getLeft();
+      vimState.cursorStartPosition = position.getLeft();
+    } else if (
+      position.line > replaceState.replaceCursorStartPosition.line ||
+      position.character > replaceState.originalChars.length
+    ) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'deleteText',
+        position,
+      });
+    } else {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        text: replaceState.originalChars[position.character - 1],
+        range: new Range(position.getLeft(), position),
+        diff: new PositionDiff({ character: -1 }),
+      });
+    }
+
+    replaceState.newChars.pop();
+  }
+}
+
+@RegisterAction
 class ReplaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<character>'];
@@ -49,48 +82,21 @@ class ReplaceInReplaceMode extends BaseCommand {
     const char = this.keysPressed[0];
     const replaceState = vimState.replaceState!;
 
-    if (char === '<BS>') {
-      if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
-        // If you backspace before the beginning of where you started to replace,
-        // just move the cursor back.
-
-        vimState.cursorStopPosition = position.getLeft();
-        vimState.cursorStartPosition = position.getLeft();
-      } else if (
-        position.line > replaceState.replaceCursorStartPosition.line ||
-        position.character > replaceState.originalChars.length
-      ) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteText',
-          position,
-        });
-      } else {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: replaceState.originalChars[position.character - 1],
-          range: new Range(position.getLeft(), position),
-          diff: new PositionDiff({ character: -1 }),
-        });
-      }
-
-      replaceState.newChars.pop();
+    if (!position.isLineEnd() && char !== '\n') {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        text: char,
+        range: new Range(position, position.getRight()),
+        diff: new PositionDiff({ character: 1 }),
+      });
     } else {
-      if (!position.isLineEnd() && char !== '\n') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: char,
-          range: new Range(position, position.getRight()),
-          diff: new PositionDiff({ character: 1 }),
-        });
-      } else {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'insertText',
-          text: char,
-          position,
-        });
-      }
-
-      replaceState.newChars.push(char);
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text: char,
+        position,
+      });
     }
+
+    replaceState.newChars.push(char);
   }
 }
