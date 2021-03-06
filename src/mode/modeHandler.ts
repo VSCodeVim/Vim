@@ -27,7 +27,8 @@ import {
   ActionOverrideCmdD,
   CommandNumber,
 } from './../actions/commands/actions';
-import { isTextTransformation } from './../transformations/transformations';
+import { isTextTransformation } from '../transformations/transformations';
+import { executeTransformations } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { EditorIdentity } from '../editorIdentity';
@@ -702,7 +703,8 @@ export class ModeHandler implements vscode.Disposable {
     if (action instanceof BaseCommand) {
       await action.execCount(this.vimState.cursorStopPosition, this.vimState);
 
-      await this.vimState.recordedState.transformer.execute(this);
+      const transformer = this.vimState.recordedState.transformer;
+      await executeTransformations(this, transformer.transformations);
 
       if (action.isCompleteAction) {
         ranAction = true;
@@ -1057,7 +1059,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.vimState.recordedState.transformer.transformations.length > 0) {
-      await this.vimState.recordedState.transformer.execute(this);
+      const transformer = this.vimState.recordedState.transformer;
+      await executeTransformations(this, transformer.transformations);
     } else {
       // Keep track of all cursors (in the case of multi-cursor).
       this.vimState.cursors = resultingCursors;
