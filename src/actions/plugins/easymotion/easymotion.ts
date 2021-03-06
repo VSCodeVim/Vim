@@ -5,7 +5,6 @@ import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { Mode } from '../../../mode/mode';
 import { Position } from 'vscode';
-import { VimState } from '../../../state/vimState';
 
 export class EasyMotion {
   /**
@@ -113,7 +112,7 @@ export class EasyMotion {
    * Search and sort using the index of a match compared to the index of position (usually the cursor)
    */
   public sortedSearch(
-    vimState: VimState,
+    document: vscode.TextDocument,
     position: Position,
     search: string | RegExp = '',
     options: EasyMotion.SearchOptions = {}
@@ -130,12 +129,12 @@ export class EasyMotion {
     let prevMatch: EasyMotion.Match | undefined;
 
     // Calculate the min/max bounds for the search
-    const lineCount = vimState.document.lineCount;
+    const lineCount = document.lineCount;
     const lineMin = options.min ? Math.max(options.min.line, 0) : 0;
     const lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
 
     outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
-      const line = vimState.document.lineAt(lineIdx).text;
+      const line = document.lineAt(lineIdx).text;
       let result = regex.exec(line);
 
       while (result) {
