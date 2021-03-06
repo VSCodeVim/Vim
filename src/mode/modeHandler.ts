@@ -38,6 +38,7 @@ import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.c
 import { Position } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
+import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
 
 interface IModeHandlerMap {
   get(editorId: EditorIdentity): ModeHandler | undefined;
@@ -85,7 +86,7 @@ export class ModeHandler implements vscode.Disposable {
     this._handlerMap = handlerMap;
     this._remappers = new Remappers();
 
-    this.vimState = new VimState(textEditor);
+    this.vimState = new VimState(textEditor, new EasyMotion());
     this.remapState = new RemapState();
     this._disposables.push(this.vimState);
   }

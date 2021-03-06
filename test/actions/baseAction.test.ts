@@ -5,6 +5,7 @@ import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
@@ -26,7 +27,7 @@ suite('base action', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    vimState = new VimState(vscode.window.activeTextEditor!);
+    vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
     await vimState.load();
   });
 

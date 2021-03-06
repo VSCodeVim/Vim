@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Position } from 'vscode';
+import { Mode } from '../../../mode/mode';
 import type { VimState } from '../../../state/vimState';
 
 export type LabelPosition = 'after' | 'before';
@@ -66,4 +67,23 @@ export interface EasyMotionSearchAction {
   fire(position: Position, vimState: VimState): Promise<void>;
   getMatches(position: Position, vimState: VimState): Match[];
   readonly searchCharCount: number;
+}
+
+export interface IEasyMotion {
+  accumulation: string;
+  previousMode: Mode;
+  markers: Marker[];
+  searchAction: EasyMotionSearchAction;
+
+  addMarker(marker: Marker): void;
+  findMarkers(nail: string, onlyVisible: boolean): Marker[];
+  sortedSearch(
+    document: vscode.TextDocument,
+    position: Position,
+    search?: string | RegExp,
+    options?: SearchOptions
+  ): Match[];
+  updateDecorations(editor: vscode.TextEditor): void;
+  clearMarkers(): void;
+  clearDecorations(editor: vscode.TextEditor): void;
 }
