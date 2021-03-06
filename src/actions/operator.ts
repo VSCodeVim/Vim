@@ -15,6 +15,8 @@ import { commandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
+  isOperator = true;
+
   constructor(multicursorIndex?: number) {
     super();
     this.multicursorIndex = multicursorIndex;

@@ -13,6 +13,9 @@ export abstract class BaseAction {
    */
   public isMotion = false;
 
+  public isOperator = false;
+  public isCommand = false;
+
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
@@ -172,6 +175,8 @@ export abstract class BaseAction {
  * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
+  isCommand = true;
+
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
    * that means that we'll go and try to run it.

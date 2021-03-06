@@ -9,7 +9,7 @@ import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMod
 import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import { RecordedState } from './../state/recordedState';
+import { IBaseAction, RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
@@ -661,7 +661,7 @@ export class ModeHandler implements vscode.Disposable {
     return true;
   }
 
-  private async runAction(recordedState: RecordedState, action: BaseAction): Promise<void> {
+  private async runAction(recordedState: RecordedState, action: IBaseAction): Promise<void> {
     let ranRepeatableAction = false;
     let ranAction = false;
     this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
