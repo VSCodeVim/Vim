@@ -7,6 +7,9 @@ import {
   EasyMotionCharMoveOpions,
   EasyMotionMoveOptionsBase,
   EasyMotionWordMoveOpions,
+  EasyMotionSearchAction,
+  Match,
+  SearchOptions,
 } from './types';
 import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
@@ -30,7 +33,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   private _baseOptions: EasyMotionMoveOptionsBase;
 
-  public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
+  public abstract getMatches(position: Position, vimState: VimState): Match[];
 
   constructor(baseOptions: EasyMotionMoveOptionsBase, trigger?: EasymotionTrigger) {
     super();
@@ -40,9 +43,9 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
   }
 
-  public abstract resolveMatchPosition(match: EasyMotion.Match): Position;
+  public abstract resolveMatchPosition(match: Match): Position;
 
-  public processMarkers(matches: EasyMotion.Match[], cursorPosition: Position, vimState: VimState) {
+  public processMarkers(matches: Match[], cursorPosition: Position, vimState: VimState) {
     // Clear existing markers, just in case
     vimState.easyMotion.clearMarkers();
 
@@ -60,7 +63,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
   }
 
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+  protected searchOptions(position: Position): SearchOptions {
     switch (this._baseOptions.searchOptions) {
       case 'min':
         return { min: position };
@@ -109,8 +112,8 @@ function getMatchesForString(
   position: Position,
   vimState: VimState,
   searchString: string,
-  options?: EasyMotion.SearchOptions
-): EasyMotion.Match[] {
+  options?: SearchOptions
+): Match[] {
   switch (searchString) {
     case '':
       return [];
@@ -142,22 +145,6 @@ function getMatchesForString(
   }
 }
 
-export interface EasyMotionSearchAction {
-  searchString: string;
-
-  /**
-   * True if it should go to Easymotion mode
-   */
-  shouldFire(): boolean;
-
-  /**
-   * Command to execute when it should fire
-   */
-  fire(position: Position, vimState: VimState): Promise<void>;
-  getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
-  readonly searchCharCount: number;
-}
-
 export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   public searchString: string = '';
   private _options: EasyMotionCharMoveOpions;
@@ -171,7 +158,7 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
     this._options = options;
   }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+  public getMatches(position: Position, vimState: VimState): Match[] {
     return getMatchesForString(position, vimState, this.searchString, this.searchOptions(position));
   }
 
@@ -184,7 +171,7 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
     await this.exec(position, vimState);
   }
 
-  public resolveMatchPosition(match: EasyMotion.Match): Position {
+  public resolveMatchPosition(match: Match): Position {
     const { line, character } = match.position;
     switch (this._options.labelPosition) {
       case 'after':
@@ -208,11 +195,11 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
     super({});
   }
 
-  public resolveMatchPosition(match: EasyMotion.Match): Position {
+  public resolveMatchPosition(match: Match): Position {
     return match.position;
   }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+  public getMatches(position: Position, vimState: VimState): Match[] {
     return getMatchesForString(
       position,
       vimState,
@@ -268,11 +255,11 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
     this._options = options;
   }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+  public getMatches(position: Position, vimState: VimState): Match[] {
     return this.getMatchesForWord(position, vimState, this.searchOptions(position));
   }
 
-  public resolveMatchPosition(match: EasyMotion.Match): Position {
+  public resolveMatchPosition(match: Match): Position {
     const { line, character } = match.position;
     switch (this._options.labelPosition) {
       case 'after':
@@ -285,8 +272,8 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   private getMatchesForWord(
     position: Position,
     vimState: VimState,
-    options?: EasyMotion.SearchOptions
-  ): EasyMotion.Match[] {
+    options?: SearchOptions
+  ): Match[] {
     const regex = this._options.jumpToAnywhere
       ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
       : new RegExp('\\w{1,}', 'g');
@@ -302,19 +289,19 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
     this._options = options;
   }
 
-  public resolveMatchPosition(match: EasyMotion.Match): Position {
+  public resolveMatchPosition(match: Match): Position {
     return match.position;
   }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+  public getMatches(position: Position, vimState: VimState): Match[] {
     return this.getMatchesForLineStart(position, vimState, this.searchOptions(position));
   }
 
   private getMatchesForLineStart(
     position: Position,
     vimState: VimState,
-    options?: EasyMotion.SearchOptions
-  ): EasyMotion.Match[] {
+    options?: SearchOptions
+  ): Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor
     const matches = vimState.easyMotion.sortedSearch(
       vimState.document,

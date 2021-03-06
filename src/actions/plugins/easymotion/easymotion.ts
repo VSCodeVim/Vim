@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { EasyMotionSearchAction } from './easymotion.cmd';
+import { EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
 import { Mode } from '../../../mode/mode';
 import { Position } from 'vscode';
 
@@ -17,8 +17,8 @@ export class EasyMotion {
   /**
    * Array of all markers and decorations
    */
-  private _markers: EasyMotion.Marker[];
-  private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
+  private _markers: Marker[];
+  private visibleMarkers: Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
 
   private static readonly fade = vscode.window.createTextEditorDecorationType({
@@ -92,18 +92,18 @@ export class EasyMotion {
     this.visibleMarkers = [];
   }
 
-  public addMarker(marker: EasyMotion.Marker) {
+  public addMarker(marker: Marker) {
     this._markers.push(marker);
   }
 
-  public getMarker(index: number): EasyMotion.Marker {
+  public getMarker(index: number): Marker {
     return this._markers[index];
   }
 
   /**
    * Find markers beginning with a string
    */
-  public findMarkers(nail: string, onlyVisible: boolean): EasyMotion.Marker[] {
+  public findMarkers(nail: string, onlyVisible: boolean): Marker[] {
     const markers = onlyVisible ? this.visibleMarkers : this._markers;
     return markers.filter((marker) => marker.name.startsWith(nail));
   }
@@ -115,18 +115,18 @@ export class EasyMotion {
     document: vscode.TextDocument,
     position: Position,
     search: string | RegExp = '',
-    options: EasyMotion.SearchOptions = {}
-  ): EasyMotion.Match[] {
+    options: SearchOptions = {}
+  ): Match[] {
     const regex =
       typeof search === 'string'
         ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
         : search;
 
-    const matches: EasyMotion.Match[] = [];
+    const matches: Match[] = [];
 
     // Cursor index refers to the index of the marker that is on or to the right of the cursor
     let cursorIndex = position.character;
-    let prevMatch: EasyMotion.Match | undefined;
+    let prevMatch: Match | undefined;
 
     // Calculate the min/max bounds for the search
     const lineCount = document.lineCount;
@@ -160,7 +160,7 @@ export class EasyMotion {
             if (pos.isEqual(position)) {
               result = regex.exec(line);
             } else {
-              prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
+              prevMatch = new Match(pos, result[0], matches.length);
               matches.push(prevMatch);
               result = regex.exec(line);
             }
@@ -170,7 +170,7 @@ export class EasyMotion {
     }
 
     // Sort by the index distance from the cursor index
-    matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
+    matches.sort((a: Match, b: Match): number => {
       const absDiffA = computeAboluteDiff(a.index);
       const absDiffB = computeAboluteDiff(b.index);
       return absDiffA - absDiffB;
@@ -421,40 +421,5 @@ export class EasyMotion {
     if (configuration.easymotionDimBackground) {
       editor.setDecorations(EasyMotion.fade, dimmingZones);
     }
-  }
-}
-
-export namespace EasyMotion {
-  export interface Marker {
-    name: string;
-    position: Position;
-  }
-
-  export class Match {
-    public position: Position;
-    public readonly text: string;
-    public readonly index: number;
-
-    constructor(position: Position, text: string, index: number) {
-      this.position = position;
-      this.text = text;
-      this.index = index;
-    }
-
-    public toRange(): vscode.Range {
-      return new vscode.Range(this.position, this.position.translate(0, this.text.length));
-    }
-  }
-
-  export interface SearchOptions {
-    /**
-     * The minimum bound of the search
-     */
-    min?: Position;
-
-    /**
-     * The maximum bound of the search
-     */
-    max?: Position;
   }
 }
