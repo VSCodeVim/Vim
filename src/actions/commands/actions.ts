@@ -153,7 +153,7 @@ export class DocumentContentChangeAction extends BaseAction {
       };
     }
 
-    let compressed: vscode.TextDocumentContentChangeEvent[] = [];
+    const compressed: vscode.TextDocumentContentChangeEvent[] = [];
     let prev: vscode.TextDocumentContentChangeEvent | undefined;
     for (const change of this.contentChanges) {
       if (prev === undefined) {
@@ -217,7 +217,7 @@ export class CommandNumber extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const number = parseInt(this.keysPressed[0], 10);
+    const num = parseInt(this.keysPressed[0], 10);
     const operatorCount = vimState.recordedState.operatorCount;
 
     if (operatorCount > 0) {
@@ -226,7 +226,7 @@ export class CommandNumber extends BaseCommand {
       if (!(lastAction instanceof CommandNumber)) {
         // We have set an operatorCount !== 0 after an operator, but now we got another count
         // number so we need to multiply them.
-        vimState.recordedState.count = operatorCount * number;
+        vimState.recordedState.count = operatorCount * num;
       } else {
         // We are now getting another digit which means we need to multiply by 10 and add
         // the new digit multiplied by operatorCount.
@@ -238,10 +238,10 @@ export class CommandNumber extends BaseCommand {
         // - After '1' the count is multiplied by 10 and added by number 1 multiplied by 'operatorCount'
         //   (6 * 10 + 1 * 2 = 62)
         // The final result will be the deletion of 62 words.
-        vimState.recordedState.count = vimState.recordedState.count * 10 + number * operatorCount;
+        vimState.recordedState.count = vimState.recordedState.count * 10 + num * operatorCount;
       }
     } else {
-      vimState.recordedState.count = vimState.recordedState.count * 10 + number;
+      vimState.recordedState.count = vimState.recordedState.count * 10 + num;
     }
   }
 
@@ -299,7 +299,7 @@ class CommandRecordMacro extends BaseCommand {
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
-      let newRegister = new RecordedState();
+      const newRegister = new RecordedState();
       newRegister.registerName = register;
       Register.putByKey(newRegister, register);
     }
@@ -343,7 +343,7 @@ class CommandExecuteMacro extends BaseCommand {
     if (Register.has(register)) {
       vimState.recordedState.transformer.addTransformation({
         type: 'macro',
-        register: register,
+        register,
         replay: 'contentChange',
       });
     }
@@ -453,7 +453,7 @@ class CommandEscReplaceMode extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: textToAdd,
-      position: position,
+      position,
       diff: new PositionDiff({ character: -1 }),
     });
 
@@ -665,7 +665,7 @@ export class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   keys = ['R'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
 
     await vimState.setCurrentMode(Mode.Replace);
     vimState.replaceState = new ReplaceState(vimState, position, timesToRepeat);
@@ -695,7 +695,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
       ) {
         vimState.recordedState.transformer.addTransformation({
           type: 'deleteText',
-          position: position,
+          position,
         });
       } else {
         vimState.recordedState.transformer.addTransformation({
@@ -719,7 +719,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: char,
-          position: position,
+          position,
         });
       }
 
@@ -1166,7 +1166,7 @@ class CommandDot extends BaseCommand {
   keys = ['.'];
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
-    let count = vimState.recordedState.count || 1;
+    const count = vimState.recordedState.count || 1;
 
     for (let i = 0; i < count; i++) {
       vimState.recordedState.transformer.addTransformation({
@@ -1800,7 +1800,7 @@ class CommandOpenFile extends BaseCommand {
       const lineNumber = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: filePath,
-        lineNumber: lineNumber,
+        lineNumber,
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
@@ -2006,7 +2006,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    let count = vimState.recordedState.count || 1;
+    const count = vimState.recordedState.count || 1;
 
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
@@ -2036,7 +2036,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    let count = vimState.recordedState.count || 1;
+    const count = vimState.recordedState.count || 1;
 
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
@@ -2326,7 +2326,7 @@ export class ActionDeleteChar extends BaseCommand {
       return;
     }
 
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
 
     await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
@@ -2373,7 +2373,7 @@ export class ActionDeleteLastChar extends BaseCommand {
       return;
     }
 
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
 
     await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
@@ -2392,7 +2392,7 @@ class ActionJoin extends BaseCommand {
 
   private firstNonWhitespaceIndex(str: string): number {
     for (let i = 0, len = str.length; i < len; i++) {
-      let chCode = str.charCodeAt(i);
+      const chCode = str.charCodeAt(i);
       if (chCode !== 32 /** space */ && chCode !== 9 /** tab */) {
         return i;
       }
@@ -2408,11 +2408,11 @@ class ActionJoin extends BaseCommand {
   ): Promise<void> {
     count = count - 1 || 1;
 
-    let startLineNumber: number,
-      startColumn: number,
-      endLineNumber: number,
-      endColumn: number,
-      columnDeltaOffset: number = 0;
+    let startLineNumber: number;
+    let startColumn: number;
+    let endLineNumber: number;
+    let endColumn: number;
+    let columnDeltaOffset: number = 0;
 
     if (startPosition.isEqual(position) || startPosition.line === position.line) {
       if (position.line + 1 < vimState.document.lineCount) {
@@ -2438,7 +2438,7 @@ class ActionJoin extends BaseCommand {
     for (let i = startLineNumber + 1; i <= endLineNumber; i++) {
       const lineText = vimState.document.lineAt(i).text;
 
-      let firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
+      const firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
 
       if (firstNonWhitespaceIdx >= 0) {
         let insertSpace = true;
@@ -2451,7 +2451,7 @@ class ActionJoin extends BaseCommand {
           insertSpace = false;
         }
 
-        let lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
+        const lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
 
         if (lineTextWithoutIndent.charAt(0) === ')') {
           insertSpace = false;
@@ -2476,8 +2476,8 @@ class ActionJoin extends BaseCommand {
       }
     }
 
-    let deleteStartPosition = new Position(startLineNumber, startColumn);
-    let deleteEndPosition = new Position(endLineNumber, endColumn);
+    const deleteStartPosition = new Position(startLineNumber, startColumn);
+    const deleteEndPosition = new Position(endLineNumber, endColumn);
 
     if (!deleteStartPosition.isEqual(deleteEndPosition)) {
       if (startPosition.isEqual(position)) {
@@ -2516,7 +2516,7 @@ class ActionJoin extends BaseCommand {
           : -1
       );
 
-    let resultingCursors: Range[] = [];
+    const resultingCursors: Range[] = [];
     for (const [idx, { start, stop }] of cursorsToIterateOver.entries()) {
       this.multicursorIndex = idx;
 
@@ -2604,7 +2604,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: resultLine,
-      position: position,
+      position,
       diff: new PositionDiff({
         character: -lastLineLength,
       }),
@@ -2635,7 +2635,7 @@ class ActionReplaceCharacter extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = vimState.recordedState.count || 1;
+    const timesToRepeat = vimState.recordedState.count || 1;
     const toReplace = this.keysPressed[1];
 
     /**
@@ -2979,7 +2979,7 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     const resultingCursors: Range[] = [];
     const cursorsOnBlankLines: Range[] = [];
     for (const selection of vimState.editor.selections) {
-      let { start, end } = selection;
+      const { start, end } = selection;
 
       for (let i = start.line; i <= end.line; i++) {
         const line = vimState.document.lineAt(i);
@@ -3323,7 +3323,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
    * @returns a list of Ranges in which to search for numbers
    */
   private getSearchRanges(vimState: VimState): Range[] {
-    let ranges: Range[] = [];
+    const ranges: Range[] = [];
     const [start, stop] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     switch (vimState.currentMode) {
       case Mode.Normal: {

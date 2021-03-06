@@ -43,7 +43,7 @@ export class PutExCommand extends node.CommandBase {
 
     vimState.recordedState.registerName = registerName;
 
-    let options: IPutCommandOptions = {
+    const options: IPutCommandOptions = {
       forceLinewise: true,
       forceCursorLastLine: true,
       pasteBeforeCursor: this.arguments.bang,

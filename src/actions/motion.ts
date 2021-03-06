@@ -61,7 +61,7 @@ abstract class MoveByScreenLine extends BaseMovement {
         // If we change the `vimState.editor.selections` directly with the forEach
         // for some reason vscode doesn't update them. But doing it this way does
         // update vscode's selections.
-        let selections = vimState.editor.selections;
+        const selections = vimState.editor.selections;
         selections.forEach((s, i) => {
           if (s.active.isAfter(s.anchor)) {
             // The selection is on the right side of the cursor, while our representation
@@ -103,7 +103,7 @@ abstract class MoveByScreenLine extends BaseMovement {
       }
 
       let start = vimState.editor.selections[multicursorIndex].anchor;
-      let stop = vimState.editor.selections[multicursorIndex].active;
+      const stop = vimState.editor.selections[multicursorIndex].active;
 
       // If we are moving up we need to keep getting the left of anchor/start because vscode is
       // to the right of the character in order to include it but our positions are always on the
@@ -171,8 +171,8 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     return true;
   }
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    let prevDesiredColumn = vimState.desiredColumn;
-    let prevLine = vimState.editor.selection.active.line;
+    const prevDesiredColumn = vimState.desiredColumn;
+    const prevLine = vimState.editor.selection.active.line;
 
     if (vimState.currentMode !== Mode.Normal) {
       /**
@@ -180,7 +180,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        * differently we need to sometimes move the cursor at the end
        * of the selection back by a character.
        */
-      let start = vimState.editor.selection.start;
+      const start = vimState.editor.selection.start;
       if (
         (this.movementType === 'down' && position.line > start.line) ||
         (this.movementType === 'up' && position.line < prevLine)
@@ -214,7 +214,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
        */
       let start = vimState.editor.selection.start;
       let stop = vimState.editor.selection.end;
-      let curPos = vimState.editor.selection.active;
+      const curPos = vimState.editor.selection.active;
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
       if (start.isEqual(curPos) && !start.isEqual(stop)) {
@@ -762,7 +762,7 @@ class MoveFindBackward extends BaseMovement {
 
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    let result = findHelper(vimState, position, toFind, count, 'backward');
+    const result = findHelper(vimState, position, toFind, count, 'backward');
 
     vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
     vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
@@ -1237,7 +1237,7 @@ class MoveNonBlankLast extends BaseMovement {
 
     return {
       start: vimState.cursorStartPosition,
-      stop: stop,
+      stop,
       registerMode: RegisterMode.LineWise,
     };
   }
@@ -1337,7 +1337,7 @@ class MoveWordEnd extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    let end = position.getCurrentWordEnd();
+    const end = position.getCurrentWordEnd();
 
     return new Position(end.line, end.character + 1);
   }
@@ -1983,7 +1983,7 @@ abstract class MoveTagMatch extends ExpandingSelection {
       return failedMovement(vimState);
     }
 
-    let startPosition =
+    const startPosition =
       start >= 0 ? vimState.document.positionAt(start) : vimState.cursorStartPosition;
     let endPosition = end >= 0 ? vimState.document.positionAt(end) : position;
     if (vimState.currentMode === Mode.Visual || vimState.currentMode === Mode.SurroundInputMode) {

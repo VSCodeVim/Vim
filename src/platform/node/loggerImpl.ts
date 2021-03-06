@@ -23,7 +23,7 @@ class VsCodeMessage extends TransportStream {
     this.prefix = options.prefix;
   }
 
-  public async log(info: { level: string; message: string }, callback: Function) {
+  public async log(info: { level: string; message: string }, callback: () => void) {
     if (configuration.debug.silent) {
       return;
     }
@@ -41,7 +41,7 @@ class VsCodeMessage extends TransportStream {
         showMessage = vscode.window.showInformationMessage;
         break;
       default:
-        throw 'Unsupported ' + info.level;
+        throw Error(`Unsupported log level ${info.level}`);
     }
 
     const message = `${this.prefix}: ${info.message}`;
@@ -70,11 +70,11 @@ class NodeLogger implements ILogger {
         new ConsoleForElectron({
           level: configuration.debug.loggingLevelForConsole,
           silent: configuration.debug.silent,
-          prefix: prefix,
+          prefix,
         }),
         new VsCodeMessage({
           level: configuration.debug.loggingLevelForAlert,
-          prefix: prefix,
+          prefix,
         }),
       ],
     });

@@ -15,7 +15,7 @@ export class Scanner {
       this.pos = this.input.length;
       return Scanner.EOF;
     }
-    let c = this.input[this.pos];
+    const c = this.input[this.pos];
     this.pos++;
     return c;
   }
@@ -49,7 +49,7 @@ export class Scanner {
     }
 
     let result = '';
-    let c: string | undefined = undefined;
+    let c: string | undefined;
 
     while (!this.isAtEof) {
       c = this.next();
@@ -81,7 +81,7 @@ export class Scanner {
 
   // Returns the span of text between the current start and the current position.
   emit(): string {
-    let s = this.input.substring(this.start, this.pos);
+    const s = this.input.substring(this.start, this.pos);
     this.ignore();
     return s;
   }
@@ -120,7 +120,7 @@ export class Scanner {
       return;
     }
     while (!this.isAtEof) {
-      let c = this.next();
+      const c = this.next();
       if (!chars.includes(c)) {
         break;
       }
@@ -158,7 +158,7 @@ export class Scanner {
   }
 
   expectOneOf(values: string[]): void {
-    let match = values.filter((s) => this.input.substr(this.pos).startsWith(s));
+    const match = values.filter((s) => this.input.substr(this.pos).startsWith(s));
     if (match.length !== 1) {
       if (match.length > 1) {
         throw new Error('Too many matches.');

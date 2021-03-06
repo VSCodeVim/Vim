@@ -51,7 +51,7 @@ export class Transformer {
       (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
     );
 
-    let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
+    const accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
     const doTextEditorEdit = (command: TextTransformations, edit: vscode.TextEditorEdit) => {
       switch (command.type) {
@@ -150,7 +150,7 @@ export class Transformer {
           break;
 
         case 'showCommandHistory':
-          let cmd = await commandLine.showHistory(vimState.currentCommandlineText);
+          const cmd = await commandLine.showHistory(vimState.currentCommandlineText);
           if (cmd && cmd.length !== 0) {
             await commandLine.Run(cmd, vimState);
             modeHandler.updateView();
@@ -193,7 +193,7 @@ export class Transformer {
           break;
 
         case 'macro':
-          let recordedMacro = (await Register.get(vimState, transformation.register))?.text;
+          const recordedMacro = (await Register.get(vimState, transformation.register))?.text;
           if (!(recordedMacro instanceof RecordedState)) {
             return;
           }
@@ -206,7 +206,7 @@ export class Transformer {
             await modeHandler.runMacro(recordedMacro);
           } else {
             let keyStrokes: string[] = [];
-            for (let action of recordedMacro.actionsRun) {
+            for (const action of recordedMacro.actionsRun) {
               keyStrokes = keyStrokes.concat(action.keysPressed);
             }
             vimState.recordedState = new RecordedState();

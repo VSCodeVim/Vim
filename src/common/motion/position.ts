@@ -566,13 +566,13 @@ Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEd
   try {
     // line
     // TODO: this `|| 1` seems dubious...
-    let lineCount = TextEditor.getLineCount(textEditor) || 1;
+    const lineCount = TextEditor.getLineCount(textEditor) || 1;
     if (this.line >= lineCount) {
       return false;
     }
 
     // char
-    let charCount = TextEditor.getLineLength(this.line);
+    const charCount = TextEditor.getLineLength(this.line);
     if (this.character > charCount + 1) {
       return false;
     }

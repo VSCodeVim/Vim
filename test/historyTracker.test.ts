@@ -19,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => <VimState>(<any>sandbox.createStubInstance(VimState));
+  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
@@ -28,7 +28,7 @@ suite('historyTracker unit tests', () => {
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
-  const buildMockPosition = (): Position => <any>sandbox.createStubInstance(Position);
+  const buildMockPosition = (): Position => sandbox.createStubInstance(Position) as any;
 
   setup(() => {
     sandbox = sinon.createSandbox();

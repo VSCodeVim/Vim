@@ -138,7 +138,7 @@ export class CommandInsertPreviousText extends BaseCommand {
       actions.shift();
     }
 
-    for (let action of actions) {
+    for (const action of actions) {
       if (action instanceof BaseCommand) {
         await action.execCount(vimState.cursorStopPosition, vimState);
       }
@@ -265,7 +265,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       // Otherwise, just delete a character (unless we're at the start of the document)
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
-        position: position,
+        position,
       });
     }
 
@@ -414,8 +414,8 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
-      text: text,
-      position: position,
+      text,
+      position,
     });
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = vimState.editor.selection.start;
@@ -646,7 +646,7 @@ class NewLineInsertMode extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: '\n',
-      position: position,
+      position,
       diff: new PositionDiff({ character: -1 }),
     });
   }

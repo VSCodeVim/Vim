@@ -3229,7 +3229,7 @@ suite('Mode Normal', () => {
 
   suite('marks', async () => {
     const jumpToNewFile = async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
       await setupWorkspace(configuration);

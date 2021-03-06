@@ -25,7 +25,7 @@ class ExternalCommand {
    * @param command the command to expand
    */
   private expandCommand(command: string): string {
-    let result: string[] = [];
+    const result: string[] = [];
 
     for (let i = 0; i < command.length; i++) {
       if (command[i] === '!') {

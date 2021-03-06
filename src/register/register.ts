@@ -134,7 +134,7 @@ export class Register {
       });
     }
 
-    let registerContent = Register.registers.get(register.toLowerCase())!;
+    const registerContent = Register.registers.get(register.toLowerCase())!;
 
     if (!Array.isArray(registerContent.text)) {
       registerContent.text = [];
@@ -194,7 +194,7 @@ export class Register {
       }
     }
 
-    let currentRegisterMode = vimState.effectiveRegisterMode;
+    const currentRegisterMode = vimState.effectiveRegisterMode;
     if (
       appendToRegister.registerMode === RegisterMode.CharacterWise &&
       currentRegisterMode === RegisterMode.CharacterWise
@@ -239,7 +239,7 @@ export class Register {
     vimState: VimState
   ): void {
     register = register.toLowerCase();
-    let currentRegisterMode = vimState.effectiveRegisterMode;
+    const currentRegisterMode = vimState.effectiveRegisterMode;
     let appendToRegister = Register.registers.get(register);
     if (appendToRegister === undefined) {
       appendToRegister = { registerMode: currentRegisterMode, text: '' };

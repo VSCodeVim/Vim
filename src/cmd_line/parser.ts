@@ -7,14 +7,12 @@ import { getParser } from './subparser';
 
 const logger = Logger.get('Parser');
 
-interface IParseFunction {
-  (state: ParserState, command: CommandLine): IParseFunction | undefined;
-}
+type IParseFunction = (state: ParserState, command: CommandLine) => IParseFunction | undefined;
 
 export function parse(input: string): CommandLine {
   const cmd = new CommandLine();
   let f: IParseFunction | undefined = parseLineRange;
-  let state: ParserState = new ParserState(input);
+  const state: ParserState = new ParserState(input);
   while (f) {
     f = f(state, cmd);
   }
@@ -23,7 +21,7 @@ export function parse(input: string): CommandLine {
 
 function parseLineRange(state: ParserState, commandLine: CommandLine): IParseFunction | undefined {
   while (true) {
-    let tok = state.next();
+    const tok = state.next();
     switch (tok.type) {
       case TokenType.Eof:
         return undefined;
@@ -93,7 +91,7 @@ class ParserState {
       this.pos = this.tokens.length;
       return new Token(TokenType.Eof, '__EOF__');
     }
-    let tok = this.tokens[this.pos];
+    const tok = this.tokens[this.pos];
     this.pos++;
     return tok;
   }

@@ -137,7 +137,7 @@ export function getPathDetails(
     partialPath = untildify(partialPath);
   }
 
-  let [dirName, baseName] = separatePath(partialPath, p.sep);
+  const [dirName, baseName] = separatePath(partialPath, p.sep);
   let fullDirPath: string;
   if (p.isAbsolute(dirName)) {
     fullDirPath = dirName;

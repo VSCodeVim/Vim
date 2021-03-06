@@ -85,7 +85,7 @@ class StatusBarImpl implements vscode.Disposable {
       return;
     }
 
-    let text: string[] = [];
+    const text: string[] = [];
 
     if (configuration.showmodename) {
       text.push(statusBarText(vimState));
@@ -110,10 +110,10 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   private updateColor(mode: Mode) {
-    let foreground: string | undefined = undefined;
-    let background: string | undefined = undefined;
+    let foreground: string | undefined;
+    let background: string | undefined;
 
-    let colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
+    const colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
@@ -184,12 +184,12 @@ export function statusBarText(vimState: VimState) {
       const leadingChar =
         globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
 
-      let searchWithCursor = globalState.searchState.searchString.split('');
+      const searchWithCursor = globalState.searchState.searchString.split('');
       searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
       return `${leadingChar}${searchWithCursor.join('')}`;
     case Mode.CommandlineInProgress:
-      let commandWithCursor = vimState.currentCommandlineText.split('');
+      const commandWithCursor = vimState.currentCommandlineText.split('');
       commandWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
 
       return `:${commandWithCursor.join('')}`;
