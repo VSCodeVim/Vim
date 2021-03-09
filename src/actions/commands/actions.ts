@@ -2851,22 +2851,22 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new Range(start, start.getLineEnd()),
-        collapseRange: true,
-      });
+    const cursors: Range[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new Range(start, start.getLineEnd()),
+          collapseRange: true,
+        });
+        cursors.push(new Range(end, end));
+      }
     }
+    vimState.cursors = cursors;
 
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
-
-    for (const { end } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.cursors.push(new Range(end, end));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
