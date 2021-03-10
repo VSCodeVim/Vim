@@ -8,3 +8,4 @@ import './commands/insert';
 import './commands/replace';
 import './commands/actions';
 import './commands/commandLine';
+import './commands/search';
