@@ -8,7 +8,7 @@ suite('Error', () => {
     for (const errorCodeString in ErrorCode) {
       const errorCode = Number(errorCodeString);
       if (!isNaN(errorCode)) {
-        assert.notEqual(ErrorMessage[errorCode], undefined, errorCodeString);
+        assert.notStrictEqual(ErrorMessage[errorCode], undefined, errorCodeString);
       }
     }
   });
