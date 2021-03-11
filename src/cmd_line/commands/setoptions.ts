@@ -92,12 +92,12 @@ export class SetOptionsCommand extends node.CommandBase {
         if (typeof this._arguments.value! === 'number') {
           configuration[optionName] -= this._arguments.value;
         } else {
-          let initialValue = configuration[optionName];
+          const initialValue = configuration[optionName];
           configuration[optionName] = initialValue.split(this._arguments.value! as string).join('');
         }
         break;
       case SetOptionOperator.Info:
-        let value = configuration[optionName];
+        const value = configuration[optionName];
         if (value === undefined) {
           throw VimError.fromCode(ErrorCode.UnknownOption);
         } else {

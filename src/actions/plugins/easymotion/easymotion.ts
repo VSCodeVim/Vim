@@ -299,7 +299,7 @@ export class EasyMotion {
       const firstCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
           contentText: keystroke.substring(0, 1),
-          backgroundColor: backgroundColor,
+          backgroundColor,
           color: firstCharFontColor,
           margin: `0 -1ch 0 0;
           position: absolute;
@@ -329,7 +329,7 @@ export class EasyMotion {
         const secondCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
           before: {
             contentText: keystroke.slice(1),
-            backgroundColor: backgroundColor,
+            backgroundColor,
             color: secondCharFontColor,
             margin: `0 -1ch 0 0;
             position: absolute;

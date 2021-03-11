@@ -52,6 +52,10 @@ class DecorationImpl {
     return this._searchHighlight;
   }
 
+  public get easyMotionIncSearch() {
+    return this._easyMotionIncSearch;
+  }
+
   public set easyMotionIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionIncSearch) {
       this._easyMotionIncSearch.dispose();
@@ -59,19 +63,15 @@ class DecorationImpl {
     this._easyMotionIncSearch = value;
   }
 
+  public get easyMotionDimIncSearch() {
+    return this._easyMotionDimIncSearch;
+  }
+
   public set easyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionDimIncSearch) {
       this._easyMotionDimIncSearch.dispose();
     }
     this._easyMotionDimIncSearch = value;
-  }
-
-  public get easyMotionIncSearch() {
-    return this._easyMotionIncSearch;
-  }
-
-  public get easyMotionDimIncSearch() {
-    return this._easyMotionDimIncSearch;
   }
 
   public getOrCreateMarkDecoration(name: string): vscode.TextEditorDecorationType {

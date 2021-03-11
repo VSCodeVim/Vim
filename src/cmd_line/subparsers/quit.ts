@@ -23,7 +23,7 @@ export function parseQuitCommandArgs(args: string): node.QuitCommand {
 }
 
 export function parseQuitAllCommandArgs(args: string): node.QuitCommand {
-  let command = parseQuitCommandArgs(args);
+  const command = parseQuitCommandArgs(args);
   command.arguments.quitAll = true;
   return command;
 }

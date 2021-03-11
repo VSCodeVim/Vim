@@ -38,6 +38,14 @@
     },
     {
       "name": "constant",
+      "match": "<([Ee][Ss][Cc])>"
+    },
+    {
+      "name": "constant",
+      "match": "<(([Uu][Pp])|([Dd][Oo][Ww][Nn])|([Ll][Ee][Ff][Tt])|([Rr][Ii][Gg][Hh][Tt]))>"
+    },
+    {
+      "name": "constant",
       "match": "<[CcDd]-.>"
     },
     {

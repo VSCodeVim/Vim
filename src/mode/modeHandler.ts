@@ -147,7 +147,7 @@ export class ModeHandler implements vscode.Disposable {
       // might close or change to other document
       return;
     }
-    let selection = e.selections[0];
+    const selection = e.selections[0];
     ModeHandler.logger.debug(
       `Selections: Handling Selection Change! Selection: ${selection.anchor.toString()}, ${
         selection.active
@@ -166,7 +166,7 @@ export class ModeHandler implements vscode.Disposable {
       (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== Mode.VisualBlock
     ) {
-      let allowedModes = [Mode.Normal];
+      const allowedModes = [Mode.Normal];
       if (!isSnippetSelectionChange()) {
         allowedModes.push(...[Mode.Insert, Mode.Replace]);
       }
@@ -201,7 +201,7 @@ export class ModeHandler implements vscode.Disposable {
         if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
           // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
           // but it is also triggered when we set the 'editor.selections' on 'updateView'.
-          let allowedModes = [Mode.Normal, Mode.Visual];
+          const allowedModes = [Mode.Normal, Mode.Visual];
           if (!isSnippetSelectionChange()) {
             // if we just inserted a snippet then don't allow insert modes to go to visual mode
             allowedModes.push(...[Mode.Insert, Mode.Replace]);
@@ -563,7 +563,7 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.keyHistory.push(key);
 
-    let recordedState = this.vimState.recordedState;
+    const recordedState = this.vimState.recordedState;
     recordedState.actionKeys.push(key);
 
     const action = getRelevantAction(recordedState.actionKeys, this.vimState);
@@ -599,7 +599,7 @@ export class ModeHandler implements vscode.Disposable {
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
     } else {
-      let lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
+      const lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
 
       if (lastAction instanceof DocumentContentChangeAction) {
         lastAction.keysPressed.push(key);
@@ -623,7 +623,7 @@ export class ModeHandler implements vscode.Disposable {
         ) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           this.vimState.historyTracker.currentContentChanges = [];
-          let newContentChange = new DocumentContentChangeAction();
+          const newContentChange = new DocumentContentChangeAction();
           newContentChange.keysPressed.push(key);
           recordedState.actionsRun.push(newContentChange);
           actionToRecord = newContentChange;
@@ -907,8 +907,8 @@ export class ModeHandler implements vscode.Disposable {
 
   private async executeMovement(movement: BaseMovement): Promise<RecordedState> {
     this.vimState.lastMovementFailed = false;
-    let recordedState = this.vimState.recordedState;
-    let cursorsToRemove: number[] = [];
+    const recordedState = this.vimState.recordedState;
+    const cursorsToRemove: number[] = [];
 
     for (let i = 0; i < this.vimState.cursors.length; i++) {
       /**
@@ -928,7 +928,7 @@ export class ModeHandler implements vscode.Disposable {
       movement.multicursorIndex = i;
 
       this.vimState.cursorStartPosition = this.vimState.cursors[i].start;
-      let cursorPosition = this.vimState.cursors[i].stop;
+      const cursorPosition = this.vimState.cursors[i].stop;
       this.vimState.cursorStopPosition = cursorPosition;
 
       const result = await movement.execActionWithCount(
@@ -988,7 +988,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Keep the cursor within bounds
     if (this.vimState.currentMode !== Mode.Normal || recordedState.operator) {
-      let stop = this.vimState.cursorStopPosition;
+      const stop = this.vimState.cursorStopPosition;
 
       // Vim does this weird thing where it allows you to select and delete
       // the newline character, which it places 1 past the last character
@@ -1048,7 +1048,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      let resultingRange = new Range(
+      const resultingRange = new Range(
         this.vimState.cursorStartPosition,
         this.vimState.cursorStopPosition
       );
@@ -1105,8 +1105,8 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState = recordedState;
     this.vimState.isRunningDotCommand = true;
 
-    for (let action of recordedMacro.actionsRun) {
-      let originalLocation = Jump.fromStateNow(this.vimState);
+    for (const action of recordedMacro.actionsRun) {
+      const originalLocation = Jump.fromStateNow(this.vimState);
 
       this.vimState.cursorsInitialState = this.vimState.cursors;
 
@@ -1221,7 +1221,7 @@ export class ModeHandler implements vscode.Disposable {
        * there would be a selectionChangeEvent when there wouldn't be any.
        */
       const getSelectionsCombined = (sel: vscode.Selection[]) => {
-        let combinedSelections: vscode.Selection[] = [];
+        const combinedSelections: vscode.Selection[] = [];
         sel.forEach((s, i) => {
           if (i > 0) {
             const previousSelection = combinedSelections[combinedSelections.length - 1];
@@ -1401,7 +1401,7 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.editor.options.cursorStyle = cursorStyle;
 
     // cursor block
-    let cursorRange: vscode.Range[] = [];
+    const cursorRange: vscode.Range[] = [];
     if (
       getCursorType(this.vimState, this.currentMode) === VSCodeVimCursorType.TextDecoration &&
       this.currentMode !== Mode.Insert
@@ -1428,9 +1428,9 @@ export class ModeHandler implements vscode.Disposable {
     // Insert Mode virtual characters: used to temporarily show the remapping pressed keys on
     // insert mode, to show the `"` character after pressing `<C-r>`, and to show `?` and the
     // first character when inserting digraphs with `<C-k>`.
-    let iModeVirtualCharDecorationOptions: vscode.DecorationOptions[] = [];
+    const iModeVirtualCharDecorationOptions: vscode.DecorationOptions[] = [];
     if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
-      let virtualKey: string | undefined = undefined;
+      let virtualKey: string | undefined;
       if (this.vimState.recordedState.bufferedKeys.length > 0) {
         virtualKey = this.vimState.recordedState.bufferedKeys[
           this.vimState.recordedState.bufferedKeys.length - 1
@@ -1478,7 +1478,7 @@ export class ModeHandler implements vscode.Disposable {
           } else {
             iModeVirtualCharDecorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getRightThroughLineBreaks(true)),
-              renderOptions: renderOptions,
+              renderOptions,
             });
           }
         }
@@ -1505,11 +1505,11 @@ export class ModeHandler implements vscode.Disposable {
         };
         opCursorDecorations.push({
           range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions: renderOptions,
+          renderOptions,
         });
         opCursorCharDecorations.push({
           range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions: renderOptions,
+          renderOptions,
         });
       }
     }

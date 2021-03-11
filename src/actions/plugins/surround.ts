@@ -362,7 +362,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     let endReplace = replacement;
 
     if (startReplace[0] === '<') {
-      let tagName = /([-\w.]+)/.exec(startReplace);
+      const tagName = /([-\w.]+)/.exec(startReplace);
       if (tagName) {
         endReplace = `</${tagName[1]}>`;
       } else {
@@ -501,8 +501,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     if (target === 't') {
       // `MoveInsideTag` must be run first as otherwise the search will
       // look for the next enclosing tag after having selected the first
-      let innerTagContent = await new MoveInsideTag().execAction(position, vimState);
-      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
+      const innerTagContent = await new MoveInsideTag().execAction(position, vimState);
+      const { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
 
       if (failed || innerTagContent.failed) {
         return CommandSurroundAddToReplacement.finish(vimState);
@@ -520,7 +520,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     // Special case: 'change' with targets w(ord), W(ord), s(entence), p(aragraph)
     // is a shortcut for 'yank' with an inner text object (e.g. `csw]` is the same as `ysiw]`)
     if (operator === 'change') {
-      let textObj: { new (): TextObjectMovement } | undefined;
+      let textObj: (new () => TextObjectMovement) | undefined;
       let addNewline: 'no' | 'end-only' | 'both' = 'no';
       if (target === 'w') {
         [textObj, addNewline] = [SelectInnerWord, 'no'];

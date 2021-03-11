@@ -112,8 +112,8 @@ export abstract class BaseAction {
     }
 
     for (let i = 0, j = 0; i < one.length; i++, j++) {
-      const left = one[i],
-        right = two[j];
+      const left = one[i];
+      const right = two[j];
 
       if (left === '<any>' || right === '<any>') {
         continue;
@@ -206,7 +206,7 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    const timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (!this.runsOnceForEveryCursor()) {
       for (let i = 0; i < timesToRepeat; i++) {
@@ -222,7 +222,7 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
-    let resultingCursors: Range[] = [];
+    const resultingCursors: Range[] = [];
 
     const cursorsToIterateOver = vimState.cursors
       .map((x) => new Range(x.start, x.stop))
@@ -265,7 +265,7 @@ export enum KeypressState {
 /**
  * Every Vim action will be added here with the @RegisterAction decorator.
  */
-const actionMap = new Map<Mode, Array<{ new (): BaseAction }>>();
+const actionMap = new Map<Mode, Array<new () => BaseAction>>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -299,7 +299,7 @@ export function getRelevantAction(
   return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
-export function RegisterAction(action: { new (): BaseAction }): void {
+export function RegisterAction(action: new () => BaseAction): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
     let actions = actionMap.get(modeName);

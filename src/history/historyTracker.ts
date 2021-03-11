@@ -359,7 +359,7 @@ export class HistoryTracker {
    */
   private updateAndReturnMarks(): IMark[] {
     const previousMarks = this.getAllCurrentDocumentMarks();
-    let newMarks: IMark[] = [];
+    const newMarks: IMark[] = [];
 
     // clone old marks into new marks
     for (const mark of previousMarks) {
@@ -479,7 +479,7 @@ export class HistoryTracker {
     const newMark: IMark = {
       position,
       name: markName,
-      isUppercaseMark: isUppercaseMark,
+      isUppercaseMark,
       editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
     };
     this.putMarkInList(newMark);
@@ -709,7 +709,7 @@ export class HistoryTracker {
 
     let done: boolean = false;
     let stepsToUndo: number = 0;
-    let changesToUndo: DocumentChange[] = [];
+    const changesToUndo: DocumentChange[] = [];
 
     const changes = currentHistoryStep.changes;
 

@@ -46,7 +46,7 @@ export class VsCodeMessage implements ILogger {
         showMessage = console.log;
         break;
       default:
-        throw 'Unsupported ' + info.level;
+        throw Error(`Unsupported log level ${info.level}`);
     }
 
     showMessage(`${this.prefix}: ${info.message}`, ...this.actionMessages);

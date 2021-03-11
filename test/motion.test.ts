@@ -353,7 +353,7 @@ suite('word motion', () => {
 });
 
 suite('unicode word motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     '漢字ひらがなカタカナalphabets、いろいろな文字。',
     'Καλημέρα κόσμε',
     'Die früh sich einst dem trüben Blick gezeigt.',
@@ -451,7 +451,7 @@ suite('unicode word motion', () => {
 });
 
 suite('sentence motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     'This text has many sections in it. What do you think?',
     '',
     'A paragraph boundary is also a sentence boundry, see',
@@ -532,7 +532,7 @@ suite('sentence motion', () => {
 });
 
 suite('paragraph motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     'this text has', // 0
     '', // 1
     'many', // 2

@@ -135,7 +135,7 @@ export class LineRange {
 
     // now handle subsequent tokens, offsetting the current candidate line number
     for (let tokenIndex = 1; tokenIndex < toks.length; ++tokenIndex) {
-      let currentToken = toks[tokenIndex];
+      const currentToken = toks[tokenIndex];
 
       switch (currentOperation) {
         case TokenType.Plus:

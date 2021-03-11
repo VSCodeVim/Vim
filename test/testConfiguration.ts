@@ -122,7 +122,7 @@ export class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  whichwrap = '';
+  whichwrap = 'b,s';
   wrapKeys = {};
   report = 2;
   digraphs: {};

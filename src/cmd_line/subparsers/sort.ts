@@ -6,12 +6,12 @@ export function parseSortCommandArgs(args: string): node.SortCommand {
     return new node.SortCommand({ reverse: false, ignoreCase: false, unique: false });
   }
 
-  let scannedArgs: node.ISortCommandArguments = {
+  const scannedArgs: node.ISortCommandArguments = {
     reverse: false,
     ignoreCase: false,
     unique: false,
   };
-  let scanner = new Scanner(args);
+  const scanner = new Scanner(args);
   const c = scanner.next();
   scannedArgs.reverse = c === '!';
 
