@@ -45,13 +45,13 @@ export const ErrorMessage: IErrorMessage = {
 };
 
 export class VimError extends Error {
-  private _code: number;
-  private _message: string;
+  public readonly code: number;
+  public readonly message: string;
 
-  constructor(code: number, message: string) {
+  private constructor(code: number, message: string) {
     super();
-    this._code = code;
-    this._message = message;
+    this.code = code;
+    this.message = message;
   }
 
   static fromCode(code: ErrorCode, extraValue?: string): VimError {
@@ -60,14 +60,6 @@ export class VimError extends Error {
     }
 
     throw new Error('unknown error code: ' + code);
-  }
-
-  get code(): number {
-    return this._code;
-  }
-
-  get message(): string {
-    return this._message;
   }
 
   toString(): string {

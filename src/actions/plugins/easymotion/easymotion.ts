@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
+import { IEasyMotion, EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
 import { Mode } from '../../../mode/mode';
 import { Position } from 'vscode';
 
-export class EasyMotion {
+export class EasyMotion implements IEasyMotion {
   /**
    * Refers to the accumulated keys for depth navigation
    */
@@ -17,7 +17,8 @@ export class EasyMotion {
   /**
    * Array of all markers and decorations
    */
-  private _markers: Marker[];
+  public readonly markers: Marker[];
+
   private visibleMarkers: Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
 
@@ -38,17 +39,13 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
 
-  public get markers() {
-    return this._markers;
-  }
-
   /**
    * Mode to return to after attempting easymotion
    */
   public previousMode: Mode;
 
   constructor() {
-    this._markers = [];
+    this.markers = [];
     this.visibleMarkers = [];
     this.decorations = [];
   }
@@ -88,23 +85,21 @@ export class EasyMotion {
    * Clear all markers
    */
   public clearMarkers() {
-    this._markers = [];
+    while (this.markers.length) {
+      this.markers.pop();
+    }
     this.visibleMarkers = [];
   }
 
   public addMarker(marker: Marker) {
-    this._markers.push(marker);
-  }
-
-  public getMarker(index: number): Marker {
-    return this._markers[index];
+    this.markers.push(marker);
   }
 
   /**
    * Find markers beginning with a string
    */
   public findMarkers(nail: string, onlyVisible: boolean): Marker[] {
-    const markers = onlyVisible ? this.visibleMarkers : this._markers;
+    const markers = onlyVisible ? this.visibleMarkers : this.markers;
     return markers.filter((marker) => marker.name.startsWith(nail));
   }
 
@@ -242,7 +237,7 @@ export class EasyMotion {
     // the user to do more work, with this solution we temporarily hide the marked character
     // so no user specific setting is needed
     const hiddenChars: vscode.Range[] = [];
-    const markers = this._markers
+    const markers = this.markers
       .filter((m) => m.name.startsWith(this.accumulation))
       .sort((a, b) => (a.position.isBefore(b.position) ? -1 : 1));
 
