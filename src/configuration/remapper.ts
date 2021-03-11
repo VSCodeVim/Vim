@@ -22,29 +22,25 @@ interface IRemapper {
 }
 
 export class Remappers implements IRemapper {
-  private remappers: IRemapper[];
-
-  constructor() {
-    this.remappers = [
-      new InsertModeRemapper(),
-      new NormalModeRemapper(),
-      new VisualModeRemapper(),
-      new CommandLineModeRemapper(),
-      new OperatorPendingModeRemapper(),
-    ];
-  }
+  private readonly remappers = [
+    new InsertModeRemapper(),
+    new NormalModeRemapper(),
+    new VisualModeRemapper(),
+    new CommandLineModeRemapper(),
+    new OperatorPendingModeRemapper(),
+  ];
 
   get isPotentialRemap(): boolean {
     return this.remappers.some((r) => r.isPotentialRemap);
   }
 
   public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
-    let handled = false;
-
     for (const remapper of this.remappers) {
-      handled = handled || (await remapper.sendKey(keys, modeHandler));
+      if (await remapper.sendKey(keys, modeHandler)) {
+        return true;
+      }
     }
-    return handled;
+    return false;
   }
 }
 
