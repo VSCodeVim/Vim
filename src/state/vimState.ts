@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
-import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
+import { IEasyMotion } from '../actions/plugins/easymotion/types';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
@@ -58,7 +58,7 @@ export class VimState implements vscode.Disposable {
 
   public historyTracker: HistoryTracker;
 
-  public easyMotion: EasyMotion;
+  public easyMotion: IEasyMotion;
 
   public identity: EditorIdentity;
 
@@ -303,11 +303,11 @@ export class VimState implements vscode.Disposable {
 
   public nvim?: INVim;
 
-  public constructor(editor: vscode.TextEditor) {
+  public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
-    this.easyMotion = new EasyMotion();
+    this.easyMotion = easyMotion;
   }
 
   async load() {

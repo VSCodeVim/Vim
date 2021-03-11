@@ -9,7 +9,7 @@ import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMod
 import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import { RecordedState } from './../state/recordedState';
+import { IBaseAction, RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
@@ -27,7 +27,8 @@ import {
   ActionOverrideCmdD,
   CommandNumber,
 } from './../actions/commands/actions';
-import { isTextTransformation } from './../transformations/transformations';
+import { isTextTransformation } from '../transformations/transformations';
+import { executeTransformations } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { EditorIdentity } from '../editorIdentity';
@@ -37,6 +38,7 @@ import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.c
 import { Position } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
+import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
 
 interface IModeHandlerMap {
   get(editorId: EditorIdentity): ModeHandler | undefined;
@@ -84,7 +86,7 @@ export class ModeHandler implements vscode.Disposable {
     this._handlerMap = handlerMap;
     this._remappers = new Remappers();
 
-    this.vimState = new VimState(textEditor);
+    this.vimState = new VimState(textEditor, new EasyMotion());
     this.remapState = new RemapState();
     this._disposables.push(this.vimState);
   }
@@ -660,7 +662,7 @@ export class ModeHandler implements vscode.Disposable {
     return true;
   }
 
-  private async runAction(recordedState: RecordedState, action: BaseAction): Promise<void> {
+  private async runAction(recordedState: RecordedState, action: IBaseAction): Promise<void> {
     let ranRepeatableAction = false;
     let ranAction = false;
     this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
@@ -702,7 +704,8 @@ export class ModeHandler implements vscode.Disposable {
     if (action instanceof BaseCommand) {
       await action.execCount(this.vimState.cursorStopPosition, this.vimState);
 
-      await this.vimState.recordedState.transformer.execute(this);
+      const transformer = this.vimState.recordedState.transformer;
+      await executeTransformations(this, transformer.transformations);
 
       if (action.isCompleteAction) {
         ranAction = true;
@@ -1057,7 +1060,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.vimState.recordedState.transformer.transformations.length > 0) {
-      await this.vimState.recordedState.transformer.execute(this);
+      const transformer = this.vimState.recordedState.transformer;
+      await executeTransformations(this, transformer.transformations);
     } else {
       // Keep track of all cursors (in the case of multi-cursor).
       this.vimState.cursors = resultingCursors;

@@ -1,6 +1,6 @@
 import { Position } from 'vscode';
 import { configuration } from './../../../configuration/configuration';
-import { EasyMotion } from './easymotion';
+import { Marker } from './types';
 
 export class MarkerGenerator {
   private matchesCount: number;
@@ -13,7 +13,7 @@ export class MarkerGenerator {
     this.prefixKeyTable = this.createPrefixKeyTable();
   }
 
-  public generateMarker(index: number, markerPosition: Position): EasyMotion.Marker | null {
+  public generateMarker(index: number, markerPosition: Position): Marker | null {
     const { keyTable, prefixKeyTable } = this;
 
     if (index >= keyTable.length - prefixKeyTable.length) {
