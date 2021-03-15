@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
+import { Jump } from '../src/jumps/jump';
+import { globalState } from '../src/state/globalState';
 import { VimState } from '../src/state/vimState';
 
 suite('historyTracker unit tests', () => {
@@ -17,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => <VimState>(<any>sandbox.createStubInstance(VimState));
+  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
@@ -26,7 +28,7 @@ suite('historyTracker unit tests', () => {
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
-  const buildMockPosition = (): Position => <any>sandbox.createStubInstance(Position);
+  const buildMockPosition = (): Position => sandbox.createStubInstance(Position) as any;
 
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -40,6 +42,27 @@ suite('historyTracker unit tests', () => {
     setup(() => {
       setupVSCode();
       historyTracker = setupHistoryTracker();
+    });
+
+    test('can set previous context mark from single quote', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, "'");
+
+      sinon.assert.calledWith(spy, mockJump);
+    });
+    test('can set previous context mark from backtick', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, '`');
+
+      sinon.assert.calledWith(spy, mockJump);
     });
 
     test('can create lowercase mark', () => {

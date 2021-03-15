@@ -16,7 +16,7 @@ export interface IKeyRemapping {
   after?: string[];
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
-  commands?: ({ command: string; args: any[] } | string)[];
+  commands?: Array<{ command: string; args: any[] } | string>;
   source?: 'vscode' | 'vimrc';
 }
 
@@ -318,6 +318,8 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+  neovimUseConfigFile: boolean;
+  neovimConfigPath: string;
 
   /**
    * .vimrc
@@ -398,4 +400,9 @@ export interface IConfiguration {
    * and `>>` with a linewise operator.
    */
   startofline: boolean;
+
+  /**
+   * Show the currently set mark(s) in the gutter.
+   */
+  showMarksInGutter: boolean;
 }

@@ -2,7 +2,7 @@ import * as TransportStream from 'winston-transport';
 import * as vscode from 'vscode';
 import * as winston from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
-import { configuration } from '../../configuration/configuration';
+import { IConfiguration } from '../../configuration/iconfiguration';
 import { ILogger } from '../common/logger';
 
 interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
@@ -15,6 +15,7 @@ interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
  */
 class VsCodeMessage extends TransportStream {
   prefix?: string;
+  configuration?: IConfiguration;
   actionMessages = ['Dismiss', 'Suppress Errors'];
 
   constructor(options: VsCodeMessageOptions) {
@@ -23,8 +24,8 @@ class VsCodeMessage extends TransportStream {
     this.prefix = options.prefix;
   }
 
-  public async log(info: { level: string; message: string }, callback: Function) {
-    if (configuration.debug.silent) {
+  public async log(info: { level: string; message: string }, callback: () => void) {
+    if (this.configuration && this.configuration.debug.silent) {
       return;
     }
     let showMessage: (message: string, ...items: string[]) => Thenable<string | undefined>;
@@ -41,16 +42,16 @@ class VsCodeMessage extends TransportStream {
         showMessage = vscode.window.showInformationMessage;
         break;
       default:
-        throw 'Unsupported ' + info.level;
+        throw Error(`Unsupported log level ${info.level}`);
     }
 
     const message = `${this.prefix}: ${info.message}`;
     const selectedAction = await showMessage(message, ...this.actionMessages);
-    if (selectedAction === 'Suppress Errors') {
+    if (selectedAction === 'Suppress Errors' && this.configuration) {
       vscode.window.showInformationMessage(
         'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.silent`.'
       );
-      configuration.debug.silent = true;
+      this.configuration.debug.silent = true;
     }
 
     if (callback) {
@@ -68,13 +69,13 @@ class NodeLogger implements ILogger {
       level: 'debug', // filtering will be done at the transport level
       transports: [
         new ConsoleForElectron({
-          level: configuration.debug.loggingLevelForConsole,
-          silent: configuration.debug.silent,
-          prefix: prefix,
+          level: 'error',
+          silent: false,
+          prefix,
         }),
         new VsCodeMessage({
-          level: configuration.debug.loggingLevelForAlert,
-          prefix: prefix,
+          level: 'error',
+          prefix,
         }),
       ],
     });
@@ -96,10 +97,11 @@ class NodeLogger implements ILogger {
     this._logger.verbose(verboseMessage);
   }
 
-  public configChanged() {
+  public configChanged(configuration: IConfiguration) {
     this._logger.transports[0].level = configuration.debug.loggingLevelForConsole;
     this._logger.transports[0].silent = configuration.debug.silent;
     this._logger.transports[1].level = configuration.debug.loggingLevelForAlert;
+    (this._logger.transports[1] as VsCodeMessage).configuration = configuration;
   }
 }
 

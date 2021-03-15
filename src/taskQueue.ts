@@ -30,7 +30,7 @@ class TaskQueue {
 
   private async runTasks(queueName: string): Promise<void> {
     while (this._taskQueue[queueName].tasks.length > 0) {
-      let task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
+      const task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
 
       try {
         task.isRunning = true;
@@ -83,10 +83,10 @@ class TaskQueue {
     queueName: string = 'default',
     isHighPriority: boolean = false
   ): void {
-    let task: IEnqueuedTask = {
+    const task: IEnqueuedTask = {
       promise: action,
       queue: queueName,
-      isHighPriority: isHighPriority,
+      isHighPriority,
       isRunning: false,
     };
 

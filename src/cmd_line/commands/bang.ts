@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { TextEditor } from '../../textEditor';
 
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
@@ -57,7 +56,7 @@ export class BangCommand extends node.CommandBase {
       type: 'replaceText',
       text: output,
       range: new Range(start, end),
-      diff: diff,
+      diff,
     });
   }
 }
