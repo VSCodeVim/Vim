@@ -2,14 +2,12 @@ import { Scanner } from './scanner';
 import { Token, TokenType } from './token';
 
 // Describes a function that can lex part of a Vim command line.
-interface ILexFunction {
-  (state: Scanner, tokens: Token[]): ILexFunction | null;
-}
+type ILexFunction = (state: Scanner, tokens: Token[]) => ILexFunction | null;
 
 export function lex(input: string): Token[] {
   // We use a character scanner as state for the lexer.
   const state = new Scanner(input);
-  let tokens: Token[] = [];
+  const tokens: Token[] = [];
   let f: ILexFunction | null = LexerFunctions.lexRange;
   while (f) {
     // Each lexing function returns the next lexing function or null.
@@ -79,13 +77,19 @@ namespace LexerFunctions {
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
         case '*':
-          state.emit();
-          tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
-          tokens.push(new Token(TokenType.Comma, ',')!);
-          tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
+          state.ignore();
+          tokens.push(new Token(TokenType.SelectionFirstLine, '<'));
+          tokens.push(new Token(TokenType.Comma, ','));
+          tokens.push(new Token(TokenType.SelectionLastLine, '>'));
           continue;
         case "'":
           return lexMark;
+        case '!':
+          tokens.push(emitToken(TokenType.CommandName, state)!);
+          return lexCommandArgs;
+        case ' ':
+          state.ignore();
+          continue;
         default:
           return lexCommand;
       }
@@ -111,7 +115,7 @@ namespace LexerFunctions {
       default:
         if (/[a-zA-Z]/.test(c)) {
           state.emit();
-          tokens.push(new Token(TokenType.Mark, c)!);
+          tokens.push(new Token(TokenType.Mark, c));
         } else {
           state.backup();
         }
@@ -128,7 +132,7 @@ namespace LexerFunctions {
    * so it's lexRange's job to specify which token to emit.
    */
   function lexDigits(tokenType: TokenType) {
-    return function (state: Scanner, tokens: Token[]): ILexFunction | null {
+    return (state: Scanner, tokens: Token[]): ILexFunction | null => {
       // The first digit has already been lexed.
       while (true) {
         if (state.isAtEof) {
@@ -158,16 +162,20 @@ namespace LexerFunctions {
       } else {
         state.backup();
         tokens.push(emitToken(TokenType.CommandName, state)!);
-        while (!state.isAtEof) {
-          state.next();
-        }
-        // TODO(guillermooo): We need to parse multiple commands.
-        const args = emitToken(TokenType.CommandArgs, state);
-        if (args) {
-          tokens.push(args);
-        }
-        break;
+        return lexCommandArgs;
       }
+    }
+    return null;
+  }
+
+  function lexCommandArgs(state: Scanner, tokens: Token[]): ILexFunction | null {
+    while (!state.isAtEof) {
+      state.next();
+    }
+    // TODO(guillermooo): We need to parse multiple commands.
+    const args = emitToken(TokenType.CommandArgs, state);
+    if (args) {
+      tokens.push(args);
     }
     return null;
   }

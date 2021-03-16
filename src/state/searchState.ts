@@ -1,12 +1,22 @@
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { Position, PositionDiff } from './../common/motion/position';
+import { PositionDiff } from './../common/motion/position';
 import { Mode } from './../mode/mode';
 
 export enum SearchDirection {
   Forward = 1,
   Backward = -1,
+}
+
+// Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
+let supportsLookbehind = true;
+try {
+  // tslint:disable-next-line
+  new RegExp('(?<=x)');
+} catch {
+  supportsLookbehind = false;
 }
 
 /**
@@ -17,8 +27,12 @@ export class SearchState {
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   private static readonly caseOverrideRegex = /\\[Cc]/g;
-  private static readonly notEscapedSlashRegex = /(?<=[^\\])\//g;
-  private static readonly notEscapedQuestionMarkRegex = /(?<=[^\\])\?/g;
+  private static readonly notEscapedSlashRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\/', 'g')
+    : /\//g;
+  private static readonly notEscapedQuestionMarkRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\?', 'g')
+    : /\?/g;
   private static readonly searchOffsetBeginRegex = /b(\+-)?[0-9]*/;
   private static readonly searchOffsetEndRegex = /e(\+-)?[0-9]*/;
 
@@ -29,18 +43,21 @@ export class SearchState {
   /**
    * Every range in the document that matches the search string.
    */
-  public getMatchRanges(document?: vscode.TextDocument): vscode.Range[] {
-    if (!document) {
-      document = vscode.window.activeTextEditor!.document;
-    }
-    return this.recalculateSearchRanges(document);
+  public getMatchRanges(editor: vscode.TextEditor): vscode.Range[] {
+    return this.recalculateSearchRanges(editor);
   }
-  private matchRanges: Map<String, { version: number; ranges: Array<vscode.Range> }> = new Map();
+  private matchRanges: Map<string, { version: number; ranges: vscode.Range[] }> = new Map();
 
   /**
    * Whether the needle should be interpreted as a regular expression
    */
   private readonly isRegex: boolean;
+
+  /**
+   * If true, an all-lowercase needle will not be treated as case-insensitive, even if smartcase is enabled.
+   * This is used for [g]* and [g]#.
+   */
+  private readonly ignoreSmartcase: boolean;
 
   /**
    * The string being searched for
@@ -96,7 +113,7 @@ export class SearchState {
         } else {
           this.offset = {
             type: 'line',
-            num: num,
+            num,
           };
         }
       }
@@ -123,7 +140,12 @@ export class SearchState {
      * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
      */
     let ignorecase = configuration.ignorecase;
-    if (ignorecase && configuration.smartcase && /[A-Z]/.test(this.needle)) {
+    if (
+      ignorecase &&
+      configuration.smartcase &&
+      !this.ignoreSmartcase &&
+      /[A-Z]/.test(this.needle)
+    ) {
       ignorecase = false;
     }
 
@@ -152,10 +174,12 @@ export class SearchState {
     return this._needleRegex;
   }
 
-  private recalculateSearchRanges(document: vscode.TextDocument): vscode.Range[] {
+  private recalculateSearchRanges(editor: vscode.TextEditor): vscode.Range[] {
     if (this.needle === '') {
       return [];
     }
+
+    const document = editor.document;
 
     const cached = this.matchRanges.get(document.fileName);
     if (cached?.version === document.version) {
@@ -165,14 +189,14 @@ export class SearchState {
     // We store the entire text file as a string inside text, and run the
     // regex against it many times to find all of our matches.
     const text = document.getText();
-    const selection = vscode.window.activeTextEditor!.selection;
+    const selection = editor.selection;
     const startOffset = document.offsetAt(selection.active);
     const regex = this.needleRegex;
     regex.lastIndex = startOffset;
 
     let result: RegExpExecArray | null;
     let wrappedOver = false;
-    let matchRanges = [] as vscode.Range[];
+    const matchRanges = [] as vscode.Range[];
     while (true) {
       result = regex.exec(text);
 
@@ -222,10 +246,11 @@ export class SearchState {
    * Pass in -1 as direction to reverse the direction we search.
    */
   public getNextSearchMatchPosition(
+    editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { pos: Position; match: boolean; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(startPosition, direction);
+    const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -234,7 +259,7 @@ export class SearchState {
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
+        pos = start.add(editor.document, PositionDiff.newBOLDiff(this.offset.num));
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {
@@ -254,13 +279,11 @@ export class SearchState {
    * end is exclusive; which means the index is start + matchedString.length
    */
   public getNextSearchMatchRange(
+    editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { start: Position; end: Position; match: boolean; index: number } | undefined {
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-    const matchRanges = this.recalculateSearchRanges(vscode.window.activeTextEditor.document);
+    const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
       // TODO(bell)
@@ -273,8 +296,8 @@ export class SearchState {
       for (const [index, matchRange] of matchRanges.entries()) {
         if (matchRange.start.isAfter(startPosition)) {
           return {
-            start: Position.FromVSCodePosition(matchRange.start),
-            end: Position.FromVSCodePosition(matchRange.end),
+            start: matchRange.start,
+            end: matchRange.end,
             match: true,
             index,
           };
@@ -285,8 +308,8 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[0];
         return {
-          start: Position.FromVSCodePosition(range.start),
-          end: Position.FromVSCodePosition(range.end),
+          start: range.start,
+          end: range.end,
           match: true,
           index: 0,
         };
@@ -297,8 +320,8 @@ export class SearchState {
       for (const [index, matchRange] of matchRanges.slice(0).reverse().entries()) {
         if (matchRange.end.isBeforeOrEqual(startPosition)) {
           return {
-            start: Position.FromVSCodePosition(matchRange.start),
-            end: Position.FromVSCodePosition(matchRange.end),
+            start: matchRange.start,
+            end: matchRange.end,
             match: true,
             index: matchRanges.length - index - 1,
           };
@@ -310,8 +333,8 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[matchRanges.length - 1];
         return {
-          start: Position.FromVSCodePosition(range.start),
-          end: Position.FromVSCodePosition(range.end),
+          start: range.start,
+          end: range.end,
           match: true,
           index: matchRanges.length - 1,
         };
@@ -322,23 +345,21 @@ export class SearchState {
   }
 
   public getSearchMatchRangeOf(
+    editor: vscode.TextEditor,
     pos: Position
   ): { start: Position; end: Position; match: boolean; index: number } {
-    if (!vscode.window.activeTextEditor) {
-      return { start: pos, end: pos, match: false, index: -1 };
-    }
-    const matchRanges = this.recalculateSearchRanges(vscode.window.activeTextEditor.document);
+    const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
       // TODO(bell)
       return { start: pos, end: pos, match: false, index: -1 };
     }
 
-    for (let [index, matchRange] of matchRanges.entries()) {
+    for (const [index, matchRange] of matchRanges.entries()) {
       if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
         return {
-          start: Position.FromVSCodePosition(matchRange.start),
-          end: Position.FromVSCodePosition(matchRange.end),
+          start: matchRange.start,
+          end: matchRange.end,
           match: true,
           index,
         };
@@ -353,12 +374,13 @@ export class SearchState {
     direction: SearchDirection,
     startPosition: Position,
     searchString = '',
-    { isRegex = false } = {},
+    { isRegex = false, ignoreSmartcase = false } = {},
     currentMode: Mode
   ) {
     this.searchDirection = direction;
     this.cursorStartPosition = startPosition;
     this.isRegex = isRegex;
+    this.ignoreSmartcase = ignoreSmartcase;
     this.searchString = searchString;
     this.previousMode = currentMode;
   }

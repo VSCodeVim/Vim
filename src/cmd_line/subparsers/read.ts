@@ -2,7 +2,7 @@ import { IReadCommandArguments, ReadCommand } from '../commands/read';
 import { Scanner } from '../scanner';
 
 export function parseReadCommandArgs(args: string): ReadCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     throw Error('Expected arguments.');
   }
 
@@ -10,7 +10,7 @@ export function parseReadCommandArgs(args: string): ReadCommand {
   const scanner = new Scanner(args);
 
   scanner.skipWhiteSpace();
-  let c = scanner.next();
+  const c = scanner.next();
   // read command has 2 forms - 'read <file-path>' and 'read! <shell-command>'
   if (c === '!') {
     scanner.ignore();

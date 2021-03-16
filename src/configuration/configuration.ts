@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
-import { VsCodeContext } from '../util/vscode-context';
+import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
@@ -15,13 +16,39 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
-import { Mode } from '../mode/mode';
 
-const packagejson: {
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../../package.json');
+import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
+
+export const extensionVersion = packagejson.version;
+
+/**
+ * Most options supported by Vim have a short alias. They are provided here.
+ * Please keep this list up to date and sorted alphabetically.
+ */
+export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
+  ['ai', 'autoindent'],
+  ['et', 'expandtab'],
+  ['gd', 'gdefault'],
+  ['hi', 'history'],
+  ['hls', 'hlsearch'],
+  ['ic', 'ignorecase'],
+  ['is', 'incsearch'],
+  ['isk', 'iskeyword'],
+  ['mmd', 'maxmapdepth'],
+  ['nu', 'number'],
+  ['rnu', 'relativenumber'],
+  ['sc', 'showcmd'],
+  ['scr', 'scroll'],
+  ['scs', 'smartcase'],
+  ['smd', 'showmode'],
+  ['sol', 'startofline'],
+  ['to', 'timeout'],
+  ['ts', 'tabstop'],
+  ['tw', 'textwidth'],
+  ['ws', 'wrapscan'],
+  ['ww', 'whichwrap'],
+]);
 
 type OptionValue = number | string | boolean;
 
@@ -72,14 +99,13 @@ class Configuration implements IConfiguration {
   };
 
   public async load(): Promise<ValidatorResults> {
-    let vimConfigs: any = Globals.isTesting
+    const vimConfigs: any = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
 
-    /* tslint:disable:forin */
-    // Disable forin rule here as we make accessors enumerable.`
+    // tslint:disable-next-line: forin
     for (const option in this) {
-      let val = vimConfigs[option] as any;
+      let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
           val = Configuration.unproxify(val);
@@ -88,25 +114,27 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
-    const validatorResults = await configurationValidator.validate(configuration);
+    this.clearKeyBindingsMaps();
 
-    // wrap keys
-    this.wrapKeys = {};
-    for (const wrapKey of this.whichwrap.split(',')) {
-      this.wrapKeys[wrapKey] = true;
-    }
+    const validatorResults = await configurationValidator.validate(configuration);
 
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
-    for (let keybinding of packagejson.contributes.keybindings) {
+    for (const keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.includes('listFocus')) {
+        continue;
+      }
+
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
@@ -130,7 +158,7 @@ class Configuration implements IConfiguration {
       // By default, all key combinations are used
       let useKey = true;
 
-      let handleKey = this.handleKeys[boundKey.key];
+      const handleKey = this.handleKeys[boundKey.key];
       if (handleKey !== undefined) {
         // enabled/disabled through `vim.handleKeys`
         useKey = handleKey;
@@ -144,23 +172,32 @@ class Configuration implements IConfiguration {
         }
       }
 
-      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
+      VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
     }
 
-    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
-    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+    VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
+    VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
     return validatorResults;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor ? activeTextEditor.document.uri : null;
+    const document = vscode.window.activeTextEditor?.document;
+    const resource = document ? { uri: document.uri, languageId: document.languageId } : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     return this.cursorTypeMap[cursorStyle];
+  }
+
+  clearKeyBindingsMaps() {
+    // Clear the KeyBindingsMaps so that the previous configuration maps don't leak to this one
+    this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
+    this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
   handleKeys: IHandleKeys[] = [];
@@ -187,22 +224,32 @@ class Configuration implements IConfiguration {
 
   replaceWithRegister = false;
 
+  smartRelativeLine = false;
+
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
 
   surround = true;
 
+  argumentObjectSeparators = [','];
+  argumentObjectOpeningDelimiters = ['(', '['];
+  argumentObjectClosingDelimiters = [')', ']'];
+
   easymotion = false;
-  easymotionMarkerBackgroundColor = '';
+  easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 0;
+  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
+  easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
+  easymotionIncSearchForegroundColor = '#7fbf00';
+  easymotionDimColor = '#777777';
+  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
+  easymotionDimBackground = true;
+  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
+  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
+  easymotionMarkerFontWeight = 'bold';
+  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
@@ -214,6 +261,8 @@ class Configuration implements IConfiguration {
   };
 
   timeout = 1000;
+
+  maxmapdepth = 1000;
 
   showcmd = true;
 
@@ -300,6 +349,18 @@ class Configuration implements IConfiguration {
   })
   iskeyword: string;
 
+  @overlapSetting({
+    settingName: 'wordWrap',
+    defaultValue: false,
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['wordWrapColumn', true],
+      ['bounded', true],
+    ]),
+  })
+  wrap: boolean;
+
   boundKeyCombinations: IKeyBinding[] = [];
 
   visualstar = false;
@@ -314,6 +375,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
 
   vimrc = {
     enable: false,
@@ -325,10 +388,11 @@ class Configuration implements IConfiguration {
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
 
-  whichwrap = '';
-  wrapKeys = {};
+  whichwrap = 'b,s';
 
   startofline = true;
+
+  showMarksInGutter = false;
 
   report = 2;
   wrapscan = true;
@@ -363,24 +427,24 @@ class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindings: IKeyRemapping[] = [];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
-  private static unproxify(obj: Object): Object {
-    let result = {};
+  private static unproxify(obj: object): object {
+    const result = {};
+    // tslint:disable-next-line: forin
     for (const key in obj) {
-      let val = obj[key] as any;
+      const val = obj[key] as any;
       if (val !== null && val !== undefined) {
         result[key] = val;
       }
@@ -395,9 +459,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function (target: any, propertyKey: string) {
+  return (target: any, propertyKey: string) => {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
+      get() {
         // retrieve value from vim configuration
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
@@ -414,7 +478,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function (value) {
+      set(value) {
         // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
@@ -423,7 +487,7 @@ function overlapSetting(args: {
         }
 
         if (args.map) {
-          for (let [vscodeSetting, vimSetting] of args.map.entries()) {
+          for (const [vscodeSetting, vimSetting] of args.map.entries()) {
             if (value === vimSetting) {
               value = vscodeSetting;
               break;

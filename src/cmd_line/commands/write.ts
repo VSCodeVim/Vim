@@ -1,8 +1,7 @@
-import * as fs from 'fs';
+import * as fs from 'platform/fs';
 import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { promisify } from 'util';
 import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
@@ -51,18 +50,18 @@ export class WriteCommand extends node.CommandBase {
     }
 
     // defer saving the file to vscode if file is new (to present file explorer) or if file is a remote file
-    if (vimState.editor.document.isUntitled || vimState.editor.document.uri.scheme !== 'file') {
+    if (vimState.document.isUntitled || vimState.document.uri.scheme !== 'file') {
       await this.background(vscode.commands.executeCommand('workbench.action.files.save'));
       return;
     }
 
     try {
-      await promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
+      await fs.accessAsync(vimState.document.fileName, fs.constants.W_OK);
       return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
         try {
-          await promisify(fs.chmod)(vimState.editor.document.fileName, 666);
+          await fs.chmodAsync(vimState.document.fileName, 666);
           return this.save(vimState);
         } catch (e) {
           StatusBar.setText(vimState, e.message);
@@ -75,15 +74,15 @@ export class WriteCommand extends node.CommandBase {
 
   private async save(vimState: VimState): Promise<void> {
     await this.background(
-      vimState.editor.document.save().then(
+      vimState.document.save().then(
         () => {
-          let text =
+          const text =
             '"' +
-            path.basename(vimState.editor.document.fileName) +
+            path.basename(vimState.document.fileName) +
             '" ' +
-            vimState.editor.document.lineCount +
+            vimState.document.lineCount +
             'L ' +
-            vimState.editor.document.getText().length +
+            vimState.document.getText().length +
             'C written';
           StatusBar.setText(vimState, text);
         },

@@ -8,13 +8,26 @@ suite('getParser', () => {
   });
 
   test(':marks', () => {
-    assert.notEqual(getParser('marks'), undefined);
+    assert.notStrictEqual(getParser('marks'), undefined);
     assert.strictEqual(getParser('marksx'), undefined);
+  });
+
+  test(':ju', () => {
+    const j = getParser('ju');
+    assert.notStrictEqual(j, undefined);
+    assert.strictEqual(getParser('jumps'), j);
+    assert.strictEqual(getParser('jump'), j);
+  });
+
+  test(':sh', () => {
+    const s = getParser('shell');
+    assert.notStrictEqual(s, undefined);
+    assert.strictEqual(getParser('sh'), s);
   });
 
   test(':write', () => {
     const w = getParser('w');
-    assert.notEqual(w, undefined);
+    assert.notStrictEqual(w, undefined);
 
     assert.strictEqual(getParser('wr'), w);
     assert.strictEqual(getParser('wri'), w);
@@ -28,7 +41,7 @@ suite('getParser', () => {
     assert.strictEqual(getParser('no'), undefined);
 
     const noh = getParser('noh');
-    assert.notEqual(noh, undefined);
+    assert.notStrictEqual(noh, undefined);
 
     assert.strictEqual(getParser('nohl'), noh);
     assert.strictEqual(getParser('nohls'), noh);
@@ -43,7 +56,7 @@ suite('getParser', () => {
 
   test(':quitall', () => {
     const qa = getParser('qa');
-    assert.notEqual(qa, undefined);
+    assert.notStrictEqual(qa, undefined);
 
     assert.strictEqual(getParser('qal'), qa);
     assert.strictEqual(getParser('qall'), qa);

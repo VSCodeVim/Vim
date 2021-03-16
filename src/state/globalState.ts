@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import { JumpTracker } from '../jumps/jumpTracker';
 import { Mode } from '../mode/mode';
-import { Position } from '../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { SearchHistory } from '../history/historyFile';
 import { SearchState, SearchDirection } from './searchState';
 import { SubstituteState } from './substituteState';
 import { configuration } from '../configuration/configuration';
+import { Position } from 'vscode';
 
 /**
  * State which stores global state (across editors)
@@ -25,7 +25,7 @@ class GlobalState {
   /**
    * Tracks search history
    */
-  private _searchHistory: SearchHistory = new SearchHistory();
+  private _searchHistory: SearchHistory;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -53,8 +53,8 @@ class GlobalState {
    */
   public hl = true;
 
-  public async load() {
-    await this._searchHistory.load();
+  public async load(context: vscode.ExtensionContext) {
+    this._searchHistory = new SearchHistory(context);
     this._searchHistory
       .get()
       .forEach((val) =>
@@ -79,7 +79,7 @@ class GlobalState {
     const prevSearchString =
       this.searchStatePrevious.length === 0
         ? undefined
-        : this.searchStatePrevious[this.searchStatePrevious.length - 1]!.searchString;
+        : this.searchStatePrevious[this.searchStatePrevious.length - 1].searchString;
     // Store this search if different than previous
     if (searchState.searchString !== prevSearchString) {
       this.searchStatePrevious.push(searchState);
@@ -103,17 +103,13 @@ class GlobalState {
    * @returns The SearchState that was selected by the user, if there was one.
    */
   public async showSearchHistory(): Promise<SearchState | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-
     const items = this._searchStatePrevious
       .slice()
       .reverse()
       .map((searchState) => {
         return {
           label: searchState.searchString,
-          searchState: searchState,
+          searchState,
         };
       });
 

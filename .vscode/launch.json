@@ -7,30 +7,22 @@
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/{out, node_modules}/**/*.js"
-      ],
+      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
       "preLaunchTask": "gulp: build-dev",
-      "internalConsoleOptions": "openOnSessionStart",
+      "internalConsoleOptions": "openOnSessionStart"
     },
     {
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/{out, node_modules}/**/*.js"
-      ]
+      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"]
     },
     {
       "name": "Run Tests",
@@ -43,9 +35,7 @@
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/{out, node_modules}/**/*.js"
-      ],
+      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
       "preLaunchTask": "gulp: prepare-test",
       "internalConsoleOptions": "openOnSessionStart"
     }

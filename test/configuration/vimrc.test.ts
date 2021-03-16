@@ -11,14 +11,14 @@ suite('Vimrc', () => {
   test("Can expand $HOME to user's home directory", async () => {
     configuration.vimrc.path = '$HOME';
 
-    vimrc.load(configuration);
+    await vimrc.load(configuration);
     assert.strictEqual(vimrc.vimrcPath, vimrcpath);
   });
 
   test("Can expand ~ to user's home directory", async () => {
     configuration.vimrc.path = '~';
 
-    vimrc.load(configuration);
+    await vimrc.load(configuration);
     assert.strictEqual(vimrc.vimrcPath, vimrcpath);
   });
 });

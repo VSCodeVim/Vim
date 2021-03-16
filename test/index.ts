@@ -25,13 +25,12 @@ export function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({
     ui: 'tdd',
-    useColors: true,
+    color: true,
     timeout: 10000,
     grep: mochaGrep,
   });
-  mocha.useColors(true);
 
-  const testsRoot = path.resolve(__dirname, '..');
+  const testsRoot = path.resolve(__dirname, '.');
 
   return new Promise((c, e) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
@@ -52,6 +51,7 @@ export function run(): Promise<void> {
           }
         });
       } catch (err) {
+        console.error(err);
         e(err);
       }
     });

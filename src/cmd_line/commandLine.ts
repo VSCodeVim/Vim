@@ -30,16 +30,13 @@ class CommandLine {
   public preCompleteCommand = '';
 
   public get historyEntries() {
-    return this._history.get();
+    return this._history?.get() || [];
   }
 
   public previousMode = Mode.Normal;
 
-  constructor() {
-    this._history = new CommandLineHistory();
-  }
-
-  public async load(): Promise<void> {
+  public async load(context: vscode.ExtensionContext): Promise<void> {
+    this._history = new CommandLineHistory(context);
     return this._history.load();
   }
 
@@ -52,16 +49,11 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    if ('help'.startsWith(command.split(/\s/)[0])) {
-      StatusBar.setText(vimState, `:help Not supported.`, true);
-      return;
-    }
-
     this._history.add(command);
     this.commandLineHistoryIndex = this._history.get().length;
 
     if (!command.startsWith('reg')) {
-      let recState = new RecordedState();
+      const recState = new RecordedState();
       recState.registerName = ':';
       recState.commandList = command.split('');
       Register.putByKey(recState, ':', undefined, true);
@@ -71,15 +63,19 @@ class CommandLine {
       const cmd = parser.parse(command);
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
 
-      if (useNeovim) {
+      if (useNeovim && vimState.nvim) {
         const { statusBarText, error } = await vimState.nvim.run(vimState, command);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
-        await cmd.execute(vimState.editor, vimState);
+        await cmd.execute(vimState);
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.NotAnEditorCommand && configuration.enableNeovim) {
+        if (
+          e.code === ErrorCode.NotAnEditorCommand &&
+          configuration.enableNeovim &&
+          vimState.nvim
+        ) {
           const { statusBarText } = await vimState.nvim.run(vimState, command);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
@@ -95,11 +91,7 @@ class CommandLine {
    * Prompts the user for a command using an InputBox, and runs the provided command
    */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document');
-      return;
-    }
-    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
+    const cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
     await this.Run(cmd!, vimState);
   }
 
@@ -113,19 +105,12 @@ class CommandLine {
   }
 
   public async showHistory(initialText: string): Promise<string | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document.');
-      return '';
-    }
-
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(this._history.get().slice().reverse(), {
+    return vscode.window.showQuickPick(this._history.get().slice().reverse(), {
       placeHolder: 'Vim command history',
       ignoreFocusOut: false,
     });
-
-    return cmd;
   }
 }
 

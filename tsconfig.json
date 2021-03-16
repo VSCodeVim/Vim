@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ES2019"
-    ],
+    "lib": ["ES2019"],
     "module": "commonjs",
     "target": "ES2019",
     "outDir": "out",
@@ -11,12 +9,14 @@
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
-    "strictNullChecks": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "experimentalDecorators": true,
-    "alwaysStrict": true,
+    "baseUrl": ".",
+    "paths": {
+      "platform/*": ["src/platform/node/*"]
+    },
+    "resolveJsonModule": true
   },
-  "exclude": [
-    "node_modules",
-    "!node_modules/@types"
-  ]
+  "exclude": ["node_modules", "!node_modules/@types"]
 }

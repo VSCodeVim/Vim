@@ -47,14 +47,14 @@ export class NumericString {
   // '000009' matches decimal.
   // '000007' matches octal.
   // '-0xf' matches hex rather than decimal '-0'
-  private static matchings: { regex: RegExp; radix: number }[] = [
+  private static matchings: Array<{ regex: RegExp; radix: number }> = [
     { regex: /(-)?0[0-7]+/, radix: 8 },
     { regex: /(-)?\d+/, radix: 10 },
     { regex: /(-)?0x[\da-fA-F]+/, radix: 16 },
   ];
 
   // Return parse result and offset of suffix
-  public static parse(input: string): { num, suffixOffset }  | undefined {
+  public static parse(input: string): { num: NumericString; suffixOffset: number } | undefined {
     // Find core numeric part of input
     let coreBegin = -1;
     let coreLength = -1;

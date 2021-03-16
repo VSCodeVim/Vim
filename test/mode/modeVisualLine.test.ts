@@ -3,18 +3,15 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -41,8 +38,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
 
-    const sel = TextEditor.getSelection();
-
+    const sel = modeHandler.vimState.editor.selection;
     assert.strictEqual(sel.start.character, 0);
     assert.strictEqual(sel.start.line, 0);
 
@@ -388,8 +384,7 @@ suite('Mode Visual Line', () => {
       assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'with me' at the first line
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);
@@ -417,8 +412,7 @@ suite('Mode Visual Line', () => {
         'or with me longer than the target',
       ]);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'or with me longer than the target' at the first line
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);
@@ -440,8 +434,7 @@ suite('Mode Visual Line', () => {
       assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       // ensuring selecting 'foo\nbar\n'
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 0);
@@ -541,5 +534,57 @@ suite('Mode Visual Line', () => {
     keysPressed: 'VjjJ',
     end: ['one two| three', 'four'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the entire selected area is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: 'VlgJ',
+    end: ['one', 'two|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: 'VjjgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the selected area spans multiple lines and line has whitespaces",
+    start: ['o|ne  ', 'two', '  three', 'four'],
+    keysPressed: 'VjjgJ',
+    end: ['one  two|  three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when start position of the selected area is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: 'VkkgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  suite('C, R, and S', () => {
+    for (const command of ['C', 'R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `Vjj${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `Vkk${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
   });
 });
