@@ -1,4 +1,6 @@
+import * as vscode from 'vscode';
 import { Logger } from './util/logger';
+import { extensionVersion } from './configuration/configuration';
 
 interface IEnqueuedTask {
   promise: () => Promise<void>;
@@ -28,14 +30,35 @@ class TaskQueue {
 
   private async runTasks(queueName: string): Promise<void> {
     while (this._taskQueue[queueName].tasks.length > 0) {
-      let task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
+      const task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
 
       try {
         task.isRunning = true;
         await task.promise();
         task.isRunning = false;
       } catch (e) {
-        this._logger.error(`Error running task. ${e.message}.`);
+        if (e instanceof Error) {
+          const reportButton = 'Report bug';
+          const stack = e.stack;
+          vscode.window
+            .showErrorMessage(e.message, reportButton)
+            .then((picked: string | undefined) => {
+              let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
+              if (stack) {
+                body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+              }
+              if (picked === reportButton) {
+                vscode.commands.executeCommand(
+                  'vscode.open',
+                  vscode.Uri.parse(
+                    `https://github.com/VSCodeVim/Vim/issues/new?title=${e.message}&body=${body}`
+                  )
+                );
+              }
+            });
+        } else {
+          this._logger.error(`Error running task due to an unknown error: ${e}.`);
+        }
       } finally {
         this.dequeueTask(task);
       }
@@ -60,10 +83,10 @@ class TaskQueue {
     queueName: string = 'default',
     isHighPriority: boolean = false
   ): void {
-    let task: IEnqueuedTask = {
+    const task: IEnqueuedTask = {
       promise: action,
       queue: queueName,
-      isHighPriority: isHighPriority,
+      isHighPriority,
       isRunning: false,
     };
 
@@ -74,7 +97,7 @@ class TaskQueue {
     }
 
     if (isHighPriority) {
-      // Insert task as the last high priotity task.
+      // Insert task as the last high priority task.
       const numHighPriority = this.numHighPriority(queueName);
       this._taskQueue[queueName].tasks.splice(numHighPriority, 0, task);
     } else {

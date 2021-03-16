@@ -29,6 +29,9 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
             case 'n':
               pattern += '\n';
               break;
+            case 't':
+              pattern += '\t';
+              break;
             default:
               pattern += '\\';
               pattern += currentChar;
@@ -55,45 +58,45 @@ function parseSubstituteFlags(scanner: Scanner): number {
       break;
     }
 
-    let c = scanner.next();
+    const c = scanner.next();
     switch (c) {
       case '&':
         if (index === 0) {
-          flags = flags | node.SubstituteFlags.KeepPreviousFlags;
+          flags |= node.SubstituteFlags.KeepPreviousFlags;
         } else {
           // Raise Error
           return node.SubstituteFlags.None;
         }
         break;
       case 'c':
-        flags = flags | node.SubstituteFlags.ConfirmEach;
+        flags |= node.SubstituteFlags.ConfirmEach;
         break;
       case 'e':
-        flags = flags | node.SubstituteFlags.SuppressError;
+        flags |= node.SubstituteFlags.SuppressError;
         break;
       case 'g':
-        flags = flags | node.SubstituteFlags.ReplaceAll;
+        flags |= node.SubstituteFlags.ReplaceAll;
         break;
       case 'i':
-        flags = flags | node.SubstituteFlags.IgnoreCase;
+        flags |= node.SubstituteFlags.IgnoreCase;
         break;
       case 'I':
-        flags = flags | node.SubstituteFlags.NoIgnoreCase;
+        flags |= node.SubstituteFlags.NoIgnoreCase;
         break;
       case 'n':
-        flags = flags | node.SubstituteFlags.PrintCount;
+        flags |= node.SubstituteFlags.PrintCount;
         break;
       case 'p':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLine;
+        flags |= node.SubstituteFlags.PrintLastMatchedLine;
         break;
       case '#':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithNumber;
+        flags |= node.SubstituteFlags.PrintLastMatchedLineWithNumber;
         break;
       case 'l':
-        flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithList;
+        flags |= node.SubstituteFlags.PrintLastMatchedLineWithList;
         break;
       case 'r':
-        flags = flags | node.SubstituteFlags.UsePreviousPattern;
+        flags |= node.SubstituteFlags.UsePreviousPattern;
         break;
       default:
         scanner.backup();
@@ -116,7 +119,7 @@ function parseCount(scanner: Scanner): number {
     countStr += scanner.next();
   }
 
-  let count = Number.parseInt(countStr, 10);
+  const count = Number.parseInt(countStr, 10);
 
   // TODO: If count is not valid number, raise error
   return Number.isInteger(count) ? count : -1;
@@ -134,7 +137,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     let flags: number;
     let count: number;
 
-    if (!args) {
+    if (!args || !args.trim()) {
       // special case for :s
       return new node.SubstituteCommand({
         pattern: undefined,
@@ -144,7 +147,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     }
     let scanner: Scanner;
 
-    let delimiter = args[0];
+    const delimiter = args[0];
 
     if (isValidDelimiter(delimiter)) {
       if (args.length === 1) {
@@ -185,8 +188,8 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     return new node.SubstituteCommand({
       pattern: searchPattern,
       replace: replaceString,
-      flags: flags,
-      count: count,
+      flags,
+      count,
     });
   } catch (e) {
     throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);

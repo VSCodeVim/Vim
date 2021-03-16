@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
-import { Mode, statusBarText, statusBarCommandText } from './mode/mode';
+import { Mode } from './mode/mode';
+import { globalState } from './state/globalState';
+import { SearchDirection } from './state/searchState';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
+import { Logger } from './util/logger';
 import { VimError } from './error';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -31,6 +34,12 @@ class StatusBarImpl implements vscode.Disposable {
   dispose() {
     this._statusBarItem.dispose();
     this._recordedStateStatusBarItem.dispose();
+  }
+
+  public updateShowCmd(vimState: VimState) {
+    this._recordedStateStatusBarItem.text = configuration.showcmd
+      ? statusBarCommandText(vimState)
+      : '';
   }
 
   /**
@@ -76,7 +85,7 @@ class StatusBarImpl implements vscode.Disposable {
       return;
     }
 
-    let text: string[] = [];
+    const text: string[] = [];
 
     if (configuration.showmodename) {
       text.push(statusBarText(vimState));
@@ -85,12 +94,8 @@ class StatusBarImpl implements vscode.Disposable {
       }
     }
 
-    if (configuration.showcmd) {
-      this._recordedStateStatusBarItem.text = statusBarCommandText(vimState);
-    }
-
-    if (vimState.isRecordingMacro) {
-      const macroText = 'Recording @' + vimState.recordedMacro.registerName;
+    if (vimState.macro) {
+      const macroText = 'Recording @' + vimState.macro.registerName;
       text.push(macroText);
     }
 
@@ -105,10 +110,10 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   private updateColor(mode: Mode) {
-    let foreground: string | undefined = undefined;
-    let background: string | undefined = undefined;
+    let foreground: string | undefined;
+    let background: string | undefined;
 
-    let colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
+    const colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
@@ -119,24 +124,21 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     const workbenchConfiguration = configuration.getConfiguration('workbench');
-    const currentColorCustomizations = workbenchConfiguration.get('colorCustomizations');
+    const currentColorCustomizations: {
+      [index: string]: string;
+    } = workbenchConfiguration.get('colorCustomizations') ?? {};
 
-    const colorCustomizations = Object.assign({}, currentColorCustomizations || {}, {
-      'statusBar.background': `${background}`,
-      'statusBar.noFolderBackground': `${background}`,
-      'statusBar.debuggingBackground': `${background}`,
-      'statusBar.foreground': `${foreground}`,
-    });
+    const colorCustomizations = { ...currentColorCustomizations };
 
     // If colors are undefined, return to VSCode defaults
-    if (background === undefined) {
-      delete colorCustomizations['statusBar.background'];
-      delete colorCustomizations['statusBar.noFolderBackground'];
-      delete colorCustomizations['statusBar.debuggingBackground'];
+    if (background !== undefined) {
+      colorCustomizations['statusBar.background'] = background;
+      colorCustomizations['statusBar.noFolderBackground'] = background;
+      colorCustomizations['statusBar.debuggingBackground'] = background;
     }
 
-    if (foreground === undefined) {
-      delete colorCustomizations['statusBar.foreground'];
+    if (foreground !== undefined) {
+      colorCustomizations['statusBar.foreground'] = foreground;
     }
 
     if (currentColorCustomizations !== colorCustomizations) {
@@ -146,3 +148,114 @@ class StatusBarImpl implements vscode.Disposable {
 }
 
 export const StatusBar = new StatusBarImpl();
+
+export function statusBarText(vimState: VimState) {
+  const cursorChar =
+    vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+      ? '"'
+      : '|';
+  switch (vimState.currentMode) {
+    case Mode.Normal:
+      return '-- NORMAL --';
+    case Mode.Insert:
+      return '-- INSERT --';
+    case Mode.Visual:
+      return '-- VISUAL --';
+    case Mode.VisualBlock:
+      return '-- VISUAL BLOCK --';
+    case Mode.VisualLine:
+      return '-- VISUAL LINE --';
+    case Mode.Replace:
+      return '-- REPLACE --';
+    case Mode.EasyMotionMode:
+      return '-- EASYMOTION --';
+    case Mode.EasyMotionInputMode:
+      return '-- EASYMOTION INPUT --';
+    case Mode.SurroundInputMode:
+      return '-- SURROUND INPUT --';
+    case Mode.Disabled:
+      return '-- VIM: DISABLED --';
+    case Mode.SearchInProgressMode:
+      if (globalState.searchState === undefined) {
+        const logger = Logger.get('StatusBar');
+        logger.warn(`globalState.searchState is undefined in SearchInProgressMode.`);
+        return '';
+      }
+      const leadingChar =
+        globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
+
+      const searchWithCursor = globalState.searchState.searchString.split('');
+      searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
+
+      return `${leadingChar}${searchWithCursor.join('')}`;
+    case Mode.CommandlineInProgress:
+      const commandWithCursor = vimState.currentCommandlineText.split('');
+      commandWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
+
+      return `:${commandWithCursor.join('')}`;
+    default:
+      return '';
+  }
+}
+
+export function statusBarCommandText(vimState: VimState): string {
+  switch (vimState.currentMode) {
+    case Mode.SurroundInputMode:
+      return vimState.surround && vimState.surround.replacement
+        ? vimState.surround.replacement
+        : '';
+    case Mode.EasyMotionMode:
+      return `Target key: ${vimState.easyMotion.accumulation}`;
+    case Mode.EasyMotionInputMode:
+      if (!vimState.easyMotion) {
+        return '';
+      }
+
+      const searchCharCount = vimState.easyMotion.searchAction.searchCharCount;
+      const message =
+        searchCharCount > 0
+          ? `Search for ${searchCharCount} character(s): `
+          : 'Search for characters: ';
+      return message + vimState.easyMotion.searchAction.searchString;
+    case Mode.Visual: {
+      // TODO: holy shit, this is SO much more complicated than it should be because
+      // our representation of a visual selection is so weird and inconsistent
+      let [start, end] = [vimState.cursorStartPosition, vimState.cursorStopPosition];
+      let wentOverEOL = false;
+      if (start.isAfter(end)) {
+        start = start.getRightThroughLineBreaks();
+        [start, end] = [end, start];
+      } else if (end.isAfter(start) && end.character === 0) {
+        end = end.getLeftThroughLineBreaks(true);
+        wentOverEOL = true;
+      }
+      const lines = end.line - start.line + 1;
+      if (lines > 1) {
+        return `${lines} ${vimState.recordedState.pendingCommandString}`;
+      } else {
+        const chars = Math.max(end.character - start.character, 1) + (wentOverEOL ? 1 : 0);
+        return `${chars} ${vimState.recordedState.pendingCommandString}`;
+      }
+    }
+    case Mode.VisualLine:
+      return `${
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1
+      } ${vimState.recordedState.pendingCommandString}`;
+    case Mode.VisualBlock: {
+      const lines =
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1;
+      const chars =
+        Math.abs(vimState.cursorStopPosition.character - vimState.cursorStartPosition.character) +
+        1;
+      return `${lines}x${chars} ${vimState.recordedState.pendingCommandString}`;
+    }
+    case Mode.Insert:
+    case Mode.Replace:
+      return vimState.recordedState.pendingCommandString;
+    case Mode.Normal:
+    case Mode.Disabled:
+      return vimState.recordedState.commandString;
+    default:
+      return '';
+  }
+}

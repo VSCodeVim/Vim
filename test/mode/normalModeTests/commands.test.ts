@@ -1,10 +1,8 @@
 import { Mode } from '../../../src/mode/mode';
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
 suite('Mode Normal', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
@@ -37,6 +35,13 @@ suite('Mode Normal', () => {
     start: ['one tw|o'],
     keysPressed: '^llxxxxxxxxx',
     end: ['|'],
+  });
+
+  newTest({
+    title: "'x' with count does not go over EOL",
+    start: ['one t|wo', 'three four'],
+    keysPressed: '1000x',
+    end: ['one |t', 'three four'],
   });
 
   newTest({
@@ -305,10 +310,38 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: "Can handle 'gJ' once and ALL WHITESPACE IS ELIMINATED",
+    title: "Can handle 'gJ' once when line has whitespaces",
     start: ['|one', '  two'],
     keysPressed: 'kgJ',
-    end: ['one|two'],
+    end: ['one|  two'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '3gJ',
+    end: ['onetwo|three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count when line has whitespaces",
+    start: ['|one', '  two  ', 'three', 'four'],
+    keysPressed: '3gJ',
+    end: ['one  two  |three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count and end position is blank line",
+    start: ['|one', 'two', '', 'three', 'four'],
+    keysPressed: '3gJ',
+    end: ['onetw|o', 'three', 'four'],
+  });
+
+  newTest({
+    title: "Can handle 'gJ' with count exceeding max number of rows",
+    start: ['|one', 'two', 'three', 'four'],
+    keysPressed: '100gJ',
+    end: ['onetwothree|four'],
   });
 
   newTest({
@@ -319,10 +352,33 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'~' goes over line boundaries if whichwrap contains '~'",
+    config: { whichwrap: '~' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['onE', '|two'],
+  });
+
+  newTest({
+    title: "'~' does not goes over line boundaries if whichwrap does not contain '~'",
+    config: { whichwrap: '' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['on|E', 'two'],
+  });
+
+  newTest({
     title: "Can handle 'g~{motion}'",
     start: ['|one two'],
     keysPressed: 'g~w',
     end: ['|ONE two'],
+  });
+
+  newTest({
+    title: "Can handle 'g~~'",
+    start: ['oNe', 'Tw|O', 'tHrEe'],
+    keysPressed: 'g~~',
+    end: ['oNe', '|tWo', 'tHrEe'],
   });
 
   newTest({

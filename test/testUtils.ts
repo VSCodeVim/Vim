@@ -4,15 +4,43 @@ import * as os from 'os';
 import { join } from 'path';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
-import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
+import { SpecialKeys } from '../src/util/specialKeys';
+
+class TestMemento implements vscode.Memento {
+  private mapping = new Map<string, any>();
+  get<T>(key: string): T | undefined;
+  get<T>(key: string, defaultValue: T): T;
+  get(key: any, defaultValue?: any) {
+    return this.mapping.get(key) || defaultValue;
+  }
+
+  async update(key: string, value: any): Promise<void> {
+    this.mapping.set(key, value);
+  }
+}
+export class TestExtensionContext implements vscode.ExtensionContext {
+  subscriptions: Array<{ dispose(): any }> = [];
+  workspaceState: vscode.Memento = new TestMemento();
+  globalState: vscode.Memento = new TestMemento();
+  extensionPath: string = 'inmem:///test';
+
+  asAbsolutePath(relativePath: string): string {
+    return path.resolve(this.extensionPath, relativePath);
+  }
+
+  storagePath: string | undefined;
+  globalStoragePath: string;
+  logPath: string;
+}
 
 export function rndName(): string {
   return Math.random()
@@ -32,22 +60,22 @@ export async function createRandomDir() {
   return createDir(dirPath);
 }
 
-export async function createEmptyFile(path: string) {
-  await promisify(fs.writeFile)(path, '');
-  return path;
+export async function createEmptyFile(fsPath: string) {
+  await promisify(fs.writeFile)(fsPath, '');
+  return fsPath;
 }
 
-export async function createDir(path: string) {
-  await promisify(fs.mkdir)(path);
-  return path;
+export async function createDir(fsPath: string) {
+  await promisify(fs.mkdir)(fsPath);
+  return fsPath;
 }
 
-export async function removeFile(path: string) {
-  return promisify(fs.unlink)(path);
+export async function removeFile(fsPath: string) {
+  return promisify(fs.unlink)(fsPath);
 }
 
-export async function removeDir(path: string) {
-  return promisify(fs.rmdir)(path);
+export async function removeDir(fsPath: string) {
+  return promisify(fs.rmdir)(fsPath);
 }
 
 /**
@@ -57,7 +85,7 @@ export async function removeDir(path: string) {
  * @param numExpectedEditors Expected number of editors in the window
  */
 export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  const waitForTextEditorsToClose = new Promise((c, e) => {
+  const waitForTextEditorsToClose = new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
@@ -77,17 +105,11 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-  for (let i = 0; i < expectedLines.length; i++) {
-    const expected = expectedLines[i];
-    const actual = TextEditor.readLineAt(i);
-    assert.strictEqual(
-      actual,
-      expected,
-      `Content does not match; Expected=${expected}. Actual=${actual}.`
-    );
-  }
-
-  assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
+  assert.strictEqual(
+    vscode.window.activeTextEditor?.document.getText(),
+    expectedLines.join(os.EOL),
+    'Document content does not match.'
+  );
 }
 
 export function assertStatusBarEqual(
@@ -101,7 +123,7 @@ export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
 ): Promise<void> {
-  await commandLine.load();
+  await commandLine.load(new TestExtensionContext());
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 
@@ -113,21 +135,21 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }
 
 const mockAndEnable = async () => {
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
-  const mh = await getAndUpdateModeHandler();
+  const mh = (await getAndUpdateModeHandler())!;
   Globals.mockModeHandler = mh;
-  await mh.handleKeyEvent('<ExtensionEnable>');
+  await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
 };
 
 export async function cleanUpWorkspace(): Promise<void> {
-  return new Promise((c, e) => {
+  return new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
     }

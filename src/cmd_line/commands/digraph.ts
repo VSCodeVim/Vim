@@ -26,10 +26,11 @@ export class DigraphsCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  private makeQuickPicks(digraphs): Array<DigraphQuickPickItem> {
+  // TODO: replace 'any' with sensible index signature
+  private makeQuickPicks(digraphs: any): DigraphQuickPickItem[] {
     const quickPicks = new Array<DigraphQuickPickItem>();
-    for (let digraphKey of Object.keys(digraphs)) {
-      let [charDesc, charCodes] = digraphs[digraphKey];
+    for (const digraphKey of Object.keys(digraphs)) {
+      const [charDesc, charCodes] = digraphs[digraphKey];
       quickPicks.push({
         label: digraphKey,
         description: `${charDesc} (user)`,
@@ -50,7 +51,7 @@ export class DigraphsCommand extends node.CommandBase {
     vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
       if (val) {
         const char = String.fromCharCode(...val.charCodes);
-        await TextEditor.insert(char);
+        await TextEditor.insert(vimState.editor, char);
       }
     });
   }

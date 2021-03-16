@@ -1,19 +1,20 @@
-import { configuration } from './configuration';
-
 export class Notation {
-  // Mapping from the normalized string to regex strings that could match it.
-  private static _notationMap: { [key: string]: string[] } = {
-    'C-': ['ctrl\\+', 'c\\-'],
-    'D-': ['cmd\\+', 'd\\-'],
-    Esc: ['escape', 'esc'],
-    BS: ['backspace', 'bs'],
-    Del: ['delete', 'del'],
-    Home: ['home'],
-    End: ['end'],
-    Insert: ['insert'],
-    ' ': ['<space>'],
-    '\n': ['<cr>', '<enter>'],
-  };
+  // Mapping from a regex to the normalized string that it should be converted to.
+  private static readonly _notationMap: ReadonlyArray<[RegExp, string]> = [
+    [/ctrl\+|c\-/gi, 'C-'],
+    [/cmd\+|d\-/gi, 'D-'],
+    [/shift\+|s\-/gi, 'S-'],
+    [/escape|esc/gi, 'Esc'],
+    [/backspace|bs/gi, 'BS'],
+    [/delete|del/gi, 'Del'],
+    [/home/gi, 'Home'],
+    [/end/gi, 'End'],
+    [/insert/gi, 'Insert'],
+    [/<space>/gi, ' '],
+    [/<cr>|<enter>/gi, '\n'],
+  ];
+
+  private static shiftedLetterRegex = /<S-[a-zA-Z]>/;
 
   /**
    * Converts keystroke like <tab> to a single control character like \t
@@ -29,10 +30,7 @@ export class Notation {
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
     return (
-      this.isSurroundedByAngleBrackets(key) &&
-      key !== '<BS>' &&
-      key !== '<SHIFT+BS>' &&
-      key !== '<TAB>'
+      this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<S-BS>' && key !== '<TAB>'
     );
   }
 
@@ -47,26 +45,30 @@ export class Notation {
       return key;
     }
 
-    if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
-      key = `<${key.toLocaleLowerCase()}>`;
+    if (key.length === 1) {
+      return key;
     }
 
-    if (key.toLocaleLowerCase() === '<leader>') {
+    key = key.toLocaleLowerCase();
+
+    if (!this.isSurroundedByAngleBrackets(key)) {
+      key = `<${key}>`;
+    }
+
+    if (key === '<leader>') {
       return leaderKey;
     }
 
-    if (['<up>', '<down>', '<left>', '<right>'].includes(key.toLocaleLowerCase())) {
-      return key.toLocaleLowerCase();
+    if (['<up>', '<down>', '<left>', '<right>'].includes(key)) {
+      return key;
     }
 
-    for (const notationMapKey in this._notationMap) {
-      if (this._notationMap.hasOwnProperty(notationMapKey)) {
-        const regex = new RegExp(this._notationMap[notationMapKey].join('|'), 'gi');
-        if (regex.test(key)) {
-          key = key.replace(regex, notationMapKey);
-          break;
-        }
-      }
+    for (const [regex, standardNotation] of this._notationMap) {
+      key = key.replace(regex, standardNotation);
+    }
+
+    if (this.shiftedLetterRegex.test(key)) {
+      key = key[3].toUpperCase();
     }
 
     return key;
@@ -75,8 +77,8 @@ export class Notation {
   /**
    * Converts a key to a form which will look nice when logged, etc.
    */
-  public static printableKey(key: string) {
-    const normalized = this.NormalizeKey(key, configuration.leader);
+  public static printableKey(key: string, leaderKey: string) {
+    const normalized = this.NormalizeKey(key, leaderKey);
     return normalized === ' ' ? '<space>' : normalized === '\n' ? '<enter>' : normalized;
   }
 

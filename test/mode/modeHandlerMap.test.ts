@@ -2,8 +2,6 @@ import * as assert from 'assert';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../../src/editorIdentity';
-import { testIt } from '../testSimplifier';
-import { KeypressState } from '../../src/actions/base';
 
 function createRandomEditorIdentity(): EditorIdentity {
   return new EditorIdentity(Math.random().toString(36).substring(7));
@@ -22,7 +20,7 @@ suite('Mode Handler Map', () => {
     const key = createRandomEditorIdentity();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, true);
-    assert.notEqual(modeHandler, undefined);
+    assert.notStrictEqual(modeHandler, undefined);
 
     [, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, false);
@@ -47,7 +45,7 @@ suite('Mode Handler Map', () => {
 
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(identity);
     assert.strictEqual(isNew, true);
-    assert.notEqual(modeHandler, undefined);
+    assert.notStrictEqual(modeHandler, undefined);
 
     const prevModeHandler = modeHandler;
     [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(new EditorIdentity(identity.fileName));

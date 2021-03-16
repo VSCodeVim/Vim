@@ -1,10 +1,12 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
+import { Jump } from '../src/jumps/jump';
+import { globalState } from '../src/state/globalState';
 import { VimState } from '../src/state/vimState';
-import { Position } from '../src/common/motion/position';
 
 suite('historyTracker unit tests', () => {
   let sandbox: sinon.SinonSandbox;
@@ -17,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => <VimState>(<any>sandbox.createStubInstance(VimState));
+  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
@@ -26,7 +28,7 @@ suite('historyTracker unit tests', () => {
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
-  const buildMockPosition = (): Position => <any>sandbox.createStubInstance(Position);
+  const buildMockPosition = (): Position => sandbox.createStubInstance(Position) as any;
 
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -40,6 +42,27 @@ suite('historyTracker unit tests', () => {
     setup(() => {
       setupVSCode();
       historyTracker = setupHistoryTracker();
+    });
+
+    test('can set previous context mark from single quote', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, "'");
+
+      sinon.assert.calledWith(spy, mockJump);
+    });
+    test('can set previous context mark from backtick', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, '`');
+
+      sinon.assert.calledWith(spy, mockJump);
     });
 
     test('can create lowercase mark', () => {
@@ -119,33 +142,28 @@ suite('historyTracker unit tests', () => {
       const position = buildMockPosition();
       const markTargets = 'AHZced'.split('');
 
-      markTargets.forEach(m => 
-      historyTracker.addMark(position, m));
+      markTargets.forEach((m) => historyTracker.addMark(position, m));
 
       historyTracker.removeMarks(markTargets);
 
-      markTargets.forEach(m =>
-        assert.strictEqual(historyTracker.getMark(m), undefined)
-      );
+      markTargets.forEach((m) => assert.strictEqual(historyTracker.getMark(m), undefined));
     });
 
-    test('does not remove \'\'', () => {
+    test("does not remove ''", () => {
       const position = buildMockPosition();
       historyTracker.addMark(position, '');
       const mark = historyTracker.getMark('');
-      
+
       historyTracker.removeMarks(['']);
 
       assert.strictEqual(mark, historyTracker.getMark(''));
     });
 
-    test('does nothing on empty or undefined', () => {
+    test('does nothing on empty', () => {
       const position = buildMockPosition();
       historyTracker.addMark(position, 'a');
       const mark = historyTracker.getMark('a');
 
-      historyTracker.removeMarks();
-      historyTracker.removeMarks(undefined);
       historyTracker.removeMarks([]);
 
       assert.strictEqual(mark, historyTracker.getMark('a'));
@@ -187,4 +205,4 @@ class TextEditorStub implements vscode.TextEditor {
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {}
   show(column?: vscode.ViewColumn) {}
   hide() {}
- }
+}

@@ -1,9 +1,10 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
+
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
 import {
   assertEqualLines,
   cleanUpWorkspace,
@@ -11,15 +12,14 @@ import {
   reloadConfiguration,
 } from './../testUtils';
 import { Globals } from '../../src/globals';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -46,7 +46,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o', '<Esc>']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       4,
       '<Esc> moved cursor position.'
     );
@@ -172,7 +172,7 @@ suite('Mode Insert', () => {
     assertEqualLines(['onetwo']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       3,
       '<BS> moved cursor to correct position'
     );
@@ -244,6 +244,14 @@ suite('Mode Insert', () => {
   });
 
   newTest({
+    title: 'Repeat insert by count times with dot',
+    start: ['give me an a|:'],
+    keysPressed: 'aa<Esc>4.',
+    end: ['give me an a:aaaa|a'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can <Esc> after entering insert mode from <ctrl+o>',
     start: ['|'],
     keysPressed: 'i<C-o>i<Esc>',
@@ -256,6 +264,14 @@ suite('Mode Insert', () => {
     start: ['testtest|'],
     keysPressed: 'a123<C-o>b123',
     end: ['123|testtest123'],
+  });
+
+  newTest({
+    title: 'Can <ctrl-o> after entering insert mode from <ctrl-o>',
+    start: ['|'],
+    keysPressed: 'i<C-o>i<C-o>',
+    end: ['|'],
+    endMode: Mode.Normal,
   });
 
   newTest({
@@ -358,5 +374,37 @@ suite('Mode Insert', () => {
     await reloadConfiguration();
     await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
     assertEqualLines(['🚀🚀']);
+  });
+
+  newTest({
+    title: 'Can insert last inserted text',
+    start: ['test|'],
+    keysPressed: 'ahello<Esc>a<C-a>',
+    end: ['testhellohello|'],
+  });
+
+  test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
+    try {
+      await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
+    } catch (e) {
+      assert(false);
+    }
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register",
+    start: ['foo |bar'],
+    keysPressed: 'yei<C-r>"',
+    end: ['foo bar|bar'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register with mupltiple cursor",
+    start: ['foo |bar', 'foo bar'],
+    // create two cursors on bar, yank. Then paste it in insert mode
+    keysPressed: 'gbgby' + 'i<C-r>"',
+    end: ['foo bar|bar', 'foo barbar'],
+    endMode: Mode.Insert,
   });
 });

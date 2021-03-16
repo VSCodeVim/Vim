@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { VimState } from '../../state/vimState';
 
 import * as node from '../node';
 
@@ -14,10 +15,11 @@ export class OnlyCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
-    await vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups');
-    await vscode.commands.executeCommand('workbench.action.maximizeEditor');
-    await vscode.commands.executeCommand('workbench.action.closePanel');
-    return;
+  async execute(vimState: VimState): Promise<void> {
+    await Promise.all([
+      vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups'),
+      vscode.commands.executeCommand('workbench.action.maximizeEditor'),
+      vscode.commands.executeCommand('workbench.action.closePanel'),
+    ]);
   }
 }

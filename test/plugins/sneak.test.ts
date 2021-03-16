@@ -1,8 +1,6 @@
 import { Globals } from '../../src/globals';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
-
-const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
 suite('sneak plugin', () => {
   setup(async () => {
@@ -130,6 +128,34 @@ suite('sneak plugin', () => {
     start: ['|abc', 'aac', 'abc'],
     keysPressed: '3sa\n',
     end: ['abc', 'aac', '|abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> once when going forward',
+    start: ['|abc abc'],
+    keysPressed: 'sab<C-o>',
+    end: ['|abc abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> once when going backward',
+    start: ['abc |abc'],
+    keysPressed: 'Sab<C-o>',
+    end: ['abc |abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> when repeating forward movement',
+    start: ['|abc abc abc'],
+    keysPressed: 'sab;<C-o>',
+    end: ['|abc abc abc'],
+  });
+
+  newTest({
+    title: 'Can go back using <C-o> when repeating backward movement',
+    start: ['abc abc |abc'],
+    keysPressed: 'sab;<C-o>',
+    end: ['abc abc |abc'],
   });
 });
 

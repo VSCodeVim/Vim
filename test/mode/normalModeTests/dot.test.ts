@@ -1,10 +1,8 @@
 import { Configuration } from '../../testConfiguration';
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -66,8 +64,6 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -111,5 +107,42 @@ suite('Repeat content change', () => {
     start: ['on|e', 'two'],
     keysPressed: 'a<C-t>b<left>c<Esc>j.',
     end: ['\tonecb', 'tw|co'],
+  });
+});
+
+suite('Dot Operator repeat with remap', () => {
+  setup(async () => {
+    const configuration = new Configuration();
+    configuration.insertModeKeyBindings = [
+      {
+        before: ['j', 'j', 'k'],
+        after: ['<esc>'],
+      },
+    ];
+    configuration.normalModeKeyBindings = [
+      {
+        before: ['<leader>', 'w'],
+        after: ['d', 'w'],
+      },
+    ];
+    configuration.leader = ' ';
+
+    await setupWorkspace(configuration);
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title: "Can repeat content change using 'jjk' mapped to '<Esc>' without trailing characters",
+    start: ['on|e', 'two'],
+    keysPressed: 'ciwfoojjkj.',
+    end: ['foo', 'fo|o'],
+  });
+
+  newTest({
+    title: "Can repeat '<leader>w' when mapped to 'dw'",
+    start: ['|one two three'],
+    keysPressed: ' w.',
+    end: ['|three'],
   });
 });

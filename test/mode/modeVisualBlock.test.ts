@@ -4,17 +4,15 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Visual Block', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -41,6 +39,13 @@ suite('Mode Visual Block', () => {
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjA123',
     end: ['tes123|t', 'tes123t'],
+  });
+
+  newTest({
+    title: '`A` over shorter line adds necessary spaces',
+    start: ['te|st', 'te', 't'],
+    keysPressed: '<C-v>jjA123',
+    end: ['tes123|t', 'te 123', 't  123'],
   });
 
   newTest({
@@ -201,7 +206,7 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when the visual block spans multiple lines",
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: '<C-v>jjlJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
   });
 
@@ -209,7 +214,66 @@ suite('Mode Visual Block', () => {
     title: "Can handle 'J' when start position of the visual block is below the stop",
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: '<C-v>kkJ',
-    end: ['one| two three', 'four'],
+    end: ['one two| three', 'four'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the entire visual block is on the same line",
+    start: ['one', '|two', 'three', 'four'],
+    keysPressed: '<C-v>lgJ',
+    end: ['one', 'two|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the visual block spans multiple lines",
+    start: ['o|ne', 'two', 'three', 'four'],
+    keysPressed: '<C-v>jjlgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when the visual block spans multiple lines and line has whitespaces",
+    start: ['o|ne  ', 'two', '  three', 'four'],
+    keysPressed: '<C-v>jjlgJ',
+    end: ['one  two|  three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'gJ' when start position of the visual block is below the stop",
+    start: ['one', 'two', 't|hree', 'four'],
+    keysPressed: '<C-v>kkgJ',
+    end: ['onetwo|three', 'four'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle ~/g~ in visual block mode',
+    start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
+    keysPressed: '<C-v>jl~jjl<C-v>jlg~',
+    end: ['oNE', 'Two', 'T|HreE', 'foUR'],
+  });
+
+  suite('R and S', () => {
+    for (const command of ['R', 'S']) {
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode`,
+        start: ['AAAAA', 'BB|BBB', 'CCCCC', 'DDDDD', 'EEEEE'],
+        keysPressed: `<C-v>jjh${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+
+      newTest({
+        title: `'${command}' deletes selected lines and puts you into insert mode (backward selection)`,
+        start: ['AAAAA', 'BBBBB', 'CCCCC', 'DD|DDD', 'EEEEE'],
+        keysPressed: `<C-v>kkl${command}`,
+        end: ['AAAAA', '|', 'EEEEE'],
+        endMode: Mode.Insert,
+      });
+    }
   });
 });

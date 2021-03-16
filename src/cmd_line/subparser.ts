@@ -2,8 +2,6 @@ import { parseCloseCommandArgs } from './subparsers/close';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 import { parseDigraphCommandArgs } from './subparsers/digraph';
 import * as fileCmd from './subparsers/file';
-import { parseNohlCommandArgs } from './subparsers/nohl';
-import { parseOnlyCommandArgs } from './subparsers/only';
 import { parseQuitAllCommandArgs, parseQuitCommandArgs } from './subparsers/quit';
 import { parseReadCommandArgs } from './subparsers/read';
 import { parseRegisterCommandArgs } from './subparsers/register';
@@ -16,34 +14,88 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
-import { parseMarksCommandArgs, parseMarksRemoveCommandArgs as parseMarksRemoveCommandArgs } from './subparsers/marks';
-import { parseSmileCommandArgs } from './subparsers/smile';
+import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers/marks';
+import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
+import { NohlCommand } from './commands/nohl';
+import { OnlyCommand } from './commands/only';
+import { SmileCommand } from './commands/smile';
+import { UndoCommand } from './commands/undo';
+import { parseBangCommand } from './subparsers/bang';
+import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
+import { VimState } from '../state/vimState';
+import { StatusBar } from '../statusBar';
+import { ShCommand } from './commands/sh';
+import { GotoCommand } from './commands/goto';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
   /** The shortest abbreviation that will work, such as `:q` */
   abbrev?: string;
 
-  /** The parser for this command */
-  parser: (args: string) => CommandBase;
+  /** The parser for this command. Undefined if no implementation exists yet. */
+  parser?: (args: string) => CommandBase;
 };
 
+// Keep this sorted, please :)
 export const commandParsers = {
-  write: {
-    abbrev: 'w',
-    parser: parseWriteCommandArgs,
+  '!': {
+    parser: parseBangCommand,
   },
 
-  wall: {
-    abbrev: 'wa',
-    parser: parseWallCommandArgs,
+  bdelete: {
+    abbrev: 'bd',
+    parser: undefined,
   },
 
-  nohlsearch: {
-    abbrev: 'noh',
-    parser: parseNohlCommandArgs,
+  bfirst: {
+    abbrev: 'bf',
+    parser: undefined,
+  },
+
+  blast: {
+    abbrev: 'bl',
+    parser: undefined,
+  },
+
+  bmodified: {
+    abbrev: 'bm',
+    parser: undefined,
+  },
+
+  bnext: {
+    abbrev: 'bn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  bNext: {
+    abbrev: 'bN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  bprevious: {
+    abbrev: 'bp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  brewind: {
+    abbrev: 'br',
+    parser: undefined,
+  },
+
+  buffers: {
+    parser: undefined,
+  },
+
+  center: {
+    abbrev: 'ce',
+    parser: undefined,
+  },
+
+  clearjumps: {
+    abbrev: 'cle',
+    parser: () => new ClearJumpsCommand(),
   },
 
   close: {
@@ -51,95 +103,29 @@ export const commandParsers = {
     parser: parseCloseCommandArgs,
   },
 
-  quit: {
-    abbrev: 'q',
-    parser: parseQuitCommandArgs,
+  copy: {
+    abbrev: 'co',
+    parser: undefined,
   },
 
-  qall: {
-    abbrev: 'qa',
-    parser: parseQuitAllCommandArgs,
+  delete: {
+    abbrev: 'd',
+    parser: parseDeleteRangeLinesCommandArgs,
   },
 
-  quitall: {
-    abbrev: 'quita',
-    parser: parseQuitAllCommandArgs,
+  delmarks: {
+    abbrev: 'delm',
+    parser: parseMarksRemoveCommandArgs,
   },
 
-  wq: {
-    parser: parseWriteQuitCommandArgs,
+  digraphs: {
+    abbrev: 'dig',
+    parser: parseDigraphCommandArgs,
   },
 
-  x: {
-    parser: parseWriteQuitCommandArgs,
-  },
-
-  wqall: {
-    abbrev: 'wqa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  xall: {
-    abbrev: 'xa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  tabnext: {
-    abbrev: 'tabn',
-    parser: tabCmd.parseTabNCommandArgs,
-  },
-
-  tabprevious: {
-    abbrev: 'tabp',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  tabNext: {
-    abbrev: 'tabN',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  tabfirst: {
-    abbrev: 'tabfir',
-    parser: tabCmd.parseTabFirstCommandArgs,
-  },
-
-  tablast: {
-    abbrev: 'tabl',
-    parser: tabCmd.parseTabLastCommandArgs,
-  },
-
-  tabedit: {
-    abbrev: 'tabe',
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabnew: {
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabclose: {
-    abbrev: 'tabc',
-    parser: tabCmd.parseTabCloseCommandArgs,
-  },
-
-  tabonly: {
-    abbrev: 'tabo',
-    parser: tabCmd.parseTabOnlyCommandArgs,
-  },
-
-  tabmove: {
-    abbrev: 'tabm',
-    parser: tabCmd.parseTabMovementCommandArgs,
-  },
-
-  substitute: {
-    abbrev: 's',
-    parser: parseSubstituteCommandArgs,
-  },
-
-  smile: {
-    parser: parseSmileCommandArgs,
+  display: {
+    abbrev: 'di',
+    parser: parseRegisterCommandArgs,
   },
 
   edit: {
@@ -152,33 +138,95 @@ export const commandParsers = {
     parser: fileCmd.parseEditNewFileCommandArgs,
   },
 
-  split: {
-    abbrev: 'sp',
-    parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
+  file: {
+    abbrev: 'f',
+    parser: parseFileInfoCommandArgs,
   },
 
-  vsplit: {
-    abbrev: 'vs',
-    parser: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  files: {
+    parser: undefined,
+  },
+
+  global: {
+    abbrev: 'g',
+    parser: undefined,
+  },
+
+  goto: {
+    abbrev: 'go',
+    parser: GotoCommand.parse,
+  },
+
+  help: {
+    abbrev: 'h',
+    parser: undefined,
+  },
+
+  history: {
+    abbrev: 'his',
+    parser: parseHistoryCommandArgs,
+  },
+
+  jumps: {
+    abbrev: 'ju',
+    parser: () => new JumpsCommand(),
+  },
+
+  left: {
+    abbrev: 'le',
+    parser: undefined,
+  },
+
+  ls: {
+    parser: undefined,
+  },
+
+  marks: {
+    parser: parseMarksCommandArgs,
+  },
+
+  move: {
+    abbrev: 'm',
+    parser: undefined,
   },
 
   new: {
     parser: fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs,
   },
 
-  vnew: {
-    abbrev: 'vne',
-    parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  nohlsearch: {
+    abbrev: 'noh',
+    parser: () => new NohlCommand({}),
+  },
+
+  normal: {
+    abbrev: 'norm',
+    parser: undefined,
   },
 
   only: {
     abbrev: 'on',
-    parser: parseOnlyCommandArgs,
+    parser: () => new OnlyCommand({}),
   },
 
-  set: {
-    abbrev: 'se',
-    parser: parseOptionsCommandArgs,
+  put: {
+    abbrev: 'pu',
+    parser: parsePutExCommandArgs,
+  },
+
+  qall: {
+    abbrev: 'qa',
+    parser: parseQuitAllCommandArgs,
+  },
+
+  quit: {
+    abbrev: 'q',
+    parser: parseQuitCommandArgs,
+  },
+
+  quitall: {
+    abbrev: 'quita',
+    parser: parseQuitAllCommandArgs,
   },
 
   read: {
@@ -191,19 +239,23 @@ export const commandParsers = {
     parser: parseRegisterCommandArgs,
   },
 
-  display: {
-    abbrev: 'reg',
-    parser: parseRegisterCommandArgs,
+  right: {
+    abbrev: 'ri',
+    parser: undefined,
   },
 
-  digraphs: {
-    abbrev: 'dig',
-    parser: parseDigraphCommandArgs,
+  set: {
+    abbrev: 'se',
+    parser: parseOptionsCommandArgs,
   },
 
-  delete: {
-    abbrev: 'd',
-    parser: parseDeleteRangeLinesCommandArgs,
+  shell: {
+    abbrev: 'sh',
+    parser: () => new ShCommand(),
+  },
+
+  smile: {
+    parser: () => new SmileCommand(),
   },
 
   sort: {
@@ -211,23 +263,125 @@ export const commandParsers = {
     parser: parseSortCommandArgs,
   },
 
-  file: {
-    abbrev: 'f',
-    parser: parseFileInfoCommandArgs,
+  source: {
+    abbrev: 'so',
+    parser: undefined,
   },
 
-  marks: {
-    parser: parseMarksCommandArgs,
+  split: {
+    abbrev: 'sp',
+    parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
   },
 
-  delmarks: {
-    abbrev: 'delm',
-    parser: parseMarksRemoveCommandArgs,
+  substitute: {
+    abbrev: 's',
+    parser: parseSubstituteCommandArgs,
   },
 
-  history: {
-    abbrev: 'his',
-    parser: parseHistoryCommandArgs,
+  t: {
+    parser: undefined,
+  },
+
+  tabclose: {
+    abbrev: 'tabc',
+    parser: tabCmd.parseTabCloseCommandArgs,
+  },
+
+  tabedit: {
+    abbrev: 'tabe',
+    parser: tabCmd.parseTabNewCommandArgs,
+  },
+
+  tabfirst: {
+    abbrev: 'tabfir',
+    parser: tabCmd.parseTabFirstCommandArgs,
+  },
+
+  tablast: {
+    abbrev: 'tabl',
+    parser: tabCmd.parseTabLastCommandArgs,
+  },
+
+  tabmove: {
+    abbrev: 'tabm',
+    parser: tabCmd.parseTabMovementCommandArgs,
+  },
+
+  tabnew: {
+    parser: tabCmd.parseTabNewCommandArgs,
+  },
+
+  tabnext: {
+    abbrev: 'tabn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  tabNext: {
+    abbrev: 'tabN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  tabonly: {
+    abbrev: 'tabo',
+    parser: tabCmd.parseTabOnlyCommandArgs,
+  },
+
+  tabprevious: {
+    abbrev: 'tabp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  undo: {
+    abbrev: 'u',
+    parser: () => new UndoCommand({}),
+  },
+
+  vglobal: {
+    abbrev: 'v',
+    parser: undefined,
+  },
+
+  vnew: {
+    abbrev: 'vne',
+    parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  },
+
+  vsplit: {
+    abbrev: 'vs',
+    parser: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  },
+
+  wall: {
+    abbrev: 'wa',
+    parser: parseWallCommandArgs,
+  },
+
+  wq: {
+    parser: parseWriteQuitCommandArgs,
+  },
+
+  wqall: {
+    abbrev: 'wqa',
+    parser: parseWriteQuitAllCommandArgs,
+  },
+
+  write: {
+    abbrev: 'w',
+    parser: parseWriteCommandArgs,
+  },
+
+  x: {
+    parser: parseWriteQuitCommandArgs,
+  },
+
+  xall: {
+    abbrev: 'xa',
+    parser: parseWriteQuitAllCommandArgs,
+  },
+
+  yank: {
+    abbrev: 'y',
+    parser: undefined,
   },
 };
 
@@ -235,7 +389,7 @@ export const commandParsers = {
  * Returns a command parser for the given `input`, if one exists.
  * Resolves `q`, `qu`, `qui`, and `quit` the same.
  */
-export function getParser(input: string): ((args?: string) => CommandBase) | undefined {
+export function getParser(input: string): ((args: string) => CommandBase) | undefined {
   if (input === '') {
     return undefined;
   }
@@ -243,16 +397,45 @@ export function getParser(input: string): ((args?: string) => CommandBase) | und
   for (const fullName of Object.keys(commandParsers)) {
     const parserMapping: CommandParserMapping = commandParsers[fullName];
 
+    const parser =
+      parserMapping.parser ??
+      ((args: string) => {
+        return new UnimplementedCommand(fullName, parserMapping);
+      });
+
     if (parserMapping.abbrev !== undefined) {
       if (input.startsWith(parserMapping.abbrev) && fullName.startsWith(input)) {
-        return parserMapping.parser;
+        return parser;
       }
     } else {
       if (input === fullName) {
-        return parserMapping.parser;
+        return parser;
       }
     }
   }
 
   return undefined;
+}
+
+class UnimplementedCommand extends CommandBase {
+  fullName: string;
+  parserMapping: CommandParserMapping;
+
+  public neovimCapable(): boolean {
+    // If the user has neovim integration enabled, don't stop them from using these commands
+    return true;
+  }
+
+  constructor(fullName: string, parserMapping: CommandParserMapping) {
+    super();
+    this.fullName = fullName;
+    this.parserMapping = parserMapping;
+  }
+
+  async execute(vimState: VimState): Promise<void> {
+    const commandText = this.parserMapping.abbrev
+      ? `${this.parserMapping.abbrev}[${this.fullName.substr(this.parserMapping.abbrev.length)}]`
+      : this.fullName;
+    StatusBar.setText(vimState, `Command :${commandText} is not yet implemented`, true);
+  }
 }

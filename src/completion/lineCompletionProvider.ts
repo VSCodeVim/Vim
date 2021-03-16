@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-import { Position } from '../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
 import { Range } from '../common/motion/range';
+import { Position } from 'vscode';
 
 /**
  * Return open text documents, with a given file at the top of the list.
@@ -31,7 +31,7 @@ const linesWithoutIndentation = (
   document: vscode.TextDocument,
   lineToStartScanFrom: number,
   scanAboveFirst: boolean
-): { sortPriority: number; text: string }[] => {
+): Array<{ sortPriority: number; text: string }> => {
   const distanceFromStartLine = (line: number) => {
     let sortPriority = scanAboveFirst ? lineToStartScanFrom - line : line - lineToStartScanFrom;
     if (sortPriority < 0) {
@@ -118,8 +118,8 @@ export const getCompletionsForCurrentLine = (
   position: Position,
   document: vscode.TextDocument
 ): string[] | null => {
-  const currentLineText = TextEditor.getText(
-    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
+  const currentLineText = document.getText(
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position)
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -145,35 +145,30 @@ export const lineCompletionProvider = {
    * a space character (such that it shows almost any symbol in the list).
    * Quick Pick also allows for searching, which is a nice bonus.
    */
-  showLineCompletionsQuickPick: async (
-    position: Position,
-    vimState: VimState
-  ): Promise<VimState> => {
-    const completions = getCompletionsForCurrentLine(position, vimState.editor.document);
+  showLineCompletionsQuickPick: async (position: Position, vimState: VimState): Promise<void> => {
+    const completions = getCompletionsForCurrentLine(position, vimState.document);
 
     if (!completions) {
-      return vimState;
+      return;
     }
 
     const selectedCompletion = await vscode.window.showQuickPick(completions);
 
     if (!selectedCompletion) {
-      return vimState;
+      return;
     }
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(
-        TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
       ),
     });
 
-    vimState.recordedState.transformations.push({
+    vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',
       text: selectedCompletion,
     });
-
-    return vimState;
   },
 };

@@ -2,14 +2,11 @@ import * as node from '../commands/digraph';
 import { Scanner } from '../scanner';
 
 export function parseDigraphCommandArgs(args: string): node.DigraphsCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     return new node.DigraphsCommand({});
   }
 
-  let scanner = new Scanner(args);
-  let name = scanner.nextWord();
-
   return new node.DigraphsCommand({
-    arg: name,
+    arg: new Scanner(args).nextWord(),
   });
 }

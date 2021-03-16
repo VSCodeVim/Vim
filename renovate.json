@@ -1,7 +1,7 @@
 {
-  "extends": [
-    "config:base",
-    "default:pinDigestsDisabled"
-  ],
-  "automerge": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base", "default:pinDigestsDisabled"],
+  "automerge": true,
+  "ignoreDeps": ["@types/vscode"],
+  "labels": ["pr/dependency"]
 }
