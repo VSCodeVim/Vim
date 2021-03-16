@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
+import { VimState } from '../../state/vimState';
 import * as node from '../node';
 
 export interface IBufferDeleteCommandArguments extends node.ICommandArgs {
@@ -24,8 +25,8 @@ export class BufferDeleteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
-    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
+  async execute(vimState: VimState): Promise<void> {
+    if (vimState.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 

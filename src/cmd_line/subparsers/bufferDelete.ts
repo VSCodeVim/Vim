@@ -1,4 +1,3 @@
-import { ErrorCode, VimError } from '../../error';
 import * as node from '../commands/bufferDelete';
 import { Scanner } from '../scanner';
 
@@ -13,7 +12,7 @@ export function parseBufferDeleteCommandArgs(args: string): node.BufferDeleteCom
     scannedArgs.bang = true;
     scanner.ignore();
   }
-  let tabPosition = scanner.remaining();
+  const tabPosition = scanner.remaining();
   scannedArgs.tabPosition = tabPosition.trim();
   return new node.BufferDeleteCommand(scannedArgs);
 }

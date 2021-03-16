@@ -13,7 +13,7 @@ suite('Buffer delete', () => {
 
   setup(async () => {
     await t.setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(t.cleanUpWorkspace);
@@ -47,11 +47,11 @@ suite('Buffer delete', () => {
 
   test("bd 'N' deletes the Nth buffer open", async () => {
     const dirPath = await t.createRandomDir();
-    let filePaths: string[] = [];
+    const filePaths: string[] = [];
 
     try {
       for (let i = 0; i < 3; i++) {
-        let uri: vscode.Uri = vscode.Uri.parse(join(dirPath, `${i}`));
+        const uri: vscode.Uri = vscode.Uri.parse(join(dirPath, `${i}`));
         filePaths.push(uri.toString());
         vscode.workspace.openTextDocument(uri).then((doc: vscode.TextDocument) => {
           doc.save();
