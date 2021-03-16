@@ -34,7 +34,7 @@ export class HistoryBase {
     }
 
     // remove duplicates
-    let index: number = this._history.indexOf(value);
+    const index: number = this._history.indexOf(value);
     if (index !== -1) {
       this._history.splice(index, 1);
     }
@@ -88,7 +88,7 @@ export class HistoryBase {
     }
 
     try {
-      let parsedData = JSON.parse(data);
+      const parsedData = JSON.parse(data);
       if (!Array.isArray(parsedData)) {
         throw Error('Unexpected format in history file. Expected JSON.');
       }

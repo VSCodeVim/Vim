@@ -18,14 +18,15 @@ import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
+import { HistoryTracker } from './src/history/historyTracker';
 
 let extensionContext: vscode.ExtensionContext;
-let previousActiveEditorId: EditorIdentity | undefined = undefined;
+let previousActiveEditorId: EditorIdentity | undefined;
 let lastClosedModeHandler: ModeHandler | null = null;
 
 interface ICodeKeybinding {
   after?: string[];
-  commands?: { command: string; args: any[] }[];
+  commands?: Array<{ command: string; args: any[] }>;
 }
 
 export async function getAndUpdateModeHandler(
@@ -38,7 +39,7 @@ export async function getAndUpdateModeHandler(
 
   const activeEditorId = EditorIdentity.fromEditor(activeTextEditor);
 
-  let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId);
+  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
@@ -77,13 +78,13 @@ export async function getAndUpdateModeHandler(
 async function loadConfiguration() {
   const validatorResults = await configuration.load();
 
-  Logger.configChanged();
+  Logger.configChanged(configuration);
 
   const logger = Logger.get('Configuration');
   logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
   if (validatorResults.numErrors > 0) {
-    for (let validatorResult of validatorResults.get()) {
+    for (const validatorResult of validatorResults.get()) {
       switch (validatorResult.level) {
         case 'error':
           logger.error(validatorResult.message);
@@ -193,7 +194,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       const documents = vscode.workspace.textDocuments;
 
       // Delete modehandler once all tabs of this document have been closed
-      for (let editorIdentity of ModeHandlerMap.getKeys()) {
+      for (const editorIdentity of ModeHandlerMap.getKeys()) {
         const modeHandler = ModeHandlerMap.get(editorIdentity);
 
         let shouldDelete = false;
@@ -361,6 +362,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh) {
         if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
+          if (mh.vimState.currentMode === Mode.Insert) {
+            compositionState.insertedText = true;
+            vscode.commands.executeCommand('default:type', { text: args.text });
+          }
         } else {
           await mh.handleKeyEvent(args.text);
         }
@@ -378,7 +383,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
               0,
               compositionState.composingText.length - args.replaceCharCnt
             ) + args.text;
-        } else {
+        }
+        if (compositionState.insertedText) {
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: args.text,
             replaceCharCnt: args.replaceCharCnt,
@@ -386,6 +392,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
         }
+      } else {
+        await vscode.commands.executeCommand('default:replacePreviousChar', {
+          text: args.text,
+          replaceCharCnt: args.replaceCharCnt,
+        });
       }
     });
   });
@@ -400,10 +411,20 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
+        if (compositionState.insertedText) {
+          mh.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: '',
+            replaceCharCnt: compositionState.composingText.length,
+          });
+          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
+          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
+          mh.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+        }
         const text = compositionState.composingText;
-        compositionState.reset();
         await mh.handleMultipleKeyEvents(text.split(''));
       }
+      compositionState.reset();
     });
   });
 
@@ -621,6 +642,6 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   ModeHandlerMap.getAll()
     .filter((modeHandler) => modeHandler.vimState.identity.fileName === document.fileName)
     .forEach((modeHandler) => {
-      modeHandler.vimState.historyTracker.clear();
+      modeHandler.vimState.historyTracker = new HistoryTracker(modeHandler.vimState);
     });
 }

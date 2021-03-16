@@ -143,16 +143,16 @@ export class PutCommand extends BaseCommand {
     } else {
       if (options.adjustIndent) {
         // Adjust indent to current line
-        let indentationWidth = TextEditor.getIndentationLevel(
+        const indentationWidth = TextEditor.getIndentationLevel(
           vimState.document.lineAt(position).text
         );
-        let firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
+        const firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
 
         text = text
           .split('\n')
           .map((line) => {
-            let currentIdentationWidth = TextEditor.getIndentationLevel(line);
-            let newIndentationWidth =
+            const currentIdentationWidth = TextEditor.getIndentationLevel(line);
+            const newIndentationWidth =
               currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
 
             return TextEditor.setIndentationLevel(line, newIndentationWidth);
@@ -211,7 +211,7 @@ export class PutCommand extends BaseCommand {
       };
     } else if (registerMode === RegisterMode.LineWise && options.forceCursorLastLine) {
       // Move to cursor to last line, first non-whitespace character of what you pasted
-      let lastLine = text.split('\n')[numNewlines];
+      const lastLine = text.split('\n')[numNewlines];
       const check = lastLine.match(/^\s*/);
       const numWhitespace = check ? check[0].length : 0;
 
@@ -280,7 +280,7 @@ export class PutCommand extends BaseCommand {
       type: 'insertText',
       text: textToAdd,
       position: whereToAddText,
-      diff: diff,
+      diff,
     });
     let numNewlinesAfterPut = textToAdd.split('\n').length;
     if (registerMode === RegisterMode.LineWise) {
@@ -411,7 +411,7 @@ class PutCommandVisual extends BaseCommand {
       // To ensure that the put command knows this is
       // a linewise register insertion in visual mode of
       // characterwise, linewise
-      let resultMode = vimState.currentMode;
+      const resultMode = vimState.currentMode;
       await vimState.setCurrentMode(oldMode);
       vimState.recordedState.registerName = replaceRegisterName;
       await new PutCommand(this.multicursorIndex).exec(start, vimState, {
@@ -536,7 +536,7 @@ class GPutCommandVisualLine extends PutCommandVisualLine {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    let repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
+    const repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
     await super.exec(position, vimState);
     // Vgp should place the cursor on the next line
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
@@ -619,6 +619,7 @@ class PutBeforeWithIndentCommand extends BaseCommand {
 
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+        vimState.document,
         vimState.cursorStopPosition.getUp().line
       );
     }

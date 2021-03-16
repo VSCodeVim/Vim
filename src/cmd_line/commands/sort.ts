@@ -50,9 +50,9 @@ export class SortCommand extends node.CommandBase {
       originalLines = [...new Set(originalLines)];
     }
 
-    let lastLineLength = originalLines[originalLines.length - 1].length;
+    const lastLineLength = originalLines[originalLines.length - 1].length;
 
-    let sortedLines = this._arguments.ignoreCase
+    const sortedLines = this._arguments.ignoreCase
       ? originalLines.sort((a: string, b: string) => a.localeCompare(b))
       : originalLines.sort();
 
@@ -60,7 +60,7 @@ export class SortCommand extends node.CommandBase {
       sortedLines.reverse();
     }
 
-    let sortedContent = sortedLines.join('\n');
+    const sortedContent = sortedLines.join('\n');
 
     await TextEditor.replace(
       vimState.editor,

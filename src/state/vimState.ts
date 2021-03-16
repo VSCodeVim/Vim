@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
-import { BaseMovement } from '../actions/baseMotion';
+import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
-import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
+import { IEasyMotion } from '../actions/plugins/easymotion/types';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
@@ -16,7 +16,15 @@ import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 
 interface IInputMethodSwitcher {
-  switchInputMethod(prevMode: Mode, newMode: Mode);
+  switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
+}
+
+interface IBaseMovement {
+  execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement>;
 }
 
 interface INVim {
@@ -50,7 +58,7 @@ export class VimState implements vscode.Disposable {
 
   public historyTracker: HistoryTracker;
 
-  public easyMotion: EasyMotion;
+  public easyMotion: IEasyMotion;
 
   public identity: EditorIdentity;
 
@@ -76,12 +84,12 @@ export class VimState implements vscode.Disposable {
   /**
    * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastSemicolonRepeatableMovement: IBaseMovement | undefined = undefined;
 
   /**
    * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
    */
-  public lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastCommaRepeatableMovement: IBaseMovement | undefined = undefined;
 
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
@@ -149,7 +157,7 @@ export class VimState implements vscode.Disposable {
   }
 
   /**
-   * The position of every cursor.
+   * The position of every cursor. Will never be empty.
    */
   private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
 
@@ -157,6 +165,11 @@ export class VimState implements vscode.Disposable {
     return this._cursors;
   }
   public set cursors(value: Range[]) {
+    if (value.length === 0) {
+      VimState.logger.warn('Tried to set VimState.cursors to an empty array');
+      return;
+    }
+
     const map = new Map<string, Range>();
     for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
@@ -286,13 +299,15 @@ export class VimState implements vscode.Disposable {
   /** The macro currently being recorded, if one exists. */
   public macro: RecordedState | undefined;
 
+  public lastInvokedMacro: RecordedState | undefined;
+
   public nvim?: INVim;
 
-  public constructor(editor: vscode.TextEditor) {
+  public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
-    this.easyMotion = new EasyMotion();
+    this.easyMotion = easyMotion;
   }
 
   async load() {

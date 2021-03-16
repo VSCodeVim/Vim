@@ -89,7 +89,7 @@ declare module 'vscode' {
   interface Position {
     toString(): string;
 
-    add(diff: PositionDiff, boundsCheck?: boolean): Position;
+    add(document: vscode.TextDocument, diff: PositionDiff, boundsCheck?: boolean): Position;
     subtract(other: Position): PositionDiff;
 
     /**
@@ -143,7 +143,7 @@ declare module 'vscode' {
      * @returns the beginning of the line, excluding preceeding whitespace.
      * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
      */
-    getLineBeginRespectingIndent(): Position;
+    getLineBeginRespectingIndent(document: vscode.TextDocument): Position;
 
     /**
      * @return the beginning of the previous line.
@@ -187,7 +187,7 @@ declare module 'vscode' {
      */
     isLineEnd(): boolean;
 
-    isFirstWordOfLine(): boolean;
+    isFirstWordOfLine(document: vscode.TextDocument): boolean;
 
     isAtDocumentBegin(): boolean;
 
@@ -195,14 +195,13 @@ declare module 'vscode' {
 
     /**
      * Returns whether the current position is in the leading whitespace of a line
-     * @param allowEmpty : Use true if "" is valid
      */
-    isInLeadingWhitespace(allowEmpty?: boolean): boolean;
+    isInLeadingWhitespace(document: vscode.TextDocument): boolean;
 
     /**
      * If `vim.startofline` is set, get first non-blank character's position.
      */
-    obeyStartOfLine(): Position;
+    obeyStartOfLine(document: vscode.TextDocument): Position;
 
     isValid(textEditor: vscode.TextEditor): boolean;
   }
@@ -214,10 +213,11 @@ Position.prototype.toString = function (this: Position) {
 
 Position.prototype.add = function (
   this: Position,
+  document: vscode.TextDocument,
   diff: PositionDiff,
   boundsCheck = true
 ): Position {
-  let resultLine = this.line + diff.line;
+  const resultLine = clamp(this.line + diff.line, 0, document.lineCount - 1);
 
   let resultChar: number;
   if (diff.type === PositionDiffType.Offset) {
@@ -225,17 +225,13 @@ Position.prototype.add = function (
   } else if (diff.type === PositionDiffType.ExactCharacter) {
     resultChar = diff.character;
   } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
-    resultChar = this.withLine(resultLine).obeyStartOfLine().character;
+    resultChar = this.withLine(resultLine).obeyStartOfLine(document).character;
   } else {
     throw new Error(`Unknown PositionDiffType: ${diff.type}`);
   }
 
-  if (boundsCheck) {
-    resultLine = clamp(resultLine, 0, TextEditor.getLineCount() - 1);
-    resultChar = clamp(resultChar, 0, TextEditor.getLineLength(resultLine));
-  }
-
-  return new Position(resultLine, resultChar);
+  const pos = new Position(resultLine, Math.max(resultChar, 0));
+  return boundsCheck ? document.validatePosition(pos) : pos;
 };
 
 Position.prototype.subtract = function (this: Position, other: Position): PositionDiff {
@@ -435,11 +431,14 @@ Position.prototype.getLineBegin = function (this: Position): Position {
  * @returns the beginning of the line, excluding preceeding whitespace.
  * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
  */
-Position.prototype.getLineBeginRespectingIndent = function (this: Position): Position {
+Position.prototype.getLineBeginRespectingIndent = function (
+  this: Position,
+  document: vscode.TextDocument
+): Position {
   if (!configuration.autoindent) {
     return this.getLineBegin();
   }
-  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line);
+  return TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line);
 };
 
 /**
@@ -523,8 +522,13 @@ Position.prototype.isLineEnd = function (this: Position): boolean {
   return this.character >= TextEditor.getLineLength(this.line);
 };
 
-Position.prototype.isFirstWordOfLine = function (this: Position): boolean {
-  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line).character === this.character;
+Position.prototype.isFirstWordOfLine = function (
+  this: Position,
+  document: vscode.TextDocument
+): boolean {
+  return (
+    TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line).character === this.character
+  );
 };
 
 Position.prototype.isAtDocumentBegin = function (this: Position): boolean {
@@ -541,33 +545,34 @@ Position.prototype.isAtDocumentEnd = function (this: Position): boolean {
  */
 Position.prototype.isInLeadingWhitespace = function (
   this: Position,
-  allowEmpty: boolean = false
+  document: vscode.TextDocument
 ): boolean {
-  if (allowEmpty) {
-    return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  } else {
-    return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  }
+  return /^\s+$/.test(document.getText(new vscode.Range(this.getLineBegin(), this)));
 };
 
 /**
  * If `vim.startofline` is set, get first non-blank character's position.
  */
-Position.prototype.obeyStartOfLine = function (this: Position): Position {
-  return configuration.startofline ? TextEditor.getFirstNonWhitespaceCharOnLine(this.line) : this;
+Position.prototype.obeyStartOfLine = function (
+  this: Position,
+  document: vscode.TextDocument
+): Position {
+  return configuration.startofline
+    ? TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line)
+    : this;
 };
 
 Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEditor): boolean {
   try {
     // line
     // TODO: this `|| 1` seems dubious...
-    let lineCount = TextEditor.getLineCount(textEditor) || 1;
+    const lineCount = TextEditor.getLineCount(textEditor) || 1;
     if (this.line >= lineCount) {
       return false;
     }
 
     // char
-    let charCount = TextEditor.getLineLength(this.line);
+    const charCount = TextEditor.getLineLength(this.line);
     if (this.character > charCount + 1) {
       return false;
     }

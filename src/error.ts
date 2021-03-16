@@ -16,10 +16,12 @@ export enum ErrorCode {
   SearchHitTop = 384,
   SearchHitBottom = 385,
   CannotCloseLastWindow = 444,
+  ArgumentRequired = 471,
   InvalidArgument = 474,
   PatternNotFound = 486,
   TrailingCharacters = 488,
   NotAnEditorCommand = 492,
+  NoBuffersDeleted = 516,
   UnknownOption = 518,
 }
 
@@ -37,21 +39,23 @@ export const ErrorMessage: IErrorMessage = {
   384: 'Search hit TOP without match for',
   385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',
+  471: 'Argument required',
   474: 'Invalid argument',
   486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
+  516: 'No buffers were deleted',
   518: 'Unknown option',
 };
 
 export class VimError extends Error {
-  private _code: number;
-  private _message: string;
+  public readonly code: number;
+  public readonly message: string;
 
-  constructor(code: number, message: string) {
+  private constructor(code: number, message: string) {
     super();
-    this._code = code;
-    this._message = message;
+    this.code = code;
+    this.message = message;
   }
 
   static fromCode(code: ErrorCode, extraValue?: string): VimError {
@@ -60,14 +64,6 @@ export class VimError extends Error {
     }
 
     throw new Error('unknown error code: ' + code);
-  }
-
-  get code(): number {
-    return this._code;
-  }
-
-  get message(): string {
-    return this._message;
   }
 
   toString(): string {

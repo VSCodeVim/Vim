@@ -9,6 +9,7 @@ import { Clipboard } from '../../src/util/clipboard';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { RecordedState } from '../../src/state/recordedState';
 import { newTest } from '../testSimplifier';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -242,7 +243,7 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    const vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
     await vimState.load();
     vimState.recordedState.registerName = '0';
 

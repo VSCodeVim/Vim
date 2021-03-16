@@ -65,7 +65,7 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    let end = getCurrentWordEnd(position, WordType.CamelCase);
+    const end = getCurrentWordEnd(position, WordType.CamelCase);
 
     return new Position(end.line, end.character + 1);
   }
@@ -117,8 +117,8 @@ class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }

@@ -89,11 +89,11 @@ export function getWordRight(
   inclusive: boolean = false
 ): Position {
   for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-    let positions = getAllPositions(
+    const positions = getAllPositions(
       TextEditor.getLine(currentLine).text,
       regexForWordType(wordType)
     );
-    let newCharacter = positions.find(
+    const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
@@ -117,11 +117,11 @@ export function getCurrentWordEnd(
   inclusive: boolean = false
 ): Position {
   for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-    let positions = getAllEndPositions(
+    const positions = getAllEndPositions(
       TextEditor.getLine(currentLine).text,
       regexForWordType(wordType)
     );
-    let newCharacter = positions.find(
+    const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
@@ -148,7 +148,7 @@ export function getLastWordEnd(pos: Position, wordType: WordType): Position {
     }
     // reverse the list to find the biggest element smaller than pos.character
     positions = positions.reverse();
-    let index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
+    const index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
     let newCharacter = 0;
     if (index === -1) {
       if (currentLine > -1) {
@@ -182,7 +182,7 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   let supportsLookbehind = true;
   try {
     // tslint:disable-next-line
-    new RegExp('(<=x)');
+    new RegExp('(?<=x)');
   } catch {
     supportsLookbehind = false;
   }
@@ -231,7 +231,7 @@ function makeUnicodeWordRegex(keywordChars: string): RegExp {
   // List of printable characters (code point intervals) and their character kinds.
   // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
   // Imported from utf_class_buf in src/mbyte.c of Vim.
-  const symbolTable: [[number, number], CharKind][] = [
+  const symbolTable: Array<[[number, number], CharKind]> = [
     [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
     [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
     [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
@@ -297,13 +297,13 @@ function makeUnicodeWordRegex(keywordChars: string): RegExp {
   ];
 
   const codePointRangePatterns: string[][] = [];
-  for (let kind in CharKind) {
+  for (const kind in CharKind) {
     if (!isNaN(Number(kind))) {
       codePointRangePatterns[kind] = [];
     }
   }
 
-  for (let [[first, last], kind] of symbolTable) {
+  for (const [[first, last], kind] of symbolTable) {
     if (first === last) {
       // '\u{hhhh}'
       codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}`);

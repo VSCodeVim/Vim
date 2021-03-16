@@ -292,7 +292,7 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
     x.type === 'moveCursor'
   );
 };
-export const isMultiCursorTextTransformation = (x: Transformation): Boolean => {
+export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
   return (x.type === 'insertTextVSCode' && x.isMultiCursor) ?? false;
 };
 
@@ -335,7 +335,7 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
   return false;
 };
 
-export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
+export const areAllSameTransformation = (transformations: Transformation[]): boolean => {
   const firstTransformation = transformations[0];
 
   return transformations.every((t) => {

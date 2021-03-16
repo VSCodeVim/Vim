@@ -9,14 +9,14 @@ import { TextEditor } from './../../textEditor';
 import { RegisterAction, BaseCommand } from './../base';
 import { BaseMovement, IMovement } from '../baseMotion';
 import {
-  MoveABacktick,
-  MoveACaret,
-  MoveACurlyBrace,
-  MoveADoubleQuotes,
-  MoveAParentheses,
+  MoveAroundBacktick,
+  MoveAroundCaret,
+  MoveAroundCurlyBrace,
+  MoveAroundDoubleQuotes,
+  MoveAroundParentheses,
   MoveAroundTag,
-  MoveASingleQuotes,
-  MoveASquareBracket,
+  MoveAroundSingleQuotes,
+  MoveAroundSquareBracket,
   MoveInsideTag,
 } from '../motion';
 import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
@@ -62,7 +62,7 @@ class CommandSurroundModeRepeat extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
-      start: position.getLineBeginRespectingIndent(),
+      start: position.getLineBeginRespectingIndent(vimState.document),
       stop: position.getLineEnd().getLastWordEnd().getRight(),
     };
   }
@@ -322,14 +322,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     while (
       !firstRangeEnd.isEqual(stop) &&
       !firstRangeEnd.isLineEnd() &&
-      TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/)
+      TextEditor.getCharAt(vimState.document, firstRangeEnd).match(/[ \t]/)
     ) {
       firstRangeEnd = firstRangeEnd.getRight();
     }
 
     while (
       !secondRangeStart.isEqual(firstRangeEnd) &&
-      TextEditor.getCharAt(secondRangeStart).match(/[ \t]/) &&
+      TextEditor.getCharAt(vimState.document, secondRangeStart).match(/[ \t]/) &&
       !secondRangeStart.isLineBeginning()
     ) {
       secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
@@ -362,7 +362,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     let endReplace = replacement;
 
     if (startReplace[0] === '<') {
-      let tagName = /([-\w.]+)/.exec(startReplace);
+      const tagName = /([-\w.]+)/.exec(startReplace);
       if (tagName) {
         endReplace = `</${tagName[1]}>`;
       } else {
@@ -426,7 +426,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       const start = vimState.surround.range.start;
       let end = vimState.surround.range.end;
 
-      if (TextEditor.getCharAt(end) !== ' ') {
+      if (TextEditor.getCharAt(vimState.document, end) !== ' ') {
         end = end.getRight();
       }
 
@@ -455,9 +455,9 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
     // Target: symmetrical text object (quotes)
     for (const { char, movement } of [
-      { char: "'", movement: () => new MoveASingleQuotes() },
-      { char: '"', movement: () => new MoveADoubleQuotes() },
-      { char: '`', movement: () => new MoveABacktick() },
+      { char: "'", movement: () => new MoveAroundSingleQuotes() },
+      { char: '"', movement: () => new MoveAroundDoubleQuotes() },
+      { char: '`', movement: () => new MoveAroundBacktick() },
     ]) {
       if (char !== target) {
         continue;
@@ -474,10 +474,10 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
     // Target: asymmetrical text object (parentheses, brackets, etc.)
     for (const { open, close, movement } of [
-      { open: '{', close: '}', movement: () => new MoveACurlyBrace() },
-      { open: '[', close: ']', movement: () => new MoveASquareBracket() },
-      { open: '(', close: ')', movement: () => new MoveAParentheses() },
-      { open: '<', close: '>', movement: () => new MoveACaret() },
+      { open: '{', close: '}', movement: () => new MoveAroundCurlyBrace() },
+      { open: '[', close: ']', movement: () => new MoveAroundSquareBracket() },
+      { open: '(', close: ')', movement: () => new MoveAroundParentheses() },
+      { open: '<', close: '>', movement: () => new MoveAroundCaret() },
     ]) {
       if (target !== open && target !== close) {
         continue;
@@ -501,8 +501,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     if (target === 't') {
       // `MoveInsideTag` must be run first as otherwise the search will
       // look for the next enclosing tag after having selected the first
-      let innerTagContent = await new MoveInsideTag().execAction(position, vimState);
-      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
+      const innerTagContent = await new MoveInsideTag().execAction(position, vimState);
+      const { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
 
       if (failed || innerTagContent.failed) {
         return CommandSurroundAddToReplacement.finish(vimState);
@@ -520,7 +520,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     // Special case: 'change' with targets w(ord), W(ord), s(entence), p(aragraph)
     // is a shortcut for 'yank' with an inner text object (e.g. `csw]` is the same as `ysiw]`)
     if (operator === 'change') {
-      let textObj: { new (): TextObjectMovement } | undefined;
+      let textObj: (new () => TextObjectMovement) | undefined;
       let addNewline: 'no' | 'end-only' | 'both' = 'no';
       if (target === 'w') {
         [textObj, addNewline] = [SelectInnerWord, 'no'];

@@ -75,7 +75,7 @@ class CommandTabInCommandline extends BaseCommand {
 
     // Sub string since vim does completion before the cursor
     let evalCmd = currentCmd.slice(0, cursorPos);
-    let restCmd = currentCmd.slice(cursorPos);
+    const restCmd = currentCmd.slice(cursorPos);
 
     // \s* is the match the extra space before any character like ':  edit'
     const cmdRegex = /^\s*\w+$/;
@@ -90,7 +90,7 @@ class CommandTabInCommandline extends BaseCommand {
     } else if (fileRegex.exec(evalCmd)) {
       // File completion by searching if there is a space after the first word/command
       // ideally it should be a process of white-listing to selected commands like :e and :vsp
-      let filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
+      const filePathInCmd = evalCmd.substring(fileRegex.lastIndex);
       const currentUri = vimState.document.uri;
       const isRemote = !!vscode.env.remoteName;
 
@@ -226,7 +226,7 @@ class CommandInsertInCommandline extends BaseCommand {
     const key = this.keysPressed[0];
 
     // handle special keys first
-    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<S-BS>' || key === '<C-h>') {
       if (vimState.statusBarCursorCharacterPos === 0) {
         await vimState.setCurrentMode(Mode.Normal);
         return;
@@ -285,7 +285,7 @@ class CommandInsertInCommandline extends BaseCommand {
 
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else {
-      let modifiedString = vimState.currentCommandlineText.split('');
+      const modifiedString = vimState.currentCommandlineText.split('');
       modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
       vimState.currentCommandlineText = modifiedString.join('');
       vimState.statusBarCursorCharacterPos += key.length;
@@ -332,7 +332,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = globalState.searchStatePrevious;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<S-bs>' || key === '<C-h>') {
+    if (key === '<BS>' || key === '<S-BS>' || key === '<C-h>') {
       if (searchState.searchString.length === 0) {
         await new CommandEscInSearchMode().exec(position, vimState);
       }
@@ -436,7 +436,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
       vimState.statusBarCursorCharacterPos = searchState.searchString.length;
     } else {
-      let modifiedString = searchState.searchString.split('');
+      const modifiedString = searchState.searchString.split('');
       modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
       searchState.searchString = modifiedString.join('');
       vimState.statusBarCursorCharacterPos += key.length;
@@ -517,7 +517,7 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 
-      for (let action of register.text.actionsRun) {
+      for (const action of register.text.actionsRun) {
         keyStrokes = keyStrokes.concat(action.keysPressed);
       }
 
@@ -560,7 +560,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
     } else if (register.text instanceof RecordedState) {
       let keyStrokes: string[] = [];
 
-      for (let action of register.text.actionsRun) {
+      for (const action of register.text.actionsRun) {
         keyStrokes = keyStrokes.concat(action.keysPressed);
       }
 
@@ -589,7 +589,7 @@ class CommandInsertWord extends BaseCommand {
       return;
     }
 
-    const word = TextEditor.getWord(position.getLeftIfEOL());
+    const word = TextEditor.getWord(vimState.document, position.getLeftIfEOL());
 
     if (word !== undefined) {
       if (vimState.currentMode === Mode.SearchInProgressMode) {
@@ -614,7 +614,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   private getTrimmedStatusBarText() {
     // first regex removes the : / and | from the string
     // second regex removes a single space from the end of the string
-    let trimmedStatusBarText = StatusBar.getText()
+    const trimmedStatusBarText = StatusBar.getText()
       .replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2')
       .replace(/(.*) $/, '$1');
     return trimmedStatusBarText;
@@ -622,7 +622,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
-    let statusBarText = this.getTrimmedStatusBarText();
+    const statusBarText = this.getTrimmedStatusBarText();
     if (key === '<right>') {
       vimState.statusBarCursorCharacterPos = Math.min(
         vimState.statusBarCursorCharacterPos + 1,
