@@ -220,7 +220,7 @@ class UndoStack {
   private currentStepIndex = -1;
 
   // The marks as they existed before the first HistoryStep
-  private initialMarks = [];
+  private initialMarks: IMark[] = [];
 
   public getHistoryStepAtIndex(idx: number): HistoryStep | undefined {
     return this.historySteps[idx];
@@ -302,6 +302,23 @@ class UndoStack {
   public getCurrentMarkList(): IMark[] {
     const step = this.getCurrentHistoryStep();
     return step?.marks ?? this.initialMarks;
+  }
+
+  public removeMarks(marks?: string[]): void {
+    const step = this.getCurrentHistoryStep();
+    if (marks === undefined) {
+      if (step) {
+        step.marks = [];
+      } else {
+        this.initialMarks = [];
+      }
+    } else {
+      if (step) {
+        step.marks = step.marks.filter((m) => !marks.includes(m.name));
+      } else {
+        this.initialMarks = this.initialMarks.filter((m) => !marks.includes(m.name));
+      }
+    }
   }
 }
 
@@ -506,6 +523,28 @@ export class HistoryTracker {
   public getMark(markName: string): IMark | undefined {
     const marks = this.getMarkList(markName.toUpperCase() === markName);
     return marks.find((mark) => mark.name === markName);
+  }
+
+  /**
+   * Removes all local marks.
+   */
+  public removeLocalMarks(): void {
+    this.undoStack.removeMarks();
+  }
+
+  /**
+   * Removes all marks matching from either the global or local array.
+   */
+  public removeMarks(markNames: string[]): void {
+    if (markNames.length === 0) {
+      return;
+    }
+
+    this.undoStack.removeMarks(markNames);
+
+    HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
+      (mark) => mark.name === '' || !markNames.includes(mark.name)
+    );
   }
 
   /**

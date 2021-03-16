@@ -14,7 +14,7 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
-import { parseMarksCommandArgs } from './subparsers/marks';
+import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers/marks';
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
@@ -115,7 +115,7 @@ export const commandParsers = {
 
   delmarks: {
     abbrev: 'delm',
-    parser: undefined,
+    parser: parseMarksRemoveCommandArgs,
   },
 
   digraphs: {

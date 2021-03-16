@@ -90,6 +90,10 @@ class DecorationImpl {
     return this._markDecorationCache.get(name);
   }
 
+  public allMarkDecorations(): IterableIterator<vscode.TextEditorDecorationType> {
+    return this._markDecorationCache.values();
+  }
+
   public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
     if (this._insertModeVirtualCharacter) {
       this._insertModeVirtualCharacter.dispose();
