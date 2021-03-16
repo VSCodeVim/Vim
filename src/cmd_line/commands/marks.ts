@@ -4,6 +4,8 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { IMark } from '../../history/historyTracker';
 import { Range } from '../../common/motion/range';
+import { StatusBar } from '../../statusBar';
+import { ErrorCode, VimError } from '../../error';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -51,7 +53,7 @@ export class MarksCommand extends node.CommandBase {
   }
 }
 
-export class MarksRemoveCommand extends node.CommandBase {
+export class DeleteMarksCommand extends node.CommandBase {
   private numbers = '0123456789';
   private numberRange = /([0-9])-([0-9])/;
   private letterRange = /([a-zA-Z])-([a-zA-Z])/;
@@ -72,7 +74,7 @@ export class MarksRemoveCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     if (!this.args) {
-      window.showInformationMessage('Marks or range required.');
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.ArgumentRequired));
       return;
     }
 
@@ -90,13 +92,13 @@ export class MarksRemoveCommand extends node.CommandBase {
     let letterArgs: any = this.letterRange.exec(this.args);
 
     if (!numberArgs && !letterArgs && this.args.includes('-')) {
-      window.showInformationMessage(`Invalid range passed.`);
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
       return;
     }
 
     if (numberArgs && numberArgs.length > 2) {
       if (parseInt(numberArgs[1], 10) > parseInt(numberArgs[2], 10)) {
-        window.showInformationMessage(`Invalid range ${numberArgs[1]} > ${numberArgs[2]}.`);
+        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
         return;
       }
 
@@ -107,7 +109,7 @@ export class MarksRemoveCommand extends node.CommandBase {
 
     while (letterArgs && letterArgs.length > 2) {
       if (this.caseMismatch(letterArgs[1], letterArgs[2])) {
-        window.showInformationMessage(`Non matching case ${letterArgs[1]} - ${letterArgs[2]}.`);
+        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
         return;
       }
 
@@ -118,7 +120,7 @@ export class MarksRemoveCommand extends node.CommandBase {
       const end = letters.indexOf(letterArgs[2]);
 
       if (start > end) {
-        window.showInformationMessage(`Invalid range ${letterArgs[1]} - ${letterArgs[2]}.`);
+        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
         return;
       }
 

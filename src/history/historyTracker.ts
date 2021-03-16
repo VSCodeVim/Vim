@@ -220,7 +220,7 @@ class UndoStack {
   private currentStepIndex = -1;
 
   // The marks as they existed before the first HistoryStep
-  private initialMarks = [];
+  private initialMarks: IMark[] = [];
 
   public getHistoryStepAtIndex(idx: number): HistoryStep | undefined {
     return this.historySteps[idx];
@@ -314,9 +314,9 @@ class UndoStack {
       }
     } else {
       if (step) {
-        step.marks = step.marks.filter((m) => marks.includes(m.name));
+        step.marks = step.marks.filter((m) => !marks.includes(m.name));
       } else {
-        this.initialMarks = this.initialMarks.filter((m) => marks.includes(m));
+        this.initialMarks = this.initialMarks.filter((m) => !marks.includes(m.name));
       }
     }
   }
