@@ -1,10 +1,8 @@
 import { Mode } from '../../../src/mode/mode';
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
 suite('Mode Normal', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
@@ -351,6 +349,22 @@ suite('Mode Normal', () => {
     start: ['|text'],
     keysPressed: '~',
     end: ['T|ext'],
+  });
+
+  newTest({
+    title: "'~' goes over line boundaries if whichwrap contains '~'",
+    config: { whichwrap: '~' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['onE', '|two'],
+  });
+
+  newTest({
+    title: "'~' does not goes over line boundaries if whichwrap does not contain '~'",
+    config: { whichwrap: '' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['on|E', 'two'],
   });
 
   newTest({

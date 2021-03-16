@@ -1,10 +1,10 @@
-import { Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
+import { Position } from 'vscode';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -29,21 +29,28 @@ export interface IMovement {
    */
   failed?: boolean;
 
+  /**
+   * Wheter this motion resulted in the current multicursor index being removed. This
+   * happens when multiple selections combine into one.
+   */
+  removed?: boolean;
+
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
+}
+
+export function failedMovement(vimState: VimState): IMovement {
+  return {
+    start: vimState.cursorStartPosition,
+    stop: vimState.cursorStopPosition,
+    failed: true,
+  };
 }
 
 export abstract class BaseMovement extends BaseAction {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   isMotion = true;
-
-  /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   *
-   * Default to false, as many motions operate on a single line and do not count as a jump.
-   */
-  isJump = false;
 
   /**
    * If movement can be repeated with semicolon or comma this will be true when
@@ -106,9 +113,9 @@ export abstract class BaseMovement extends BaseAction {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
+    const recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
-    let prevResult: IMovement = { start: position, stop: position, failed: true };
+    let prevResult = failedMovement(vimState);
     let firstMovementStart: Position = new Position(position.line, position.character);
 
     count = clamp(count, this.minCount, this.maxCount);

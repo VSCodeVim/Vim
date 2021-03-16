@@ -9,9 +9,14 @@
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
-    "strictNullChecks": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "experimentalDecorators": true,
-    "alwaysStrict": true
+    "baseUrl": ".",
+    "paths": {
+      "platform/*": ["src/platform/node/*"]
+    },
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }

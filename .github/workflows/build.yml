@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v2
+        with:
+          # Get full history; needed for Prettier to amend commit
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Prettier
+        uses: creyD/prettier_action@v3.3
+        with:
+          prettier_options: '--write **/*.{ts,js,json,md,yml}'
+          same_commit: true
+          only_changed: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint
+        run: npx tslint -c tslint.json -p tsconfig.json
+
+      - name: Build
+        run: gulp webpack
+
+      - name: Test
+        run: |
+          gulp prepare-test
+          xvfb-run -a yarn test

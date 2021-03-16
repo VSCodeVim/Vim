@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.16.0",
+  "version": "1.18.9",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.42.0"
   },
   "categories": [
     "Other",
@@ -32,20 +32,19 @@
   ],
   "extensionKind": [
     "ui",
+    "web",
     "workspace"
   ],
+  "sideEffects": false,
   "activationEvents": [
     "*",
     "onCommand:type"
   ],
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
+  "browser": "./out/extensionWeb",
   "contributes": {
     "commands": [
-      {
-        "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
-      },
       {
         "command": "toggleVim",
         "title": "Vim: Toggle Vim Mode"
@@ -64,6 +63,11 @@
         "key": "Escape",
         "command": "extension.vim_escape",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "Escape",
+        "command": "notebook.cell.quitEdit",
+        "when": "inputFocus && notebookEditorFocused && !editorHasSelection && !editorHoverVisible && vim.active && vim.mode == 'Normal'"
       },
       {
         "key": "Home",
@@ -323,12 +327,12 @@
       {
         "key": "ctrl+backspace",
         "command": "extension.vim_ctrl+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<S-BS> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "cmd+left",
@@ -358,7 +362,7 @@
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.overrideCmdV && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
@@ -373,6 +377,16 @@
         "mac": "cmd+alt+up",
         "command": "extension.vim_cmd+alt+up",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "j",
+        "command": "notebook.focusNextEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'none' && notebookEditorCursorAtBoundary != 'top'"
+      },
+      {
+        "key": "k",
+        "command": "notebook.focusPreviousEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'bottom' && notebookEditorCursorAtBoundary != 'none'"
       }
     ],
     "configuration": {
@@ -415,6 +429,14 @@
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
           "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.operatorPendingModeKeyBindings": {
+          "type": "array",
+          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+        },
+        "vim.operatorPendingModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -500,6 +522,12 @@
           "default": 1000,
           "minimum": 0
         },
+        "vim.maxmapdepth": {
+          "type": "number",
+          "description": "Maximum number of times a mapping is done without resulting in a character to be used.",
+          "default": 1000,
+          "minimum": 0
+        },
         "vim.scroll": {
           "type": "number",
           "markdownDescription": "Number of lines to scroll with `Ctrl-U` and `Ctrl-D` commands. Set to 0 to use a half page scroll.",
@@ -542,21 +570,47 @@
         },
         "vim.easymotionMarkerBackgroundColor": {
           "type": "string",
+          "default": "#0000",
           "description": "Set a custom background color for EasyMotion markers."
         },
         "vim.easymotionMarkerForegroundColorOneChar": {
           "type": "string",
+          "default": "#ff0000",
           "description": "Set a custom color for the text on one character long markers."
         },
         "vim.easymotionMarkerForegroundColorTwoChar": {
           "type": "string",
-          "description": "Set a custom color for the text on two character long markers."
+          "description": "Set a custom color for the text on two character long markers.",
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharFirst": {
+          "type": "string",
+          "default": "#ffb400",
+          "description": "Set a custom color for the first character on two character long markers."
+        },
+        "vim.easymotionMarkerForegroundColorTwoCharSecond": {
+          "type": "string",
+          "default": "#b98300",
+          "description": "Set a custom color for the second character on two character long markers."
+        },
+        "vim.easymotionIncSearchForegroundColor": {
+          "type": "string",
+          "default": "#7fbf00",
+          "description": "Set a custom color for the easymotion search n-character (default `<leader><leader>/`)."
+        },
+        "vim.easymotionDimColor": {
+          "type": "string",
+          "default": "#777777",
+          "description": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
         },
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
           "description": "Set the width (in pixels) allocated to each character in the match.",
           "default": 8,
-          "minimum": 1
+          "minimum": 1,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now lets vscode calculate the correct width.",
+          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now lets vscode calculate the correct width."
         },
         "vim.easymotionDimBackground": {
           "type": "boolean",
@@ -580,12 +634,14 @@
         "vim.easymotionMarkerFontWeight": {
           "type": "string",
           "description": "Set the font weight of the marker text.",
-          "default": "normal"
+          "default": "bold"
         },
         "vim.easymotionMarkerMargin": {
           "type": "number",
           "description": "Set the margin around each marker, in pixels.",
-          "default": 0
+          "default": 0,
+          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, it is no longer required.",
+          "deprecationMessage": "Deprecated: Please don't use this setting, it is no longer required."
         },
         "vim.easymotionKeys": {
           "type": "string",
@@ -600,6 +656,11 @@
         "vim.replaceWithRegister": {
           "type": "boolean",
           "markdownDescription": "Enable the [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister) plugin for Vim.",
+          "default": false
+        },
+        "vim.smartRelativeLine": {
+          "type": "boolean",
+          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
           "default": false
         },
         "vim.sneak": {
@@ -815,6 +876,17 @@
           "default": "",
           "scope": "machine-overridable"
         },
+        "vim.neovimUseConfigFile": {
+          "type": "boolean",
+          "markdownDescription": "Use a config file for Neovim, specified by `vim.neovimConfigPath`.",
+          "default": false
+        },
+        "vim.neovimConfigPath": {
+          "type": "string",
+          "markdownDescription": "Path to Neovim configuration file. `vim.neovimUseConfigFile` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
+          "default": "",
+          "scope": "machine-overridable"
+        },
         "vim.vimrc.enable": {
           "type": "boolean",
           "markdownDescription": "Use key mappings from a `.vimrc` file.",
@@ -937,7 +1009,7 @@
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
-          "default": ""
+          "default": "b,s"
         },
         "vim.report": {
           "type": "number",
@@ -959,6 +1031,11 @@
           "type": "boolean",
           "markdownDescription": "When `true` the commands listed below move the cursor to the first non-blank of the line.  When `false` the cursor is kept in the same column (if possible).  This applies to the commands: `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<` and `>>` with a linewise operator.",
           "default": true
+        },
+        "vim.showMarksInGutter": {
+          "type": "boolean",
+          "description": "Show the currently set mark(s) in the gutter.",
+          "default": false
         }
       }
     },
@@ -967,7 +1044,8 @@
         "id": "vimrc",
         "extensions": [
           ".vimrc"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -984,51 +1062,48 @@
     "test": "node ./out/test/runTest.js",
     "forceprettier": "gulp forceprettier"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "dependencies": {
     "diff-match-patch": "1.0.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "neovim": "4.9.0",
+    "path-browserify": "1.0.1",
     "untildify": "4.0.0",
     "winston": "3.3.3",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.4.0"
   },
   "devDependencies": {
-    "@types/diff": "4.0.2",
+    "@types/diff": "5.0.0",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.3",
-    "@types/lodash": "4.14.157",
-    "@types/mocha": "8.0.0",
-    "@types/node": "12.12.31",
-    "@types/sinon": "9.0.4",
-    "@types/vscode": "1.37.0",
+    "@types/lodash": "4.14.168",
+    "@types/mocha": "8.2.1",
+    "@types/node": "12.20.6",
+    "@types/sinon": "9.0.11",
+    "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
+    "event-stream": "4.0.1",
+    "fork-ts-checker-webpack-plugin": "6.1.1",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
-    "gulp-sourcemaps": "2.6.5",
+    "gulp-sourcemaps": "3.0.0",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "husky": "4.2.5",
     "minimist": "1.2.5",
-    "mocha": "8.0.1",
+    "mocha": "8.3.2",
     "plugin-error": "1.0.1",
-    "prettier": "2.0.5",
-    "pretty-quick": "2.0.1",
-    "sinon": "9.0.2",
-    "ts-loader": "8.0.1",
-    "tslint": "6.1.2",
-    "typescript": "3.9.7",
-    "vscode-test": "1.4.0",
-    "webpack": "4.43.0",
-    "webpack-cli": "3.3.12",
-    "webpack-merge": "5.0.9",
-    "webpack-stream": "5.2.1"
+    "prettier": "2.2.1",
+    "sinon": "9.2.4",
+    "ts-loader": "8.0.18",
+    "tslint": "6.1.3",
+    "typescript": "4.2.3",
+    "vsce": "1.87.0",
+    "vscode-test": "1.5.1",
+    "webpack": "5.26.2",
+    "webpack-cli": "4.5.0",
+    "webpack-merge": "5.7.3",
+    "webpack-stream": "6.1.2"
   }
 }

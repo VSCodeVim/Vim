@@ -1,29 +1,25 @@
 import * as assert from 'assert';
-
-import * as error from '../../src/error';
+import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
-import { getTestingFunctions } from '../testSimplifier';
 import {
   assertEqualLines,
-  assertStatusBarEqual,
   cleanUpWorkspace,
   setupWorkspace,
   reloadConfiguration,
 } from './../testUtils';
 import { Globals } from '../../src/globals';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -50,7 +46,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o', '<Esc>']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       4,
       '<Esc> moved cursor position.'
     );
@@ -176,7 +172,7 @@ suite('Mode Insert', () => {
     assertEqualLines(['onetwo']);
 
     assert.strictEqual(
-      TextEditor.getSelection().start.character,
+      vscode.window.activeTextEditor!.selection.start.character,
       3,
       '<BS> moved cursor to correct position'
     );
@@ -393,5 +389,22 @@ suite('Mode Insert', () => {
     } catch (e) {
       assert(false);
     }
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register",
+    start: ['foo |bar'],
+    keysPressed: 'yei<C-r>"',
+    end: ['foo bar|bar'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register with mupltiple cursor",
+    start: ['foo |bar', 'foo bar'],
+    // create two cursors on bar, yank. Then paste it in insert mode
+    keysPressed: 'gbgby' + 'i<C-r>"',
+    end: ['foo bar|bar', 'foo barbar'],
+    endMode: Mode.Insert,
   });
 });

@@ -1,10 +1,8 @@
-import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Configuration } from '../testConfiguration';
+import { newTest } from '../testSimplifier';
 
 suite('surround plugin', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.surround = true;
@@ -278,14 +276,14 @@ suite('surround plugin', () => {
     title: "'S)' surrounds visual selection without space",
     start: ['first li|ne test'],
     keysPressed: 'viwS)',
-    end: ['first (lin|e) test'],
+    end: ['first |(line) test'],
   });
 
   newTest({
     title: "'S(' surrounds visual selection with space",
     start: ['first li|ne test'],
     keysPressed: 'viwS(',
-    end: ['first ( lin|e ) test'],
+    end: ['first |( line ) test'],
   });
 
   newTest({

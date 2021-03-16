@@ -14,20 +14,30 @@ export class RemappingValidator implements IConfigurationValidator {
       'insertModeKeyBindingsNonRecursive',
       'normalModeKeyBindings',
       'normalModeKeyBindingsNonRecursive',
+      'operatorPendingModeKeyBindings',
+      'operatorPendingModeKeyBindingsNonRecursive',
       'visualModeKeyBindings',
       'visualModeKeyBindingsNonRecursive',
       'commandLineModeKeyBindings',
       'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = config[modeKeyBindingsKey];
+      const keybindings = config[modeKeyBindingsKey];
+      const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
-      const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
+      const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
+      let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;
+      if (!modeKeyBindingsMap) {
+        modeKeyBindingsMap = new Map<string, IKeyRemapping>();
+      }
       for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i] as IKeyRemapping;
+        const remapping = keybindings[i] as IKeyRemapping;
+
+        // set 'recursive' of the remapping according to where it was stored
+        remapping.recursive = isRecursive;
 
         // validate
-        let remappingError = await this.isRemappingValid(remapping);
+        const remappingError = await this.isRemappingValid(remapping);
         result.concat(remappingError);
         if (remappingError.hasError) {
           // errors with remapping, skip
@@ -62,7 +72,7 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap.set(beforeKeys, remapping);
       }
 
-      config[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
+      config[modeMapName + 'Map'] = modeKeyBindingsMap;
     }
 
     return result;
@@ -89,6 +99,13 @@ export class RemappingValidator implements IConfigurationValidator {
       });
     }
 
+    if (remapping.recursive === undefined) {
+      result.append({
+        level: 'error',
+        message: `Remapping of '${remapping.before}' missing 'recursive' info.`,
+      });
+    }
+
     if (remapping.after && !(remapping.after instanceof Array)) {
       result.append({
         level: 'error',
@@ -102,12 +119,17 @@ export class RemappingValidator implements IConfigurationValidator {
 
         if (typeof command === 'string') {
           cmd = command;
-        } else {
+        } else if (command.command) {
           cmd = command.command;
-        }
 
-        if (!(await this.isCommandValid(cmd))) {
-          result.append({ level: 'warning', message: `${cmd} does not exist.` });
+          if (!(await this.isCommandValid(cmd))) {
+            result.append({ level: 'warning', message: `${cmd} does not exist.` });
+          }
+        } else {
+          result.append({
+            level: 'error',
+            message: `Remapping of '${remapping.before}' has wrong "commands" structure. Should be 'string[] | { "command": string, "args": any[] }[]'.`,
+          });
         }
       }
     }

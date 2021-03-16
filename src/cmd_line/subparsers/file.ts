@@ -2,20 +2,20 @@ import * as node from '../commands/file';
 import { Scanner } from '../scanner';
 
 export function parseEditFileCommandArgs(args: string): node.FileCommand {
-  if (!args) {
+  if (!args || !args.trim()) {
     return new node.FileCommand({ name: '', createFileIfNotExists: true });
   }
 
-  let scanner = new Scanner(args);
+  const scanner = new Scanner(args);
   const bang = scanner.next() === '!';
   if (scanner.isAtEof) {
-    return new node.FileCommand({ name: '', bang: bang, createFileIfNotExists: true });
+    return new node.FileCommand({ name: '', bang, createFileIfNotExists: true });
   }
 
-  let name = scanner.remaining();
+  const name = scanner.remaining();
   return new node.FileCommand({
     name: name.trim(),
-    bang: bang,
+    bang,
     createFileIfNotExists: true,
   });
 }
@@ -31,12 +31,12 @@ export function parseEditFileInNewVerticalWindowCommandArgs(args: string): node.
   let name = '';
 
   if (args) {
-    let scanner = new Scanner(args);
+    const scanner = new Scanner(args);
     name = scanner.nextWord();
   }
 
   return new node.FileCommand({
-    name: name,
+    name,
     position: node.FilePosition.NewWindowVerticalSplit,
   });
 }
@@ -45,12 +45,12 @@ export function parseEditFileInNewHorizontalWindowCommandArgs(args: string): nod
   let name = '';
 
   if (args) {
-    let scanner = new Scanner(args);
+    const scanner = new Scanner(args);
     name = scanner.nextWord();
   }
 
   return new node.FileCommand({
-    name: name,
+    name,
     position: node.FilePosition.NewWindowHorizontalSplit,
   });
 }

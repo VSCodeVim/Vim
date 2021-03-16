@@ -11,7 +11,7 @@ suite('cmd_line tab', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   suiteTeardown(cleanUpWorkspace);
@@ -21,7 +21,7 @@ suite('cmd_line tab', () => {
     await commandLine.Run('tabe', modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
-    assert.notEqual(beforeEditor, afterEditor, 'Active editor did not change');
+    assert.notStrictEqual(beforeEditor, afterEditor, 'Active editor did not change');
   });
 
   test('tabedit with no arguments when not in workspace opens an untitled file', async () => {
@@ -29,7 +29,7 @@ suite('cmd_line tab', () => {
     await commandLine.Run('tabedit', modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
-    assert.notEqual(beforeEditor, afterEditor, 'Active editor did not change');
+    assert.notStrictEqual(beforeEditor, afterEditor, 'Active editor did not change');
   });
 
   test('tabe with absolute path when not in workspace opens file', async () => {

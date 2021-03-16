@@ -14,7 +14,9 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
-  commands?: ({ command: string; args: any[] } | string)[];
+  // 'recursive' is calculated when validating, according to the config that stored the remapping
+  recursive?: boolean;
+  commands?: Array<{ command: string; args: any[] } | string>;
   source?: 'vscode' | 'vimrc';
 }
 
@@ -135,6 +137,11 @@ export interface IConfiguration {
   replaceWithRegister: boolean;
 
   /**
+   * Use SmartRelativeLine plugin?
+   */
+  smartRelativeLine: boolean;
+
+  /**
    * Use sneak plugin?
    */
   sneak: boolean;
@@ -166,19 +173,31 @@ export interface IConfiguration {
    */
   easymotionMarkerBackgroundColor: string;
   easymotionMarkerForegroundColorOneChar: string;
-  easymotionMarkerForegroundColorTwoChar: string;
-  easymotionMarkerWidthPerChar: number;
+  easymotionMarkerForegroundColorTwoChar: string; // Deprecated! Use the ones bellow
+  easymotionMarkerForegroundColorTwoCharFirst: string;
+  easymotionMarkerForegroundColorTwoCharSecond: string;
+  easymotionIncSearchForegroundColor: string;
+  easymotionDimColor: string;
+  easymotionMarkerWidthPerChar: number; // Deprecated! No longer needed!
   easymotionDimBackground: boolean;
-  easymotionMarkerFontFamily: string;
-  easymotionMarkerFontSize: string;
+  easymotionMarkerFontFamily: string; // Deprecated! No longer needed!
+  easymotionMarkerFontSize: string; // Deprecated! No longer needed!
   easymotionMarkerFontWeight: string;
-  easymotionMarkerMargin: number;
+  easymotionMarkerMargin: number; // Deprecated! No longer needed!
   easymotionKeys: string;
 
   /**
    * Timeout in milliseconds for remapped commands.
    */
   timeout: number;
+
+  /**
+   * Maximum number of times a mapping is done without resulting in a
+   * character to be used. This normally catches endless mappings, like
+   * ":map x y" with ":map y x". It still does not catch ":map g wg",
+   * because the 'w' is used before the next mapping is done.
+   */
+  maxmapdepth: number;
 
   /**
    * Display partial commands on status bar?
@@ -299,6 +318,8 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+  neovimUseConfigFile: boolean;
+  neovimConfigPath: string;
 
   /**
    * .vimrc
@@ -329,6 +350,8 @@ export interface IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[];
   normalModeKeyBindings: IKeyRemapping[];
   normalModeKeyBindingsNonRecursive: IKeyRemapping[];
+  operatorPendingModeKeyBindings: IKeyRemapping[];
+  operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
   commandLineModeKeyBindings: IKeyRemapping[];
@@ -338,13 +361,10 @@ export interface IConfiguration {
    * These are constructed by the RemappingValidator
    */
   insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   /**
    * Comma-separated list of motion keys that should wrap to next/previous line.
@@ -380,4 +400,9 @@ export interface IConfiguration {
    * and `>>` with a linewise operator.
    */
   startofline: boolean;
+
+  /**
+   * Show the currently set mark(s) in the gutter.
+   */
+  showMarksInGutter: boolean;
 }

@@ -47,7 +47,7 @@ export class TagMatcher {
     const stack: Tag[] = [];
     const matchedTags: MatchedTag[] = [];
 
-    for (let tag of tags) {
+    for (const tag of tags) {
       // We have to push on the stack
       // if it is an open tag.
       if (tag.type === 'open') {
@@ -77,6 +77,7 @@ export class TagMatcher {
     }
 
     const firstNonWhitespacePositionOnLine = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
       vimState.cursorStartPosition.line
     );
 
@@ -95,7 +96,7 @@ export class TagMatcher {
         ? firstNonWhitespacePositionOnLine
         : vimState.cursorStartPosition;
 
-    const startPosOffset = TextEditor.getOffsetAt(startPos);
+    const startPosOffset = vimState.document.offsetAt(startPos);
     const endPosOffset = position;
     const tagsSurrounding = matchedTags.filter((n) => {
       return startPosOffset >= n.openingTagStart && endPosOffset < n.closingTagEnd;

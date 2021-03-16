@@ -1,8 +1,9 @@
-import { exec } from '../util/child_process';
-import { readFileAsync, writeFileAsync, unlink } from '../util/fs';
+import { readFileAsync, writeFileAsync, unlink } from 'platform/fs';
 import { tmpdir } from '../util/os';
 import { join } from '../util/path';
 import { VimError, ErrorCode } from '../error';
+import { promisify } from 'util';
+import * as process from 'process';
 
 class ExternalCommand {
   private previousExternalCommand: string | undefined;
@@ -24,7 +25,7 @@ class ExternalCommand {
    * @param command the command to expand
    */
   private expandCommand(command: string): string {
-    let result: string[] = [];
+    const result: string[] = [];
 
     for (let i = 0; i < command.length; i++) {
       if (command[i] === '!') {
@@ -96,7 +97,9 @@ class ExternalCommand {
       this.previousExternalCommand = command;
       command = this.redirectCommand(command, inputFile, outputFile);
       try {
-        await exec(command);
+        await import('child_process').then((cp) => {
+          return promisify(cp.exec)(command);
+        });
       } catch (e) {
         // exec throws an error if exit code != 0
         // keep going and read the output anyway (just like vim)

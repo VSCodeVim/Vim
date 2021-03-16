@@ -8,8 +8,8 @@ export function parseRegisterCommandArgs(args: string): RegisterCommand {
     });
   }
 
-  let scanner = new Scanner(args);
-  let regs: string[] = [];
+  const scanner = new Scanner(args);
+  const regs: string[] = [];
   let reg = scanner.nextWord();
   while (reg !== Scanner.EOF) {
     regs.push(reg);

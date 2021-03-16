@@ -10,15 +10,13 @@ import {
   reloadConfiguration,
   setupWorkspace,
 } from './../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
-
+import { newTest } from '../testSimplifier';
 suite('Basic substitute', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   suiteTeardown(cleanUpWorkspace);
@@ -148,6 +146,20 @@ suite('Basic substitute', () => {
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: ':.+1+s/blah/yay\n',
     end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Replace with \\n',
+    start: ['one |two three'],
+    keysPressed: ':s/t/\\n/g\n',
+    end: ['one| ', 'wo ', 'hree'],
+  });
+
+  newTest({
+    title: 'Replace with \\t',
+    start: ['one |two three'],
+    keysPressed: ':s/t/\\t/g\n',
+    end: ['one |\two \three'],
   });
 
   test('Replace specific single equal lines', async () => {

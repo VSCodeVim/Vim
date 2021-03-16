@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as fs from '../util/fs';
+import * as fs from 'platform/fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -8,7 +8,7 @@ import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
 import { configuration } from './configuration';
 
-class VimrcImpl {
+export class VimrcImpl {
   private _vimrcPath: string;
 
   /**
@@ -56,6 +56,17 @@ class VimrcImpl {
           const remap = await vimrcKeyRemappingBuilder.build(line);
           if (remap) {
             VimrcImpl.addRemapToConfig(config, remap);
+            continue;
+          }
+          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+          if (unremap) {
+            VimrcImpl.removeRemapFromConfig(config, unremap);
+            continue;
+          }
+          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+          if (clearRemap) {
+            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+            continue;
           }
         }
       } catch (err) {
@@ -67,32 +78,115 @@ class VimrcImpl {
   /**
    * Adds a remapping from .vimrc to the given configuration
    */
-  private static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
+  public static addRemapToConfig(config: IConfiguration, remap: IVimrcKeyRemapping): void {
     const mappings = (() => {
       switch (remap.keyRemappingType) {
         case 'map':
-          return [config.normalModeKeyBindings, config.visualModeKeyBindings];
+          return [
+            config.normalModeKeyBindings,
+            config.visualModeKeyBindings,
+            config.operatorPendingModeKeyBindings,
+          ];
         case 'nmap':
+        case 'nma':
+        case 'nm':
           return [config.normalModeKeyBindings];
         case 'vmap':
+        case 'vma':
+        case 'vm':
+        case 'xmap':
+        case 'xma':
+        case 'xm':
           return [config.visualModeKeyBindings];
         case 'imap':
+        case 'ima':
+        case 'im':
           return [config.insertModeKeyBindings];
         case 'cmap':
+        case 'cma':
+        case 'cm':
           return [config.commandLineModeKeyBindings];
+        case 'omap':
+        case 'oma':
+        case 'om':
+          return [config.operatorPendingModeKeyBindings];
+        case 'lmap':
+        case 'lma':
+        case 'lm':
+        case 'map!':
+          return [config.insertModeKeyBindings, config.commandLineModeKeyBindings];
         case 'noremap':
+        case 'norema':
+        case 'norem':
+        case 'nore':
+        case 'nor':
+        case 'no':
           return [
             config.normalModeKeyBindingsNonRecursive,
             config.visualModeKeyBindingsNonRecursive,
+            config.operatorPendingModeKeyBindingsNonRecursive,
           ];
         case 'nnoremap':
+        case 'nnorema':
+        case 'nnorem':
+        case 'nnore':
+        case 'nnor':
+        case 'nno':
+        case 'nn':
           return [config.normalModeKeyBindingsNonRecursive];
         case 'vnoremap':
+        case 'vnorema':
+        case 'vnorem':
+        case 'vnore':
+        case 'vnor':
+        case 'vno':
+        case 'vn':
+        case 'xnoremap':
+        case 'xnorema':
+        case 'xnorem':
+        case 'xnore':
+        case 'xnor':
+        case 'xno':
+        case 'xn':
           return [config.visualModeKeyBindingsNonRecursive];
         case 'inoremap':
+        case 'inorema':
+        case 'inorem':
+        case 'inore':
+        case 'inor':
+        case 'ino':
           return [config.insertModeKeyBindingsNonRecursive];
         case 'cnoremap':
+        case 'cnorema':
+        case 'cnorem':
+        case 'cnore':
+        case 'cnor':
+        case 'cno':
           return [config.commandLineModeKeyBindingsNonRecursive];
+        case 'onoremap':
+        case 'onorema':
+        case 'onorem':
+        case 'onore':
+        case 'onor':
+        case 'ono':
+          return [config.operatorPendingModeKeyBindingsNonRecursive];
+        case 'lnoremap':
+        case 'lnorema':
+        case 'lnorem':
+        case 'lnore':
+        case 'lnor':
+        case 'lno':
+        case 'ln':
+        case 'noremap!':
+        case 'norema!':
+        case 'norem!':
+        case 'nore!':
+        case 'nor!':
+        case 'no!':
+          return [
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
         default:
           console.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
           return undefined;
@@ -101,19 +195,199 @@ class VimrcImpl {
 
     mappings?.forEach((remaps) => {
       // Don't override a mapping present in settings.json; those are more specific to VSCodeVim.
-      if (!remaps.some((r) => _.isEqual(r.before, remap!.keyRemapping.before))) {
+      if (!remaps.some((r) => _.isEqual(r.before, remap.keyRemapping.before))) {
         remaps.push(remap.keyRemapping);
       }
     });
   }
 
-  private static removeAllRemapsFromConfig(config: IConfiguration): void {
+  /**
+   * Removes a remapping from .vimrc from the given configuration
+   */
+  public static removeRemapFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
+    const mappings = (() => {
+      switch (remap.keyRemappingType) {
+        case 'unmap':
+        case 'unma':
+        case 'unm':
+          return [
+            config.normalModeKeyBindings,
+            config.normalModeKeyBindingsNonRecursive,
+            config.visualModeKeyBindings,
+            config.visualModeKeyBindingsNonRecursive,
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
+        case 'nunmap':
+        case 'nunma':
+        case 'nunm':
+        case 'nun':
+          return [config.normalModeKeyBindings, config.normalModeKeyBindingsNonRecursive];
+        case 'vunmap':
+        case 'vunma':
+        case 'vunm':
+        case 'vun':
+        case 'vu':
+        case 'xunmap':
+        case 'xunma':
+        case 'xunm':
+        case 'xun':
+        case 'xu':
+          return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
+        case 'iunmap':
+        case 'iunma':
+        case 'iunm':
+        case 'iun':
+        case 'iu':
+          return [config.insertModeKeyBindings, config.insertModeKeyBindingsNonRecursive];
+        case 'cunmap':
+        case 'cunma':
+        case 'cunm':
+        case 'cun':
+        case 'cu':
+          return [config.commandLineModeKeyBindings, config.commandLineModeKeyBindingsNonRecursive];
+        case 'ounmap':
+        case 'ounma':
+        case 'ounm':
+        case 'oun':
+        case 'ou':
+          return [
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
+        case 'lunmap':
+        case 'lunma':
+        case 'lunm':
+        case 'lun':
+        case 'lu':
+        case 'unmap!':
+        case 'unma!':
+        case 'unm!':
+          return [
+            config.insertModeKeyBindings,
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindings,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
+        default:
+          console.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
+          return undefined;
+      }
+    })();
+
+    if (mappings) {
+      mappings.forEach((remaps) => {
+        // Don't remove a mapping present in settings.json; those are more specific to VSCodeVim.
+        _.remove(
+          remaps,
+          (r) => r.source === 'vimrc' && _.isEqual(r.before, remap.keyRemapping.before)
+        );
+      });
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Clears all remappings from .vimrc from the given configuration for specific mode
+   */
+  public static clearRemapsFromConfig(config: IConfiguration, remap: IVimrcKeyRemapping): boolean {
+    const mappings = (() => {
+      switch (remap.keyRemappingType) {
+        case 'mapclear':
+        case 'mapclea':
+        case 'mapcle':
+        case 'mapcl':
+        case 'mapc':
+          return [
+            config.normalModeKeyBindings,
+            config.normalModeKeyBindingsNonRecursive,
+            config.visualModeKeyBindings,
+            config.visualModeKeyBindingsNonRecursive,
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
+        case 'nmapclear':
+        case 'nmapclea':
+        case 'nmapcle':
+        case 'nmapcl':
+        case 'nmapc':
+          return [config.normalModeKeyBindings, config.normalModeKeyBindingsNonRecursive];
+        case 'vmapclear':
+        case 'vmapclea':
+        case 'vmapcle':
+        case 'vmapcl':
+        case 'vmapc':
+        case 'xmapclear':
+        case 'xmapclea':
+        case 'xmapcle':
+        case 'xmapcl':
+        case 'xmapc':
+          return [config.visualModeKeyBindings, config.visualModeKeyBindingsNonRecursive];
+        case 'imapclear':
+        case 'imapclea':
+        case 'imapcle':
+        case 'imapcl':
+        case 'imapc':
+          return [config.insertModeKeyBindings, config.insertModeKeyBindingsNonRecursive];
+        case 'cmapclear':
+        case 'cmapclea':
+        case 'cmapcle':
+        case 'cmapcl':
+        case 'cmapc':
+          return [config.commandLineModeKeyBindings, config.commandLineModeKeyBindingsNonRecursive];
+        case 'omapclear':
+        case 'omapclea':
+        case 'omapcle':
+        case 'omapcl':
+        case 'omapc':
+          return [
+            config.operatorPendingModeKeyBindings,
+            config.operatorPendingModeKeyBindingsNonRecursive,
+          ];
+        case 'lmapclear':
+        case 'lmapclea':
+        case 'lmapcle':
+        case 'lmapcl':
+        case 'lmapc':
+        case 'mapclear!':
+        case 'mapclea!':
+        case 'mapcle!':
+        case 'mapcl!':
+        case 'mapc!':
+          return [
+            config.insertModeKeyBindings,
+            config.insertModeKeyBindingsNonRecursive,
+            config.commandLineModeKeyBindings,
+            config.commandLineModeKeyBindingsNonRecursive,
+          ];
+        default:
+          console.warn(
+            `Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`
+          );
+          return undefined;
+      }
+    })();
+
+    if (mappings) {
+      mappings.forEach((remaps) => {
+        // Don't remove a mapping present in settings.json; those are more specific to VSCodeVim.
+        _.remove(remaps, (r) => r.source === 'vimrc');
+      });
+      return true;
+    }
+    return false;
+  }
+
+  public static removeAllRemapsFromConfig(config: IConfiguration): void {
     const remapCollections = [
       config.normalModeKeyBindings,
+      config.operatorPendingModeKeyBindings,
       config.visualModeKeyBindings,
       config.insertModeKeyBindings,
       config.commandLineModeKeyBindings,
       config.normalModeKeyBindingsNonRecursive,
+      config.operatorPendingModeKeyBindingsNonRecursive,
       config.visualModeKeyBindingsNonRecursive,
       config.insertModeKeyBindingsNonRecursive,
       config.commandLineModeKeyBindingsNonRecursive,

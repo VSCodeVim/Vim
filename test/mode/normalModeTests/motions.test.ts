@@ -1,10 +1,8 @@
-import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { Mode } from '../../../src/mode/mode';
+import { newTest, newTestSkip } from '../../testSimplifier';
 
 suite('Motions in Normal Mode', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });

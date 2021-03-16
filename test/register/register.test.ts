@@ -3,21 +3,20 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { IRegisterContent, Register } from '../../src/register/register';
+import { Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
-import { getTestingFunctions } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { RecordedState } from '../../src/state/recordedState';
+import { newTest } from '../testSimplifier';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -244,14 +243,14 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    const vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
+    await vimState.load();
     vimState.recordedState.registerName = '0';
-    let actual: IRegisterContent;
 
     try {
       Register.put(expected, vimState);
-      actual = await Register.get(vimState);
-      assert.strictEqual(actual.text, expected);
+      const actual = await Register.get(vimState);
+      assert.strictEqual(actual?.text, expected);
     } catch (err) {
       assert.fail(err);
     }
@@ -259,9 +258,6 @@ suite('register', () => {
 
   test('Small deletion using x is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
-
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '2', 'x', 'j', '"', '-', 'p']);
@@ -272,9 +268,6 @@ suite('register', () => {
   test('Small deletion using Del is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
-
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '<Del>', 'j', '"', '-', 'p']);
 
@@ -283,9 +276,6 @@ suite('register', () => {
 
   test('Small deletion using X is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
-
-    modeHandler.vimState.registerName = '-';
-    Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
     await modeHandler.handleMultipleKeyEvents([
@@ -312,15 +302,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'notthere');
   });
 
   test('Search register (/) is set by backward search', async () => {
@@ -330,15 +320,15 @@ suite('register', () => {
 
     // Register changed by forward search
     await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'katu');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'katu');
 
     // Register changed even if search doesn't exist
     await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'notthere');
 
     // Not changed if search is canceled
     await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.getByKey('/')).text, 'notthere');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'notthere');
   });
 
   test('Search register (/) is set by star search', async () => {
@@ -347,16 +337,16 @@ suite('register', () => {
     );
 
     await modeHandler.handleKeyEvent('*');
-    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '*']);
-    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'Wake');
 
     await modeHandler.handleKeyEvent('#');
-    assert.strictEqual((await Register.getByKey('/')).text, '\\bWake\\b');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, '\\bWake\\b');
 
     await modeHandler.handleMultipleKeyEvents(['g', '#']);
-    assert.strictEqual((await Register.getByKey('/')).text, 'Wake');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'Wake');
   });
 
   test('Command register (:) is set by command line', async () => {
@@ -366,7 +356,8 @@ suite('register', () => {
     // :reg should not update the command register
     await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
 
-    const regStr = ((await Register.getByKey(':')).text as RecordedState).commandString;
+    const regStr = ((await Register.get(modeHandler.vimState, ':'))?.text as RecordedState)
+      .commandString;
     assert.strictEqual(regStr, command);
   });
 
@@ -383,9 +374,9 @@ suite('register', () => {
     await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('":yy'.split(''));
 
-    assert.strictEqual((await Register.getByKey('/')).text, 'Expected for /');
-    assert.strictEqual((await Register.getByKey('.')).text, 'Expected for .');
-    assert.strictEqual((await Register.getByKey('%')).text, 'Expected for %');
-    assert.strictEqual((await Register.getByKey(':')).text, 'Expected for :');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '/'))?.text, 'Expected for /');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '.'))?.text, 'Expected for .');
+    assert.strictEqual((await Register.get(modeHandler.vimState, '%'))?.text, 'Expected for %');
+    assert.strictEqual((await Register.get(modeHandler.vimState, ':'))?.text, 'Expected for :');
   });
 });
