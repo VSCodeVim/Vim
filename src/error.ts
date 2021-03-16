@@ -21,6 +21,7 @@ export enum ErrorCode {
   PatternNotFound = 486,
   TrailingCharacters = 488,
   NotAnEditorCommand = 492,
+  NoBuffersDeleted = 516,
   UnknownOption = 518,
 }
 
@@ -43,6 +44,7 @@ export const ErrorMessage: IErrorMessage = {
   486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
+  516: 'No buffers were deleted',
   518: 'Unknown option',
 };
 

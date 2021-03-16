@@ -18,6 +18,7 @@ import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
+import { parseBufferDeleteCommandArgs } from './subparsers/bufferDelete';
 import { NohlCommand } from './commands/nohl';
 import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
@@ -46,7 +47,7 @@ export const commandParsers = {
 
   bdelete: {
     abbrev: 'bd',
-    parser: undefined,
+    parser: parseBufferDeleteCommandArgs,
   },
 
   bfirst: {
