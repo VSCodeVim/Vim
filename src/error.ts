@@ -4,6 +4,7 @@ interface IErrorMessage {
 
 export enum ErrorCode {
   MarkNotSet = 20,
+  NoAlternateFile = 23,
   NoInsertedTextYet = 29,
   NoFileName = 32,
   NoPreviousCommand = 34,
@@ -27,6 +28,7 @@ export enum ErrorCode {
 
 export const ErrorMessage: IErrorMessage = {
   20: 'Mark not set',
+  23: 'No alternate file',
   29: 'No inserted text yet',
   32: 'No file name',
   34: 'No previous command',

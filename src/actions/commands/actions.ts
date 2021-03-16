@@ -36,6 +36,7 @@ import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
+import { ErrorCode, VimError } from '../../error';
 
 export class DocumentContentChangeAction extends BaseAction {
   modes: [];
@@ -3124,7 +3125,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 @RegisterAction
 class ActionShowFileInfo extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['<C-g>']];
+  keys = ['<C-g>'];
 
   runsOnceForEveryCursor() {
     return false;
@@ -3160,5 +3161,29 @@ class Quit extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await new QuitCommand({ bang: true }).execute(vimState);
+  }
+}
+
+@RegisterAction
+class ActionGoToAlternateFile extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['<C-6>'], ['<C-^>']];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const altFile = await Register.get(undefined, '#');
+    if (altFile === undefined || altFile.text === '') {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
+    } else {
+      const files = await vscode.workspace.findFiles(altFile.text as string);
+      // TODO: if the path matches a file from multiple workspace roots, we may not choose the right one
+      if (files.length > 0) {
+        const document = await vscode.workspace.openTextDocument(files[0]);
+        await vscode.window.showTextDocument(document);
+      }
+    }
   }
 }

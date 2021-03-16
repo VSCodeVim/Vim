@@ -358,10 +358,14 @@ export class Register {
    * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
    */
   public static async get(
-    vimState: VimState,
+    vimState?: VimState,
     register?: string
   ): Promise<IRegisterContent | undefined> {
-    register ??= vimState.recordedState.registerName;
+    register ??= vimState?.recordedState.registerName;
+
+    if (register === undefined) {
+      return undefined;
+    }
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);

@@ -16,7 +16,7 @@ import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
-import { Register } from './src/register/register';
+import { Register, RegisterMode } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
 
@@ -250,8 +250,18 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-      Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
+      const oldFileRegister = (await Register.get(undefined, '%'))?.text;
+      const relativePath = vscode.workspace.asRelativePath(
+        vscode.window.activeTextEditor.document.uri,
+        false
+      );
+
+      if (relativePath !== oldFileRegister) {
+        if (oldFileRegister && oldFileRegister !== '') {
+          Register.putByKey(oldFileRegister, '#', RegisterMode.CharacterWise, true);
+        }
+        Register.putByKey(relativePath, '%', RegisterMode.CharacterWise, true);
+      }
 
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler(true);
