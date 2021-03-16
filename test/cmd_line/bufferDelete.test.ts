@@ -32,7 +32,7 @@ suite('Buffer delete', () => {
     try {
       await commandLine.Run('bd', modeHandler.vimState);
     } catch (e) {
-      assert.equal(e.message, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
+      assert.strictEqual(e, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
     }
   });
 
@@ -45,7 +45,7 @@ suite('Buffer delete', () => {
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
 
-  test("bd 'N' deletes the Nth buffer open", async () => {
+  test.skip("bd 'N' deletes the Nth buffer open", async () => {
     const dirPath = await t.createRandomDir();
     const filePaths: string[] = [];
 
