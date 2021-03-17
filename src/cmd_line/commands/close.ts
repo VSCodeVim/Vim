@@ -35,7 +35,7 @@ export class CloseCommand extends node.CommandBase {
       throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
     }
 
-    let oldViewColumn = vimState.editor.viewColumn;
+    const oldViewColumn = vimState.editor.viewColumn;
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
     if (

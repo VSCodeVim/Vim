@@ -18,6 +18,8 @@ import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
 import { Mode } from '../mode/mode';
 import { Position } from 'vscode';
+import { Jump } from '../jumps/jump';
+import { globalState } from '../state/globalState';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -218,7 +220,7 @@ class UndoStack {
   private currentStepIndex = -1;
 
   // The marks as they existed before the first HistoryStep
-  private initialMarks = [];
+  private initialMarks: IMark[] = [];
 
   public getHistoryStepAtIndex(idx: number): HistoryStep | undefined {
     return this.historySteps[idx];
@@ -301,6 +303,23 @@ class UndoStack {
     const step = this.getCurrentHistoryStep();
     return step?.marks ?? this.initialMarks;
   }
+
+  public removeMarks(marks?: string[]): void {
+    const step = this.getCurrentHistoryStep();
+    if (marks === undefined) {
+      if (step) {
+        step.marks = [];
+      } else {
+        this.initialMarks = [];
+      }
+    } else {
+      if (step) {
+        step.marks = step.marks.filter((m) => !marks.includes(m.name));
+      } else {
+        this.initialMarks = this.initialMarks.filter((m) => !marks.includes(m.name));
+      }
+    }
+  }
 }
 
 export class HistoryTracker {
@@ -357,7 +376,7 @@ export class HistoryTracker {
    */
   private updateAndReturnMarks(): IMark[] {
     const previousMarks = this.getAllCurrentDocumentMarks();
-    let newMarks: IMark[] = [];
+    const newMarks: IMark[] = [];
 
     // clone old marks into new marks
     for (const mark of previousMarks) {
@@ -435,7 +454,7 @@ export class HistoryTracker {
 
     // Ensure the position of every mark is within the range of the document.
 
-    const docEnd = TextEditor.getDocumentEnd();
+    const docEnd = TextEditor.getDocumentEnd(this.vimState.document);
     for (const mark of newMarks) {
       if (mark.position.isAfter(docEnd)) {
         mark.position = docEnd;
@@ -467,11 +486,17 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(position: Position, markName: string): void {
+    // Sets previous context mark (adds current position to jump list).
+
+    if (markName === "'" || markName === '`') {
+      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    }
+
     const isUppercaseMark = markName.toUpperCase() === markName;
     const newMark: IMark = {
       position,
       name: markName,
-      isUppercaseMark: isUppercaseMark,
+      isUppercaseMark,
       editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
     };
     this.putMarkInList(newMark);
@@ -498,6 +523,28 @@ export class HistoryTracker {
   public getMark(markName: string): IMark | undefined {
     const marks = this.getMarkList(markName.toUpperCase() === markName);
     return marks.find((mark) => mark.name === markName);
+  }
+
+  /**
+   * Removes all local marks.
+   */
+  public removeLocalMarks(): void {
+    this.undoStack.removeMarks();
+  }
+
+  /**
+   * Removes all marks matching from either the global or local array.
+   */
+  public removeMarks(markNames: string[]): void {
+    if (markNames.length === 0) {
+      return;
+    }
+
+    this.undoStack.removeMarks(markNames);
+
+    HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
+      (mark) => mark.name === '' || !markNames.includes(mark.name)
+    );
   }
 
   /**
@@ -701,7 +748,7 @@ export class HistoryTracker {
 
     let done: boolean = false;
     let stepsToUndo: number = 0;
-    let changesToUndo: DocumentChange[] = [];
+    const changesToUndo: DocumentChange[] = [];
 
     const changes = currentHistoryStep.changes;
 

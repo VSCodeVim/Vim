@@ -40,7 +40,7 @@ export class FileCommand extends node.CommandBase {
 
     // Need to do this before the split since it loses the activeTextEditor
     const editorFileUri = vscode.window.activeTextEditor!.document.uri;
-    let editorFilePath = editorFileUri.fsPath;
+    const editorFilePath = editorFileUri.fsPath;
 
     // Do the split if requested
     let split = false;
@@ -53,7 +53,7 @@ export class FileCommand extends node.CommandBase {
       split = true;
     }
 
-    let hidePreviousEditor = async function () {
+    const hidePreviousEditor = async () => {
       if (split === true) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');

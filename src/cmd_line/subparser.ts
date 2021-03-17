@@ -14,10 +14,11 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
-import { parseMarksCommandArgs } from './subparsers/marks';
+import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers/marks';
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
+import { parseBufferDeleteCommandArgs } from './subparsers/bufferDelete';
 import { NohlCommand } from './commands/nohl';
 import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
@@ -27,6 +28,7 @@ import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
+import { GotoCommand } from './commands/goto';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -45,7 +47,7 @@ export const commandParsers = {
 
   bdelete: {
     abbrev: 'bd',
-    parser: undefined,
+    parser: parseBufferDeleteCommandArgs,
   },
 
   bfirst: {
@@ -114,7 +116,7 @@ export const commandParsers = {
 
   delmarks: {
     abbrev: 'delm',
-    parser: undefined,
+    parser: parseMarksRemoveCommandArgs,
   },
 
   digraphs: {
@@ -149,6 +151,11 @@ export const commandParsers = {
   global: {
     abbrev: 'g',
     parser: undefined,
+  },
+
+  goto: {
+    abbrev: 'go',
+    parser: GotoCommand.parse,
   },
 
   help: {

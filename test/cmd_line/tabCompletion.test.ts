@@ -38,7 +38,7 @@ suite('cmd_line tabComplete', () => {
     const actual = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(firstTab, secondTab);
+    assert.notStrictEqual(firstTab, secondTab);
     assert.strictEqual(actual, firstTab, "Command can't go back with shift+tab");
   });
 
@@ -50,7 +50,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with / as base path', async () => {
@@ -61,7 +61,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ~/ as base path', async () => {
@@ -72,7 +72,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ./ as base path', async () => {
@@ -83,7 +83,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ../ as base path', async () => {
@@ -94,7 +94,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion directory with / at the end', async () => {

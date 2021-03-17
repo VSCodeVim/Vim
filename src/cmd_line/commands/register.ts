@@ -74,7 +74,7 @@ export class RegisterCommand extends node.CommandBase {
         .sort((reg1: string, reg2: string) => this.regSortOrder(reg1) - this.regSortOrder(reg2));
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();
 
-      for (let registerKey of currentRegisterKeys) {
+      for (const registerKey of currentRegisterKeys) {
         registerKeyAndContent.push({
           label: registerKey,
           description: await this.getRegisterDisplayValue(vimState, registerKey),
@@ -83,7 +83,7 @@ export class RegisterCommand extends node.CommandBase {
 
       vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
         if (val) {
-          let result = val.description;
+          const result = val.description;
           vscode.window.showInformationMessage(`${val.label} ${result}`);
         }
       });

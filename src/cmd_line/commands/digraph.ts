@@ -27,10 +27,10 @@ export class DigraphsCommand extends node.CommandBase {
   }
 
   // TODO: replace 'any' with sensible index signature
-  private makeQuickPicks(digraphs: any): Array<DigraphQuickPickItem> {
+  private makeQuickPicks(digraphs: any): DigraphQuickPickItem[] {
     const quickPicks = new Array<DigraphQuickPickItem>();
-    for (let digraphKey of Object.keys(digraphs)) {
-      let [charDesc, charCodes] = digraphs[digraphKey];
+    for (const digraphKey of Object.keys(digraphs)) {
+      const [charDesc, charCodes] = digraphs[digraphKey];
       quickPicks.push({
         label: digraphKey,
         description: `${charDesc} (user)`,

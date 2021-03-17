@@ -46,7 +46,7 @@ export class SearchState {
   public getMatchRanges(editor: vscode.TextEditor): vscode.Range[] {
     return this.recalculateSearchRanges(editor);
   }
-  private matchRanges: Map<string, { version: number; ranges: Array<vscode.Range> }> = new Map();
+  private matchRanges: Map<string, { version: number; ranges: vscode.Range[] }> = new Map();
 
   /**
    * Whether the needle should be interpreted as a regular expression
@@ -113,7 +113,7 @@ export class SearchState {
         } else {
           this.offset = {
             type: 'line',
-            num: num,
+            num,
           };
         }
       }
@@ -196,7 +196,7 @@ export class SearchState {
 
     let result: RegExpExecArray | null;
     let wrappedOver = false;
-    let matchRanges = [] as vscode.Range[];
+    const matchRanges = [] as vscode.Range[];
     while (true) {
       result = regex.exec(text);
 
@@ -259,7 +259,7 @@ export class SearchState {
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
+        pos = start.add(editor.document, PositionDiff.newBOLDiff(this.offset.num));
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {
@@ -355,7 +355,7 @@ export class SearchState {
       return { start: pos, end: pos, match: false, index: -1 };
     }
 
-    for (let [index, matchRange] of matchRanges.entries()) {
+    for (const [index, matchRange] of matchRanges.entries()) {
       if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
         return {
           start: matchRange.start,

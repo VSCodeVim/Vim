@@ -224,7 +224,7 @@ class VimrcKeyRemappingBuilderImpl {
   }
 
   private static buildKeyList(keyString: string): string[] {
-    let keyList: string[] = [];
+    const keyList: string[] = [];
     let matches: RegExpMatchArray | null = null;
     do {
       matches = VimrcKeyRemappingBuilderImpl.KEY_LIST_REG_EX.exec(keyString);

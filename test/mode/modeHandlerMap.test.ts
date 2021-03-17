@@ -20,7 +20,7 @@ suite('Mode Handler Map', () => {
     const key = createRandomEditorIdentity();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, true);
-    assert.notEqual(modeHandler, undefined);
+    assert.notStrictEqual(modeHandler, undefined);
 
     [, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, false);
@@ -45,7 +45,7 @@ suite('Mode Handler Map', () => {
 
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(identity);
     assert.strictEqual(isNew, true);
-    assert.notEqual(modeHandler, undefined);
+    assert.notStrictEqual(modeHandler, undefined);
 
     const prevModeHandler = modeHandler;
     [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(new EditorIdentity(identity.fileName));

@@ -918,5 +918,33 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
     });
+
+    newTest({
+      title: 'Jump to visual start `<',
+      start: ['one |Xx two three'],
+      keysPressed: 'v2ev`<',
+      end: ['one |Xx two three'],
+    });
+
+    newTest({
+      title: 'Jump to visual end `>',
+      start: ['|one two Xx three'],
+      keysPressed: 'v2wv1G`>',
+      end: ['one two |Xx three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual start '<",
+      start: ['one', 'Xx|x', 'two', '  three'],
+      keysPressed: "vjjv'<",
+      end: ['one', '|Xxx', 'two', '  three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual end '>",
+      start: ['|one', '  Xxx', 'two', '  three'],
+      keysPressed: "vjv1G'>",
+      end: ['one', '  |Xxx', 'two', '  three'],
+    });
   });
 });
