@@ -119,7 +119,7 @@ export class PairMatcher {
   }
 
   static getPairing(pair: string): Pairing {
-    let pairing = this.pairings[pair];
+    const pairing = this.pairings[pair];
     if (pairing !== undefined && pairing.matchesWithPercentageMotion === false) {
       // we look up config if it overwrites matchesWithPercentageMotion setting
       pairing.matchesWithPercentageMotion = configuration.matchpairs.includes(pair);
