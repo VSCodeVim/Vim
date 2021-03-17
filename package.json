@@ -454,19 +454,23 @@
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.operatorPendingModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.operatorPendingModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -518,27 +522,33 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.commandLineModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.commandLineModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.textwidth": {
           "type": "number",
@@ -904,7 +914,7 @@
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
           "default": "",
-          "scope": "machine-overridable"
+          "scope": "machine"
         },
         "vim.neovimUseConfigFile": {
           "type": "boolean",
@@ -915,7 +925,7 @@
           "type": "string",
           "markdownDescription": "Path to Neovim configuration file. `vim.neovimUseConfigFile` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
           "default": "",
-          "scope": "machine-overridable"
+          "scope": "machine"
         },
         "vim.vimrc.enable": {
           "type": "boolean",
