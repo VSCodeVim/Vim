@@ -33,14 +33,23 @@ function regexForWordType(wordType: WordType): RegExp {
  * Get the position of the word counting from the position specified.
  * @param text The string to search from.
  * @param pos The position of text to search from.
- * @param inclusive true if we consider the pos a valid result, false otherwise.
  * @returns The character position of the word to the left relative to the text and the pos.
  *          undefined if there is no word to the left of the postion.
  */
-export function getWordLeftInText(text: string, pos: number): number | undefined {
-  // TODO: isn't `inclusive` being put into `forceFirst`?
-  const inclusive = false;
-  return getWordLeftOnLine(text, pos, WordType.Normal, inclusive);
+export function getWordLeftInText(
+  text: string,
+  pos: number,
+  wordType: WordType
+): number | undefined {
+  return getWordLeftOnLine(text, pos, wordType);
+}
+
+export function getWordRightInText(
+  text: string,
+  pos: number,
+  wordType: WordType
+): number | undefined {
+  return getAllPositions(text, regexForWordType(wordType)).find((index) => index > pos);
 }
 
 /**
