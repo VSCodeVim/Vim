@@ -315,6 +315,26 @@
         "when": "editorTextFocus && vim.active && vim.use<C-shift+2>"
       },
       {
+        "key": "ctrl+up",
+        "command": "extension.vim_ctrl+up",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+down",
+        "command": "extension.vim_ctrl+down",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+left",
+        "command": "extension.vim_ctrl+left",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+right",
+        "command": "extension.vim_ctrl+right",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
         "key": "ctrl+pagedown",
         "command": "extension.vim_ctrl+pagedown",
         "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl"
