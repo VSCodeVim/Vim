@@ -11,7 +11,7 @@ export class Notation {
     [/end/gi, 'End'],
     [/insert/gi, 'Insert'],
     [/<space>/gi, ' '],
-    [/<cr>|<enter>/gi, '\n'],
+    [/<cr>|<enter>|<return>/gi, '\n'],
   ];
 
   private static shiftedLetterRegex = /<S-[a-zA-Z]>/;
