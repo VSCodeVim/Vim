@@ -5,7 +5,8 @@ import { ValidatorResults } from './iconfigurationValidator';
 import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
@@ -17,6 +18,7 @@ import {
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
 
 export const extensionVersion = packagejson.version;
 
@@ -97,12 +99,11 @@ class Configuration implements IConfiguration {
   };
 
   public async load(): Promise<ValidatorResults> {
-    let vimConfigs: any = Globals.isTesting
+    const vimConfigs: any = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
 
-    /* tslint:disable:forin */
-    // Disable forin rule here as we make accessors enumerable.`
+    // tslint:disable-next-line: forin
     for (const option in this) {
       let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
@@ -113,8 +114,10 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
@@ -123,17 +126,15 @@ class Configuration implements IConfiguration {
 
     const validatorResults = await configurationValidator.validate(configuration);
 
-    // wrap keys
-    this.wrapKeys = {};
-    for (const wrapKey of this.whichwrap.split(',')) {
-      this.wrapKeys[wrapKey] = true;
-    }
-
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
-    for (let keybinding of packagejson.contributes.keybindings) {
+    for (const keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.includes('listFocus')) {
+        continue;
+      }
+
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
@@ -157,7 +158,7 @@ class Configuration implements IConfiguration {
       // By default, all key combinations are used
       let useKey = true;
 
-      let handleKey = this.handleKeys[boundKey.key];
+      const handleKey = this.handleKeys[boundKey.key];
       if (handleKey !== undefined) {
         // enabled/disabled through `vim.handleKeys`
         useKey = handleKey;
@@ -374,6 +375,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
 
   vimrc = {
     enable: false,
@@ -385,10 +388,11 @@ class Configuration implements IConfiguration {
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
 
-  whichwrap = '';
-  wrapKeys = {};
+  whichwrap = 'b,s';
 
   startofline = true;
+
+  showMarksInGutter = false;
 
   report = 2;
   wrapscan = true;
@@ -436,10 +440,11 @@ class Configuration implements IConfiguration {
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
 
-  private static unproxify(obj: Object): Object {
-    let result = {};
+  private static unproxify(obj: object): object {
+    const result = {};
+    // tslint:disable-next-line: forin
     for (const key in obj) {
-      let val = obj[key] as any;
+      const val = obj[key] as any;
       if (val !== null && val !== undefined) {
         result[key] = val;
       }
@@ -454,9 +459,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function (target: any, propertyKey: string) {
+  return (target: any, propertyKey: string) => {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
+      get() {
         // retrieve value from vim configuration
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
@@ -473,7 +478,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function (value) {
+      set(value) {
         // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
@@ -482,7 +487,7 @@ function overlapSetting(args: {
         }
 
         if (args.map) {
-          for (let [vscodeSetting, vimSetting] of args.map.entries()) {
+          for (const [vscodeSetting, vimSetting] of args.map.entries()) {
             if (value === vimSetting) {
               value = vscodeSetting;
               break;

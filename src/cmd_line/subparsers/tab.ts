@@ -122,7 +122,7 @@ export function parseTabNewCommandArgs(args: string): node.TabCommand {
   let name = '';
 
   if (args) {
-    let scanner = new Scanner(args);
+    const scanner = new Scanner(args);
     name = scanner.nextWord();
   }
 

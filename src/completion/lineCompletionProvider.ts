@@ -31,7 +31,7 @@ const linesWithoutIndentation = (
   document: vscode.TextDocument,
   lineToStartScanFrom: number,
   scanAboveFirst: boolean
-): { sortPriority: number; text: string }[] => {
+): Array<{ sortPriority: number; text: string }> => {
   const distanceFromStartLine = (line: number) => {
     let sortPriority = scanAboveFirst ? lineToStartScanFrom - line : line - lineToStartScanFrom;
     if (sortPriority < 0) {
@@ -119,7 +119,7 @@ export const getCompletionsForCurrentLine = (
   document: vscode.TextDocument
 ): string[] | null => {
   const currentLineText = document.getText(
-    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position)
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -161,7 +161,7 @@ export const lineCompletionProvider = {
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(
-        TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
       ),
     });

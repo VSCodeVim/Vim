@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.18.5",
+  "version": "1.19.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -63,6 +63,11 @@
         "key": "Escape",
         "command": "extension.vim_escape",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "Escape",
+        "command": "notebook.cell.quitEdit",
+        "when": "inputFocus && notebookEditorFocused && !editorHasSelection && !editorHoverVisible && vim.active && vim.mode == 'Normal'"
       },
       {
         "key": "Home",
@@ -285,6 +290,16 @@
         "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl"
       },
       {
+        "key": "ctrl+6",
+        "command": "extension.vim_ctrl+6",
+        "when": "editorTextFocus && vim.active && vim.use<C-6> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+^",
+        "command": "extension.vim_ctrl+^",
+        "when": "editorTextFocus && vim.active && vim.use<C-^> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+[",
         "command": "extension.vim_ctrl+[",
         "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
@@ -298,6 +313,26 @@
         "key": "ctrl+shift+2",
         "command": "extension.vim_ctrl+shift+2",
         "when": "editorTextFocus && vim.active && vim.use<C-shift+2>"
+      },
+      {
+        "key": "ctrl+up",
+        "command": "extension.vim_ctrl+up",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+down",
+        "command": "extension.vim_ctrl+down",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+left",
+        "command": "extension.vim_ctrl+left",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+right",
+        "command": "extension.vim_ctrl+right",
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+pagedown",
@@ -322,12 +357,12 @@
       {
         "key": "ctrl+backspace",
         "command": "extension.vim_ctrl+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<C-BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<S-BS> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "cmd+left",
@@ -372,6 +407,16 @@
         "mac": "cmd+alt+up",
         "command": "extension.vim_cmd+alt+up",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
+        "key": "j",
+        "command": "notebook.focusNextEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'none' && notebookEditorCursorAtBoundary != 'top'"
+      },
+      {
+        "key": "k",
+        "command": "notebook.focusPreviousEditor",
+        "when": "vim.mode == 'Normal' && editorTextFocus && inputFocus && notebookEditorFocused && notebookEditorCursorAtBoundary != 'bottom' && notebookEditorCursorAtBoundary != 'none'"
       }
     ],
     "configuration": {
@@ -409,19 +454,23 @@
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.operatorPendingModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.operatorPendingModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive remapped keys in OperatorPending mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -473,27 +522,33 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Insert mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.commandLineModeKeyBindings": {
           "type": "array",
-          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.commandLineModeKeyBindingsNonRecursive": {
           "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
+          "markdownDescription": "Non-recursive keybinding overrides to use for command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
+          "scope": "application"
         },
         "vim.textwidth": {
           "type": "number",
@@ -859,7 +914,18 @@
           "type": "string",
           "markdownDescription": "Path to Neovim executable. For example, `/usr/bin/nvim`, or  `C:\\Program Files\\Neovim\\bin\\nvim.exe`.",
           "default": "",
-          "scope": "machine-overridable"
+          "scope": "machine"
+        },
+        "vim.neovimUseConfigFile": {
+          "type": "boolean",
+          "markdownDescription": "Use a config file for Neovim, specified by `vim.neovimConfigPath`.",
+          "default": false
+        },
+        "vim.neovimConfigPath": {
+          "type": "string",
+          "markdownDescription": "Path to Neovim configuration file. `vim.neovimUseConfigFile` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
+          "default": "",
+          "scope": "machine"
         },
         "vim.vimrc.enable": {
           "type": "boolean",
@@ -983,7 +1049,7 @@
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
-          "default": ""
+          "default": "b,s"
         },
         "vim.report": {
           "type": "number",
@@ -1005,6 +1071,11 @@
           "type": "boolean",
           "markdownDescription": "When `true` the commands listed below move the cursor to the first non-blank of the line.  When `false` the cursor is kept in the same column (if possible).  This applies to the commands: `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<` and `>>` with a linewise operator.",
           "default": true
+        },
+        "vim.showMarksInGutter": {
+          "type": "boolean",
+          "description": "Show the currently set mark(s) in the gutter.",
+          "default": false
         }
       }
     },
@@ -1035,22 +1106,26 @@
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.20",
     "neovim": "4.9.0",
+    "path-browserify": "1.0.1",
+    "source-map-support": "0.5.19",
     "untildify": "4.0.0",
     "winston": "3.3.3",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.4.0"
   },
   "devDependencies": {
-    "@types/diff": "4.0.2",
+    "@types/diff": "5.0.0",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.1.3",
-    "@types/lodash": "4.14.165",
-    "@types/mocha": "8.2.0",
-    "@types/node": "12.12.31",
-    "@types/sinon": "9.0.9",
+    "@types/lodash": "4.14.168",
+    "@types/mocha": "8.2.1",
+    "@types/node": "12.20.6",
+    "@types/sinon": "9.0.11",
+    "@types/source-map-support": "0.5.3",
     "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
+    "fork-ts-checker-webpack-plugin": "6.2.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1059,18 +1134,18 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.5",
-    "mocha": "8.2.1",
+    "mocha": "8.3.2",
     "plugin-error": "1.0.1",
     "prettier": "2.2.1",
-    "sinon": "9.2.2",
-    "ts-loader": "8.0.9",
+    "sinon": "9.2.4",
+    "ts-loader": "8.0.18",
     "tslint": "6.1.3",
-    "typescript": "4.1.3",
-    "vsce": "1.81.1",
-    "vscode-test": "1.4.1",
-    "webpack": "5.10.1",
-    "webpack-cli": "4.2.0",
-    "webpack-merge": "5.6.1",
-    "webpack-stream": "6.1.1"
+    "typescript": "4.2.3",
+    "vsce": "1.87.0",
+    "vscode-test": "1.5.1",
+    "webpack": "5.27.0",
+    "webpack-cli": "4.5.0",
+    "webpack-merge": "5.7.3",
+    "webpack-stream": "6.1.2"
   }
 }

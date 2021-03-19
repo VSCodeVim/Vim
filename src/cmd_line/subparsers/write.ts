@@ -45,7 +45,7 @@ export function parseWriteCommandArgs(args: string): WriteCommand {
           scanner.backup();
           continue;
         }
-        let value = scanner.emit();
+        const value = scanner.emit();
         if (!value) {
           throw new Error('Expected value for option.');
         }

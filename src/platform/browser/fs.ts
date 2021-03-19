@@ -76,7 +76,7 @@ export async function existsAsync(path: string): Promise<boolean> {
   }
 }
 
-export async function unlink(path): Promise<void> {
+export async function unlink(path: string): Promise<void> {
   await vscode.workspace.fs.delete(vscode.Uri.parse(path));
 }
 

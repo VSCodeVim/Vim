@@ -69,7 +69,7 @@ export class DeleteRangeCommand extends node.CommandBase {
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
 
-    let text = await this.deleteRange(start, end, vimState);
+    const text = await this.deleteRange(start, end, vimState);
     const register = this._arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
     Register.putByKey(text, register, RegisterMode.LineWise);
   }

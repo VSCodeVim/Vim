@@ -109,7 +109,7 @@ class GlobalState {
       .map((searchState) => {
         return {
           label: searchState.searchString,
-          searchState: searchState,
+          searchState,
         };
       });
 

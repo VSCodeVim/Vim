@@ -26,23 +26,31 @@
     },
     {
       "name": "constant",
-      "match": "<([Ll][Ee][Aa][Dd][Ee][Rr])>"
+      "match": "(?i)<Leader>"
     },
     {
       "name": "constant",
-      "match": "<([Cc][Rr])>"
+      "match": "(?i)<(CR|Enter|Return)>"
     },
     {
       "name": "constant",
-      "match": "<([Bb][Ss])>"
+      "match": "(?i)<(BS|Del|Space)>"
     },
     {
       "name": "constant",
-      "match": "<[CcDd]-.>"
+      "match": "(?i)<Esc>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<(Up|Down|Left|Right)>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<[CD]-.>"
     },
     {
       "name": "string.unquoted",
-      "match": "[A-Za-z]+(\\.[A-Za-z]+)+"
+      "match": "(?i)[a-z]+(\\.[a-z]+)+"
     }
   ]
 }

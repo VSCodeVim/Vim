@@ -113,7 +113,7 @@ export abstract class BaseMovement extends BaseAction {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
+    const recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
     let prevResult = failedMovement(vimState);
     let firstMovementStart: Position = new Position(position.line, position.character);

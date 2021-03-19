@@ -58,7 +58,7 @@ function parseSubstituteFlags(scanner: Scanner): number {
       break;
     }
 
-    let c = scanner.next();
+    const c = scanner.next();
     switch (c) {
       case '&':
         if (index === 0) {
@@ -119,7 +119,7 @@ function parseCount(scanner: Scanner): number {
     countStr += scanner.next();
   }
 
-  let count = Number.parseInt(countStr, 10);
+  const count = Number.parseInt(countStr, 10);
 
   // TODO: If count is not valid number, raise error
   return Number.isInteger(count) ? count : -1;
@@ -147,7 +147,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     }
     let scanner: Scanner;
 
-    let delimiter = args[0];
+    const delimiter = args[0];
 
     if (isValidDelimiter(delimiter)) {
       if (args.length === 1) {
@@ -188,8 +188,8 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     return new node.SubstituteCommand({
       pattern: searchPattern,
       replace: replaceString,
-      flags: flags,
-      count: count,
+      flags,
+      count,
     });
   } catch (e) {
     throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);

@@ -33,18 +33,8 @@ suite('Configuration', () => {
 
     assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
     assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
-    assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
-    assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
-  });
-
-  test('whichwrap is parsed into wrapKeys', async () => {
-    const wrapKeys = srcConfiguration.configuration.wrapKeys;
-
-    const h = 'h';
-    const j = 'j';
-
-    assert.strictEqual(wrapKeys[h], true);
-    assert.strictEqual(wrapKeys[j], undefined);
+    assert.deepStrictEqual(normalizedKeybinds[0].before, [' ', 'o']);
+    assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
   newTest({

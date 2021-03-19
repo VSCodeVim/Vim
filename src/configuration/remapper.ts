@@ -22,29 +22,25 @@ interface IRemapper {
 }
 
 export class Remappers implements IRemapper {
-  private remappers: IRemapper[];
-
-  constructor() {
-    this.remappers = [
-      new InsertModeRemapper(),
-      new NormalModeRemapper(),
-      new VisualModeRemapper(),
-      new CommandLineModeRemapper(),
-      new OperatorPendingModeRemapper(),
-    ];
-  }
+  private readonly remappers = [
+    new InsertModeRemapper(),
+    new NormalModeRemapper(),
+    new VisualModeRemapper(),
+    new CommandLineModeRemapper(),
+    new OperatorPendingModeRemapper(),
+  ];
 
   get isPotentialRemap(): boolean {
     return this.remappers.some((r) => r.isPotentialRemap);
   }
 
   public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
-    let handled = false;
-
-    for (let remapper of this.remappers) {
-      handled = handled || (await remapper.sendKey(keys, modeHandler));
+    for (const remapper of this.remappers) {
+      if (await remapper.sendKey(keys, modeHandler)) {
+        return true;
+      }
     }
-    return handled;
+    return false;
   }
 }
 
@@ -303,7 +299,7 @@ export class Remapper implements IRemapper {
         // remapping from waiting for the timeout again by making a clone of
         // remapping and change 'after' to send the '<TimeoutFinished>' key at
         // the end.
-        let newRemapping = { ...remapping };
+        const newRemapping = { ...remapping };
         newRemapping.after = remapping.after?.slice(0);
         newRemapping.after?.push(SpecialKeys.TimeoutFinished);
         remapping = newRemapping;
@@ -584,7 +580,7 @@ export class Remapper implements IRemapper {
     const keysAsString = keys.join('');
     const re = /^<([^>]+)>/;
     if (keysAsString !== '') {
-      for (let remap of remappings.keys()) {
+      for (const remap of remappings.keys()) {
         if (remap.startsWith(keysAsString) && (remap !== keysAsString || countRemapAsPotential)) {
           // Don't confuse a key combination starting with '<' that is not a special key like '<C-a>'
           // with a remap that starts with a special key.

@@ -1,5 +1,3 @@
-import { configuration } from './configuration';
-
 export class Notation {
   // Mapping from a regex to the normalized string that it should be converted to.
   private static readonly _notationMap: ReadonlyArray<[RegExp, string]> = [
@@ -13,8 +11,10 @@ export class Notation {
     [/end/gi, 'End'],
     [/insert/gi, 'Insert'],
     [/<space>/gi, ' '],
-    [/<cr>|<enter>/gi, '\n'],
+    [/<cr>|<enter>|<return>/gi, '\n'],
   ];
+
+  private static shiftedLetterRegex = /<S-[a-zA-Z]>/;
 
   /**
    * Converts keystroke like <tab> to a single control character like \t
@@ -67,14 +67,18 @@ export class Notation {
       key = key.replace(regex, standardNotation);
     }
 
+    if (this.shiftedLetterRegex.test(key)) {
+      key = key[3].toUpperCase();
+    }
+
     return key;
   }
 
   /**
    * Converts a key to a form which will look nice when logged, etc.
    */
-  public static printableKey(key: string) {
-    const normalized = this.NormalizeKey(key, configuration.leader);
+  public static printableKey(key: string, leaderKey: string) {
+    const normalized = this.NormalizeKey(key, leaderKey);
     return normalized === ' ' ? '<space>' : normalized === '\n' ? '<enter>' : normalized;
   }
 

@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
+import { Jump } from '../src/jumps/jump';
+import { globalState } from '../src/state/globalState';
 import { VimState } from '../src/state/vimState';
 
 suite('historyTracker unit tests', () => {
@@ -17,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => <VimState>(<any>sandbox.createStubInstance(VimState));
+  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
@@ -26,7 +28,7 @@ suite('historyTracker unit tests', () => {
     sandbox.stub(vscode, 'window').value({ activeTextEditor });
   };
 
-  const buildMockPosition = (): Position => <any>sandbox.createStubInstance(Position);
+  const buildMockPosition = (): Position => sandbox.createStubInstance(Position) as any;
 
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -40,6 +42,27 @@ suite('historyTracker unit tests', () => {
     setup(() => {
       setupVSCode();
       historyTracker = setupHistoryTracker();
+    });
+
+    test('can set previous context mark from single quote', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, "'");
+
+      sinon.assert.calledWith(spy, mockJump);
+    });
+    test('can set previous context mark from backtick', () => {
+      const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
+      const position = buildMockPosition();
+      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
+
+      historyTracker.addMark(position, '`');
+
+      sinon.assert.calledWith(spy, mockJump);
     });
 
     test('can create lowercase mark', () => {
@@ -87,6 +110,63 @@ suite('historyTracker unit tests', () => {
       otherHistoryTrackerInstance.addMark(position, 'a');
       const mark = retrieveLocalMark('a');
       assert.strictEqual(mark, undefined);
+    });
+  });
+
+  suite('removeLocalMarks', () => {
+    setup(() => {
+      setupVSCode();
+      historyTracker = setupHistoryTracker();
+    });
+
+    test('removes only local marks', () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, 'a');
+      historyTracker.addMark(position, 'A');
+      const mark = historyTracker.getMark('A');
+
+      historyTracker.removeLocalMarks();
+
+      assert.strictEqual(historyTracker.getMark('a'), undefined);
+      assert.strictEqual(historyTracker.getMark('A'), mark);
+    });
+  });
+
+  suite('removeMarks', () => {
+    setup(() => {
+      setupVSCode();
+      historyTracker = setupHistoryTracker();
+    });
+
+    test('removes multiple local and global', () => {
+      const position = buildMockPosition();
+      const markTargets = 'AHZced'.split('');
+
+      markTargets.forEach((m) => historyTracker.addMark(position, m));
+
+      historyTracker.removeMarks(markTargets);
+
+      markTargets.forEach((m) => assert.strictEqual(historyTracker.getMark(m), undefined));
+    });
+
+    test("does not remove ''", () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, '');
+      const mark = historyTracker.getMark('');
+
+      historyTracker.removeMarks(['']);
+
+      assert.strictEqual(mark, historyTracker.getMark(''));
+    });
+
+    test('does nothing on empty', () => {
+      const position = buildMockPosition();
+      historyTracker.addMark(position, 'a');
+      const mark = historyTracker.getMark('a');
+
+      historyTracker.removeMarks([]);
+
+      assert.strictEqual(mark, historyTracker.getMark('a'));
     });
   });
 });

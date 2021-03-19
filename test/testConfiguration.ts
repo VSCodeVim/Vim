@@ -93,6 +93,8 @@ export class Configuration implements IConfiguration {
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
   neovimPath = 'nvim';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
   vimrc = {
     enable: false,
     path: '',
@@ -120,11 +122,12 @@ export class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  whichwrap = '';
+  whichwrap = 'b,s';
   wrapKeys = {};
   report = 2;
   digraphs: {};
   wrapscan = true;
   scroll = 20;
   startofline = true;
+  showMarksInGutter = true;
 }

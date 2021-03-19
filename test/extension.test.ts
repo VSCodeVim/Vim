@@ -26,7 +26,7 @@ suite('package.json', () => {
     const pkgConfigurations = packagejson.contributes.configuration.properties;
     assert.ok(pkgConfigurations);
     const keys = Object.keys(pkgConfigurations);
-    assert.notEqual(keys.length, 0);
+    assert.notStrictEqual(keys.length, 0);
 
     // configuration
     let handlers = Object.keys(srcConfiguration.configuration);

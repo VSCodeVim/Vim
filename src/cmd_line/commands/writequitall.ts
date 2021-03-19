@@ -30,11 +30,11 @@ export class WriteQuitAllCommand extends node.CommandBase {
 
   // Writing command. Taken as a basis from the "write.ts" file.
   async execute(vimState: VimState): Promise<void> {
-    let writeArgs: wall.IWallCommandArguments = {
+    const writeArgs: wall.IWallCommandArguments = {
       bang: this.arguments.bang,
     };
 
-    let quitArgs: quit.IQuitCommandArguments = {
+    const quitArgs: quit.IQuitCommandArguments = {
       // wq! fails when no file name is provided
       bang: false,
     };

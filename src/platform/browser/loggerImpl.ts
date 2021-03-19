@@ -1,4 +1,4 @@
-import { configuration } from '../../configuration/configuration';
+import { IConfiguration } from '../../configuration/iconfiguration';
 import { ILogger } from 'src/platform/common/logger';
 
 /**
@@ -7,6 +7,7 @@ import { ILogger } from 'src/platform/common/logger';
 export class VsCodeMessage implements ILogger {
   actionMessages = ['Dismiss', 'Suppress Errors'];
   private prefix: string;
+  configuration?: IConfiguration;
 
   constructor(prefix: string) {
     this.prefix = prefix;
@@ -29,7 +30,7 @@ export class VsCodeMessage implements ILogger {
   }
 
   private async log(info: { level: string; message: string }) {
-    if (configuration.debug.silent) {
+    if (this.configuration && this.configuration.debug.silent) {
       return;
     }
     let showMessage: (message: string, ...items: string[]) => void;
@@ -46,14 +47,14 @@ export class VsCodeMessage implements ILogger {
         showMessage = console.log;
         break;
       default:
-        throw 'Unsupported ' + info.level;
+        throw Error(`Unsupported log level ${info.level}`);
     }
 
     showMessage(`${this.prefix}: ${info.message}`, ...this.actionMessages);
   }
 
-  public configChanged(): void {
-    // Nothing to change
+  public configChanged(configuration: IConfiguration): void {
+    this.configuration = configuration;
   }
 }
 

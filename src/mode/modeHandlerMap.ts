@@ -13,7 +13,7 @@ class ModeHandlerMapImpl {
 
     if (!modeHandler) {
       isNew = true;
-      modeHandler = await ModeHandler.create();
+      modeHandler = await ModeHandler.create(this);
       this.modeHandlerMap.set(editorId, modeHandler);
     }
     return [modeHandler, isNew];
@@ -51,4 +51,4 @@ class ModeHandlerMapImpl {
   }
 }
 
-export let ModeHandlerMap = new ModeHandlerMapImpl();
+export const ModeHandlerMap = new ModeHandlerMapImpl();

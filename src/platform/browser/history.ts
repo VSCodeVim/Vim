@@ -29,7 +29,7 @@ export class HistoryBase {
     }
 
     // remove duplicates
-    let index: number = this._history.indexOf(value);
+    const index: number = this._history.indexOf(value);
     if (index !== -1) {
       this._history.splice(index, 1);
     }
@@ -60,12 +60,12 @@ export class HistoryBase {
   }
 
   public async load(): Promise<void> {
-    let data = this._context.workspaceState.get<string>(this.historyKey) || '';
+    const data = this._context.workspaceState.get<string>(this.historyKey) || '';
     if (data.length === 0) {
       return;
     }
 
-    let parsedData = JSON.parse(data);
+    const parsedData = JSON.parse(data);
     if (!Array.isArray(parsedData)) {
       throw Error('Unexpected format in history. Expected JSON.');
     }

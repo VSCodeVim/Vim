@@ -76,7 +76,7 @@ export class WriteCommand extends node.CommandBase {
     await this.background(
       vimState.document.save().then(
         () => {
-          let text =
+          const text =
             '"' +
             path.basename(vimState.document.fileName) +
             '" ' +

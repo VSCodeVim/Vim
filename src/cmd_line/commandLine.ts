@@ -53,7 +53,7 @@ class CommandLine {
     this.commandLineHistoryIndex = this._history.get().length;
 
     if (!command.startsWith('reg')) {
-      let recState = new RecordedState();
+      const recState = new RecordedState();
       recState.registerName = ':';
       recState.commandList = command.split('');
       Register.putByKey(recState, ':', undefined, true);

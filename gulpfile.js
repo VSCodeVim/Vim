@@ -8,6 +8,7 @@ var gulp = require('gulp'),
   PluginError = require('plugin-error'),
   minimist = require('minimist'),
   path = require('path'),
+  webpack = require('webpack'),
   webpack_stream = require('webpack-stream'),
   webpack_config = require('./webpack.config.js'),
   es = require('event-stream');
@@ -186,17 +187,23 @@ gulp.task('tsc', function () {
 });
 
 gulp.task('webpack', function () {
-  return webpack_stream({
-    config: webpack_config,
-    entry: ['./extension.ts', './extensionWeb.ts'],
-  }).pipe(gulp.dest('out'));
+  return webpack_stream(
+    {
+      config: webpack_config,
+      entry: ['./extension.ts', './extensionWeb.ts'],
+    },
+    webpack
+  ).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack-dev', function () {
-  return webpack_stream({
-    config: webpack_dev_config,
-    entry: ['./extension.ts', './extensionWeb.ts'],
-  }).pipe(gulp.dest('out'));
+  return webpack_stream(
+    {
+      config: webpack_dev_config,
+      entry: ['./extension.ts', './extensionWeb.ts'],
+    },
+    webpack
+  ).pipe(gulp.dest('out'));
 });
 
 gulp.task('tslint', function () {

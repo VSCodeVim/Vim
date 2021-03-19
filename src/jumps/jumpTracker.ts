@@ -69,8 +69,8 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump, to: Jump) {
-    if (from.isSamePosition(to)) {
+  public recordJump(from: Jump, to?: Jump) {
+    if (to && from.isSamePosition(to)) {
       return;
     }
 
@@ -293,12 +293,12 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  private pushJump(from: Jump | null, to: Jump) {
+  private pushJump(from: Jump | null, to?: Jump) {
     if (from) {
       this.clearJumpsOnSamePosition(from);
     }
 
-    if (from && !from.isSamePosition(to)) {
+    if (from && (!to || !from.isSamePosition(to))) {
       this._jumps.push(from);
     }
 

@@ -1,10 +1,10 @@
 import { configuration } from '../configuration/configuration';
 import { Mode, isVisualMode } from '../mode/mode';
-import { BaseAction, BaseCommand } from './../actions/base';
-import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
 import { Transformer } from './../transformations/transformer';
 import { SpecialKeys } from '../util/specialKeys';
+import type { VimState } from './vimState';
+import { Position } from 'vscode';
 
 /**
  * The RecordedState class holds the current action that the user is
@@ -142,7 +142,7 @@ export class RecordedState {
   /**
    * Every action that has been run.
    */
-  public actionsRun: BaseAction[] = [];
+  public actionsRun: IBaseAction[] = [];
 
   /**
    * Keeps track of keys pressed by the actionsRun. Used for the showCmd. If an action
@@ -151,7 +151,7 @@ export class RecordedState {
    */
   public actionsRunPressedKeys: string[] = [];
 
-  public getLastActionRun(): BaseAction | undefined {
+  public getLastActionRun(): IBaseAction | undefined {
     if (this.actionsRun.length === 0) {
       return;
     }
@@ -211,22 +211,20 @@ export class RecordedState {
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
-  public get operator(): BaseOperator | undefined {
+  public get operator(): IBaseOperator | undefined {
     const operators = this.operators;
     return operators.length > 0 ? operators[0] : undefined;
   }
 
-  public get operators(): BaseOperator[] {
-    return this.actionsRun.filter((a): a is BaseOperator => a instanceof BaseOperator).reverse();
+  public get operators(): IBaseOperator[] {
+    return this.actionsRun.filter((a): a is IBaseOperator => a.isOperator).reverse();
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
-  public get command(): BaseCommand {
-    const list = this.actionsRun
-      .filter((a): a is BaseCommand => a instanceof BaseCommand)
-      .reverse();
+  public get command(): IBaseCommand {
+    const list = this.actionsRun.filter((a): a is IBaseCommand => a.isCommand).reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -298,4 +296,26 @@ export class RecordedState {
       )
     );
   }
+}
+
+export interface IBaseAction {
+  isMotion: boolean;
+  isOperator: boolean;
+  isCommand: boolean;
+  isJump: boolean;
+  canBeRepeatedWithDot: boolean;
+
+  keysPressed: string[];
+  multicursorIndex: number | undefined;
+
+  preservesDesiredColumn(): boolean;
+}
+
+export interface IBaseCommand extends IBaseAction {
+  exec(position: Position, vimState: VimState): Promise<void>;
+}
+
+export interface IBaseOperator extends IBaseAction {
+  run(vimState: VimState, start: Position, stop: Position): Promise<void>;
+  runRepeat(vimState: VimState, position: Position, count: number): Promise<void>;
 }

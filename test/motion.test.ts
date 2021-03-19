@@ -116,19 +116,19 @@ suite('basic motion', () => {
   });
 
   test('document end', () => {
-    const motion = TextEditor.getDocumentEnd();
+    const motion = TextEditor.getDocumentEnd(window.activeTextEditor!.document);
     assert.strictEqual(motion.line, text.length - 1);
     assert.strictEqual(motion.character, text[text.length - 1].length);
   });
 
   test('line begin cursor on first non-blank character', () => {
-    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(0);
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(window.activeTextEditor!.document, 0);
     assert.strictEqual(motion.line, 0);
     assert.strictEqual(motion.character, 0);
   });
 
   test('last line begin cursor on first non-blank character', () => {
-    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(3);
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(window.activeTextEditor!.document, 3);
     assert.strictEqual(motion.line, 3);
     assert.strictEqual(motion.character, 1);
   });
@@ -340,20 +340,20 @@ suite('word motion', () => {
   });
 
   test('line begin cursor on first non-blank character', () => {
-    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(4);
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(window.activeTextEditor!.document, 4);
     assert.strictEqual(motion.line, 4);
     assert.strictEqual(motion.character, 2);
   });
 
   test('last line begin cursor on first non-blank character', () => {
-    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(6);
+    const motion = TextEditor.getFirstNonWhitespaceCharOnLine(window.activeTextEditor!.document, 6);
     assert.strictEqual(motion.line, 6);
     assert.strictEqual(motion.character, 0);
   });
 });
 
 suite('unicode word motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     '漢字ひらがなカタカナalphabets、いろいろな文字。',
     'Καλημέρα κόσμε',
     'Die früh sich einst dem trüben Blick gezeigt.',
@@ -451,7 +451,7 @@ suite('unicode word motion', () => {
 });
 
 suite('sentence motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     'This text has many sections in it. What do you think?',
     '',
     'A paragraph boundary is also a sentence boundry, see',
@@ -532,7 +532,7 @@ suite('sentence motion', () => {
 });
 
 suite('paragraph motion', () => {
-  const text: Array<string> = [
+  const text: string[] = [
     'this text has', // 0
     '', // 1
     'many', // 2

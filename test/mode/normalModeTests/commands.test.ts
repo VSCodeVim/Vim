@@ -352,6 +352,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'~' goes over line boundaries if whichwrap contains '~'",
+    config: { whichwrap: '~' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['onE', '|two'],
+  });
+
+  newTest({
+    title: "'~' does not goes over line boundaries if whichwrap does not contain '~'",
+    config: { whichwrap: '' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['on|E', 'two'],
+  });
+
+  newTest({
     title: "Can handle 'g~{motion}'",
     start: ['|one two'],
     keysPressed: 'g~w',

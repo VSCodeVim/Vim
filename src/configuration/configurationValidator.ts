@@ -16,7 +16,7 @@ class ConfigurationValidator {
     const results = new ValidatorResults();
 
     for (const validator of this._validators) {
-      let validatorResults = await validator.validate(config);
+      const validatorResults = await validator.validate(config);
       if (validatorResults.hasError) {
         // errors found in configuration, disable feature
         validator.disable(config);

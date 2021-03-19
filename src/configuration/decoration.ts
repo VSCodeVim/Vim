@@ -10,6 +10,26 @@ class DecorationImpl {
   private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
   private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
 
+  private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
+
+  private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
+      '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
+      '<path fill="rgb(3,102,214)" d="M23,27l-8-7l-8,7V5c0-1.105,0.895-2,2-2h12c1.105,0,2,0.895,2,2V27z"/>',
+      `<text x="50%" y="40%" fill="rgb(200,200,200)" text-anchor="middle" dominant-baseline="middle">${name}</text>`,
+      '</svg>',
+    ].join('');
+
+    const uri = vscode.Uri.parse(`data:image/svg+xml;utf8,${encodeURI(svg)}`, true);
+
+    return vscode.window.createTextEditorDecorationType({
+      isWholeLine: false,
+      gutterIconPath: uri,
+      gutterIconSize: 'cover',
+    });
+  }
+
   public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
       this._default.dispose();
@@ -32,11 +52,19 @@ class DecorationImpl {
     return this._searchHighlight;
   }
 
+  public get easyMotionIncSearch() {
+    return this._easyMotionIncSearch;
+  }
+
   public set easyMotionIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionIncSearch) {
       this._easyMotionIncSearch.dispose();
     }
     this._easyMotionIncSearch = value;
+  }
+
+  public get easyMotionDimIncSearch() {
+    return this._easyMotionDimIncSearch;
   }
 
   public set easyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
@@ -46,12 +74,24 @@ class DecorationImpl {
     this._easyMotionDimIncSearch = value;
   }
 
-  public get easyMotionIncSearch() {
-    return this._easyMotionIncSearch;
+  public getOrCreateMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const decorationType = this.getMarkDecoration(name);
+
+    if (decorationType) {
+      return decorationType;
+    } else {
+      const type = this._createMarkDecoration(name);
+      this._markDecorationCache.set(name, type);
+      return type;
+    }
   }
 
-  public get easyMotionDimIncSearch() {
-    return this._easyMotionDimIncSearch;
+  public getMarkDecoration(name: string): vscode.TextEditorDecorationType | undefined {
+    return this._markDecorationCache.get(name);
+  }
+
+  public allMarkDecorations(): IterableIterator<vscode.TextEditorDecorationType> {
+    return this._markDecorationCache.values();
   }
 
   public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {

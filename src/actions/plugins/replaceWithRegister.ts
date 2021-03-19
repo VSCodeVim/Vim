@@ -8,7 +8,7 @@ import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
-import { Position } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 
 @RegisterAction
 export class ReplaceOperator extends BaseOperator {
@@ -56,7 +56,7 @@ const updateCursorPosition = (
 
   const cursorPosition = singleLineAction
     ? cursorAtEndOfReplacement(range, replaceWith)
-    : cursorAtFirstNonBlankCharOfLine(range);
+    : cursorAtFirstNonBlankCharOfLine(vimState.document, range);
 
   vimState.cursorStopPosition = cursorPosition;
   vimState.cursorStartPosition = cursorPosition;
@@ -65,5 +65,5 @@ const updateCursorPosition = (
 const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
   new Position(range.start.line, Math.max(0, range.start.character + replacement.length - 1));
 
-const cursorAtFirstNonBlankCharOfLine = (range: vscode.Range) =>
-  TextEditor.getFirstNonWhitespaceCharOnLine(range.start.line);
+const cursorAtFirstNonBlankCharOfLine = (document: TextDocument, range: vscode.Range) =>
+  TextEditor.getFirstNonWhitespaceCharOnLine(document, range.start.line);

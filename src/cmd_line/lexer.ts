@@ -2,14 +2,12 @@ import { Scanner } from './scanner';
 import { Token, TokenType } from './token';
 
 // Describes a function that can lex part of a Vim command line.
-interface ILexFunction {
-  (state: Scanner, tokens: Token[]): ILexFunction | null;
-}
+type ILexFunction = (state: Scanner, tokens: Token[]) => ILexFunction | null;
 
 export function lex(input: string): Token[] {
   // We use a character scanner as state for the lexer.
   const state = new Scanner(input);
-  let tokens: Token[] = [];
+  const tokens: Token[] = [];
   let f: ILexFunction | null = LexerFunctions.lexRange;
   while (f) {
     // Each lexing function returns the next lexing function or null.
@@ -134,7 +132,7 @@ namespace LexerFunctions {
    * so it's lexRange's job to specify which token to emit.
    */
   function lexDigits(tokenType: TokenType) {
-    return function (state: Scanner, tokens: Token[]): ILexFunction | null {
+    return (state: Scanner, tokens: Token[]): ILexFunction | null => {
       // The first digit has already been lexed.
       while (true) {
         if (state.isAtEof) {
