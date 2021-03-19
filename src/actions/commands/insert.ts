@@ -138,7 +138,7 @@ export class CommandInsertPreviousText extends BaseCommand {
       actions.shift();
     }
 
-    for (let action of actions) {
+    for (const action of actions) {
       if (action instanceof BaseCommand) {
         await action.execCount(vimState.cursorStopPosition, vimState);
       }
@@ -231,7 +231,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 @RegisterAction
 export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
-  keys = ['<BS>'];
+  keys = [['<BS>'], ['<C-h>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const line = vimState.document.lineAt(position).text;
@@ -265,7 +265,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
       // Otherwise, just delete a character (unless we're at the start of the document)
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
-        position: position,
+        position,
       });
     }
 
@@ -414,8 +414,8 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
-      text: text,
-      position: position,
+      text,
+      position,
     });
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStartPosition = vimState.editor.selection.start;
@@ -523,19 +523,6 @@ class CommandInsertAboveChar extends BaseCommand {
 
     vimState.cursorStartPosition = vimState.editor.selection.start;
     vimState.cursorStopPosition = vimState.editor.selection.start;
-  }
-}
-
-@RegisterAction
-class CommandCtrlHInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-h>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteText',
-      position: position,
-    });
   }
 }
 
@@ -659,7 +646,7 @@ class NewLineInsertMode extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
       text: '\n',
-      position: position,
+      position,
       diff: new PositionDiff({ character: -1 }),
     });
   }

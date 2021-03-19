@@ -31,7 +31,7 @@ const linesWithoutIndentation = (
   document: vscode.TextDocument,
   lineToStartScanFrom: number,
   scanAboveFirst: boolean
-): { sortPriority: number; text: string }[] => {
+): Array<{ sortPriority: number; text: string }> => {
   const distanceFromStartLine = (line: number) => {
     let sortPriority = scanAboveFirst ? lineToStartScanFrom - line : line - lineToStartScanFrom;
     if (sortPriority < 0) {

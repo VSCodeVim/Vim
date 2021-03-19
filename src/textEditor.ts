@@ -22,8 +22,8 @@ export class TextEditor {
   static async insert(
     editor: vscode.TextEditor,
     text: string,
-    at: Position | undefined = undefined,
-    letVSCodeHandleKeystrokes: boolean | undefined = undefined
+    at?: Position,
+    letVSCodeHandleKeystrokes?: boolean
   ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
@@ -280,9 +280,9 @@ export class TextEditor {
     do {
       const word = text.substring(start.character, wordEnd.character + 1);
       yield {
-        start: start,
+        start,
         end: wordEnd,
-        word: word,
+        word,
       };
 
       if (wordEnd.getRight().isLineEnd()) {

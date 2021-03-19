@@ -45,7 +45,7 @@ export class NeovimValidator implements IConfigurationValidator {
       // If Neovim config path doesn't exist, default to empty config path.
       if (config.neovimUseConfigFile && config.neovimConfigPath !== '') {
         if (!existsSync(config.neovimConfigPath)) {
-          let warningMessage = `No config file found in neovimConfigPath. Neovim will search its default config path.`;
+          const warningMessage = `No config file found in neovimConfigPath. Neovim will search its default config path.`;
           config.neovimConfigPath = '';
           result.append({
             level: 'warning',

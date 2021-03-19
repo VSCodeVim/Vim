@@ -5,6 +5,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -41,6 +42,10 @@ const config = {
         test: /\.ts$/,
         exclude: /node_modules/,
         loader: 'ts-loader',
+        options: {
+          // Don't type check - ForkTsCheckerWebpackPlugin does this faster
+          transpileOnly: true,
+        },
       },
     ],
   },
@@ -48,6 +53,7 @@ const config = {
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: [], // disable initial clean
     }),
+    new ForkTsCheckerWebpackPlugin(),
   ],
 };
 
@@ -64,7 +70,7 @@ const nodelessConfig = {
     filename: 'extensionWeb.js',
     libraryTarget: 'umd',
   },
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
   },
@@ -86,11 +92,11 @@ const nodelessConfig = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-        ],
+        loader: 'ts-loader',
+        options: {
+          // Don't type check - ForkTsCheckerWebpackPlugin does this faster
+          transpileOnly: true,
+        },
       },
     ],
   },
@@ -107,6 +113,7 @@ const nodelessConfig = {
     new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,
     }),
+    new ForkTsCheckerWebpackPlugin(),
   ],
 };
 

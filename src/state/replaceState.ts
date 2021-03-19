@@ -29,7 +29,7 @@ export class ReplaceState {
     this.timesToRepeat = timesToRepeat;
 
     const text = vimState.document.lineAt(startPosition).text.substring(startPosition.character);
-    for (let [key, value] of text.split('').entries()) {
+    for (const [key, value] of text.split('').entries()) {
       this.originalChars[key + startPosition.character] = value;
     }
   }

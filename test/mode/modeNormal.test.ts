@@ -1326,19 +1326,30 @@ suite('Mode Normal', () => {
     end: ['|t text'],
   });
 
-  newTest({
-    title: 'Can handle backspace',
-    start: ['text |text'],
-    keysPressed: '<BS><BS>',
-    end: ['tex|t text'],
-  });
+  for (const key of ['<BS>', '<C-BS>', '<S-BS>']) {
+    newTest({
+      title: `${key} moves one character to the left`,
+      start: ['text |text'],
+      keysPressed: key,
+      end: ['text| text'],
+    });
 
-  newTest({
-    title: 'Can handle backspace across lines',
-    start: ['one', '|two'],
-    keysPressed: '<BS><BS>',
-    end: ['o|ne', 'two'],
-  });
+    newTest({
+      title: `${key} goes across line boundaries when 'whichwrap' contains 'b'`,
+      config: { whichwrap: 'b' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['on|e', 'two'],
+    });
+
+    newTest({
+      title: `${key} does not go across line boundaries when 'whichwrap' does not contain 'b'`,
+      config: { whichwrap: '' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['one', '|two'],
+    });
+  }
 
   newTest({
     title: 'Can handle A and backspace',
@@ -1576,17 +1587,26 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle space',
+    title: '<Space> moves cursor one character right',
     start: ['|abc', 'def'],
-    keysPressed: '  ',
-    end: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['a|bc', 'def'],
   });
 
   newTest({
-    title: 'Can handle space',
-    start: ['|abc', 'def'],
-    keysPressed: '    ',
-    end: ['abc', 'd|ef'],
+    title: "<Space> goes over line break when whichwrap includes 's'",
+    config: { whichwrap: 's' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['abc', '|def'],
+  });
+
+  newTest({
+    title: "<Space> does not go over line break when whichwrap does not include 's'",
+    config: { whichwrap: '' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['ab|c', 'def'],
   });
 
   newTest({
@@ -2254,16 +2274,6 @@ suite('Mode Normal', () => {
     keysPressed: '/\\Casdf\n',
     end: ['__ASDF', '|asdf'],
   });
-
-  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
-    newTest({
-      title: `${backspace} deletes the last character in search in progress mode`,
-      start: ['|foo', 'bar', 'abd'],
-      keysPressed: `/abc${backspace}d\n`,
-      end: ['foo', 'bar', '|abd'],
-      endMode: Mode.Normal,
-    });
-  }
 
   newTest({
     title: '<C-l> adds the next character in the first match to search term',
@@ -3219,7 +3229,7 @@ suite('Mode Normal', () => {
 
   suite('marks', async () => {
     const jumpToNewFile = async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
       await setupWorkspace(configuration);

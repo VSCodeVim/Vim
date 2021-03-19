@@ -37,16 +37,6 @@ suite('Configuration', () => {
     assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
-  test('whichwrap is parsed into wrapKeys', async () => {
-    const wrapKeys = srcConfiguration.configuration.wrapKeys;
-
-    const h = 'h';
-    const j = 'j';
-
-    assert.strictEqual(wrapKeys[h], true);
-    assert.strictEqual(wrapKeys[j], undefined);
-  });
-
   newTest({
     title: 'Can handle long key chords',
     start: ['|'],

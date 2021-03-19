@@ -6,14 +6,14 @@ import { TextEditor } from '../textEditor';
 import { RegisterAction } from '../actions/base';
 import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
-  MoveAClosingCurlyBrace,
-  MoveADoubleQuotes,
-  MoveAParentheses,
-  MoveASingleQuotes,
-  MoveASquareBracket,
-  MoveABacktick,
+  MoveAroundDoubleQuotes,
+  MoveAroundParentheses,
+  MoveAroundSingleQuotes,
+  MoveAroundSquareBracket,
+  MoveAroundBacktick,
   MoveAroundTag,
   ExpandingSelection,
+  MoveAroundCurlyBrace,
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
@@ -91,8 +91,8 @@ export class SelectWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -154,8 +154,8 @@ export class SelectABigWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -175,12 +175,12 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const blocks = [
-      new MoveADoubleQuotes(),
-      new MoveASingleQuotes(),
-      new MoveABacktick(),
-      new MoveAClosingCurlyBrace(),
-      new MoveAParentheses(),
-      new MoveASquareBracket(),
+      new MoveAroundDoubleQuotes(),
+      new MoveAroundSingleQuotes(),
+      new MoveAroundBacktick(),
+      new MoveAroundCurlyBrace(),
+      new MoveAroundParentheses(),
+      new MoveAroundSquareBracket(),
       new MoveAroundTag(),
     ];
     // ideally no state would change as we test each of the possible expansions
@@ -200,7 +200,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       return !range.failed;
     });
 
-    let smallestRange: Range | undefined = undefined;
+    let smallestRange: Range | undefined;
 
     for (const iMotion of ranges) {
       const currentSelectedRange = new Range(
@@ -212,7 +212,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       }
 
       const range = new Range(iMotion.start, iMotion.stop);
-      let contender: Range | undefined = undefined;
+      let contender: Range | undefined;
 
       if (
         range.start.isBefore(currentSelectedRange.start) &&
@@ -298,8 +298,8 @@ export class SelectInnerWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -339,8 +339,8 @@ export class SelectInnerBigWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -396,8 +396,8 @@ export class SelectSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -439,8 +439,8 @@ export class SelectInnerSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -476,8 +476,8 @@ export class SelectParagraph extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -521,8 +521,8 @@ export class SelectInnerParagraph extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }

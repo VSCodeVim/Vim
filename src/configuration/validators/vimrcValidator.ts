@@ -1,6 +1,5 @@
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
-import { vimrc } from '../vimrc';
 import { configurationValidator } from '../configurationValidator';
 
 export class VimrcValidator implements IConfigurationValidator {

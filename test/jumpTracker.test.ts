@@ -133,6 +133,23 @@ suite('Record and navigate jumps', () => {
       );
     });
 
+    test('Can handle recording "from" jump with no corresponding "to" jump', () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.recordJump(jump(0, 0));
+
+      assert.strictEqual(
+        jumpTracker.jumps.length,
+        1,
+        'Jump tracker failed to record "from"-only jump'
+      );
+      assert.deepEqual(
+        jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
+        [[0, 0, 'Untitled']],
+        `Jump tracker doesn't contain expected jumps after recording "from"-only jump`
+      );
+    });
+
     test('Can handle text deleted from a file', async () => {
       const jumpTracker = new JumpTracker();
 

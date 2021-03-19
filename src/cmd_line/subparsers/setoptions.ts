@@ -2,14 +2,14 @@ import * as node from '../commands/setoptions';
 import { Scanner } from '../scanner';
 
 export function parseOption(args?: string): node.IOptionArgs {
-  let scanner = new Scanner(args ?? '');
+  const scanner = new Scanner(args ?? '');
   scanner.skipWhiteSpace();
 
   if (scanner.isAtEof) {
     return {};
   }
 
-  let optionName = scanner.nextWord('?!&=:^+-'.split(''));
+  const optionName = scanner.nextWord('?!&=:^+-'.split(''));
 
   if (optionName.startsWith('no')) {
     return {
@@ -34,8 +34,8 @@ export function parseOption(args?: string): node.IOptionArgs {
     };
   }
 
-  let operator = scanner.next();
-  let optionArgs: node.IOptionArgs = {
+  const operator = scanner.next();
+  const optionArgs: node.IOptionArgs = {
     name: optionName,
     value: scanner.nextWord([]),
   };

@@ -47,7 +47,7 @@ export class TagMatcher {
     const stack: Tag[] = [];
     const matchedTags: MatchedTag[] = [];
 
-    for (let tag of tags) {
+    for (const tag of tags) {
       // We have to push on the stack
       // if it is an open tag.
       if (tag.type === 'open') {
