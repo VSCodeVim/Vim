@@ -1,6 +1,14 @@
 # Change Log
 
-## [v1.19.0](https://github.com/vscodevim/vim/tree/v1.19.0) (2021-03-18)
+## [v1.19.1](https://github.com/vscodevim/vim/tree/v1.19.1) (2021-03-18)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.0...v1.19.1)
+
+**Fixed Bugs:**
+
+- Failed to handle key=\<right\>. Cannot read property 'isOperator' of undefined [\#6309](https://github.com/VSCodeVim/Vim/issues/6309)
+
+## [v1.19.0](https://github.com/vscodevim/vim/tree/v1.19.0) (2021-03-19)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.9...v1.19.0)
 
@@ -150,8 +158,6 @@
 - Forced by user [\#5649](https://github.com/VSCodeVim/Vim/issues/5649)
 - Failed to handle key=\<Esc\>. Cannot read property 'cursorStartPosition' of undefined [\#5628](https://github.com/VSCodeVim/Vim/issues/5628)
 - Cannot bind \<C-v\> to command "\*p \( paste from register \) [\#5592](https://github.com/VSCodeVim/Vim/issues/5592)
-- \<C-o\> in insert mode is not supported [\#5550](https://github.com/VSCodeVim/Vim/issues/5550)
-- Failed to handle key=\<right\>. getLineLength\(\) called with out-of-bounds line 26 [\#5549](https://github.com/VSCodeVim/Vim/issues/5549)
 
 **Merged pull requests:**
 
@@ -163,7 +169,6 @@
 - Simulate cursor "disappearing" on CommandLineMode [\#5674](https://github.com/VSCodeVim/Vim/pull/5674) ([berknam](https://github.com/berknam))
 - Add Rust's INNER_LINE_DOC to reflow list [\#5597](https://github.com/VSCodeVim/Vim/pull/5597) ([lf-](https://github.com/lf-))
 - Implement normalization for 'Shift+Tab' key combo [\#5587](https://github.com/VSCodeVim/Vim/pull/5587) ([berknam](https://github.com/berknam))
-- Stop snippet insertion from going to visual mode [\#5540](https://github.com/VSCodeVim/Vim/pull/5540) ([berknam](https://github.com/berknam))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
