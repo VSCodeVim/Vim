@@ -366,10 +366,16 @@ export class ArrowsInInsertMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
     // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [
-      vimState.recordedState.actionsRun.shift()!,
-      vimState.recordedState.actionsRun.pop()!,
-    ];
+    const firstAction = vimState.recordedState.actionsRun.shift();
+    const lastAction = vimState.recordedState.actionsRun.pop();
+    vimState.recordedState.actionsRun = [];
+    if (firstAction) {
+      vimState.recordedState.actionsRun.push(firstAction);
+    }
+    if (lastAction) {
+      vimState.recordedState.actionsRun.push(lastAction);
+    }
+    // TODO: assert vimState.recordedState.actionsRun.length === 2?
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {

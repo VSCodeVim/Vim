@@ -571,7 +571,11 @@ export class ModeHandler implements vscode.Disposable {
     const action = getRelevantAction(recordedState.actionKeys, this.vimState);
     switch (action) {
       case KeypressState.NoPossibleMatch:
-        this.vimState.recordedState = new RecordedState();
+        if (this.vimState.currentMode === Mode.Insert) {
+          this.vimState.recordedState.actionKeys = [];
+        } else {
+          this.vimState.recordedState = new RecordedState();
+        }
         // Since there is no possible action we are no longer waiting any action keys
         this.vimState.recordedState.waitingForAnotherActionKey = false;
 
