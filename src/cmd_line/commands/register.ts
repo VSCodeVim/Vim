@@ -11,15 +11,11 @@ export interface IRegisterCommandArguments extends node.ICommandArgs {
   registers: string[];
 }
 export class RegisterCommand extends node.CommandBase {
-  protected _arguments: IRegisterCommandArguments;
+  private readonly arguments: IRegisterCommandArguments;
 
   constructor(args: IRegisterCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IRegisterCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   private async getRegisterDisplayValue(

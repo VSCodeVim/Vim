@@ -1725,7 +1725,7 @@ class CommandOnly extends BaseCommand {
   ];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    new OnlyCommand({}).execute(vimState);
+    new OnlyCommand().execute(vimState);
   }
 }
 

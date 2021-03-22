@@ -12,15 +12,11 @@ export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
 }
 
 export class DeleteRangeCommand extends node.CommandBase {
-  protected _arguments: IDeleteRangeCommandArguments;
+  private readonly arguments: IDeleteRangeCommandArguments;
 
   constructor(args: IDeleteRangeCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IDeleteRangeCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   public neovimCapable(): boolean {
@@ -62,7 +58,7 @@ export class DeleteRangeCommand extends node.CommandBase {
 
     const line = vimState.cursorStopPosition.line;
     const text = await this.deleteRange(line, line, vimState);
-    const register = this._arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
+    const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
     Register.putByKey(text, register, RegisterMode.LineWise);
   }
 
@@ -70,7 +66,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     const [start, end] = range.resolve(vimState);
 
     const text = await this.deleteRange(start, end, vimState);
-    const register = this._arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
+    const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
     Register.putByKey(text, register, RegisterMode.LineWise);
   }
 }

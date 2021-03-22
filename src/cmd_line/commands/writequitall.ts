@@ -17,15 +17,11 @@ export interface IWriteQuitAllCommandArguments extends node.ICommandArgs {
 }
 
 export class WriteQuitAllCommand extends node.CommandBase {
-  protected _arguments: IWriteQuitAllCommandArguments;
+  private readonly arguments: IWriteQuitAllCommandArguments;
 
   constructor(args: IWriteQuitAllCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IWriteQuitAllCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.

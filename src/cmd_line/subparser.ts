@@ -197,7 +197,7 @@ export const commandParsers = {
 
   nohlsearch: {
     abbrev: 'noh',
-    parser: () => new NohlCommand({}),
+    parser: () => new NohlCommand(),
   },
 
   normal: {
@@ -207,7 +207,7 @@ export const commandParsers = {
 
   only: {
     abbrev: 'on',
-    parser: () => new OnlyCommand({}),
+    parser: () => new OnlyCommand(),
   },
 
   put: {
@@ -334,7 +334,7 @@ export const commandParsers = {
 
   undo: {
     abbrev: 'u',
-    parser: () => new UndoCommand({}),
+    parser: () => new UndoCommand(),
   },
 
   vglobal: {

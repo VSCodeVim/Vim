@@ -239,11 +239,6 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  get arguments(): ICommandArgs {
-    return this._arguments;
-  }
-  protected _arguments: ICommandArgs;
-
   public neovimCapable(): boolean {
     return false;
   }

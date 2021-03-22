@@ -15,15 +15,11 @@ export interface ICloseCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
 export class CloseCommand extends node.CommandBase {
-  protected _arguments: ICloseCommandArguments;
+  public readonly arguments: ICloseCommandArguments;
 
   constructor(args: ICloseCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ICloseCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
