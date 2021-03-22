@@ -100,7 +100,7 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
   try {
     await waitForTextEditorsToClose;
   } catch (error) {
-    assert.fail(null, null, error.toString(), '');
+    assert.fail(error);
   }
 }
 

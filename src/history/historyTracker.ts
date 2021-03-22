@@ -346,19 +346,19 @@ export class HistoryTracker {
     this.vimState = vimState;
     this.undoStack = new UndoStack();
     this.previousDocumentState = {
-      text: this._getDocumentText(),
-      versionNumber: this._getDocumentVersion(),
+      text: this.getDocumentText(),
+      versionNumber: this.getDocumentVersion(),
     };
     this.lastContentChanges = [];
     this.currentContentChanges = [];
   }
 
-  private _getDocumentText(): string {
+  private getDocumentText(): string {
     // vimState.editor can be undefined in some unit tests
     return this.vimState.editor?.document.getText() ?? '';
   }
 
-  private _getDocumentVersion(): number {
+  private getDocumentVersion(): number {
     // vimState.editor can be undefined in some unit tests
     return this.vimState.editor?.document.version ?? -1;
   }
@@ -568,11 +568,11 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it used to look like.
    */
   public addChange(cursorPosition = [new Position(0, 0)]): void {
-    if (this._getDocumentVersion() === this.previousDocumentState.versionNumber) {
+    if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
       return;
     }
 
-    const newText = this._getDocumentText();
+    const newText = this.getDocumentText();
     if (newText === this.previousDocumentState.text) {
       return;
     }
@@ -613,7 +613,7 @@ export class HistoryTracker {
     this.undoStack.getCurrentHistoryStep()!.cursorEnd = cursorPosition;
     this.previousDocumentState = {
       text: newText,
-      versionNumber: this._getDocumentVersion(),
+      versionNumber: this.getDocumentVersion(),
     };
 
     // A change has been made, reset the changelist navigation index to the end
@@ -672,8 +672,8 @@ export class HistoryTracker {
    */
   public ignoreChange(): void {
     this.previousDocumentState = {
-      text: this._getDocumentText(),
-      versionNumber: this._getDocumentVersion(),
+      text: this.getDocumentText(),
+      versionNumber: this.getDocumentVersion(),
     };
   }
 

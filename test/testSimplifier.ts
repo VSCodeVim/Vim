@@ -123,31 +123,31 @@ class TestObjectHelper {
   endPosition = new Position(0, 0);
 
   private _isValid = false;
-  private _testObject: ITestObject;
+  private testObject: ITestObject;
 
-  constructor(_testObject: ITestObject) {
-    this._testObject = _testObject;
+  constructor(testObject: ITestObject) {
+    this.testObject = testObject;
 
-    this._parse(_testObject);
+    this.parse(testObject);
   }
 
   public get isValid(): boolean {
     return this._isValid;
   }
 
-  private _setStartCursorPosition(lines: string[]): boolean {
-    const result = this._getCursorPosition(lines);
+  private setStartCursorPosition(lines: string[]): boolean {
+    const result = this.getCursorPosition(lines);
     this.startPosition = result.position;
     return result.success;
   }
 
-  private _setEndCursorPosition(lines: string[]): boolean {
-    const result = this._getCursorPosition(lines);
+  private setEndCursorPosition(lines: string[]): boolean {
+    const result = this.getCursorPosition(lines);
     this.endPosition = result.position;
     return result.success;
   }
 
-  private _getCursorPosition(lines: string[]): { success: boolean; position: Position } {
+  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
     const ret = { success: false, position: new Position(0, 0) };
     for (let i = 0; i < lines.length; i++) {
       const columnIdx = lines[i].indexOf('|');
@@ -160,17 +160,17 @@ class TestObjectHelper {
     return ret;
   }
 
-  private _parse(t: ITestObject): void {
-    this._isValid = this._setStartCursorPosition(t.start) && this._setEndCursorPosition(t.end);
+  private parse(t: ITestObject): void {
+    this._isValid = this.setStartCursorPosition(t.start) && this.setEndCursorPosition(t.end);
   }
 
   public asVimInputText(): string[] {
-    const ret = 'i' + this._testObject.start.join('\n').replace('|', '');
+    const ret = 'i' + this.testObject.start.join('\n').replace('|', '');
     return ret.split('');
   }
 
   public asVimOutputText(): string[] {
-    const ret = this._testObject.end.slice(0);
+    const ret = this.testObject.end.slice(0);
     ret[this.endPosition.line] = ret[this.endPosition.line].replace('|', '');
     return ret;
   }
@@ -184,9 +184,9 @@ class TestObjectHelper {
     const linesToMove = this.startPosition.line;
 
     const cursorPosAfterEsc =
-      this._testObject.start[this._testObject.start.length - 1].replace('|', '').length - 1;
+      this.testObject.start[this.testObject.start.length - 1].replace('|', '').length - 1;
     const numCharsInCursorStartLine =
-      this._testObject.start[this.startPosition.line].replace('|', '').length - 1;
+      this.testObject.start[this.startPosition.line].replace('|', '').length - 1;
     const charactersToMove = this.startPosition.character;
 
     if (linesToMove > 0) {
@@ -227,40 +227,40 @@ class TestWithRemapsObjectHelper {
   currentStep = 0;
 
   private _isValid = false;
-  private _testObject: ITestWithRemapsObject;
+  private testObject: ITestWithRemapsObject;
 
-  constructor(_testObject: ITestWithRemapsObject) {
-    this._testObject = _testObject;
+  constructor(testObject: ITestWithRemapsObject) {
+    this.testObject = testObject;
 
-    this.parseStep(_testObject);
+    this.parseStep(testObject);
   }
 
   public get isValid(): boolean {
     return this._isValid;
   }
 
-  private _setStartCursorPosition(lines: string[]): boolean {
-    const result = this._getCursorPosition(lines);
+  private setStartCursorPosition(lines: string[]): boolean {
+    const result = this.getCursorPosition(lines);
     this.currentStepStartPosition = result.position;
     return result.success;
   }
 
-  private _setEndCursorPosition(lines: string[]): boolean {
-    const result = this._getCursorPosition(lines);
+  private setEndCursorPosition(lines: string[]): boolean {
+    const result = this.getCursorPosition(lines);
     this.currentStepEndPosition = result.position;
     return result.success;
   }
 
-  private _setEndAfterTimeoutCursorPosition(lines: string[] | undefined): boolean {
+  private setEndAfterTimeoutCursorPosition(lines: string[] | undefined): boolean {
     if (!lines) {
       return true;
     }
-    const result = this._getCursorPosition(lines);
+    const result = this.getCursorPosition(lines);
     this.currentStepEndAfterTimeoutPosition = result.position;
     return result.success;
   }
 
-  private _getCursorPosition(lines: string[]): { success: boolean; position: Position } {
+  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
     const ret = { success: false, position: new Position(0, 0) };
     for (let i = 0; i < lines.length; i++) {
       const columnIdx = lines[i].indexOf('|');
@@ -277,35 +277,35 @@ class TestWithRemapsObjectHelper {
     this._isValid = true;
     const stepIdx = this.currentStep;
     if (stepIdx === 0) {
-      if (!this._setStartCursorPosition(t.start)) {
+      if (!this.setStartCursorPosition(t.start)) {
         this._isValid = false;
         return;
       }
     } else {
       const lastStepEnd =
         t.steps[stepIdx - 1].stepResult.endAfterTimeout ?? t.steps[stepIdx - 1].stepResult.end;
-      if (!this._setStartCursorPosition(lastStepEnd)) {
+      if (!this.setStartCursorPosition(lastStepEnd)) {
         this._isValid = false;
         return;
       }
     }
-    if (!this._setEndCursorPosition(t.steps[stepIdx].stepResult.end)) {
+    if (!this.setEndCursorPosition(t.steps[stepIdx].stepResult.end)) {
       this._isValid = false;
       return;
     }
-    if (!this._setEndAfterTimeoutCursorPosition(t.steps[stepIdx].stepResult.endAfterTimeout)) {
+    if (!this.setEndAfterTimeoutCursorPosition(t.steps[stepIdx].stepResult.endAfterTimeout)) {
       this._isValid = false;
       return;
     }
   }
 
   public asVimInputText(): string[] {
-    const ret = 'i' + this._testObject.start.join('\n').replace('|', '');
+    const ret = 'i' + this.testObject.start.join('\n').replace('|', '');
     return ret.split('');
   }
 
   public asVimOutputText(afterTimeout: boolean = false): string[] {
-    const step = this._testObject.steps[this.currentStep];
+    const step = this.testObject.steps[this.currentStep];
     const ret = afterTimeout
       ? step.stepResult.endAfterTimeout!.slice(0)
       : step.stepResult.end.slice(0);
@@ -325,9 +325,9 @@ class TestWithRemapsObjectHelper {
     const linesToMove = this.currentStepStartPosition.line;
 
     const cursorPosAfterEsc =
-      this._testObject.start[this._testObject.start.length - 1].replace('|', '').length - 1;
+      this.testObject.start[this.testObject.start.length - 1].replace('|', '').length - 1;
     const numCharsInCursorStartLine =
-      this._testObject.start[this.currentStepStartPosition.line].replace('|', '').length - 1;
+      this.testObject.start[this.currentStepStartPosition.line].replace('|', '').length - 1;
     const charactersToMove = this.currentStepStartPosition.character;
 
     if (linesToMove > 0) {

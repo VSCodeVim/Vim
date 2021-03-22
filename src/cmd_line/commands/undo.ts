@@ -10,7 +10,6 @@ import { Position } from 'vscode';
 //
 export class UndoCommand extends node.CommandBase {
   protected _arguments: {};
-  private readonly _logger = Logger.get('Undo');
 
   constructor(args: {}) {
     super();

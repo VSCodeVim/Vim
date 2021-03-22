@@ -21,7 +21,7 @@ export interface IFileCommandArguments extends node.ICommandArgs {
 
 export class FileCommand extends node.CommandBase {
   protected _arguments: IFileCommandArguments;
-  private readonly _logger = Logger.get('File');
+  private readonly logger = Logger.get('File');
 
   constructor(args: IFileCommandArguments) {
     super();
@@ -127,7 +127,7 @@ export class FileCommand extends node.CommandBase {
             // untitled tab
             fileUri = uriPath.with({ scheme: 'untitled' });
           } else {
-            this._logger.error(`${this.arguments.name} does not exist.`);
+            this.logger.error(`${this.arguments.name} does not exist.`);
             return;
           }
         }

@@ -23,7 +23,7 @@ export interface IWriteCommandArguments extends node.ICommandArgs {
 //
 export class WriteCommand extends node.CommandBase {
   protected _arguments: IWriteCommandArguments;
-  private readonly _logger = Logger.get('Write');
+  private readonly logger = Logger.get('Write');
 
   constructor(args: IWriteCommandArguments) {
     super();
@@ -36,16 +36,16 @@ export class WriteCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.file) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.append) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.cmd) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     }
 

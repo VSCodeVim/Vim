@@ -54,9 +54,9 @@ export class ModeHandler implements vscode.Disposable {
   public readonly vimState: VimState;
   public readonly remapState: RemapState;
 
-  private _disposables: vscode.Disposable[] = [];
-  private _handlerMap: IModeHandlerMap;
-  private _remappers: Remappers;
+  private readonly disposables: vscode.Disposable[] = [];
+  private readonly handlerMap: IModeHandlerMap;
+  private readonly remappers: Remappers;
   private static readonly logger = Logger.get('ModeHandler');
 
   // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
@@ -83,12 +83,12 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private constructor(handlerMap: IModeHandlerMap, textEditor: vscode.TextEditor) {
-    this._handlerMap = handlerMap;
-    this._remappers = new Remappers();
+    this.handlerMap = handlerMap;
+    this.remappers = new Remappers();
 
     this.vimState = new VimState(textEditor, new EasyMotion());
     this.remapState = new RemapState();
-    this._disposables.push(this.vimState);
+    this.disposables.push(this.vimState);
   }
 
   /**
@@ -448,7 +448,7 @@ export class ModeHandler implements vscode.Disposable {
         !preventZeroRemap &&
         !this.vimState.recordedState.waitingForAnotherActionKey
       ) {
-        handledAsRemap = await this._remappers.sendKey(
+        handledAsRemap = await this.remappers.sendKey(
           this.vimState.recordedState.commandList,
           this
         );
@@ -1547,7 +1547,7 @@ export class ModeHandler implements vscode.Disposable {
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this._handlerMap
+      this.handlerMap
         .get(EditorIdentity.fromEditor(editor))
         ?.updateSearchHighlights(showHighlights);
     }
@@ -1641,7 +1641,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   dispose() {
-    this._disposables.map((d) => d.dispose());
+    this.disposables.map((d) => d.dispose());
   }
 }
 

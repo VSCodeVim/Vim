@@ -61,10 +61,10 @@ class VsCodeMessage extends TransportStream {
 }
 
 class NodeLogger implements ILogger {
-  private _logger: winston.Logger;
+  private logger: winston.Logger;
 
   constructor(prefix: string) {
-    this._logger = winston.createLogger({
+    this.logger = winston.createLogger({
       format: winston.format.simple(),
       level: 'debug', // filtering will be done at the transport level
       transports: [
@@ -82,26 +82,26 @@ class NodeLogger implements ILogger {
   }
 
   public error(errorMessage: string): void {
-    this._logger.error(errorMessage);
+    this.logger.error(errorMessage);
   }
 
   public debug(debugMessage: string): void {
-    this._logger.debug(debugMessage);
+    this.logger.debug(debugMessage);
   }
 
   public warn(warnMessage: string): void {
-    this._logger.warn(warnMessage);
+    this.logger.warn(warnMessage);
   }
 
   public verbose(verboseMessage: string): void {
-    this._logger.verbose(verboseMessage);
+    this.logger.verbose(verboseMessage);
   }
 
   public configChanged(configuration: IConfiguration) {
-    this._logger.transports[0].level = configuration.debug.loggingLevelForConsole;
-    this._logger.transports[0].silent = configuration.debug.silent;
-    this._logger.transports[1].level = configuration.debug.loggingLevelForAlert;
-    (this._logger.transports[1] as VsCodeMessage).configuration = configuration;
+    this.logger.transports[0].level = configuration.debug.loggingLevelForConsole;
+    this.logger.transports[0].silent = configuration.debug.silent;
+    this.logger.transports[1].level = configuration.debug.loggingLevelForAlert;
+    (this.logger.transports[1] as VsCodeMessage).configuration = configuration;
   }
 }
 
