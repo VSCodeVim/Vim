@@ -1,5 +1,4 @@
 import { Position } from 'vscode';
-import { TextEditor } from './../textEditor';
 import { VimState } from './vimState';
 
 /**

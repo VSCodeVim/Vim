@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import {
   assertEqualLines,
   cleanUpWorkspace,

@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { VimState } from '../state/vimState';
 import { TokenType, Token } from './token';
 

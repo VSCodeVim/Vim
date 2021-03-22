@@ -16,7 +16,6 @@ import { Logger } from './../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { StatusBar } from '../statusBar';
-import { Mode } from '../mode/mode';
 import { Position } from 'vscode';
 import { Jump } from '../jumps/jump';
 import { globalState } from '../state/globalState';
@@ -343,11 +342,8 @@ export class HistoryTracker {
 
   private readonly vimState: VimState;
 
-  private currentMode: Mode;
-
   constructor(vimState: VimState) {
     this.vimState = vimState;
-    // TODO: we should initialize currentMode here, right?
     this.undoStack = new UndoStack();
     this.previousDocumentState = {
       text: this._getDocumentText(),

@@ -5,7 +5,6 @@ import { getAndUpdateModeHandler } from '../extension';
 import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
-import { TextEditor } from '../src/textEditor';
 import { assertEqualLines, reloadConfiguration } from './testUtils';
 import { globalState } from '../src/state/globalState';
 import { IKeyRemapping } from '../src/configuration/iconfiguration';
