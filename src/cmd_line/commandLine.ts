@@ -35,8 +35,8 @@ class CommandLine {
 
   public previousMode = Mode.Normal;
 
-  public async load(): Promise<void> {
-    this._history = new CommandLineHistory();
+  public async load(context: vscode.ExtensionContext): Promise<void> {
+    this._history = new CommandLineHistory(context);
     return this._history.load();
   }
 

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { HistoryFile } from '../../src/history/historyFile';
-import { setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, rndName, TestExtensionContext } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
 import { Globals } from '../../src/globals';
 
@@ -26,7 +26,7 @@ suite('HistoryFile', () => {
     }
 
     Globals.extensionStoragePath = os.tmpdir();
-    history = new HistoryFile(rndName());
+    history = new HistoryFile(new TestExtensionContext(), rndName());
     await history.load();
   });
 

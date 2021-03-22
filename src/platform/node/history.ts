@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as path from 'path';
 import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
 import { ILogger } from '../common/logger';
@@ -15,6 +16,7 @@ export class HistoryBase {
   private _logger: ILogger;
 
   constructor(
+    context: vscode.ExtensionContext,
     historyFileName: string,
     extensionStoragePath: string,
     logger: ILogger

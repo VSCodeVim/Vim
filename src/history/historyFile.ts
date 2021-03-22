@@ -1,3 +1,4 @@
+import { ExtensionContext } from 'vscode';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
 import { Globals } from '../globals';
@@ -11,8 +12,13 @@ export class HistoryFile {
     return this._base.historyKey;
   }
 
-  constructor(historyFileName: string) {
-    this._base = new HistoryBase(historyFileName, Globals.extensionStoragePath, this._logger);
+  constructor(context: ExtensionContext, historyFileName: string) {
+    this._base = new HistoryBase(
+      context,
+      historyFileName,
+      Globals.extensionStoragePath,
+      this._logger
+    );
   }
 
   public async add(value: string | undefined): Promise<void> {
@@ -33,13 +39,13 @@ export class HistoryFile {
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor() {
-    super('.search_history');
+  constructor(context: ExtensionContext) {
+    super(context, '.search_history');
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor() {
-    super('.cmdline_history');
+  constructor(context: ExtensionContext) {
+    super(context, '.cmdline_history');
   }
 }
