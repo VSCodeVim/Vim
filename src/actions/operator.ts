@@ -230,7 +230,7 @@ export class DeleteOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class DeleteOperatorVisual extends BaseOperator {
+class DeleteOperatorVisual extends BaseOperator {
   public keys = ['D'];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -315,7 +315,7 @@ export class YankOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class FilterOperator extends BaseOperator {
+class FilterOperator extends BaseOperator {
   public keys = ['!'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -349,7 +349,7 @@ export class FilterOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class ShiftYankOperatorVisual extends BaseOperator {
+class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -361,7 +361,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
 }
 
 @RegisterAction
-export class DeleteOperatorXVisual extends BaseOperator {
+class DeleteOperatorXVisual extends BaseOperator {
   public keys = [['x'], ['<Del>']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -371,7 +371,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
 }
 
 @RegisterAction
-export class ChangeOperatorSVisual extends BaseOperator {
+class ChangeOperatorSVisual extends BaseOperator {
   public keys = ['s'];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -386,7 +386,7 @@ export class ChangeOperatorSVisual extends BaseOperator {
 }
 
 @RegisterAction
-export class FormatOperator extends BaseOperator {
+class FormatOperator extends BaseOperator {
   public keys = ['='];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -408,7 +408,7 @@ export class FormatOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class UpperCaseOperator extends BaseOperator {
+class UpperCaseOperator extends BaseOperator {
   public keys = [['g', 'U'], ['U']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -424,7 +424,7 @@ export class UpperCaseOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class UpperCaseWithMotion extends UpperCaseOperator {
+class UpperCaseWithMotion extends UpperCaseOperator {
   public keys = [['g', 'U']];
   public modes = [Mode.Normal];
 }
@@ -449,7 +449,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class LowerCaseOperator extends BaseOperator {
+class LowerCaseOperator extends BaseOperator {
   public keys = [['g', 'u'], ['u']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -465,7 +465,7 @@ export class LowerCaseOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class LowerCaseWithMotion extends LowerCaseOperator {
+class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = [['g', 'u']];
   public modes = [Mode.Normal];
 }
@@ -670,7 +670,7 @@ export class ChangeOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class YankVisualBlockMode extends BaseOperator {
+class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
@@ -768,7 +768,7 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 }
 
 @RegisterAction
-export class CommentOperator extends BaseOperator {
+class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -832,7 +832,7 @@ export class ROT13Operator extends BaseOperator {
 }
 
 @RegisterAction
-export class CommentBlockOperator extends BaseOperator {
+class CommentBlockOperator extends BaseOperator {
   public keys = ['g', 'C'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 

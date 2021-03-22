@@ -613,7 +613,7 @@ class MarkMovementVisualEndLine extends MarkMovementVisual {
 }
 
 @RegisterAction
-export class MarkMovementBOL extends BaseMovement {
+class MarkMovementBOL extends BaseMovement {
   keys = ["'", '<character>'];
   isJump = true;
 
@@ -636,7 +636,7 @@ export class MarkMovementBOL extends BaseMovement {
 }
 
 @RegisterAction
-export class MarkMovement extends BaseMovement {
+class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
   isJump = true;
 
@@ -663,7 +663,7 @@ async function ensureEditorIsActive(editor: vscode.TextEditor) {
 }
 
 @RegisterAction
-export class MoveLeft extends BaseMovement {
+class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1048,7 +1048,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByDisplayLine extends MoveByScreenLine {
+class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -1324,7 +1324,7 @@ class MoveNonBlankLast extends BaseMovement {
 }
 
 @RegisterAction
-export class MoveWordBegin extends BaseMovement {
+class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1707,7 +1707,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-export abstract class MoveInsideCharacter extends ExpandingSelection {
+abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
 
@@ -1868,7 +1868,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-export abstract class MoveQuoteMatch extends BaseMovement {
+abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract charToMatch: string;
   protected includeSurrounding = false;

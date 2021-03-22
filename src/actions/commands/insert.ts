@@ -229,7 +229,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 // }
 
 @RegisterAction
-export class CommandBackspaceInInsertMode extends BaseCommand {
+class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 
@@ -275,7 +275,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandDeleteInInsertMode extends BaseCommand {
+class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
@@ -430,7 +430,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandOneNormalCommandInInsertMode extends BaseCommand {
+class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
 

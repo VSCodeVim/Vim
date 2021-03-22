@@ -11,7 +11,7 @@ import { VimError, ErrorCode } from '../../error';
 import { Position, TextDocument } from 'vscode';
 
 @RegisterAction
-export class ReplaceOperator extends BaseOperator {
+class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 

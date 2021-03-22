@@ -708,7 +708,7 @@ class CommandCmdA extends BaseCommand {
 }
 
 @RegisterAction
-export class MarkCommand extends BaseCommand {
+class MarkCommand extends BaseCommand {
   keys = ['m', '<character>'];
   modes = [Mode.Normal];
 
@@ -1272,7 +1272,7 @@ class CommandExitVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandVisualMode extends BaseCommand {
+class CommandVisualMode extends BaseCommand {
   modes = [Mode.Normal, Mode.VisualLine, Mode.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
@@ -2588,7 +2588,7 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 }
 
 @RegisterAction
-export class ActionGoToInsertVisualLineMode extends ActionGoToInsertVisualLineModeCommand {
+class ActionGoToInsertVisualLineMode extends ActionGoToInsertVisualLineModeCommand {
   modes = [Mode.VisualLine];
   keys = ['I'];
 
@@ -2602,7 +2602,7 @@ export class ActionGoToInsertVisualLineMode extends ActionGoToInsertVisualLineMo
 }
 
 @RegisterAction
-export class ActionGoToInsertVisualLineModeAppend extends ActionGoToInsertVisualLineModeCommand {
+class ActionGoToInsertVisualLineModeAppend extends ActionGoToInsertVisualLineModeCommand {
   modes = [Mode.VisualLine];
   keys = ['A'];
 
@@ -2613,7 +2613,7 @@ export class ActionGoToInsertVisualLineModeAppend extends ActionGoToInsertVisual
 }
 
 @RegisterAction
-export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCommand {
+class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCommand {
   modes = [Mode.Visual];
   keys = ['I'];
 
@@ -2631,7 +2631,7 @@ export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCo
 }
 
 @RegisterAction
-export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLineModeCommand {
+class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLineModeCommand {
   modes = [Mode.Visual];
   keys = ['A'];
 
