@@ -700,6 +700,16 @@ export class ModeHandler implements vscode.Disposable {
       );
     }
 
+    // Make sure all cursors are within the document's bounds before running any action
+    // It's not 100% clear to me that this is the correct place to do this, but it should solve a lot of issues
+    this.vimState.cursors = this.vimState.cursors.map(
+      (c) =>
+        new Range(
+          this.vimState.document.validatePosition(c.start),
+          this.vimState.document.validatePosition(c.stop)
+        )
+    );
+
     if (action instanceof BaseMovement) {
       recordedState = await this.executeMovement(action);
       ranAction = true;
