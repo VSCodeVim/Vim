@@ -6,6 +6,7 @@ import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from
 import { Range } from './common/motion/range';
 import { Position } from 'vscode';
 import { Logger } from './util/logger';
+import { clamp } from './util/util';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -220,6 +221,7 @@ export class TextEditor {
     document: vscode.TextDocument,
     line: number
   ): Position {
+    line = clamp(line, 0, document.lineCount - 1);
     return new Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
   }
 
