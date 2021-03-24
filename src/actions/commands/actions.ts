@@ -87,7 +87,8 @@ export class DocumentContentChangeAction extends BaseAction {
           lineOffset === 0
             ? position.character + diffPos.character - originalLeftBoundary.character
             : diffPos.character;
-        return new Position(position.line + lineOffset, char);
+        // TODO: Should we document.validate() this position?
+        return new Position(Math.max(position.line + lineOffset, 0), Math.max(char, 0));
       };
 
       replaceRange = new Range(translate(change.range.start), translate(change.range.end));
