@@ -104,6 +104,7 @@ export class TextEditor {
   }
 
   static getCharAt(document: vscode.TextDocument, position: Position): string {
+    position = document.validatePosition(position);
     return document.lineAt(position).text[position.character];
   }
 
