@@ -408,7 +408,7 @@ class CommandEsc extends BaseCommand {
         // If there's nothing to do on the vim side, we might as well call some
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
-        await Promise.all([
+        await Promise.allSettled([
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
