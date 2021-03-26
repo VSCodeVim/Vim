@@ -88,8 +88,8 @@ export class DeleteMarksCommand extends node.CommandBase {
       return;
     }
 
-    const numberArgs: any = this.numberRange.exec(this.args);
-    let letterArgs: any = this.letterRange.exec(this.args);
+    const numberArgs = this.numberRange.exec(this.args);
+    let letterArgs = this.letterRange.exec(this.args);
 
     if (!numberArgs && !letterArgs && this.args.includes('-')) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));

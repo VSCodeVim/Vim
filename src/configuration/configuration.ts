@@ -99,7 +99,7 @@ class Configuration implements IConfiguration {
   };
 
   public async load(): Promise<ValidatorResults> {
-    const vimConfigs: any = Globals.isTesting
+    const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
 

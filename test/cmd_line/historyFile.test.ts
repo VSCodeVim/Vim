@@ -10,7 +10,7 @@ suite('HistoryFile', () => {
   let history: HistoryFile;
   let runCmds: string[];
 
-  const assertArrayEquals = (expected: any[], actual: any[]) => {
+  const assertArrayEquals = <T>(expected: T[], actual: T[]) => {
     assert.strictEqual(expected.length, actual.length);
     for (let i: number = 0; i < expected.length; i++) {
       assert.strictEqual(expected[i], actual[i]);
