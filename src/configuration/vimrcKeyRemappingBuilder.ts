@@ -135,7 +135,10 @@ class VimrcKeyRemappingBuilderImpl {
   /**
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
-  public async build(line: string): Promise<IVimrcKeyRemapping | undefined> {
+  public async build(
+    line: string,
+    vscodeCommands: string[]
+  ): Promise<IVimrcKeyRemapping | undefined> {
     if (line.trimLeft().startsWith('"')) {
       return;
     }
@@ -149,7 +152,6 @@ class VimrcKeyRemappingBuilderImpl {
     const before = matches[2];
     const after = matches[3];
 
-    const vscodeCommands = await vscode.commands.getCommands();
     const vimCommand = after.match(VimrcKeyRemappingBuilderImpl.VIM_COMMAND_REG_EX);
 
     let command: {

@@ -51,9 +51,10 @@ export class VimrcImpl {
 
       // Add the new remappings
       try {
+        const vscodeCommands = await vscode.commands.getCommands();
         const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
         for (const line of lines) {
-          const remap = await vimrcKeyRemappingBuilder.build(line);
+          const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
           if (remap) {
             VimrcImpl.addRemapToConfig(config, remap);
             continue;

@@ -716,9 +716,10 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   // Remove all the old remappings from the .vimrc file
   VimrcImpl.removeAllRemapsFromConfig(config);
 
+  const vscodeCommands = await vscode.commands.getCommands();
   // Add the new remappings
   for (const line of lines) {
-    const remap = await vimrcKeyRemappingBuilder.build(line);
+    const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
     if (remap) {
       VimrcImpl.addRemapToConfig(config, remap);
       continue;
