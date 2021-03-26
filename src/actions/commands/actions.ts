@@ -9,7 +9,13 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
+import {
+  PositionDiff,
+  earlierOf,
+  laterOf,
+  sorted,
+  PositionDiffType,
+} from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
@@ -2172,32 +2178,26 @@ class ActionJoinNoWhitespace extends BaseCommand {
   }
 
   public async execJoin(count: number, position: Position, vimState: VimState): Promise<void> {
-    const lastLine = Math.min(position.line + count, vimState.document.lineCount - 1);
-    const lines: string[] = [];
-    for (let i = position.line + 1; i <= lastLine; i++) {
-      lines.push(vimState.document.lineAt(i).text);
-    }
-    const resultLine = vimState.document.lineAt(position.line).text + lines.join('');
-
-    await new operator.DeleteOperator(this.multicursorIndex).run(
-      vimState,
-      position.getLineBegin(),
-      TextEditor.getLineLength(lastLine) > 0
-        ? position.getDown(count).getLineEnd().getLeft()
-        : position.getDown(count - 1).getLineEnd()
+    const replaceRange = new vscode.Range(
+      new Position(position.line, 0),
+      new Position(Math.min(position.line + count, vimState.document.lineCount - 1), 0).getLineEnd()
     );
 
-    const lastLineLength = lines[lines.length - 1].length;
+    const joinedText = vimState.document.getText(replaceRange).replace(/\r?\n/g, '');
+
+    // Put the cursor at the start of the last joined line's text
+    const newCursorColumn =
+      joinedText.length - vimState.document.lineAt(replaceRange.end).text.length;
+
     vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: resultLine,
-      position,
+      type: 'replaceText',
+      range: new Range(replaceRange.start, replaceRange.end),
+      text: joinedText,
       diff: new PositionDiff({
-        character: -lastLineLength,
+        type: PositionDiffType.ExactCharacter,
+        character: newCursorColumn,
       }),
     });
-
-    vimState.cursorStopPosition = new Position(position.line, resultLine.length - lastLineLength);
   }
 }
 
@@ -2209,8 +2209,8 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     const count = start.line === end.line ? 1 : end.line - start.line;
-    vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    return new ActionJoinNoWhitespace().execJoin(count, start, vimState);
+    await new ActionJoinNoWhitespace().execJoin(count, start, vimState);
+    await vimState.setCurrentMode(Mode.Normal);
   }
 }
 
@@ -2751,12 +2751,13 @@ class ActionChangeLineVisualBlockMode extends BaseCommand {
 class ActionChangeChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['s'];
-  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await new operator.ChangeOperator().run(vimState, position, position);
-
-    await vimState.setCurrentMode(Mode.Insert);
+    await new operator.ChangeOperator(this.multicursorIndex).run(
+      vimState,
+      position,
+      position.getRight((vimState.recordedState.count || 1) - 1)
+    );
   }
 
   // Don't clash with surround or sneak modes!
