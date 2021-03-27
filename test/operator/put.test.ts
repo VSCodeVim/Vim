@@ -333,6 +333,34 @@ suite('put operator', () => {
   });
 
   newTest({
+    title: 'Yank character-wise, <count>gp in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeve3gp',
+    end: ['one', 'twotwotw|o', 'three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gp in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeV3gp',
+    end: ['one', 'two', 'two', 'two', '|three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyve3gp',
+    end: ['one', '', 'two', 'two', 'two', '|', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyV3gp',
+    end: ['one', 'two', 'two', 'two', '|three'],
+  });
+
+  newTest({
     title: 'can handle p in visual to end of line',
     start: ['1234 |5678', 'test test'],
     keysPressed: 'vllllyjvllllp',

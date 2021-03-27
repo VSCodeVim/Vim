@@ -480,7 +480,7 @@ class PutCommandVisual extends BaseCommand {
 @RegisterAction
 class GPutCommand extends BaseCommand {
   keys = ['g', 'p'];
-  modes = [Mode.Normal, Mode.Visual];
+  modes = [Mode.Normal];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
@@ -525,18 +525,19 @@ class GPutCommand extends BaseCommand {
 }
 
 @RegisterAction
-class GPutCommandVisualLine extends PutCommandVisual {
+class GPutCommandVisual extends PutCommandVisual {
   keys = [
     ['g', 'p'],
     ['g', 'P'],
   ];
-  modes = [Mode.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    const visualLine = vimState.currentMode === Mode.VisualLine;
     const repeats = vimState.recordedState.count === 0 ? 1 : vimState.recordedState.count;
     await super.exec(position, vimState);
     // Vgp should place the cursor on the next line
-    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+    if (visualLine || vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
         diff: new PositionDiff({ line: repeats, character: 0 }),
