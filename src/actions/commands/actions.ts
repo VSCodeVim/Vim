@@ -1285,6 +1285,9 @@ class CommandVisualMode extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (vimState.currentMode === Mode.Normal && vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = position.getRight(vimState.recordedState.count - 1);
+    }
     await vimState.setCurrentMode(Mode.Visual);
   }
 }
