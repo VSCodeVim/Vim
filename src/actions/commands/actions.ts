@@ -1315,6 +1315,9 @@ class CommandVisualBlockMode extends BaseCommand {
   keys = [['<C-v>'], ['<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (vimState.currentMode === Mode.Normal && vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = position.getRight(vimState.recordedState.count - 1);
+    }
     await vimState.setCurrentMode(Mode.VisualBlock);
   }
 }
@@ -1335,13 +1338,10 @@ class CommandVisualLineMode extends BaseCommand {
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(Mode.VisualLine);
-
-    if (vimState.recordedState.count > 1) {
-      vimState.cursorStopPosition = vimState.cursorStopPosition.getDown(
-        vimState.recordedState.count - 1
-      );
+    if (vimState.currentMode === Mode.Normal && vimState.recordedState.count > 1) {
+      vimState.cursorStopPosition = position.getDown(vimState.recordedState.count - 1);
     }
+    await vimState.setCurrentMode(Mode.VisualLine);
   }
 }
 
