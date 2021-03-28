@@ -1507,7 +1507,7 @@ class CommandGoLastChange extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertAtLastChange extends BaseCommand {
+export class CommandInsertAtLastChange extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'i'];
 
@@ -1534,7 +1534,7 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertAtLineBegin extends BaseCommand {
+export class CommandInsertAtLineBegin extends BaseCommand {
   modes = [Mode.Normal];
   mustBeFirstKey = true;
   keys = ['g', 'I'];

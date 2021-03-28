@@ -18,6 +18,8 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
   CommandReplaceAtCursorFromNormalMode,
+  CommandInsertAtLineBegin,
+  CommandInsertAtLastChange,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
@@ -74,8 +76,10 @@ class CommandEscInsertMode extends BaseCommand {
     const isTypeToRepeatInsert =
       typeOfInsert instanceof CommandInsertAtCursor ||
       typeOfInsert instanceof CommandInsertAfterCursor ||
+      typeOfInsert instanceof CommandInsertAtLineBegin ||
       typeOfInsert instanceof CommandInsertAtLineEnd ||
-      typeOfInsert instanceof CommandInsertAtFirstCharacter;
+      typeOfInsert instanceof CommandInsertAtFirstCharacter ||
+      typeOfInsert instanceof CommandInsertAtLastChange;
 
     // If this is the type to repeat insert, do this now
     if (vimState.recordedState.count > 1 && isTypeToRepeatInsert) {
