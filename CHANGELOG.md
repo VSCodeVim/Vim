@@ -1,6 +1,14 @@
 # Change Log
 
-## [v1.19.2](https://github.com/vscodevim/vim/tree/v1.19.2) (2021-03-23)
+## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.2...v1.19.3)
+
+**Fixed Bugs:**
+
+- \<count\>p does not work in visual mode [\#6357](https://github.com/VSCodeVim/Vim/issues/6357)
+
+## [v1.19.2](https://github.com/vscodevim/vim/tree/v1.19.2) (2021-03-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.1...v1.19.2)
 
@@ -149,10 +157,6 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.1...v1.18.0)
 
-**Enhancements:**
-
-- \<C-l\> in search mode [\#5675](https://github.com/VSCodeVim/Vim/issues/5675)
-
 **Fixed Bugs:**
 
 - Initial cursor sync should not allow cursor to be on EOL character [\#5728](https://github.com/VSCodeVim/Vim/issues/5728)
@@ -171,8 +175,6 @@
 - Fix bug where \<C-i\> \<C-o\> do not work after easy motion movement \#5730 [\#5731](https://github.com/VSCodeVim/Vim/pull/5731) ([rndware](https://github.com/rndware))
 - Fix broken table in README [\#5725](https://github.com/VSCodeVim/Vim/pull/5725) ([kidonng](https://github.com/kidonng))
 - Update ROADMAP.md Spelling [\#5717](https://github.com/VSCodeVim/Vim/pull/5717) ([dogpetkid](https://github.com/dogpetkid))
-- Fix n with matches at eol [\#5678](https://github.com/VSCodeVim/Vim/pull/5678) ([sql-koala](https://github.com/sql-koala))
-- Simulate cursor "disappearing" on CommandLineMode [\#5674](https://github.com/VSCodeVim/Vim/pull/5674) ([berknam](https://github.com/berknam))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
