@@ -90,6 +90,14 @@ suite('Mode Replace', () => {
   });
 
   newTest({
+    title: 'Can handle backspace',
+    start: ['123|456'],
+    keysPressed: 'R<BS>abc<BS><BS><BS>',
+    end: ['12|3456'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
     title: 'Can handle backspace across lines',
     start: ['123|456'],
     keysPressed: 'Rabcd\nef<BS><BS><BS><BS><BS>',

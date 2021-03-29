@@ -11,19 +11,19 @@ class ExitReplaceMode extends BaseCommand {
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const timesToRepeat = vimState.replaceState!.timesToRepeat;
-    let textToAdd = '';
+    const replaceState = vimState.replaceState!;
 
-    for (let i = 1; i < timesToRepeat; i++) {
-      textToAdd += vimState.replaceState!.newChars.join('');
+    // `3Rabc` results in 'abc' being inserted 2 more times
+    if (replaceState.timesToRepeat > 1) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text: replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1),
+        position,
+        diff: new PositionDiff({ character: -1 }),
+      });
+    } else {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
     }
-
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: textToAdd,
-      position,
-      diff: new PositionDiff({ character: -1 }),
-    });
 
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -49,12 +49,15 @@ class BackspaceInReplaceMode extends BaseCommand {
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
 
-      vimState.cursorStopPosition = position.getLeft();
-      vimState.cursorStartPosition = position.getLeft();
+      const newPosition = position.getLeft();
+      vimState.c1rsorStopPosition = newPosition;
+      vimState.cursorStartPosition = newPosition;
+      replaceState.replaceCursorStartPosition = newPosition;
     } else if (
       position.line > replaceState.replaceCursorStartPosition.line ||
       position.character > replaceState.originalChars.length
     ) {
+      // We've gone beyond the originally existing text; just backspace.
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
         position,
