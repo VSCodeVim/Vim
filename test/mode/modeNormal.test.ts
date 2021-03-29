@@ -1958,7 +1958,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can ctrl-a on an octal ',
-    start: ['07|'],
+    start: ['0|7'],
     keysPressed: '<C-a>',
     end: ['01|0'],
   });
