@@ -165,11 +165,6 @@
         "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
       },
       {
-        "key": "ctrl+b",
-        "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
         "key": "ctrl+c",
         "command": "extension.vim_ctrl+c",
         "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
@@ -190,9 +185,24 @@
         "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl"
       },
       {
+        "key": "ctrl+n",
+        "command": "extension.vim_ctrl+n",
+        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+p",
+        "command": "extension.vim_ctrl+p",
+        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
         "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+b",
+        "command": "extension.vim_ctrl+b",
+        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+g",
@@ -230,19 +240,9 @@
         "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl"
       },
       {
-        "key": "ctrl+n",
-        "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
-      },
-      {
         "key": "ctrl+o",
         "command": "extension.vim_ctrl+o",
         "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+p",
-        "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+q",
