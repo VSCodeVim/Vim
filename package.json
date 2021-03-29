@@ -105,24 +105,44 @@
         "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
-        "key": "left",
-        "command": "extension.vim_left",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "right",
-        "command": "extension.vim_right",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "up",
-        "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
-      },
-      {
-        "key": "down",
+        "key": "ctrl+n",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+        "when": "editorTextFocus && vim.active && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "ctrl+p",
+        "command": "extension.vim_up",
+        "when": "editorTextFocus && vim.active && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "ctrl+f",
+        "command": "extension.vim_right",
+        "when": "editorTextFocus && vim.active"
+      },
+      {
+        "key": "ctrl+b",
+        "command": "extension.vim_left",
+        "when": "editorTextFocus && vim.active"
+      },
+      {
+        "key": "[ArrowDown]",
+        "command": "extension.vim_down",
+        "when": "editorTextFocus && vim.active && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "[ArrowUp]",
+        "command": "extension.vim_up",
+        "when": "editorTextFocus && vim.active && !suggestWidgetVisible && !parameterHintsVisible"
+      },
+      {
+        "key": "[ArrowRight]",
+        "command": "extension.vim_right",
+        "when": "editorTextFocus && vim.active"
+      },
+      {
+        "key": "[ArrowLeft]",
+        "command": "extension.vim_left",
+        "when": "editorTextFocus && vim.active"
       },
       {
         "key": "g g",

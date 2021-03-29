@@ -495,6 +495,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     false
   );
 
+  const uniqByCommand = configuration.boundKeyCombinations.filter(
+    (ikey, idx) =>
+      configuration.boundKeyCombinations.findIndex((o) => o.command === ikey.command) === idx
+  );
+
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
@@ -506,7 +511,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       : () => {
           handleKeyEvent(`${boundKey.key}`);
         };
-    registerCommand(context, boundKey.command, command);
+    if (uniqByCommand.includes(boundKey)) {
+      registerCommand(context, boundKey.command, command);
+    }
   }
 
   {
