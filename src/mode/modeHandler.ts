@@ -97,21 +97,19 @@ export class ModeHandler implements vscode.Disposable {
    */
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
-    global.setImmediate(() => {
-      if (this.vimState.editor) {
-        const { selections } = this.vimState.editor;
-        if (
-          !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
-          !this.vimState.cursorStopPosition.isEqual(selections[0].active)
-        ) {
-          this.vimState.desiredColumn = selections[0].active.character;
-        }
-
-        this.vimState.cursors = selections.map(({ active, anchor }) =>
-          active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
-        );
+    if (this.vimState.editor) {
+      const { selections } = this.vimState.editor;
+      if (
+        !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
+        !this.vimState.cursorStopPosition.isEqual(selections[0].active)
+      ) {
+        this.vimState.desiredColumn = selections[0].active.character;
       }
-    }, 0);
+
+      this.vimState.cursors = selections.map(({ active, anchor }) =>
+        active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
+      );
+    }
   }
 
   /**
