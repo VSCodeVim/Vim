@@ -50,7 +50,7 @@ class BackspaceInReplaceMode extends BaseCommand {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
 
       const newPosition = position.getLeft();
-      vimState.c1rsorStopPosition = newPosition;
+      vimState.cursorStopPosition = newPosition;
       vimState.cursorStartPosition = newPosition;
       replaceState.replaceCursorStartPosition = newPosition;
     } else if (
