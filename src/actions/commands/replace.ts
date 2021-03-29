@@ -13,13 +13,13 @@ class ExitReplaceMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const replaceState = vimState.replaceState!;
 
-    // `3Rabc` results in 'abc' being inserted 2 more times
+    // `3Rabc` results in 'abc' replacing the next characters 2 more times
     if (replaceState.timesToRepeat > 1) {
+      const newText = replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1);
       vimState.recordedState.transformer.addTransformation({
-        type: 'insertText',
-        text: replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1),
-        position,
-        diff: new PositionDiff({ character: -1 }),
+        type: 'replaceText',
+        range: new Range(position, position.getRight(newText.length)),
+        text: newText,
       });
     } else {
       vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();

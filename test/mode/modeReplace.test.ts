@@ -68,6 +68,14 @@ suite('Mode Replace', () => {
   newTest({
     title: 'Can handle R with {count}',
     start: ['123|456', '789'],
+    keysPressed: '3Rabc<Esc>',
+    end: ['123abcabcab|c', '789'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle R with {count}',
+    start: ['123|456', '789'],
     keysPressed: '3Rabc\ndef<Esc>',
     end: ['123abc', 'defabc', 'defabc', 'de|f', '789'],
     endMode: Mode.Normal,
