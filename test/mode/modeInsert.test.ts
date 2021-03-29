@@ -399,11 +399,11 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: "Can handle '<C-r>' paste register with mupltiple cursor",
+    title: "Can handle '<C-r>' paste register with multiple cursors",
     start: ['foo |bar', 'foo bar'],
     // create two cursors on bar, yank. Then paste it in insert mode
     keysPressed: 'gbgby' + 'i<C-r>"',
-    end: ['foo bar|bar', 'foo barbar'],
+    end: ['foo barbar', 'foo bar|bar'],
     endMode: Mode.Insert,
   });
 });

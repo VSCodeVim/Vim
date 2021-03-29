@@ -260,8 +260,6 @@ export class YankOperator extends BaseOperator {
       return;
     }
 
-    const originalMode = vimState.currentMode;
-
     [start, end] = sorted(start, end);
     let extendedEnd = new Position(end.line, end.character + 1);
 
@@ -285,29 +283,12 @@ export class YankOperator extends BaseOperator {
 
     Register.put(text, vimState, this.multicursorIndex);
 
+    vimState.cursorStopPosition =
+      vimState.currentMode === Mode.Normal && vimState.currentRegisterMode === RegisterMode.LineWise
+        ? start.with({ character: vimState.cursorStopPosition.character })
+        : start;
+
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStartPosition = start;
-
-    // Only change cursor position if we ran a text object movement
-    let moveCursor = false;
-    if (vimState.recordedState.actionsRun.length > 1) {
-      if (vimState.recordedState.actionsRun[1] instanceof TextObjectMovement) {
-        moveCursor = true;
-      }
-    }
-
-    if (originalMode === Mode.Normal && !moveCursor) {
-      // we dont want to move the cursor(s)
-      // our default for that is else, but this reset would destroy multicursor when run for the secondary cursors
-      // so for these, we have the following alternative
-      if (this.multicursorIndex !== undefined && this.multicursorIndex > 0) {
-        vimState.cursorStopPosition = vimState.cursors[this.multicursorIndex].stop;
-      } else {
-        vimState.cursors = vimState.cursorsInitialState;
-      }
-    } else {
-      vimState.cursorStopPosition = start;
-    }
 
     const numLinesYanked = text.split('\n').length;
     reportLinesYanked(numLinesYanked, vimState);

@@ -2275,6 +2275,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'yk moves cursor up',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'yk',
+    end: ['o|ne', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'yh moves cursor left',
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'yh',
+    end: ['one', 'two', 'th|ree'],
+  });
+
+  newTest({
     title: 'yat yanks the correct tag when inside one',
     start: ['<foo>', '  <b|ar>asd</bar>', '</foo>'],
     keysPressed: 'yat$p',
