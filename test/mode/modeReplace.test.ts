@@ -114,6 +114,22 @@ suite('Mode Replace', () => {
   });
 
   newTest({
+    title: '`<BS>` goes across EOL',
+    start: ['123', '|456'],
+    keysPressed: 'R<BS><BS><BS>X',
+    end: ['1X|3', '456'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
+    title: '`<BS>` goes across EOL',
+    start: ['123', '|456'],
+    keysPressed: 'R<BS><BS><BS>X<BS>',
+    end: ['1|23', '456'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
     title: 'Can handle arrows',
     start: ['123|456'],
     keysPressed: 'Rabc<left><BS><BS>',

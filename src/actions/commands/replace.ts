@@ -2,6 +2,7 @@ import { Position } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { Range } from '../../common/motion/range';
 import { Mode } from '../../mode/mode';
+import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
 import { RegisterAction, BaseCommand } from '../base';
 
@@ -48,11 +49,16 @@ class BackspaceInReplaceMode extends BaseCommand {
     const replaceState = vimState.replaceState!;
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
+      const newPosition = position.getLeftThroughLineBreaks();
 
-      const newPosition = position.getLeft();
+      if (newPosition.line < replaceState.replaceCursorStartPosition.line) {
+        vimState.replaceState = new ReplaceState(vimState, newPosition);
+      } else {
+        replaceState.replaceCursorStartPosition = newPosition;
+      }
+
       vimState.cursorStopPosition = newPosition;
       vimState.cursorStartPosition = newPosition;
-      replaceState.replaceCursorStartPosition = newPosition;
     } else if (
       position.line > replaceState.replaceCursorStartPosition.line ||
       position.character > replaceState.originalChars.length
@@ -62,6 +68,7 @@ class BackspaceInReplaceMode extends BaseCommand {
         type: 'deleteText',
         position,
       });
+      replaceState.newChars.pop();
     } else {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
@@ -69,9 +76,8 @@ class BackspaceInReplaceMode extends BaseCommand {
         range: new Range(position.getLeft(), position),
         diff: new PositionDiff({ character: -1 }),
       });
+      replaceState.newChars.pop();
     }
-
-    replaceState.newChars.pop();
   }
 }
 
