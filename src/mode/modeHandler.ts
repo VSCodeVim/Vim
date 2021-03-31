@@ -28,7 +28,7 @@ import {
   CommandNumber,
 } from './../actions/commands/actions';
 import { isTextTransformation } from '../transformations/transformations';
-import { executeTransformations } from '../transformations/execute';
+import { executeTransformations, IModeHandler } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { EditorIdentity } from '../editorIdentity';
@@ -50,7 +50,7 @@ interface IModeHandlerMap {
  *
  * See:  https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md#the-vim-state-machine
  */
-export class ModeHandler implements vscode.Disposable {
+export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly vimState: VimState;
   public readonly remapState: RemapState;
 
@@ -902,11 +902,6 @@ export class ModeHandler implements vscode.Disposable {
         return cursor;
       });
     }
-
-    // Update the current history step to have the latest cursor position
-    this.vimState.historyTracker.setLastHistoryEndPosition(
-      this.vimState.cursors.map((c) => c.stop)
-    );
 
     if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv

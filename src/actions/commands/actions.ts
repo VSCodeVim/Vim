@@ -1421,15 +1421,12 @@ class CommandGoBackInChangelist extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalIndex = vimState.historyTracker.changelistIndex;
-    const prevPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex - 1);
-    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
+    const prevPos = vimState.historyTracker.prevChangeInChangeList();
 
-    if (prevPos !== undefined) {
-      vimState.cursorStopPosition = prevPos[0];
-      vimState.historyTracker.changelistIndex = originalIndex - 1;
-    } else if (currPos !== undefined) {
-      vimState.cursorStopPosition = currPos[0];
+    if (prevPos instanceof VimError) {
+      StatusBar.displayError(vimState, prevPos);
+    } else {
+      vimState.cursorStopPosition = prevPos;
     }
   }
 }
@@ -1441,15 +1438,12 @@ class CommandGoForwardInChangelist extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalIndex = vimState.historyTracker.changelistIndex;
-    const nextPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex + 1);
-    const currPos = vimState.historyTracker.getChangePositionAtIndex(originalIndex);
+    const nextPos = vimState.historyTracker.nextChangeInChangeList();
 
-    if (nextPos !== undefined) {
-      vimState.cursorStopPosition = nextPos[0];
-      vimState.historyTracker.changelistIndex = originalIndex + 1;
-    } else if (currPos !== undefined) {
-      vimState.cursorStopPosition = currPos[0];
+    if (nextPos instanceof VimError) {
+      StatusBar.displayError(vimState, nextPos);
+    } else {
+      vimState.cursorStopPosition = nextPos;
     }
   }
 }
