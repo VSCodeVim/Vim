@@ -14,6 +14,5 @@ export class Globals {
    * Used for testing.
    */
   static isTesting = false;
-  static mockModeHandler: ModeHandler;
   static mockConfiguration: IConfiguration;
 }

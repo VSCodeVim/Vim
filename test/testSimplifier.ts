@@ -333,8 +333,6 @@ async function testIt(testObj: ITestObject): Promise<void> {
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(EditorIdentity.fromEditor(editor));
 
-  Globals.mockModeHandler = modeHandler;
-
   let keysPressed = testObj.keysPressed;
   if (process.platform === 'win32') {
     keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
@@ -405,8 +403,6 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<void> {
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(EditorIdentity.fromEditor(editor));
-
-  Globals.mockModeHandler = modeHandler;
 
   // Change remappings
   if (testObj.remaps) {
