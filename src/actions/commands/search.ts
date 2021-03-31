@@ -48,9 +48,9 @@ async function searchCurrentWord(
       isExact,
       searchStartCursorPosition,
     });
+  } else {
+    StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
   }
-
-  StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
 }
 
 /**
