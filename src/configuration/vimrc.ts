@@ -18,31 +18,55 @@ export class VimrcImpl {
     return this._vimrcPath;
   }
 
-  private static async loadConfig(path: string, config: IConfiguration) {
-      // Add the new remappings
-      try {
-        const vscodeCommands = await vscode.commands.getCommands();
-        const lines = (await fs.readFileAsync(path, 'utf8')).split(/\r?\n/);
-        for (const line of lines) {
-          const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
-          if (remap) {
-            VimrcImpl.addRemapToConfig(config, remap);
-            continue;
-          }
-          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
-          if (unremap) {
-            VimrcImpl.removeRemapFromConfig(config, unremap);
-            continue;
-          }
-          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
-          if (clearRemap) {
-            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
-            continue;
-          }
+  private static readonly SOURCE_REG_REX = /^(source)\s+(.+)/i;
+
+  private static buildSource(line: string) {
+    if (line.trimLeft().startsWith('"')) {
+      return;
+    }
+
+    const matches = VimrcImpl.SOURCE_REG_REX.exec(line);
+    if (!matches || matches.length < 2) {
+      return undefined;
+    }
+
+    const sourceKeyword = matches[1];
+    const filePath = matches[2];
+
+    return VimrcImpl.expandHome(filePath);
+  }
+
+  private static async loadConfig(configPath: string, config: IConfiguration) {
+    // Add the new remappings
+    try {
+      console.log(`Reading VimRC file from "${configPath}"`);
+      const vscodeCommands = await vscode.commands.getCommands();
+      const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
+      for (const line of lines) {
+        const source = this.buildSource(line);
+        if (source) {
+          VimrcImpl.loadConfig(source, config);
+          continue;
         }
-      } catch (err) {
-        window.showWarningMessage(`vimrc file "${path}" is broken, err=${err}`);
+        const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
+        if (remap) {
+          VimrcImpl.addRemapToConfig(config, remap);
+          continue;
+        }
+        const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+        if (unremap) {
+          VimrcImpl.removeRemapFromConfig(config, unremap);
+          continue;
+        }
+        const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+        if (clearRemap) {
+          VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+          continue;
+        }
       }
+    } catch (err) {
+      window.showWarningMessage(`vimrc file "${configPath}" is broken, err=${err}`);
+    }
   }
 
   public async load(config: IConfiguration) {
