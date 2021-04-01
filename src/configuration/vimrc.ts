@@ -18,6 +18,33 @@ export class VimrcImpl {
     return this._vimrcPath;
   }
 
+  private static async loadConfig(path: string, config: IConfiguration) {
+      // Add the new remappings
+      try {
+        const vscodeCommands = await vscode.commands.getCommands();
+        const lines = (await fs.readFileAsync(path, 'utf8')).split(/\r?\n/);
+        for (const line of lines) {
+          const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
+          if (remap) {
+            VimrcImpl.addRemapToConfig(config, remap);
+            continue;
+          }
+          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+          if (unremap) {
+            VimrcImpl.removeRemapFromConfig(config, unremap);
+            continue;
+          }
+          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+          if (clearRemap) {
+            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+            continue;
+          }
+        }
+      } catch (err) {
+        window.showWarningMessage(`vimrc file "${path}" is broken, err=${err}`);
+      }
+  }
+
   public async load(config: IConfiguration) {
     const _path = config.vimrc.path
       ? VimrcImpl.expandHome(config.vimrc.path)
@@ -50,29 +77,7 @@ export class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      try {
-        const vscodeCommands = await vscode.commands.getCommands();
-        const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
-        for (const line of lines) {
-          const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
-          if (remap) {
-            VimrcImpl.addRemapToConfig(config, remap);
-            continue;
-          }
-          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
-          if (unremap) {
-            VimrcImpl.removeRemapFromConfig(config, unremap);
-            continue;
-          }
-          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
-          if (clearRemap) {
-            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
-            continue;
-          }
-        }
-      } catch (err) {
-        window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
-      }
+      VimrcImpl.loadConfig(this._vimrcPath, config);
     }
   }
 
