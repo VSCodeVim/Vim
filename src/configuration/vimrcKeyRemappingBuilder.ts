@@ -139,10 +139,6 @@ class VimrcKeyRemappingBuilderImpl {
     line: string,
     vscodeCommands: string[]
   ): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
       return undefined;
@@ -180,10 +176,6 @@ class VimrcKeyRemappingBuilderImpl {
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
   public async buildUnmapping(line: string): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcKeyRemappingBuilderImpl.KEY_UNREMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 3) {
       return undefined;
@@ -205,10 +197,6 @@ class VimrcKeyRemappingBuilderImpl {
    * @returns An empty remapping with its type if the given `line` parses to one, and `undefined` otherwise.
    */
   public async buildClearMapping(line: string): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcKeyRemappingBuilderImpl.KEY_CLEAR_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 2) {
       return undefined;

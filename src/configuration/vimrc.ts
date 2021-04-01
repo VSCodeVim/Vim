@@ -23,10 +23,6 @@ export class VimrcImpl {
   private static readonly SOURCE_REG_REX = /^(source)\s+(.+)/i;
 
   private static buildSource(line: string) {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcImpl.SOURCE_REG_REX.exec(line);
     if (!matches || matches.length < 2) {
       return undefined;
@@ -43,6 +39,10 @@ export class VimrcImpl {
       const vscodeCommands = await vscode.commands.getCommands();
       const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
       for (const line of lines) {
+        if (line.trimLeft().startsWith('"')) {
+          continue;
+        }
+
         const source = this.buildSource(line);
         if (source) {
           if (!(await fs.existsAsync(source))) {
@@ -223,7 +223,9 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          VimrcImpl.logger.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(
+            `Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`
+          );
           return undefined;
       }
     })();
@@ -305,7 +307,9 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          VimrcImpl.logger.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(
+            `Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`
+          );
           return undefined;
       }
     })();
