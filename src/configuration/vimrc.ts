@@ -24,7 +24,7 @@ export class VimrcImpl {
 
   private static buildSource(line: string) {
     const matches = VimrcImpl.SOURCE_REG_REX.exec(line);
-    if (!matches || matches.length < 2) {
+    if (!matches || matches.length < 3) {
       return undefined;
     }
 
