@@ -7,9 +7,11 @@ import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
 import { configuration } from './configuration';
+import { Logger } from '../util/logger';
 
 export class VimrcImpl {
   private _vimrcPath: string;
+  private static readonly logger = Logger.get('VimRC');
 
   /**
    * Fully resolved path to the user's .vimrc
@@ -44,10 +46,10 @@ export class VimrcImpl {
         const source = this.buildSource(line);
         if (source) {
           if (!(await fs.existsAsync(source))) {
-            console.warn(`Unable to find "${source}" file for configuration.`);
+            VimrcImpl.logger.warn(`Unable to find "${source}" file for configuration.`);
             continue;
           }
-          console.log(`Loading "${source}" file for configuration.`);
+          VimrcImpl.logger.debug(`Loading "${source}" file for configuration.`);
           VimrcImpl.loadConfig(config, source);
           continue;
         }
@@ -221,7 +223,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();
@@ -303,7 +305,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();
@@ -395,7 +397,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(
+          VimrcImpl.logger.warn(
             `Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`
           );
           return undefined;
