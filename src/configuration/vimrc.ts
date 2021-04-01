@@ -36,8 +36,7 @@ export class VimrcImpl {
     return VimrcImpl.expandHome(filePath);
   }
 
-  private static async loadConfig(configPath: string, config: IConfiguration) {
-    // Add the new remappings
+  private static async loadConfig(config: IConfiguration, configPath: string) {
     try {
       const vscodeCommands = await vscode.commands.getCommands();
       const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
@@ -45,10 +44,11 @@ export class VimrcImpl {
         const source = this.buildSource(line);
         if (source) {
           if (!(await fs.existsAsync(source))) {
-            console.warn(`Unable to find "${source}" file for configuration`);
+            console.warn(`Unable to find "${source}" file for configuration.`);
             continue;
           }
-          VimrcImpl.loadConfig(source, config);
+          console.log(`Loading "${source}" file for configuration.`);
+          VimrcImpl.loadConfig(config, source);
           continue;
         }
         const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
@@ -104,7 +104,7 @@ export class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      VimrcImpl.loadConfig(this._vimrcPath, config);
+      await VimrcImpl.loadConfig(config, this._vimrcPath);
     }
   }
 
