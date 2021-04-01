@@ -39,12 +39,15 @@ export class VimrcImpl {
   private static async loadConfig(configPath: string, config: IConfiguration) {
     // Add the new remappings
     try {
-      console.log(`Reading VimRC file from "${configPath}"`);
       const vscodeCommands = await vscode.commands.getCommands();
       const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
       for (const line of lines) {
         const source = this.buildSource(line);
         if (source) {
+          if (!(await fs.existsAsync(source))) {
+            console.warn(`Unable to find "${source}" file for configuration`);
+            continue;
+          }
           VimrcImpl.loadConfig(source, config);
           continue;
         }
