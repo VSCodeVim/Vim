@@ -50,7 +50,7 @@ export class VimrcImpl {
             continue;
           }
           VimrcImpl.logger.debug(`Loading "${source}" file for configuration.`);
-          VimrcImpl.loadConfig(config, source);
+          await VimrcImpl.loadConfig(config, source);
           continue;
         }
         const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
