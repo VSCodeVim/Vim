@@ -50,29 +50,25 @@ export interface IOptionArgs extends node.ICommandArgs {
 }
 
 export class SetOptionsCommand extends node.CommandBase {
-  protected _arguments: IOptionArgs;
+  private readonly arguments: IOptionArgs;
 
   constructor(args: IOptionArgs) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IOptionArgs {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (!this._arguments.name) {
+    if (!this.arguments.name) {
       throw new Error('Missing argument.');
     }
 
-    const optionName = optionAliases.get(this._arguments.name) ?? this._arguments.name;
+    const optionName = optionAliases.get(this.arguments.name) ?? this.arguments.name;
 
     if (configuration[optionName] == null) {
       throw VimError.fromCode(ErrorCode.UnknownOption);
     }
 
-    switch (this._arguments.operator) {
+    switch (this.arguments.operator) {
       case SetOptionOperator.Set:
         configuration[optionName] = true;
         break;
@@ -80,20 +76,20 @@ export class SetOptionsCommand extends node.CommandBase {
         configuration[optionName] = false;
         break;
       case SetOptionOperator.Equal:
-        configuration[optionName] = this._arguments.value!;
+        configuration[optionName] = this.arguments.value!;
         break;
       case SetOptionOperator.Invert:
         configuration[optionName] = !configuration[optionName];
         break;
       case SetOptionOperator.Append:
-        configuration[optionName] += this._arguments.value!;
+        configuration[optionName] += this.arguments.value!;
         break;
       case SetOptionOperator.Subtract:
-        if (typeof this._arguments.value! === 'number') {
-          configuration[optionName] -= this._arguments.value;
+        if (typeof this.arguments.value! === 'number') {
+          configuration[optionName] -= this.arguments.value;
         } else {
           const initialValue = configuration[optionName];
-          configuration[optionName] = initialValue.split(this._arguments.value! as string).join('');
+          configuration[optionName] = initialValue.split(this.arguments.value! as string).join('');
         }
         break;
       case SetOptionOperator.Info:

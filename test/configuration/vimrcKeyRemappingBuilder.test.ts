@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder';
 
@@ -147,8 +148,12 @@ suite('VimrcKeyRemappingBuilder', () => {
       },
     ];
 
+    const vscodeCommands = await vscode.commands.getCommands();
     for (const testCase of testCases) {
-      const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.build(testCase.vimrcLine);
+      const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.build(
+        testCase.vimrcLine,
+        vscodeCommands
+      );
 
       if (testCase.expectNull) {
         assert.strictEqual(vimrcKeyRemapping, undefined);

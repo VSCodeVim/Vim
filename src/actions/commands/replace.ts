@@ -2,6 +2,7 @@ import { Position } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { Range } from '../../common/motion/range';
 import { Mode } from '../../mode/mode';
+import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
 import { RegisterAction, BaseCommand } from '../base';
 
@@ -11,19 +12,19 @@ class ExitReplaceMode extends BaseCommand {
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const timesToRepeat = vimState.replaceState!.timesToRepeat;
-    let textToAdd = '';
+    const replaceState = vimState.replaceState!;
 
-    for (let i = 1; i < timesToRepeat; i++) {
-      textToAdd += vimState.replaceState!.newChars.join('');
+    // `3Rabc` results in 'abc' replacing the next characters 2 more times
+    if (replaceState.timesToRepeat > 1) {
+      const newText = replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1);
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        range: new Range(position, position.getRight(newText.length)),
+        text: newText,
+      });
+    } else {
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
     }
-
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: textToAdd,
-      position,
-      diff: new PositionDiff({ character: -1 }),
-    });
 
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -48,17 +49,26 @@ class BackspaceInReplaceMode extends BaseCommand {
     const replaceState = vimState.replaceState!;
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
+      const newPosition = position.getLeftThroughLineBreaks();
 
-      vimState.cursorStopPosition = position.getLeft();
-      vimState.cursorStartPosition = position.getLeft();
+      if (newPosition.line < replaceState.replaceCursorStartPosition.line) {
+        vimState.replaceState = new ReplaceState(vimState, newPosition);
+      } else {
+        replaceState.replaceCursorStartPosition = newPosition;
+      }
+
+      vimState.cursorStopPosition = newPosition;
+      vimState.cursorStartPosition = newPosition;
     } else if (
       position.line > replaceState.replaceCursorStartPosition.line ||
       position.character > replaceState.originalChars.length
     ) {
+      // We've gone beyond the originally existing text; just backspace.
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteText',
         position,
       });
+      replaceState.newChars.pop();
     } else {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
@@ -66,9 +76,8 @@ class BackspaceInReplaceMode extends BaseCommand {
         range: new Range(position.getLeft(), position),
         diff: new PositionDiff({ character: -1 }),
       });
+      replaceState.newChars.pop();
     }
-
-    replaceState.newChars.pop();
   }
 }
 

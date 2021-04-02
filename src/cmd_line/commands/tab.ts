@@ -28,15 +28,11 @@ export interface ITabCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/tabpage.html
 //
 export class TabCommand extends node.CommandBase {
-  protected _arguments: ITabCommandArguments;
+  public readonly arguments: ITabCommandArguments;
 
   constructor(args: ITabCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ITabCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   private async executeCommandWithCount(count: number, command: string): Promise<void> {
@@ -46,32 +42,32 @@ export class TabCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    switch (this._arguments.tab) {
+    switch (this.arguments.tab) {
       case Tab.Absolute:
-        if (this._arguments.count !== undefined && this._arguments.count >= 0) {
+        if (this.arguments.count !== undefined && this.arguments.count >= 0) {
           await vscode.commands.executeCommand(
             'workbench.action.openEditorAtIndex',
-            this._arguments.count
+            this.arguments.count
           );
         }
         break;
       case Tab.Next:
-        if (this._arguments.count !== undefined && this._arguments.count <= 0) {
+        if (this.arguments.count !== undefined && this.arguments.count <= 0) {
           break;
         }
 
         await this.executeCommandWithCount(
-          this._arguments.count || 1,
+          this.arguments.count || 1,
           'workbench.action.nextEditorInGroup'
         );
         break;
       case Tab.Previous:
-        if (this._arguments.count !== undefined && this._arguments.count <= 0) {
+        if (this.arguments.count !== undefined && this.arguments.count <= 0) {
           break;
         }
 
         await this.executeCommandWithCount(
-          this._arguments.count || 1,
+          this.arguments.count || 1,
           'workbench.action.previousEditorInGroup'
         );
         break;
@@ -110,12 +106,12 @@ export class TabCommand extends node.CommandBase {
       }
       case Tab.Close:
         // Navigate the correct position
-        if (this._arguments.count === undefined) {
+        if (this.arguments.count === undefined) {
           await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
           break;
         }
 
-        if (this._arguments.count === 0) {
+        if (this.arguments.count === 0) {
           // Wrong paramter
           break;
         }

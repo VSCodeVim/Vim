@@ -14,15 +14,11 @@ export interface IBufferDeleteCommandArguments extends node.ICommandArgs {
 // http://vimdoc.sourceforge.net/htmldoc/windows.html#buffers
 //
 export class BufferDeleteCommand extends node.CommandBase {
-  protected _arguments: IBufferDeleteCommandArguments;
+  public readonly arguments: IBufferDeleteCommandArguments;
 
   constructor(args: IBufferDeleteCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IBufferDeleteCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {

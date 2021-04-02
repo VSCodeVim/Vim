@@ -15,15 +15,11 @@ export interface IQuitCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
 export class QuitCommand extends node.CommandBase {
-  protected _arguments: IQuitCommandArguments;
+  public arguments: IQuitCommandArguments;
 
   constructor(args: IQuitCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IQuitCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
@@ -34,12 +30,12 @@ export class QuitCommand extends node.CommandBase {
     if (
       vimState.document.isDirty &&
       !this.arguments.bang &&
-      (!duplicatedInSplit || this._arguments.quitAll)
+      (!duplicatedInSplit || this.arguments.quitAll)
     ) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 
-    if (this._arguments.quitAll) {
+    if (this.arguments.quitAll) {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     } else {
       if (!this.arguments.bang) {

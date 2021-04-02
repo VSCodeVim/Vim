@@ -84,21 +84,17 @@ export enum SubstituteFlags {
  *   - update search state too!
  */
 export class SubstituteCommand extends node.CommandBase {
-  protected _arguments: ISubstituteCommandArguments;
-  protected _abort: boolean;
+  public readonly arguments: ISubstituteCommandArguments;
+  protected abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
     super();
-    this._arguments = args;
-    this._abort = false;
-  }
-
-  get arguments(): ISubstituteCommandArguments {
-    return this._arguments;
+    this.arguments = args;
+    this.abort = false;
   }
 
   public neovimCapable(): boolean {
     // We need to use VSCode's quickpick capabilities to do confirmation
-    return (this._arguments.flags & SubstituteFlags.ConfirmEach) === 0;
+    return (this.arguments.flags & SubstituteFlags.ConfirmEach) === 0;
   }
 
   getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
@@ -164,7 +160,7 @@ export class SubstituteCommand extends node.CommandBase {
       return false;
     }
 
-    if (this._arguments.flags & SubstituteFlags.ConfirmEach) {
+    if (this.arguments.flags & SubstituteFlags.ConfirmEach) {
       // Loop through each match on this line and get confirmation before replacing
       let newContent = originalContent;
       const matches = newContent.match(regex)!;
@@ -173,7 +169,7 @@ export class SubstituteCommand extends node.CommandBase {
       let matchPos = 0;
 
       for (const match of matches) {
-        if (this._abort) {
+        if (this.abort) {
           break;
         }
 
@@ -187,6 +183,7 @@ export class SubstituteCommand extends node.CommandBase {
           newContent =
             newContent.slice(0, matchPos) +
             newContent.slice(matchPos).replace(nonGlobalRegex, this.arguments.replace);
+
           vimState.recordedState.transformer.addTransformation({
             type: 'replaceText',
             text: newContent,
@@ -263,22 +260,22 @@ export class SubstituteCommand extends node.CommandBase {
     );
 
     if (selection === 'q' || selection === 'l' || !selection) {
-      this._abort = true;
+      this.abort = true;
     } else if (selection === 'a') {
-      this._arguments.flags = this._arguments.flags & ~SubstituteFlags.ConfirmEach;
+      this.arguments.flags = this.arguments.flags & ~SubstituteFlags.ConfirmEach;
     }
 
     return selection === 'y' || selection === 'a' || selection === 'l';
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const regex = this.getRegex(this._arguments, vimState);
+    const regex = this.getRegex(this.arguments, vimState);
     const selection = vimState.editor.selection;
     const line = selection.start.isBefore(selection.end)
       ? selection.start.line
       : selection.end.line;
 
-    if (!this._abort) {
+    if (!this.abort) {
       const foundPattern = await this.replaceTextAtLine(line, regex, vimState);
       if (!foundPattern) {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
@@ -289,21 +286,21 @@ export class SubstituteCommand extends node.CommandBase {
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let [startLine, endLine] = range.resolve(vimState);
 
-    if (this._arguments.count && this._arguments.count >= 0) {
+    if (this.arguments.count && this.arguments.count >= 0) {
       startLine = endLine;
-      endLine = endLine + this._arguments.count - 1;
+      endLine = endLine + this.arguments.count - 1;
     }
 
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
-    const regex = this.getRegex(this._arguments, vimState);
+    const regex = this.getRegex(this.arguments, vimState);
     let foundPattern = false;
     for (
       let currentLine = startLine;
       currentLine <= endLine && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
-      if (this._abort) {
+      if (this.abort) {
         break;
       }
       foundPattern = (await this.replaceTextAtLine(currentLine, regex, vimState)) || foundPattern;

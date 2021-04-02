@@ -18,6 +18,8 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
   CommandReplaceAtCursorFromNormalMode,
+  CommandInsertAtLineBegin,
+  CommandInsertAtLastChange,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
@@ -74,8 +76,10 @@ class CommandEscInsertMode extends BaseCommand {
     const isTypeToRepeatInsert =
       typeOfInsert instanceof CommandInsertAtCursor ||
       typeOfInsert instanceof CommandInsertAfterCursor ||
+      typeOfInsert instanceof CommandInsertAtLineBegin ||
       typeOfInsert instanceof CommandInsertAtLineEnd ||
-      typeOfInsert instanceof CommandInsertAtFirstCharacter;
+      typeOfInsert instanceof CommandInsertAtFirstCharacter ||
+      typeOfInsert instanceof CommandInsertAtLastChange;
 
     // If this is the type to repeat insert, do this now
     if (vimState.recordedState.count > 1 && isTypeToRepeatInsert) {
@@ -229,7 +233,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 // }
 
 @RegisterAction
-export class CommandBackspaceInInsertMode extends BaseCommand {
+class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 
@@ -275,7 +279,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandDeleteInInsertMode extends BaseCommand {
+class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
@@ -430,7 +434,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandOneNormalCommandInInsertMode extends BaseCommand {
+class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
 

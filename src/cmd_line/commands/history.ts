@@ -23,19 +23,15 @@ export interface IHistoryCommandArguments extends ICommandArgs {
 
 // http://vimdoc.sourceforge.net/htmldoc/cmdline.html#:history
 export class HistoryCommand extends CommandBase {
-  protected _arguments: IHistoryCommandArguments;
+  private readonly arguments: IHistoryCommandArguments;
 
   constructor(args: IHistoryCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IHistoryCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    switch (this._arguments.type) {
+    switch (this.arguments.type) {
       case HistoryCommandType.Cmd:
         await new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
         break;

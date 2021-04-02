@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { VimState } from '../state/vimState';
 import { TokenType, Token } from './token';
 
@@ -240,11 +239,6 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
-  get arguments(): ICommandArgs {
-    return this._arguments;
-  }
-  protected _arguments: ICommandArgs;
-
   public neovimCapable(): boolean {
     return false;
   }

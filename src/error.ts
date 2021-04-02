@@ -24,6 +24,9 @@ export enum ErrorCode {
   NotAnEditorCommand = 492,
   NoBuffersDeleted = 516,
   UnknownOption = 518,
+  AtStartOfChangeList = 662,
+  AtEndOfChangeList = 663,
+  ChangeListIsEmpty = 664,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -48,6 +51,9 @@ export const ErrorMessage: IErrorMessage = {
   492: 'Not an editor command',
   516: 'No buffers were deleted',
   518: 'Unknown option',
+  662: 'At start of changelist',
+  663: 'At end of changelist',
+  664: 'changelist is empty',
 };
 
 export class VimError extends Error {
