@@ -62,15 +62,6 @@ export class TextEditor {
   }
 
   /**
-   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
-   */
-  static async delete(editor: vscode.TextEditor, range: vscode.Range): Promise<boolean> {
-    return editor.edit((editBuilder) => {
-      editBuilder.delete(range);
-    });
-  }
-
-  /**
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(

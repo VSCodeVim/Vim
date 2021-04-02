@@ -32,25 +32,4 @@ suite('text editor', () => {
     assert.strictEqual(editor.document.lineCount, 1);
     assert.strictEqual(editor.document.lineAt(0).text, 'Hello Foo Bar');
   });
-
-  test('delete `Hello`', async () => {
-    const editor = vscode.window.activeTextEditor!;
-    assert.strictEqual(editor.document.lineCount, 1);
-
-    const end = new vscode.Position(0, 5);
-    const range = new vscode.Range(new vscode.Position(0, 0), end);
-
-    await TextEditor.delete(editor, range);
-    assert.strictEqual(editor.document.lineAt(0).text, ' Foo Bar');
-  });
-
-  test('delete the whole line', async () => {
-    const editor = vscode.window.activeTextEditor!;
-    assert.strictEqual(editor.document.lineCount, 1);
-
-    const range = editor.document.lineAt(0).range;
-
-    await TextEditor.delete(editor, range);
-    assert.strictEqual(editor.document.lineAt(0).text, '');
-  });
 });
