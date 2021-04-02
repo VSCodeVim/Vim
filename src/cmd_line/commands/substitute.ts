@@ -180,13 +180,13 @@ export class SubstituteCommand extends node.CommandBase {
         matchPos = newContent.indexOf(match, matchPos);
 
         if (
-          !(this._arguments.flags & SubstituteFlags.ConfirmEach) ||
-          (await this.confirmReplacement(this._arguments.replace, line, vimState, match, matchPos))
+          !(this.arguments.flags & SubstituteFlags.ConfirmEach) ||
+          (await this.confirmReplacement(this.arguments.replace, line, vimState, match, matchPos))
         ) {
           const rangeEnd = newContent.length;
           newContent =
             newContent.slice(0, matchPos) +
-            newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
+            newContent.slice(matchPos).replace(nonGlobalRegex, this.arguments.replace);
           vimState.recordedState.transformer.addTransformation({
             type: 'replaceText',
             text: newContent,
@@ -202,10 +202,10 @@ export class SubstituteCommand extends node.CommandBase {
             Jump.fromStateNow(vimState)
           );
         }
-        matchPos += this._arguments.replace.length;
+        matchPos += this.arguments.replace.length;
       }
     } else {
-      const newContent = originalContent.replace(regex, this._arguments.replace);
+      const newContent = originalContent.replace(regex, this.arguments.replace);
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: newContent,
