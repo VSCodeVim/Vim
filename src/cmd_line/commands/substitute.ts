@@ -153,8 +153,7 @@ export class SubstituteCommand extends node.CommandBase {
    * @returns whether the search pattern existed on the line
    */
   async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState): Promise<boolean> {
-    const BOL = new vscode.Position(line, 0);
-    const originalContent = vimState.document.getText(new vscode.Range(BOL, BOL.getLineEnd()));
+    const originalContent = vimState.document.lineAt(line).text;
 
     if (!regex.test(originalContent)) {
       return false;
