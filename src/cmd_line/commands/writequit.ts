@@ -35,7 +35,7 @@ export class WriteQuitCommand extends node.CommandBase {
 
   // Writing command. Taken as a basis from the "write.ts" file.
   async execute(vimState: VimState): Promise<void> {
-    let writeArgs: write.IWriteCommandArguments = {
+    const writeArgs: write.IWriteCommandArguments = {
       opt: this.arguments.opt,
       optValue: this.arguments.optValue,
       bang: this.arguments.bang,
@@ -43,15 +43,15 @@ export class WriteQuitCommand extends node.CommandBase {
       range: this.arguments.range,
     };
 
-    let writeCmd = new write.WriteCommand(writeArgs);
+    const writeCmd = new write.WriteCommand(writeArgs);
     await writeCmd.execute(vimState);
-    let quitArgs: quit.IQuitCommandArguments = {
+    const quitArgs: quit.IQuitCommandArguments = {
       // wq! fails when no file name is provided
       bang: false,
       range: this.arguments.range,
     };
 
-    let quitCmd = new quit.QuitCommand(quitArgs);
+    const quitCmd = new quit.QuitCommand(quitArgs);
     await quitCmd.execute(vimState);
   }
 }

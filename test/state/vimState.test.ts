@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Position } from 'vscode';
 import { Range } from '../../src/common/motion/range';
 import { VimState } from '../../src/state/vimState';
@@ -14,7 +15,7 @@ suite('VimState', () => {
 
   test('de-dupes cursors', async () => {
     // setup
-    const vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
     await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
@@ -29,7 +30,7 @@ suite('VimState', () => {
 
   test('cursorStart/cursorStop should be first cursor in cursors', async () => {
     // setup
-    const vimState = new VimState(vscode.window.activeTextEditor!);
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
     await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);

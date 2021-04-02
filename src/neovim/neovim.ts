@@ -93,7 +93,20 @@ export class NeovimWrapper implements vscode.Disposable {
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-n', '--embed'], {
+    const neovimArgs: string[] = [];
+    // '-u' flag is only added if user wants to use a custom path for
+    // their config file OR they want no config file to be loaded at all.
+    // '-u' flag is omitted altogether if user wants Neovim to look for a
+    // config in its default location.
+    if (configuration.neovimUseConfigFile) {
+      if (configuration.neovimConfigPath !== '') {
+        neovimArgs.push('-u', configuration.neovimConfigPath);
+      }
+    } else {
+      neovimArgs.push('-u', 'NONE');
+    }
+    neovimArgs.push('-i', 'NONE', '-n', '--embed');
+    this.process = spawn(configuration.neovimPath, neovimArgs, {
       cwd: dir,
     });
 
@@ -174,7 +187,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
     NeovimWrapper.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
-    let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
+    const [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as number[]).slice(
       1,
       3
     );

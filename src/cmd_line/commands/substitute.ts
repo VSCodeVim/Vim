@@ -296,7 +296,7 @@ export class SubstituteCommand extends node.CommandBase {
 
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
-    let regex = this.getRegex(this._arguments, vimState);
+    const regex = this.getRegex(this._arguments, vimState);
     let foundPattern = false;
     for (
       let currentLine = startLine;
