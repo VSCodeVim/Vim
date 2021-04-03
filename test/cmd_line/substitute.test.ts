@@ -170,6 +170,13 @@ suite('Basic substitute', () => {
   });
 
   newTest({
+    title: 'Replace with \\',
+    start: ['one |two three'],
+    keysPressed: ':s/t/\\\\/g\n',
+    end: ['one |\\wo \\hree'],
+  });
+
+  newTest({
     title: 'Replace specific single equal lines',
     start: ['|aba', 'ab'],
     keysPressed: ':1,1s/a/d/g\n',
