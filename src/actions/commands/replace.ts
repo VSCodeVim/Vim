@@ -43,7 +43,7 @@ class ReplaceModeToInsertMode extends BaseCommand {
 @RegisterAction
 class BackspaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
-  keys = [['<BS>'], ['<C-h>']];
+  keys = [['<BS>'], ['<S-BS>'], ['<C-BS>'], ['<C-h>']];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const replaceState = vimState.replaceState!;
