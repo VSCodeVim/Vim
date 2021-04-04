@@ -2689,19 +2689,12 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ['X'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (vimState.currentMode === Mode.Visual) {
-      await new operator.DeleteOperator(this.multicursorIndex).run(
-        vimState,
-        vimState.cursorStartPosition.getLineBegin(),
-        vimState.cursorStopPosition.getLineEnd()
-      );
-    } else {
-      await new operator.DeleteOperator(this.multicursorIndex).run(
-        vimState,
-        position.getLineBegin(),
-        position.getLineEnd()
-      );
-    }
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    await new operator.DeleteOperator(this.multicursorIndex).run(
+      vimState,
+      start.getLineBegin(),
+      end.getLineEnd()
+    );
   }
 }
 
