@@ -564,7 +564,7 @@ class OutdentOperator extends BaseOperator {
  */
 @RegisterAction
 class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
