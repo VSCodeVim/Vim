@@ -304,6 +304,56 @@ suite('put operator', () => {
     end: ['abc abc |dhi'],
   });
 
+  // TODO: Yank character-wise, <count>p
+  // TODO: Yank character-wise, <count>P
+  // TODO: Yank character-wise, <count>gp
+  // TODO: Yank character-wise, <count>gP
+  // TODO: Yank character-wise, <count>]p
+  // TODO: Yank character-wise, <count>[p
+
+  newTest({
+    title: 'Yank line-wise, <count>p',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2p',
+    end: ['one', 'two', '|abc', 'abc', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>P',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2P',
+    end: ['one', '|abc', 'abc', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2gp',
+    end: ['one', 'two', 'abc', 'abc', '|three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gP',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2gP',
+    end: ['one', 'abc', 'abc', '|two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>]p',
+    start: ['|abc', 'one', '  two', 'three'],
+    keysPressed: 'ddj' + '2]p',
+    // TODO: cursor position is wrong
+    end: ['one', '  two', '  abc', '  |abc', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>[p',
+    start: ['|abc', 'one', '  two', 'three'],
+    keysPressed: 'ddj' + '2[p',
+    end: ['one', '  |abc', '  abc', '  two', 'three'],
+  });
+
   newTest({
     title: 'Yank character-wise, <count>p in Visual mode',
     start: ['one', '|two', 'three'],
