@@ -1558,7 +1558,6 @@ class MoveParagraphBegin extends BaseMovement {
 }
 
 abstract class MoveSectionBoundary extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   abstract boundary: string;
   abstract forward: boolean;
   isJump = true;
