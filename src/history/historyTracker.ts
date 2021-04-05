@@ -617,8 +617,8 @@ export class HistoryTracker {
 
     this.nextStepStartPosition ??= cursorPosition[0];
 
-    if (this.vimState.currentMode === Mode.Insert) {
-      // We can ignore changes while we're in insert mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
+    if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
+      // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
       // This allows us to avoid a little bit of work per keystroke, but more importantly, it means we'll get bigger contiguous edit chunks to merge.
       // This is particularly impactful when there are multiple cursors, which are otherwise difficult to optimize.
       return;
