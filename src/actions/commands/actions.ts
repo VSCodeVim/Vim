@@ -1696,8 +1696,7 @@ class CommandNavigateLastBOL extends BaseCommand {
       return;
     }
     const jump = new Jump({
-      editor: vimState.editor,
-      fileName: vimState.document.fileName,
+      document: vimState.document,
       position: lastJump.position.getLineBegin(),
     });
     globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
