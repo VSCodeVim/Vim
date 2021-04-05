@@ -251,7 +251,7 @@ suite('put operator', () => {
     title: "Can handle 'p' after y'a",
     start: ['|one', 'two', 'three'],
     keysPressed: "majjy'ap",
-    end: ['one', 'two', 'three', '|one', 'two', 'three'],
+    end: ['one', '|one', 'two', 'three', 'two', 'three'],
   });
 
   newTest({

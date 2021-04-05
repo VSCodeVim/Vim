@@ -1021,6 +1021,13 @@ suite('Mode Visual', () => {
       keysPressed: 'vj$X',
       end: ['this is', '|the world'],
     });
+
+    newTest({
+      title: 'Backward selection',
+      start: ['one', 'two', 't|hree', 'four'],
+      keysPressed: 'vkX',
+      end: ['one', '|four'],
+    });
   });
 
   suite('C will delete linewise', () => {
