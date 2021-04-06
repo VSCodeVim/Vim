@@ -18,91 +18,84 @@ suite('replaceWithRegister plugin', () => {
     title: 'Replaces within inner word',
     start: ['|first second'],
     keysPressed: `${YankInnerWord}w${ReplaceOperator}iw`,
-    end: ['first firs|t'],
+    end: ['first |first'],
   });
 
   newTest({
     title: 'Replaces within inner Word',
     start: ['|first sec-ond'],
     keysPressed: `${YankInnerWord}w${ReplaceOperator}iW`,
-    end: ['first firs|t'],
+    end: ['first |first'],
   });
 
   newTest({
     title: "Replaces within ''",
     start: ["|first 'second'"],
     keysPressed: `${YankInnerWord}ww${ReplaceOperator}i'`,
-    end: ["first 'firs|t'"],
+    end: ["first '|first'"],
   });
 
   newTest({
     title: "Replaces within '' including spaces",
     start: ["|first ' second '"],
     keysPressed: `${YankInnerWord}ww${ReplaceOperator}i'`,
-    end: ["first 'firs|t'"],
+    end: ["first 'f|irst'"],
   });
 
   newTest({
     title: 'Replaces within ()',
     start: ['|first (second)'],
     keysPressed: `${YankInnerWord}ww${ReplaceOperator}i)`,
-    end: ['first (firs|t)'],
+    end: ['first (|first)'],
   });
 
   newTest({
     title: 'Replaces within () including spaces',
     start: ['|first ( second )'],
     keysPressed: `${YankInnerWord}ww${ReplaceOperator}i)`,
-    end: ['first (firs|t)'],
+    end: ['first (f|irst)'],
   });
 
   newTest({
     title: 'Replaces within a paragraph',
     start: ['  |first', '  second'],
     keysPressed: `${YankInnerWord}${ReplaceOperator}ap`,
-    end: ['|first'],
+    end: ['fi|rst'],
   });
 
   newTest({
     title: 'Replaces using a specified register',
     start: ['|first second'],
     keysPressed: `"a${YankInnerWord}w"a${ReplaceOperator}iw`,
-    end: ['first firs|t'],
+    end: ['first |first'],
   });
 
   newTest({
     title: 'Replaces within {} over multiple lines',
     start: ['{', '  first', '  s|econd', '  third', '}'],
     keysPressed: `${YankInnerWord}${ReplaceOperator}i}`,
-    end: ['{', '|second', '}'],
+    end: ['{', 'secon|d', '}'],
   });
 
   newTest({
     title: 'Replaces a multiline register within {} over multiple lines',
     start: ['{', '  first', '  s|econd', '  third', '}'],
     keysPressed: `yj${ReplaceOperator}i}`,
-    end: ['{', '  |second', '  third', '}'],
-  });
-
-  newTest({
-    title: 'Replaces a multiline register within {} over multiple lines',
-    start: ['{', '  first', '  s|econd', '  third', '}'],
-    keysPressed: `yj${ReplaceOperator}i}`,
-    end: ['{', '  |second', '  third', '}'],
+    end: ['{', '  second', '  |third', '}'],
   });
 
   newTest({
     title: 'Yanking inside {} then replacing inside {} in a noop, besides the cursor movement',
     start: ['{', '  first', '  s|econd', '  third', '}'],
     keysPressed: `yi}${ReplaceOperator}i}`,
-    end: ['{', '  |first', '  second', '  third', '}'],
+    end: ['{', '  first', '  s|econd', '  third', '}'],
   });
 
   newTest({
     title: 'grr replaces the entire line with the register',
     start: ['first sec|ond third'],
     keysPressed: `${YankInnerWord}grr`,
-    end: ['|second'],
+    end: ['secon|d'],
   });
 
   newTest({
@@ -137,6 +130,6 @@ suite('replaceWithRegister plugin', () => {
     title: 'grj is linewise',
     start: ['|first second', 'third fourth', 'fifth sixth'],
     keysPressed: `${YankInnerWord}w${ReplaceOperator}j`,
-    end: ['|first', 'fifth sixth'],
+    end: ['firs|t', 'fifth sixth'],
   });
 });
