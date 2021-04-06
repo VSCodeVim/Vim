@@ -187,6 +187,7 @@ export class SubstituteCommand extends node.CommandBase {
             type: 'replaceText',
             text: newContent,
             range: new Range(new Position(line, 0), new Position(line, rangeEnd)),
+            cursorIndex: 0,
           });
 
           globalState.jumpTracker.recordJump(
@@ -207,6 +208,7 @@ export class SubstituteCommand extends node.CommandBase {
         range: new Range(new Position(line, 0), new Position(line, originalContent.length)),
         // move cursor to BOL
         diff: new Position(line, 0).subtract(new Position(line, newContent.length)),
+        cursorIndex: 0,
       });
 
       globalState.jumpTracker.recordJump(
