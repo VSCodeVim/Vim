@@ -23,7 +23,7 @@ export class ReplaceOperator extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const range =
+    const replaceRange =
       vimState.currentRegisterMode === RegisterMode.LineWise
         ? new Range(start.getLineBegin(), end.getLineEndIncludingEOL())
         : new Range(start, end.getRight());
@@ -38,7 +38,7 @@ export class ReplaceOperator extends BaseOperator {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: replaceWith,
-        range: range,
+        range: replaceRange,
       });
     }
     await vimState.setCurrentMode(Mode.Normal);
