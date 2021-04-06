@@ -54,8 +54,7 @@ suite('Undo', () => {
       title: "Can handle 'u' after :s/abc/def",
       start: ['Xa|bcX'],
       keysPressed: ':s/abc/def/\nu',
-      // TODO: this cursor position is wrong
-      end: ['Xa|bcX'],
+      end: ['|XabcX'],
     });
 
     newTest({
