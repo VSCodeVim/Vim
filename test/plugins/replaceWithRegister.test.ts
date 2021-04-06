@@ -86,9 +86,9 @@ suite('replaceWithRegister plugin', () => {
 
   newTest({
     title: 'Yanking inside {} then replacing inside {} in a noop, besides the cursor movement',
-    start: ['{', '  first', '  s|econd', '  third', '}'],
+    start: ['{', '  first', '  |second', '  third', '}'],
     keysPressed: `yi}${ReplaceOperator}i}`,
-    end: ['{', '  first', '  s|econd', '  third', '}'],
+    end: ['{', '  first', '  |second', '  third', '}'],
   });
 
   newTest({
