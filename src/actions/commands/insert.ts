@@ -536,13 +536,20 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const start = position.isInLeadingWhitespace(vimState.document)
-      ? position.getLineBegin()
-      : position.getLineBeginRespectingIndent(vimState.document);
+    let start: Position;
+    if (position.character === 0) {
+      start = position.getLeftThroughLineBreaks(true);
+    } else if (position.isInLeadingWhitespace(vimState.document)) {
+      start = position.getLineBegin();
+    } else {
+      start = position.getLineBeginRespectingIndent(vimState.document);
+    }
+
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, position),
     });
+
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
   }

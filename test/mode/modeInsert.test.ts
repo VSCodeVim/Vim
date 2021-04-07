@@ -131,25 +131,38 @@ suite('Mode Insert', () => {
     end: ['foo|bar'],
   });
 
-  newTest({
-    title: '<C-u> deletes to start of line',
-    start: ['text |text'],
-    keysPressed: 'i<C-u>',
-    end: ['|text'],
-  });
+  suite('<C-u>', () => {
+    newTest({
+      title: '<C-u> deletes to start of line',
+      start: ['text |text'],
+      keysPressed: 'i<C-u>',
+      end: ['|text'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-u> on leading characters',
-    start: ['{', '  foo: |true', '}'],
-    keysPressed: 'i<C-u>',
-    end: ['{', '  |true', '}'],
-  });
+    newTest({
+      title: 'Can handle <C-u> on leading characters',
+      start: ['{', '  foo: |true', '}'],
+      keysPressed: 'i<C-u>',
+      end: ['{', '  |true', '}'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-u> on leading whitespace',
-    start: ['{', '  |true', '}'],
-    keysPressed: 'i<C-u>',
-    end: ['{', '|true', '}'],
+    newTest({
+      title: 'Can handle <C-u> on leading whitespace',
+      start: ['{', '  |true', '}'],
+      keysPressed: 'i<C-u>',
+      end: ['{', '|true', '}'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-u> at start of line deletes line break',
+      start: ['one', '|two', 'three'],
+      keysPressed: 'i<C-u>',
+      end: ['one|two', 'three'],
+      endMode: Mode.Insert,
+    });
   });
 
   test('Correctly places the cursor after deleting the previous line break', async () => {
