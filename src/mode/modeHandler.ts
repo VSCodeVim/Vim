@@ -1588,11 +1588,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     StatusBar.clear(this.vimState, false);
 
-    await VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
+    // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
+    VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
-    // Tell VSCode that the cursor position changed, so it updates its highlights for
-    // `editor.occurrencesHighlight`.
-
+    // Tell VSCode that the cursor position changed, so it updates its highlights for `editor.occurrencesHighlight`.
     const range = new vscode.Range(
       this.vimState.cursorStartPosition,
       this.vimState.cursorStopPosition
