@@ -731,10 +731,11 @@ class MoveDownUnderscore extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.getDown(Math.max(count - 1, 0)).line
-    );
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const pos = position.getDown(Math.max(count - 1, 0));
+    return vimState.recordedState.operator
+      ? pos
+      : TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, pos.line);
   }
 }
 
