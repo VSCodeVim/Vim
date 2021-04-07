@@ -28,7 +28,7 @@ import {
   CommandNumber,
 } from './../actions/commands/actions';
 import { isTextTransformation } from '../transformations/transformations';
-import { executeTransformations } from '../transformations/execute';
+import { executeTransformations, IModeHandler } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { EditorIdentity } from '../editorIdentity';
@@ -50,7 +50,7 @@ interface IModeHandlerMap {
  *
  * See:  https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md#the-vim-state-machine
  */
-export class ModeHandler implements vscode.Disposable {
+export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly vimState: VimState;
   public readonly remapState: RemapState;
 
@@ -97,21 +97,19 @@ export class ModeHandler implements vscode.Disposable {
    */
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
-    global.setImmediate(() => {
-      if (this.vimState.editor) {
-        const { selections } = this.vimState.editor;
-        if (
-          !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
-          !this.vimState.cursorStopPosition.isEqual(selections[0].active)
-        ) {
-          this.vimState.desiredColumn = selections[0].active.character;
-        }
-
-        this.vimState.cursors = selections.map(({ active, anchor }) =>
-          active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
-        );
+    if (this.vimState.editor) {
+      const { selections } = this.vimState.editor;
+      if (
+        !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
+        !this.vimState.cursorStopPosition.isEqual(selections[0].active)
+      ) {
+        this.vimState.desiredColumn = selections[0].active.character;
       }
-    }, 0);
+
+      this.vimState.cursors = selections.map(({ active, anchor }) =>
+        active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
+      );
+    }
   }
 
   /**
@@ -905,11 +903,6 @@ export class ModeHandler implements vscode.Disposable {
       });
     }
 
-    // Update the current history step to have the latest cursor position
-    this.vimState.historyTracker.setLastHistoryEndPosition(
-      this.vimState.cursors.map((c) => c.stop)
-    );
-
     if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv
       this.vimState.lastVisualSelection = {
@@ -1595,11 +1588,10 @@ export class ModeHandler implements vscode.Disposable {
 
     StatusBar.clear(this.vimState, false);
 
-    await VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
+    // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
+    VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
-    // Tell VSCode that the cursor position changed, so it updates its highlights for
-    // `editor.occurrencesHighlight`.
-
+    // Tell VSCode that the cursor position changed, so it updates its highlights for `editor.occurrencesHighlight`.
     const range = new vscode.Range(
       this.vimState.cursorStartPosition,
       this.vimState.cursorStopPosition

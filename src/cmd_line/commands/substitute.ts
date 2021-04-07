@@ -5,13 +5,13 @@ import * as node from '../node';
 import { Jump } from '../../jumps/jump';
 import { SearchState, SearchDirection } from '../../state/searchState';
 import { SubstituteState } from '../../state/substituteState';
-import { TextEditor } from '../../textEditor';
 import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { Position } from 'vscode';
+import { Range } from '../../common/motion/range';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -182,16 +182,17 @@ export class SubstituteCommand extends node.CommandBase {
           newContent =
             newContent.slice(0, matchPos) +
             newContent.slice(matchPos).replace(nonGlobalRegex, this.arguments.replace);
-          await TextEditor.replace(
-            vimState.editor,
-            new vscode.Range(line, 0, line, rangeEnd),
-            newContent
-          );
+
+          vimState.recordedState.transformer.addTransformation({
+            type: 'replaceText',
+            text: newContent,
+            range: new Range(new Position(line, 0), new Position(line, rangeEnd)),
+            cursorIndex: 0,
+          });
 
           globalState.jumpTracker.recordJump(
             new Jump({
-              editor: vimState.editor,
-              fileName: vimState.document.fileName,
+              document: vimState.document,
               position: new Position(line, 0),
             }),
             Jump.fromStateNow(vimState)
@@ -200,16 +201,19 @@ export class SubstituteCommand extends node.CommandBase {
         matchPos += this.arguments.replace.length;
       }
     } else {
-      await TextEditor.replace(
-        vimState.editor,
-        new vscode.Range(line, 0, line, originalContent.length),
-        originalContent.replace(regex, this.arguments.replace)
-      );
+      const newContent = originalContent.replace(regex, this.arguments.replace);
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        text: newContent,
+        range: new Range(new Position(line, 0), new Position(line, originalContent.length)),
+        // move cursor to BOL
+        diff: new Position(line, 0).subtract(new Position(line, newContent.length)),
+        cursorIndex: 0,
+      });
 
       globalState.jumpTracker.recordJump(
         new Jump({
-          editor: vimState.editor,
-          fileName: vimState.document.fileName,
+          document: vimState.document,
           position: new Position(line, 0),
         }),
         Jump.fromStateNow(vimState)

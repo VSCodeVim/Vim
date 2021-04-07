@@ -14,7 +14,7 @@ class StatusBarImpl implements vscode.Disposable {
   // Displays the keys you've typed so far when they haven't yet resolved to a command
   private readonly recordedStateStatusBarItem: vscode.StatusBarItem;
 
-  private previousModeName: Mode | undefined = undefined;
+  private previousMode: Mode | undefined = undefined;
   private showingDefaultMessage = true;
 
   constructor() {
@@ -47,7 +47,7 @@ class StatusBarImpl implements vscode.Disposable {
    * @param isError If true, text rendered in red
    */
   public setText(vimState: VimState, text: string, isError = false) {
-    const hasModeChanged = vimState.currentMode !== this.previousModeName;
+    const hasModeChanged = vimState.currentMode !== this.previousMode;
 
     // Text
     this.updateText(text);
@@ -63,7 +63,7 @@ class StatusBarImpl implements vscode.Disposable {
       this.updateColor(vimState.currentMode);
     }
 
-    this.previousModeName = vimState.currentMode;
+    this.previousMode = vimState.currentMode;
     this.showingDefaultMessage = false;
   }
 

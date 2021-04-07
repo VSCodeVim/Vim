@@ -47,7 +47,10 @@ suite('historyTracker unit tests', () => {
     test('can set previous context mark from single quote', () => {
       const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
       const position = buildMockPosition();
-      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      const mockJump = new Jump({
+        document: { fileName: 'file name' } as vscode.TextDocument,
+        position,
+      });
       sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
 
       historyTracker.addMark(position, "'");
@@ -57,7 +60,10 @@ suite('historyTracker unit tests', () => {
     test('can set previous context mark from backtick', () => {
       const spy = sandbox.spy(globalState.jumpTracker, 'recordJump');
       const position = buildMockPosition();
-      const mockJump = new Jump({ editor: null, fileName: 'file name', position });
+      const mockJump = new Jump({
+        document: { fileName: 'file name' } as vscode.TextDocument,
+        position,
+      });
       sandbox.stub(Jump, 'fromStateNow').returns(mockJump);
 
       historyTracker.addMark(position, '`');

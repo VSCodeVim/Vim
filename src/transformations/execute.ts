@@ -203,6 +203,7 @@ export async function executeTransformations(
 
         vimState.isReplayingMacro = true;
 
+        vimState.recordedState = new RecordedState();
         if (transformation.register === ':') {
           await commandLine.Run(recordedMacro.commandString, vimState);
         } else if (transformation.replay === 'contentChange') {
@@ -212,9 +213,13 @@ export async function executeTransformations(
           for (const action of recordedMacro.actionsRun) {
             keyStrokes = keyStrokes.concat(action.keysPressed);
           }
-          vimState.recordedState = new RecordedState();
           await modeHandler.handleMultipleKeyEvents(keyStrokes);
         }
+
+        await executeTransformations(
+          modeHandler,
+          vimState.recordedState.transformer.transformations
+        );
 
         vimState.isReplayingMacro = false;
         vimState.lastInvokedMacro = recordedMacro;

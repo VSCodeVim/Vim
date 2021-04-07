@@ -168,15 +168,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
     };
 
-    if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler);
-    } else {
-      ModeHandlerMap.getAll()
-        .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
-        .forEach((modeHandler) => {
-          contentChangeHandler(modeHandler);
-        });
-    }
+    ModeHandlerMap.getAll()
+      .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
+      .forEach((modeHandler) => {
+        contentChangeHandler(modeHandler);
+      });
 
     if (handleLocal) {
       setTimeout(() => {

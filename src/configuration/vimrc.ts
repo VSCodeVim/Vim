@@ -7,15 +7,71 @@ import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
 import { configuration } from './configuration';
+import { Logger } from '../util/logger';
 
 export class VimrcImpl {
   private _vimrcPath: string;
+  private static readonly logger = Logger.get('VimRC');
 
   /**
    * Fully resolved path to the user's .vimrc
    */
   public get vimrcPath(): string {
     return this._vimrcPath;
+  }
+
+  private static readonly SOURCE_REG_REX = /^(source)\s+(.+)/i;
+
+  private static buildSource(line: string) {
+    const matches = VimrcImpl.SOURCE_REG_REX.exec(line);
+    if (!matches || matches.length < 3) {
+      return undefined;
+    }
+
+    const sourceKeyword = matches[1];
+    const filePath = matches[2];
+
+    return VimrcImpl.expandHome(filePath);
+  }
+
+  private static async loadConfig(config: IConfiguration, configPath: string) {
+    try {
+      const vscodeCommands = await vscode.commands.getCommands();
+      const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
+      for (const line of lines) {
+        if (line.trimLeft().startsWith('"')) {
+          continue;
+        }
+
+        const source = this.buildSource(line);
+        if (source) {
+          if (!(await fs.existsAsync(source))) {
+            VimrcImpl.logger.warn(`Unable to find "${source}" file for configuration.`);
+            continue;
+          }
+          VimrcImpl.logger.debug(`Loading "${source}" file for configuration.`);
+          await VimrcImpl.loadConfig(config, source);
+          continue;
+        }
+        const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
+        if (remap) {
+          VimrcImpl.addRemapToConfig(config, remap);
+          continue;
+        }
+        const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+        if (unremap) {
+          VimrcImpl.removeRemapFromConfig(config, unremap);
+          continue;
+        }
+        const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+        if (clearRemap) {
+          VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+          continue;
+        }
+      }
+    } catch (err) {
+      window.showWarningMessage(`vimrc file "${configPath}" is broken, err=${err}`);
+    }
   }
 
   public async load(config: IConfiguration) {
@@ -50,29 +106,7 @@ export class VimrcImpl {
       VimrcImpl.removeAllRemapsFromConfig(config);
 
       // Add the new remappings
-      try {
-        const vscodeCommands = await vscode.commands.getCommands();
-        const lines = (await fs.readFileAsync(this.vimrcPath, 'utf8')).split(/\r?\n/);
-        for (const line of lines) {
-          const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
-          if (remap) {
-            VimrcImpl.addRemapToConfig(config, remap);
-            continue;
-          }
-          const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
-          if (unremap) {
-            VimrcImpl.removeRemapFromConfig(config, unremap);
-            continue;
-          }
-          const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
-          if (clearRemap) {
-            VimrcImpl.clearRemapsFromConfig(config, clearRemap);
-            continue;
-          }
-        }
-      } catch (err) {
-        window.showWarningMessage(`vimrc file "${this._vimrcPath}" is broken, err=${err}`);
-      }
+      await VimrcImpl.loadConfig(config, this._vimrcPath);
     }
   }
 
@@ -189,7 +223,9 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(
+            `Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`
+          );
           return undefined;
       }
     })();
@@ -271,7 +307,9 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
+          VimrcImpl.logger.warn(
+            `Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`
+          );
           return undefined;
       }
     })();
@@ -363,7 +401,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          console.warn(
+          VimrcImpl.logger.warn(
             `Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`
           );
           return undefined;

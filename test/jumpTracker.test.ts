@@ -24,8 +24,7 @@ suite('Record and navigate jumps', () => {
   suite('Jump Tracker unit tests', () => {
     const jump = (lineNumber: number, columnNumber: number, fileName?: string) =>
       new Jump({
-        editor: null,
-        fileName: fileName || 'Untitled',
+        document: { fileName: fileName ?? 'Untitled' } as vscode.TextDocument,
         position: new Position(lineNumber, columnNumber),
       });
     const file1 = jump(0, 0, 'file1');

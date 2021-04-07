@@ -204,12 +204,12 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const originalText = vimState.document.lineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
+    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) + 1) * tabSize;
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
-      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
-      range: new Range(position.getLineBegin(), position.getLineEnd()),
+      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
+      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
       diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
     });
   }
@@ -536,13 +536,20 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const start = position.isInLeadingWhitespace(vimState.document)
-      ? position.getLineBegin()
-      : position.getLineBeginRespectingIndent(vimState.document);
+    let start: Position;
+    if (position.character === 0) {
+      start = position.getLeftThroughLineBreaks(true);
+    } else if (position.isInLeadingWhitespace(vimState.document)) {
+      start = position.getLineBegin();
+    } else {
+      start = position.getLineBeginRespectingIndent(vimState.document);
+    }
+
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, position),
     });
+
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
   }
