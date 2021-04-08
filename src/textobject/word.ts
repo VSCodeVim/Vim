@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
-import { Position } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { TextEditor } from '../textEditor';
 import { getAllPositions, getAllEndPositions } from './util';
 
 export enum WordType {
@@ -52,17 +51,15 @@ export function getWordRightInText(
   return getAllPositions(text, regexForWordType(wordType)).find((index) => index > pos);
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getWordLeft(
+export function prevWordStart(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
   inclusive: boolean = false
 ): Position {
   for (let currentLine = pos.line; currentLine >= 0; currentLine--) {
     const newCharacter = getWordLeftOnLine(
-      TextEditor.getLine(currentLine).text,
+      document.lineAt(currentLine).text,
       pos.character,
       wordType,
       currentLine !== pos.line,
@@ -89,17 +86,15 @@ function getWordLeftOnLine(
     .find((index) => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getWordRight(
+export function nextWordStart(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
   inclusive: boolean = false
 ): Position {
-  for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+  for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
     const positions = getAllPositions(
-      TextEditor.getLine(currentLine).text,
+      document.lineAt(currentLine).text,
       regexForWordType(wordType)
     );
     const newCharacter = positions.find(
@@ -114,20 +109,18 @@ export function getWordRight(
     }
   }
 
-  return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+  return new Position(document.lineCount - 1, 0).getLineEnd();
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getCurrentWordEnd(
+export function nextWordEnd(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
   inclusive: boolean = false
 ): Position {
-  for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+  for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
     const positions = getAllEndPositions(
-      TextEditor.getLine(currentLine).text,
+      document.lineAt(currentLine).text,
       regexForWordType(wordType)
     );
     const newCharacter = positions.find(
@@ -142,13 +135,13 @@ export function getCurrentWordEnd(
     }
   }
 
-  return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+  return new Position(document.lineCount - 1, 0).getLineEnd();
 }
 
-export function getLastWordEnd(pos: Position, wordType: WordType): Position {
+export function prevWordEnd(document: TextDocument, pos: Position, wordType: WordType): Position {
   for (let currentLine = pos.line; currentLine > -1; currentLine--) {
     let positions = getAllEndPositions(
-      TextEditor.getLine(currentLine).text,
+      document.lineAt(currentLine).text,
       regexForWordType(wordType)
     );
     // if one line is empty, use the 0 position as the default value

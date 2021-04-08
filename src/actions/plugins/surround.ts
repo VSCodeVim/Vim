@@ -28,6 +28,7 @@ import {
   TextObjectMovement,
 } from '../../textobject/textobject';
 import { Position } from 'vscode';
+import { WordType } from '../../textobject/word';
 
 export interface SurroundState {
   /** The operator paired with the surround action. "yank" is really "add", but it uses 'y' */
@@ -63,7 +64,7 @@ class CommandSurroundModeRepeat extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start: position.getLineBeginRespectingIndent(vimState.document),
-      stop: position.getLineEnd().getLastWordEnd().getRight(),
+      stop: position.getLineEnd().prevWordEnd(vimState.document).getRight(),
     };
   }
 
@@ -511,7 +512,9 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       replaceRanges = [
         new Range(
           start,
-          retainAttributes ? start.getCurrentBigWordEnd().getRight() : innerTagContent.start
+          retainAttributes
+            ? start.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight()
+            : innerTagContent.start
         ),
         new Range(innerTagContent.stop.getRight(), stop.getRight()),
       ];

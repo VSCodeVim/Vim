@@ -457,7 +457,7 @@ class CommandCtrlW extends BaseCommand {
     } else if (position.isLineBeginning()) {
       wordBegin = position.getPreviousLineBegin().getLineEnd();
     } else {
-      wordBegin = position.getWordLeft();
+      wordBegin = position.prevWordStart(vimState.document);
     }
 
     vimState.recordedState.transformer.addTransformation({

@@ -268,9 +268,9 @@ export class TextEditor {
   ): Iterable<{ start: Position; end: Position; word: string }> {
     const text = document.lineAt(start).text;
     if (/\s/.test(text[start.character])) {
-      start = start.getWordRight();
+      start = start.nextWordStart(document);
     }
-    let wordEnd = start.getCurrentWordEnd(true);
+    let wordEnd = start.nextWordEnd(document, { inclusive: true });
     do {
       const word = text.substring(start.character, wordEnd.character + 1);
       yield {
@@ -282,8 +282,8 @@ export class TextEditor {
       if (wordEnd.getRight().isLineEnd()) {
         return;
       }
-      start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd(true);
+      start = start.nextWordStart(document);
+      wordEnd = start.nextWordEnd(document, { inclusive: true });
     } while (true);
   }
 }
