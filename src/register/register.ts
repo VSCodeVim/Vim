@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,

@@ -18,6 +18,8 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
   CommandReplaceAtCursorFromNormalMode,
+  CommandInsertAtLineBegin,
+  CommandInsertAtLastChange,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
@@ -74,8 +76,10 @@ class CommandEscInsertMode extends BaseCommand {
     const isTypeToRepeatInsert =
       typeOfInsert instanceof CommandInsertAtCursor ||
       typeOfInsert instanceof CommandInsertAfterCursor ||
+      typeOfInsert instanceof CommandInsertAtLineBegin ||
       typeOfInsert instanceof CommandInsertAtLineEnd ||
-      typeOfInsert instanceof CommandInsertAtFirstCharacter;
+      typeOfInsert instanceof CommandInsertAtFirstCharacter ||
+      typeOfInsert instanceof CommandInsertAtLastChange;
 
     // If this is the type to repeat insert, do this now
     if (vimState.recordedState.count > 1 && isTypeToRepeatInsert) {
@@ -200,12 +204,12 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const originalText = vimState.document.lineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
+    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) + 1) * tabSize;
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
-      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
-      range: new Range(position.getLineBegin(), position.getLineEnd()),
+      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
+      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
       diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
     });
   }
@@ -229,7 +233,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
 // }
 
 @RegisterAction
-export class CommandBackspaceInInsertMode extends BaseCommand {
+class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 
@@ -275,7 +279,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandDeleteInInsertMode extends BaseCommand {
+class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
@@ -430,7 +434,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 }
 
 @RegisterAction
-export class CommandOneNormalCommandInInsertMode extends BaseCommand {
+class CommandOneNormalCommandInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-o>'];
 
@@ -532,13 +536,20 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const start = position.isInLeadingWhitespace(vimState.document)
-      ? position.getLineBegin()
-      : position.getLineBeginRespectingIndent(vimState.document);
+    let start: Position;
+    if (position.character === 0) {
+      start = position.getLeftThroughLineBreaks(true);
+    } else if (position.isInLeadingWhitespace(vimState.document)) {
+      start = position.getLineBegin();
+    } else {
+      start = position.getLineBeginRespectingIndent(vimState.document);
+    }
+
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
       range: new Range(start, position),
     });
+
     vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
   }

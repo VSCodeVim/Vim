@@ -166,7 +166,7 @@ export abstract class BaseAction {
     return this.keys.join('');
   }
 
-  private static is2DArray<T>(x: any): x is T[][] {
+  private static is2DArray<T>(x: T[] | T[][]): x is T[][] {
     return Array.isArray(x[0]);
   }
 }

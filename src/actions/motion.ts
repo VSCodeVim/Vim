@@ -366,10 +366,16 @@ export class ArrowsInInsertMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
     // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [
-      vimState.recordedState.actionsRun.shift()!,
-      vimState.recordedState.actionsRun.pop()!,
-    ];
+    const firstAction = vimState.recordedState.actionsRun.shift();
+    const lastAction = vimState.recordedState.actionsRun.pop();
+    vimState.recordedState.actionsRun = [];
+    if (firstAction) {
+      vimState.recordedState.actionsRun.push(firstAction);
+    }
+    if (lastAction) {
+      vimState.recordedState.actionsRun.push(lastAction);
+    }
+    // TODO: assert vimState.recordedState.actionsRun.length === 2?
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {
@@ -607,7 +613,7 @@ class MarkMovementVisualEndLine extends MarkMovementVisual {
 }
 
 @RegisterAction
-export class MarkMovementBOL extends BaseMovement {
+class MarkMovementBOL extends BaseMovement {
   keys = ["'", '<character>'];
   isJump = true;
 
@@ -630,7 +636,7 @@ export class MarkMovementBOL extends BaseMovement {
 }
 
 @RegisterAction
-export class MarkMovement extends BaseMovement {
+class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
   isJump = true;
 
@@ -657,7 +663,7 @@ async function ensureEditorIsActive(editor: vscode.TextEditor) {
 }
 
 @RegisterAction
-export class MoveLeft extends BaseMovement {
+class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -725,10 +731,11 @@ class MoveDownUnderscore extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.getDown(Math.max(count - 1, 0)).line
-    );
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const pos = position.getDown(Math.max(count - 1, 0));
+    return vimState.recordedState.operator
+      ? pos
+      : TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, pos.line);
   }
 }
 
@@ -1042,7 +1049,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByDisplayLine extends MoveByScreenLine {
+class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -1318,7 +1325,7 @@ class MoveNonBlankLast extends BaseMovement {
 }
 
 @RegisterAction
-export class MoveWordBegin extends BaseMovement {
+class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1552,7 +1559,6 @@ class MoveParagraphBegin extends BaseMovement {
 }
 
 abstract class MoveSectionBoundary extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   abstract boundary: string;
   abstract forward: boolean;
   isJump = true;
@@ -1701,7 +1707,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-export abstract class MoveInsideCharacter extends ExpandingSelection {
+abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
 
@@ -1862,7 +1868,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-export abstract class MoveQuoteMatch extends BaseMovement {
+abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract charToMatch: string;
   protected includeSurrounding = false;

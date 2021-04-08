@@ -30,6 +30,20 @@ suite('Mode Visual', () => {
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
   });
 
+  newTest({
+    title: '[count]v',
+    start: ['a|bcde'],
+    keysPressed: '3vd',
+    end: ['a|e'],
+  });
+
+  newTest({
+    title: '[count]v past EOL',
+    start: ['a|bcde', '12345'],
+    keysPressed: '100vd',
+    end: ['a|12345'],
+  });
+
   test('Can handle w', async () => {
     await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
@@ -1006,6 +1020,13 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$X',
       end: ['this is', '|the world'],
+    });
+
+    newTest({
+      title: 'Backward selection',
+      start: ['one', 'two', 't|hree', 'four'],
+      keysPressed: 'vkX',
+      end: ['one', '|four'],
     });
   });
 

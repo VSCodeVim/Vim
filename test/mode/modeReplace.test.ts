@@ -68,6 +68,14 @@ suite('Mode Replace', () => {
   newTest({
     title: 'Can handle R with {count}',
     start: ['123|456', '789'],
+    keysPressed: '3Rabc<Esc>',
+    end: ['123abcabcab|c', '789'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can handle R with {count}',
+    start: ['123|456', '789'],
     keysPressed: '3Rabc\ndef<Esc>',
     end: ['123abc', 'defabc', 'defabc', 'de|f', '789'],
     endMode: Mode.Normal,
@@ -90,10 +98,34 @@ suite('Mode Replace', () => {
   });
 
   newTest({
+    title: 'Can handle backspace',
+    start: ['123|456'],
+    keysPressed: 'R<BS>abc<BS><BS><BS>',
+    end: ['12|3456'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
     title: 'Can handle backspace across lines',
     start: ['123|456'],
     keysPressed: 'Rabcd\nef<BS><BS><BS><BS><BS>',
     end: ['123ab|6'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
+    title: '`<BS>` goes across EOL',
+    start: ['123', '|456'],
+    keysPressed: 'R<BS><BS><BS>X',
+    end: ['1X|3', '456'],
+    endMode: Mode.Replace,
+  });
+
+  newTest({
+    title: '`<BS>` goes across EOL',
+    start: ['123', '|456'],
+    keysPressed: 'R<BS><BS><BS>X<BS>',
+    end: ['1|23', '456'],
     endMode: Mode.Replace,
   });
 

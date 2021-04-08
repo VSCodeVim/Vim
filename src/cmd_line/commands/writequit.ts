@@ -22,15 +22,11 @@ export interface IWriteQuitCommandArguments extends node.ICommandArgs {
 }
 
 export class WriteQuitCommand extends node.CommandBase {
-  protected _arguments: IWriteQuitCommandArguments;
+  private readonly arguments: IWriteQuitCommandArguments;
 
   constructor(args: IWriteQuitCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IWriteQuitCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.

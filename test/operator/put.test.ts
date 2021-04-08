@@ -251,7 +251,7 @@ suite('put operator', () => {
     title: "Can handle 'p' after y'a",
     start: ['|one', 'two', 'three'],
     keysPressed: "majjy'ap",
-    end: ['one', 'two', 'three', '|one', 'two', 'three'],
+    end: ['one', '|one', 'two', 'three', 'two', 'three'],
   });
 
   newTest({
@@ -302,6 +302,62 @@ suite('put operator', () => {
     start: ['|abc def ghi'],
     keysPressed: 'vwywvwP',
     end: ['abc abc |dhi'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>p in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeve3p',
+    end: ['one', 'twotwotw|o', 'three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>p in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeV3p',
+    end: ['one', '|two', 'two', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>p in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyve3p',
+    end: ['one', '', '|two', 'two', 'two', '', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>p in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyV3p',
+    end: ['one', '|two', 'two', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gp in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeve3gp',
+    end: ['one', 'twotwotw|o', 'three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gp in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yeV3gp',
+    end: ['one', 'two', 'two', 'two', '|three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp in Visual mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyve3gp',
+    end: ['one', '', 'two', 'two', 'two', '|', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp in VisualLine mode',
+    start: ['one', '|two', 'three'],
+    keysPressed: 'yyV3gp',
+    end: ['one', 'two', 'two', 'two', '|three'],
   });
 
   newTest({

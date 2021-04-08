@@ -9,29 +9,22 @@ import { VimState } from '../state/vimState';
  * and to be able to open the related file.
  */
 export class Jump {
-  public readonly editor: vscode.TextEditor | null;
-  public readonly fileName: string;
+  public readonly document: vscode.TextDocument;
   public readonly position: Position;
 
   /**
    *
    * @param options
    * @param options.editor - The editor associated with the jump.
-   * @param options.fileName - The absolute or relative file path.
    * @param options.position - The line and column number information.
    */
-  constructor({
-    editor,
-    fileName,
-    position,
-  }: {
-    editor: vscode.TextEditor | null;
-    fileName: string;
-    position: Position;
-  }) {
-    this.editor = editor;
-    this.fileName = fileName;
+  constructor({ document, position }: { document: vscode.TextDocument; position: Position }) {
+    this.document = document;
     this.position = position;
+  }
+
+  public get fileName() {
+    return this.document.fileName;
   }
 
   /**
@@ -40,8 +33,7 @@ export class Jump {
    */
   public static fromStateNow(vimState: VimState) {
     return new Jump({
-      editor: vimState.editor,
-      fileName: vimState.document.fileName,
+      document: vimState.document,
       position: vimState.cursorStopPosition,
     });
   }
@@ -53,8 +45,7 @@ export class Jump {
    */
   public static fromStateBefore(vimState: VimState) {
     return new Jump({
-      editor: vimState.editor,
-      fileName: vimState.document.fileName,
+      document: vimState.document,
       position: vimState.cursorsInitialState[0].stop,
     });
   }

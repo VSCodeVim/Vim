@@ -22,30 +22,26 @@ export interface IWriteCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:write
 //
 export class WriteCommand extends node.CommandBase {
-  protected _arguments: IWriteCommandArguments;
-  private readonly _logger = Logger.get('Write');
+  public readonly arguments: IWriteCommandArguments;
+  private readonly logger = Logger.get('Write');
 
   constructor(args: IWriteCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IWriteCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.file) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.append) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     } else if (this.arguments.cmd) {
-      this._logger.warn('not implemented');
+      this.logger.warn('not implemented');
       return;
     }
 
@@ -92,7 +88,7 @@ export class WriteCommand extends node.CommandBase {
   }
 
   private async background(fn: Thenable<void>): Promise<void> {
-    if (!this._arguments.bgWrite) {
+    if (!this.arguments.bgWrite) {
       await fn;
     }
   }

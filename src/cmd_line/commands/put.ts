@@ -19,15 +19,11 @@ export interface IPutCommandArguments extends node.ICommandArgs {
 //
 
 export class PutExCommand extends node.CommandBase {
-  protected _arguments: IPutCommandArguments;
+  public readonly arguments: IPutCommandArguments;
 
   constructor(args: IPutCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IPutCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   public neovimCapable(): boolean {

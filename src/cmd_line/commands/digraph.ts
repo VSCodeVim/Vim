@@ -15,15 +15,11 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 }
 
 export class DigraphsCommand extends node.CommandBase {
-  protected _arguments: IDigraphsCommandArguments;
+  private readonly arguments: IDigraphsCommandArguments;
 
   constructor(args: IDigraphsCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IDigraphsCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   // TODO: replace 'any' with sensible index signature

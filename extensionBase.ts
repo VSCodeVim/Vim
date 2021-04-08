@@ -112,7 +112,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   // Load state
   Register.loadFromDisk(handleLocal);
-  await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
+  await Promise.all([commandLine.load(context), globalState.load(context)]);
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
@@ -168,15 +168,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
     };
 
-    if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler);
-    } else {
-      ModeHandlerMap.getAll()
-        .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
-        .forEach((modeHandler) => {
-          contentChangeHandler(modeHandler);
-        });
-    }
+    ModeHandlerMap.getAll()
+      .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
+      .forEach((modeHandler) => {
+        contentChangeHandler(modeHandler);
+      });
 
     if (handleLocal) {
       setTimeout(() => {
