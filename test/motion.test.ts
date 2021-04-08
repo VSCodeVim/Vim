@@ -508,12 +508,6 @@ suite('sentence motion', () => {
       assert.strictEqual(motion.character, 35);
     });
 
-    test('next sentence that ends with paragraph ending', () => {
-      const motion = new Position(2, 50).getNextLineBegin();
-      assert.strictEqual(motion.line, 3);
-      assert.strictEqual(motion.character, 0);
-    });
-
     test('next sentence when cursor is at the end of previous paragraph', () => {
       const motion = new Position(3, 0).getSentenceBegin({ forward: true });
       assert.strictEqual(motion.line, 4);

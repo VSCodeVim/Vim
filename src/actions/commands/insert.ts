@@ -455,7 +455,7 @@ class CommandCtrlW extends BaseCommand {
     if (position.isInLeadingWhitespace(vimState.document)) {
       wordBegin = position.getLineBegin();
     } else if (position.isLineBeginning()) {
-      wordBegin = position.getPreviousLineBegin().getLineEnd();
+      wordBegin = position.getUp().getLineEnd();
     } else {
       wordBegin = position.prevWordStart(vimState.document);
     }

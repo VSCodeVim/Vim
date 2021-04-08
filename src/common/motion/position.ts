@@ -176,18 +176,6 @@ declare module 'vscode' {
     getLineBeginRespectingIndent(document: vscode.TextDocument): Position;
 
     /**
-     * @return the beginning of the previous line.
-     * If already on the first line, return the beginning of this line.
-     */
-    getPreviousLineBegin(): Position;
-
-    /**
-     * @return the beginning of the next line.
-     * If already on the last line, return the *end* of this line.
-     */
-    getNextLineBegin(): Position;
-
-    /**
      * @returns a new Position at the end of this position's line.
      */
     getLineEnd(): Position;
@@ -448,30 +436,6 @@ Position.prototype.getLineBeginRespectingIndent = function (
     return this.getLineBegin();
   }
   return TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line);
-};
-
-/**
- * @return the beginning of the previous line.
- * If already on the first line, return the beginning of this line.
- */
-Position.prototype.getPreviousLineBegin = function (this: Position): Position {
-  if (this.line === 0) {
-    return this.getLineBegin();
-  }
-
-  return new Position(this.line - 1, 0);
-};
-
-/**
- * @return the beginning of the next line.
- * If already on the last line, return the *end* of this line.
- */
-Position.prototype.getNextLineBegin = function (this: Position): Position {
-  if (this.line >= TextEditor.getLineCount() - 1) {
-    return this.getLineEnd();
-  }
-
-  return new Position(this.line + 1, 0);
 };
 
 /**
