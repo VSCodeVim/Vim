@@ -35,7 +35,7 @@ type SurroundEdge = {
   rightEdge: Range;
   /** we need to pass this with transformations */
   cursorIndex: number;
-  // to support changing a tag, cstt
+  /** to support changing a tag, cstt */
   leftTagName?: Range;
   rightTagName?: Range;
 };
@@ -360,8 +360,11 @@ class SurroundHelper {
     [key: string]: {
       left: string;
       right: string;
+      /** do we consume space on the edges? "(" vs ")" */
       removeSpace: boolean;
-      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag;
+      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObjectMovement;
+      /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
+      extraChars?: number;
     };
   } = {
     // check: unify this with Pairmatcher.pairings?
@@ -402,12 +405,20 @@ class SurroundHelper {
     },
     '`': { left: '`', right: '`', removeSpace: false, movement: () => new MoveAroundBacktick() },
     '<': { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
+    '*': {
+      left: '*',
+      right: '*',
+      removeSpace: false,
+      movement: () => new SelectInnerWord(),
+      extraChars: 1,
+    },
     // aliases
     b: { left: '(', right: ')', removeSpace: false, movement: () => new MoveAroundParentheses() },
     r: { left: '[', right: ']', removeSpace: false, movement: () => new MoveAroundSquareBracket() },
     B: { left: '{', right: '}', removeSpace: false, movement: () => new MoveAroundCurlyBrace() },
     a: { left: '<', right: '>', removeSpace: false, movement: () => new MoveAroundCaret() },
     t: { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
+    _: { left: '_', right: '_', removeSpace: false, movement: () => new SelectInnerWord() },
   };
 
   /** returns two ranges (for left and right replacement) for our surround target (X in dsX, csXy) relative to position */
@@ -441,7 +452,7 @@ class SurroundHelper {
       // we want as result an IMovement, that did not fail.
       return undefined;
     }
-    const rangeStart = targetMovement.start;
+    let rangeStart = targetMovement.start;
     let rangeEnd = targetMovement.stop;
 
     // good to go, now we can calculate our ranges based on rangeStart and rangeEnd
@@ -453,6 +464,10 @@ class SurroundHelper {
         // for parens, brackets, curly ... we have to adjust the right range
         // there seems to be inconsistency between MoveInsideCharacter and MoveQuoteMatch
         rangeEnd = rangeEnd.getLeft();
+      }
+      if (target.extraChars) {
+        rangeStart = rangeStart.getLeft(target.extraChars);
+        rangeEnd = rangeEnd.getRight(target.extraChars);
       }
       // now start and end are on ()
       // next, check if there is space to remove (foo) vs ( bar )
