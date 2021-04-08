@@ -1077,7 +1077,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public async rerunRecordedState(recordedState: RecordedState): Promise<void> {
     const actions = [...recordedState.actionsRun];
-    const { hasRunSurround, surroundKeys } = recordedState;
 
     this.vimState.isRunningDotCommand = true;
 
@@ -1092,22 +1091,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState = new RecordedState();
     this.vimState.recordedState = recordedState;
 
-    // Replay surround if applicable, otherwise rerun actions
-    if (hasRunSurround) {
-      await this.handleMultipleKeyEvents(surroundKeys);
-    } else {
-      for (const [i, action] of actions.entries()) {
-        recordedState.actionsRun = actions.slice(0, i + 1);
-        await this.runAction(recordedState, action);
+    for (const [i, action] of actions.entries()) {
+      recordedState.actionsRun = actions.slice(0, i + 1);
+      await this.runAction(recordedState, action);
 
-        if (this.vimState.lastMovementFailed) {
-          return;
-        }
-
-        await this.updateView();
+      if (this.vimState.lastMovementFailed) {
+        return;
       }
-      recordedState.actionsRun = actions;
+
+      await this.updateView();
     }
+    recordedState.actionsRun = actions;
     this.vimState.isRunningDotCommand = false;
   }
 

@@ -250,15 +250,7 @@ export class YankOperator extends BaseOperator {
   canBeRepeatedWithDot = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    // HACK: make Surround with y (which takes a motion) work.
-    if (vimState.surround) {
-      vimState.surround.range = new vscode.Range(start, end);
-      await vimState.setCurrentMode(Mode.SurroundInputMode);
-      vimState.cursorStopPosition = start;
-      vimState.cursorStartPosition = start;
-
-      return;
-    }
+    const originalMode = vimState.currentMode;
 
     [start, end] = sorted(start, end);
     let extendedEnd = new Position(end.line, end.character + 1);
