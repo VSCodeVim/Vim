@@ -20,13 +20,7 @@ import {
 } from '../motion';
 import { isIMovement } from '../baseMotion';
 import { BaseOperator } from './../operator';
-import {
-  SelectInnerBigWord,
-  SelectInnerParagraph,
-  SelectInnerSentence,
-  SelectInnerWord,
-  TextObjectMovement,
-} from '../../textobject/textobject';
+import { SelectInnerWord, TextObjectMovement } from '../../textobject/textobject';
 import { Position } from 'vscode';
 import { Logger } from '../../util/logger';
 
@@ -118,7 +112,7 @@ class YankSurroundOperator extends SurroundOperator {
       position
         .getDown(Math.max(0, count - 1))
         .getLineEnd()
-        .getLastWordEnd()
+        .prevWordEnd(vimState.document)
     );
   }
 }
@@ -495,8 +489,10 @@ class SurroundHelper {
       // return ranges from there to the other side
       // start -> <foo>bar</foo> <-- stop
       const openTagNameStart = rangeStart.getRight();
-      const openTagNameEnd = openTagNameStart.getCurrentWordEnd(true).getRight();
-      const closeTagNameStart = rangeEnd.getLeft().getWordLeft();
+      const openTagNameEnd = openTagNameStart
+        .nextWordEnd(vimState.document, { inclusive: true })
+        .getRight();
+      const closeTagNameStart = rangeEnd.getLeft().nextWordStart(vimState.document);
       const closeTagNameEnd = rangeEnd.getLeft();
       vimState.cursorStartPosition = position; // some textobj (MoveInsideCharacter) expect this
       vimState.cursorStopPosition = position;

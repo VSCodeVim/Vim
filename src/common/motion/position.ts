@@ -6,10 +6,10 @@ import { clamp } from '../../util/util';
 import { getSentenceBegin, getSentenceEnd } from '../../textobject/sentence';
 import {
   WordType,
-  getCurrentWordEnd,
-  getLastWordEnd,
-  getWordLeft,
-  getWordRight,
+  nextWordEnd,
+  prevWordEnd,
+  prevWordStart,
+  nextWordStart,
 } from '../../textobject/word';
 import { Position } from 'vscode';
 
@@ -124,15 +124,45 @@ declare module 'vscode' {
     getRightThroughLineBreaks(includeEol?: boolean): Position;
     getOffsetThroughLineBreaks(offset: number): Position;
 
-    getWordLeft(inclusive?: boolean): Position;
-    getWordRight(inclusive?: boolean): Position;
-    getCurrentWordEnd(inclusive?: boolean): Position;
-    getLastWordEnd(): Position;
+    /**
+     * @returns the start of the first word to the left of the current position, like `b`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the start of a word
+     */
+    prevWordStart(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean }
+    ): Position;
 
-    getBigWordLeft(inclusive?: boolean): Position;
-    getBigWordRight(): Position;
-    getCurrentBigWordEnd(inclusive?: boolean): Position;
-    getLastBigWordEnd(): Position;
+    /**
+     * @returns the start of the first word to the right of the current position, like `w`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the start of a word
+     */
+    nextWordStart(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean }
+    ): Position;
+
+    /**
+     * @returns the end of the first word to the left of the current position, like `ge`
+     *
+     * @param wordType how word boundaries are determined
+     */
+    prevWordEnd(document: vscode.TextDocument, args?: { wordType?: WordType }): Position;
+
+    /**
+     * @returns the end of the first word to the right of the current position, like `e`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the end of a word
+     */
+    nextWordEnd(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean }
+    ): Position;
 
     getSentenceBegin(args: { forward: boolean }): Position;
     getSentenceEnd(): Position;
@@ -144,18 +174,6 @@ declare module 'vscode' {
      * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
      */
     getLineBeginRespectingIndent(document: vscode.TextDocument): Position;
-
-    /**
-     * @return the beginning of the previous line.
-     * If already on the first line, return the beginning of this line.
-     */
-    getPreviousLineBegin(): Position;
-
-    /**
-     * @return the beginning of the next line.
-     * If already on the last line, return the *end* of this line.
-     */
-    getNextLineBegin(): Position;
 
     /**
      * @returns a new Position at the end of this position's line.
@@ -356,57 +374,36 @@ Position.prototype.getOffsetThroughLineBreaks = function (
   return pos;
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getWordLeft = function (this: Position, inclusive: boolean = false): Position {
-  return getWordLeft(this, WordType.Normal, inclusive);
-};
-
-Position.prototype.getBigWordLeft = function (
+Position.prototype.prevWordStart = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean }
 ): Position {
-  return getWordLeft(this, WordType.Big, inclusive);
+  return prevWordStart(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getWordRight = function (this: Position, inclusive: boolean = false): Position {
-  return getWordRight(this, WordType.Normal, inclusive);
-};
-
-Position.prototype.getBigWordRight = function (this: Position): Position {
-  return getWordRight(this, WordType.Big);
-};
-
-Position.prototype.getLastWordEnd = function (this: Position): Position {
-  return getLastWordEnd(this, WordType.Normal);
-};
-
-Position.prototype.getLastBigWordEnd = function (this: Position): Position {
-  return getLastWordEnd(this, WordType.Big);
-};
-
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getCurrentWordEnd = function (
+Position.prototype.nextWordStart = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean }
 ): Position {
-  return getCurrentWordEnd(this, WordType.Normal, inclusive);
+  return nextWordStart(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getCurrentBigWordEnd = function (
+Position.prototype.prevWordEnd = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType }
 ): Position {
-  return getCurrentWordEnd(this, WordType.Big, inclusive);
+  return prevWordEnd(document, this, args?.wordType ?? WordType.Normal);
+};
+
+Position.prototype.nextWordEnd = function (
+  this: Position,
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean }
+): Position {
+  return nextWordEnd(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
 Position.prototype.getSentenceBegin = function (
@@ -439,30 +436,6 @@ Position.prototype.getLineBeginRespectingIndent = function (
     return this.getLineBegin();
   }
   return TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line);
-};
-
-/**
- * @return the beginning of the previous line.
- * If already on the first line, return the beginning of this line.
- */
-Position.prototype.getPreviousLineBegin = function (this: Position): Position {
-  if (this.line === 0) {
-    return this.getLineBegin();
-  }
-
-  return new Position(this.line - 1, 0);
-};
-
-/**
- * @return the beginning of the next line.
- * If already on the last line, return the *end* of this line.
- */
-Position.prototype.getNextLineBegin = function (this: Position): Position {
-  if (this.line >= TextEditor.getLineCount() - 1) {
-    return this.getLineEnd();
-  }
-
-  return new Position(this.line + 1, 0);
 };
 
 /**

@@ -38,7 +38,7 @@ import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
-import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
+import { WordType } from '../../textobject/word';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
@@ -1367,8 +1367,8 @@ class CommandOpenFile extends BaseCommand {
       fullFilePath = vimState.document.getText(vimState.editor.selection);
     } else {
       const range = new vscode.Range(
-        getWordLeft(position, WordType.FileName, true),
-        getWordRight(position, WordType.FileName)
+        position.prevWordStart(vimState.document, { wordType: WordType.FileName, inclusive: true }),
+        position.nextWordStart(vimState.document, { wordType: WordType.FileName })
       );
 
       fullFilePath = vimState.document.getText(range).trim();
@@ -2814,7 +2814,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       // that word.
       const whereToStart = text[position.character].match(/\s/)
         ? position
-        : position.getWordLeft(true);
+        : position.prevWordStart(vimState.document, { inclusive: true });
 
       wordLoop: for (let { start, end, word } of TextEditor.iterateWords(
         vimState.document,
@@ -3058,16 +3058,16 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       const curPos = x.active;
       if (idx === 0) {
         return new vscode.Selection(
-          curPos.getWordLeft(false),
-          curPos.getLeft().getCurrentWordEnd(true).getRight()
+          curPos.prevWordStart(vimState.document),
+          curPos.getLeft().nextWordEnd(vimState.document, { inclusive: true }).getRight()
         );
       } else {
         // Since we're adding the selections ourselves, we need to make sure
         // that our selection is actually over what our original word is
         const matchWordPos = vimState.editor.selections[0].active;
         const matchWordLength =
-          matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
-          matchWordPos.getWordLeft(false).character;
+          matchWordPos.getLeft().nextWordEnd(vimState.document, { inclusive: true }).getRight()
+            .character - matchWordPos.prevWordStart(vimState.document).character;
         const wordBegin = curPos.getLeft(matchWordLength);
         return new vscode.Selection(wordBegin, curPos);
       }
