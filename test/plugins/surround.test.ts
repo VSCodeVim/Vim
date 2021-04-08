@@ -77,6 +77,7 @@ suite('surround plugin', () => {
     end: ['first |( line ).test'],
   });
 
+  /*
   newTest({
     title: "'ysiw<' surrounds word with tags",
     start: ['first li|ne test'],
@@ -97,6 +98,7 @@ suite('surround plugin', () => {
     keysPressed: 'cst<abc.def>',
     end: ['first <abc.def>li|ne</abc.def> test'],
   });
+  */
 
   /* todo: keep whitespace for yss
   newTest({
@@ -163,12 +165,14 @@ suite('surround plugin', () => {
     end: ['first |<line> test'],
   });
 
+  /*
   newTest({
     title: 'change surround to tags',
     start: ['first [li|ne] test'],
     keysPressed: 'cs]tabc>',
     end: ['first <abc>li|ne</abc> test'],
   });
+  */
 
   newTest({
     title: 'delete surround',
@@ -268,6 +272,7 @@ suite('surround plugin', () => {
     end: ['func() [ ', '    |foo()', ' ]'],
   });
 
+  /*
   newTest({
     title: 'change surround with tags that contain an attribute and preserve them',
     start: ['<h2 test class="foo">b|ar</h2>'],
@@ -281,6 +286,7 @@ suite('surround plugin', () => {
     keysPressed: 'cstth3>',
     end: ['<h3>b|ar</h3>'],
   });
+  */
 
   newTest({
     title:
@@ -306,6 +312,7 @@ suite('surround plugin', () => {
     end: ['first ( l|ine ) test'],
   });
 
+  /*
   newTest({
     title: "'S<div>' surrounds selection with <div></div>",
     start: ['first li|ne test'],
@@ -316,6 +323,7 @@ suite('surround plugin', () => {
     keysPressed: 'viwS<div>0',
     end: ['|first <div>line</div> test'],
   });
+  */
 
   newTest({
     title: "'S)' surrounds visual line selection without space",
@@ -331,10 +339,12 @@ suite('surround plugin', () => {
     end: ['first', '( ', 'second', '| )', 'third'],
   });
 
+  /*
   newTest({
     title: "'S<div>' surrounds visual line selection with <div></div>",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS<div>',
     end: ['first', '<div>', 'second', '|</div>', 'third'],
   });
+  */
 });
