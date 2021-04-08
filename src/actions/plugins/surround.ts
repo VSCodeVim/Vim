@@ -51,7 +51,7 @@ export interface SurroundState {
   replacement: string;
 
   /** name of tag */
-  tag: string | undefined;
+  tag?: string;
 
   /** for visual line mode */
   addNewline?: boolean;
@@ -80,7 +80,6 @@ class YankSurroundOperator extends SurroundOperator {
       vimState.surround = {
         operator: 'yank',
         target: undefined,
-        tag: undefined,
         replacement: '',
         edges: [],
         previousMode: vimState.currentMode,
@@ -147,7 +146,6 @@ class CommandSurroundModeStartVisualLine extends SurroundOperator {
     if (!this.multicursorIndex) {
       vimState.surround = {
         target: undefined,
-        tag: undefined,
         operator: 'yank',
         replacement: '',
         addNewline: true,
@@ -204,7 +202,6 @@ class CommandSurroundDeleteSurround extends CommandSurround {
       operator: 'delete',
       target,
       replacement: '',
-      tag: undefined,
       edges: [],
       previousMode: Mode.Normal,
     };
@@ -249,7 +246,6 @@ class CommandSurroundChangeSurround extends CommandSurround {
       vimState.surround = {
         operator: 'change',
         target,
-        tag: undefined,
         replacement: '',
         edges: [],
         previousMode: Mode.Normal,
