@@ -100,14 +100,12 @@ suite('surround plugin', () => {
   });
   */
 
-  /* todo: keep whitespace for yss
   newTest({
     title: "'yss)' surrounds entire line respecting whitespace",
     start: ['foo', '    foob|ar  '],
     keysPressed: 'yss)',
     end: ['foo', '    |(foobar)  '],
   });
-  */
 
   newTest({
     title: 'change surround',

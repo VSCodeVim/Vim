@@ -30,10 +30,10 @@ import {
 import { Position } from 'vscode';
 import { Logger } from '../../util/logger';
 
-export type SurroundEdge = {
+type SurroundEdge = {
   leftEdge: Range;
   rightEdge: Range;
-  /** we need to pass this with transformation<e */
+  /** we need to pass this with transformations */
   cursorIndex: number;
   // to support changing a tag, cstt
   leftTagName?: Range;
@@ -108,6 +108,18 @@ class YankSurroundOperator extends SurroundOperator {
         cursorIndex: multicursorIndex,
       };
     }
+  }
+
+  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
+    // we want to act on range: first non whitespace to last non whitespace
+    await this.run(
+      vimState,
+      position.getLineBeginRespectingIndent(vimState.document),
+      position
+        .getDown(Math.max(0, count - 1))
+        .getLineEnd()
+        .getLastWordEnd()
+    );
   }
 }
 
