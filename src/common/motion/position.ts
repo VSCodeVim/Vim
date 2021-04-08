@@ -415,12 +415,7 @@ Position.prototype.nextWordEnd = function (
   document: vscode.TextDocument,
   args?: { wordType?: WordType; inclusive?: boolean }
 ): Position {
-  return nextWordEnd(
-    document,
-    this,
-    args?.wordType ?? WordType.Normal,
-    args?.inclusive ?? false
-  );
+  return nextWordEnd(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
 Position.prototype.getSentenceBegin = function (

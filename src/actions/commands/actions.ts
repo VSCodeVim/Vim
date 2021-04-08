@@ -3066,10 +3066,8 @@ class ActionOverrideCmdDInsert extends BaseCommand {
         // that our selection is actually over what our original word is
         const matchWordPos = vimState.editor.selections[0].active;
         const matchWordLength =
-          matchWordPos
-            .getLeft()
-            .nextWordEnd(vimState.document, { inclusive: true })
-            .getRight().character - matchWordPos.prevWordStart(vimState.document).character;
+          matchWordPos.getLeft().nextWordEnd(vimState.document, { inclusive: true }).getRight()
+            .character - matchWordPos.prevWordStart(vimState.document).character;
         const wordBegin = curPos.getLeft(matchWordLength);
         return new vscode.Selection(wordBegin, curPos);
       }

@@ -41,9 +41,7 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position
-        .nextWordEnd(vimState.document, { wordType: WordType.CamelCase })
-        .getRight();
+      return position.nextWordEnd(vimState.document, { wordType: WordType.CamelCase }).getRight();
     } else {
       return position.nextWordStart(vimState.document, { wordType: WordType.CamelCase });
     }
@@ -88,9 +86,7 @@ class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position
-        .prevWordEnd(vimState.document, { wordType: WordType.CamelCase })
-        .getRight();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.CamelCase }).getRight();
       stop = position
         .nextWordStart(vimState.document, { wordType: WordType.CamelCase })
         .getLeftThroughLineBreaks();

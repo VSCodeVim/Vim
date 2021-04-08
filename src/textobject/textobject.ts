@@ -118,9 +118,7 @@ export class SelectABigWord extends TextObjectMovement {
         (nextWord.line > position.line || nextWord.isAtDocumentEnd()) &&
         vimState.recordedState.count === 0
       ) {
-        if (
-          position.prevWordEnd(vimState.document, { wordType: WordType.Big }).isLineBeginning()
-        ) {
+        if (position.prevWordEnd(vimState.document, { wordType: WordType.Big }).isLineBeginning()) {
           start = position.prevWordEnd(vimState.document, { wordType: WordType.Big });
         } else {
           start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
@@ -324,7 +322,10 @@ export class SelectInnerBigWord extends TextObjectMovement {
       start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
       stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
     } else {
-      start = position.prevWordStart(vimState.document, { wordType: WordType.Big, inclusive: true });
+      start = position.prevWordStart(vimState.document, {
+        wordType: WordType.Big,
+        inclusive: true,
+      });
       stop = position.nextWordEnd(vimState.document, {
         wordType: WordType.Big,
         inclusive: true,
