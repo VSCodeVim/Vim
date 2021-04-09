@@ -358,6 +358,13 @@ suite('put operator', () => {
   });
 
   newTest({
+    title: 'Yank two lines line-wise, <count>p',
+    start: ['|abc', 'def', 'one', 'two', 'three'],
+    keysPressed: 'd2dj' + '2p',
+    end: ['one', 'two', '|abc', 'def', 'abc', 'def', 'three'],
+  });
+
+  newTest({
     title: 'Yank line-wise, <count>P',
     start: ['|abc', 'one', 'two', 'three'],
     keysPressed: 'ddj' + '2P',

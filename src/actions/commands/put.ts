@@ -335,21 +335,13 @@ export class PutCommand extends BaseCommand {
 
     await super.execCount(position, vimState);
 
-    if (
-      vimState.effectiveRegisterMode === RegisterMode.LineWise &&
-      vimState.recordedState.count > 0
-    ) {
-      const numNewlines =
-        (await PutCommand.getText(vimState, register, this.multicursorIndex)).split('\n').length *
-        vimState.recordedState.count;
-
+    const count = vimState.recordedState.count || 1;
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise && count > 1) {
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
-        diff: new PositionDiff({ line: -numNewlines + 1 }),
+        diff: new PositionDiff({ line: -count + 1 }),
         cursorIndex: this.multicursorIndex,
       });
-
-      reportLinesChanged(numNewlines, vimState);
     }
   }
 }
