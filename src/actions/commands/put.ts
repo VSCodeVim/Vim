@@ -31,18 +31,11 @@ export interface IPutCommandOptions {
   adjustIndent?: boolean;
 
   /**
-   * Forces a linewise register mode put.
-   *
    * True only for `:p[ut]`
-   */
-  forceLinewise?: boolean;
-
-  /**
-   * Forces the cursor to move to the last line of what you pasted.
    *
-   * True only for `:p[ut]`
+   * Forces a linewise register mode put and puts the cursor on the last line of what you pasted.
    */
-  forceCursorLastLine?: boolean;
+  exCommand?: boolean;
 }
 
 @RegisterAction
@@ -90,8 +83,7 @@ export class PutCommand extends BaseCommand {
       return;
     }
 
-    const dest = options.pasteBeforeCursor ? position : position.getRight();
-    const registerMode = options.forceLinewise ? RegisterMode.LineWise : register.registerMode;
+    const registerMode = options.exCommand ? RegisterMode.LineWise : register.registerMode;
 
     if (register.text instanceof RecordedState) {
       /**
@@ -118,75 +110,75 @@ export class PutCommand extends BaseCommand {
       );
     }
 
-    let text = await PutCommand.getText(vimState, register, this.multicursorIndex);
+    // Where we're going to insert the text
+    const destination =
+      !isVisualMode(vimState.currentMode) && registerMode === RegisterMode.LineWise
+        ? options.pasteBeforeCursor
+          ? position.getLineBegin()
+          : position.getLineEnd()
+        : options.pasteBeforeCursor
+        ? position
+        : position.getRight();
 
+    // Get text from the register
+    let text = await PutCommand.getText(vimState, register, this.multicursorIndex);
+    if (
+      !isVisualMode(vimState.currentMode) &&
+      registerMode === RegisterMode.LineWise &&
+      options.adjustIndent
+    ) {
+      // Adjust indent to current line
+      const indentationWidth = TextEditor.getIndentationLevel(
+        vimState.document.lineAt(position).text
+      );
+      const firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
+
+      text = text
+        .split('\n')
+        .map((line) => {
+          const currentIdentationWidth = TextEditor.getIndentationLevel(line);
+          const newIndentationWidth =
+            currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
+
+          return TextEditor.setIndentationLevel(line, newIndentationWidth);
+        })
+        .join('\n');
+    }
+
+    // Adjust text with leading and/or trailing newline as needed by linewise register
     const noPrevLine = vimState.cursorStartPosition.line === 0;
     const noNextLine = vimState.cursorStopPosition.line === vimState.document.lineCount - 1;
-
-    let textToAdd: string;
-    let whereToAddText: Position;
-    if (registerMode === RegisterMode.CharacterWise) {
-      textToAdd = text;
-      whereToAddText = dest;
-    } else if (vimState.currentMode === Mode.Visual && registerMode === RegisterMode.LineWise) {
-      // in the specific case of linewise register data during visual mode,
-      // we need extra newline feeds
-      textToAdd = '\n' + text + '\n';
-      whereToAddText = dest;
-    } else if (vimState.currentMode === Mode.VisualLine && registerMode === RegisterMode.LineWise) {
-      // in the specific case of linewise register data during visual mode,
-      // we need extra newline feeds
-      const left = !noPrevLine && noNextLine ? '\n' : '';
-      const right = noNextLine ? '' : '\n';
-      textToAdd = left + text + right;
-      whereToAddText = dest;
-    } else {
-      if (options.adjustIndent) {
-        // Adjust indent to current line
-        const indentationWidth = TextEditor.getIndentationLevel(
-          vimState.document.lineAt(position).text
-        );
-        const firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
-
-        text = text
-          .split('\n')
-          .map((line) => {
-            const currentIdentationWidth = TextEditor.getIndentationLevel(line);
-            const newIndentationWidth =
-              currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
-
-            return TextEditor.setIndentationLevel(line, newIndentationWidth);
-          })
-          .join('\n');
-      }
-
-      if (registerMode === RegisterMode.LineWise) {
-        // P insert before current line
-        if (options.pasteBeforeCursor) {
-          textToAdd = text + '\n';
-          whereToAddText = dest.getLineBegin();
-        } else {
-          textToAdd = '\n' + text;
-          whereToAddText = dest.getLineEnd();
-        }
+    let adjustedText = text;
+    if (registerMode === RegisterMode.LineWise) {
+      if (vimState.currentMode === Mode.Visual) {
+        // In the specific case of linewise register data during visual mode, we need extra newline feeds
+        adjustedText = '\n' + text + '\n';
+      } else if (vimState.currentMode === Mode.VisualLine) {
+        // In the specific case of linewise register data during visual mode, we need extra newline feeds
+        const left = !noPrevLine && noNextLine ? '\n' : '';
+        const right = noNextLine ? '' : '\n';
+        adjustedText = left + text + right;
+      } else if (options.pasteBeforeCursor) {
+        adjustedText = text + '\n';
       } else {
-        textToAdd = text;
-        whereToAddText = options.pasteBeforeCursor ? position : position.getRight();
+        adjustedText = '\n' + text;
       }
     }
 
-    // After using "p" or "P" in Visual mode the text that was put will be
-    // selected (from Vim's ":help gv").
+    // After using "p" or "P" in Visual mode the text that was put will be selected (from Vim's ":help gv").
     if (isVisualMode(vimState.currentMode)) {
-      let textToEnd = textToAdd;
-      if (vimState.currentMode === Mode.VisualLine && textToAdd[textToAdd.length - 1] === '\n') {
-        // don't go next line
-        textToEnd = textToAdd.substring(0, textToAdd.length - 1);
+      let textToEnd = adjustedText;
+      if (
+        vimState.currentMode === Mode.VisualLine &&
+        adjustedText[adjustedText.length - 1] === '\n'
+      ) {
+        // Don't go to next line due to trailing newline
+        textToEnd = adjustedText.substring(0, adjustedText.length - 1);
       }
       vimState.lastVisualSelection = {
         mode: vimState.currentMode,
-        start: whereToAddText,
-        end: whereToAddText.advancePositionByText(textToEnd),
+        start: destination,
+        end: destination.advancePositionByText(textToEnd),
       };
     }
 
@@ -196,6 +188,7 @@ export class PutCommand extends BaseCommand {
     const numNewlines = text.split('\n').length - 1;
     const currentLineLength = vimState.document.lineAt(position).text.length;
 
+    // Adjust the cursor position using a PositionDiff
     let diff: PositionDiff;
     if (vimState.currentMode === Mode.VisualLine) {
       const lines = text.split('\n');
@@ -209,7 +202,7 @@ export class PutCommand extends BaseCommand {
         line: -lineDiff,
         character: whitespaceOnFirstLine,
       };
-    } else if (registerMode === RegisterMode.LineWise && options.forceCursorLastLine) {
+    } else if (options.exCommand) {
       // Move to cursor to last line, first non-whitespace character of what you pasted
       const lastLine = text.split('\n')[numNewlines];
       const check = lastLine.match(/^\s*/);
@@ -250,7 +243,7 @@ export class PutCommand extends BaseCommand {
         if (registerMode === RegisterMode.BlockWise) {
           characterOffset = options.pasteBeforeCursor ? -text.length : 1;
         } else {
-          characterOffset = options.pasteBeforeCursor ? -1 : textToAdd.length;
+          characterOffset = options.pasteBeforeCursor ? -1 : adjustedText.length;
         }
         diff = new PositionDiff({
           character: characterOffset,
@@ -278,11 +271,13 @@ export class PutCommand extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertText',
-      text: textToAdd,
-      position: whereToAddText,
+      text: adjustedText,
+      position: destination,
       diff,
     });
-    let numNewlinesAfterPut = textToAdd.split('\n').length;
+
+    // Report lines changed
+    let numNewlinesAfterPut = adjustedText.split('\n').length;
     if (registerMode === RegisterMode.LineWise) {
       numNewlinesAfterPut--;
     }
