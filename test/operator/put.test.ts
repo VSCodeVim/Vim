@@ -304,12 +304,51 @@ suite('put operator', () => {
     end: ['abc abc |dhi'],
   });
 
-  // TODO: Yank character-wise, <count>p
-  // TODO: Yank character-wise, <count>P
-  // TODO: Yank character-wise, <count>gp
-  // TODO: Yank character-wise, <count>gP
-  // TODO: Yank character-wise, <count>]p
-  // TODO: Yank character-wise, <count>[p
+  newTest({
+    title: 'Yank character-wise, <count>p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2p',
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>P',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2P',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gp',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2gp',
+    // TODO: cursor position is wrong
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gP',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2gP',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>]p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2]p',
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>[p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2[p',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
 
   newTest({
     title: 'Yank line-wise, <count>p',
