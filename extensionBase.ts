@@ -116,7 +116,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-    Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
+    Register.setReadonlyRegister('%', filepathComponents[filepathComponents.length - 1]);
   }
 
   // workspace events
@@ -242,11 +242,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
       if (vscode.window.activeTextEditor === undefined) {
-        Register.putByKey('', '%', undefined, true);
+        Register.setReadonlyRegister('%', '');
         return;
       }
 
-      const oldFileRegister = (await Register.get(undefined, '%'))?.text;
+      const oldFileRegister = (await Register.get('%'))?.text;
       const relativePath = vscode.workspace.asRelativePath(
         vscode.window.activeTextEditor.document.uri,
         false
@@ -254,9 +254,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
-          Register.putByKey(oldFileRegister, '#', RegisterMode.CharacterWise, true);
+          Register.setReadonlyRegister('#', oldFileRegister as string);
         }
-        Register.putByKey(relativePath, '%', RegisterMode.CharacterWise, true);
+        Register.setReadonlyRegister('%', relativePath);
       }
 
       taskQueue.enqueueTask(async () => {

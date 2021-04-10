@@ -444,7 +444,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
 
       vimState.statusBarCursorCharacterPos = 0;
-      Register.putByKey(searchState.searchString, '/', undefined, true);
+      Register.setReadonlyRegister('/', searchState.searchString);
       globalState.addSearchStateToHistory(searchState);
       globalState.hl = true;
 
@@ -579,7 +579,7 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.registerName = this.keysPressed[1];
-    const register = await Register.get(vimState);
+    const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
@@ -621,8 +621,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
       return;
     }
 
-    vimState.recordedState.registerName = this.keysPressed[1];
-    const register = await Register.get(vimState);
+    const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;

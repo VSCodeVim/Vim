@@ -176,7 +176,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (yank) {
-      Register.put(text, vimState, this.multicursorIndex);
+      Register.put(vimState, text, this.multicursorIndex);
     }
 
     let diff = new PositionDiff();
@@ -281,7 +281,7 @@ export class YankOperator extends BaseOperator {
 
     this.highlightYankedRanges(vimState, [range]);
 
-    Register.put(text, vimState, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex);
 
     vimState.cursorStopPosition =
       vimState.currentMode === Mode.Normal && vimState.currentRegisterMode === RegisterMode.LineWise
@@ -678,7 +678,7 @@ class YankVisualBlockMode extends BaseOperator {
 
     this.highlightYankedRanges(vimState, ranges);
 
-    Register.put(toCopy, vimState, this.multicursorIndex);
+    Register.put(vimState, toCopy, this.multicursorIndex);
 
     vimState.historyTracker.addMark(startPos, '<');
     vimState.historyTracker.addMark(endPos, '>');

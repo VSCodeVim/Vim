@@ -107,7 +107,7 @@ async function createSearchStateAndMoveToMatch(args: {
     { isRegex: isExact, ignoreSmartcase: true },
     vimState.currentMode
   );
-  Register.putByKey(globalState.searchState.searchString, '/', undefined, true);
+  Register.setReadonlyRegister('/', globalState.searchState.searchString);
   globalState.addSearchStateToHistory(globalState.searchState);
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
