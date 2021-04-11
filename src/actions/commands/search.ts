@@ -38,7 +38,7 @@ async function searchCurrentWord(
     // outside of the currently selected word.
     const searchStartCursorPosition =
       direction === SearchDirection.Backward
-        ? vimState.cursorStopPosition.getWordLeft(true)
+        ? vimState.cursorStopPosition.prevWordStart(vimState.document, { inclusive: true })
         : vimState.cursorStopPosition;
 
     await createSearchStateAndMoveToMatch({

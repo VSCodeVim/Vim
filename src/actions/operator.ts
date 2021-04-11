@@ -163,7 +163,7 @@ export class DeleteOperator extends BaseOperator {
 
     // Now rebornix is confused as well.
     if (isOnLastLine && start.line !== 0 && registerMode === RegisterMode.LineWise) {
-      start = start.getPreviousLineBegin().getLineEnd();
+      start = start.getUp().getLineEnd();
     }
 
     if (registerMode === RegisterMode.LineWise) {
