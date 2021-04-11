@@ -398,15 +398,15 @@ suite('Remapper', () => {
 
     const expected = 'text-to-put-on-register';
     let actual: IRegisterContent | undefined;
-    Register.put(expected, modeHandler.vimState);
-    actual = await Register.get(vimState);
+    Register.put(modeHandler.vimState, expected);
+    actual = await Register.get(vimState.recordedState.registerName);
     assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'd']);
 
     // assert
-    actual = await Register.get(vimState);
+    actual = await Register.get(vimState.recordedState.registerName);
     assert.strictEqual(actual?.text, expected);
   });
 
@@ -426,15 +426,15 @@ suite('Remapper', () => {
 
     const expected = 'text-to-put-on-register';
     let actual: IRegisterContent | undefined;
-    Register.put(expected, modeHandler.vimState);
-    actual = await Register.get(vimState);
+    Register.put(modeHandler.vimState, expected);
+    actual = await Register.get(vimState.recordedState.registerName);
     assert.strictEqual(actual?.text, expected);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['d', 'w']);
 
     // assert
-    actual = await Register.get(vimState);
+    actual = await Register.get(vimState.recordedState.registerName);
     assert.strictEqual(actual?.text, expected);
   });
 

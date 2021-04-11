@@ -26,7 +26,6 @@ import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
-import { PutCommand } from './put';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -121,7 +120,7 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ['<C-a>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = await Register.get(vimState, '.');
+    const register = await Register.get('.');
     if (
       register === undefined ||
       !(register.text instanceof RecordedState) ||
@@ -386,21 +385,13 @@ class CommandInsertRegisterContent extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.registerName = this.keysPressed[1];
-    const register = await Register.get(vimState);
+    const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
     }
 
-    let text: string;
-    if (register.text instanceof Array) {
-      text =
-        // when we yanked with MC and insert with MC, we insert register[i] at cusor[i]
-        vimState.isMultiCursor && vimState.cursors.length === register.text.length
-          ? await PutCommand.getText(vimState, register, this.multicursorIndex)
-          : register.text.join('\n');
-    } else if (register.text instanceof RecordedState) {
+    if (register.text instanceof RecordedState) {
       vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: vimState.recordedState.registerName,
@@ -408,10 +399,9 @@ class CommandInsertRegisterContent extends BaseCommand {
       });
 
       return;
-    } else {
-      text = register.text;
     }
 
+    let text = register.text;
     if (register.registerMode === RegisterMode.LineWise && !vimState.isMultiCursor) {
       text += '\n';
     }

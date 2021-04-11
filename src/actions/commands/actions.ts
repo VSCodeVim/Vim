@@ -307,7 +307,7 @@ class CommandRecordMacro extends BaseCommand {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       const newRegister = new RecordedState();
       newRegister.registerName = register;
-      Register.putByKey(newRegister, register);
+      Register.putByKey(register, newRegister);
     }
   }
 }
@@ -320,7 +320,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const macro = vimState.macro!;
 
-    const existingMacro = (await Register.get(vimState, macro.registerName))?.text;
+    const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
       existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
     }
@@ -2424,7 +2424,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
-    Register.put(text, vimState, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex);
 
     const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
@@ -3165,7 +3165,7 @@ class ActionGoToAlternateFile extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const altFile = await Register.get(undefined, '#');
+    const altFile = await Register.get('#');
     if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {

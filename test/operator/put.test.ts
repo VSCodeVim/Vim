@@ -305,6 +305,102 @@ suite('put operator', () => {
   });
 
   newTest({
+    title: 'Yank character-wise, <count>p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2p',
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>P',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2P',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gp',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2gp',
+    // TODO: cursor position is wrong
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>gP',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2gP',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>]p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2]p',
+    end: ['one tXYZXY|Zwo three'],
+  });
+
+  newTest({
+    title: 'Yank character-wise, <count>[p',
+    start: ['|XYZone two three'],
+    keysPressed: 'd3l' + 'w' + '2[p',
+    // TODO: cursor position is wrong
+    end: ['one XYZX|YZtwo three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>p',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2p',
+    end: ['one', 'two', '|abc', 'abc', 'three'],
+  });
+
+  newTest({
+    title: 'Yank two lines line-wise, <count>p',
+    start: ['|abc', 'def', 'one', 'two', 'three'],
+    keysPressed: 'd2dj' + '2p',
+    end: ['one', 'two', '|abc', 'def', 'abc', 'def', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>P',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2P',
+    end: ['one', '|abc', 'abc', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gp',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2gp',
+    end: ['one', 'two', 'abc', 'abc', '|three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>gP',
+    start: ['|abc', 'one', 'two', 'three'],
+    keysPressed: 'ddj' + '2gP',
+    end: ['one', 'abc', 'abc', '|two', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>]p',
+    start: ['|abc', 'one', '  two', 'three'],
+    keysPressed: 'ddj' + '2]p',
+    // TODO: cursor position is wrong
+    end: ['one', '  two', '  abc', '  |abc', 'three'],
+  });
+
+  newTest({
+    title: 'Yank line-wise, <count>[p',
+    start: ['|abc', 'one', '  two', 'three'],
+    keysPressed: 'ddj' + '2[p',
+    end: ['one', '  |abc', '  abc', '  two', 'three'],
+  });
+
+  newTest({
     title: 'Yank character-wise, <count>p in Visual mode',
     start: ['one', '|two', 'three'],
     keysPressed: 'yeve3p',
