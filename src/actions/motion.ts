@@ -24,6 +24,7 @@ import { clamp } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
+import { WordType } from '../textobject/word';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -1354,12 +1355,12 @@ class MoveWordBegin extends BaseMovement {
       */
 
       if (' \t'.includes(char)) {
-        return position.getWordRight();
+        return position.nextWordStart(vimState.document);
       } else {
-        return position.getCurrentWordEnd(true).getRight();
+        return position.nextWordEnd(vimState.document, { inclusive: true }).getRight();
       }
     } else {
-      return position.getWordRight();
+      return position.nextWordStart(vimState.document);
     }
   }
 
@@ -1402,9 +1403,9 @@ class MoveFullWordBegin extends BaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.getCurrentBigWordEnd().getRight();
+      return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
     } else {
-      return position.getBigWordRight();
+      return position.nextWordStart(vimState.document, { wordType: WordType.Big });
     }
   }
 }
@@ -1414,11 +1415,11 @@ class MoveWordEnd extends BaseMovement {
   keys = ['e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentWordEnd();
+    return position.nextWordEnd(vimState.document);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const end = position.getCurrentWordEnd();
+    const end = position.nextWordEnd(vimState.document);
 
     return new Position(end.line, end.character + 1);
   }
@@ -1429,11 +1430,11 @@ class MoveFullWordEnd extends BaseMovement {
   keys = ['E'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentBigWordEnd();
+    return position.nextWordEnd(vimState.document, { wordType: WordType.Big });
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentBigWordEnd().getRight();
+    return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
   }
 }
 
@@ -1442,7 +1443,7 @@ class MoveLastWordEnd extends BaseMovement {
   keys = ['g', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLastWordEnd();
+    return position.prevWordEnd(vimState.document);
   }
 }
 
@@ -1451,7 +1452,7 @@ class MoveLastFullWordEnd extends BaseMovement {
   keys = ['g', 'E'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLastBigWordEnd();
+    return position.prevWordEnd(vimState.document, { wordType: WordType.Big });
   }
 }
 
@@ -1460,7 +1461,7 @@ class MoveBeginningWord extends BaseMovement {
   keys = [['b'], ['<C-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getWordLeft();
+    return position.prevWordStart(vimState.document);
   }
 }
 
@@ -1469,7 +1470,7 @@ class MoveBeginningFullWord extends BaseMovement {
   keys = ['B'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getBigWordLeft();
+    return position.prevWordStart(vimState.document, { wordType: WordType.Big });
   }
 }
 
