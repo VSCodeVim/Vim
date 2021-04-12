@@ -1,4 +1,4 @@
-import { PositionDiff, PositionDiffType, sorted } from '../../common/motion/position';
+import { PositionDiff, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode, Mode } from '../../mode/mode';
 import { Register, RegisterMode, RegisterContent } from '../../register/register';
@@ -175,11 +175,10 @@ export class PutCommand extends BaseCommand {
       if (register.registerMode === RegisterMode.LineWise && !noNextLine) {
         lineDiff++;
       }
-      diff = {
-        type: PositionDiffType.ExactCharacter,
-        line: -lineDiff,
+      diff = PositionDiff.exactCharacter({
+        lineOffset: -lineDiff,
         character: whitespaceOnFirstLine,
-      };
+      });
     } else if (options.exCommand) {
       // Move to cursor to last line, first non-whitespace character of what you pasted
       const lastLine = text.split('\n')[numNewlines];
@@ -193,26 +192,23 @@ export class PutCommand extends BaseCommand {
         lineDiff = currentLineLength > 0 ? numNewlines + 1 : 0;
       }
 
-      diff = new PositionDiff({
-        line: lineDiff,
+      diff = PositionDiff.exactCharacter({
+        lineOffset: lineDiff,
         character: numWhitespace,
-        type: PositionDiffType.ExactCharacter,
       });
     } else if (registerMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
       const numWhitespace = check ? check[0].length : 0;
 
       if (options.pasteBeforeCursor) {
-        diff = new PositionDiff({
-          line: -numNewlines - 1,
+        diff = PositionDiff.exactCharacter({
+          lineOffset: -numNewlines - 1,
           character: numWhitespace,
-          type: PositionDiffType.ExactCharacter,
         });
       } else {
-        diff = new PositionDiff({
-          line: currentLineLength > 0 ? 1 : -numNewlines,
+        diff = PositionDiff.exactCharacter({
+          lineOffset: currentLineLength > 0 ? 1 : -numNewlines,
           character: numWhitespace,
-          type: PositionDiffType.ExactCharacter,
         });
       }
     } else if (!text.includes('\n')) {
@@ -223,26 +219,24 @@ export class PutCommand extends BaseCommand {
         } else {
           characterOffset = options.pasteBeforeCursor ? -1 : adjustedText.length;
         }
-        diff = new PositionDiff({
+        diff = PositionDiff.offset({
           character: characterOffset,
         });
       } else {
-        diff = new PositionDiff();
+        diff = PositionDiff.identity();
       }
     } else if (position.isLineEnd()) {
-      diff = new PositionDiff({
-        line: -numNewlines,
+      diff = PositionDiff.exactCharacter({
+        lineOffset: -numNewlines,
         character: position.character,
-        type: PositionDiffType.ExactCharacter,
       });
     } else if (options.pasteBeforeCursor) {
-      diff = new PositionDiff({
-        line: -numNewlines,
+      diff = PositionDiff.exactCharacter({
+        lineOffset: -numNewlines,
         character: position.character,
-        type: PositionDiffType.ExactCharacter,
       });
     } else {
-      diff = new PositionDiff({
+      diff = PositionDiff.offset({
         character: 1,
       });
     }
@@ -317,7 +311,7 @@ export class PutCommand extends BaseCommand {
     if (vimState.effectiveRegisterMode === RegisterMode.LineWise && count > 1) {
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
-        diff: new PositionDiff({ line: -count + 1 }),
+        diff: PositionDiff.offset({ line: -count + 1 }),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -476,7 +470,7 @@ class GPutCommand extends BaseCommand {
       const addedLinesCount = register.text.split('\n').length;
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
-        diff: PositionDiff.newBOLDiff(addedLinesCount),
+        diff: PositionDiff.exactCharacter({ lineOffset: addedLinesCount, character: 0 }),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -499,7 +493,7 @@ class GPutCommandVisual extends PutCommandVisual {
     if (visualLine || vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
-        diff: new PositionDiff({ line: repeats, character: 0 }),
+        diff: PositionDiff.offset({ line: repeats, character: 0 }),
         cursorIndex: this.multicursorIndex,
       });
     }
@@ -537,7 +531,7 @@ class GPutBeforeCommand extends BaseCommand {
       const addedLinesCount = register.text.split('\n').length;
       vimState.recordedState.transformer.addTransformation({
         type: 'moveCursor',
-        diff: PositionDiff.newBOLDiff(addedLinesCount),
+        diff: PositionDiff.exactCharacter({ lineOffset: addedLinesCount, character: 0 }),
         cursorIndex: this.multicursorIndex,
       });
     }

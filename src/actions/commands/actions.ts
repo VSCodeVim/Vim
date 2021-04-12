@@ -14,7 +14,6 @@ import {
   earlierOf,
   laterOf,
   sorted,
-  PositionDiffType,
 } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
@@ -2074,7 +2073,7 @@ class ActionJoin extends BaseCommand {
           type: 'replaceText',
           text: trimmedLinesContent,
           range: new Range(deleteStartPosition, deleteEndPosition),
-          diff: new PositionDiff({
+          diff: PositionDiff.offset({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
         });
@@ -2189,8 +2188,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
       type: 'replaceText',
       range: new Range(replaceRange.start, replaceRange.end),
       text: joinedText,
-      diff: new PositionDiff({
-        type: PositionDiffType.ExactCharacter,
+      diff: PositionDiff.exactCharacter({
         character: newCursorColumn,
       }),
     });
@@ -2254,7 +2252,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
-        diff: new PositionDiff({ character: -1 }),
+        diff: PositionDiff.offset({ character: -1 }),
       });
     } else if (toReplace === '\n') {
       // A newline replacement always inserts exactly one newline (regardless
@@ -2273,7 +2271,7 @@ class ActionReplaceCharacter extends BaseCommand {
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
         range: new Range(position, endPos),
-        diff: new PositionDiff({ character: timesToRepeat - 1 }),
+        diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
       });
     }
   }

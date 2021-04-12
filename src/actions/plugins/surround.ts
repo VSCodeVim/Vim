@@ -441,7 +441,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
         text: startReplace,
         position: start,
         // This PositionDiff places the cursor at the start of startReplace text the we insert rather than after
-        diff: new PositionDiff({ character: -startReplace.length }),
+        diff: PositionDiff.offset({ character: -startReplace.length }),
       });
       vimState.recordedState.transformer.addTransformation({
         type: 'insertText',

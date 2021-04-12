@@ -16,12 +16,10 @@ import { Position } from 'vscode';
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
  */
-export enum PositionDiffType {
-  /** Simple line and column offset */
+enum PositionDiffType {
+  /** Offsets both the line and character */
   Offset,
-  /**
-   * Sets the Position's column to `PositionDiff.character`
-   */
+  /** Offsets the line and sets the column exactly */
   ExactCharacter,
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   ObeyStartOfLine,
@@ -36,18 +34,36 @@ export class PositionDiff {
   public readonly character: number;
   public readonly type: PositionDiffType;
 
-  constructor({ line = 0, character = 0, type = PositionDiffType.Offset } = {}) {
+  private constructor(type: PositionDiffType, line: number, character: number) {
+    this.type = type;
     this.line = line;
     this.character = character;
-    this.type = type;
   }
 
-  public static newBOLDiff(lineOffset: number = 0) {
-    return new PositionDiff({
-      line: lineOffset,
-      character: 0,
-      type: PositionDiffType.ExactCharacter,
-    });
+  /** Has no effect */
+  public static identity(): PositionDiff {
+    return PositionDiff.offset({ line: 0, character: 0 });
+  }
+
+  /** Offsets both the Position's line and character */
+  public static offset({ line = 0, character = 0 }): PositionDiff {
+    return new PositionDiff(PositionDiffType.Offset, line, character);
+  }
+
+  /** Brings the Position to the beginning of the line if `vim.startofline` is true */
+  public static startOfLine(lineOffset?: number): PositionDiff {
+    return new PositionDiff(PositionDiffType.ObeyStartOfLine, lineOffset ?? 0, 0);
+  }
+
+  /** Offsets the Position's line and sets its character exactly */
+  public static exactCharacter({
+    lineOffset,
+    character,
+  }: {
+    lineOffset?: number;
+    character: number;
+  }): PositionDiff {
+    return new PositionDiff(PositionDiffType.ExactCharacter, lineOffset ?? 0, character);
   }
 
   public toString(): string {
@@ -59,6 +75,7 @@ export class PositionDiff {
       case PositionDiffType.ObeyStartOfLine:
         return `[ Diff: ObeyStartOfLine ${this.line} ]`;
       default:
+        const guard: never = this.type;
         throw new Error(`Unknown PositionDiffType: ${this.type}`);
     }
   }
@@ -253,7 +270,7 @@ Position.prototype.add = function (
 };
 
 Position.prototype.subtract = function (this: Position, other: Position): PositionDiff {
-  return new PositionDiff({
+  return PositionDiff.offset({
     line: this.line - other.line,
     character: this.character - other.character,
   });

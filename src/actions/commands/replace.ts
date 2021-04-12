@@ -74,7 +74,7 @@ class BackspaceInReplaceMode extends BaseCommand {
         type: 'replaceText',
         text: replaceState.originalChars[position.character - 1],
         range: new Range(position.getLeft(), position),
-        diff: new PositionDiff({ character: -1 }),
+        diff: PositionDiff.offset({ character: -1 }),
       });
       replaceState.newChars.pop();
     }
@@ -96,7 +96,7 @@ class ReplaceInReplaceMode extends BaseCommand {
         type: 'replaceText',
         text: char,
         range: new Range(position, position.getRight()),
-        diff: new PositionDiff({ character: 1 }),
+        diff: PositionDiff.offset({ character: 1 }),
       });
     } else {
       vimState.recordedState.transformer.addTransformation({
