@@ -17,6 +17,8 @@ import { Position } from 'vscode';
  * Controls how a PositionDiff affects the Position it's applied to.
  */
 enum PositionDiffType {
+  /** Sets both the line and character exactly */
+  ExactPosition,
   /** Offsets both the line and character */
   Offset,
   /** Offsets the line and sets the column exactly */
@@ -50,6 +52,11 @@ export class PositionDiff {
     return new PositionDiff(PositionDiffType.Offset, line, character);
   }
 
+  /** Sets the Position's line and character exactly */
+  public static exactPosition(position: Position): PositionDiff {
+    return new PositionDiff(PositionDiffType.ExactPosition, position.line, position.character);
+  }
+
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   public static startOfLine(lineOffset?: number): PositionDiff {
     return new PositionDiff(PositionDiffType.ObeyStartOfLine, lineOffset ?? 0, 0);
@@ -72,6 +79,8 @@ export class PositionDiff {
         return `[ Diff: Offset ${this.line} ${this.character} ]`;
       case PositionDiffType.ExactCharacter:
         return `[ Diff: ExactCharacter ${this.line} ${this.character} ]`;
+      case PositionDiffType.ExactPosition:
+        return `[ Diff: ExactPosition ${this.line} ${this.character} ]`;
       case PositionDiffType.ObeyStartOfLine:
         return `[ Diff: ObeyStartOfLine ${this.line} ]`;
       default:
@@ -252,6 +261,10 @@ Position.prototype.add = function (
   diff: PositionDiff,
   boundsCheck = true
 ): Position {
+  if (diff.type === PositionDiffType.ExactPosition) {
+    return new Position(diff.line, diff.character);
+  }
+
   const resultLine = clamp(this.line + diff.line, 0, document.lineCount - 1);
 
   let resultChar: number;
