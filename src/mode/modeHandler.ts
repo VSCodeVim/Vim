@@ -2,7 +2,11 @@ import * as vscode from 'vscode';
 
 import { BaseAction, KeypressState, BaseCommand, getRelevantAction } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
-import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
+import {
+  CommandEscInsertMode,
+  CommandInsertInInsertMode,
+  CommandInsertPreviousText,
+} from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
@@ -606,7 +610,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       const lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
 
       if (lastAction instanceof DocumentContentChangeAction) {
-        lastAction.keysPressed.push(key);
+        if (!(action instanceof CommandEscInsertMode)) {
+          lastAction.keysPressed.push(key);
+        }
 
         if (
           action instanceof CommandInsertInInsertMode ||

@@ -28,7 +28,7 @@ import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
 
 @RegisterAction
-class CommandEscInsertMode extends BaseCommand {
+export class CommandEscInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 

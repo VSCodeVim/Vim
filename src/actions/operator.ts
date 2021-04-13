@@ -657,30 +657,23 @@ class YankVisualBlockMode extends BaseOperator {
   }
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    let toCopy: string = '';
     const ranges: vscode.Range[] = [];
-
-    const isMultiline = startPos.line !== endPos.line;
-
+    const lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
+      lines.push(line);
       ranges.push(new vscode.Range(start, end));
-      if (isMultiline) {
-        toCopy += line + '\n';
-      } else {
-        toCopy = line;
-      }
     }
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
     this.highlightYankedRanges(vimState, ranges);
 
-    Register.put(vimState, toCopy, this.multicursorIndex);
+    Register.put(vimState, lines.join('\n'), this.multicursorIndex);
 
     vimState.historyTracker.addMark(startPos, '<');
     vimState.historyTracker.addMark(endPos, '>');
 
-    const numLinesYanked = toCopy.split('\n').length;
+    const numLinesYanked = lines.length;
     reportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(Mode.Normal);
