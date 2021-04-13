@@ -28,7 +28,7 @@ class ReplaceOperator extends BaseOperator {
       vimState.currentRegisterMode === RegisterMode.LineWise
         ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
         : new vscode.Range(start, end.getRight());
-    const register = await Register.get(vimState);
+    const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
