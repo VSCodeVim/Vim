@@ -305,7 +305,7 @@ class CommandSurroundAddSurrounding extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSurroundAddSurroundingTag extends BaseCommand {
+export class CommandSurroundAddSurroundingTag extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   // add surrounding / read X when: ys + motion + X
   keys = [['<'], ['t']];
@@ -320,13 +320,7 @@ class CommandSurroundAddSurroundingTag extends BaseCommand {
     }
 
     vimState.surround.replacement = 't';
-    const tag =
-      this.recordedTag !== ''
-        ? this.recordedTag
-        : await vscode.window.showInputBox({
-            prompt: 'enter tag (without <>)',
-            ignoreFocusOut: true,
-          });
+    const tag = this.recordedTag !== '' ? this.recordedTag : await this.readTag();
 
     if (!tag) {
       vimState.surround = undefined;
@@ -338,6 +332,12 @@ class CommandSurroundAddSurroundingTag extends BaseCommand {
     this.recordedTag = tag;
     vimState.surround.tag = tag;
     await SurroundHelper.ExecuteSurround(vimState);
+  }
+  private async readTag(): Promise<string | undefined> {
+    return vscode.window.showInputBox({
+      prompt: 'enter tag (without <>)',
+      ignoreFocusOut: true,
+    });
   }
 }
 

@@ -1,29 +1,12 @@
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
+import { CommandSurroundAddSurroundingTag } from '../../src/actions/plugins/surround';
 
 suite('surround plugin', () => {
   setup(async () => {
     const configuration = new Configuration();
     configuration.surround = true;
-    configuration.normalModeKeyBindingsNonRecursive = [
-      {
-        before: ['c', 's'],
-        after: ['<plugcs>'],
-      },
-      {
-        before: ['d', 's'],
-        after: ['<plugds>'],
-      },
-      {
-        before: ['y', 's'],
-        after: ['<plugys>'],
-      },
-      {
-        before: ['y', 's', 's'],
-        after: ['<plugys>', '<plugys>'],
-      },
-    ];
     await setupWorkspace(configuration, '.js');
   });
 
@@ -77,28 +60,29 @@ suite('surround plugin', () => {
     end: ['first |( line ).test'],
   });
 
-  /*
   newTest({
     title: "'ysiw<' surrounds word with tags",
     start: ['first li|ne test'],
-    keysPressed: 'ysiw<123>',
+    keysPressed: 'ysiw<',
     end: ['first |<123>line</123> test'],
-  });
-
-  newTest({
-    title: "'ysiw<' surrounds word with tags and attributes",
-    start: ['first li|ne test'],
-    keysPressed: 'ysiw<abc attr1 attr2="test">',
-    end: ['first |<abc attr1 attr2="test">line</abc> test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: '123',
+    },
   });
 
   newTest({
     title: "'cst<' surrounds word with tags that have a dot in them",
     start: ['first <test>li|ne</test> test'],
-    keysPressed: 'cst<abc.def>',
+    keysPressed: 'cst<',
     end: ['first <abc.def>li|ne</abc.def> test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'abc.def',
+    },
   });
-  */
 
   newTest({
     title: "'yss)' surrounds entire line respecting whitespace",
@@ -163,14 +147,17 @@ suite('surround plugin', () => {
     end: ['first |<line> test'],
   });
 
-  /*
   newTest({
     title: 'change surround to tags',
     start: ['first [li|ne] test'],
-    keysPressed: 'cs]tabc>',
+    keysPressed: 'cs]t>',
     end: ['first <abc>li|ne</abc> test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'abc',
+    },
   });
-  */
 
   newTest({
     title: 'delete surround',
@@ -270,21 +257,29 @@ suite('surround plugin', () => {
     end: ['func() [ ', '    |foo()', ' ]'],
   });
 
-  /*
   newTest({
     title: 'change surround with tags that contain an attribute and preserve them',
     start: ['<h2 test class="foo">b|ar</h2>'],
-    keysPressed: 'cstth3' + '\n',
+    keysPressed: 'cstt',
     end: ['<h3 test class="foo">b|ar</h3>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'h3',
+    },
   });
 
   newTest({
     title: 'change surround with tags that contain an attribute and remove them',
     start: ['<h2 test class="foo">b|ar</h2>'],
-    keysPressed: 'cstth3>',
+    keysPressed: 'cstt',
     end: ['<h3>b|ar</h3>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'h3>',
+    },
   });
-  */
 
   newTest({
     title:
@@ -310,7 +305,6 @@ suite('surround plugin', () => {
     end: ['first ( l|ine ) test'],
   });
 
-  /*
   newTest({
     title: "'S<div>' surrounds selection with <div></div>",
     start: ['first li|ne test'],
@@ -318,10 +312,14 @@ suite('surround plugin', () => {
     // the extension and did this test manually the cursor would end up on the first '<'. But
     // when running the tests this test was failing saying the cursor was actually on the
     // second '<' (character 15) instead of the first (character 6) as expected.
-    keysPressed: 'viwS<div>0',
+    keysPressed: 'viwS<0',
     end: ['|first <div>line</div> test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'div',
+    },
   });
-  */
 
   newTest({
     title: "'S)' surrounds visual line selection without space",
@@ -337,12 +335,15 @@ suite('surround plugin', () => {
     end: ['first', '( ', 'second', '| )', 'third'],
   });
 
-  /*
   newTest({
     title: "'S<div>' surrounds visual line selection with <div></div>",
     start: ['first', 'sec|ond', 'third'],
-    keysPressed: 'VS<div>',
+    keysPressed: 'VS<',
     end: ['first', '<div>', 'second', '|</div>', 'third'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'div',
+    },
   });
-  */
 });
