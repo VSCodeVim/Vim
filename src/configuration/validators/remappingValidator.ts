@@ -23,7 +23,7 @@ export class RemappingValidator implements IConfigurationValidator {
       'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = config[modeKeyBindingsKey];
+      const keybindings = config[modeKeyBindingsKey];
       // add default mappings for activated plugins
       // because we process keybindings backwards in next loop, user mapping will override
       for (const pluginMapping of PluginDefaultMappings.getPluginDefaultMappings(
