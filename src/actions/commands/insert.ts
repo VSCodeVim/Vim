@@ -28,7 +28,7 @@ import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
 
 @RegisterAction
-class CommandEscInsertMode extends BaseCommand {
+export class CommandEscInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
@@ -91,8 +91,8 @@ class CommandEscInsertMode extends BaseCommand {
         // If this is the last transform, move cursor back one character
         const positionDiff =
           i === vimState.recordedState.count - 2
-            ? new PositionDiff({ character: -1 })
-            : new PositionDiff();
+            ? PositionDiff.offset({ character: -1 })
+            : PositionDiff.identity();
 
         // Add a transform containing the change
         vimState.recordedState.transformer.addTransformation(
@@ -209,7 +209,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
       range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
-      diff: new PositionDiff({ character: newIndentationWidth - indentationWidth }),
+      diff: PositionDiff.offset({ character: newIndentationWidth - indentationWidth }),
     });
   }
 }
@@ -648,7 +648,7 @@ class NewLineInsertMode extends BaseCommand {
       type: 'insertText',
       text: '\n',
       position,
-      diff: new PositionDiff({ character: -1 }),
+      diff: PositionDiff.offset({ character: -1 }),
     });
   }
 }

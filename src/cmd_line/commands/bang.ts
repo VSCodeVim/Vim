@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
+import { PositionDiff } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
 import { Range } from '../../common/motion/range';
 import { Position } from 'vscode';
@@ -29,10 +29,9 @@ export class BangCommand extends node.CommandBase {
     const check = lines[0].match(/^\s*/);
     const numWhitespace = check ? check[0].length : 0;
 
-    return new PositionDiff({
-      line: -numNewlines,
+    return PositionDiff.exactCharacter({
+      lineOffset: -numNewlines,
       character: numWhitespace,
-      type: PositionDiffType.ExactCharacter,
     });
   }
 

@@ -5,7 +5,6 @@ import { Register, RegisterMode } from '../../register/register';
 import * as node from '../node';
 import { configuration } from '../../configuration/configuration';
 import { Position } from 'vscode';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
 import { Range } from '../../common/motion/range';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {

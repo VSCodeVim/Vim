@@ -298,14 +298,16 @@ export class Register {
     const contentByCursor = Register.registers.get(register);
 
     if (Register.isClipboardRegister(register)) {
-      /* Read from system clipboard */
-      const registerContent = {
-        text: (await Clipboard.Paste()).replace(/\r\n/g, '\n'),
-        registerMode:
-          contentByCursor?.[multicursorIndex]?.registerMode ?? RegisterMode.CharacterWise,
-      };
-      Register.registers.set(register, [registerContent]);
-      return registerContent;
+      const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
+      if (contentByCursor?.[0]?.text !== clipboardContent) {
+        // System clipboard seems to have changed
+        const registerContent = {
+          text: clipboardContent,
+          registerMode: RegisterMode.CharacterWise,
+        };
+        Register.registers.set(register, [registerContent]);
+        return registerContent;
+      }
     }
 
     // Default to the first cursor.

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { PositionDiff, PositionDiffType, earlierOf, sorted } from './../common/motion/position';
+import { PositionDiff, earlierOf, sorted } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -9,7 +9,6 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
-import { TextObjectMovement } from '../textobject/textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
@@ -179,7 +178,7 @@ export class DeleteOperator extends BaseOperator {
       Register.put(vimState, text, this.multicursorIndex);
     }
 
-    let diff = new PositionDiff();
+    let diff: PositionDiff | undefined;
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
@@ -188,16 +187,14 @@ export class DeleteOperator extends BaseOperator {
 
     if (start.character > vimState.document.lineAt(start).text.length) {
       resultingPosition = start.getLeft();
-      diff = new PositionDiff({ character: -1 });
+      diff = PositionDiff.offset({ character: -1 });
     } else {
       resultingPosition = start;
     }
 
     if (registerMode === RegisterMode.LineWise) {
       resultingPosition = resultingPosition.obeyStartOfLine(vimState.document);
-      diff = new PositionDiff({
-        type: PositionDiffType.ObeyStartOfLine,
-      });
+      diff = PositionDiff.startOfLine();
     }
 
     vimState.recordedState.transformer.addTransformation({
@@ -633,7 +630,7 @@ export class ChangeOperator extends BaseOperator {
         vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
+          diff: PositionDiff.offset({ character: 1 }), // Handle transition from Normal to Insert modes
         });
       }
     }
@@ -650,30 +647,23 @@ class YankVisualBlockMode extends BaseOperator {
   }
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    let toCopy: string = '';
     const ranges: vscode.Range[] = [];
-
-    const isMultiline = startPos.line !== endPos.line;
-
+    const lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
+      lines.push(line);
       ranges.push(new vscode.Range(start, end));
-      if (isMultiline) {
-        toCopy += line + '\n';
-      } else {
-        toCopy = line;
-      }
     }
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
     this.highlightYankedRanges(vimState, ranges);
 
-    Register.put(vimState, toCopy, this.multicursorIndex);
+    Register.put(vimState, lines.join('\n'), this.multicursorIndex);
 
     vimState.historyTracker.addMark(startPos, '<');
     vimState.historyTracker.addMark(endPos, '>');
 
-    const numLinesYanked = toCopy.split('\n').length;
+    const numLinesYanked = lines.length;
     reportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -1087,7 +1077,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       text: textToReflow,
       range: new Range(start, end),
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.newBOLDiff(),
+      diff: PositionDiff.exactCharacter({ character: 0 }),
     });
 
     await vimState.setCurrentMode(Mode.Normal);
