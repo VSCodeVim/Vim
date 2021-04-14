@@ -196,7 +196,7 @@ export async function executeTransformations(
         break;
 
       case 'macro':
-        const recordedMacro = (await Register.get(vimState, transformation.register))?.text;
+        const recordedMacro = (await Register.get(transformation.register))?.text;
         if (!(recordedMacro instanceof RecordedState)) {
           return;
         }

@@ -56,7 +56,7 @@ class CommandLine {
       const recState = new RecordedState();
       recState.registerName = ':';
       recState.commandList = command.split('');
-      Register.putByKey(recState, ':', undefined, true);
+      Register.setReadonlyRegister(':', recState);
     }
 
     try {

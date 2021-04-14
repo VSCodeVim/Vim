@@ -2,11 +2,11 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 
-import { PutCommand, IPutCommandOptions } from '../../actions/commands/put';
 import { Register } from '../../register/register';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
+import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
 
 export interface IPutCommandArguments extends node.ICommandArgs {
   bang?: boolean;
@@ -39,13 +39,9 @@ export class PutExCommand extends node.CommandBase {
 
     vimState.recordedState.registerName = registerName;
 
-    const options: IPutCommandOptions = {
-      forceLinewise: true,
-      forceCursorLastLine: true,
-      pasteBeforeCursor: this.arguments.bang,
-    };
-
-    await new PutCommand().exec(position, vimState, options);
+    const putCmd = this.arguments.bang ? new PutBeforeFromCmdLine() : new PutFromCmdLine();
+    putCmd.setInsertionLine(position.line);
+    await putCmd.exec(position, vimState);
   }
 
   async execute(vimState: VimState): Promise<void> {

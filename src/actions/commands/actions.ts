@@ -9,13 +9,7 @@ import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
-import {
-  PositionDiff,
-  earlierOf,
-  laterOf,
-  sorted,
-  PositionDiffType,
-} from './../../common/motion/position';
+import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
@@ -38,7 +32,7 @@ import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
-import { getWordLeft, WordType, getWordRight } from '../../textobject/word';
+import { WordType } from '../../textobject/word';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
@@ -307,7 +301,7 @@ class CommandRecordMacro extends BaseCommand {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       const newRegister = new RecordedState();
       newRegister.registerName = register;
-      Register.putByKey(newRegister, register);
+      Register.putByKey(register, newRegister);
     }
   }
 }
@@ -320,7 +314,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const macro = vimState.macro!;
 
-    const existingMacro = (await Register.get(vimState, macro.registerName))?.text;
+    const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
       existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
     }
@@ -1367,8 +1361,8 @@ class CommandOpenFile extends BaseCommand {
       fullFilePath = vimState.document.getText(vimState.editor.selection);
     } else {
       const range = new vscode.Range(
-        getWordLeft(position, WordType.FileName, true),
-        getWordRight(position, WordType.FileName)
+        position.prevWordStart(vimState.document, { wordType: WordType.FileName, inclusive: true }),
+        position.nextWordStart(vimState.document, { wordType: WordType.FileName })
       );
 
       fullFilePath = vimState.document.getText(range).trim();
@@ -2074,7 +2068,7 @@ class ActionJoin extends BaseCommand {
           type: 'replaceText',
           text: trimmedLinesContent,
           range: new Range(deleteStartPosition, deleteEndPosition),
-          diff: new PositionDiff({
+          diff: PositionDiff.offset({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
         });
@@ -2189,8 +2183,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
       type: 'replaceText',
       range: new Range(replaceRange.start, replaceRange.end),
       text: joinedText,
-      diff: new PositionDiff({
-        type: PositionDiffType.ExactCharacter,
+      diff: PositionDiff.exactCharacter({
         character: newCursorColumn,
       }),
     });
@@ -2254,7 +2247,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
-        diff: new PositionDiff({ character: -1 }),
+        diff: PositionDiff.offset({ character: -1 }),
       });
     } else if (toReplace === '\n') {
       // A newline replacement always inserts exactly one newline (regardless
@@ -2273,7 +2266,7 @@ class ActionReplaceCharacter extends BaseCommand {
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
         range: new Range(position, endPos),
-        diff: new PositionDiff({ character: timesToRepeat - 1 }),
+        diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
       });
     }
   }
@@ -2424,7 +2417,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
-    Register.put(text, vimState, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex);
 
     const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
@@ -2814,7 +2807,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       // that word.
       const whereToStart = text[position.character].match(/\s/)
         ? position
-        : position.getWordLeft(true);
+        : position.prevWordStart(vimState.document, { inclusive: true });
 
       wordLoop: for (let { start, end, word } of TextEditor.iterateWords(
         vimState.document,
@@ -3058,16 +3051,16 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       const curPos = x.active;
       if (idx === 0) {
         return new vscode.Selection(
-          curPos.getWordLeft(false),
-          curPos.getLeft().getCurrentWordEnd(true).getRight()
+          curPos.prevWordStart(vimState.document),
+          curPos.getLeft().nextWordEnd(vimState.document, { inclusive: true }).getRight()
         );
       } else {
         // Since we're adding the selections ourselves, we need to make sure
         // that our selection is actually over what our original word is
         const matchWordPos = vimState.editor.selections[0].active;
         const matchWordLength =
-          matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
-          matchWordPos.getWordLeft(false).character;
+          matchWordPos.getLeft().nextWordEnd(vimState.document, { inclusive: true }).getRight()
+            .character - matchWordPos.prevWordStart(vimState.document).character;
         const wordBegin = curPos.getLeft(matchWordLength);
         return new vscode.Selection(wordBegin, curPos);
       }
@@ -3165,7 +3158,7 @@ class ActionGoToAlternateFile extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const altFile = await Register.get(undefined, '#');
+    const altFile = await Register.get('#');
     if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {

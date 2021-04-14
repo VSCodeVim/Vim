@@ -5,7 +5,6 @@ import { Register, RegisterMode } from '../../register/register';
 import * as node from '../node';
 import { configuration } from '../../configuration/configuration';
 import { Position } from 'vscode';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
 import { Range } from '../../common/motion/range';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
@@ -65,7 +64,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     const line = vimState.cursorStopPosition.line;
     const text = await this.deleteRange(line, line, vimState);
     const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
-    Register.putByKey(text, register, RegisterMode.LineWise);
+    Register.putByKey(register, text, RegisterMode.LineWise);
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
@@ -73,6 +72,6 @@ export class DeleteRangeCommand extends node.CommandBase {
 
     const text = await this.deleteRange(start, end, vimState);
     const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
-    Register.putByKey(text, register, RegisterMode.LineWise);
+    Register.putByKey(register, text, RegisterMode.LineWise);
   }
 }
