@@ -150,7 +150,7 @@ suite('surround plugin', () => {
   newTest({
     title: 'change surround to tags',
     start: ['first [li|ne] test'],
-    keysPressed: 'cs]t>',
+    keysPressed: 'cs]t',
     end: ['first <abc>li|ne</abc> test'],
     stub: {
       stubClass: CommandSurroundAddSurroundingTag,
