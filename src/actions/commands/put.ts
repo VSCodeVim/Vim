@@ -169,6 +169,11 @@ abstract class BasePutCommand extends BaseCommand {
         lines.length,
         replaceRange.stop.line - replaceRange.start.line + 1
       );
+
+      // Only relevant for Visual mode
+      // If we replace 2 newlines, subsequent transformations need to take that into account (otherwise we get overlaps)
+      let deletedNewlines = 0;
+
       for (let idx = 0; idx < lineCount; idx++) {
         const lineText = lines[idx] ?? '';
 
@@ -185,10 +190,14 @@ abstract class BasePutCommand extends BaseCommand {
           }
         } else {
           if (idx > 0) {
-            const pos = replaceRange.start.with({ line: replaceRange.start.line + idx });
+            const pos = replaceRange.start.with({
+              line: replaceRange.start.line + idx + deletedNewlines,
+            });
             range = new Range(pos, pos);
           } else {
             range = replaceRange;
+            deletedNewlines =
+              document.getText(new vscode.Range(range.start, range.stop)).split('\n').length - 1;
           }
         }
 
