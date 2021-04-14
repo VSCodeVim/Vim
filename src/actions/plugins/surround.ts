@@ -34,6 +34,12 @@ type SurroundEdge = {
   rightTagName?: Range;
 };
 
+type TagReplacement = {
+  tag: string;
+  /** when  changing tag to tag, do we keep attributes? default: yes */
+  keepAttributes: boolean;
+};
+
 export interface SurroundState {
   /** The operator paired with the surround action. "yank" is really "add", but it uses 'y' */
   operator: 'change' | 'delete' | 'yank';
@@ -45,7 +51,7 @@ export interface SurroundState {
   replacement: string;
 
   /** name of tag */
-  tag?: string;
+  tag?: TagReplacement;
 
   /** for visual line mode */
   addNewline?: boolean;
@@ -320,19 +326,31 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
     }
 
     vimState.surround.replacement = 't';
-    const tag = this.recordedTag !== '' ? this.recordedTag : await this.readTag();
+    const tagInput = this.recordedTag !== '' ? this.recordedTag : await this.readTag();
 
-    if (!tag) {
+    if (!tagInput) {
       vimState.surround = undefined;
       await vimState.setCurrentMode(Mode.Normal);
       return;
     }
 
     // record tag for repeat. this works because recordedState will store the actual objects
-    this.recordedTag = tag;
-    vimState.surround.tag = tag;
+    this.recordedTag = tagInput;
+
+    // check as special case (set by >) if we want to replace the attributes on tag or keep them (default)
+    vimState.surround.tag = checkReplaceAttributes(tagInput);
+
+    // finally, we can exec surround
     await SurroundHelper.ExecuteSurround(vimState);
+
+    // local helper
+    function checkReplaceAttributes(tag: string) {
+      return tag.substring(tag.length - 1) === '>'
+        ? { tag: tag.substring(0, tag.length - 1), keepAttributes: false }
+        : { tag, keepAttributes: true };
+    }
   }
+
   private async readTag(): Promise<string | undefined> {
     return vscode.window.showInputBox({
       prompt: 'enter tag (without <>)',
@@ -526,7 +544,7 @@ class SurroundHelper {
       throw new Error('replacement missing in pairs');
     }
     // handle special case: cstt, replace only tag name
-    if (surroundState.target === 't' && surroundState.replacement === 't') {
+    if (surroundState.target === 't' && surroundState.tag && surroundState.tag.keepAttributes) {
       for (const { leftTagName, rightTagName } of surroundState.edges) {
         if (!surroundState.tag || !leftTagName || !rightTagName) {
           // throw ?
@@ -534,12 +552,12 @@ class SurroundHelper {
         }
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
-          text: surroundState.tag,
+          text: surroundState.tag.tag,
           range: leftTagName,
         });
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
-          text: surroundState.tag,
+          text: surroundState.tag.tag,
           range: rightTagName,
         });
       }
@@ -550,15 +568,15 @@ class SurroundHelper {
       const leftFixed =
         surroundState.operator === 'delete'
           ? ''
-          : surroundState.replacement === 't'
-          ? '<' + surroundState.tag + '>' + optNewline
+          : surroundState.tag
+          ? '<' + surroundState.tag.tag + '>' + optNewline
           : replacement.left + optNewline;
 
       const rightFixed =
         surroundState.operator === 'delete'
           ? ''
-          : surroundState.replacement === 't'
-          ? optNewline + '</' + surroundState.tag + '>'
+          : surroundState.tag
+          ? optNewline + '</' + surroundState.tag.tag + '>'
           : optNewline + replacement.right;
 
       for (const { leftEdge, rightEdge, cursorIndex } of surroundState.edges) {
