@@ -416,7 +416,7 @@ suite('Mode Insert', () => {
     start: ['foo |bar', 'foo bar'],
     // create two cursors on bar, yank. Then paste it in insert mode
     keysPressed: 'gbgby' + 'i<C-r>"',
-    end: ['foo barbar', 'foo bar|bar'],
+    end: ['foo bar|bar', 'foo barbar'],
     endMode: Mode.Insert,
   });
 });

@@ -865,7 +865,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     if (this.currentMode === Mode.Normal) {
-      this.vimState.cursorStartPosition = this.vimState.cursorStopPosition;
+      this.vimState.cursors = this.vimState.cursors.map(
+        (cursor) => new Range(cursor.stop, cursor.stop)
+      );
     }
 
     // Ensure cursors are within bounds
