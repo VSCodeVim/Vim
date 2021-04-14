@@ -7,7 +7,7 @@ import {
   isMultiCursorTextTransformation,
   InsertTextVSCodeTransformation,
   areAllSameTransformation,
-  areAnyTransformationsOverlapping,
+  overlappingTransformations,
 } from './transformations';
 import { commandLine } from '../cmd_line/commandLine';
 import { PairMatcher } from '../common/matching/matcher';
@@ -23,6 +23,7 @@ import { Range } from '../common/motion/range';
 import { Position } from 'vscode';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
+import { Globals } from '../globals';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -99,12 +100,13 @@ export async function executeTransformations(
   };
 
   if (textTransformations.length > 0) {
-    if (areAnyTransformationsOverlapping(textTransformations)) {
-      logger.debug(
-        `Text transformations are overlapping. Falling back to serial
-          transformations. This is generally a very bad sign. Try to make
-          your text transformations operate on non-overlapping ranges.`
-      );
+    const overlapping = overlappingTransformations(textTransformations);
+    if (overlapping !== undefined) {
+      const msg = `Transformations overlapping: ${JSON.stringify(overlapping)}`;
+      logger.warn(msg);
+      if (Globals.isTesting) {
+        throw new Error(msg);
+      }
 
       // TODO: Select one transformation for every cursor and run them all
       // in parallel. Repeat till there are no more transformations.
