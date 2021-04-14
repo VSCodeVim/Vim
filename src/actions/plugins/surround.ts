@@ -488,7 +488,9 @@ class SurroundHelper {
       const openTagNameEnd = openTagNameStart
         .nextWordEnd(vimState.document, { inclusive: true })
         .getRight();
-      const closeTagNameStart = rangeEnd.getLeft().nextWordStart(vimState.document);
+      const closeTagNameStart = rangeEnd
+        .getLeft(2)
+        .prevWordStart(vimState.document, { inclusive: true });
       const closeTagNameEnd = rangeEnd.getLeft();
       vimState.cursorStartPosition = position; // some textobj (MoveInsideCharacter) expect this
       vimState.cursorStopPosition = position;
