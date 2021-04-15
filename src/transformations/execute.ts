@@ -65,7 +65,7 @@ export async function executeTransformations(
         edit.insert(command.position, command.text);
         break;
       case 'replaceText':
-        edit.replace(new vscode.Selection(command.range.start, command.range.stop), command.text);
+        edit.replace(command.range, command.text);
         break;
       case 'deleteText':
         const matchRange = PairMatcher.immediateMatchingBracket(vimState, command.position);
@@ -77,7 +77,7 @@ export async function executeTransformations(
         );
         break;
       case 'deleteRange':
-        edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+        edit.delete(command.range);
         break;
       case 'moveCursor':
         break;

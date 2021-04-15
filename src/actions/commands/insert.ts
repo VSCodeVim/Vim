@@ -4,7 +4,6 @@ import { lineCompletionProvider } from '../../completion/lineCompletionProvider'
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { PositionDiff } from './../../common/motion/position';
-import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
@@ -55,7 +54,7 @@ export class CommandEscInsertMode extends BaseCommand {
       ) {
         vimState.recordedState.transformer.addTransformation({
           type: 'deleteRange',
-          range: new Range(
+          range: new vscode.Range(
             vimState.cursors[i].stop.getLineBegin(),
             vimState.cursors[i].stop.getLineEnd()
           ),
@@ -176,7 +175,10 @@ class IncreaseIndent extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
-      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
+      range: new vscode.Range(
+        position.getLineBegin(),
+        position.with({ character: indentationWidth })
+      ),
     });
   }
 }
@@ -195,7 +197,10 @@ class DecreaseIndent extends BaseCommand {
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
-      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
+      range: new vscode.Range(
+        position.getLineBegin(),
+        position.with({ character: indentationWidth })
+      ),
     });
   }
 }
@@ -230,7 +235,7 @@ class CommandBackspaceInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(selection.start, selection.end),
+        range: selection,
       });
     } else if (
       position.character > 0 &&
@@ -248,7 +253,10 @@ class CommandBackspaceInInsertMode extends BaseCommand {
 
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(position.withColumn(desiredLineLength), position.withColumn(line.length)),
+        range: new vscode.Range(
+          position.withColumn(desiredLineLength),
+          position.withColumn(line.length)
+        ),
       });
     } else if (!position.isAtDocumentBegin()) {
       // Otherwise, just delete a character (unless we're at the start of the document)
@@ -275,7 +283,7 @@ class CommandDeleteInInsertMode extends BaseCommand {
       // If a selection is active, delete it
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(selection.start, selection.end),
+        range: selection,
       });
     } else if (!position.isAtDocumentEnd()) {
       // Otherwise, just delete a character (unless we're at the end of the document)
@@ -438,7 +446,7 @@ class CommandCtrlW extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(wordBegin, position),
+      range: new vscode.Range(wordBegin, position),
     });
 
     vimState.cursorStopPosition = wordBegin;
@@ -512,7 +520,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(start, position),
+      range: new vscode.Range(start, position),
     });
 
     vimState.cursorStopPosition = start;

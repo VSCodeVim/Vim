@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
 import { PositionDiff, earlierOf, sorted } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
@@ -199,7 +198,7 @@ export class DeleteOperator extends BaseOperator {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       diff,
     });
 
@@ -780,7 +779,7 @@ export class ROT13Operator extends BaseOperator {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        range: new Range(range.start, range.end),
+        range,
       });
     }
   }
@@ -1138,7 +1137,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: textToReflow,
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       // Move cursor to front of line to realign the view
       diff: PositionDiff.exactCharacter({ character: 0 }),
     });

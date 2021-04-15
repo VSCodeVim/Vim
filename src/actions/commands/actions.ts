@@ -98,7 +98,10 @@ export class DocumentContentChangeAction extends BaseCommand {
         return new Position(Math.max(position.line + lineOffset, 0), Math.max(char, 0));
       };
 
-      const replaceRange = new Range(translate(change.range.start), translate(change.range.end));
+      const replaceRange = new vscode.Range(
+        translate(change.range.start),
+        translate(change.range.end)
+      );
 
       if (replaceRange.start.isAfter(rightBoundary)) {
         // This change should be ignored as it's out of boundary
@@ -115,7 +118,7 @@ export class DocumentContentChangeAction extends BaseCommand {
 
       rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
-      if (replaceRange.start.isEqual(replaceRange.stop)) {
+      if (replaceRange.start.isEqual(replaceRange.end)) {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           position: replaceRange.start,
@@ -2088,7 +2091,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: trimmedLinesContent,
-          range: new Range(deleteStartPosition, deleteEndPosition),
+          range: new vscode.Range(deleteStartPosition, deleteEndPosition),
           diff: PositionDiff.offset({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
@@ -2097,7 +2100,7 @@ class ActionJoin extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: trimmedLinesContent,
-          range: new Range(deleteStartPosition, deleteEndPosition),
+          range: new vscode.Range(deleteStartPosition, deleteEndPosition),
           manuallySetCursorPositions: true,
         });
 
@@ -2202,7 +2205,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
-      range: new Range(replaceRange.start, replaceRange.end),
+      range: replaceRange,
       text: joinedText,
       diff: PositionDiff.exactCharacter({
         character: newCursorColumn,
@@ -2263,7 +2266,7 @@ class ActionReplaceCharacter extends BaseCommand {
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(position, endPos),
+        range: new vscode.Range(position, endPos),
       });
       vimState.recordedState.transformer.addTransformation({
         type: 'tab',
@@ -2276,7 +2279,7 @@ class ActionReplaceCharacter extends BaseCommand {
       // We use `insertTextVSCode` so we get the right indentation
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(position, endPos),
+        range: new vscode.Range(position, endPos),
       });
       vimState.recordedState.transformer.addTransformation({
         type: 'insertTextVSCode',
@@ -2286,7 +2289,7 @@ class ActionReplaceCharacter extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: toReplace.repeat(timesToRepeat),
-        range: new Range(position, endPos),
+        range: new vscode.Range(position, endPos),
         diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
       });
     }
@@ -2334,7 +2337,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(end.character - start.character + 2).join(toInsert),
-          range: new Range(start, new Position(end.line, end.character + 1)),
+          range: new vscode.Range(start, new Position(end.line, end.character + 1)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === start.line) {
@@ -2342,7 +2345,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(lineText.length - start.character + 1).join(toInsert),
-          range: new Range(start, new Position(start.line, lineText.length)),
+          range: new vscode.Range(start, new Position(start.line, lineText.length)),
           manuallySetCursorPositions: true,
         });
       } else if (lineNum === end.line) {
@@ -2350,7 +2353,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
-          range: new Range(
+          range: new vscode.Range(
             new Position(end.line, 0),
             new Position(end.line, end.character + visualSelectionOffset)
           ),
@@ -2361,7 +2364,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: Array(lineText.length + 1).join(toInsert),
-          range: new Range(new Position(lineNum, 0), new Position(lineNum, lineText.length)),
+          range: new vscode.Range(new Position(lineNum, 0), new Position(lineNum, lineText.length)),
           manuallySetCursorPositions: true,
         });
       }
@@ -2397,7 +2400,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: Array(end.character - start.character + 1).join(toInsert),
-        range: new Range(start, end),
+        range: new vscode.Range(start, end),
         manuallySetCursorPositions: true,
       });
     }
@@ -2427,7 +2430,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
       lines.push(line);
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(start, end),
+        range: new vscode.Range(start, end),
         manuallySetCursorPositions: true,
       });
     }
@@ -2459,7 +2462,7 @@ class ActionShiftDVisualBlock extends BaseCommand {
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(start, start.getLineEnd()),
+        range: new vscode.Range(start, start.getLineEnd()),
         manuallySetCursorPositions: true,
       });
     }
@@ -2509,7 +2512,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new Range(start, end),
+        range: new vscode.Range(start, end),
         manuallySetCursorPositions: true,
       });
     }
@@ -2539,7 +2542,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
         vimState.recordedState.transformer.addTransformation({
           type: 'deleteRange',
-          range: new Range(start, start.getLineEnd()),
+          range: new vscode.Range(start, start.getLineEnd()),
           collapseRange: true,
         });
         cursors.push(new Range(end, end));

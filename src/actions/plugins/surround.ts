@@ -1,7 +1,5 @@
-import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PositionDiff, sorted } from './../../common/motion/position';
-import { Range } from './../../common/motion/range';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { RegisterAction, BaseCommand } from './../base';
@@ -27,7 +25,7 @@ import {
   SelectABigWord,
   SelectWord,
 } from '../../textobject/textobject';
-import { Position } from 'vscode';
+import { Position, Range, window } from 'vscode';
 
 type SurroundEdge = {
   leftEdge: Range;
@@ -368,7 +366,7 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
   }
 
   private async readTag(): Promise<string | undefined> {
-    return vscode.window.showInputBox({
+    return window.showInputBox({
       prompt: 'Enter tag',
       ignoreFocusOut: true,
     });
@@ -505,11 +503,9 @@ class SurroundHelper {
     function checkRemoveSpace(): number {
       // capiche?
       const leftSpace = vimState.editor.document.getText(
-        new vscode.Range(rangeStart.getRight(), rangeStart.getRight(2))
+        new Range(rangeStart.getRight(), rangeStart.getRight(2))
       );
-      const rightSpace = vimState.editor.document.getText(
-        new vscode.Range(rangeEnd.getLeft(), rangeEnd)
-      );
+      const rightSpace = vimState.editor.document.getText(new Range(rangeEnd.getLeft(), rangeEnd));
       return removeSpace && leftSpace === ' ' && rightSpace === ' ' ? 1 : 0;
     }
     async function getAdjustedRangesForTag(): Promise<SurroundEdge | undefined> {

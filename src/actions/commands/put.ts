@@ -178,13 +178,13 @@ abstract class BasePutCommand extends BaseCommand {
       for (let idx = 0; idx < lineCount; idx++) {
         const lineText = lines[idx] ?? '';
 
-        let range: Range;
+        let range: vscode.Range;
         if (mode === Mode.VisualBlock) {
           if (replaceRange.start.line + idx > replaceRange.stop.line) {
             const pos = replaceRange.start.with({ line: replaceRange.start.line + idx });
-            range = new Range(pos, pos);
+            range = new vscode.Range(pos, pos);
           } else {
-            range = new Range(
+            range = new vscode.Range(
               replaceRange.start.with({ line: replaceRange.start.line + idx }),
               replaceRange.stop.with({ line: replaceRange.start.line + idx })
             );
@@ -194,11 +194,10 @@ abstract class BasePutCommand extends BaseCommand {
             const pos = replaceRange.start.with({
               line: replaceRange.start.line + idx + deletedNewlines,
             });
-            range = new Range(pos, pos);
+            range = new vscode.Range(pos, pos);
           } else {
-            range = replaceRange;
-            deletedNewlines =
-              document.getText(new vscode.Range(range.start, range.stop)).split('\n').length - 1;
+            range = new vscode.Range(replaceRange.start, replaceRange.stop);
+            deletedNewlines = document.getText(range).split('\n').length - 1;
           }
         }
 
@@ -228,7 +227,7 @@ abstract class BasePutCommand extends BaseCommand {
       return [
         {
           type: 'replaceText',
-          range: replaceRange,
+          range: new vscode.Range(replaceRange.start, replaceRange.stop),
           text,
         },
       ];
@@ -236,7 +235,7 @@ abstract class BasePutCommand extends BaseCommand {
       const transformations: Transformation[] = [];
       if (registerMode === RegisterMode.CharacterWise) {
         for (let line = replaceRange.start.line; line <= replaceRange.stop.line; line++) {
-          const range = new Range(
+          const range = new vscode.Range(
             new Position(line, replaceRange.start.character),
             new Position(line, replaceRange.stop.character)
           );
@@ -250,7 +249,7 @@ abstract class BasePutCommand extends BaseCommand {
       } else if (registerMode === RegisterMode.LineWise) {
         // Weird case: first delete the block...
         for (let line = replaceRange.start.line; line <= replaceRange.stop.line; line++) {
-          const range = new Range(
+          const range = new vscode.Range(
             new Position(line, replaceRange.start.character),
             new Position(line, replaceRange.stop.character)
           );
@@ -267,7 +266,7 @@ abstract class BasePutCommand extends BaseCommand {
           : new Position(replaceRange.stop.line, 0).getLineEnd();
         transformations.push({
           type: 'replaceText',
-          range: new Range(insertPos, insertPos),
+          range: new vscode.Range(insertPos, insertPos),
           text,
         });
       } else {

@@ -1,11 +1,8 @@
-import * as vscode from 'vscode';
-
+import { Position, Range } from 'vscode';
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { PositionDiff } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
-import { Range } from '../../common/motion/range';
-import { Position } from 'vscode';
 
 export interface IBangCommandArguments extends node.ICommandArgs {
   command: string;
@@ -45,7 +42,7 @@ export class BangCommand extends node.CommandBase {
     const end = new Position(endLine, 0).getLineEnd();
 
     // pipe in stdin from lines in range
-    const input = vimState.document.getText(new vscode.Range(start, end));
+    const input = vimState.document.getText(new Range(start, end));
     const output = await externalCommand.run(this._arguments.command, input);
 
     // place cursor at the start of the replaced text and first non-whitespace character
