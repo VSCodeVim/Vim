@@ -299,7 +299,7 @@ export class Register {
 
     if (Register.isClipboardRegister(register)) {
       const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
-      const currentRegisterContent = (contentByCursor?.[0]?.text as string).replace(/\r\n/g, '\n');
+      const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
       if (currentRegisterContent !== clipboardContent) {
         // System clipboard seems to have changed
         const registerContent = {
