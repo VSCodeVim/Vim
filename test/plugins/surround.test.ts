@@ -61,6 +61,13 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'add surround with repeat',
+    start: ['o|ne two three'],
+    keysPressed: 'ysiw"Ww.',
+    end: ['"one" two |"three"'],
+  });
+
+  newTest({
     title: "'ysiw<' surrounds word with tags",
     start: ['first li|ne test'],
     keysPressed: 'ysiw<',
@@ -234,6 +241,20 @@ suite('surround plugin', () => {
     start: ['first {li|ne} test'],
     keysPressed: 'dsB',
     end: ['first li|ne test'],
+  });
+
+  newTest({
+    title: 'delete surround with repeat',
+    start: ['( |one ) two ( three )'],
+    keysPressed: 'ds(ww.',
+    end: ['one two |three'],
+  });
+
+  newTest({
+    title: 'delete surround with no space',
+    start: ['(on|e) two'],
+    keysPressed: 'ds(',
+    end: ['on|e two'],
   });
 
   newTest({
