@@ -22,7 +22,6 @@ import {
   CommandInsertAtLastChange,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
-import { Clipboard } from '../../util/clipboard';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
@@ -603,25 +602,14 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const textFromClipboard = await Clipboard.Paste();
+    // This should be safe...
+    const textFromClipboard = (await Register.get('*', this.multicursorIndex))!.text as string;
 
     vimState.recordedState.transformer.addTransformation({
-      type: 'deleteRange',
+      type: 'replaceText',
       range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
+      text: textFromClipboard,
     });
-
-    if (vimState.isMultiCursor) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'insertText',
-        text: textFromClipboard,
-        position: vimState.cursorStopPosition,
-      });
-    } else {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'insertTextVSCode',
-        text: textFromClipboard,
-      });
-    }
   }
 }
 
