@@ -602,14 +602,17 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    // This should be safe...
-    const textFromClipboard = (await Register.get('*', this.multicursorIndex))!.text as string;
+    const clipboard = await Register.get('*', this.multicursorIndex);
+    const text = clipboard?.text instanceof RecordedState ? undefined : clipboard?.text;
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
-      text: textFromClipboard,
-    });
+    if (text) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
+        text,
+        diff: PositionDiff.offset({ character: 1 }),
+      });
+    }
   }
 }
 
