@@ -55,9 +55,16 @@ export class Register {
   private static registers: Map<string, IRegisterContent[]>;
 
   /**
-   * Puts content in a register. If none is specified, uses the default register ".
+   * Puts given content in the currently selected register, using the current RegisterMode.
+   *
+   * @param copyToUnnamed: If true, set the unnamed register (") as well
    */
-  public static put(vimState: VimState, content: RegisterContent, multicursorIndex?: number): void {
+  public static put(
+    vimState: VimState,
+    content: RegisterContent,
+    multicursorIndex?: number,
+    copyToUnnamed?: boolean
+  ): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -72,6 +79,10 @@ export class Register {
       Register.appendToRegister(vimState, register.toLowerCase(), content, multicursorIndex ?? 0);
     } else {
       Register.overwriteRegister(vimState, register, content, multicursorIndex ?? 0);
+    }
+
+    if (copyToUnnamed && register !== '"') {
+      Register.registers.set('"', Register.registers.get(register)!);
     }
   }
 
@@ -184,6 +195,7 @@ export class Register {
     }
   }
 
+  /** @deprecated Currently used only by tests */
   public static putByKey(
     register: string,
     content: RegisterContent,

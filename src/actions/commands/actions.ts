@@ -299,9 +299,12 @@ class CommandRecordMacro extends BaseCommand {
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
+      // TODO: this seems suspect - why are we not putting `vimState.macro` in the register? Why are we setting `registerName`?
       const newRegister = new RecordedState();
       newRegister.registerName = register;
-      Register.putByKey(register, newRegister);
+
+      vimState.recordedState.registerName = register;
+      Register.put(vimState, newRegister);
     }
   }
 }
@@ -2417,7 +2420,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
-    Register.put(vimState, text, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex, true);
 
     const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
