@@ -367,4 +367,49 @@ suite('surround plugin', () => {
       returnValue: 'div',
     },
   });
+
+  // multi cursor tests
+
+  newTest({
+    title: 'visual surround with multicursor',
+    start: ['one |two three, one two three'],
+    keysPressed: 'gbgb' + 'S)' + '<esc>',
+    end: ['one (|two) three, one (two) three'],
+  });
+
+  newTest({
+    title: 'yank surround with multicursor',
+    start: ['one |two three, one two three'],
+    // gbgbv creates two multicursor in normal mode
+    keysPressed: 'gbgbv' + 'ysiw)' + '<esc>',
+    end: ['one (|two) three, one (two) three'],
+  });
+
+  newTest({
+    title: 'yank surround with multicursor and repeat',
+    start: ['one |two three, one two three'],
+    keysPressed: 'gbgbv' + 'ysiw)' + 'W.' + '<esc>',
+    end: ['one (two) |(three), one (two) (three)'],
+  });
+
+  newTest({
+    title: 'delete surround with multicursor',
+    start: ['one (tw|o) three, one (two) three'],
+    keysPressed: 'gbgbv' + 'ds)' + '<esc>',
+    end: ['one tw|o three, one two three'],
+  });
+
+  newTest({
+    title: 'delete surround with multicursor and repeat',
+    start: ['one (tw|o) (three), one (two) (three)'],
+    keysPressed: 'gbgbv' + 'ds)' + 'W.' + '<esc>',
+    end: ['one two |three, one two three'],
+  });
+
+  newTest({
+    title: 'change surround with multicursor',
+    start: ['one (tw|o) three, one (two) three'],
+    keysPressed: 'gbgbv' + 'cs)[' + '<esc>',
+    end: ['one [ tw|o ] three, one [ two ] three'],
+  });
 });
