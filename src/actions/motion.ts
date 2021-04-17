@@ -1699,9 +1699,10 @@ class MoveToMatchingBracket extends BaseMovement {
         return failedMovement(vimState);
       }
 
-      const targetLine = Math.round((count * vimState.document.lineCount) / 100);
+      // See `:help N%`
+      const targetLine = Math.trunc((count * vimState.document.lineCount + 99) / 100) - 1;
 
-      return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, targetLine - 1);
+      return position.with({ line: targetLine }).obeyStartOfLine(vimState.document);
     } else {
       return super.execActionWithCount(position, vimState, count);
     }
