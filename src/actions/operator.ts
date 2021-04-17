@@ -381,6 +381,11 @@ class UpperCaseOperator extends BaseOperator {
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      start = start.getLineBegin();
+      end = end.getLineEnd();
+    }
+
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     const text = vimState.document.getText(range);
 
@@ -388,6 +393,7 @@ class UpperCaseOperator extends BaseOperator {
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
+    vimState.desiredColumn = start.character;
   }
 }
 
@@ -422,6 +428,11 @@ class LowerCaseOperator extends BaseOperator {
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      start = start.getLineBegin();
+      end = end.getLineEnd();
+    }
+
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     const text = vimState.document.getText(range);
 
@@ -429,6 +440,7 @@ class LowerCaseOperator extends BaseOperator {
 
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = start;
+    vimState.desiredColumn = start.character;
   }
 }
 
@@ -677,6 +689,11 @@ export class ToggleCaseOperator extends BaseOperator {
   public modes = [Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      start = start.getLineBegin();
+      end = end.getLineEnd();
+    }
+
     const range = new vscode.Range(start, end.getRight());
 
     await ToggleCaseOperator.toggleCase(vimState, range);
@@ -684,6 +701,7 @@ export class ToggleCaseOperator extends BaseOperator {
     const cursorPosition = earlierOf(start, end);
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
+    vimState.desiredColumn = cursorPosition.character;
     await vimState.setCurrentMode(Mode.Normal);
   }
 
