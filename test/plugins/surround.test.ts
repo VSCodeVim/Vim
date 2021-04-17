@@ -370,11 +370,13 @@ suite('surround plugin', () => {
 
   // multi cursor tests
 
+  // (one) (((two))) three (one) (((two))) three
+
   newTest({
     title: 'visual surround with multicursor',
     start: ['one |two three, one two three'],
-    keysPressed: 'gbgb' + 'S)' + '<esc>',
-    end: ['one (|two) three, one (two) three'],
+    keysPressed: 'gbgb' + 'S)' + '<esc>' + '0', // 0: not sure about cursor pos
+    end: ['|one (two) three, one (two) three'],
   });
 
   newTest({
@@ -382,7 +384,7 @@ suite('surround plugin', () => {
     start: ['one |two three, one two three'],
     // gbgbv creates two multicursor in normal mode
     keysPressed: 'gbgbv' + 'ysiw)' + '<esc>',
-    end: ['one (|two) three, one (two) three'],
+    end: ['one |(two) three, one (two) three'],
   });
 
   newTest({
