@@ -1,6 +1,43 @@
 # Change Log
 
-## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-27)
+## [v1.20.0](https://github.com/vscodevim/vim/tree/v1.20.0) (2021-04-17)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.3...v1.20.0)
+
+**Fixed Bugs:**
+
+- The fomula of `{count} %` [\#6490](https://github.com/VSCodeVim/Vim/issues/6490)
+- `gu` and `gU` do not respect line-wise motions [\#6467](https://github.com/VSCodeVim/Vim/issues/6467)
+- `\[num\] gP` doesn't put the register content `\[num\]` times. [\#6444](https://github.com/VSCodeVim/Vim/issues/6444)
+- When specifying the register to be used, it should also put the content to `""` register. [\#6441](https://github.com/VSCodeVim/Vim/issues/6441)
+- `d \_` should delete entire line. [\#6435](https://github.com/VSCodeVim/Vim/issues/6435)
+- `o \<C-U\>` should delete the `\n` inserted by `o` [\#6429](https://github.com/VSCodeVim/Vim/issues/6429)
+- `{num} \[p` should put the text in register `{num}` times. [\#6416](https://github.com/VSCodeVim/Vim/issues/6416)
+- `\<C-V\>` and `\>` doesn't work. [\#6414](https://github.com/VSCodeVim/Vim/issues/6414)
+- `\<C-V\> \]\[` should go to next section [\#6411](https://github.com/VSCodeVim/Vim/issues/6411)
+- Visual multiple lines `X` has different behavior when the cursor at the begin of the select and the end of the select. [\#6408](https://github.com/VSCodeVim/Vim/issues/6408)
+- Failed to handle key=U. Cannot read property 'start' of undefined [\#6377](https://github.com/VSCodeVim/Vim/issues/6377)
+- `\<BS\>` in replace mode should go over EOL [\#6371](https://github.com/VSCodeVim/Vim/issues/6371)
+- \[count\]R inserts text when it should overwrite it [\#6370](https://github.com/VSCodeVim/Vim/issues/6370)
+- Replace mode does not properly restore characters after backspacing before where it started [\#6369](https://github.com/VSCodeVim/Vim/issues/6369)
+- `\<C-t\>` in insert mode selects characters [\#6190](https://github.com/VSCodeVim/Vim/issues/6190)
+
+**Closed issues:**
+
+- Failed to handle key=\<C-a\>. Overlapping ranges are not allowed! [\#6493](https://github.com/VSCodeVim/Vim/issues/6493)
+- Failed to handle key=s. TextEditor\(vs.editor.ICodeEditor:1,$model5\) has been disposed [\#6477](https://github.com/VSCodeVim/Vim/issues/6477)
+- Failed to handle key=w. TextEditor\(vs.editor.ICodeEditor:1,$model13\) has been disposed [\#6472](https://github.com/VSCodeVim/Vim/issues/6472)
+- Failed to handle key=p. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#6468](https://github.com/VSCodeVim/Vim/issues/6468)
+- HUGE performance toll on VS Code, whole WIN 10 system WHEN combined with "Git for Windows"\< 2.30- extension/VSC unusable [\#6169](https://github.com/VSCodeVim/Vim/issues/6169)
+- More robust representation of register contents [\#5856](https://github.com/VSCodeVim/Vim/issues/5856)
+
+**Merged pull requests:**
+
+- Substitute, use transformations [\#6402](https://github.com/VSCodeVim/Vim/pull/6402) ([sql-koala](https://github.com/sql-koala))
+- Feature/vimrc source support [\#6394](https://github.com/VSCodeVim/Vim/pull/6394) ([Demiguise](https://github.com/Demiguise))
+- More consistent behavior of C-d [\#6364](https://github.com/VSCodeVim/Vim/pull/6364) ([artagnon](https://github.com/artagnon))
+
+## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-29)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.2...v1.19.3)
 
@@ -58,7 +95,6 @@
 - Implement previous context marks \(add to jump list on m' / m`\) [\#6174](https://github.com/VSCodeVim/Vim/pull/6174) ([jose-elias-alvarez](https://github.com/jose-elias-alvarez))
 - Add Erlang style comments [\#5970](https://github.com/VSCodeVim/Vim/pull/5970) ([maxnordlund](https://github.com/maxnordlund))
 - Potential fix for non latin chars issue [\#5951](https://github.com/VSCodeVim/Vim/pull/5951) ([berknam](https://github.com/berknam))
-- Fix multi cursor visual paste \(in part\) [\#5713](https://github.com/VSCodeVim/Vim/pull/5713) ([sql-koala](https://github.com/sql-koala))
 
 ## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
 
@@ -121,7 +157,6 @@
 - Failed to handle key=/. Maximum call stack size exceeded [\#5844](https://github.com/VSCodeVim/Vim/issues/5844)
 - Cannot read property 'after' of undefined [\#5841](https://github.com/VSCodeVim/Vim/issues/5841)
 - C-f and C-b keys should page up and down like real Vim [\#5822](https://github.com/VSCodeVim/Vim/issues/5822)
-- exiting insert mode moves cursor to previous non-blank line [\#5726](https://github.com/VSCodeVim/Vim/issues/5726)
 
 **Merged pull requests:**
 
@@ -143,7 +178,6 @@
 **Closed issues:**
 
 - Cursor jumps back to previous position when moving after clicking in editor [\#5795](https://github.com/VSCodeVim/Vim/issues/5795)
-- Vim cursor does not move with "Go to Next Problem" [\#5746](https://github.com/VSCodeVim/Vim/issues/5746)
 
 ## [v1.18.2](https://github.com/vscodevim/vim/tree/v1.18.2) (2020-12-07)
 
@@ -157,24 +191,15 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.1...v1.18.0)
 
-**Fixed Bugs:**
-
-- Initial cursor sync should not allow cursor to be on EOL character [\#5728](https://github.com/VSCodeVim/Vim/issues/5728)
-
 **Closed issues:**
 
 - Visual mode keybinding overwrite [\#5832](https://github.com/VSCodeVim/Vim/issues/5832)
 - Failed to handle key=\<C-a\>. Illegal value for `line` [\#5828](https://github.com/VSCodeVim/Vim/issues/5828)
 - \<C-o\> \<C-i\> will mess up cursor movement with left and right keys [\#5813](https://github.com/VSCodeVim/Vim/issues/5813)
-- Migrate from Travis CI to GitHub Actions [\#5720](https://github.com/VSCodeVim/Vim/issues/5720)
-- Extremely slow rendering introduced in v1.17 with long text in register [\#5707](https://github.com/VSCodeVim/Vim/issues/5707)
 
 **Merged pull requests:**
 
 - Remove zombie data creator [\#5814](https://github.com/VSCodeVim/Vim/pull/5814) ([berknam](https://github.com/berknam))
-- Fix bug where \<C-i\> \<C-o\> do not work after easy motion movement \#5730 [\#5731](https://github.com/VSCodeVim/Vim/pull/5731) ([rndware](https://github.com/rndware))
-- Fix broken table in README [\#5725](https://github.com/VSCodeVim/Vim/pull/5725) ([kidonng](https://github.com/kidonng))
-- Update ROADMAP.md Spelling [\#5717](https://github.com/VSCodeVim/Vim/pull/5717) ([dogpetkid](https://github.com/dogpetkid))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
