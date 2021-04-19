@@ -2939,7 +2939,9 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       }
 
       default:
-        throw new Error('Unexpected mode in IncrementDecrementNumberAction.getPositions()');
+        throw new Error(
+          `Unexpected mode ${vimState.currentMode} in IncrementDecrementNumberAction.getPositions()`
+        );
     }
     return ranges;
   }
