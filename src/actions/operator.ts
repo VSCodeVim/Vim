@@ -359,7 +359,7 @@ class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    await new ChangeOperator().run(vimState, start, end);
+    await new ChangeOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 

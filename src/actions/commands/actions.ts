@@ -1230,7 +1230,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const count = vimState.recordedState.count || 1;
 
-    await new operator.ChangeOperator().run(
+    await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       position,
       position
