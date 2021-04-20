@@ -10,6 +10,15 @@ export enum SearchDirection {
   Backward = -1,
 }
 
+// Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
+let supportsLookbehind = true;
+try {
+  // tslint:disable-next-line
+  new RegExp('(?<=x)');
+} catch {
+  supportsLookbehind = false;
+}
+
 /**
  * State involved with beginning a search (/).
  */
@@ -18,8 +27,12 @@ export class SearchState {
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   private static readonly caseOverrideRegex = /\\[Cc]/g;
-  private static readonly notEscapedSlashRegex = /(?<=[^\\])\//g;
-  private static readonly notEscapedQuestionMarkRegex = /(?<=[^\\])\?/g;
+  private static readonly notEscapedSlashRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\/', 'g')
+    : /\//g;
+  private static readonly notEscapedQuestionMarkRegex = supportsLookbehind
+    ? new RegExp('(?<=[^\\\\])\\?', 'g')
+    : /\?/g;
   private static readonly searchOffsetBeginRegex = /b(\+-)?[0-9]*/;
   private static readonly searchOffsetEndRegex = /e(\+-)?[0-9]*/;
 
@@ -33,7 +46,7 @@ export class SearchState {
   public getMatchRanges(editor: vscode.TextEditor): vscode.Range[] {
     return this.recalculateSearchRanges(editor);
   }
-  private matchRanges: Map<string, { version: number; ranges: Array<vscode.Range> }> = new Map();
+  private matchRanges: Map<string, { version: number; ranges: vscode.Range[] }> = new Map();
 
   /**
    * Whether the needle should be interpreted as a regular expression
@@ -100,7 +113,7 @@ export class SearchState {
         } else {
           this.offset = {
             type: 'line',
-            num: num,
+            num,
           };
         }
       }
@@ -183,7 +196,7 @@ export class SearchState {
 
     let result: RegExpExecArray | null;
     let wrappedOver = false;
-    let matchRanges = [] as vscode.Range[];
+    const matchRanges = [] as vscode.Range[];
     while (true) {
       result = regex.exec(text);
 
@@ -246,7 +259,10 @@ export class SearchState {
     let pos = start;
     if (this.offset) {
       if (this.offset.type === 'line') {
-        pos = start.add(PositionDiff.newBOLDiff(this.offset.num));
+        pos = start.add(
+          editor.document,
+          PositionDiff.exactCharacter({ lineOffset: this.offset.num, character: 0 })
+        );
       } else if (this.offset.type === 'beginning') {
         pos = start.getOffsetThroughLineBreaks(this.offset.num);
       } else if (this.offset.type === 'end') {
@@ -342,7 +358,7 @@ export class SearchState {
       return { start: pos, end: pos, match: false, index: -1 };
     }
 
-    for (let [index, matchRange] of matchRanges.entries()) {
+    for (const [index, matchRange] of matchRanges.entries()) {
       if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
         return {
           start: matchRange.start,

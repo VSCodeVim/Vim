@@ -1,4 +1,6 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { cleanUpWorkspace, setupWorkspace, assertStatusBarEqual } from '../testUtils';
 
@@ -150,4 +152,18 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents(['/', '<C-p>']);
     assertStatusBarEqual('/abc|', 'Failed to go to previous search string');
   });
+
+  for (const key of ['<BS>', '<S-BS>', '<C-h>']) {
+    test(`${key} removes one character from command line`, async () => {
+      await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+      await modeHandler.handleKeyEvent(key);
+      assertStatusBarEqual(':ab|');
+    });
+
+    test(`${key} with empty command line goes to normal mode`, async () => {
+      await modeHandler.handleKeyEvent(':');
+      await modeHandler.handleKeyEvent(key);
+      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    });
+  }
 });

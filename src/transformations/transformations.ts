@@ -292,7 +292,7 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
     x.type === 'moveCursor'
   );
 };
-export const isMultiCursorTextTransformation = (x: Transformation): Boolean => {
+export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
   return (x.type === 'insertTextVSCode' && x.isMultiCursor) ?? false;
 };
 
@@ -313,7 +313,9 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
   throw new Error('Unhandled text transformation: ' + transformation);
 };
 
-export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
+export function overlappingTransformations(
+  transformations: TextTransformations[]
+): [TextTransformations, TextTransformations] | undefined {
   for (let i = 0; i < transformations.length; i++) {
     for (let j = i + 1; j < transformations.length; j++) {
       const first = transformations[i];
@@ -327,15 +329,15 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
       }
 
       if (firstRange.overlaps(secondRange)) {
-        return true;
+        return [first, second];
       }
     }
   }
 
-  return false;
-};
+  return undefined;
+}
 
-export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
+export const areAllSameTransformation = (transformations: Transformation[]): boolean => {
   const firstTransformation = transformations[0];
 
   return transformations.every((t) => {

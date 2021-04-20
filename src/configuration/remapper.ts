@@ -22,36 +22,32 @@ interface IRemapper {
 }
 
 export class Remappers implements IRemapper {
-  private remappers: IRemapper[];
-
-  constructor() {
-    this.remappers = [
-      new InsertModeRemapper(),
-      new NormalModeRemapper(),
-      new VisualModeRemapper(),
-      new CommandLineModeRemapper(),
-      new OperatorPendingModeRemapper(),
-    ];
-  }
+  private readonly remappers = [
+    new InsertModeRemapper(),
+    new NormalModeRemapper(),
+    new VisualModeRemapper(),
+    new CommandLineModeRemapper(),
+    new OperatorPendingModeRemapper(),
+  ];
 
   get isPotentialRemap(): boolean {
     return this.remappers.some((r) => r.isPotentialRemap);
   }
 
   public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
-    let handled = false;
-
-    for (let remapper of this.remappers) {
-      handled = handled || (await remapper.sendKey(keys, modeHandler));
+    for (const remapper of this.remappers) {
+      if (await remapper.sendKey(keys, modeHandler)) {
+        return true;
+      }
     }
-    return handled;
+    return false;
   }
 }
 
 export class Remapper implements IRemapper {
-  private readonly _configKey: string;
-  private readonly _remappedModes: Mode[];
-  private readonly _logger = Logger.get('Remapper');
+  private readonly configKey: string;
+  private readonly remappedModes: Mode[];
+  private readonly logger = Logger.get('Remapper');
 
   /**
    * Checks if the current commandList is a potential remap.
@@ -63,7 +59,7 @@ export class Remapper implements IRemapper {
    * call it an Ambiguous Remap and we store it here. If later we need to handle it
    * we don't need to go looking for it.
    */
-  private _hasAmbiguousRemap: IKeyRemapping | undefined;
+  private hasAmbiguousRemap: IKeyRemapping | undefined;
 
   /**
    * If the commandList is a potential remap but has no ambiguous remap
@@ -86,15 +82,15 @@ export class Remapper implements IRemapper {
    * key, which means we won't get to the same state because the first key
    * will be handled as an action (in this case a 'CommandInsertAfterCursor')
    */
-  private _hasPotentialRemap = false;
+  private hasPotentialRemap = false;
 
   get isPotentialRemap(): boolean {
     return this._isPotentialRemap;
   }
 
   constructor(configKey: string, remappedModes: Mode[]) {
-    this._configKey = configKey;
-    this._remappedModes = remappedModes;
+    this.configKey = configKey;
+    this.remappedModes = remappedModes;
   }
 
   public async sendKey(keys: string[], modeHandler: ModeHandler): Promise<boolean> {
@@ -110,11 +106,11 @@ export class Remapper implements IRemapper {
      */
     let allowBufferingKeys = true;
 
-    if (!this._remappedModes.includes(vimState.currentModeIncludingPseudoModes)) {
+    if (!this.remappedModes.includes(vimState.currentModeIncludingPseudoModes)) {
       return false;
     }
 
-    const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
+    const userDefinedRemappings = configuration[this.configKey] as Map<string, IKeyRemapping>;
 
     if (keys[keys.length - 1] === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
@@ -126,10 +122,10 @@ export class Remapper implements IRemapper {
       return true;
     }
 
-    this._logger.debug(
+    this.logger.debug(
       `trying to find matching remap. keys=${keys}. mode=${
         Mode[vimState.currentMode]
-      }. keybindings=${this._configKey}.`
+      }. keybindings=${this.configKey}.`
     );
 
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(
@@ -163,19 +159,19 @@ export class Remapper implements IRemapper {
      */
     if (
       !remapping &&
-      (this._hasAmbiguousRemap || this._hasPotentialRemap) &&
+      (this.hasAmbiguousRemap || this.hasPotentialRemap) &&
       (!isPotentialRemap || !allowBufferingKeys) &&
       keys.length > 1
     ) {
-      if (this._hasAmbiguousRemap) {
-        remapping = this._hasAmbiguousRemap;
+      if (this.hasAmbiguousRemap) {
+        remapping = this.hasAmbiguousRemap;
         isPotentialRemap = false;
         this._isPotentialRemap = false;
 
         // Use the commandList to get the remaining keys so that it includes any existing
         // '<TimeoutFinished>' key
         remainingKeys = vimState.recordedState.commandList.slice(remapping.before.length);
-        this._hasAmbiguousRemap = undefined;
+        this.hasAmbiguousRemap = undefined;
       }
       if (!remapping) {
         // if there is still no remapping, handle all the keys without allowing
@@ -214,14 +210,14 @@ export class Remapper implements IRemapper {
 
           keys.push(SpecialKeys.TimeoutFinished); // include the '<TimeoutFinished>' key
 
-          this._logger.debug(
-            `${this._configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
+          this.logger.debug(
+            `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
           );
         }
-        this._logger.debug(
-          `${this._configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
+        this.logger.debug(
+          `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
         );
-        this._hasPotentialRemap = false;
+        this.hasPotentialRemap = false;
         vimState.recordedState.allowPotentialRemapOnFirstKey = false;
         vimState.recordedState.resetCommandList();
 
@@ -237,8 +233,8 @@ export class Remapper implements IRemapper {
             await modeHandler.handleMultipleKeyEvents(keys);
           } catch (e) {
             if (e instanceof ForceStopRemappingError) {
-              this._logger.debug(
-                `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+              this.logger.debug(
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
               );
             }
           } finally {
@@ -271,15 +267,15 @@ export class Remapper implements IRemapper {
         // to finish. Also store this current ambiguous remap on '_hasAmbiguousRemap' so that if later
         // this ambiguous remap is broken or the user waits for timeout we don't need to go looking for
         // it again.
-        this._hasAmbiguousRemap = remapping;
+        this.hasAmbiguousRemap = remapping;
 
-        this._logger.debug(
-          `${this._configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
+        this.logger.debug(
+          `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
         );
       } else {
-        this._hasPotentialRemap = true;
-        this._logger.debug(
-          `${this._configKey}. potential remap found. waiting for other key or timeout to finish.`
+        this.hasPotentialRemap = true;
+        this.logger.debug(
+          `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`
         );
       }
 
@@ -303,14 +299,14 @@ export class Remapper implements IRemapper {
         // remapping from waiting for the timeout again by making a clone of
         // remapping and change 'after' to send the '<TimeoutFinished>' key at
         // the end.
-        let newRemapping = { ...remapping };
+        const newRemapping = { ...remapping };
         newRemapping.after = remapping.after?.slice(0);
         newRemapping.after?.push(SpecialKeys.TimeoutFinished);
         remapping = newRemapping;
       }
 
-      this._hasAmbiguousRemap = undefined;
-      this._hasPotentialRemap = false;
+      this.hasAmbiguousRemap = undefined;
+      this.hasPotentialRemap = false;
 
       let skipFirstCharacter = false;
 
@@ -340,8 +336,8 @@ export class Remapper implements IRemapper {
       // Increase mapDepth
       remapState.mapDepth++;
 
-      this._logger.debug(
-        `${this._configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`
+      this.logger.debug(
+        `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`
       );
 
       let remapFailed = false;
@@ -384,13 +380,13 @@ export class Remapper implements IRemapper {
             throw e;
           }
 
-          this._logger.debug(
-            `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+          this.logger.debug(
+            `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
           );
         } else {
           // If some other error happens during the remapping handling it should stop the remap and rethrow
-          this._logger.debug(
-            `${this._configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
+          this.logger.debug(
+            `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
           );
           throw e;
         }
@@ -447,8 +443,8 @@ export class Remapper implements IRemapper {
               remapState.isCurrentlyPerformingRecursiveRemapping = true;
               await modeHandler.handleMultipleKeyEvents(remainingKeys);
             } catch (e) {
-              this._logger.debug(
-                `${this._configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+              this.logger.debug(
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
               );
             } finally {
               remapState.isCurrentlyPerformingRecursiveRemapping = false;
@@ -466,8 +462,8 @@ export class Remapper implements IRemapper {
       return true;
     }
 
-    this._hasPotentialRemap = false;
-    this._hasAmbiguousRemap = undefined;
+    this.hasPotentialRemap = false;
+    this.hasAmbiguousRemap = undefined;
     return false;
   }
 
@@ -539,11 +535,11 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      this._logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
+      this.logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         const precedingKeys = inputtedString.slice(0, inputtedString.length - keySlice.length);
         if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
-          this._logger.verbose(
+          this.logger.verbose(
             `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
           );
           break;
@@ -584,7 +580,7 @@ export class Remapper implements IRemapper {
     const keysAsString = keys.join('');
     const re = /^<([^>]+)>/;
     if (keysAsString !== '') {
-      for (let remap of remappings.keys()) {
+      for (const remap of remappings.keys()) {
         if (remap.startsWith(keysAsString) && (remap !== keysAsString || countRemapAsPotential)) {
           // Don't confuse a key combination starting with '<' that is not a special key like '<C-a>'
           // with a remap that starts with a special key.

@@ -13,15 +13,11 @@ export interface IWallCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:wall
 //
 export class WallCommand extends node.CommandBase {
-  protected _arguments: IWallCommandArguments;
+  private readonly arguments: IWallCommandArguments;
 
   constructor(args: IWallCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IWallCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {

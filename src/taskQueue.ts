@@ -10,27 +10,27 @@ interface IEnqueuedTask {
 }
 
 class TaskQueue {
-  private readonly _logger = Logger.get('TaskQueue');
-  private readonly _taskQueue: {
+  private readonly logger = Logger.get('TaskQueue');
+  private readonly taskQueue: {
     [key: string]: {
       tasks: IEnqueuedTask[];
     };
   } = {};
 
   private isRunning(queueName: string): boolean {
-    return this._taskQueue[queueName] && this._taskQueue[queueName].tasks.some((x) => x.isRunning);
+    return this.taskQueue[queueName] && this.taskQueue[queueName].tasks.some((x) => x.isRunning);
   }
 
   private numHighPriority(queueName: string): number {
-    if (!this._taskQueue[queueName]) {
+    if (!this.taskQueue[queueName]) {
       return 0;
     }
-    return this._taskQueue[queueName].tasks.filter((x) => x.isHighPriority).length;
+    return this.taskQueue[queueName].tasks.filter((x) => x.isHighPriority).length;
   }
 
   private async runTasks(queueName: string): Promise<void> {
-    while (this._taskQueue[queueName].tasks.length > 0) {
-      let task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
+    while (this.taskQueue[queueName].tasks.length > 0) {
+      const task: IEnqueuedTask = this.taskQueue[queueName].tasks[0];
 
       try {
         task.isRunning = true;
@@ -43,11 +43,11 @@ class TaskQueue {
           vscode.window
             .showErrorMessage(e.message, reportButton)
             .then((picked: string | undefined) => {
-              let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
-              if (stack) {
-                body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
-              }
               if (picked === reportButton) {
+                let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
+                if (stack) {
+                  body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+                }
                 vscode.commands.executeCommand(
                   'vscode.open',
                   vscode.Uri.parse(
@@ -57,7 +57,7 @@ class TaskQueue {
               }
             });
         } else {
-          this._logger.error(`Error running task due to an unknown error: ${e}.`);
+          this.logger.error(`Error running task due to an unknown error: ${e}.`);
         }
       } finally {
         this.dequeueTask(task);
@@ -72,7 +72,7 @@ class TaskQueue {
    *       promises don't allow you to stop it.
    */
   private dequeueTask(task: IEnqueuedTask): void {
-    this._taskQueue[task.queue].tasks = this._taskQueue[task.queue].tasks.filter((t) => t !== task);
+    this.taskQueue[task.queue].tasks = this.taskQueue[task.queue].tasks.filter((t) => t !== task);
   }
 
   /**
@@ -83,15 +83,15 @@ class TaskQueue {
     queueName: string = 'default',
     isHighPriority: boolean = false
   ): void {
-    let task: IEnqueuedTask = {
+    const task: IEnqueuedTask = {
       promise: action,
       queue: queueName,
-      isHighPriority: isHighPriority,
+      isHighPriority,
       isRunning: false,
     };
 
-    if (!this._taskQueue[queueName]) {
-      this._taskQueue[queueName] = {
+    if (!this.taskQueue[queueName]) {
+      this.taskQueue[queueName] = {
         tasks: [],
       };
     }
@@ -99,9 +99,9 @@ class TaskQueue {
     if (isHighPriority) {
       // Insert task as the last high priority task.
       const numHighPriority = this.numHighPriority(queueName);
-      this._taskQueue[queueName].tasks.splice(numHighPriority, 0, task);
+      this.taskQueue[queueName].tasks.splice(numHighPriority, 0, task);
     } else {
-      this._taskQueue[queueName].tasks.push(task);
+      this.taskQueue[queueName].tasks.push(task);
     }
 
     if (!this.isRunning(queueName)) {

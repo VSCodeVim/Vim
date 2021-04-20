@@ -6,6 +6,7 @@ import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from
 import { Range } from './common/motion/range';
 import { Position } from 'vscode';
 import { Logger } from './util/logger';
+import { clamp } from './util/util';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -22,8 +23,8 @@ export class TextEditor {
   static async insert(
     editor: vscode.TextEditor,
     text: string,
-    at: Position | undefined = undefined,
-    letVSCodeHandleKeystrokes: boolean | undefined = undefined
+    at?: Position,
+    letVSCodeHandleKeystrokes?: boolean
   ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
@@ -61,15 +62,6 @@ export class TextEditor {
   }
 
   /**
-   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
-   */
-  static async delete(editor: vscode.TextEditor, range: vscode.Range): Promise<boolean> {
-    return editor.edit((editBuilder) => {
-      editBuilder.delete(range);
-    });
-  }
-
-  /**
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(
@@ -102,15 +94,9 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
   }
 
-  static getCharAt(position: Position): string {
-    const line = vscode.window.activeTextEditor!.document.lineAt(position);
-
-    return line.text[position.character];
-  }
-
-  /** @deprecated Use vimState.document.getText() */
-  static getText(selection?: vscode.Range): string {
-    return vscode.window.activeTextEditor!.document.getText(selection);
+  static getCharAt(document: vscode.TextDocument, position: Position): string {
+    position = document.validatePosition(position);
+    return document.lineAt(position).text[position.character];
   }
 
   /**
@@ -120,8 +106,8 @@ export class TextEditor {
    *    - Will go right (but not over line boundaries) until it finds a "real" word
    *    - Will settle for a "fake" word only if it hits the line end
    */
-  static getWord(position: Position): string | undefined {
-    const line = vscode.window.activeTextEditor!.document.lineAt(position).text;
+  static getWord(document: vscode.TextDocument, position: Position): string | undefined {
+    const line = document.lineAt(position).text;
 
     // Skip over whitespace
     let firstNonBlank = position.character;
@@ -172,15 +158,6 @@ export class TextEditor {
     return '\t';
   }
 
-  static isFirstLine(position: Position): boolean {
-    return position.line === 0;
-  }
-
-  /** @deprecated Use position.line === vimState.document.lineCount - 1 */
-  static isLastLine(position: Position): boolean {
-    return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
-  }
-
   /**
    * @returns the number of visible columns that the given line begins with
    */
@@ -223,23 +200,21 @@ export class TextEditor {
     return new Position(0, 0);
   }
 
-  static getDocumentEnd(textEditor?: vscode.TextEditor): Position {
-    const lineCount = TextEditor.getLineCount(textEditor);
-    const line = lineCount > 0 ? lineCount - 1 : 0;
-    const char = TextEditor.getLineLength(line);
-
-    return new Position(line, char);
+  static getDocumentEnd(document: vscode.TextDocument): Position {
+    const line = Math.max(document.lineCount, 1) - 1;
+    return document.lineAt(line).range.end;
   }
 
   /**
    * @returns the Position of the first character on the given line which is not whitespace.
    * If it's all whitespace, will return the Position of the EOL character.
    */
-  public static getFirstNonWhitespaceCharOnLine(line: number): Position {
-    return new Position(
-      line,
-      vscode.window.activeTextEditor!.document.lineAt(line).firstNonWhitespaceCharacterIndex
-    );
+  public static getFirstNonWhitespaceCharOnLine(
+    document: vscode.TextDocument,
+    line: number
+  ): Position {
+    line = clamp(line, 0, document.lineCount - 1);
+    return new Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
   }
 
   /**
@@ -288,26 +263,27 @@ export class TextEditor {
    * Iterates through words on the same line, starting from the current position.
    */
   public static *iterateWords(
+    document: vscode.TextDocument,
     start: Position
   ): Iterable<{ start: Position; end: Position; word: string }> {
-    const text = vscode.window.activeTextEditor!.document.lineAt(start).text;
+    const text = document.lineAt(start).text;
     if (/\s/.test(text[start.character])) {
-      start = start.getWordRight();
+      start = start.nextWordStart(document);
     }
-    let wordEnd = start.getCurrentWordEnd(true);
+    let wordEnd = start.nextWordEnd(document, { inclusive: true });
     do {
       const word = text.substring(start.character, wordEnd.character + 1);
       yield {
-        start: start,
+        start,
         end: wordEnd,
-        word: word,
+        word,
       };
 
       if (wordEnd.getRight().isLineEnd()) {
         return;
       }
-      start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd(true);
+      start = start.nextWordStart(document);
+      wordEnd = start.nextWordEnd(document, { inclusive: true });
     } while (true);
   }
 }

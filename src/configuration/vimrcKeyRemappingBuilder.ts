@@ -135,11 +135,10 @@ class VimrcKeyRemappingBuilderImpl {
   /**
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
-  public async build(line: string): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
+  public async build(
+    line: string,
+    vscodeCommands: string[]
+  ): Promise<IVimrcKeyRemapping | undefined> {
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {
       return undefined;
@@ -149,7 +148,6 @@ class VimrcKeyRemappingBuilderImpl {
     const before = matches[2];
     const after = matches[3];
 
-    const vscodeCommands = await vscode.commands.getCommands();
     const vimCommand = after.match(VimrcKeyRemappingBuilderImpl.VIM_COMMAND_REG_EX);
 
     let command: {
@@ -178,10 +176,6 @@ class VimrcKeyRemappingBuilderImpl {
    * @returns A remapping if the given `line` parses to one, and `undefined` otherwise.
    */
   public async buildUnmapping(line: string): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcKeyRemappingBuilderImpl.KEY_UNREMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 3) {
       return undefined;
@@ -203,10 +197,6 @@ class VimrcKeyRemappingBuilderImpl {
    * @returns An empty remapping with its type if the given `line` parses to one, and `undefined` otherwise.
    */
   public async buildClearMapping(line: string): Promise<IVimrcKeyRemapping | undefined> {
-    if (line.trimLeft().startsWith('"')) {
-      return;
-    }
-
     const matches = VimrcKeyRemappingBuilderImpl.KEY_CLEAR_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 2) {
       return undefined;
@@ -224,7 +214,7 @@ class VimrcKeyRemappingBuilderImpl {
   }
 
   private static buildKeyList(keyString: string): string[] {
-    let keyList: string[] = [];
+    const keyList: string[] = [];
     let matches: RegExpMatchArray | null = null;
     do {
       matches = VimrcKeyRemappingBuilderImpl.KEY_LIST_REG_EX.exec(keyString);

@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import {
   assertEqualLines,
   cleanUpWorkspace,
@@ -132,25 +131,38 @@ suite('Mode Insert', () => {
     end: ['foo|bar'],
   });
 
-  newTest({
-    title: '<C-u> deletes to start of line',
-    start: ['text |text'],
-    keysPressed: 'i<C-u>',
-    end: ['|text'],
-  });
+  suite('<C-u>', () => {
+    newTest({
+      title: '<C-u> deletes to start of line',
+      start: ['text |text'],
+      keysPressed: 'i<C-u>',
+      end: ['|text'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-u> on leading characters',
-    start: ['{', '  foo: |true', '}'],
-    keysPressed: 'i<C-u>',
-    end: ['{', '  |true', '}'],
-  });
+    newTest({
+      title: 'Can handle <C-u> on leading characters',
+      start: ['{', '  foo: |true', '}'],
+      keysPressed: 'i<C-u>',
+      end: ['{', '  |true', '}'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-u> on leading whitespace',
-    start: ['{', '  |true', '}'],
-    keysPressed: 'i<C-u>',
-    end: ['{', '|true', '}'],
+    newTest({
+      title: 'Can handle <C-u> on leading whitespace',
+      start: ['{', '  |true', '}'],
+      keysPressed: 'i<C-u>',
+      end: ['{', '|true', '}'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-u> at start of line deletes line break',
+      start: ['one', '|two', 'three'],
+      keysPressed: 'i<C-u>',
+      end: ['one|two', 'three'],
+      endMode: Mode.Insert,
+    });
   });
 
   test('Correctly places the cursor after deleting the previous line break', async () => {
@@ -389,5 +401,22 @@ suite('Mode Insert', () => {
     } catch (e) {
       assert(false);
     }
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register",
+    start: ['foo |bar'],
+    keysPressed: 'yei<C-r>"',
+    end: ['foo bar|bar'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle '<C-r>' paste register with multiple cursors",
+    start: ['foo |bar', 'foo bar'],
+    // create two cursors on bar, yank. Then paste it in insert mode
+    keysPressed: 'gbgby' + 'i<C-r>"',
+    end: ['foo bar|bar', 'foo barbar'],
+    endMode: Mode.Insert,
   });
 });

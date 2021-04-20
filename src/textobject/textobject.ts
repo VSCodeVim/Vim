@@ -6,20 +6,20 @@ import { TextEditor } from '../textEditor';
 import { RegisterAction } from '../actions/base';
 import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
-  MoveAClosingCurlyBrace,
-  MoveADoubleQuotes,
-  MoveAParentheses,
-  MoveASingleQuotes,
-  MoveASquareBracket,
-  MoveABacktick,
+  MoveAroundDoubleQuotes,
+  MoveAroundParentheses,
+  MoveAroundSingleQuotes,
+  MoveAroundSquareBracket,
+  MoveAroundBacktick,
   MoveAroundTag,
   ExpandingSelection,
+  MoveAroundCurlyBrace,
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
+import { Position, TextDocument } from 'vscode';
+import { WordType } from './word';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -44,18 +44,18 @@ export class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getCharAt(position);
+    const currentChar = TextEditor.getCharAt(vimState.document, position);
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastWordEnd().getRight();
-      stop = position.getCurrentWordEnd();
+      start = position.prevWordEnd(vimState.document).getRight();
+      stop = position.nextWordEnd(vimState.document);
     } else {
-      stop = position.getWordRight();
+      stop = position.nextWordStart(vimState.document);
       // If the next word is not at the beginning of the next line, we want to pretend it is.
       // This is because 'aw' has two fundamentally different behaviors distinguished by whether
       // the next word is directly after the current word, as described in the following comment.
       // The only case that's not true is in cases like #1350.
-      if (stop.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line))) {
+      if (stop.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, stop.line))) {
         stop = stop.getLineBegin();
       }
       stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
@@ -63,15 +63,15 @@ export class SelectWord extends TextObjectMovement {
       // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
       // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
       if (
-        stop.isEqual(position.getCurrentWordEnd(true)) &&
+        stop.isEqual(position.nextWordEnd(vimState.document, { inclusive: true })) &&
         !position
-          .getWordLeft(true)
-          .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(stop.line)) &&
+          .prevWordStart(vimState.document, { inclusive: true })
+          .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, stop.line)) &&
         vimState.recordedState.count === 0
       ) {
-        start = position.getLastWordEnd().getRight();
+        start = position.prevWordEnd(vimState.document).getRight();
       } else {
-        start = position.getWordLeft(true);
+        start = position.prevWordStart(vimState.document, { inclusive: true });
       }
     }
 
@@ -84,16 +84,16 @@ export class SelectWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor position is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getWordLeft(true);
+          stop = position.prevWordStart(vimState.document, { inclusive: true });
         } else {
-          stop = position.getLastWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document).getRight();
         }
       }
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -109,31 +109,36 @@ export class SelectABigWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastBigWordEnd().getRight();
-      stop = position.getCurrentBigWordEnd();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      stop = position.nextWordEnd(vimState.document, { wordType: WordType.Big });
     } else {
       // Check 'aw' code for much of the reasoning behind this logic.
-      const nextWord = position.getBigWordRight();
+      const nextWord = position.nextWordStart(vimState.document, { wordType: WordType.Big });
       if (
         (nextWord.line > position.line || nextWord.isAtDocumentEnd()) &&
         vimState.recordedState.count === 0
       ) {
-        if (position.getLastBigWordEnd().isLineBeginning()) {
-          start = position.getLastBigWordEnd();
+        if (position.prevWordEnd(vimState.document, { wordType: WordType.Big }).isLineBeginning()) {
+          start = position.prevWordEnd(vimState.document, { wordType: WordType.Big });
         } else {
-          start = position.getLastBigWordEnd().getRight();
+          start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         }
         stop = position.getLineEnd();
       } else if (
-        (nextWord.isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(nextWord.line)) ||
+        (nextWord.isEqual(
+          TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, nextWord.line)
+        ) ||
           nextWord.isLineEnd()) &&
         vimState.recordedState.count === 0
       ) {
-        start = position.getLastWordEnd().getRight();
+        start = position.prevWordEnd(vimState.document).getRight();
         stop = position.getLineEnd();
       } else {
-        start = position.getBigWordLeft(true);
-        stop = position.getBigWordRight().getLeft();
+        start = position.prevWordStart(vimState.document, {
+          wordType: WordType.Big,
+          inclusive: true,
+        });
+        stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
       }
     }
     if (
@@ -145,16 +150,16 @@ export class SelectABigWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getBigWordLeft();
+          stop = position.prevWordStart(vimState.document, { wordType: WordType.Big });
         } else {
-          stop = position.getLastBigWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         }
       }
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -174,12 +179,12 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const blocks = [
-      new MoveADoubleQuotes(),
-      new MoveASingleQuotes(),
-      new MoveABacktick(),
-      new MoveAClosingCurlyBrace(),
-      new MoveAParentheses(),
-      new MoveASquareBracket(),
+      new MoveAroundDoubleQuotes(),
+      new MoveAroundSingleQuotes(),
+      new MoveAroundBacktick(),
+      new MoveAroundCurlyBrace(),
+      new MoveAroundParentheses(),
+      new MoveAroundSquareBracket(),
       new MoveAroundTag(),
     ];
     // ideally no state would change as we test each of the possible expansions
@@ -199,7 +204,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       return !range.failed;
     });
 
-    let smallestRange: Range | undefined = undefined;
+    let smallestRange: Range | undefined;
 
     for (const iMotion of ranges) {
       const currentSelectedRange = new Range(
@@ -211,7 +216,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       }
 
       const range = new Range(iMotion.start, iMotion.stop);
-      let contender: Range | undefined = undefined;
+      let contender: Range | undefined;
 
       if (
         range.start.isBefore(currentSelectedRange.start) &&
@@ -273,11 +278,11 @@ export class SelectInnerWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastWordEnd().getRight();
-      stop = position.getWordRight().getLeftThroughLineBreaks();
+      start = position.prevWordEnd(vimState.document).getRight();
+      stop = position.nextWordStart(vimState.document).getLeftThroughLineBreaks();
     } else {
-      start = position.getWordLeft(true);
-      stop = position.getCurrentWordEnd(true);
+      start = position.prevWordStart(vimState.document, { inclusive: true });
+      stop = position.nextWordEnd(vimState.document, { inclusive: true });
     }
 
     if (
@@ -289,16 +294,16 @@ export class SelectInnerWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getLastWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document).getRight();
         } else {
-          stop = position.getWordLeft(true);
+          stop = position.prevWordStart(vimState.document, { inclusive: true });
         }
       }
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -314,11 +319,17 @@ export class SelectInnerBigWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastBigWordEnd().getRight();
-      stop = position.getBigWordRight().getLeft();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
     } else {
-      start = position.getBigWordLeft(true);
-      stop = position.getCurrentBigWordEnd(true);
+      start = position.prevWordStart(vimState.document, {
+        wordType: WordType.Big,
+        inclusive: true,
+      });
+      stop = position.nextWordEnd(vimState.document, {
+        wordType: WordType.Big,
+        inclusive: true,
+      });
     }
 
     if (
@@ -330,16 +341,16 @@ export class SelectInnerBigWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getLastBigWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         } else {
-          stop = position.getBigWordLeft();
+          stop = position.prevWordStart(vimState.document, { wordType: WordType.Big });
         }
       }
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -395,8 +406,8 @@ export class SelectSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -438,8 +449,8 @@ export class SelectInnerSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -475,8 +486,8 @@ export class SelectParagraph extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -520,8 +531,8 @@ export class SelectInnerParagraph extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }
@@ -533,7 +544,7 @@ export class SelectEntire extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start: TextEditor.getDocumentBegin(),
-      stop: TextEditor.getDocumentEnd(),
+      stop: TextEditor.getDocumentEnd(vimState.document),
     };
   }
 }
@@ -544,7 +555,7 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position = TextEditor.getDocumentBegin();
-    let stop: Position = TextEditor.getDocumentEnd();
+    let stop: Position = TextEditor.getDocumentEnd(vimState.document);
 
     while (start.line < stop.line && vimState.document.lineAt(start).isEmptyOrWhitespace) {
       start = start.getDown();
@@ -734,31 +745,40 @@ abstract class SelectArgument extends TextObjectMovement {
     let leftSearchStartPosition = position;
     let rightSearchStartPosition = position;
 
+    const charAtPos = TextEditor.getCharAt(vimState.document, position);
+
     // When the cursor is on a delimiter already, pre-advance the cursor,
     // so that our search actually spans a range. We will advance to the next argument,
     // in case of opening delimiters or separators, and advance to the
     // previous on closing delimiters.
     if (
-      SelectArgument.separatorCharacters().includes(TextEditor.getCharAt(position)) ||
-      SelectArgument.openingDelimiterCharacters().includes(TextEditor.getCharAt(position))
+      SelectArgument.separatorCharacters().includes(charAtPos) ||
+      SelectArgument.openingDelimiterCharacters().includes(charAtPos)
     ) {
       rightSearchStartPosition = position.getRightThroughLineBreaks(true);
-    } else if (
-      SelectArgument.closingDelimiterCharacters().includes(TextEditor.getCharAt(position))
-    ) {
+    } else if (SelectArgument.closingDelimiterCharacters().includes(charAtPos)) {
       leftSearchStartPosition = position.getLeftThroughLineBreaks(true);
     }
 
     // Early abort, if no delimiters (i.e. (), [], etc.) surround us.
     // This prevents applying the movement to surrounding separators across the buffer.
     if (
-      SelectInnerArgument.findLeftArgumentBoundary(leftSearchStartPosition, true) === undefined ||
-      SelectInnerArgument.findRightArgumentBoundary(rightSearchStartPosition, true) === undefined
+      SelectInnerArgument.findLeftArgumentBoundary(
+        vimState.document,
+        leftSearchStartPosition,
+        true
+      ) === undefined ||
+      SelectInnerArgument.findRightArgumentBoundary(
+        vimState.document,
+        rightSearchStartPosition,
+        true
+      ) === undefined
     ) {
       return failure;
     }
 
     const leftArgumentBoundary = SelectInnerArgument.findLeftArgumentBoundary(
+      vimState.document,
       leftSearchStartPosition
     );
     if (leftArgumentBoundary === undefined) {
@@ -766,6 +786,7 @@ abstract class SelectArgument extends TextObjectMovement {
     }
 
     const rightArgumentBoundary = SelectInnerArgument.findRightArgumentBoundary(
+      vimState.document,
       rightSearchStartPosition
     );
     if (rightArgumentBoundary === undefined) {
@@ -777,10 +798,10 @@ abstract class SelectArgument extends TextObjectMovement {
 
     if (this.selectAround) {
       const isLeftOnOpening: boolean = SelectArgument.openingDelimiterCharacters().includes(
-        TextEditor.getCharAt(leftArgumentBoundary)
+        TextEditor.getCharAt(vimState.document, leftArgumentBoundary)
       );
       const isRightOnClosing: boolean = SelectArgument.closingDelimiterCharacters().includes(
-        TextEditor.getCharAt(rightArgumentBoundary)
+        TextEditor.getCharAt(vimState.document, rightArgumentBoundary)
       );
 
       // Edge-case:
@@ -800,7 +821,7 @@ abstract class SelectArgument extends TextObjectMovement {
       if (isInFirstArgument) {
         stop = rightArgumentBoundary.getRight();
         // Walk right until non-whitespace
-        while (/\s/.test(TextEditor.getCharAt(stop.getRight()))) {
+        while (/\s/.test(TextEditor.getCharAt(vimState.document, stop.getRight()))) {
           stop = stop.getRight();
         }
       } else {
@@ -819,13 +840,13 @@ abstract class SelectArgument extends TextObjectMovement {
       // going until the first non whitespace.
       // This ensures that indented argument-lists keep the indentation.
       start = leftArgumentBoundary.getRightThroughLineBreaks(false);
-      while (/\s/.test(TextEditor.getCharAt(start))) {
+      while (/\s/.test(TextEditor.getCharAt(vimState.document, start))) {
         start = start.getRightThroughLineBreaks(false);
       }
 
       // Same procedure for stop.
       stop = rightArgumentBoundary.getLeftThroughLineBreaks(false);
-      while (/\s/.test(TextEditor.getCharAt(stop))) {
+      while (/\s/.test(TextEditor.getCharAt(vimState.document, stop))) {
         stop = stop.getLeftThroughLineBreaks(false);
       }
 
@@ -850,6 +871,7 @@ abstract class SelectArgument extends TextObjectMovement {
   }
 
   private static findLeftArgumentBoundary(
+    document: TextDocument,
     position: Position,
     ignoreSeparators: boolean = false
   ): Position | undefined {
@@ -858,7 +880,7 @@ abstract class SelectArgument extends TextObjectMovement {
     let closedParensCount = 0;
 
     while (true) {
-      const char = TextEditor.getCharAt(walkingPosition);
+      const char = TextEditor.getCharAt(document, walkingPosition);
       if (closedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.openingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {
@@ -890,6 +912,7 @@ abstract class SelectArgument extends TextObjectMovement {
   }
 
   private static findRightArgumentBoundary(
+    document: TextDocument,
     position: Position,
     ignoreSeparators: boolean = false
   ): Position | undefined {
@@ -898,7 +921,7 @@ abstract class SelectArgument extends TextObjectMovement {
     let openedParensCount = 0;
 
     while (true) {
-      const char = TextEditor.getCharAt(walkingPosition);
+      const char = TextEditor.getCharAt(document, walkingPosition);
       if (openedParensCount === 0) {
         let isOnBoundary: boolean = SelectArgument.closingDelimiterCharacters().includes(char);
         if (!ignoreSeparators) {

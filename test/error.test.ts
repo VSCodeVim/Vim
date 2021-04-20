@@ -4,11 +4,11 @@ import { ErrorCode, ErrorMessage } from '../src/error';
 
 suite('Error', () => {
   test('error code has message', () => {
-    /* tslint:disable:forin */
+    // tslint:disable-next-line: forin
     for (const errorCodeString in ErrorCode) {
       const errorCode = Number(errorCodeString);
       if (!isNaN(errorCode)) {
-        assert.notEqual(ErrorMessage[errorCode], undefined, errorCodeString);
+        assert.notStrictEqual(ErrorMessage[errorCode], undefined, errorCodeString);
       }
     }
   });

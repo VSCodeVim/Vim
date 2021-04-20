@@ -5,7 +5,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { configurationValidator } from '../configurationValidator';
 
 export class RemappingValidator implements IConfigurationValidator {
-  private _commandMap: Map<string, boolean>;
+  private commandMap: Map<string, boolean>;
 
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
@@ -22,7 +22,7 @@ export class RemappingValidator implements IConfigurationValidator {
       'commandLineModeKeyBindingsNonRecursive',
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = config[modeKeyBindingsKey];
+      const keybindings = config[modeKeyBindingsKey];
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
       const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
@@ -31,13 +31,13 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap = new Map<string, IKeyRemapping>();
       }
       for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i] as IKeyRemapping;
+        const remapping = keybindings[i] as IKeyRemapping;
 
         // set 'recursive' of the remapping according to where it was stored
         remapping.recursive = isRecursive;
 
         // validate
-        let remappingError = await this.isRemappingValid(remapping);
+        const remappingError = await this.isRemappingValid(remapping);
         result.concat(remappingError);
         if (remappingError.hasError) {
           // errors with remapping, skip
@@ -146,12 +146,12 @@ export class RemappingValidator implements IConfigurationValidator {
   }
 
   private async getCommandMap(): Promise<Map<string, boolean>> {
-    if (this._commandMap == null) {
-      this._commandMap = new Map(
+    if (this.commandMap == null) {
+      this.commandMap = new Map(
         (await vscode.commands.getCommands(true)).map((x) => [x, true] as [string, boolean])
       );
     }
-    return this._commandMap;
+    return this.commandMap;
   }
 }
 

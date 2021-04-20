@@ -20,16 +20,12 @@ export interface IFileCommandArguments extends node.ICommandArgs {
 }
 
 export class FileCommand extends node.CommandBase {
-  protected _arguments: IFileCommandArguments;
-  private readonly _logger = Logger.get('File');
+  private readonly arguments: IFileCommandArguments;
+  private readonly logger = Logger.get('File');
 
   constructor(args: IFileCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IFileCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
@@ -40,7 +36,7 @@ export class FileCommand extends node.CommandBase {
 
     // Need to do this before the split since it loses the activeTextEditor
     const editorFileUri = vscode.window.activeTextEditor!.document.uri;
-    let editorFilePath = editorFileUri.fsPath;
+    const editorFilePath = editorFileUri.fsPath;
 
     // Do the split if requested
     let split = false;
@@ -53,7 +49,7 @@ export class FileCommand extends node.CommandBase {
       split = true;
     }
 
-    let hidePreviousEditor = async function () {
+    const hidePreviousEditor = async () => {
       if (split === true) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -71,7 +67,7 @@ export class FileCommand extends node.CommandBase {
 
     // Only untidify when the currently open page and file completion is local
     if (this.arguments.name && editorFileUri.scheme === 'file') {
-      this._arguments.name = untildify(this.arguments.name);
+      this.arguments.name = untildify(this.arguments.name);
     }
 
     let fileUri = editorFileUri;
@@ -88,7 +84,7 @@ export class FileCommand extends node.CommandBase {
       }
     } else {
       // remove file://
-      this._arguments.name = this.arguments.name.replace(/^file:\/\//, '');
+      this.arguments.name = this.arguments.name.replace(/^file:\/\//, '');
 
       // Using a filename, open or create the file
       const isRemote = !!vscode.env.remoteName;
@@ -127,7 +123,7 @@ export class FileCommand extends node.CommandBase {
             // untitled tab
             fileUri = uriPath.with({ scheme: 'untitled' });
           } else {
-            this._logger.error(`${this.arguments.name} does not exist.`);
+            this.logger.error(`${this.arguments.name} does not exist.`);
             return;
           }
         }

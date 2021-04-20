@@ -10,7 +10,6 @@ import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
-import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
@@ -29,7 +28,7 @@ class TestMemento implements vscode.Memento {
   }
 }
 export class TestExtensionContext implements vscode.ExtensionContext {
-  subscriptions: { dispose(): any }[] = [];
+  subscriptions: Array<{ dispose(): any }> = [];
   workspaceState: vscode.Memento = new TestMemento();
   globalState: vscode.Memento = new TestMemento();
   extensionPath: string = 'inmem:///test';
@@ -101,13 +100,13 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
   try {
     await waitForTextEditorsToClose;
   } catch (error) {
-    assert.fail(null, null, error.toString(), '');
+    assert.fail(error);
   }
 }
 
 export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(
-    TextEditor.getText(),
+    vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
     'Document content does not match.'
   );
@@ -136,8 +135,8 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }
@@ -145,7 +144,6 @@ export async function setupWorkspace(
 const mockAndEnable = async () => {
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
   const mh = (await getAndUpdateModeHandler())!;
-  Globals.mockModeHandler = mh;
   await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
 };
 

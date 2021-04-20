@@ -69,8 +69,8 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump, to: Jump) {
-    if (from.isSamePosition(to)) {
+  public recordJump(from: Jump, to?: Jump) {
+    if (to && from.isSamePosition(to)) {
       return;
     }
 
@@ -95,7 +95,7 @@ export class JumpTracker {
       return;
     }
 
-    if (to.editor && to.editor.document && to.editor.document.isClosed) {
+    if (to.document.isClosed) {
       // Wallaby.js seemed to be adding an extra file jump, named e.g. extension-output-#4
       // It was marked closed when jumping to it. Hopefully we can rely on checking isClosed
       // when extensions get all weird on us.
@@ -108,9 +108,9 @@ export class JumpTracker {
   private async performFileJump(jump: Jump, vimState: VimState): Promise<void> {
     this.isJumpingThroughHistory = true;
 
-    if (jump.editor) {
+    if (jump.document) {
       // Open jump file from stored editor
-      await vscode.window.showTextDocument(jump.editor.document);
+      await vscode.window.showTextDocument(jump.document);
     } else if (await existsAsync(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
@@ -150,8 +150,7 @@ export class JumpTracker {
     vimState: VimState
   ): Promise<void> {
     let jump = new Jump({
-      editor: vimState.editor,
-      fileName: vimState.document.fileName,
+      document: vimState.document,
       position,
     });
 
@@ -293,12 +292,12 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  private pushJump(from: Jump | null, to: Jump) {
+  private pushJump(from: Jump | null, to?: Jump) {
     if (from) {
       this.clearJumpsOnSamePosition(from);
     }
 
-    if (from && !from.isSamePosition(to)) {
+    if (from && (!to || !from.isSamePosition(to))) {
       this._jumps.push(from);
     }
 
@@ -312,8 +311,7 @@ export class JumpTracker {
       index,
       1,
       new Jump({
-        editor: jump.editor,
-        fileName: jump.fileName,
+        document: jump.document,
         position: newPosition,
       })
     );

@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -246,6 +246,14 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'cw',
     end: ['| a = 1;'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cw' on white space",
+    start: ['|  const a = 1;'],
+    keysPressed: '0cw',
+    end: ['|const a = 1;'],
     endMode: Mode.Insert,
   });
 
@@ -1318,19 +1326,30 @@ suite('Mode Normal', () => {
     end: ['|t text'],
   });
 
-  newTest({
-    title: 'Can handle backspace',
-    start: ['text |text'],
-    keysPressed: '<BS><BS>',
-    end: ['tex|t text'],
-  });
+  for (const key of ['<BS>', '<C-BS>', '<S-BS>']) {
+    newTest({
+      title: `${key} moves one character to the left`,
+      start: ['text |text'],
+      keysPressed: key,
+      end: ['text| text'],
+    });
 
-  newTest({
-    title: 'Can handle backspace across lines',
-    start: ['one', '|two'],
-    keysPressed: '<BS><BS>',
-    end: ['o|ne', 'two'],
-  });
+    newTest({
+      title: `${key} goes across line boundaries when 'whichwrap' contains 'b'`,
+      config: { whichwrap: 'b' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['on|e', 'two'],
+    });
+
+    newTest({
+      title: `${key} does not go across line boundaries when 'whichwrap' does not contain 'b'`,
+      config: { whichwrap: '' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['one', '|two'],
+    });
+  }
 
   newTest({
     title: 'Can handle A and backspace',
@@ -1396,10 +1415,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'gi works correctly',
+    title: '`gi` enters insert mode at point of last insertion',
     start: ['|'],
     keysPressed: 'ione<Esc>otwo<Esc>0gi',
     end: ['one', 'two|'],
+    endMode: Mode.Insert,
+  });
+
+  // TODO: this gets messed up by test framework inserting start text, I think
+  newTestSkip({
+    title: "`gi` enters insert mode at start of document if there's no prior insertion",
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'gi',
+    end: ['|one', 'two', 'three'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -1416,11 +1445,29 @@ suite('Mode Normal', () => {
     end: ['one|two'],
   });
 
-  newTest({
-    title: 'g; works correctly',
-    start: ['|'],
-    keysPressed: 'ione<Esc>atwo<Esc>g;g;',
-    end: ['one|two'],
+  suite('g;', () => {
+    newTest({
+      title: 'g; works correctly after insert',
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'iXYZ<Esc>Gg;',
+      end: ['one', 'twXY|Zo', 'three'],
+    });
+
+    newTest({
+      title: 'g; works correctly after delete',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'xggg;',
+      end: ['one', 'two', 'th|ee'],
+    });
+
+    newTest({
+      title: 'g; works correctly after change',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'clXYZ<Esc>ggg;',
+      end: ['one', 'two', 'thXY|Zee'],
+    });
+
+    // TODO: Test with multiple changes
   });
 
   newTest({
@@ -1558,164 +1605,26 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle space',
+    title: '<Space> moves cursor one character right',
     start: ['|abc', 'def'],
-    keysPressed: '  ',
+    keysPressed: ' ',
+    end: ['a|bc', 'def'],
+  });
+
+  newTest({
+    title: "<Space> goes over line break when whichwrap includes 's'",
+    config: { whichwrap: 's' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['abc', '|def'],
+  });
+
+  newTest({
+    title: "<Space> does not go over line break when whichwrap does not include 's'",
+    config: { whichwrap: '' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
     end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: 'Can handle space',
-    start: ['|abc', 'def'],
-    keysPressed: '    ',
-    end: ['abc', 'd|ef'],
-  });
-
-  newTest({
-    title: 'Undo 1',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo 2',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>u',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Undo cursor',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uuu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo cursor 2',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Undo cursor 3',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>u',
-    end: ['|defabc'],
-  });
-
-  newTest({
-    title: 'Undo with movement first',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>hlhlu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: "Can handle 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for multiple changes",
-    start: ['|'],
-    keysPressed: 'idef<Esc>aghi<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line below",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>U',
-    end: ['abc', '|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line above",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Odef<Esc>U',
-    end: ['|', 'abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for consecutive changes only",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
-    end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: "Can handle 'u' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>UU',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'u' after :s/abc/def",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>:s/abc/def/\nu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwu',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete twice',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwuu',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count and redo',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u<C-r>',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r><C-r>',
-    end: ['abc|def'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uuhlhl<C-r><C-r>',
-    end: ['abc|def'],
   });
 
   newTest({
@@ -1920,7 +1829,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can ctrl-a on an octal ',
-    start: ['07|'],
+    start: ['0|7'],
     keysPressed: '<C-a>',
     end: ['01|0'],
   });
@@ -2237,16 +2146,6 @@ suite('Mode Normal', () => {
     end: ['__ASDF', '|asdf'],
   });
 
-  for (const backspace of ['<BS>', '<S-bs>', '<C-h>']) {
-    newTest({
-      title: `${backspace} deletes the last character in search in progress mode`,
-      start: ['|foo', 'bar', 'abd'],
-      keysPressed: `/abc${backspace}d\n`,
-      end: ['foo', 'bar', '|abd'],
-      endMode: Mode.Normal,
-    });
-  }
-
   newTest({
     title: '<C-l> adds the next character in the first match to search term',
     start: ['|foo', 'bar', 'abcd'],
@@ -2373,6 +2272,20 @@ suite('Mode Normal', () => {
     keysPressed: 'cit',
     end: ['<div>|</div>'],
     endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'yk moves cursor up',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'yk',
+    end: ['o|ne', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'yh moves cursor left',
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'yh',
+    end: ['one', 'two', 'th|ree'],
   });
 
   newTest({
@@ -3201,7 +3114,7 @@ suite('Mode Normal', () => {
 
   suite('marks', async () => {
     const jumpToNewFile = async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
       await setupWorkspace(configuration);

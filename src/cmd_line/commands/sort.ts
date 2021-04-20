@@ -12,15 +12,11 @@ export interface ISortCommandArguments extends node.ICommandArgs {
 }
 
 export class SortCommand extends node.CommandBase {
-  protected _arguments: ISortCommandArguments;
+  private readonly arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ISortCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   public neovimCapable(): boolean {
@@ -46,21 +42,21 @@ export class SortCommand extends node.CommandBase {
     ) {
       originalLines.push(vimState.document.lineAt(currentLine).text);
     }
-    if (this._arguments.unique) {
+    if (this.arguments.unique) {
       originalLines = [...new Set(originalLines)];
     }
 
-    let lastLineLength = originalLines[originalLines.length - 1].length;
+    const lastLineLength = originalLines[originalLines.length - 1].length;
 
-    let sortedLines = this._arguments.ignoreCase
+    const sortedLines = this.arguments.ignoreCase
       ? originalLines.sort((a: string, b: string) => a.localeCompare(b))
       : originalLines.sort();
 
-    if (this._arguments.reverse) {
+    if (this.arguments.reverse) {
       sortedLines.reverse();
     }
 
-    let sortedContent = sortedLines.join('\n');
+    const sortedContent = sortedLines.join('\n');
 
     await TextEditor.replace(
       vimState.editor,

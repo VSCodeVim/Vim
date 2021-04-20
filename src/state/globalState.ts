@@ -25,7 +25,7 @@ class GlobalState {
   /**
    * Tracks search history
    */
-  private _searchHistory: SearchHistory;
+  private searchHistory: SearchHistory;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -54,8 +54,8 @@ class GlobalState {
   public hl = true;
 
   public async load(context: vscode.ExtensionContext) {
-    this._searchHistory = new SearchHistory(context);
-    this._searchHistory
+    this.searchHistory = new SearchHistory(context);
+    this.searchHistory
       .get()
       .forEach((val) =>
         this.searchStatePrevious.push(
@@ -83,8 +83,8 @@ class GlobalState {
     // Store this search if different than previous
     if (searchState.searchString !== prevSearchString) {
       this.searchStatePrevious.push(searchState);
-      if (this._searchHistory !== undefined) {
-        await this._searchHistory.add(searchState.searchString);
+      if (this.searchHistory !== undefined) {
+        await this.searchHistory.add(searchState.searchString);
       }
     }
 
@@ -109,7 +109,7 @@ class GlobalState {
       .map((searchState) => {
         return {
           label: searchState.searchString,
-          searchState: searchState,
+          searchState,
         };
       });
 

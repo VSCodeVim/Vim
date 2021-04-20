@@ -8,10 +8,10 @@ import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
-import { Position } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 
 @RegisterAction
-export class ReplaceOperator extends BaseOperator {
+class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
@@ -28,7 +28,7 @@ export class ReplaceOperator extends BaseOperator {
       vimState.currentRegisterMode === RegisterMode.LineWise
         ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
         : new vscode.Range(start, end.getRight());
-    const register = await Register.get(vimState);
+    const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
       return;
@@ -56,7 +56,7 @@ const updateCursorPosition = (
 
   const cursorPosition = singleLineAction
     ? cursorAtEndOfReplacement(range, replaceWith)
-    : cursorAtFirstNonBlankCharOfLine(range);
+    : cursorAtFirstNonBlankCharOfLine(vimState.document, range);
 
   vimState.cursorStopPosition = cursorPosition;
   vimState.cursorStartPosition = cursorPosition;
@@ -65,5 +65,5 @@ const updateCursorPosition = (
 const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
   new Position(range.start.line, Math.max(0, range.start.character + replacement.length - 1));
 
-const cursorAtFirstNonBlankCharOfLine = (range: vscode.Range) =>
-  TextEditor.getFirstNonWhitespaceCharOnLine(range.start.line);
+const cursorAtFirstNonBlankCharOfLine = (document: TextDocument, range: vscode.Range) =>
+  TextEditor.getFirstNonWhitespaceCharOnLine(document, range.start.line);

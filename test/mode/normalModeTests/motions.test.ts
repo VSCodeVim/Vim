@@ -128,32 +128,116 @@ suite('Motions in Normal Mode', () => {
     end: ['tex|t text'],
   });
 
-  newTest({
-    title: "Can handle 'gg'",
-    start: ['text', 'text', 'tex|t'],
-    keysPressed: '$jkjgg',
-    end: ['|text', 'text', 'text'],
+  suite('gg', () => {
+    newTest({
+      title: 'gg (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'gg',
+      end: [' |123456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '3gg',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=true), count greater than last line',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9gg',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'gg (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'gg',
+      end: [' 123|456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '3gg',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=false), count greater than last line',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9gg',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
   });
 
-  newTest({
-    title: "Can handle 'gg' to first non blank char on random line",
-    start: ['   te|xt', '  text', ' text', 'test'],
-    keysPressed: '3gg',
-    end: ['   text', '  text', ' |text', 'test'],
-  });
+  suite('G', () => {
+    newTest({
+      title: 'G (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'G',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
 
-  newTest({
-    title: "Can handle 'gg' to first non blank char on first line",
-    start: ['   text', 'text', 'tex|t'],
-    keysPressed: 'gg',
-    end: ['   |text', 'text', 'text'],
-  });
+    newTest({
+      title: '[count]G (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '1G',
+      end: [' |123456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
 
-  newTest({
-    title: "'gg' obeys startofline",
-    start: ['   text', 'text', 'texttexttex|t'],
-    keysPressed: 'gg',
-    end: ['   |text', 'text', 'texttexttext'],
+    newTest({
+      title: '[count]G (startofline=true), count greater than last line',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9G',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'G (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'G',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]G (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '1G',
+      end: [' 123|456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]G (startofline=false), count greater than last line',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9G',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
   });
 
   newTest({
@@ -556,41 +640,6 @@ suite('Motions in Normal Mode', () => {
     end: ['one one one', 'two', 'thre|e'],
   });
 
-  newTest({
-    title: 'Can handle G ',
-    start: ['|one', 'two', '  three'],
-    keysPressed: 'G',
-    end: ['one', 'two', '  |three'],
-  });
-
-  newTest({
-    title: 'Can handle G with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '2G',
-    end: ['one', '|two', 'three'],
-  });
-
-  newTest({
-    title: 'Can handle G with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '5G',
-    end: ['one', 'two', '|three'],
-  });
-
-  newTest({
-    title: 'Can handle gg',
-    start: ['one', '|two', 'three'],
-    keysPressed: 'gg',
-    end: ['|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: 'Can handle gg with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '2gg',
-    end: ['one', '|two', 'three'],
-  });
-
   // This is still currently not possible.
   // newTest({
   //   title: "Can handle dot with I with tab",
@@ -917,6 +966,34 @@ suite('Motions in Normal Mode', () => {
       start: ['short line', 'very long line of text....|.'],
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
+    });
+
+    newTest({
+      title: 'Jump to visual start `<',
+      start: ['one |Xx two three'],
+      keysPressed: 'v2ev`<',
+      end: ['one |Xx two three'],
+    });
+
+    newTest({
+      title: 'Jump to visual end `>',
+      start: ['|one two Xx three'],
+      keysPressed: 'v2wv1G`>',
+      end: ['one two |Xx three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual start '<",
+      start: ['one', 'Xx|x', 'two', '  three'],
+      keysPressed: "vjjv'<",
+      end: ['one', '|Xxx', 'two', '  three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual end '>",
+      start: ['|one', '  Xxx', 'two', '  three'],
+      keysPressed: "vjv1G'>",
+      end: ['one', '  |Xxx', 'two', '  three'],
     });
   });
 });

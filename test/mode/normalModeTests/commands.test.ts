@@ -381,6 +381,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'~' goes over line boundaries if whichwrap contains '~'",
+    config: { whichwrap: '~' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['onE', '|two'],
+  });
+
+  newTest({
+    title: "'~' does not goes over line boundaries if whichwrap does not contain '~'",
+    config: { whichwrap: '' },
+    start: ['on|e', 'two'],
+    keysPressed: '~',
+    end: ['on|E', 'two'],
+  });
+
+  newTest({
     title: "Can handle 'g~{motion}'",
     start: ['|one two'],
     keysPressed: 'g~w',
@@ -410,14 +426,14 @@ suite('Mode Normal', () => {
 
   newTest({
     title: "Can handle 'ge' in multiple lines case1",
-    start: ['one two', 'three', 'four five|'],
+    start: ['one two', 'three', 'four fiv|e'],
     keysPressed: 'gege',
     end: ['one two', 'thre|e', 'four five'],
   });
 
   newTest({
     title: "Can handle 'ge' in multiple lines case2",
-    start: ['one two', 'three', 'four five|'],
+    start: ['one two', 'three', 'four fiv|e'],
     keysPressed: 'gegegegege',
     end: ['|one two', 'three', 'four five'],
   });

@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import { TextEditor } from '../../textEditor';
 
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
+import { PositionDiff } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
 import { Range } from '../../common/motion/range';
 import { Position } from 'vscode';
@@ -30,10 +29,9 @@ export class BangCommand extends node.CommandBase {
     const check = lines[0].match(/^\s*/);
     const numWhitespace = check ? check[0].length : 0;
 
-    return new PositionDiff({
-      line: -numNewlines,
+    return PositionDiff.exactCharacter({
+      lineOffset: -numNewlines,
       character: numWhitespace,
-      type: PositionDiffType.ExactCharacter,
     });
   }
 
@@ -57,7 +55,7 @@ export class BangCommand extends node.CommandBase {
       type: 'replaceText',
       text: output,
       range: new Range(start, end),
-      diff: diff,
+      diff,
     });
   }
 }
