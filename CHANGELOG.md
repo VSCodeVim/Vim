@@ -1,12 +1,104 @@
 # Change Log
 
-## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
+## [v1.20.0](https://github.com/vscodevim/vim/tree/v1.20.0) (2021-04-17)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.8...v1.18.9)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.3...v1.20.0)
 
 **Fixed Bugs:**
 
-- Failed to handle key=\<BS\>. Cannot read property 'canBeRepeatedWithDot' of undefined [\#5468](https://github.com/VSCodeVim/Vim/issues/5468)
+- The fomula of `{count} %` [\#6490](https://github.com/VSCodeVim/Vim/issues/6490)
+- `gu` and `gU` do not respect line-wise motions [\#6467](https://github.com/VSCodeVim/Vim/issues/6467)
+- `\[num\] gP` doesn't put the register content `\[num\]` times. [\#6444](https://github.com/VSCodeVim/Vim/issues/6444)
+- When specifying the register to be used, it should also put the content to `""` register. [\#6441](https://github.com/VSCodeVim/Vim/issues/6441)
+- `d \_` should delete entire line. [\#6435](https://github.com/VSCodeVim/Vim/issues/6435)
+- `o \<C-U\>` should delete the `\n` inserted by `o` [\#6429](https://github.com/VSCodeVim/Vim/issues/6429)
+- `{num} \[p` should put the text in register `{num}` times. [\#6416](https://github.com/VSCodeVim/Vim/issues/6416)
+- `\<C-V\>` and `\>` doesn't work. [\#6414](https://github.com/VSCodeVim/Vim/issues/6414)
+- `\<C-V\> \]\[` should go to next section [\#6411](https://github.com/VSCodeVim/Vim/issues/6411)
+- Visual multiple lines `X` has different behavior when the cursor at the begin of the select and the end of the select. [\#6408](https://github.com/VSCodeVim/Vim/issues/6408)
+- Failed to handle key=U. Cannot read property 'start' of undefined [\#6377](https://github.com/VSCodeVim/Vim/issues/6377)
+- `\<BS\>` in replace mode should go over EOL [\#6371](https://github.com/VSCodeVim/Vim/issues/6371)
+- \[count\]R inserts text when it should overwrite it [\#6370](https://github.com/VSCodeVim/Vim/issues/6370)
+- Replace mode does not properly restore characters after backspacing before where it started [\#6369](https://github.com/VSCodeVim/Vim/issues/6369)
+- `\<C-t\>` in insert mode selects characters [\#6190](https://github.com/VSCodeVim/Vim/issues/6190)
+
+**Closed issues:**
+
+- Failed to handle key=\<C-a\>. Overlapping ranges are not allowed! [\#6493](https://github.com/VSCodeVim/Vim/issues/6493)
+- Failed to handle key=s. TextEditor\(vs.editor.ICodeEditor:1,$model5\) has been disposed [\#6477](https://github.com/VSCodeVim/Vim/issues/6477)
+- Failed to handle key=w. TextEditor\(vs.editor.ICodeEditor:1,$model13\) has been disposed [\#6472](https://github.com/VSCodeVim/Vim/issues/6472)
+- Failed to handle key=p. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#6468](https://github.com/VSCodeVim/Vim/issues/6468)
+- HUGE performance toll on VS Code, whole WIN 10 system WHEN combined with "Git for Windows"\< 2.30- extension/VSC unusable [\#6169](https://github.com/VSCodeVim/Vim/issues/6169)
+- More robust representation of register contents [\#5856](https://github.com/VSCodeVim/Vim/issues/5856)
+
+**Merged pull requests:**
+
+- Substitute, use transformations [\#6402](https://github.com/VSCodeVim/Vim/pull/6402) ([sql-koala](https://github.com/sql-koala))
+- Feature/vimrc source support [\#6394](https://github.com/VSCodeVim/Vim/pull/6394) ([Demiguise](https://github.com/Demiguise))
+- More consistent behavior of C-d [\#6364](https://github.com/VSCodeVim/Vim/pull/6364) ([artagnon](https://github.com/artagnon))
+
+## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-29)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.2...v1.19.3)
+
+**Fixed Bugs:**
+
+- \<count\>p does not work in visual mode [\#6357](https://github.com/VSCodeVim/Vim/issues/6357)
+
+## [v1.19.2](https://github.com/vscodevim/vim/tree/v1.19.2) (2021-03-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.1...v1.19.2)
+
+**Fixed Bugs:**
+
+- Failed to handle key=.. Illegal argument: character must be non-negative [\#6339](https://github.com/VSCodeVim/Vim/issues/6339)
+- Failed to handle key=\<C-a\>. Illegal value for `line` [\#6331](https://github.com/VSCodeVim/Vim/issues/6331)
+- Illegal value for `line` [\#6273](https://github.com/VSCodeVim/Vim/issues/6273)
+- Failed to handle key=d. Illegal value for `line` [\#6258](https://github.com/VSCodeVim/Vim/issues/6258)
+- Failed to handle key==. Illegal value for `line` [\#6178](https://github.com/VSCodeVim/Vim/issues/6178)
+- Failed to handle key=i. Illegal value for `line` [\#5909](https://github.com/VSCodeVim/Vim/issues/5909)
+
+## [v1.19.1](https://github.com/vscodevim/vim/tree/v1.19.1) (2021-03-21)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.0...v1.19.1)
+
+**Fixed Bugs:**
+
+- Failed to handle key=\<right\>. Cannot read property 'isOperator' of undefined [\#6309](https://github.com/VSCodeVim/Vim/issues/6309)
+
+## [v1.19.0](https://github.com/vscodevim/vim/tree/v1.19.0) (2021-03-19)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.9...v1.19.0)
+
+**Enhancements:**
+
+- goto command not implemented [\#6025](https://github.com/VSCodeVim/Vim/issues/6025)
+- Use source maps to get intelligible stack traces [\#5887](https://github.com/VSCodeVim/Vim/issues/5887)
+
+**Fixed Bugs:**
+
+- Tests fail silently on module loading problems. [\#6244](https://github.com/VSCodeVim/Vim/issues/6244)
+- `gi` should put cursor at start of file if there was no prior insertion [\#6189](https://github.com/VSCodeVim/Vim/issues/6189)
+- Issue while search text in Russian [\#6140](https://github.com/VSCodeVim/Vim/issues/6140)
+- `nnoremap`'ing `\<S-J\>` and `\<S-K\>` from .vimrc doesn't work [\#6110](https://github.com/VSCodeVim/Vim/issues/6110)
+- When Korean keyboard layout \(Hangul\) is active, Entering a space does not work properly. [\#5900](https://github.com/VSCodeVim/Vim/issues/5900)
+
+**Closed issues:**
+
+- Failed to handle key=c. Illegal value for `line` [\#6301](https://github.com/VSCodeVim/Vim/issues/6301)
+- Enable `noImplicitAny` in tsconfig [\#6034](https://github.com/VSCodeVim/Vim/issues/6034)
+
+**Merged pull requests:**
+
+- Fix even more dependency cycles [\#6243](https://github.com/VSCodeVim/Vim/pull/6243) ([inspirer](https://github.com/inspirer))
+- Fix several dependency cycles [\#6208](https://github.com/VSCodeVim/Vim/pull/6208) ([inspirer](https://github.com/inspirer))
+- Implement previous context marks \(add to jump list on m' / m`\) [\#6174](https://github.com/VSCodeVim/Vim/pull/6174) ([jose-elias-alvarez](https://github.com/jose-elias-alvarez))
+- Add Erlang style comments [\#5970](https://github.com/VSCodeVim/Vim/pull/5970) ([maxnordlund](https://github.com/maxnordlund))
+- Potential fix for non latin chars issue [\#5951](https://github.com/VSCodeVim/Vim/pull/5951) ([berknam](https://github.com/berknam))
+
+## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.8...v1.18.9)
 
 **Closed issues:**
 
@@ -28,7 +120,6 @@
 **Enhancements:**
 
 - Implement `ZZ` and `ZQ` [\#5998](https://github.com/VSCodeVim/Vim/issues/5998)
-- :bn\[ext\] and :bp\[rev\] should probably be aliases for :tabn\[ext\] and :tabp\[rev\] [\#5518](https://github.com/VSCodeVim/Vim/issues/5518)
 - Show Marks in Gutter [\#5924](https://github.com/VSCodeVim/Vim/pull/5924) ([zstix](https://github.com/zstix))
 
 **Fixed Bugs:**
@@ -66,7 +157,6 @@
 - Failed to handle key=/. Maximum call stack size exceeded [\#5844](https://github.com/VSCodeVim/Vim/issues/5844)
 - Cannot read property 'after' of undefined [\#5841](https://github.com/VSCodeVim/Vim/issues/5841)
 - C-f and C-b keys should page up and down like real Vim [\#5822](https://github.com/VSCodeVim/Vim/issues/5822)
-- exiting insert mode moves cursor to previous non-blank line [\#5726](https://github.com/VSCodeVim/Vim/issues/5726)
 
 **Merged pull requests:**
 
@@ -88,7 +178,6 @@
 **Closed issues:**
 
 - Cursor jumps back to previous position when moving after clicking in editor [\#5795](https://github.com/VSCodeVim/Vim/issues/5795)
-- Vim cursor does not move with "Go to Next Problem" [\#5746](https://github.com/VSCodeVim/Vim/issues/5746)
 
 ## [v1.18.2](https://github.com/vscodevim/vim/tree/v1.18.2) (2020-12-07)
 
@@ -102,54 +191,15 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.1...v1.18.0)
 
-**Enhancements:**
-
-- \<C-l\> in search mode [\#5675](https://github.com/VSCodeVim/Vim/issues/5675)
-
-**Fixed Bugs:**
-
-- Initial cursor sync should not allow cursor to be on EOL character [\#5728](https://github.com/VSCodeVim/Vim/issues/5728)
-- Macros in File A Don't Work in File B [\#5636](https://github.com/VSCodeVim/Vim/issues/5636)
-- Reverse search for `{` stops after first `n` [\#5591](https://github.com/VSCodeVim/Vim/issues/5591)
-- \<Backspace\> while typing ex command deletes text in file [\#5584](https://github.com/VSCodeVim/Vim/issues/5584)
-- Failed to handle key=p. No multi-cursor index when calling PutCommand [\#5448](https://github.com/VSCodeVim/Vim/issues/5448)
-- Forced by user [\#5419](https://github.com/VSCodeVim/Vim/issues/5419)
-
 **Closed issues:**
 
 - Visual mode keybinding overwrite [\#5832](https://github.com/VSCodeVim/Vim/issues/5832)
 - Failed to handle key=\<C-a\>. Illegal value for `line` [\#5828](https://github.com/VSCodeVim/Vim/issues/5828)
 - \<C-o\> \<C-i\> will mess up cursor movement with left and right keys [\#5813](https://github.com/VSCodeVim/Vim/issues/5813)
-- Migrate from Travis CI to GitHub Actions [\#5720](https://github.com/VSCodeVim/Vim/issues/5720)
-- Extremely slow rendering introduced in v1.17 with long text in register [\#5707](https://github.com/VSCodeVim/Vim/issues/5707)
-- Cannot read property 'visibleRanges' of undefined [\#5655](https://github.com/VSCodeVim/Vim/issues/5655)
-- Forced by user [\#5649](https://github.com/VSCodeVim/Vim/issues/5649)
-- Failed to handle key=\<Esc\>. Cannot read property 'cursorStartPosition' of undefined [\#5628](https://github.com/VSCodeVim/Vim/issues/5628)
-- Cannot bind \<C-v\> to command "\*p \( paste from register \) [\#5592](https://github.com/VSCodeVim/Vim/issues/5592)
-- \<C-o\> in insert mode is not supported [\#5550](https://github.com/VSCodeVim/Vim/issues/5550)
-- Failed to handle key=\<right\>. getLineLength\(\) called with out-of-bounds line 26 [\#5549](https://github.com/VSCodeVim/Vim/issues/5549)
-- Vsode snippets choice bug [\#5538](https://github.com/VSCodeVim/Vim/issues/5538)
-- Keymappings aren't ported. [\#5527](https://github.com/VSCodeVim/Vim/issues/5527)
-- Broken jsx autocomplete [\#5474](https://github.com/VSCodeVim/Vim/issues/5474)
-- Glitch after paste multiple lines [\#5442](https://github.com/VSCodeVim/Vim/issues/5442)
-- 'C' in Visual Mode doesn't count as selected text for snippets with $TM_SELECTED_TEXT [\#5418](https://github.com/VSCodeVim/Vim/issues/5418)
-- Failed to handle key=\<C-o\>. Could NOT open editor for "file:///e:/hc_client_1/Assets/Scripts/Rhythm/MusicScriptEditor.cs". [\#5412](https://github.com/VSCodeVim/Vim/issues/5412)
-- Line down lagging when in visual line selection mode [\#5401](https://github.com/VSCodeVim/Vim/issues/5401)
-- Autocomplete behaving badly [\#5390](https://github.com/VSCodeVim/Vim/issues/5390)
 
 **Merged pull requests:**
 
 - Remove zombie data creator [\#5814](https://github.com/VSCodeVim/Vim/pull/5814) ([berknam](https://github.com/berknam))
-- Fix bug where \<C-i\> \<C-o\> do not work after easy motion movement \#5730 [\#5731](https://github.com/VSCodeVim/Vim/pull/5731) ([rndware](https://github.com/rndware))
-- Fix broken table in README [\#5725](https://github.com/VSCodeVim/Vim/pull/5725) ([kidonng](https://github.com/kidonng))
-- Update ROADMAP.md Spelling [\#5717](https://github.com/VSCodeVim/Vim/pull/5717) ([dogpetkid](https://github.com/dogpetkid))
-- Fix n with matches at eol [\#5678](https://github.com/VSCodeVim/Vim/pull/5678) ([sql-koala](https://github.com/sql-koala))
-- Simulate cursor "disappearing" on CommandLineMode [\#5674](https://github.com/VSCodeVim/Vim/pull/5674) ([berknam](https://github.com/berknam))
-- Add Rust's INNER_LINE_DOC to reflow list [\#5597](https://github.com/VSCodeVim/Vim/pull/5597) ([lf-](https://github.com/lf-))
-- Implement normalization for 'Shift+Tab' key combo [\#5587](https://github.com/VSCodeVim/Vim/pull/5587) ([berknam](https://github.com/berknam))
-- Stop snippet insertion from going to visual mode [\#5540](https://github.com/VSCodeVim/Vim/pull/5540) ([berknam](https://github.com/berknam))
-- Fixes \#5442 - \[X\]p does not work in visual line mode [\#5504](https://github.com/VSCodeVim/Vim/pull/5504) ([rickythefox](https://github.com/rickythefox))
-- Stop user forced stop remap from throwing error [\#5425](https://github.com/VSCodeVim/Vim/pull/5425) ([berknam](https://github.com/berknam))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 

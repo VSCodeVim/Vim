@@ -11,22 +11,15 @@ export interface IRegisterCommandArguments extends node.ICommandArgs {
   registers: string[];
 }
 export class RegisterCommand extends node.CommandBase {
-  protected _arguments: IRegisterCommandArguments;
+  private readonly arguments: IRegisterCommandArguments;
 
   constructor(args: IRegisterCommandArguments) {
     super();
-    this._arguments = args;
+    this.arguments = args;
   }
 
-  get arguments(): IRegisterCommandArguments {
-    return this._arguments;
-  }
-
-  private async getRegisterDisplayValue(
-    vimState: VimState,
-    register: string
-  ): Promise<string | undefined> {
-    let result = (await Register.get(vimState, register))?.text;
+  private async getRegisterDisplayValue(register: string): Promise<string | undefined> {
+    let result = (await Register.get(register))?.text;
     if (result instanceof Array) {
       result = result.join('\n').substr(0, 100);
     } else if (result instanceof RecordedState) {
@@ -37,7 +30,7 @@ export class RegisterCommand extends node.CommandBase {
   }
 
   async displayRegisterValue(vimState: VimState, register: string): Promise<void> {
-    let result = await this.getRegisterDisplayValue(vimState, register);
+    let result = await this.getRegisterDisplayValue(register);
     if (result === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
     } else {
@@ -77,7 +70,7 @@ export class RegisterCommand extends node.CommandBase {
       for (const registerKey of currentRegisterKeys) {
         registerKeyAndContent.push({
           label: registerKey,
-          description: await this.getRegisterDisplayValue(vimState, registerKey),
+          description: await this.getRegisterDisplayValue(registerKey),
         });
       }
 

@@ -9,35 +9,35 @@ import { VimError } from './error';
 
 class StatusBarImpl implements vscode.Disposable {
   // Displays the current state (mode, recording macro, etc.) and messages to the user
-  private _statusBarItem: vscode.StatusBarItem;
+  private readonly statusBarItem: vscode.StatusBarItem;
 
   // Displays the keys you've typed so far when they haven't yet resolved to a command
-  private _recordedStateStatusBarItem: vscode.StatusBarItem;
+  private readonly recordedStateStatusBarItem: vscode.StatusBarItem;
 
-  private _previousModeName: Mode | undefined = undefined;
-  private _showingDefaultMessage = true;
+  private previousMode: Mode | undefined = undefined;
+  private showingDefaultMessage = true;
 
   constructor() {
-    this._statusBarItem = vscode.window.createStatusBarItem(
+    this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Left,
       Number.MIN_SAFE_INTEGER // Furthest right on the left
     );
-    this._statusBarItem.show();
+    this.statusBarItem.show();
 
-    this._recordedStateStatusBarItem = vscode.window.createStatusBarItem(
+    this.recordedStateStatusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
       Number.MAX_SAFE_INTEGER // Furthest left on the right
     );
-    this._recordedStateStatusBarItem.show();
+    this.recordedStateStatusBarItem.show();
   }
 
   dispose() {
-    this._statusBarItem.dispose();
-    this._recordedStateStatusBarItem.dispose();
+    this.statusBarItem.dispose();
+    this.recordedStateStatusBarItem.dispose();
   }
 
   public updateShowCmd(vimState: VimState) {
-    this._recordedStateStatusBarItem.text = configuration.showcmd
+    this.recordedStateStatusBarItem.text = configuration.showcmd
       ? statusBarCommandText(vimState)
       : '';
   }
@@ -47,14 +47,14 @@ class StatusBarImpl implements vscode.Disposable {
    * @param isError If true, text rendered in red
    */
   public setText(vimState: VimState, text: string, isError = false) {
-    const hasModeChanged = vimState.currentMode !== this._previousModeName;
+    const hasModeChanged = vimState.currentMode !== this.previousMode;
 
     // Text
     this.updateText(text);
 
     // Foreground color
     if (!configuration.statusBarColorControl) {
-      this._statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
+      this.statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
     }
 
     // Background color
@@ -63,8 +63,8 @@ class StatusBarImpl implements vscode.Disposable {
       this.updateColor(vimState.currentMode);
     }
 
-    this._previousModeName = vimState.currentMode;
-    this._showingDefaultMessage = false;
+    this.previousMode = vimState.currentMode;
+    this.showingDefaultMessage = false;
   }
 
   public displayError(vimState: VimState, error: VimError) {
@@ -72,7 +72,7 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   public getText() {
-    return this._statusBarItem.text.replace(/\^M/g, '\n');
+    return this.statusBarItem.text.replace(/\^M/g, '\n');
   }
 
   /**
@@ -81,7 +81,7 @@ class StatusBarImpl implements vscode.Disposable {
    * @param force If true, will clear even high priority messages like errors.
    */
   public clear(vimState: VimState, force = true) {
-    if (!this._showingDefaultMessage && !force) {
+    if (!this.showingDefaultMessage && !force) {
       return;
     }
 
@@ -101,12 +101,12 @@ class StatusBarImpl implements vscode.Disposable {
 
     StatusBar.setText(vimState, text.join(' '));
 
-    this._showingDefaultMessage = true;
+    this.showingDefaultMessage = true;
   }
 
   private updateText(text: string) {
     const escaped = text.replace(/\n/g, '^M');
-    this._statusBarItem.text = escaped || '';
+    this.statusBarItem.text = escaped || '';
   }
 
   private updateColor(mode: Mode) {

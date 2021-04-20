@@ -1445,11 +1445,29 @@ suite('Mode Normal', () => {
     end: ['one|two'],
   });
 
-  newTest({
-    title: 'g; works correctly',
-    start: ['|'],
-    keysPressed: 'ione<Esc>atwo<Esc>g;g;',
-    end: ['one|two'],
+  suite('g;', () => {
+    newTest({
+      title: 'g; works correctly after insert',
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'iXYZ<Esc>Gg;',
+      end: ['one', 'twXY|Zo', 'three'],
+    });
+
+    newTest({
+      title: 'g; works correctly after delete',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'xggg;',
+      end: ['one', 'two', 'th|ee'],
+    });
+
+    newTest({
+      title: 'g; works correctly after change',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'clXYZ<Esc>ggg;',
+      end: ['one', 'two', 'thXY|Zee'],
+    });
+
+    // TODO: Test with multiple changes
   });
 
   newTest({
@@ -1518,8 +1536,8 @@ suite('Mode Normal', () => {
     keysPressed: 'gqj',
     end: [
       '|// We choose to write a vim extension, not because it is easy, but because it is',
-      '// hard. We choose to write a vim extension, not because it is easy, but because',
-      '// it is hard.',
+      '// hard.  We choose to write a vim extension, not because it is easy, but',
+      '// because it is hard.',
     ],
   });
 
@@ -1607,153 +1625,6 @@ suite('Mode Normal', () => {
     start: ['ab|c', 'def'],
     keysPressed: ' ',
     end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: 'Undo 1',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo 2',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>u',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Undo cursor',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uuu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo cursor 2',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Undo cursor 3',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>u',
-    end: ['|defabc'],
-  });
-
-  newTest({
-    title: 'Undo with movement first',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>hlhlu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: "Can handle 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for multiple changes",
-    start: ['|'],
-    keysPressed: 'idef<Esc>aghi<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line below",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>U',
-    end: ['abc', '|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line above",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Odef<Esc>U',
-    end: ['|', 'abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for consecutive changes only",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
-    end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: "Can handle 'u' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>UU',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'u' after :s/abc/def",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>:s/abc/def/\nu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwu',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete twice',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwuu',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count and redo',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u<C-r>',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r><C-r>',
-    end: ['abc|def'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uuhlhl<C-r><C-r>',
-    end: ['abc|def'],
   });
 
   newTest({
@@ -1958,7 +1829,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can ctrl-a on an octal ',
-    start: ['07|'],
+    start: ['0|7'],
     keysPressed: '<C-a>',
     end: ['01|0'],
   });
@@ -2401,6 +2272,20 @@ suite('Mode Normal', () => {
     keysPressed: 'cit',
     end: ['<div>|</div>'],
     endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'yk moves cursor up',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'yk',
+    end: ['o|ne', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'yh moves cursor left',
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'yh',
+    end: ['one', 'two', 'th|ree'],
   });
 
   newTest({

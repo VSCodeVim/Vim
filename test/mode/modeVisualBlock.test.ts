@@ -28,6 +28,20 @@ suite('Mode Visual Block', () => {
   });
 
   newTest({
+    title: '[count]<C-v>',
+    start: ['a|bcde'],
+    keysPressed: '3<C-v>d',
+    end: ['a|e'],
+  });
+
+  newTest({
+    title: '[count]<C-v> past EOL',
+    start: ['a|bcde', '12345'],
+    keysPressed: '100<C-v>d',
+    end: ['|a', '12345'],
+  });
+
+  newTest({
     title: 'Can handle A forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljA123',
@@ -191,7 +205,7 @@ suite('Mode Visual Block', () => {
     title: 'Select register using " works in visual block mode',
     start: ['abcde', '0|1234', 'abcde', '01234'],
     keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
-    end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
+    end: ['abcde', '01234', 'abcde', '01234', '123', 'bc|d'],
   });
 
   newTest({

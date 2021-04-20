@@ -24,6 +24,7 @@ import { clamp } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
+import { WordType } from '../textobject/word';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -366,10 +367,16 @@ export class ArrowsInInsertMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
     // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [
-      vimState.recordedState.actionsRun.shift()!,
-      vimState.recordedState.actionsRun.pop()!,
-    ];
+    const firstAction = vimState.recordedState.actionsRun.shift();
+    const lastAction = vimState.recordedState.actionsRun.pop();
+    vimState.recordedState.actionsRun = [];
+    if (firstAction) {
+      vimState.recordedState.actionsRun.push(firstAction);
+    }
+    if (lastAction) {
+      vimState.recordedState.actionsRun.push(lastAction);
+    }
+    // TODO: assert vimState.recordedState.actionsRun.length === 2?
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {
@@ -607,7 +614,7 @@ class MarkMovementVisualEndLine extends MarkMovementVisual {
 }
 
 @RegisterAction
-export class MarkMovementBOL extends BaseMovement {
+class MarkMovementBOL extends BaseMovement {
   keys = ["'", '<character>'];
   isJump = true;
 
@@ -630,7 +637,7 @@ export class MarkMovementBOL extends BaseMovement {
 }
 
 @RegisterAction
-export class MarkMovement extends BaseMovement {
+class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
   isJump = true;
 
@@ -657,7 +664,7 @@ async function ensureEditorIsActive(editor: vscode.TextEditor) {
 }
 
 @RegisterAction
-export class MoveLeft extends BaseMovement {
+class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -725,10 +732,11 @@ class MoveDownUnderscore extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    return TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.getDown(Math.max(count - 1, 0)).line
-    );
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const pos = position.getDown(Math.max(count - 1, 0));
+    return vimState.recordedState.operator
+      ? pos
+      : TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, pos.line);
   }
 }
 
@@ -1042,7 +1050,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-export class MoveUpByDisplayLine extends MoveByScreenLine {
+class MoveUpByDisplayLine extends MoveByScreenLine {
   modes = [Mode.Insert, Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -1318,7 +1326,7 @@ class MoveNonBlankLast extends BaseMovement {
 }
 
 @RegisterAction
-export class MoveWordBegin extends BaseMovement {
+class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1347,12 +1355,12 @@ export class MoveWordBegin extends BaseMovement {
       */
 
       if (' \t'.includes(char)) {
-        return position.getWordRight();
+        return position.nextWordStart(vimState.document);
       } else {
-        return position.getCurrentWordEnd(true).getRight();
+        return position.nextWordEnd(vimState.document, { inclusive: true }).getRight();
       }
     } else {
-      return position.getWordRight();
+      return position.nextWordStart(vimState.document);
     }
   }
 
@@ -1385,7 +1393,7 @@ export class MoveWordBegin extends BaseMovement {
 
 @RegisterAction
 class MoveFullWordBegin extends BaseMovement {
-  keys = ['W'];
+  keys = [['W'], ['<C-right>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
@@ -1395,9 +1403,9 @@ class MoveFullWordBegin extends BaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.getCurrentBigWordEnd().getRight();
+      return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
     } else {
-      return position.getBigWordRight();
+      return position.nextWordStart(vimState.document, { wordType: WordType.Big });
     }
   }
 }
@@ -1407,11 +1415,11 @@ class MoveWordEnd extends BaseMovement {
   keys = ['e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentWordEnd();
+    return position.nextWordEnd(vimState.document);
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const end = position.getCurrentWordEnd();
+    const end = position.nextWordEnd(vimState.document);
 
     return new Position(end.line, end.character + 1);
   }
@@ -1422,11 +1430,11 @@ class MoveFullWordEnd extends BaseMovement {
   keys = ['E'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentBigWordEnd();
+    return position.nextWordEnd(vimState.document, { wordType: WordType.Big });
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentBigWordEnd().getRight();
+    return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
   }
 }
 
@@ -1435,7 +1443,7 @@ class MoveLastWordEnd extends BaseMovement {
   keys = ['g', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLastWordEnd();
+    return position.prevWordEnd(vimState.document);
   }
 }
 
@@ -1444,16 +1452,16 @@ class MoveLastFullWordEnd extends BaseMovement {
   keys = ['g', 'E'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLastBigWordEnd();
+    return position.prevWordEnd(vimState.document, { wordType: WordType.Big });
   }
 }
 
 @RegisterAction
 class MoveBeginningWord extends BaseMovement {
-  keys = ['b'];
+  keys = [['b'], ['<C-left>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getWordLeft();
+    return position.prevWordStart(vimState.document);
   }
 }
 
@@ -1462,7 +1470,7 @@ class MoveBeginningFullWord extends BaseMovement {
   keys = ['B'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getBigWordLeft();
+    return position.prevWordStart(vimState.document, { wordType: WordType.Big });
   }
 }
 
@@ -1552,7 +1560,6 @@ class MoveParagraphBegin extends BaseMovement {
 }
 
 abstract class MoveSectionBoundary extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   abstract boundary: string;
   abstract forward: boolean;
   isJump = true;
@@ -1696,16 +1703,17 @@ class MoveToMatchingBracket extends BaseMovement {
         return failedMovement(vimState);
       }
 
-      const targetLine = Math.round((count * vimState.document.lineCount) / 100);
+      // See `:help N%`
+      const targetLine = Math.trunc((count * vimState.document.lineCount + 99) / 100) - 1;
 
-      return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, targetLine - 1);
+      return position.with({ line: targetLine }).obeyStartOfLine(vimState.document);
     } else {
       return super.execActionWithCount(position, vimState, count);
     }
   }
 }
 
-export abstract class MoveInsideCharacter extends ExpandingSelection {
+abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
 
@@ -1866,7 +1874,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-export abstract class MoveQuoteMatch extends BaseMovement {
+abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract charToMatch: string;
   protected includeSurrounding = false;

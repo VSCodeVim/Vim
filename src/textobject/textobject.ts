@@ -19,6 +19,7 @@ import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { Position, TextDocument } from 'vscode';
+import { WordType } from './word';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -46,10 +47,10 @@ export class SelectWord extends TextObjectMovement {
     const currentChar = TextEditor.getCharAt(vimState.document, position);
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastWordEnd().getRight();
-      stop = position.getCurrentWordEnd();
+      start = position.prevWordEnd(vimState.document).getRight();
+      stop = position.nextWordEnd(vimState.document);
     } else {
-      stop = position.getWordRight();
+      stop = position.nextWordStart(vimState.document);
       // If the next word is not at the beginning of the next line, we want to pretend it is.
       // This is because 'aw' has two fundamentally different behaviors distinguished by whether
       // the next word is directly after the current word, as described in the following comment.
@@ -62,15 +63,15 @@ export class SelectWord extends TextObjectMovement {
       // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
       // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
       if (
-        stop.isEqual(position.getCurrentWordEnd(true)) &&
+        stop.isEqual(position.nextWordEnd(vimState.document, { inclusive: true })) &&
         !position
-          .getWordLeft(true)
+          .prevWordStart(vimState.document, { inclusive: true })
           .isEqual(TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, stop.line)) &&
         vimState.recordedState.count === 0
       ) {
-        start = position.getLastWordEnd().getRight();
+        start = position.prevWordEnd(vimState.document).getRight();
       } else {
-        start = position.getWordLeft(true);
+        start = position.prevWordStart(vimState.document, { inclusive: true });
       }
     }
 
@@ -83,9 +84,9 @@ export class SelectWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor position is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getWordLeft(true);
+          stop = position.prevWordStart(vimState.document, { inclusive: true });
         } else {
-          stop = position.getLastWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document).getRight();
         }
       }
     }
@@ -108,19 +109,19 @@ export class SelectABigWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastBigWordEnd().getRight();
-      stop = position.getCurrentBigWordEnd();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      stop = position.nextWordEnd(vimState.document, { wordType: WordType.Big });
     } else {
       // Check 'aw' code for much of the reasoning behind this logic.
-      const nextWord = position.getBigWordRight();
+      const nextWord = position.nextWordStart(vimState.document, { wordType: WordType.Big });
       if (
         (nextWord.line > position.line || nextWord.isAtDocumentEnd()) &&
         vimState.recordedState.count === 0
       ) {
-        if (position.getLastBigWordEnd().isLineBeginning()) {
-          start = position.getLastBigWordEnd();
+        if (position.prevWordEnd(vimState.document, { wordType: WordType.Big }).isLineBeginning()) {
+          start = position.prevWordEnd(vimState.document, { wordType: WordType.Big });
         } else {
-          start = position.getLastBigWordEnd().getRight();
+          start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         }
         stop = position.getLineEnd();
       } else if (
@@ -130,11 +131,14 @@ export class SelectABigWord extends TextObjectMovement {
           nextWord.isLineEnd()) &&
         vimState.recordedState.count === 0
       ) {
-        start = position.getLastWordEnd().getRight();
+        start = position.prevWordEnd(vimState.document).getRight();
         stop = position.getLineEnd();
       } else {
-        start = position.getBigWordLeft(true);
-        stop = position.getBigWordRight().getLeft();
+        start = position.prevWordStart(vimState.document, {
+          wordType: WordType.Big,
+          inclusive: true,
+        });
+        stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
       }
     }
     if (
@@ -146,9 +150,9 @@ export class SelectABigWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getBigWordLeft();
+          stop = position.prevWordStart(vimState.document, { wordType: WordType.Big });
         } else {
-          stop = position.getLastBigWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         }
       }
     }
@@ -274,11 +278,11 @@ export class SelectInnerWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastWordEnd().getRight();
-      stop = position.getWordRight().getLeftThroughLineBreaks();
+      start = position.prevWordEnd(vimState.document).getRight();
+      stop = position.nextWordStart(vimState.document).getLeftThroughLineBreaks();
     } else {
-      start = position.getWordLeft(true);
-      stop = position.getCurrentWordEnd(true);
+      start = position.prevWordStart(vimState.document, { inclusive: true });
+      stop = position.nextWordEnd(vimState.document, { inclusive: true });
     }
 
     if (
@@ -290,9 +294,9 @@ export class SelectInnerWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getLastWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document).getRight();
         } else {
-          stop = position.getWordLeft(true);
+          stop = position.prevWordStart(vimState.document, { inclusive: true });
         }
       }
     }
@@ -315,11 +319,17 @@ export class SelectInnerBigWord extends TextObjectMovement {
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastBigWordEnd().getRight();
-      stop = position.getBigWordRight().getLeft();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
     } else {
-      start = position.getBigWordLeft(true);
-      stop = position.getCurrentBigWordEnd(true);
+      start = position.prevWordStart(vimState.document, {
+        wordType: WordType.Big,
+        inclusive: true,
+      });
+      stop = position.nextWordEnd(vimState.document, {
+        wordType: WordType.Big,
+        inclusive: true,
+      });
     }
 
     if (
@@ -331,9 +341,9 @@ export class SelectInnerBigWord extends TextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getLastBigWordEnd().getRight();
+          stop = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
         } else {
-          stop = position.getBigWordLeft();
+          stop = position.prevWordStart(vimState.document, { wordType: WordType.Big });
         }
       }
     }

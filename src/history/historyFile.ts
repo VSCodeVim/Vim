@@ -1,56 +1,51 @@
-import * as vscode from 'vscode';
+import { ExtensionContext } from 'vscode';
 import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
 import { Globals } from '../globals';
 import { HistoryBase } from 'platform/history';
 
 export class HistoryFile {
-  private readonly _logger = Logger.get('HistoryFile');
-  private _base: HistoryBase;
-  private _history: string[] = [];
+  private readonly logger = Logger.get('HistoryFile');
+  private base: HistoryBase;
 
   get historyFilePath(): string {
-    return this._base.historyKey;
+    return this.base.historyKey;
   }
 
-  constructor(context: vscode.ExtensionContext, historyFileName: string) {
-    this._base = new HistoryBase(
+  constructor(context: ExtensionContext, historyFileName: string) {
+    this.base = new HistoryBase(
       context,
       historyFileName,
       Globals.extensionStoragePath,
-      this._logger
+      this.logger
     );
   }
 
   public async add(value: string | undefined): Promise<void> {
-    return this._base.add(value, configuration.history);
+    return this.base.add(value, configuration.history);
   }
 
   public get(): string[] {
-    return this._base.get(configuration.history);
+    return this.base.get(configuration.history);
   }
 
   public clear() {
-    this._base.clear();
+    this.base.clear();
   }
 
   public async load(): Promise<void> {
-    await this._base.load();
-  }
-
-  private async save(): Promise<void> {
-    await this._base.save();
+    await this.base.load();
   }
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor(context: vscode.ExtensionContext) {
+  constructor(context: ExtensionContext) {
     super(context, '.search_history');
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor(context: vscode.ExtensionContext) {
+  constructor(context: ExtensionContext) {
     super(context, '.cmdline_history');
   }
 }

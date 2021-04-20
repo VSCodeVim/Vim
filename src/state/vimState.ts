@@ -242,7 +242,7 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
-  private _inputMethodSwitcher?: IInputMethodSwitcher;
+  private inputMethodSwitcher?: IInputMethodSwitcher;
   /**
    * The mode Vim is currently including pseudo-modes like OperatorPendingMode
    * This is to be used only by the Remappers when getting the remappings so don't
@@ -255,7 +255,12 @@ export class VimState implements vscode.Disposable {
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
-    await this._inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
+    if (mode === undefined) {
+      // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
+      throw new Error('Tried setting currentMode to undefined');
+    }
+
+    await this.inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
     if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
       this.returnToInsertAfterCommand = false;
     }
@@ -318,7 +323,7 @@ export class VimState implements vscode.Disposable {
 
     if (SUPPORT_IME_SWITCHER) {
       const ime = await import('../actions/plugins/imswitcher');
-      this._inputMethodSwitcher = new ime.InputMethodSwitcher();
+      this.inputMethodSwitcher = new ime.InputMethodSwitcher();
     }
   }
 

@@ -29,6 +29,7 @@ import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
 import { GotoCommand } from './commands/goto';
+import { YankCommand } from './commands/yank';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -197,7 +198,7 @@ export const commandParsers = {
 
   nohlsearch: {
     abbrev: 'noh',
-    parser: () => new NohlCommand({}),
+    parser: () => new NohlCommand(),
   },
 
   normal: {
@@ -207,7 +208,7 @@ export const commandParsers = {
 
   only: {
     abbrev: 'on',
-    parser: () => new OnlyCommand({}),
+    parser: () => new OnlyCommand(),
   },
 
   put: {
@@ -334,7 +335,7 @@ export const commandParsers = {
 
   undo: {
     abbrev: 'u',
-    parser: () => new UndoCommand({}),
+    parser: () => new UndoCommand(),
   },
 
   vglobal: {
@@ -382,7 +383,7 @@ export const commandParsers = {
 
   yank: {
     abbrev: 'y',
-    parser: undefined,
+    parser: YankCommand.parse,
   },
 };
 

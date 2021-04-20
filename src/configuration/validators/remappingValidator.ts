@@ -5,7 +5,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { configurationValidator } from '../configurationValidator';
 
 export class RemappingValidator implements IConfigurationValidator {
-  private _commandMap: Map<string, boolean>;
+  private commandMap: Map<string, boolean>;
 
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
@@ -146,12 +146,12 @@ export class RemappingValidator implements IConfigurationValidator {
   }
 
   private async getCommandMap(): Promise<Map<string, boolean>> {
-    if (this._commandMap == null) {
-      this._commandMap = new Map(
+    if (this.commandMap == null) {
+      this.commandMap = new Map(
         (await vscode.commands.getCommands(true)).map((x) => [x, true] as [string, boolean])
       );
     }
-    return this._commandMap;
+    return this.commandMap;
   }
 }
 

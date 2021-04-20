@@ -30,11 +30,11 @@
     },
     {
       "name": "constant",
-      "match": "(?i)<CR>"
+      "match": "(?i)<(CR|Enter|Return)>"
     },
     {
       "name": "constant",
-      "match": "(?i)<BS>"
+      "match": "(?i)<(BS|Del|Space)>"
     },
     {
       "name": "constant",

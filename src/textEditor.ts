@@ -6,6 +6,7 @@ import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from
 import { Range } from './common/motion/range';
 import { Position } from 'vscode';
 import { Logger } from './util/logger';
+import { clamp } from './util/util';
 
 /**
  * Collection of helper functions around vscode.window.activeTextEditor
@@ -61,15 +62,6 @@ export class TextEditor {
   }
 
   /**
-   * @deprecated Use DeleteTextTransformation or DeleteTextRangeTransformation instead.
-   */
-  static async delete(editor: vscode.TextEditor, range: vscode.Range): Promise<boolean> {
-    return editor.edit((editBuilder) => {
-      editBuilder.delete(range);
-    });
-  }
-
-  /**
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(
@@ -103,6 +95,7 @@ export class TextEditor {
   }
 
   static getCharAt(document: vscode.TextDocument, position: Position): string {
+    position = document.validatePosition(position);
     return document.lineAt(position).text[position.character];
   }
 
@@ -220,6 +213,7 @@ export class TextEditor {
     document: vscode.TextDocument,
     line: number
   ): Position {
+    line = clamp(line, 0, document.lineCount - 1);
     return new Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
   }
 
@@ -274,9 +268,9 @@ export class TextEditor {
   ): Iterable<{ start: Position; end: Position; word: string }> {
     const text = document.lineAt(start).text;
     if (/\s/.test(text[start.character])) {
-      start = start.getWordRight();
+      start = start.nextWordStart(document);
     }
-    let wordEnd = start.getCurrentWordEnd(true);
+    let wordEnd = start.nextWordEnd(document, { inclusive: true });
     do {
       const word = text.substring(start.character, wordEnd.character + 1);
       yield {
@@ -288,8 +282,8 @@ export class TextEditor {
       if (wordEnd.getRight().isLineEnd()) {
         return;
       }
-      start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd(true);
+      start = start.nextWordStart(document);
+      wordEnd = start.nextWordEnd(document, { inclusive: true });
     } while (true);
   }
 }
