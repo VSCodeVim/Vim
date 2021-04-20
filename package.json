@@ -776,6 +776,11 @@
           "description": "Indent code automatically.",
           "default": true
         },
+        "vim.joinspaces": {
+          "type": "boolean",
+          "description": "Add two spaces after '.', '?', and '!' when joining or reformatting.",
+          "default": true
+        },
         "vim.startInInsertMode": {
           "type": "boolean",
           "description": "Start in Insert mode."

@@ -1009,10 +1009,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
       // Start with a single empty content line.
       lines = [``];
 
-      // This tracks if we're pushing the first line of a chunk. If so, then we
-      // don't want to add an extra space. In addition, when there's a blank
-      // line, this needs to be reset.
-      let curIndex = 0;
+      // This tracks what separator should be added before the next word.
+      // It's empty at the beginning of a paragraph, one space after most
+      // words, and two spaces after certain punctuation (via `joinspaces`).
+      let separator = '';
+
       for (const line of content.split('\n')) {
         // Preserve blank lines in output.
         if (line.trim() === '') {
@@ -1026,29 +1027,32 @@ class ActionVisualReflowParagraph extends BaseOperator {
           // Add new empty content line for remaining content.
           lines.push(``);
 
-          curIndex = 0;
+          separator = '';
           continue;
         }
 
         // Add word by word, wrapping when necessary.
         const words = line.split(/\s+/);
-        for (let i = 0; i < words.length; i++) {
-          const word = words[i];
+        for (const word of words) {
           if (word === '') {
             continue;
           }
 
-          if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (curIndex === 0 && i === 0) {
-              lines[lines.length - 1] += `${word}`;
-            } else {
-              lines[lines.length - 1] += ` ${word}`;
-            }
+          if (lines[lines.length - 1].length + separator.length + word.length < maximumLineLength) {
+            lines[lines.length - 1] += `${separator}${word}`;
           } else {
             lines.push(`${word}`);
           }
+
+          if (
+            configuration.joinspaces &&
+            (word.endsWith('.') || word.endsWith('?') || word.endsWith('!'))
+          ) {
+            separator = '  ';
+          } else {
+            separator = ' ';
+          }
         }
-        curIndex++;
       }
 
       // Drop final empty content line.

@@ -1994,6 +1994,8 @@ class ActionJoin extends BaseCommand {
   ): Promise<void> {
     count = count - 1 || 1;
 
+    const joinspaces = configuration.joinspaces;
+
     let startLineNumber: number;
     let startColumn: number;
     let endLineNumber: number;
@@ -2027,38 +2029,37 @@ class ActionJoin extends BaseCommand {
       const firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
 
       if (firstNonWhitespaceIdx >= 0) {
-        let insertSpace = true;
+        // Compute number of spaces to separate the lines
+        let insertSpace = ' ';
 
-        if (
-          trimmedLinesContent === '' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
+        if (trimmedLinesContent === '' || trimmedLinesContent.endsWith('\t')) {
+          insertSpace = '';
+        } else if (
+          joinspaces &&
+          (trimmedLinesContent.endsWith('.') ||
+            trimmedLinesContent.endsWith('!') ||
+            trimmedLinesContent.endsWith('?'))
         ) {
-          insertSpace = false;
+          insertSpace = '  ';
+        } else if (
+          joinspaces &&
+          (trimmedLinesContent.endsWith('. ') ||
+            trimmedLinesContent.endsWith('! ') ||
+            trimmedLinesContent.endsWith('? '))
+        ) {
+          insertSpace = ' ';
+        } else if (trimmedLinesContent.endsWith(' ')) {
+          insertSpace = '';
         }
 
         const lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
 
         if (lineTextWithoutIndent.charAt(0) === ')') {
-          insertSpace = false;
+          insertSpace = '';
         }
 
-        trimmedLinesContent += (insertSpace ? ' ' : '') + lineTextWithoutIndent;
-
-        if (insertSpace) {
-          columnDeltaOffset = lineTextWithoutIndent.length + 1;
-        } else {
-          columnDeltaOffset = lineTextWithoutIndent.length;
-        }
-      } else if (
-        trimmedLinesContent === '' ||
-        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
-      ) {
-        columnDeltaOffset += 0;
-      } else {
-        trimmedLinesContent += ' ';
-        columnDeltaOffset += 1;
+        trimmedLinesContent += insertSpace + lineTextWithoutIndent;
+        columnDeltaOffset = lineTextWithoutIndent.length + insertSpace.length;
       }
     }
 
