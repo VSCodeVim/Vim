@@ -168,32 +168,6 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertBelowChar extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-e>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.line === vimState.document.lineCount - 1) {
-      return;
-    }
-
-    const charBelowCursorPosition = position.getDown();
-
-    if (charBelowCursorPosition.isLineEnd()) {
-      return;
-    }
-
-    const char = vimState.document.getText(
-      new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight())
-    );
-    await TextEditor.insert(vimState.editor, char, position);
-
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
-  }
-}
-
-@RegisterAction
 class CommandInsertIndentInCurrentLine extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-t>'];
@@ -494,7 +468,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertAboveChar extends BaseCommand {
+class InsertCharAbove extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-y>'];
 
@@ -503,19 +477,43 @@ class CommandInsertAboveChar extends BaseCommand {
       return;
     }
 
-    const charAboveCursorPosition = position.getUp(1);
-
-    if (charAboveCursorPosition.isLineEnd()) {
+    const charPos = position.getUp();
+    if (charPos.isLineEnd()) {
       return;
     }
 
-    const char = vimState.document.getText(
-      new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight())
-    );
-    await TextEditor.insert(vimState.editor, char, position);
+    const char = vimState.document.getText(new vscode.Range(charPos, charPos.getRight()));
 
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      position,
+      text: char,
+    });
+  }
+}
+
+@RegisterAction
+class InsertCharBelow extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-e>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (position.line >= vimState.document.lineCount - 1) {
+      return;
+    }
+
+    const charPos = position.getDown();
+    if (charPos.isLineEnd()) {
+      return;
+    }
+
+    const char = vimState.document.getText(new vscode.Range(charPos, charPos.getRight()));
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      position,
+      text: char,
+    });
   }
 }
 
