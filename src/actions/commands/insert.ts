@@ -311,10 +311,11 @@ class CommandInsertDigraph extends BaseCommand {
       charCodes = [charCodes];
     }
     const char = String.fromCharCode(...charCodes);
-    await TextEditor.insertAt(vimState.editor, char, position);
-    await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      text: char,
+      position,
+    });
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -384,9 +385,6 @@ class CommandInsertRegisterContent extends BaseCommand {
       text,
       position,
     });
-    await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
