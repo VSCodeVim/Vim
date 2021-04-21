@@ -2537,10 +2537,10 @@ for-own@^1.0.0:
   dependencies:
     for-in "^1.0.1"
 
-fork-ts-checker-webpack-plugin@6.2.2:
-  version "6.2.2"
-  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-6.2.2.tgz#dc8f40c0f9304d64b69dbbc1c9490e74f8b83292"
-  integrity sha512-ZLTZn54JkoMtOakPY8kN76rwfWn0vOjKIAQEHWg1kcz4tzRfTdWrPdcnLQr25IMEKyCpI+fw013F7MuX2qf07g==
+fork-ts-checker-webpack-plugin@6.2.4:
+  version "6.2.4"
+  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-6.2.4.tgz#f46dc0700820476f260451518b9d545c42277aff"
+  integrity sha512-M0+lELATBqzf+tubq9PcRfJm4/wW172P7cAoCs1OpgfRICtEuJ/JUMuUm0H9JAZ57lLaN1gj38uxNktDhscYhA==
   dependencies:
     "@babel/code-frame" "^7.8.3"
     "@types/json-schema" "^7.0.5"
