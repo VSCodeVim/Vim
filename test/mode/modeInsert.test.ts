@@ -421,7 +421,7 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: "<C-t> increases indent",
+    title: '<C-t> increases indent',
     start: ['    x|yz'],
     keysPressed: 'i' + '<C-t>',
     end: ['      x|yz'],
@@ -429,7 +429,7 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: "<C-d> decreases indent",
+    title: '<C-d> decreases indent',
     start: ['    x|yz'],
     keysPressed: 'i' + '<C-d>',
     end: ['  x|yz'],

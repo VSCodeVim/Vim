@@ -12,10 +12,8 @@ import { clamp } from './util/util';
  * Collection of helper functions around vscode.window.activeTextEditor
  */
 export class TextEditor {
-  static readonly whitespaceRegExp = new RegExp('\\s+');
+  private static readonly whitespaceRegExp = new RegExp('\\s+');
   private static readonly logger = Logger.get('TextEditor');
-
-  // TODO: Refactor args
 
   /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
@@ -31,8 +29,6 @@ export class TextEditor {
     letVSCodeHandleKeystrokes ??= text.length === 1;
 
     if (!letVSCodeHandleKeystrokes) {
-      // const selections = editor.selections.slice(0);
-
       await editor.edit((editBuilder) => {
         if (!at) {
           at = editor.selection.active;
@@ -40,25 +36,9 @@ export class TextEditor {
 
         editBuilder.insert(at, text);
       });
-
-      // maintain all selections in multi-cursor mode.
-      // editor.selections = selections;
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
-  }
-
-  /**
-   * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
-   */
-  static async insertAt(
-    editor: vscode.TextEditor,
-    text: string,
-    position: Position
-  ): Promise<boolean> {
-    return editor.edit((editBuilder) => {
-      editBuilder.insert(position, text);
-    });
   }
 
   /**

@@ -2654,10 +2654,11 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
             ? line.text.length
             : Math.max(cursor.start.character, cursor.stop.character) + 1;
         if (line.text.length < insertionColumn) {
-          await TextEditor.insertAt(
+          await TextEditor.insert(
             vimState.editor,
             ' '.repeat(insertionColumn - line.text.length),
-            line.range.end
+            line.range.end,
+            false
           );
         }
         const newCursor = new Position(lineNum, insertionColumn);
