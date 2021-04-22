@@ -1210,7 +1210,7 @@ export class CommandYankFullLine extends BaseCommand {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    await new operator.YankOperator().run(vimState, start, end);
+    await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 

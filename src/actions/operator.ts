@@ -334,7 +334,7 @@ class ShiftYankOperatorVisual extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    await new YankOperator().run(vimState, start, end);
+    await new YankOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
