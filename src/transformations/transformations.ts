@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Position } from 'vscode';
+import { RecordedState } from '../state/recordedState';
 
 import { PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
@@ -195,10 +196,11 @@ export interface ShowSearchHistory {
 }
 
 /**
- * Represents pressing '.'
+ * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
-  type: 'dot';
+  type: 'replayRecordedState';
+  recordedState: RecordedState;
 }
 
 /**
@@ -346,3 +348,13 @@ export const areAllSameTransformation = (transformations: Transformation[]): boo
     });
   });
 };
+
+export function stringify(transformation: Transformation): string {
+  if (transformation.type === 'replayRecordedState') {
+    return `Replay: ${transformation.recordedState.actionsRun
+      .map((x) => x.keysPressed.join(''))
+      .join('')}`;
+  } else {
+    return JSON.stringify(transformation);
+  }
+}

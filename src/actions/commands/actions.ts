@@ -24,7 +24,6 @@ import { SearchDirection } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
-import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
@@ -38,7 +37,7 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 
-export class DocumentContentChangeAction extends BaseAction {
+export class DocumentContentChangeAction extends BaseCommand {
   modes: [];
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -68,7 +67,6 @@ export class DocumentContentChangeAction extends BaseAction {
         : firstTextDiff.range.start;
 
     let rightBoundary: Position = position;
-    let replaceRange: Range | undefined;
     for (const change of this.contentChanges) {
       if (change.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -91,7 +89,7 @@ export class DocumentContentChangeAction extends BaseAction {
         return new Position(Math.max(position.line + lineOffset, 0), Math.max(char, 0));
       };
 
-      replaceRange = new Range(translate(change.range.start), translate(change.range.end));
+      const replaceRange = new Range(translate(change.range.start), translate(change.range.end));
 
       if (replaceRange.start.isAfter(rightBoundary)) {
         // This change should be ignored as it's out of boundary
@@ -108,28 +106,20 @@ export class DocumentContentChangeAction extends BaseAction {
 
       rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
-      vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
-
       if (replaceRange.start.isEqual(replaceRange.stop)) {
-        await TextEditor.insert(vimState.editor, change.text, replaceRange.start);
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          position: replaceRange.start,
+          text: change.text,
+        });
       } else {
-        await TextEditor.replace(vimState.editor, vimState.editor.selection, change.text);
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replaceText',
+          range: replaceRange,
+          text: change.text,
+        });
       }
     }
-
-    /**
-     * We're making an assumption here that content changes are always in order, and I'm not sure
-     * we're guaranteed that, but it seems to work well enough in practice.
-     */
-    if (replaceRange) {
-      const lastChange = this.contentChanges[this.contentChanges.length - 1];
-
-      vimState.cursorStartPosition = vimState.cursorStopPosition = replaceRange.start.advancePositionByText(
-        lastChange.text
-      );
-    }
-
-    await vimState.setCurrentMode(Mode.Insert);
   }
 
   private compressChanges(): void {
@@ -817,12 +807,15 @@ class CommandDot extends BaseCommand {
   keys = ['.'];
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
-    const count = vimState.recordedState.count || 1;
+    if (globalState.previousFullAction) {
+      const count = vimState.recordedState.count || 1;
 
-    for (let i = 0; i < count; i++) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'dot',
-      });
+      for (let i = 0; i < count; i++) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replayRecordedState',
+          recordedState: globalState.previousFullAction,
+        });
+      }
     }
   }
 }

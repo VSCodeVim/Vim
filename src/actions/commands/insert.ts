@@ -117,6 +117,9 @@ export class CommandEscInsertMode extends BaseCommand {
 export class CommandInsertPreviousText extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-a>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get('.');
@@ -128,31 +131,23 @@ export class CommandInsertPreviousText extends BaseCommand {
       throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
     }
 
-    const actions = [...register.text.actionsRun];
-    // let actions = Register.lastContentChange.actionsRun.slice(0);
+    const recordedState = register.text.clone();
+
     // The first action is entering Insert Mode, which is not necessary in this case
-    actions.shift();
+    recordedState.actionsRun.shift();
+
     // The last action is leaving Insert Mode, which is not necessary in this case
-    // actions.pop();
+    recordedState.actionsRun.pop();
 
-    if (actions.length > 0 && actions[0] instanceof ArrowsInInsertMode) {
+    if (recordedState.actionsRun?.[0] instanceof ArrowsInInsertMode) {
       // Note, arrow keys are the only Insert action command that can't be repeated here as far as @rebornix knows.
-      actions.shift();
+      recordedState.actionsRun.shift();
     }
 
-    for (const action of actions) {
-      if (action instanceof BaseCommand) {
-        await action.execCount(vimState.cursorStopPosition, vimState);
-      }
-
-      if (action instanceof DocumentContentChangeAction) {
-        await action.exec(vimState.cursorStopPosition, vimState);
-      }
-    }
-
-    vimState.cursorStopPosition = vimState.editor.selection.end;
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    await vimState.setCurrentMode(Mode.Insert);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replayRecordedState',
+      recordedState,
+    });
   }
 }
 
