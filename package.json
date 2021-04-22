@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.19.3",
+  "version": "1.20.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -776,6 +776,11 @@
           "description": "Indent code automatically.",
           "default": true
         },
+        "vim.joinspaces": {
+          "type": "boolean",
+          "description": "Add two spaces after '.', '?', and '!' when joining or reformatting.",
+          "default": true
+        },
         "vim.startInInsertMode": {
           "type": "boolean",
           "description": "Start in Insert mode."
@@ -1119,13 +1124,13 @@
     "@types/glob": "7.1.3",
     "@types/lodash": "4.14.168",
     "@types/mocha": "8.2.2",
-    "@types/node": "12.20.9",
+    "@types/node": "12.20.10",
     "@types/sinon": "10.0.0",
     "@types/source-map-support": "0.5.3",
     "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "6.2.1",
+    "fork-ts-checker-webpack-plugin": "6.2.4",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1138,12 +1143,12 @@
     "plugin-error": "1.0.1",
     "prettier": "2.2.1",
     "sinon": "10.0.0",
-    "ts-loader": "8.1.0",
+    "ts-loader": "9.1.0",
     "tslint": "6.1.3",
     "typescript": "4.2.4",
     "vsce": "1.87.1",
     "vscode-test": "1.5.2",
-    "webpack": "5.33.2",
+    "webpack": "5.35.0",
     "webpack-cli": "4.6.0",
     "webpack-merge": "5.7.3",
     "webpack-stream": "6.1.2"

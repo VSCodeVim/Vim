@@ -6,7 +6,6 @@
     "max-classes-per-file": false,
     "no-console": [true, "debug", "info", "time", "timeEnd", "trace"],
     "no-duplicate-variable": true,
-    "no-namespace": false,
     "no-parameter-properties": true,
     "no-return-await": true,
     "no-switch-case-fall-through": true,

@@ -24,7 +24,6 @@ import { SearchDirection } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
-import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
@@ -38,7 +37,7 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 
-export class DocumentContentChangeAction extends BaseAction {
+export class DocumentContentChangeAction extends BaseCommand {
   modes: [];
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -68,7 +67,6 @@ export class DocumentContentChangeAction extends BaseAction {
         : firstTextDiff.range.start;
 
     let rightBoundary: Position = position;
-    let replaceRange: Range | undefined;
     for (const change of this.contentChanges) {
       if (change.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -91,7 +89,7 @@ export class DocumentContentChangeAction extends BaseAction {
         return new Position(Math.max(position.line + lineOffset, 0), Math.max(char, 0));
       };
 
-      replaceRange = new Range(translate(change.range.start), translate(change.range.end));
+      const replaceRange = new Range(translate(change.range.start), translate(change.range.end));
 
       if (replaceRange.start.isAfter(rightBoundary)) {
         // This change should be ignored as it's out of boundary
@@ -108,28 +106,20 @@ export class DocumentContentChangeAction extends BaseAction {
 
       rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
-      vimState.editor.selection = new vscode.Selection(replaceRange.start, replaceRange.stop);
-
       if (replaceRange.start.isEqual(replaceRange.stop)) {
-        await TextEditor.insert(vimState.editor, change.text, replaceRange.start);
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          position: replaceRange.start,
+          text: change.text,
+        });
       } else {
-        await TextEditor.replace(vimState.editor, vimState.editor.selection, change.text);
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replaceText',
+          range: replaceRange,
+          text: change.text,
+        });
       }
     }
-
-    /**
-     * We're making an assumption here that content changes are always in order, and I'm not sure
-     * we're guaranteed that, but it seems to work well enough in practice.
-     */
-    if (replaceRange) {
-      const lastChange = this.contentChanges[this.contentChanges.length - 1];
-
-      vimState.cursorStartPosition = vimState.cursorStopPosition = replaceRange.start.advancePositionByText(
-        lastChange.text
-      );
-    }
-
-    await vimState.setCurrentMode(Mode.Insert);
   }
 
   private compressChanges(): void {
@@ -299,9 +289,12 @@ class CommandRecordMacro extends BaseCommand {
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
+      // TODO: this seems suspect - why are we not putting `vimState.macro` in the register? Why are we setting `registerName`?
       const newRegister = new RecordedState();
       newRegister.registerName = register;
-      Register.putByKey(register, newRegister);
+
+      vimState.recordedState.registerName = register;
+      Register.put(vimState, newRegister);
     }
   }
 }
@@ -814,12 +807,15 @@ class CommandDot extends BaseCommand {
   keys = ['.'];
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
-    const count = vimState.recordedState.count || 1;
+    if (globalState.previousFullAction) {
+      const count = vimState.recordedState.count || 1;
 
-    for (let i = 0; i < count; i++) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'dot',
-      });
+      for (let i = 0; i < count; i++) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replayRecordedState',
+          recordedState: globalState.previousFullAction,
+        });
+      }
     }
   }
 }
@@ -1214,7 +1210,7 @@ export class CommandYankFullLine extends BaseCommand {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    await new operator.YankOperator().run(vimState, start, end);
+    await new operator.YankOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -1227,7 +1223,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const count = vimState.recordedState.count || 1;
 
-    await new operator.ChangeOperator().run(
+    await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       position,
       position
@@ -1991,6 +1987,8 @@ class ActionJoin extends BaseCommand {
   ): Promise<void> {
     count = count - 1 || 1;
 
+    const joinspaces = configuration.joinspaces;
+
     let startLineNumber: number;
     let startColumn: number;
     let endLineNumber: number;
@@ -2024,38 +2022,37 @@ class ActionJoin extends BaseCommand {
       const firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
 
       if (firstNonWhitespaceIdx >= 0) {
-        let insertSpace = true;
+        // Compute number of spaces to separate the lines
+        let insertSpace = ' ';
 
-        if (
-          trimmedLinesContent === '' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-          trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
+        if (trimmedLinesContent === '' || trimmedLinesContent.endsWith('\t')) {
+          insertSpace = '';
+        } else if (
+          joinspaces &&
+          (trimmedLinesContent.endsWith('.') ||
+            trimmedLinesContent.endsWith('!') ||
+            trimmedLinesContent.endsWith('?'))
         ) {
-          insertSpace = false;
+          insertSpace = '  ';
+        } else if (
+          joinspaces &&
+          (trimmedLinesContent.endsWith('. ') ||
+            trimmedLinesContent.endsWith('! ') ||
+            trimmedLinesContent.endsWith('? '))
+        ) {
+          insertSpace = ' ';
+        } else if (trimmedLinesContent.endsWith(' ')) {
+          insertSpace = '';
         }
 
         const lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
 
         if (lineTextWithoutIndent.charAt(0) === ')') {
-          insertSpace = false;
+          insertSpace = '';
         }
 
-        trimmedLinesContent += (insertSpace ? ' ' : '') + lineTextWithoutIndent;
-
-        if (insertSpace) {
-          columnDeltaOffset = lineTextWithoutIndent.length + 1;
-        } else {
-          columnDeltaOffset = lineTextWithoutIndent.length;
-        }
-      } else if (
-        trimmedLinesContent === '' ||
-        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-        trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t'
-      ) {
-        columnDeltaOffset += 0;
-      } else {
-        trimmedLinesContent += ' ';
-        columnDeltaOffset += 1;
+        trimmedLinesContent += insertSpace + lineTextWithoutIndent;
+        columnDeltaOffset = lineTextWithoutIndent.length + insertSpace.length;
       }
     }
 
@@ -2417,7 +2414,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
-    Register.put(vimState, text, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex, true);
 
     const topLeft = visualBlockGetTopLeftPosition(
       vimState.cursorStopPosition,
@@ -2657,10 +2654,11 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
             ? line.text.length
             : Math.max(cursor.start.character, cursor.stop.character) + 1;
         if (line.text.length < insertionColumn) {
-          await TextEditor.insertAt(
+          await TextEditor.insert(
             vimState.editor,
             ' '.repeat(insertionColumn - line.text.length),
-            line.range.end
+            line.range.end,
+            false
           );
         }
         const newCursor = new Position(lineNum, insertionColumn);
@@ -2936,7 +2934,9 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       }
 
       default:
-        throw new Error('Unexpected mode in IncrementDecrementNumberAction.getPositions()');
+        throw new Error(
+          `Unexpected mode ${vimState.currentMode} in IncrementDecrementNumberAction.getPositions()`
+        );
     }
     return ranges;
   }

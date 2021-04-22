@@ -98,7 +98,8 @@ abstract class BasePutCommand extends BaseCommand {
       Register.put(
         vimState,
         vimState.document.getText(new vscode.Range(replaceRange.start, replaceRange.stop)),
-        this.multicursorIndex
+        this.multicursorIndex,
+        true
       );
     }
 
