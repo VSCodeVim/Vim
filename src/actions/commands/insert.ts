@@ -425,6 +425,10 @@ class CommandCtrlW extends BaseCommand {
   keys = ['<C-w>'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (position.isAtDocumentBegin()) {
+      return;
+    }
+
     let wordBegin: Position;
     if (position.isInLeadingWhitespace(vimState.document)) {
       wordBegin = position.getLineBegin();
