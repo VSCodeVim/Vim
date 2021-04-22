@@ -163,7 +163,7 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertIndentInCurrentLine extends BaseCommand {
+class IncreaseIndent extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-t>'];
 
@@ -177,7 +177,25 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
       range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
-      diff: PositionDiff.offset({ character: newIndentationWidth - indentationWidth }),
+    });
+  }
+}
+
+@RegisterAction
+class DecreaseIndent extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-d>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const originalText = vimState.document.lineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
+    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) - 1) * tabSize;
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
+      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
     });
   }
 }
@@ -422,41 +440,6 @@ class CommandCtrlW extends BaseCommand {
     });
 
     vimState.cursorStopPosition = wordBegin;
-  }
-}
-
-@RegisterAction
-class CommandDeleteIndentInCurrentLine extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-d>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalText = vimState.document.lineAt(position).text;
-    const indentationWidth = TextEditor.getIndentationLevel(originalText);
-
-    if (indentationWidth === 0) {
-      return;
-    }
-
-    const tabSize = configuration.tabstop;
-    const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
-
-    await TextEditor.replace(
-      vimState.editor,
-      new vscode.Range(position.getLineBegin(), position.getLineEnd()),
-      TextEditor.setIndentationLevel(
-        originalText,
-        newIndentationWidth < 0 ? 0 : newIndentationWidth
-      )
-    );
-
-    const cursorPosition = position.with(
-      position.line,
-      position.character + (newIndentationWidth - indentationWidth) / tabSize
-    );
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Insert);
   }
 }
 

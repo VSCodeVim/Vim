@@ -419,4 +419,20 @@ suite('Mode Insert', () => {
     end: ['foo bar|bar', 'foo barbar'],
     endMode: Mode.Insert,
   });
+
+  newTest({
+    title: "<C-t> increases indent",
+    start: ['    x|yz'],
+    keysPressed: 'i' + '<C-t>',
+    end: ['      x|yz'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "<C-d> decreases indent",
+    start: ['    x|yz'],
+    keysPressed: 'i' + '<C-d>',
+    end: ['  x|yz'],
+    endMode: Mode.Insert,
+  });
 });
