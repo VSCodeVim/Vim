@@ -526,25 +526,12 @@ class CommandCtrlUInInsertMode extends BaseCommand {
 class CommandNavigateAutocompleteDown extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<C-n>'], ['<C-j>']];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    /* if we're in a multi cursor state, we check to see if the current active text selection
-     * is the same as the position we've been passed when we exec this function
-     * this has the effect of only ever executing `selectNextSuggestion` once.
-     * without this we execute it once per multi cursor, meaning it skips over the autocomplete
-     * list suggestions
-     */
-    if (vimState.isMultiCursor) {
-      const selection = vimState.editor.selection;
-      if (
-        selection.active.line === position.line &&
-        selection.active.character === position.character
-      ) {
-        await vscode.commands.executeCommand('selectNextSuggestion');
-      }
-    } else {
-      await vscode.commands.executeCommand('selectNextSuggestion');
-    }
+    await vscode.commands.executeCommand('selectNextSuggestion');
   }
 }
 
@@ -552,25 +539,12 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
 class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-p>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    /* if we're in a multi cursor state, we check to see if the current active text selection
-     * is the same as the position we've been passed when we exec this function
-     * this has the effect of only ever executing `selectPrevSuggestion` once.
-     * without this we execute it once per multi cursor, meaning it skips over the autocomplete
-     * list suggestions
-     */
-    if (vimState.isMultiCursor) {
-      const selection = vimState.editor.selection;
-      if (
-        selection.active.line === position.line &&
-        selection.active.character === position.character
-      ) {
-        await vscode.commands.executeCommand('selectPrevSuggestion');
-      }
-    } else {
-      await vscode.commands.executeCommand('selectPrevSuggestion');
-    }
+    await vscode.commands.executeCommand('selectPrevSuggestion');
   }
 }
 
