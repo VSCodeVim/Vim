@@ -86,24 +86,26 @@ abstract class MoveByScreenLine extends BaseMovement {
       });
     }
 
+    /**
+     * HACK:
+     * The `cursorMove` command is handling the selection for us.
+     * So we are not following our design principal (do no real movement inside an action) here
+     */
+    if (!vimState.editor.selections[multicursorIndex]) {
+      // VS Code selections no longer have the same amount of cursors as we do. This means that
+      // two or more selections combined into one. In this case we return these cursors as they
+      // were with the removed flag so that they can be removed.
+      // TODO: does this work in VisualBlock (where cursors are not 1 to 1 with selections)?
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+        removed: true,
+      };
+    }
+
     if (vimState.currentMode === Mode.Normal) {
       return vimState.editor.selections[multicursorIndex].active;
     } else {
-      /**
-       * cursorMove command is handling the selection for us.
-       * So we are not following our design principal (do no real movement inside an action) here.
-       */
-      if (!vimState.editor.selections[multicursorIndex]) {
-        // Vscode selections no longer have the same amount of cursors as we do. This means that
-        // two or more selections combined into one. In this case we return these cursors as they
-        // were with the removed flag so that they can be removed.
-        return {
-          start: vimState.cursorStartPosition,
-          stop: vimState.cursorStopPosition,
-          removed: true,
-        };
-      }
-
       let start = vimState.editor.selections[multicursorIndex].anchor;
       const stop = vimState.editor.selections[multicursorIndex].active;
 
