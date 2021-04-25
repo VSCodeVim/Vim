@@ -287,7 +287,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  keys = [['j'], ['<down>']];
+  keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -312,7 +312,7 @@ class MoveDown extends BaseMovement {
 
 @RegisterAction
 class MoveUp extends BaseMovement {
-  keys = [['k'], ['<up>']];
+  keys = [['k'], ['<up>'], ['<C-p>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -693,7 +693,7 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveDownNonBlank extends BaseMovement {
-  keys = ['+'];
+  keys = [['+'], ['\n'], ['<C-m>']];
 
   public async execActionWithCount(
     position: Position,
@@ -1251,29 +1251,6 @@ class MoveNonBlank extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line);
-  }
-}
-
-@RegisterAction
-class MoveNextLineNonBlank extends BaseMovement {
-  keys = ['\n'];
-
-  public async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    // Count === 0 if just pressing enter in normal mode, need to still go down 1 line
-    if (count === 0) {
-      count++;
-    }
-
-    return TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.getDown(count).line
-    );
   }
 }
 
