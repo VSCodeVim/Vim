@@ -372,6 +372,10 @@ class CommandInsertRegisterContent extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!Register.isValidRegister(this.keysPressed[1])) {
+      return;
+    }
+
     const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
@@ -398,12 +402,6 @@ class CommandInsertRegisterContent extends BaseCommand {
       text,
       position,
     });
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 }
 

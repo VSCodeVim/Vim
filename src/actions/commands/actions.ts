@@ -262,13 +262,13 @@ export class CommandRegister extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1];
-    vimState.recordedState.registerName = register;
-  }
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+    if (Register.isValidRegister(register)) {
+      vimState.recordedState.registerName = register;
+    } else {
+      // TODO: Changing isCompleteAction here is maybe a bit janky - should it be a function?
+      this.isCompleteAction = true;
+    }
   }
 }
 
@@ -325,33 +325,6 @@ export class CommandQuitRecordMacro extends BaseCommand {
 }
 
 @RegisterAction
-class CommandExecuteMacro extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['@', '<character>'];
-  runsOnceForEachCountPrefix = true;
-  canBeRepeatedWithDot = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = this.keysPressed[1].toLocaleLowerCase();
-    if (Register.has(register)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'macro',
-        register,
-        replay: 'contentChange',
-      });
-    }
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const register = keysPressed[1];
-
-    return (
-      super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register)
-    );
-  }
-}
-
-@RegisterAction
 class CommandExecuteLastMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['@', '@'];
@@ -366,6 +339,33 @@ class CommandExecuteLastMacro extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'macro',
         register: lastInvokedMacro.registerName,
+        replay: 'contentChange',
+      });
+    }
+  }
+}
+
+@RegisterAction
+class CommandExecuteMacro extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['@', '<character>'];
+  runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const register = this.keysPressed[1].toLocaleLowerCase();
+
+    if (!Register.isValidRegister(register)) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.InvalidRegisterName, `'${register}'`)
+      );
+    }
+
+    if (Register.has(register)) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'macro',
+        register,
         replay: 'contentChange',
       });
     }
