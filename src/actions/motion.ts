@@ -1256,7 +1256,7 @@ class MoveNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
-  keys = ['g', 'g'];
+  keys = [['g', 'g'], ['<C-Home>']];
   isJump = true;
 
   public async execActionWithCount(
@@ -1301,6 +1301,23 @@ class MoveNonBlankLast extends BaseMovement {
       stop,
       registerMode: RegisterMode.LineWise,
     };
+  }
+}
+
+@RegisterAction
+class EndOfSpecificLine extends BaseMovement {
+  keys = ['<C-End>'];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position> {
+    const line = count
+      ? clamp(count - 1, 0, vimState.document.lineCount - 1)
+      : vimState.document.lineCount - 1;
+
+    return new Position(line, 0).getLineEnd();
   }
 }
 

@@ -75,8 +75,18 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
+        "key": "ctrl+home",
+        "command": "extension.vim_ctrl+home",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+      },
+      {
         "key": "End",
         "command": "extension.vim_end",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+      },
+      {
+        "key": "ctrl+end",
+        "command": "extension.vim_ctrl+end",
         "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
