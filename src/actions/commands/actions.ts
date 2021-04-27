@@ -2267,10 +2267,6 @@ class ActionReplaceCharacter extends BaseCommand {
       });
     }
   }
-
-  public async execCount(position: Position, vimState: VimState): Promise<void> {
-    await super.execCount(position, vimState);
-  }
 }
 
 @RegisterAction
