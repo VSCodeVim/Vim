@@ -1481,6 +1481,17 @@ class MovePreviousSentenceBegin extends BaseMovement {
 }
 
 @RegisterAction
+class GoToOffset extends BaseMovement {
+  keys = ['g', 'o'];
+  isJump = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number) {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return vimState.document.positionAt((count || 1) - 1);
+  }
+}
+
+@RegisterAction
 class MoveNextSentenceBegin extends BaseMovement {
   keys = [')'];
   isJump = true;
