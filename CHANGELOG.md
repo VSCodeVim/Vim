@@ -1,5 +1,24 @@
 # Change Log
 
+## [v1.20.1](https://github.com/vscodevim/vim/tree/v1.20.1) (2021-04-25)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.0...v1.20.1)
+
+**Enhancements:**
+
+- Visual mode + \<C-n\>/\<C-p\>/\<C-f\>/\<C-b\> doesn't work as expected [\#6363](https://github.com/VSCodeVim/Vim/issues/6363)
+
+**Fixed Bugs:**
+
+- `\<C-w\>` in Insert mode deletes line when used at start of document [\#6529](https://github.com/VSCodeVim/Vim/issues/6529)
+- `\<C-e\>` and `\<C-y\>` in Insert mode do not work with multiple cursors [\#6522](https://github.com/VSCodeVim/Vim/issues/6522)
+- `:y` yank command moves cursor [\#6519](https://github.com/VSCodeVim/Vim/issues/6519)
+- Failed to handle key=L. Cannot read property 'active' of undefined [\#6454](https://github.com/VSCodeVim/Vim/issues/6454)
+
+**Merged pull requests:**
+
+- Support 'set joinspaces' in join and reformat paragraph \(fix \#2505\) [\#5895](https://github.com/VSCodeVim/Vim/pull/5895) ([edemaine](https://github.com/edemaine))
+
 ## [v1.20.0](https://github.com/vscodevim/vim/tree/v1.20.0) (2021-04-17)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.3...v1.20.0)
@@ -24,7 +43,6 @@
 
 **Closed issues:**
 
-- Failed to handle key=\<C-a\>. Overlapping ranges are not allowed! [\#6493](https://github.com/VSCodeVim/Vim/issues/6493)
 - Failed to handle key=s. TextEditor\(vs.editor.ICodeEditor:1,$model5\) has been disposed [\#6477](https://github.com/VSCodeVim/Vim/issues/6477)
 - Failed to handle key=w. TextEditor\(vs.editor.ICodeEditor:1,$model13\) has been disposed [\#6472](https://github.com/VSCodeVim/Vim/issues/6472)
 - Failed to handle key=p. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#6468](https://github.com/VSCodeVim/Vim/issues/6468)
@@ -142,7 +160,6 @@
 - Remove stray console.log statements [\#6032](https://github.com/VSCodeVim/Vim/pull/6032) ([edemaine](https://github.com/edemaine))
 - Document build/test process better [\#5946](https://github.com/VSCodeVim/Vim/pull/5946) ([edemaine](https://github.com/edemaine))
 - Fix gq to preserve blank lines like Vim does \(fix \#2393\) [\#5892](https://github.com/VSCodeVim/Vim/pull/5892) ([edemaine](https://github.com/edemaine))
-- Fix broken table in README's vim-easymotion section [\#5848](https://github.com/VSCodeVim/Vim/pull/5848) ([kidonng](https://github.com/kidonng))
 
 ## [v1.18.5](https://github.com/vscodevim/vim/tree/v1.18.5) (2020-12-10)
 
@@ -152,17 +169,6 @@
 
 - Double brackets shortcuts don't work \(i.e., "\[\[" & "\]\]"\) [\#5857](https://github.com/VSCodeVim/Vim/issues/5857)
 
-**Closed issues:**
-
-- Failed to handle key=/. Maximum call stack size exceeded [\#5844](https://github.com/VSCodeVim/Vim/issues/5844)
-- Cannot read property 'after' of undefined [\#5841](https://github.com/VSCodeVim/Vim/issues/5841)
-- C-f and C-b keys should page up and down like real Vim [\#5822](https://github.com/VSCodeVim/Vim/issues/5822)
-
-**Merged pull requests:**
-
-- Fix CommandSearch throwing error in multicursor [\#5845](https://github.com/VSCodeVim/Vim/pull/5845) ([berknam](https://github.com/berknam))
-- Remove "vim.remap" from the command palette [\#5843](https://github.com/VSCodeVim/Vim/pull/5843) ([berknam](https://github.com/berknam))
-
 ## [v1.18.4](https://github.com/vscodevim/vim/tree/v1.18.4) (2020-12-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.3...v1.18.4)
@@ -171,35 +177,13 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.2...v1.18.3)
 
-**Fixed Bugs:**
-
-- Forced by user [\#5800](https://github.com/VSCodeVim/Vim/issues/5800)
-
-**Closed issues:**
-
-- Cursor jumps back to previous position when moving after clicking in editor [\#5795](https://github.com/VSCodeVim/Vim/issues/5795)
-
 ## [v1.18.2](https://github.com/vscodevim/vim/tree/v1.18.2) (2020-12-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.0...v1.18.2)
 
-**Fixed Bugs:**
-
-- Key Remapping, how to access "up"/"down" arrow key [\#5839](https://github.com/VSCodeVim/Vim/issues/5839)
-
 ## [v1.18.0](https://github.com/vscodevim/vim/tree/v1.18.0) (2020-12-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.17.1...v1.18.0)
-
-**Closed issues:**
-
-- Visual mode keybinding overwrite [\#5832](https://github.com/VSCodeVim/Vim/issues/5832)
-- Failed to handle key=\<C-a\>. Illegal value for `line` [\#5828](https://github.com/VSCodeVim/Vim/issues/5828)
-- \<C-o\> \<C-i\> will mess up cursor movement with left and right keys [\#5813](https://github.com/VSCodeVim/Vim/issues/5813)
-
-**Merged pull requests:**
-
-- Remove zombie data creator [\#5814](https://github.com/VSCodeVim/Vim/pull/5814) ([berknam](https://github.com/berknam))
 
 ## [v1.17.1](https://github.com/vscodevim/vim/tree/v1.17.1) (2020-09-25)
 
