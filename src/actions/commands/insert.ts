@@ -557,10 +557,9 @@ class CommandCtrlVInInsertMode extends BaseCommand {
 
     if (text) {
       vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
-        range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
+        type: 'insertText',
+        position: vimState.cursorStopPosition,
         text,
-        diff: PositionDiff.offset({ character: 1 }),
       });
     }
   }
