@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { Position, Selection } from 'vscode';
+import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
 import { Mode } from '../../mode/mode';
@@ -57,20 +58,16 @@ async function searchCurrentWord(
  * Search for the word under the cursor; used by [g]* and [g]# in visual mode when `visualstar` is enabled
  */
 async function searchCurrentSelection(vimState: VimState, direction: SearchDirection) {
-  const selection = vimState.editor.selection;
-  const end = new Position(selection.end.line, selection.end.character);
-  const currentSelection = vimState.document.getText(selection.with(selection.start, end));
+  const currentSelection = vimState.document.getText(vimState.editor.selection);
 
   // Go back to Normal mode, otherwise the selection grows to the next match.
   await vimState.setCurrentMode(Mode.Normal);
 
-  // If the search is going left then use `getLeft()` on the selection start.
-  // If going right then use `getRight()` on the selection end. This ensures
-  // that any matches happen outside of the currently selected word.
+  const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+
+  // Ensure that any matches happen outside of the currently selected word.
   const searchStartCursorPosition =
-    direction === SearchDirection.Backward
-      ? vimState.lastVisualSelection!.start.getLeft()
-      : vimState.lastVisualSelection!.end.getRight();
+    direction === SearchDirection.Backward ? start.getLeft() : end.getRight();
 
   await createSearchStateAndMoveToMatch({
     needle: currentSelection,

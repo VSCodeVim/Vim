@@ -109,26 +109,46 @@ suite('Mode Insert', () => {
     endMode: Mode.Insert,
   });
 
-  newTest({
-    title: "'<C-w>' deletes a word",
-    start: ['text text| text'],
-    keysPressed: 'i<C-w>',
-    end: ['text | text'],
-    endMode: Mode.Insert,
-  });
+  suite('<C-w>', () => {
+    newTest({
+      title: '`<C-w>` deletes a word',
+      start: ['text text| text'],
+      keysPressed: 'i<C-w>',
+      end: ['text | text'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-w> on leading whitespace',
-    start: ['foo', '  |bar'],
-    keysPressed: 'i<C-w>',
-    end: ['foo', '|bar'],
-  });
+    newTest({
+      title: '`<C-w>` in whitespace deletes whitespace and prior word',
+      start: ['one two     | three'],
+      keysPressed: 'i<C-w>',
+      end: ['one | three'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: 'Can handle <C-w> at beginning of line',
-    start: ['foo', '|bar'],
-    keysPressed: 'i<C-w>',
-    end: ['foo|bar'],
+    newTest({
+      title: '`<C-w>` on leading whitespace deletes to start of line',
+      start: ['foo', '  |bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo', '|bar'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`<C-w>` at beginning of line deletes line break',
+      start: ['foo', '|bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo|bar'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`<C-w>` at beginning of document does nothing',
+      start: ['|foo', 'bar'],
+      keysPressed: 'i<C-w>',
+      end: ['|foo', 'bar'],
+      endMode: Mode.Insert,
+    });
   });
 
   suite('<C-u>', () => {

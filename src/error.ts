@@ -14,6 +14,7 @@ export enum ErrorCode {
   RecursiveMapping = 223,
   NoStringUnderCursor = 348,
   NothingInRegister = 353,
+  InvalidRegisterName = 354,
   SearchHitTop = 384,
   SearchHitBottom = 385,
   CannotCloseLastWindow = 444,
@@ -41,6 +42,7 @@ export const ErrorMessage: IErrorMessage = {
   223: 'Recursive mapping',
   348: 'No string under cursor',
   353: 'Nothing in register', // TODO: this needs an extra value ("Nothing in register x")
+  354: 'Invalid register name',
   384: 'Search hit TOP without match for',
   385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',

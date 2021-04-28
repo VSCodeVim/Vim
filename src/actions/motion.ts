@@ -86,24 +86,26 @@ abstract class MoveByScreenLine extends BaseMovement {
       });
     }
 
+    /**
+     * HACK:
+     * The `cursorMove` command is handling the selection for us.
+     * So we are not following our design principal (do no real movement inside an action) here
+     */
+    if (!vimState.editor.selections[multicursorIndex]) {
+      // VS Code selections no longer have the same amount of cursors as we do. This means that
+      // two or more selections combined into one. In this case we return these cursors as they
+      // were with the removed flag so that they can be removed.
+      // TODO: does this work in VisualBlock (where cursors are not 1 to 1 with selections)?
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+        removed: true,
+      };
+    }
+
     if (vimState.currentMode === Mode.Normal) {
       return vimState.editor.selections[multicursorIndex].active;
     } else {
-      /**
-       * cursorMove command is handling the selection for us.
-       * So we are not following our design principal (do no real movement inside an action) here.
-       */
-      if (!vimState.editor.selections[multicursorIndex]) {
-        // Vscode selections no longer have the same amount of cursors as we do. This means that
-        // two or more selections combined into one. In this case we return these cursors as they
-        // were with the removed flag so that they can be removed.
-        return {
-          start: vimState.cursorStartPosition,
-          stop: vimState.cursorStopPosition,
-          removed: true,
-        };
-      }
-
       let start = vimState.editor.selections[multicursorIndex].anchor;
       const stop = vimState.editor.selections[multicursorIndex].active;
 
@@ -285,7 +287,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  keys = [['j'], ['<down>']];
+  keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -310,7 +312,7 @@ class MoveDown extends BaseMovement {
 
 @RegisterAction
 class MoveUp extends BaseMovement {
-  keys = [['k'], ['<up>']];
+  keys = [['k'], ['<up>'], ['<C-p>']];
   preservesDesiredColumn() {
     return true;
   }
@@ -691,7 +693,7 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveDownNonBlank extends BaseMovement {
-  keys = ['+'];
+  keys = [['+'], ['\n'], ['<C-m>']];
 
   public async execActionWithCount(
     position: Position,
@@ -1051,7 +1053,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 
 @RegisterAction
 class MoveUpByDisplayLine extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual];
+  modes = [Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
     ['g', '<up>'],
@@ -1063,7 +1065,7 @@ class MoveUpByDisplayLine extends MoveByScreenLine {
 
 @RegisterAction
 class MoveDownByDisplayLine extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual];
+  modes = [Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'j'],
     ['g', '<down>'],
@@ -1154,7 +1156,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
 
 @RegisterAction
 class MoveScreenToRight extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'h'];
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'character';
@@ -1170,7 +1172,7 @@ class MoveScreenToRight extends MoveByScreenLine {
 
 @RegisterAction
 class MoveScreenToLeft extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'l'];
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'character';
@@ -1186,7 +1188,7 @@ class MoveScreenToLeft extends MoveByScreenLine {
 
 @RegisterAction
 class MoveScreenToRightHalf extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'H'];
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'halfLine';
@@ -1202,7 +1204,7 @@ class MoveScreenToRightHalf extends MoveByScreenLine {
 
 @RegisterAction
 class MoveScreenToLeftHalf extends MoveByScreenLine {
-  modes = [Mode.Insert, Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'L'];
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'halfLine';
@@ -1253,31 +1255,8 @@ class MoveNonBlank extends BaseMovement {
 }
 
 @RegisterAction
-class MoveNextLineNonBlank extends BaseMovement {
-  keys = ['\n'];
-
-  public async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    // Count === 0 if just pressing enter in normal mode, need to still go down 1 line
-    if (count === 0) {
-      count++;
-    }
-
-    return TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.getDown(count).line
-    );
-  }
-}
-
-@RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
-  keys = ['g', 'g'];
+  keys = [['g', 'g'], ['<C-Home>']];
   isJump = true;
 
   public async execActionWithCount(
@@ -1322,6 +1301,23 @@ class MoveNonBlankLast extends BaseMovement {
       stop,
       registerMode: RegisterMode.LineWise,
     };
+  }
+}
+
+@RegisterAction
+class EndOfSpecificLine extends BaseMovement {
+  keys = ['<C-End>'];
+
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position> {
+    const line = count
+      ? clamp(count - 1, 0, vimState.document.lineCount - 1)
+      : vimState.document.lineCount - 1;
+
+    return new Position(line, 0).getLineEnd();
   }
 }
 
@@ -1481,6 +1477,17 @@ class MovePreviousSentenceBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSentenceBegin({ forward: false });
+  }
+}
+
+@RegisterAction
+class GoToOffset extends BaseMovement {
+  keys = ['g', 'o'];
+  isJump = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number) {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return vimState.document.positionAt((count || 1) - 1);
   }
 }
 
