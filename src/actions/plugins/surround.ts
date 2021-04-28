@@ -22,7 +22,6 @@ import { isIMovement } from '../baseMotion';
 import { BaseOperator } from './../operator';
 import { SelectInnerWord, TextObjectMovement } from '../../textobject/textobject';
 import { Position } from 'vscode';
-import { Logger } from '../../util/logger';
 
 type SurroundEdge = {
   leftEdge: Range;
@@ -362,7 +361,6 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
 // following are static internal helper functions
 // top level helper is ExecuteSurround, which is called from exec and does the actual text transformations
 class SurroundHelper {
-  public static readonly _logger = Logger.get('Surround');
   /** a map which holds for each target key: inserted text + implementation helper */
   static edgePairings: {
     [key: string]: {
@@ -375,7 +373,6 @@ class SurroundHelper {
       extraChars?: number;
     };
   } = {
-    // check: unify this with Pairmatcher.pairings?
     // helpful linter is helpful :-D
     '(': {
       left: '( ',
