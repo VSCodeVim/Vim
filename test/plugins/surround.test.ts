@@ -237,6 +237,13 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'delete outer surround with count',
+    start: ['(first (li|ne) test)'],
+    keysPressed: '2ds)',
+    end: ['first (li|ne) test'],
+  });
+
+  newTest({
     title: 'delete surround with alias',
     start: ['first {li|ne} test'],
     keysPressed: 'dsB',
@@ -262,6 +269,13 @@ suite('surround plugin', () => {
     start: ['first <test>li|ne</test> test'],
     keysPressed: 'dst',
     end: ['first li|ne test'],
+  });
+
+  newTest({
+    title: 'change outer surround with count',
+    start: ['(first (li|ne) test)'],
+    keysPressed: 'cs2)[',
+    end: ['[ first (li|ne) test ]'],
   });
 
   newTest({
