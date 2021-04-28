@@ -15,6 +15,7 @@ export class Configuration implements IConfiguration {
   ignorecase = true;
   smartcase = true;
   autoindent = true;
+  joinspaces = true;
   camelCaseMotion = {
     enable: false,
   };

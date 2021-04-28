@@ -175,7 +175,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (yank) {
-      Register.put(vimState, text, this.multicursorIndex);
+      Register.put(vimState, text, this.multicursorIndex, true);
     }
 
     let diff: PositionDiff | undefined;
@@ -268,7 +268,7 @@ export class YankOperator extends BaseOperator {
 
     this.highlightYankedRanges(vimState, [range]);
 
-    Register.put(vimState, text, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex, true);
 
     vimState.cursorStopPosition =
       vimState.currentMode === Mode.Normal && vimState.currentRegisterMode === RegisterMode.LineWise
@@ -324,7 +324,7 @@ class ShiftYankOperatorVisual extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    await new YankOperator().run(vimState, start, end);
+    await new YankOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -349,7 +349,7 @@ class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    await new ChangeOperator().run(vimState, start, end);
+    await new ChangeOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -670,7 +670,7 @@ class YankVisualBlockMode extends BaseOperator {
 
     this.highlightYankedRanges(vimState, ranges);
 
-    Register.put(vimState, lines.join('\n'), this.multicursorIndex);
+    Register.put(vimState, lines.join('\n'), this.multicursorIndex, true);
 
     vimState.historyTracker.addMark(startPos, '<');
     vimState.historyTracker.addMark(endPos, '>');
@@ -999,10 +999,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
       // Start with a single empty content line.
       lines = [``];
 
-      // This tracks if we're pushing the first line of a chunk. If so, then we
-      // don't want to add an extra space. In addition, when there's a blank
-      // line, this needs to be reset.
-      let curIndex = 0;
+      // This tracks what separator should be added before the next word.
+      // It's empty at the beginning of a paragraph, one space after most
+      // words, and two spaces after certain punctuation (via `joinspaces`).
+      let separator = '';
+
       for (const line of content.split('\n')) {
         // Preserve blank lines in output.
         if (line.trim() === '') {
@@ -1016,29 +1017,32 @@ class ActionVisualReflowParagraph extends BaseOperator {
           // Add new empty content line for remaining content.
           lines.push(``);
 
-          curIndex = 0;
+          separator = '';
           continue;
         }
 
         // Add word by word, wrapping when necessary.
         const words = line.split(/\s+/);
-        for (let i = 0; i < words.length; i++) {
-          const word = words[i];
+        for (const word of words) {
           if (word === '') {
             continue;
           }
 
-          if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (curIndex === 0 && i === 0) {
-              lines[lines.length - 1] += `${word}`;
-            } else {
-              lines[lines.length - 1] += ` ${word}`;
-            }
+          if (lines[lines.length - 1].length + separator.length + word.length < maximumLineLength) {
+            lines[lines.length - 1] += `${separator}${word}`;
           } else {
             lines.push(`${word}`);
           }
+
+          if (
+            configuration.joinspaces &&
+            (word.endsWith('.') || word.endsWith('?') || word.endsWith('!'))
+          ) {
+            separator = '  ';
+          } else {
+            separator = ' ';
+          }
         }
-        curIndex++;
       }
 
       // Drop final empty content line.

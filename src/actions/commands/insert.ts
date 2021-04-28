@@ -117,6 +117,9 @@ export class CommandEscInsertMode extends BaseCommand {
 export class CommandInsertPreviousText extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-a>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get('.');
@@ -128,31 +131,23 @@ export class CommandInsertPreviousText extends BaseCommand {
       throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
     }
 
-    const actions = [...register.text.actionsRun];
-    // let actions = Register.lastContentChange.actionsRun.slice(0);
+    const recordedState = register.text.clone();
+
     // The first action is entering Insert Mode, which is not necessary in this case
-    actions.shift();
+    recordedState.actionsRun.shift();
+
     // The last action is leaving Insert Mode, which is not necessary in this case
-    // actions.pop();
+    recordedState.actionsRun.pop();
 
-    if (actions.length > 0 && actions[0] instanceof ArrowsInInsertMode) {
+    if (recordedState.actionsRun?.[0] instanceof ArrowsInInsertMode) {
       // Note, arrow keys are the only Insert action command that can't be repeated here as far as @rebornix knows.
-      actions.shift();
+      recordedState.actionsRun.shift();
     }
 
-    for (const action of actions) {
-      if (action instanceof BaseCommand) {
-        await action.execCount(vimState.cursorStopPosition, vimState);
-      }
-
-      if (action instanceof DocumentContentChangeAction) {
-        await action.exec(vimState.cursorStopPosition, vimState);
-      }
-    }
-
-    vimState.cursorStopPosition = vimState.editor.selection.end;
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    await vimState.setCurrentMode(Mode.Insert);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replayRecordedState',
+      recordedState,
+    });
   }
 }
 
@@ -168,33 +163,7 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertBelowChar extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-e>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.line === vimState.document.lineCount - 1) {
-      return;
-    }
-
-    const charBelowCursorPosition = position.getDown();
-
-    if (charBelowCursorPosition.isLineEnd()) {
-      return;
-    }
-
-    const char = vimState.document.getText(
-      new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight())
-    );
-    await TextEditor.insert(vimState.editor, char, position);
-
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
-  }
-}
-
-@RegisterAction
-class CommandInsertIndentInCurrentLine extends BaseCommand {
+class IncreaseIndent extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-t>'];
 
@@ -208,7 +177,25 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
       range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
-      diff: PositionDiff.offset({ character: newIndentationWidth - indentationWidth }),
+    });
+  }
+}
+
+@RegisterAction
+class DecreaseIndent extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-d>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    const originalText = vimState.document.lineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
+    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) - 1) * tabSize;
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1],
+      range: new Range(position.getLineBegin(), position.with({ character: indentationWidth })),
     });
   }
 }
@@ -337,10 +324,11 @@ class CommandInsertDigraph extends BaseCommand {
       charCodes = [charCodes];
     }
     const char = String.fromCharCode(...charCodes);
-    await TextEditor.insertAt(vimState.editor, char, position);
-    await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      text: char,
+      position,
+    });
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -410,9 +398,6 @@ class CommandInsertRegisterContent extends BaseCommand {
       text,
       position,
     });
-    await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -459,42 +444,7 @@ class CommandCtrlW extends BaseCommand {
 }
 
 @RegisterAction
-class CommandDeleteIndentInCurrentLine extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<C-d>'];
-
-  public async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalText = vimState.document.lineAt(position).text;
-    const indentationWidth = TextEditor.getIndentationLevel(originalText);
-
-    if (indentationWidth === 0) {
-      return;
-    }
-
-    const tabSize = configuration.tabstop;
-    const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
-
-    await TextEditor.replace(
-      vimState.editor,
-      new vscode.Range(position.getLineBegin(), position.getLineEnd()),
-      TextEditor.setIndentationLevel(
-        originalText,
-        newIndentationWidth < 0 ? 0 : newIndentationWidth
-      )
-    );
-
-    const cursorPosition = position.with(
-      position.line,
-      position.character + (newIndentationWidth - indentationWidth) / tabSize
-    );
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Insert);
-  }
-}
-
-@RegisterAction
-class CommandInsertAboveChar extends BaseCommand {
+class InsertCharAbove extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-y>'];
 
@@ -503,19 +453,43 @@ class CommandInsertAboveChar extends BaseCommand {
       return;
     }
 
-    const charAboveCursorPosition = position.getUp(1);
-
-    if (charAboveCursorPosition.isLineEnd()) {
+    const charPos = position.getUp();
+    if (charPos.isLineEnd()) {
       return;
     }
 
-    const char = vimState.document.getText(
-      new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight())
-    );
-    await TextEditor.insert(vimState.editor, char, position);
+    const char = vimState.document.getText(new vscode.Range(charPos, charPos.getRight()));
 
-    vimState.cursorStartPosition = vimState.editor.selection.start;
-    vimState.cursorStopPosition = vimState.editor.selection.start;
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      position,
+      text: char,
+    });
+  }
+}
+
+@RegisterAction
+class InsertCharBelow extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-e>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (position.line >= vimState.document.lineCount - 1) {
+      return;
+    }
+
+    const charPos = position.getDown();
+    if (charPos.isLineEnd()) {
+      return;
+    }
+
+    const char = vimState.document.getText(new vscode.Range(charPos, charPos.getRight()));
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      position,
+      text: char,
+    });
   }
 }
 

@@ -611,6 +611,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (lastAction instanceof DocumentContentChangeAction) {
         if (!(action instanceof CommandEscInsertMode)) {
+          // TODO: this includes things like <BS>, which it shouldn't
           lastAction.keysPressed.push(key);
         }
 
@@ -732,10 +733,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (action.canBeRepeatedWithDot) {
         ranRepeatableAction = true;
       }
-    }
-
-    if (action instanceof DocumentContentChangeAction) {
-      await action.exec(this.vimState.cursorStopPosition, this.vimState);
     }
 
     if (action instanceof BaseOperator) {

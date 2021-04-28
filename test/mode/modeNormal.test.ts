@@ -1536,8 +1536,8 @@ suite('Mode Normal', () => {
     keysPressed: 'gqj',
     end: [
       '|// We choose to write a vim extension, not because it is easy, but because it is',
-      '// hard. We choose to write a vim extension, not because it is easy, but because',
-      '// it is hard.',
+      '// hard.  We choose to write a vim extension, not because it is easy, but',
+      '// because it is hard.',
     ],
   });
 

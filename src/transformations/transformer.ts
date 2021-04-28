@@ -1,5 +1,5 @@
 import { Logger } from '../util/logger';
-import { Transformation } from './transformations';
+import { stringify, Transformation } from './transformations';
 
 export class Transformer {
   public readonly transformations: Transformation[] = [];
@@ -7,7 +7,7 @@ export class Transformer {
   private logger = Logger.get('Transformer');
 
   public addTransformation(transformation: Transformation) {
-    this.logger.debug(`Adding Transformation ${JSON.stringify(transformation)}`);
+    this.logger.debug(`Adding Transformation ${stringify(transformation)}`);
     this.transformations.push(transformation);
   }
 }

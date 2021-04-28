@@ -189,12 +189,8 @@ export async function executeTransformations(
         }
         break;
 
-      case 'dot':
-        if (!globalState.previousFullAction) {
-          return; // TODO(bell)
-        }
-
-        await modeHandler.rerunRecordedState(globalState.previousFullAction.clone());
+      case 'replayRecordedState':
+        await modeHandler.rerunRecordedState(transformation.recordedState.clone());
         break;
 
       case 'macro':
