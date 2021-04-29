@@ -1605,6 +1605,51 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gq leaves alone whitespace within a line',
+    start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
+    keysPressed: 'gqG',
+    end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
+  });
+
+  newTest({
+    title: 'gq breaks at exactly textwidth',
+    start: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9x split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9x',
+      'split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks before textwidth',
+    start: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9xs split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7',
+      '9xs split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks around long words',
+    start: [
+      '|this is a suuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuper long looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong                    word',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|this is a',
+      'suuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuper',
+      'long looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
+      'word',
+    ],
+  });
+
+  newTest({
     title: '<Space> moves cursor one character right',
     start: ['|abc', 'def'],
     keysPressed: ' ',
