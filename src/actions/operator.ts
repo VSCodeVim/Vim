@@ -1060,8 +1060,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
           }
 
           // Consider appending separator and part of line to last line
-          const remaining =
-            maximumLineLength - separator.length - (lastLine.length || commentLength);
+          const remaining = maximumLineLength - separator.length - lastLine.length - commentLength;
           const trimmedLine = line.trimStart();
           if (trimmedLine.length <= remaining) {
             // Entire line fits on last line
