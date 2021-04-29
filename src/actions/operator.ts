@@ -1011,6 +1011,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
+      const commentLength = commentType.start.length + indentAfterComment.length;
 
       // Start with a single empty content line.
       lines = [``];
@@ -1059,7 +1060,8 @@ class ActionVisualReflowParagraph extends BaseOperator {
           }
 
           // Consider appending separator and part of line to last line
-          const remaining = maximumLineLength - lastLine.length - separator.length;
+          const remaining =
+            maximumLineLength - separator.length - (lastLine.length || commentLength);
           const trimmedLine = line.trimStart();
           if (trimmedLine.length <= remaining) {
             // Entire line fits on last line

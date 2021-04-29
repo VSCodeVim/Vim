@@ -1498,8 +1498,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '//    We choose to write a vim extension, not because it is easy, but because it is',
-      '|//    hard.',
+      '//    We choose to write a vim extension, not because it is easy, but because it',
+      '|//    is hard.',
     ],
   });
 
@@ -1510,8 +1510,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '    // We choose to write a vim extension, not because it is easy, but because it',
-      '|    // is hard.',
+      '    // We choose to write a vim extension, not because it is easy, but because',
+      '|    // it is hard.',
     ],
   });
 
@@ -1522,8 +1522,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '\t\t// We choose to write a vim extension, not because it is easy, but because',
-      '|\t\t// it is hard.',
+      '\t\t// We choose to write a vim extension, not because it is easy, but',
+      '|\t\t// because it is hard.',
     ],
   });
 
@@ -1632,6 +1632,20 @@ suite('Mode Normal', () => {
     end: [
       '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7',
       '9xs split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks at exactly textwidth with indent and comment',
+    start: [
+      '| // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9xs split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '| // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9',
+      ' // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9',
+      ' // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7',
+      ' // 9xs split',
     ],
   });
 
