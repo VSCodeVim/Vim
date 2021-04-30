@@ -1,5 +1,28 @@
 # Change Log
 
+## [v1.20.2](https://github.com/vscodevim/vim/tree/v1.20.2) (2021-04-28)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.1...v1.20.2)
+
+**Enhancements:**
+
+- `\<C-Home\>` and `\<C-End\>` motions [\#6548](https://github.com/VSCodeVim/Vim/issues/6548)
+
+**Fixed Bugs:**
+
+- gq overrides all spaces according to joinspaces, not just at line boundaries [\#6569](https://github.com/VSCodeVim/Vim/issues/6569)
+- Failed to handle key=\*. Cannot read property 'end' of undefined [\#6453](https://github.com/VSCodeVim/Vim/issues/6453)
+
+**Closed issues:**
+
+- The joinspaces configuration option should default to false [\#6572](https://github.com/VSCodeVim/Vim/issues/6572)
+- af command from Readme doesn't work [\#6565](https://github.com/VSCodeVim/Vim/issues/6565)
+- Insertion after deletion when one of multiple cursors is at the end of a line [\#6053](https://github.com/VSCodeVim/Vim/issues/6053)
+
+**Merged pull requests:**
+
+- gq preserves whitespace between line breaks [\#6571](https://github.com/VSCodeVim/Vim/pull/6571) ([edemaine](https://github.com/edemaine))
+
 ## [v1.20.1](https://github.com/vscodevim/vim/tree/v1.20.1) (2021-04-25)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.0...v1.20.1)
@@ -47,7 +70,6 @@
 - Failed to handle key=w. TextEditor\(vs.editor.ICodeEditor:1,$model13\) has been disposed [\#6472](https://github.com/VSCodeVim/Vim/issues/6472)
 - Failed to handle key=p. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#6468](https://github.com/VSCodeVim/Vim/issues/6468)
 - HUGE performance toll on VS Code, whole WIN 10 system WHEN combined with "Git for Windows"\< 2.30- extension/VSC unusable [\#6169](https://github.com/VSCodeVim/Vim/issues/6169)
-- More robust representation of register contents [\#5856](https://github.com/VSCodeVim/Vim/issues/5856)
 
 **Merged pull requests:**
 
@@ -144,13 +166,11 @@
 
 - Cannot read property 'warn' of undefined [\#5983](https://github.com/VSCodeVim/Vim/issues/5983)
 - H/M/L key not working in visual block mode [\#5890](https://github.com/VSCodeVim/Vim/issues/5890)
-- 1.18.0 After the update, the space bar is not input immediately by use korean IME [\#5865](https://github.com/VSCodeVim/Vim/issues/5865)
 
 **Closed issues:**
 
 - Unable to install vscode.vim extension is not compatible with current version vscode 1.51.1 [\#5883](https://github.com/VSCodeVim/Vim/issues/5883)
 - Failed to handle key=d. Cannot read property 'canBeRepeatedWithDot' of undefined [\#5879](https://github.com/VSCodeVim/Vim/issues/5879)
-- \[Why?\] Ctrl + Shift + Left Arrow \(Insert mode\) =\> Enters visual mode [\#5877](https://github.com/VSCodeVim/Vim/issues/5877)
 
 **Merged pull requests:**
 
@@ -164,10 +184,6 @@
 ## [v1.18.5](https://github.com/vscodevim/vim/tree/v1.18.5) (2020-12-10)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.4...v1.18.5)
-
-**Fixed Bugs:**
-
-- Double brackets shortcuts don't work \(i.e., "\[\[" & "\]\]"\) [\#5857](https://github.com/VSCodeVim/Vim/issues/5857)
 
 ## [v1.18.4](https://github.com/vscodevim/vim/tree/v1.18.4) (2020-12-07)
 
