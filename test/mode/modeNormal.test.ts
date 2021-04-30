@@ -2979,11 +2979,11 @@ suite('Mode Normal', () => {
     });
 
     newTest({
-      title: 'cgn deletes the next word when cursor is at hello|',
-      start: ['|foo', 'hello world', 'hello', 'hello'],
-      keysPressed: '/hello\nelcgn',
-      end: ['foo', 'hello world', '|', 'hello'],
-      endMode: Mode.Insert,
+      title: '`cgn` can be repeated by dot',
+      start: ['|', 'one', 'two', 'one', 'three'],
+      keysPressed: '/one\n' + 'cgn' + 'XYZ' + '<Esc>' + '..',
+      end: ['', 'XYZ', 'two', 'XY|Z', 'three'],
+      endMode: Mode.Normal,
     });
   });
 
