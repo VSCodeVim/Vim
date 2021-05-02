@@ -958,7 +958,7 @@ class CommandCenterScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandTopScroll extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 't'];
 
   preservesDesiredColumn() {
@@ -1016,7 +1016,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandBottomScroll extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'b'];
 
   preservesDesiredColumn() {
