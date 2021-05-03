@@ -19,8 +19,14 @@ import {
   MoveQuoteMatch,
 } from '../motion';
 import { isIMovement } from '../baseMotion';
+import { MoveFullWordBegin, MoveWordBegin } from '../motion';
 import { BaseOperator } from './../operator';
-import { SelectInnerWord, TextObjectMovement } from '../../textobject/textobject';
+import {
+  SelectInnerWord,
+  TextObjectMovement,
+  SelectABigWord,
+  SelectWord,
+} from '../../textobject/textobject';
 import { Position } from 'vscode';
 
 type SurroundEdge = {
@@ -97,9 +103,17 @@ class YankSurroundOperator extends SurroundOperator {
     function getYankRanges(): SurroundEdge {
       // for special handling for w motion.
       // with "|surroundme ZONK" it will jump to Z, but we just want surroundme
-      const endPlus1 = end.getRight();
-      const rightorig = vimState.document.getText(new vscode.Range(end, endPlus1));
-      const rightEdge = rightorig === ' ' ? new Range(end, end) : new Range(endPlus1, endPlus1);
+      const endPlus1 = new Range(end.getRight(), end.getRight());
+      const prevWordEnd = end.prevWordEnd(vimState.document);
+      const endW = new Range(prevWordEnd.getRight(), prevWordEnd.getRight());
+      const lastMotion =
+        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
+      const ranWwMotion =
+        lastMotion instanceof MoveWordBegin ||
+        lastMotion instanceof MoveFullWordBegin ||
+        lastMotion instanceof SelectABigWord ||
+        lastMotion instanceof SelectWord;
+      const rightEdge = ranWwMotion ? endW : endPlus1;
       return {
         leftEdge: new Range(start, start),
         rightEdge,

@@ -1322,7 +1322,7 @@ class EndOfSpecificLine extends BaseMovement {
 }
 
 @RegisterAction
-class MoveWordBegin extends BaseMovement {
+export class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1388,7 +1388,7 @@ class MoveWordBegin extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFullWordBegin extends BaseMovement {
+export class MoveFullWordBegin extends BaseMovement {
   keys = [['W'], ['<C-right>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
