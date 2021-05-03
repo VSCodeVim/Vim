@@ -34,6 +34,20 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: "'ysw)' surrounds word, two spaces next word",
+    start: ['first |line  test'],
+    keysPressed: 'ysw)',
+    end: ['first |(line)  test'],
+  });
+
+  newTest({
+    title: "'ysw)' surrounds word, tab to next word",
+    start: ['first |line\ttest'],
+    keysPressed: 'ysw)',
+    end: ['first |(line)\ttest'],
+  });
+
+  newTest({
     title: "'ysw(' surrounds word with space",
     start: ['first |line test'],
     keysPressed: 'ysw(',
