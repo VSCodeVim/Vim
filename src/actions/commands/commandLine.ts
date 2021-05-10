@@ -94,11 +94,12 @@ class CommandTabInCommandline extends BaseCommand {
       const currentUri = vimState.document.uri;
       const isRemote = !!vscode.env.remoteName;
 
-      const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
-        filePathInCmd,
-        currentUri,
-        isRemote
-      );
+      const {
+        fullDirPath,
+        baseName,
+        partialPath,
+        path: p,
+      } = getPathDetails(filePathInCmd, currentUri, isRemote);
       // Update the evalCmd in case of windows, where we change / to \
       evalCmd = evalCmd.slice(0, fileRegex.lastIndex) + partialPath;
 

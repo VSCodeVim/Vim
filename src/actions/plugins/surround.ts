@@ -352,9 +352,10 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     });
   }
 
-  private static getStartAndEndReplacements(
-    replacement: string | undefined
-  ): { startReplace: string; endReplace: string } {
+  private static getStartAndEndReplacements(replacement: string | undefined): {
+    startReplace: string;
+    endReplace: string;
+  } {
     if (!replacement) {
       return { startReplace: '', endReplace: '' };
     }

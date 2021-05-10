@@ -162,9 +162,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           modeHandler.vimState.historyTracker.currentContentChanges = [];
         }
 
-        modeHandler.vimState.historyTracker.currentContentChanges = modeHandler.vimState.historyTracker.currentContentChanges.concat(
-          event.contentChanges
-        );
+        modeHandler.vimState.historyTracker.currentContentChanges =
+          modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
       }
     };
 
