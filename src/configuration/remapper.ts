@@ -223,8 +223,8 @@ export class Remapper implements IRemapper {
 
         if (remapState.wasPerformingRemapThatFinishedWaitingForTimeout) {
           // Some keys that broke the possible remap were typed by the user so handle them seperatly
-          const lastRemapLength = remapState.wasPerformingRemapThatFinishedWaitingForTimeout.after!
-            .length;
+          const lastRemapLength =
+            remapState.wasPerformingRemapThatFinishedWaitingForTimeout.after!.length;
           const keysPressedByUser = keys.slice(lastRemapLength);
           keys = keys.slice(0, lastRemapLength);
 

@@ -309,6 +309,8 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     // Try to search for the next word
     result = newSearchState.getNextSearchMatchRange(vimState.editor, vimState.cursorStopPosition);
     if (!result?.match) {
+      // TODO: `gn` should just be a TextObject, I think - setting this directly is a bit of a hack
+      vimState.lastMovementFailed = true;
       return; // no match...
     }
   }

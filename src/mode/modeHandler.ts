@@ -463,9 +463,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
           // key was the last key, then 'key' will be undefined and won't be sent to handle action.
           this.vimState.recordedState.commandList.pop();
-          key = this.vimState.recordedState.commandList[
-            this.vimState.recordedState.commandList.length - 1
-          ];
+          key =
+            this.vimState.recordedState.commandList[
+              this.vimState.recordedState.commandList.length - 1
+            ];
         }
         if (key !== undefined) {
           handledAsAction = await this.handleKeyAsAnAction(key);
@@ -1442,13 +1443,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
       let virtualKey: string | undefined;
       if (this.vimState.recordedState.bufferedKeys.length > 0) {
-        virtualKey = this.vimState.recordedState.bufferedKeys[
-          this.vimState.recordedState.bufferedKeys.length - 1
-        ];
+        virtualKey =
+          this.vimState.recordedState.bufferedKeys[
+            this.vimState.recordedState.bufferedKeys.length - 1
+          ];
       } else if (this.vimState.recordedState.waitingForAnotherActionKey) {
-        virtualKey = this.vimState.recordedState.actionKeys[
-          this.vimState.recordedState.actionKeys.length - 1
-        ];
+        virtualKey =
+          this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
         if (virtualKey === '<C-r>') {
           virtualKey = '"';
         } else if (virtualKey === '<C-k>') {
@@ -1603,9 +1604,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   // Return true if a new undo point should be created based on brackets and parentheses
   private createUndoPointForBrackets(): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
-    const key = this.vimState.recordedState.actionKeys[
-      this.vimState.recordedState.actionKeys.length - 1
-    ];
+    const key =
+      this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
 
     if (key === undefined) {
       return false;

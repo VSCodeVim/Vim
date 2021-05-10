@@ -28,9 +28,10 @@ function parseCount(args: string): number | undefined {
   }
 }
 
-function parseCountOrOffset(
-  args: string
-): { count: number | undefined; direction?: 'left' | 'right' } {
+function parseCountOrOffset(args: string): {
+  count: number | undefined;
+  direction?: 'left' | 'right';
+} {
   if (!args) {
     return { count: undefined };
   }
