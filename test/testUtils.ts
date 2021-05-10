@@ -179,7 +179,8 @@ export async function cleanUpWorkspace(): Promise<void> {
 }
 
 export async function reloadConfiguration() {
-  const validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  const validatorResults =
+    (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
   for (const validatorResult of validatorResults.get()) {
     console.log(validatorResult);
   }

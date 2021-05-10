@@ -19,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
+  const setupVimState = () => sandbox.createStubInstance(VimState) as unknown as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
