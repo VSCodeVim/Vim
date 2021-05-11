@@ -436,7 +436,7 @@ class CommandNextSearchMatch extends BaseMovement {
   keys = ['n'];
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
@@ -451,7 +451,7 @@ class CommandNextSearchMatch extends BaseMovement {
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     // we have to handle a special case here: searching for $ or \n,
@@ -474,7 +474,7 @@ class CommandNextSearchMatch extends BaseMovement {
           searchState.searchString
         )
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
@@ -488,7 +488,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
   keys = ['N'];
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
@@ -503,7 +503,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     const searchForward = searchState.searchDirection === SearchDirection.Forward;
@@ -533,7 +533,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
           searchState.searchString
         )
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     reportSearch(prevMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
