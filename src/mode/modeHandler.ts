@@ -257,6 +257,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           // another program. Let's just use VSCode's selection.
           // TODO: if this is the case, but we're in visual mode, we never get here (because of branch above)
         } else if (
+          e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
           this.vimState.cursorStopPosition.isEqual(this.vimState.cursorStartPosition) &&
           this.vimState.cursorStopPosition.getRight().isLineEnd() &&
           this.vimState.cursorStopPosition.getLineEnd().isEqual(selection.active)
