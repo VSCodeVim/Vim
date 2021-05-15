@@ -124,6 +124,14 @@ suite('Repeat content change', () => {
   });
 
   newTest({
+    title: 'Can repeat `<BS>` and `<Del>`',
+    start: ['abc|def', 'ABCDEF'],
+    keysPressed: 'i<BS><Del>0<Esc>' + 'j0fD.',
+    end: ['ab0ef', 'AB|0EF'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can repeat insertion with newline',
     start: ['ab|cde', 'ABCDE'],
     keysPressed: 'i1\n2<Esc>' + 'j0ll.',

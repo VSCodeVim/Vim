@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { BaseAction, KeypressState, BaseCommand, getRelevantAction } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
 import {
+  CommandBackspaceInInsertMode,
   CommandEscInsertMode,
   CommandInsertInInsertMode,
   CommandInsertPreviousText,
@@ -611,6 +612,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       const actionCanBeMergedWithDocumentChange =
         action instanceof CommandInsertInInsertMode ||
+        action instanceof CommandBackspaceInInsertMode ||
         action instanceof CommandInsertPreviousText ||
         action instanceof InsertCharAbove ||
         action instanceof InsertCharBelow;
@@ -634,7 +636,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           this.vimState.historyTracker.currentContentChanges = [];
-          const newContentChange = new DocumentContentChangeAction();
+          const newContentChange = new DocumentContentChangeAction(
+            this.vimState.cursorStopPosition
+          );
           newContentChange.keysPressed.push(key);
           recordedState.actionsRun.push(newContentChange);
           actionToRecord = newContentChange;

@@ -213,7 +213,7 @@ class DecreaseIndent extends BaseCommand {
 // }
 
 @RegisterAction
-class CommandBackspaceInInsertMode extends BaseCommand {
+export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 

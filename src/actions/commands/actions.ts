@@ -48,6 +48,12 @@ import { ErrorCode, VimError } from '../../error';
 export class DocumentContentChangeAction extends BaseCommand {
   modes = [];
   keys = [];
+  private readonly cursorStart: Position;
+
+  constructor(cursorStart: Position) {
+    super();
+    this.cursorStart = cursorStart;
+  }
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
@@ -69,11 +75,7 @@ export class DocumentContentChangeAction extends BaseCommand {
       return;
     }
 
-    const firstTextDiff = this.contentChanges[0];
-    let originalLeftBoundary =
-      firstTextDiff.text === '' && firstTextDiff.rangeLength === 1
-        ? firstTextDiff.range.end
-        : firstTextDiff.range.start;
+    let originalLeftBoundary = this.cursorStart;
 
     let rightBoundary: Position = position;
     for (const change of this.contentChanges) {
@@ -137,7 +139,7 @@ export class DocumentContentChangeAction extends BaseCommand {
           text: first.text + second.text,
           range: first.range,
           rangeOffset: first.rangeOffset,
-          rangeLength: first.rangeLength + second.rangeOffset,
+          rangeLength: first.rangeLength,
         };
       } else if (
         first.rangeOffset <= second.rangeOffset &&
