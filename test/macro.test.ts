@@ -105,4 +105,12 @@ suite('Record and execute a macro', () => {
     keysPressed: 'qajyyP<C-a>kq8@a',
     end: ['C|ountdown:', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'LAUNCH!!!'],
   });
+
+  newTest({
+    title: 'Failed `n` stops macro from repeating',
+    config: { wrapscan: false },
+    start: ['|one two three', 'one two three', 'one two three'],
+    keysPressed: '/two\n0' + 'qq' + 'nea XXX<Esc>q' + '5@q',
+    end: ['one two XXX three', 'one two XXX three', 'one two XX|X three'],
+  });
 });
