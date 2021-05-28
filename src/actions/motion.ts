@@ -159,12 +159,14 @@ abstract class MoveByScreenLine extends BaseMovement {
 }
 
 class MoveUpByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
 class MoveDownByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -237,19 +239,8 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   }
 }
 
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
-class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -337,6 +328,7 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;

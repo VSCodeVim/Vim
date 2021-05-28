@@ -46,7 +46,8 @@ import { ErrorCode, VimError } from '../../error';
  * which compresses the changes, generally into a single document edit per cursor.
  */
 export class DocumentContentChangeAction extends BaseCommand {
-  modes: [];
+  modes = [];
+  keys = [];
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
@@ -457,7 +458,6 @@ class CommandEsc extends BaseCommand {
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
-  keys: string[];
   abstract to: EditorScrollDirection;
   abstract by: EditorScrollByUnit;
 
