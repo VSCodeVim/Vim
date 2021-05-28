@@ -6,6 +6,8 @@ import {
   CommandEscInsertMode,
   CommandInsertInInsertMode,
   CommandInsertPreviousText,
+  InsertCharAbove,
+  InsertCharBelow,
 } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
@@ -610,16 +612,19 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     } else {
       const lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
 
+      const actionCanBeMergedWithDocumentChange =
+        action instanceof CommandInsertInInsertMode ||
+        action instanceof CommandInsertPreviousText ||
+        action instanceof InsertCharAbove ||
+        action instanceof InsertCharBelow;
+
       if (lastAction instanceof DocumentContentChangeAction) {
         if (!(action instanceof CommandEscInsertMode)) {
           // TODO: this includes things like <BS>, which it shouldn't
           lastAction.keysPressed.push(key);
         }
 
-        if (
-          action instanceof CommandInsertInInsertMode ||
-          action instanceof CommandInsertPreviousText
-        ) {
+        if (actionCanBeMergedWithDocumentChange) {
           // delay the macro recording
           actionToRecord = undefined;
         } else {
@@ -629,10 +634,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           recordedState.actionsRun.push(action);
         }
       } else {
-        if (
-          action instanceof CommandInsertInInsertMode ||
-          action instanceof CommandInsertPreviousText
-        ) {
+        if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           this.vimState.historyTracker.currentContentChanges = [];
           const newContentChange = new DocumentContentChangeAction();

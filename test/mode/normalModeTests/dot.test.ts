@@ -132,6 +132,22 @@ suite('Repeat content change', () => {
   });
 
   newTest({
+    title: 'Can repeat `<C-y>`',
+    start: ['abcde', '|12', 'ABCDE', '12'],
+    keysPressed: 'A<C-y><C-y><Esc>' + 'jj0.',
+    end: ['abcde', '12cd', 'ABCDE', '12c|d'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<C-e>`',
+    start: ['abcde', '|12', 'ABCDE', '12'],
+    keysPressed: 'A<C-e><C-e><Esc>' + 'jj0.',
+    end: ['abcde', '12CD', 'ABCDE', '12C|D'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can repeat '<C-t>'",
     start: ['on|e', 'two'],
     keysPressed: 'a<C-t><Esc>j.',
