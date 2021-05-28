@@ -446,7 +446,7 @@ class CommandCtrlW extends BaseCommand {
 }
 
 @RegisterAction
-class InsertCharAbove extends BaseCommand {
+export class InsertCharAbove extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-y>'];
 
@@ -471,7 +471,7 @@ class InsertCharAbove extends BaseCommand {
 }
 
 @RegisterAction
-class InsertCharBelow extends BaseCommand {
+export class InsertCharBelow extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-e>'];
 
