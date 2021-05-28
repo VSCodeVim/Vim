@@ -408,19 +408,90 @@ suite('Mode Insert', () => {
     assertEqualLines(['🚀🚀']);
   });
 
-  newTest({
-    title: 'Can insert last inserted text',
-    start: ['test|'],
-    keysPressed: 'ahello<Esc>a<C-a>',
-    end: ['testhellohello|'],
+  suite('<C-a>', () => {
+    newTest({
+      title: 'Basic <C-a> test',
+      start: ['tes|t'],
+      keysPressed: 'a' + 'hello' + '<Esc>' + 'a' + '<C-a>',
+      end: ['testhellohello|'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-a> with <BS>',
+      start: ['tes|t'],
+      keysPressed: 'i' + '<BS>' + '<Esc>' + 'a' + '<C-a>',
+      end: ['t|t'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-a> with <BS> then regular character',
+      start: ['tes|t'],
+      keysPressed: 'i' + '<BS>1' + '<Esc>' + 'i' + '<C-a>',
+      end: ['t1|1t'],
+      endMode: Mode.Insert,
+    });
+
+    test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
+      try {
+        await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
+      } catch (e) {
+        assert(false);
+      }
+    });
   });
 
-  test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
-    try {
-      await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
-    } catch (e) {
-      assert(false);
-    }
+  suite('<C-y>', () => {
+    newTest({
+      title: '<C-y> inserts character above cursor',
+      start: ['abcde', '12|3', 'ABCDE'],
+      keysPressed: 'i' + '<C-y><C-y>',
+      end: ['abcde', '12cd|3', 'ABCDE'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-y> does nothing if line below is too short',
+      start: ['abcde', '12|3', 'ABCDE'],
+      keysPressed: 'i' + '<C-y><C-y><C-y><C-y><C-y><C-y>',
+      end: ['abcde', '12cde|3', 'ABCDE'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-y> does nothing on first line',
+      start: ['|', 'ABCDE'],
+      keysPressed: 'i' + '<C-y><C-y>',
+      end: ['|', 'ABCDE'],
+      endMode: Mode.Insert,
+    });
+  });
+
+  suite('<C-e>', () => {
+    newTest({
+      title: '<C-e> inserts character below cursor',
+      start: ['abcde', '12|3', 'ABCDE'],
+      keysPressed: 'i' + '<C-e><C-e>',
+      end: ['abcde', '12CD|3', 'ABCDE'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-e> does nothing if line below is too short',
+      start: ['abcde', '12|3', 'ABCDE'],
+      keysPressed: 'i' + '<C-e><C-e><C-e><C-e><C-e><C-e>',
+      end: ['abcde', '12CDE|3', 'ABCDE'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-e> does nothing on last line',
+      start: ['abcde', '|'],
+      keysPressed: 'i' + '<C-e><C-e>',
+      end: ['abcde', '|'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({

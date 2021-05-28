@@ -1,3 +1,4 @@
+import { Mode } from '../../../src/mode/mode';
 import { Configuration } from '../../testConfiguration';
 import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
@@ -73,6 +74,62 @@ suite('Repeat content change', () => {
   });
 
   teardown(cleanUpWorkspace);
+
+  newTest({
+    title: 'Can repeat `<BS>`',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'i<BS><Esc>' + 'j$.',
+    end: ['abce', 'AB|CE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<BS><BS>`',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'i<BS><BS><Esc>' + 'j$.',
+    end: ['abe', 'A|BE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<BS>` within larger insertion',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'ixy<BS>z<Esc>' + 'j$.',
+    end: ['abcdxze', 'ABCDx|zE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del>`',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'a<Del><Esc>' + 'j0.',
+    end: ['acde', '|ACDE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del><Del>`',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'a<Del><Del><Esc>' + 'j0.',
+    end: ['ade', '|ADE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del>` within larger insertion',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'axy<Del>z<Esc>' + 'j0.',
+    end: ['axyzcde', 'Axy|zCDE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat insertion with newline',
+    start: ['ab|cde', 'ABCDE'],
+    keysPressed: 'i1\n2<Esc>' + 'j0ll.',
+    end: ['ab1', '2cde', 'AB1', '|2CDE'],
+    endMode: Mode.Normal,
+  });
 
   newTest({
     title: "Can repeat '<C-t>'",
