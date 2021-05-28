@@ -15,8 +15,8 @@ import { Position } from 'vscode';
 import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
-  private process: ChildProcess;
-  private nvim: Neovim;
+  private process?: ChildProcess;
+  private nvim?: Neovim;
   private static readonly logger = Logger.get('Neovim');
   private readonly processTimeoutInSeconds = 3;
 
@@ -120,6 +120,10 @@ export class NeovimWrapper implements vscode.Disposable {
 
   // Data flows from VSCode to Vim
   private async syncVSCodeToVim(vimState: VimState) {
+    if (!this.nvim) {
+      return;
+    }
+
     const buf = await this.nvim.buffer;
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
@@ -169,6 +173,10 @@ export class NeovimWrapper implements vscode.Disposable {
 
   // Data flows from Vim to VSCode
   private async syncVimToVSCode(vimState: VimState) {
+    if (!this.nvim) {
+      return;
+    }
+
     const buf = await this.nvim.buffer;
     const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 

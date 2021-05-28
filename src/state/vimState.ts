@@ -187,7 +187,7 @@ export class VimState implements vscode.Disposable {
   /**
    * Initial state of cursors prior to any action being performed
    */
-  private _cursorsInitialState: Range[];
+  private _cursorsInitialState!: Range[];
   public get cursorsInitialState(): Range[] {
     return this._cursorsInitialState;
   }
@@ -332,7 +332,7 @@ export class VimState implements vscode.Disposable {
   }
 }
 
-export class ViewChange {
-  public command: string;
-  public args: any;
+export interface ViewChange {
+  command: string;
+  args: any;
 }

@@ -5,7 +5,7 @@ import { IConfigurationValidator, ValidatorResults } from '../iconfigurationVali
 import { configurationValidator } from '../configurationValidator';
 
 export class RemappingValidator implements IConfigurationValidator {
-  private commandMap: Map<string, boolean>;
+  private commandMap!: Map<string, boolean>;
 
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();

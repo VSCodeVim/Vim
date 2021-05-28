@@ -179,11 +179,11 @@ suite('historyTracker unit tests', () => {
 
 // tslint:disable: no-empty
 class TextEditorStub implements vscode.TextEditor {
-  readonly document: vscode.TextDocument;
-  selection: vscode.Selection;
-  selections: vscode.Selection[];
-  readonly visibleRanges: vscode.Range[];
-  options: vscode.TextEditorOptions;
+  readonly document!: vscode.TextDocument;
+  selection!: vscode.Selection;
+  selections!: vscode.Selection[];
+  readonly visibleRanges!: vscode.Range[];
+  options!: vscode.TextEditorOptions;
   viewColumn?: vscode.ViewColumn;
 
   constructor() {}

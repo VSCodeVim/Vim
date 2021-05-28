@@ -44,7 +44,7 @@ export abstract class ExpandingSelection extends BaseMovement {
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   abstract movementType: CursorMovePosition;
-  by: CursorMoveByUnit;
+  by?: CursorMoveByUnit;
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState) {
@@ -539,10 +539,10 @@ enum VisualMark {
   SelectionEnd,
 }
 abstract class MarkMovementVisual extends BaseMovement {
-  isJump = true;
-  registerMode: RegisterMode;
   modes = [Mode.Normal];
-  mark: VisualMark;
+  isJump = true;
+  abstract registerMode: RegisterMode;
+  abstract mark: VisualMark;
 
   private startOrEnd(lastVisualSelection: {
     start: vscode.Position;

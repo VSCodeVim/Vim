@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
 class DecorationImpl {
-  private _default: vscode.TextEditorDecorationType;
-  private _searchHighlight: vscode.TextEditorDecorationType;
-  private _easyMotionIncSearch: vscode.TextEditorDecorationType;
-  private _easyMotionDimIncSearch: vscode.TextEditorDecorationType;
-  private _insertModeVirtualCharacter: vscode.TextEditorDecorationType;
-  private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
-  private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
+  private _default!: vscode.TextEditorDecorationType;
+  private _searchHighlight!: vscode.TextEditorDecorationType;
+  private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
+  private _easyMotionDimIncSearch!: vscode.TextEditorDecorationType;
+  private _insertModeVirtualCharacter!: vscode.TextEditorDecorationType;
+  private _operatorPendingModeCursor!: vscode.TextEditorDecorationType;
+  private _operatorPendingModeCursorChar!: vscode.TextEditorDecorationType;
 
   private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
 
