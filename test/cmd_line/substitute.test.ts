@@ -173,7 +173,7 @@ suite('Basic substitute', () => {
     title: 'Replace with \\',
     start: ['one |two three'],
     keysPressed: ':s/t/\\\\/g\n',
-    end: ['one |\\wo \\hree'],
+    end: ['|one \\wo \\hree'],
   });
 
   newTest({
