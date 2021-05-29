@@ -94,6 +94,18 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'surround word with tag and repeat',
+    start: ['first li|ne test'],
+    keysPressed: 'ysiw<W.',
+    end: ['first <123>line</123> |<123>test</123>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: '123',
+    },
+  });
+
+  newTest({
     title: "'cst<' surrounds word with tags that have a dot in them",
     start: ['first <test>li|ne</test> test'],
     keysPressed: 'cst<',

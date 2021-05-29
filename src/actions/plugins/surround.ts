@@ -339,7 +339,10 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
     }
 
     vimState.surround.replacement = 't';
-    const tagInput = this.recordedTag !== '' ? this.recordedTag : await this.readTag();
+    const tagInput =
+      vimState.isRunningDotCommand || vimState.isReplayingMacro
+        ? this.recordedTag
+        : await this.readTag();
 
     if (!tagInput) {
       vimState.surround = undefined;
