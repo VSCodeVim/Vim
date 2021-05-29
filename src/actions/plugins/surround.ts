@@ -369,7 +369,7 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
 
   private async readTag(): Promise<string | undefined> {
     return vscode.window.showInputBox({
-      prompt: 'enter tag (without <>)',
+      prompt: 'Enter tag',
       ignoreFocusOut: true,
     });
   }
