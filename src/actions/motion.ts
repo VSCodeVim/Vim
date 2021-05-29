@@ -1314,7 +1314,7 @@ class EndOfSpecificLine extends BaseMovement {
 }
 
 @RegisterAction
-class MoveWordBegin extends BaseMovement {
+export class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1380,7 +1380,7 @@ class MoveWordBegin extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFullWordBegin extends BaseMovement {
+export class MoveFullWordBegin extends BaseMovement {
   keys = [['W'], ['<C-right>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1708,7 +1708,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-abstract class MoveInsideCharacter extends ExpandingSelection {
+export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
 
@@ -1869,7 +1869,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-abstract class MoveQuoteMatch extends BaseMovement {
+export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract charToMatch: string;
   protected includeSurrounding = false;

@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import * as sinon from 'sinon';
 
 import { Globals } from '../src/globals';
 import { Mode } from '../src/mode/mode';
@@ -76,6 +77,11 @@ interface ITestObject {
   end: string[];
   endMode?: Mode;
   jumps?: string[];
+  stub?: {
+    stubClass: any;
+    methodName: string;
+    returnValue: any;
+  };
 }
 
 type Step = {
@@ -341,8 +347,16 @@ async function testIt(testObj: ITestObject): Promise<void> {
   const jumpTracker = globalState.jumpTracker;
   jumpTracker.clearJumps();
 
-  // Assumes key presses are single characters for now
-  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+  if (testObj.stub) {
+    const confirmStub = sinon
+      .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
+      .resolves(testObj.stub.returnValue);
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+    confirmStub.restore();
+  } else {
+    // Assumes key presses are single characters for now
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+  }
 
   // Check given end output is correct
   const lines = helper.asVimOutputText();
