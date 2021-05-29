@@ -53,6 +53,14 @@ suite('surround plugin', () => {
     keysPressed: 'ysw(',
     end: ['first |( line ) test'],
   });
+
+  newTest({
+    title: "'ysw)' surrounds word at EOL",
+    start: ['one two |three', 'four five six'],
+    keysPressed: 'ysw)',
+    end: ['one two |(three)', 'four five six'],
+  });
+
   newTest({
     title: "'ysaw)' surrounds word without space",
     start: ['first li|ne test'],
@@ -150,6 +158,13 @@ suite('surround plugin', () => {
     start: ['first (li|ne) test'],
     keysPressed: 'csb]',
     end: ['first [li|ne] test'],
+  });
+
+  newTest({
+    title: 'change surround with cursor before quotes',
+    start: ['one |two "three" four'],
+    keysPressed: 'cs")',
+    end: ['one two |(three) four'],
   });
 
   newTest({
