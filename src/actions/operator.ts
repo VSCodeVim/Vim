@@ -889,7 +889,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     for (const char of indent) {
       indentLevel += char === '\t' ? configuration.tabstop : 1;
     }
-    const maximumLineLength = configuration.textwidth - indentLevel - 2;
+    const maximumLineLength = configuration.textwidth - indentLevel;
 
     // Chunk the lines by commenting style.
 
@@ -903,7 +903,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
     for (const line of s.split('\n')) {
       let lastChunk: Chunk | undefined = chunksToReflow[chunksToReflow.length - 1];
-      const trimmedLine = line.trim();
+      const trimmedLine = line.trimStart();
 
       // See what comment type they are using.
 
@@ -945,7 +945,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       if (!lastChunk || lastChunk.final || commentType.start !== lastChunk.commentType.start) {
         const chunk = {
           commentType,
-          content: `${trimmedLine.substr(commentType.start.length).trim()}`,
+          content: `${trimmedLine.substr(commentType.start.length).trimStart()}`,
           indentLevelAfterComment: 0,
           final: false,
         };
@@ -970,7 +970,9 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
       if (lastChunk.commentType.singleLine) {
         // is it a continuation of a comment like "//"
-        lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.start.length).trim()}`;
+        lastChunk.content += `\n${trimmedLine
+          .substr(lastChunk.commentType.start.length)
+          .trimStart()}`;
       } else if (!lastChunk.final) {
         // are we in the middle of a multiline comment like "/*"
         if (trimmedLine.endsWith(lastChunk.commentType.final)) {
@@ -982,9 +984,13 @@ class ActionVisualReflowParagraph extends BaseOperator {
             .substr(prefix, trimmedLine.length - lastChunk.commentType.final.length - prefix)
             .trim()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.inner)) {
-          lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.inner.length).trim()}`;
+          lastChunk.content += `\n${trimmedLine
+            .substr(lastChunk.commentType.inner.length)
+            .trimStart()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.start)) {
-          lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.start.length).trim()}`;
+          lastChunk.content += `\n${trimmedLine
+            .substr(lastChunk.commentType.start.length)
+            .trimStart()}`;
         }
       }
     }
@@ -995,16 +1001,12 @@ class ActionVisualReflowParagraph extends BaseOperator {
     for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
+      const commentLength = commentType.start.length + indentAfterComment.length;
 
       // Start with a single empty content line.
       lines = [``];
 
-      // This tracks what separator should be added before the next word.
-      // It's empty at the beginning of a paragraph, one space after most
-      // words, and two spaces after certain punctuation (via `joinspaces`).
-      let separator = '';
-
-      for (const line of content.split('\n')) {
+      for (let line of content.split('\n')) {
         // Preserve blank lines in output.
         if (line.trim() === '') {
           // Replace empty content line with blank line.
@@ -1017,30 +1019,69 @@ class ActionVisualReflowParagraph extends BaseOperator {
           // Add new empty content line for remaining content.
           lines.push(``);
 
-          separator = '';
           continue;
         }
 
-        // Add word by word, wrapping when necessary.
-        const words = line.split(/\s+/);
-        for (const word of words) {
-          if (word === '') {
-            continue;
-          }
+        // Repeatedly partition line into pieces that fit in maximumLineLength
+        while (line) {
+          const lastLine = lines[lines.length - 1];
 
-          if (lines[lines.length - 1].length + separator.length + word.length < maximumLineLength) {
-            lines[lines.length - 1] += `${separator}${word}`;
-          } else {
-            lines.push(`${word}`);
-          }
-
-          if (
+          // Determine the separator that we'd need to add to the last line
+          // in order to join onto this line.
+          let separator;
+          if (!lastLine) {
+            separator = '';
+          } else if (
             configuration.joinspaces &&
-            (word.endsWith('.') || word.endsWith('?') || word.endsWith('!'))
+            (lastLine.endsWith('.') || lastLine.endsWith('?') || lastLine.endsWith('!'))
           ) {
             separator = '  ';
+          } else if (lastLine.endsWith(' ')) {
+            if (
+              configuration.joinspaces &&
+              (lastLine.endsWith('. ') || lastLine.endsWith('? ') || lastLine.endsWith('! '))
+            ) {
+              separator = ' ';
+            } else {
+              separator = '';
+            }
           } else {
             separator = ' ';
+          }
+
+          // Consider appending separator and part of line to last line
+          const remaining = maximumLineLength - separator.length - lastLine.length - commentLength;
+          const trimmedLine = line.trimStart();
+          if (trimmedLine.length <= remaining) {
+            // Entire line fits on last line
+            lines[lines.length - 1] += `${separator}${trimmedLine}`;
+            break;
+          } else {
+            // Find largest portion of line that fits on last line,
+            // by searching backward for a whitespace character (space or tab).
+            let breakpoint = Math.max(
+              trimmedLine.lastIndexOf(' ', remaining),
+              trimmedLine.lastIndexOf('\t', remaining)
+            );
+            if (breakpoint < 0) {
+              // Next word is too long to fit on the current line.
+              if (lastLine) {
+                // Start a new line and try again next round.
+                lines.push('');
+                continue;
+              } else {
+                // Next word is too long to fit on a line by itself.
+                // Break it at the next word boundary, if there is one.
+                breakpoint = trimmedLine.search(/[ \t]/);
+                if (breakpoint < 0) breakpoint = line.length;
+              }
+            }
+
+            // Split the line into the part that fits on the last line
+            // and the remainder.  Start a new line for the remainder.
+            lines[lines.length - 1] += `${separator}${trimmedLine.slice(0, breakpoint).trimEnd()}`;
+            line = line.slice(breakpoint + 1);
+            lines.push('');
           }
         }
       }

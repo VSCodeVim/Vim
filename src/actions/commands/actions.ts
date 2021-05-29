@@ -37,8 +37,17 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 
+/**
+ * A very special snowflake.
+ *
+ * Each keystroke when typing in Insert mode is its own Action, which means naively replaying a
+ * realistic insertion (via `.` or a macro) does many small insertions, which is very slow.
+ * So instead, we fold all those actions after the fact into a single DocumentContentChangeAction,
+ * which compresses the changes, generally into a single document edit per cursor.
+ */
 export class DocumentContentChangeAction extends BaseCommand {
-  modes: [];
+  modes = [];
+  keys = [];
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
@@ -128,19 +137,35 @@ export class DocumentContentChangeAction extends BaseCommand {
       second: vscode.TextDocumentContentChangeEvent
     ): vscode.TextDocumentContentChangeEvent | undefined {
       if (
-        first.rangeOffset + first.text.length !== second.rangeOffset ||
-        second.rangeLength !== 0
+        first.rangeOffset + first.text.length === second.rangeOffset ||
+        second.rangeLength === 0
       ) {
-        // TODO: We should be able to do better, but I'm not sure if this is actually relevant.
+        // Simple concatenation
+        return {
+          text: first.text + second.text,
+          range: first.range,
+          rangeOffset: first.rangeOffset,
+          rangeLength: first.rangeLength,
+        };
+      } else if (
+        first.rangeOffset <= second.rangeOffset &&
+        first.text.length >= second.rangeLength
+      ) {
+        const start = second.rangeOffset - first.rangeOffset;
+        const end = start + second.rangeLength;
+        const text = first.text.slice(0, start) + second.text + first.text.slice(end);
+        // `second` replaces part of `first`
+        // Most often, this is the result of confirming an auto-completion
+        return {
+          text,
+          range: first.range,
+          rangeOffset: first.rangeOffset,
+          rangeLength: first.rangeLength,
+        };
+      } else {
+        // TODO: Do any of the cases falling into this `else` matter?
         return undefined;
       }
-
-      return {
-        text: first.text + second.text,
-        range: first.range,
-        rangeOffset: first.rangeOffset,
-        rangeLength: first.rangeLength,
-      };
     }
 
     const compressed: vscode.TextDocumentContentChangeEvent[] = [];
@@ -433,7 +458,6 @@ class CommandEsc extends BaseCommand {
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   runsOnceForEachCountPrefix = false;
-  keys: string[];
   abstract to: EditorScrollDirection;
   abstract by: EditorScrollByUnit;
 
@@ -958,7 +982,7 @@ class CommandCenterScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandTopScroll extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 't'];
 
   preservesDesiredColumn() {
@@ -1016,7 +1040,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandBottomScroll extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'b'];
 
   preservesDesiredColumn() {

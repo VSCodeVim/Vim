@@ -44,7 +44,7 @@ export abstract class ExpandingSelection extends BaseMovement {
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   abstract movementType: CursorMovePosition;
-  by: CursorMoveByUnit;
+  by?: CursorMoveByUnit;
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState) {
@@ -159,12 +159,14 @@ abstract class MoveByScreenLine extends BaseMovement {
 }
 
 class MoveUpByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
 class MoveDownByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -237,19 +239,8 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   }
 }
 
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
-class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -337,6 +328,7 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -436,7 +428,7 @@ class CommandNextSearchMatch extends BaseMovement {
   keys = ['n'];
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
@@ -451,7 +443,7 @@ class CommandNextSearchMatch extends BaseMovement {
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     // we have to handle a special case here: searching for $ or \n,
@@ -474,7 +466,7 @@ class CommandNextSearchMatch extends BaseMovement {
           searchState.searchString
         )
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
@@ -488,7 +480,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
   keys = ['N'];
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
     if (!searchState || searchState.searchString === '') {
@@ -503,7 +495,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     const searchForward = searchState.searchDirection === SearchDirection.Forward;
@@ -533,7 +525,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
           searchState.searchString
         )
       );
-      return position;
+      return failedMovement(vimState);
     }
 
     reportSearch(prevMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
@@ -547,10 +539,10 @@ enum VisualMark {
   SelectionEnd,
 }
 abstract class MarkMovementVisual extends BaseMovement {
-  isJump = true;
-  registerMode: RegisterMode;
   modes = [Mode.Normal];
-  mark: VisualMark;
+  isJump = true;
+  abstract registerMode: RegisterMode;
+  abstract mark: VisualMark;
 
   private startOrEnd(lastVisualSelection: {
     start: vscode.Position;

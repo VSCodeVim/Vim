@@ -6,6 +6,8 @@ import {
   CommandEscInsertMode,
   CommandInsertInInsertMode,
   CommandInsertPreviousText,
+  InsertCharAbove,
+  InsertCharBelow,
 } from './../actions/commands/insert';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
@@ -64,7 +66,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   private static readonly logger = Logger.get('ModeHandler');
 
   // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
-  private _currentMode: Mode;
+  private _currentMode!: Mode;
 
   get currentMode(): Mode {
     return this._currentMode;
@@ -463,9 +465,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
           // key was the last key, then 'key' will be undefined and won't be sent to handle action.
           this.vimState.recordedState.commandList.pop();
-          key = this.vimState.recordedState.commandList[
-            this.vimState.recordedState.commandList.length - 1
-          ];
+          key =
+            this.vimState.recordedState.commandList[
+              this.vimState.recordedState.commandList.length - 1
+            ];
         }
         if (key !== undefined) {
           handledAsAction = await this.handleKeyAsAnAction(key);
@@ -609,16 +612,19 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     } else {
       const lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
 
+      const actionCanBeMergedWithDocumentChange =
+        action instanceof CommandInsertInInsertMode ||
+        action instanceof CommandInsertPreviousText ||
+        action instanceof InsertCharAbove ||
+        action instanceof InsertCharBelow;
+
       if (lastAction instanceof DocumentContentChangeAction) {
         if (!(action instanceof CommandEscInsertMode)) {
           // TODO: this includes things like <BS>, which it shouldn't
           lastAction.keysPressed.push(key);
         }
 
-        if (
-          action instanceof CommandInsertInInsertMode ||
-          action instanceof CommandInsertPreviousText
-        ) {
+        if (actionCanBeMergedWithDocumentChange) {
           // delay the macro recording
           actionToRecord = undefined;
         } else {
@@ -628,10 +634,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           recordedState.actionsRun.push(action);
         }
       } else {
-        if (
-          action instanceof CommandInsertInInsertMode ||
-          action instanceof CommandInsertPreviousText
-        ) {
+        if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           this.vimState.historyTracker.currentContentChanges = [];
           const newContentChange = new DocumentContentChangeAction();
@@ -1442,13 +1445,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
       let virtualKey: string | undefined;
       if (this.vimState.recordedState.bufferedKeys.length > 0) {
-        virtualKey = this.vimState.recordedState.bufferedKeys[
-          this.vimState.recordedState.bufferedKeys.length - 1
-        ];
+        virtualKey =
+          this.vimState.recordedState.bufferedKeys[
+            this.vimState.recordedState.bufferedKeys.length - 1
+          ];
       } else if (this.vimState.recordedState.waitingForAnotherActionKey) {
-        virtualKey = this.vimState.recordedState.actionKeys[
-          this.vimState.recordedState.actionKeys.length - 1
-        ];
+        virtualKey =
+          this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
         if (virtualKey === '<C-r>') {
           virtualKey = '"';
         } else if (virtualKey === '<C-k>') {
@@ -1603,9 +1606,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   // Return true if a new undo point should be created based on brackets and parentheses
   private createUndoPointForBrackets(): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
-    const key = this.vimState.recordedState.actionKeys[
-      this.vimState.recordedState.actionKeys.length - 1
-    ];
+    const key =
+      this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
 
     if (key === undefined) {
       return false;
