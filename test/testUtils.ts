@@ -38,8 +38,8 @@ export class TestExtensionContext implements vscode.ExtensionContext {
   }
 
   storagePath: string | undefined;
-  globalStoragePath: string;
-  logPath: string;
+  globalStoragePath!: string;
+  logPath!: string;
 }
 
 export function rndName(): string {

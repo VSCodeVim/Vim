@@ -66,7 +66,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   private static readonly logger = Logger.get('ModeHandler');
 
   // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
-  private _currentMode: Mode;
+  private _currentMode!: Mode;
 
   get currentMode(): Mode {
     return this._currentMode;

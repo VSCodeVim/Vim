@@ -10,13 +10,13 @@ import { configuration } from './configuration';
 import { Logger } from '../util/logger';
 
 export class VimrcImpl {
-  private _vimrcPath: string;
+  private _vimrcPath?: string;
   private static readonly logger = Logger.get('VimRC');
 
   /**
    * Fully resolved path to the user's .vimrc
    */
-  public get vimrcPath(): string {
+  public get vimrcPath(): string | undefined {
     return this._vimrcPath;
   }
 

@@ -39,12 +39,12 @@ export abstract class BaseAction {
   /**
    * Modes that this action can be run in.
    */
-  public abstract modes: Mode[];
+  public abstract readonly modes: readonly Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public keys: string[] | string[][];
+  public abstract readonly keys: readonly string[] | readonly string[][];
 
   public mustBeFirstKey = false;
 
@@ -99,7 +99,10 @@ export abstract class BaseAction {
     return true;
   }
 
-  public static CompareKeypressSequence(one: string[] | string[][], two: string[]): boolean {
+  public static CompareKeypressSequence(
+    one: readonly string[] | readonly string[][],
+    two: readonly string[]
+  ): boolean {
     if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
         if (BaseAction.CompareKeypressSequence(sequence, two)) {
@@ -166,7 +169,7 @@ export abstract class BaseAction {
     return this.keys.join('');
   }
 
-  private static is2DArray<T>(x: T[] | T[][]): x is T[][] {
+  private static is2DArray<T>(x: readonly T[] | readonly T[][]): x is readonly T[][] {
     return Array.isArray(x[0]);
   }
 }
