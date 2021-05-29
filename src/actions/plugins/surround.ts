@@ -104,7 +104,7 @@ class YankSurroundOperator extends SurroundOperator {
       // for special handling for w motion.
       // with "|surroundme ZONK" it will jump to Z, but we just want surroundme
       const endPlus1 = new Range(end.getRight(), end.getRight());
-      const prevWordEnd = end.prevWordEnd(vimState.document);
+      const prevWordEnd = end.getRight().prevWordEnd(vimState.document);
       const endW = new Range(prevWordEnd.getRight(), prevWordEnd.getRight());
       const lastMotion =
         vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
