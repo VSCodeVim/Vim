@@ -1,8 +1,6 @@
-import * as vscode from 'vscode';
-import { Position } from 'vscode';
-
+import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
+import { RecordedState } from '../state/recordedState';
 import { PositionDiff } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 
 /**
  * This file contains definitions of objects that represent text
@@ -195,10 +193,11 @@ export interface ShowSearchHistory {
 }
 
 /**
- * Represents pressing '.'
+ * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
-  type: 'dot';
+  type: 'replayRecordedState';
+  recordedState: RecordedState;
 }
 
 /**
@@ -241,7 +240,7 @@ export interface Macro {
  */
 export interface ContentChangeTransformation {
   type: 'contentChange';
-  changes: vscode.TextDocumentContentChangeEvent[];
+  changes: TextDocumentContentChangeEvent[];
   diff: PositionDiff;
 }
 
@@ -328,7 +327,8 @@ export function overlappingTransformations(
         continue;
       }
 
-      if (firstRange.overlaps(secondRange)) {
+      const intersection = firstRange.intersection(secondRange);
+      if (intersection && !intersection.start.isEqual(intersection.end)) {
         return [first, second];
       }
     }
@@ -346,3 +346,13 @@ export const areAllSameTransformation = (transformations: Transformation[]): boo
     });
   });
 };
+
+export function stringify(transformation: Transformation): string {
+  if (transformation.type === 'replayRecordedState') {
+    return `Replay: ${transformation.recordedState.actionsRun
+      .map((x) => x.keysPressed.join(''))
+      .join('')}`;
+  } else {
+    return JSON.stringify(transformation);
+  }
+}

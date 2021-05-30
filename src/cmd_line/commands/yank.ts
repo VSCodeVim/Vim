@@ -19,30 +19,26 @@ export class YankCommand extends CommandBase {
     return new YankCommand(scanner.isAtEof ? undefined : scanner.nextWord());
   }
 
-  async execute(vimState: VimState): Promise<void> {
+  private async yank(vimState: VimState, start: Position, end: Position) {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     if (this.register) {
       vimState.recordedState.registerName = this.register;
     }
 
-    await new YankOperator().run(
-      vimState,
-      vimState.cursorStartPosition.getLineBegin(),
-      vimState.cursorStopPosition.getLineEnd()
-    );
+    const cursorPosition = vimState.cursorStopPosition;
+
+    await new YankOperator().run(vimState, start.getLineBegin(), end.getLineEnd());
+
+    // YankOperator moves the cursor - undo that
+    vimState.cursorStopPosition = cursorPosition;
+  }
+
+  async execute(vimState: VimState): Promise<void> {
+    await this.yank(vimState, vimState.cursorStartPosition, vimState.cursorStopPosition);
   }
 
   async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-    if (this.register) {
-      vimState.recordedState.registerName = this.register;
-    }
-
     const [start, end] = range.resolve(vimState);
-    await new YankOperator().run(
-      vimState,
-      new Position(start, 0),
-      new Position(end, 0).getLineEnd()
-    );
+    await this.yank(vimState, new Position(start, 0), new Position(end, 0));
   }
 }

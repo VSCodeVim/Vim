@@ -3,7 +3,7 @@ import { window, QuickPickItem } from 'vscode';
 import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { IMark } from '../../history/historyTracker';
-import { Range } from '../../common/motion/range';
+import { Cursor } from '../../common/motion/cursor';
 import { StatusBar } from '../../statusBar';
 import { ErrorCode, VimError } from '../../error';
 
@@ -45,7 +45,7 @@ export class MarksCommand extends node.CommandBase {
         canPickMany: false,
       });
       if (item) {
-        vimState.cursors = [new Range(item.mark.position, item.mark.position)];
+        vimState.cursors = [new Cursor(item.mark.position, item.mark.position)];
       }
     } else {
       window.showInformationMessage('No marks set');

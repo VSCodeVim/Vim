@@ -11,7 +11,6 @@ import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { Position } from 'vscode';
-import { Range } from '../../common/motion/range';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -186,7 +185,7 @@ export class SubstituteCommand extends node.CommandBase {
           vimState.recordedState.transformer.addTransformation({
             type: 'replaceText',
             text: newContent,
-            range: new Range(new Position(line, 0), new Position(line, rangeEnd)),
+            range: new vscode.Range(new Position(line, 0), new Position(line, rangeEnd)),
             cursorIndex: 0,
           });
 
@@ -205,7 +204,7 @@ export class SubstituteCommand extends node.CommandBase {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: newContent,
-        range: new Range(new Position(line, 0), new Position(line, originalContent.length)),
+        range: new vscode.Range(new Position(line, 0), new Position(line, originalContent.length)),
         // move cursor to BOL
         diff: new Position(line, 0).subtract(new Position(line, newContent.length)),
         cursorIndex: 0,
