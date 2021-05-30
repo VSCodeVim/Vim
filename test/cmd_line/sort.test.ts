@@ -78,4 +78,11 @@ suite.only(':sort', () => {
     keysPressed: ':sort u\n',
     end: ['|Banana', 'Eggplant', 'apple', 'cabbage', 'dragonfruit'],
   });
+
+  newTest({
+    title: 'Sort whole file, ascending, ignore case, unique',
+    start: ['Eggplant', 'Apple', 'banana', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage', 'apple'],
+    keysPressed: ':sort iu\n',
+    end: ['|Apple', 'banana', 'cabbage', 'dragonfruit', 'Eggplant'],
+  });
 });

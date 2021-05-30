@@ -42,8 +42,18 @@ export class SortCommand extends node.CommandBase {
     ) {
       originalLines.push(vimState.document.lineAt(currentLine).text);
     }
+
     if (this.arguments.unique) {
-      originalLines = [...new Set(originalLines)];
+      const seen = new Set<string>();
+      const uniqueLines: string[] = [];
+      for (const line of originalLines) {
+        const adjustedLine = this.arguments.ignoreCase ? line.toLowerCase() : line;
+        if (!seen.has(adjustedLine)) {
+          seen.add(adjustedLine);
+          uniqueLines.push(line);
+        }
+      }
+      originalLines = uniqueLines;
     }
 
     const lastLineLength = originalLines[originalLines.length - 1].length;
