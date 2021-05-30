@@ -539,7 +539,11 @@ function ExCommand<TBase extends new (...args: any[]) => PutCommand>(Base: TBase
       return RegisterMode.LineWise;
     }
 
-    protected getReplaceRange(mode: Mode, cursor: Cursor, registerMode: RegisterMode): vscode.Range {
+    protected getReplaceRange(
+      mode: Mode,
+      cursor: Cursor,
+      registerMode: RegisterMode
+    ): vscode.Range {
       const line = this.insertLine ?? laterOf(cursor.start, cursor.stop).line;
       const pos = this.putBefore() ? new Position(line, 0) : new Position(line, 0).getLineEnd();
       return new vscode.Range(pos, pos);

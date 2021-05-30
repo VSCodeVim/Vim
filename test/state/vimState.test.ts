@@ -19,7 +19,10 @@ suite('VimState', () => {
     await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
-    const initialCursors = [new Cursor(cursorStart, cursorStop), new Cursor(cursorStart, cursorStop)];
+    const initialCursors = [
+      new Cursor(cursorStart, cursorStop),
+      new Cursor(cursorStart, cursorStop),
+    ];
 
     // test
     vimState.cursors = initialCursors;
