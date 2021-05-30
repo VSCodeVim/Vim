@@ -7,7 +7,7 @@ import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
-import { Range } from './../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
@@ -159,18 +159,18 @@ export class VimState implements vscode.Disposable {
   /**
    * The position of every cursor. Will never be empty.
    */
-  private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
+  private _cursors: Cursor[] = [new Cursor(new Position(0, 0), new Position(0, 0))];
 
-  public get cursors(): Range[] {
+  public get cursors(): Cursor[] {
     return this._cursors;
   }
-  public set cursors(value: Range[]) {
+  public set cursors(value: Cursor[]) {
     if (value.length === 0) {
       VimState.logger.warn('Tried to set VimState.cursors to an empty array');
       return;
     }
 
-    const map = new Map<string, Range>();
+    const map = new Map<string, Cursor>();
     for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
         VimState.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
@@ -187,11 +187,11 @@ export class VimState implements vscode.Disposable {
   /**
    * Initial state of cursors prior to any action being performed
    */
-  private _cursorsInitialState!: Range[];
-  public get cursorsInitialState(): Range[] {
+  private _cursorsInitialState!: Cursor[];
+  public get cursorsInitialState(): Cursor[] {
     return this._cursorsInitialState;
   }
-  public set cursorsInitialState(cursors: Range[]) {
+  public set cursorsInitialState(cursors: Cursor[]) {
     this._cursorsInitialState = [...cursors];
   }
 

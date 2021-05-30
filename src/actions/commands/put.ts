@@ -11,7 +11,7 @@ import { reportLinesChanged } from '../../util/statusBarTextUtils';
 import { BaseCommand, RegisterAction } from '../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
-import { Range } from '../../common/motion/range';
+import { Cursor } from '../../common/motion/cursor';
 import { Transformation } from '../../transformations/transformations';
 
 function firstNonBlankChar(text: string): number {
@@ -276,7 +276,7 @@ abstract class BasePutCommand extends BaseCommand {
 
   protected abstract getReplaceRange(
     mode: Mode,
-    cursor: Range,
+    cursor: Cursor,
     registerMode: RegisterMode
   ): vscode.Range;
 
@@ -306,7 +306,7 @@ class PutCommand extends BasePutCommand {
     return register.registerMode;
   }
 
-  protected getReplaceRange(mode: Mode, cursor: Range, registerMode: RegisterMode): vscode.Range {
+  protected getReplaceRange(mode: Mode, cursor: Cursor, registerMode: RegisterMode): vscode.Range {
     if (mode === Mode.Normal) {
       let pos: Position;
       if (registerMode === RegisterMode.CharacterWise || registerMode === RegisterMode.BlockWise) {
@@ -394,7 +394,7 @@ class PutBeforeCommand extends PutCommand {
     return super.adjustLinewiseRegisterText(mode, text);
   }
 
-  protected getReplaceRange(mode: Mode, cursor: Range, registerMode: RegisterMode): vscode.Range {
+  protected getReplaceRange(mode: Mode, cursor: Cursor, registerMode: RegisterMode): vscode.Range {
     if (mode === Mode.Normal) {
       if (registerMode === RegisterMode.CharacterWise || registerMode === RegisterMode.BlockWise) {
         const pos = cursor.stop;
@@ -539,7 +539,7 @@ function ExCommand<TBase extends new (...args: any[]) => PutCommand>(Base: TBase
       return RegisterMode.LineWise;
     }
 
-    protected getReplaceRange(mode: Mode, cursor: Range, registerMode: RegisterMode): vscode.Range {
+    protected getReplaceRange(mode: Mode, cursor: Cursor, registerMode: RegisterMode): vscode.Range {
       const line = this.insertLine ?? laterOf(cursor.start, cursor.stop).line;
       const pos = this.putBefore() ? new Position(line, 0) : new Position(line, 0).getLineEnd();
       return new vscode.Range(pos, pos);

@@ -1,5 +1,5 @@
 import { Position } from 'vscode';
-import { Range } from '../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
@@ -230,10 +230,10 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
-    const resultingCursors: Range[] = [];
+    const resultingCursors: Cursor[] = [];
 
     const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Range(x.start, x.stop))
+      .map((x) => new Cursor(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -252,7 +252,7 @@ export abstract class BaseCommand extends BaseAction {
         await this.exec(stop, vimState);
       }
 
-      resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
+      resultingCursors.push(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
       for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {

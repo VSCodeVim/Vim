@@ -14,7 +14,7 @@ import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
-import { Range } from './../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { IBaseAction, RecordedState } from './../state/recordedState';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
@@ -113,7 +113,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       this.vimState.cursors = selections.map(({ active, anchor }) =>
-        active.isBefore(anchor) ? new Range(anchor.getLeft(), active) : new Range(anchor, active)
+        active.isBefore(anchor) ? new Cursor(anchor.getLeft(), active) : new Cursor(anchor, active)
       );
     }
   }
@@ -179,7 +179,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
         (sel) =>
-          new Range(
+          new Cursor(
             // Adjust the cursor positions because cursors & selections don't match exactly
             sel.anchor.isAfter(sel.active) ? sel.anchor.getLeft() : sel.anchor,
             sel.active
@@ -713,7 +713,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // It's not 100% clear to me that this is the correct place to do this, but it should solve a lot of issues
     this.vimState.cursors = this.vimState.cursors.map(
       (c) =>
-        new Range(
+        new Cursor(
           this.vimState.document.validatePosition(c.start),
           this.vimState.document.validatePosition(c.stop)
         )
@@ -867,7 +867,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     if (this.currentMode === Mode.Normal) {
       this.vimState.cursors = this.vimState.cursors.map(
-        (cursor) => new Range(cursor.stop, cursor.stop)
+        (cursor) => new Cursor(cursor.stop, cursor.stop)
       );
     }
 
@@ -876,7 +876,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !this.vimState.document.isClosed &&
       this.vimState.editor === vscode.window.activeTextEditor
     ) {
-      this.vimState.cursors = this.vimState.cursors.map((cursor: Range) => {
+      this.vimState.cursors = this.vimState.cursors.map((cursor: Cursor) => {
         // adjust start/stop
         const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.document);
         const documentLineCount = this.vimState.document.lineCount;
@@ -958,7 +958,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       // We also need to update the specific cursor, in case the cursor position was modified inside
       // the handling functions (e.g. 'it')
-      this.vimState.cursors[i] = new Range(
+      this.vimState.cursors[i] = new Cursor(
         this.vimState.cursorStartPosition,
         this.vimState.cursorStopPosition
       );
@@ -981,7 +981,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (result.removed) {
           cursorsToRemove.push(i);
         } else {
-          this.vimState.cursors[i] = new Range(result.start, result.stop);
+          this.vimState.cursors[i] = new Cursor(result.start, result.stop);
         }
 
         if (result.registerMode) {
@@ -1029,7 +1029,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const startingMode = this.vimState.currentMode;
     const startingRegisterMode = this.vimState.currentRegisterMode;
 
-    const resultingCursors: Range[] = [];
+    const resultingCursors: Cursor[] = [];
     for (let [i, { start, stop }] of this.vimState.cursors.entries()) {
       operator.multicursorIndex = i;
 
@@ -1067,12 +1067,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
 
-      const resultingRange = new Range(
+      const resultingCursor = new Cursor(
         this.vimState.cursorStartPosition,
         this.vimState.cursorStopPosition
       );
 
-      resultingCursors.push(resultingRange);
+      resultingCursors.push(resultingCursor);
     }
 
     if (this.vimState.recordedState.transformer.transformations.length > 0) {
@@ -1336,7 +1336,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       const isLastCursorTracked =
         this.vimState.recordedState.getLastActionRun() instanceof ActionOverrideCmdD;
 
-      let cursorToTrack: Range;
+      let cursorToTrack: Cursor;
       if (isLastCursorTracked) {
         cursorToTrack = this.vimState.cursors[this.vimState.cursors.length - 1];
       } else {

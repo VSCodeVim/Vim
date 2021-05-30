@@ -19,7 +19,7 @@ import { globalState } from '../state/globalState';
 import { RecordedState } from '../state/recordedState';
 import { TextEditor } from '../textEditor';
 import { reportSearch } from '../util/statusBarTextUtils';
-import { Range } from '../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { Position } from 'vscode';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
@@ -151,7 +151,7 @@ export async function executeTransformations(
     switch (transformation.type) {
       case 'insertTextVSCode':
         await TextEditor.insert(vimState.editor, transformation.text);
-        vimState.cursors[0] = Range.FromVSCodeSelection(vimState.editor.selection);
+        vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
         break;
 
       case 'showCommandHistory':
@@ -276,7 +276,7 @@ export async function executeTransformations(
   }
 
   const selections = vimState.editor.selections.map((sel) => {
-    let range = Range.FromVSCodeSelection(sel);
+    let range = Cursor.FromVSCodeSelection(sel);
     if (range.start.isBefore(range.stop)) {
       range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
     }
@@ -300,11 +300,11 @@ export async function executeTransformations(
 
       return diffs.reduce(
         (cursor, diff) =>
-          new Range(
+          new Cursor(
             cursor.start.add(vimState.document, diff),
             cursor.stop.add(vimState.document, diff)
           ),
-        Range.FromVSCodeSelection(sel)
+        Cursor.FromVSCodeSelection(sel)
       );
     });
 

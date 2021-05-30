@@ -10,7 +10,7 @@ import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
 import { Tab, TabCommand } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
-import { Range } from './../../common/motion/range';
+import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
@@ -1155,7 +1155,7 @@ export class CommandUndo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      vimState.cursors = newPositions.map((x) => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -1175,7 +1175,7 @@ class CommandUndoOnLine extends BaseCommand {
     const newPositions = await vimState.historyTracker.goBackHistoryStepsOnLine();
 
     if (newPositions !== undefined) {
-      vimState.cursors = newPositions.map((x) => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -1196,7 +1196,7 @@ class CommandRedo extends BaseCommand {
     if (newPositions === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      vimState.cursors = newPositions.map((x) => new Range(x, x));
+      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
     }
 
     vimState.alteredHistory = true;
@@ -1609,7 +1609,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
         vimState.cursors[0].start.line + i,
         vimState.cursors[0].start.character
       );
-      vimState.cursors.push(new Range(newPos, newPos));
+      vimState.cursors.push(new Cursor(newPos, newPos));
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
@@ -1638,7 +1638,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
         vimState.cursorStartPosition.line - i,
         vimState.cursorStartPosition.character
       );
-      vimState.cursors.push(new Range(newPos, newPos));
+      vimState.cursors.push(new Cursor(newPos, newPos));
 
       // Ahhhhhh. We have to manually set cursor position here as we need text
       // transformations AND to set multiple cursors.
@@ -2115,7 +2115,7 @@ class ActionJoin extends BaseCommand {
 
   public async execCount(position: Position, vimState: VimState): Promise<void> {
     const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Range(x.start, x.stop))
+      .map((x) => new Cursor(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -2123,7 +2123,7 @@ class ActionJoin extends BaseCommand {
           : -1
       );
 
-    const resultingCursors: Range[] = [];
+    const resultingCursors: Cursor[] = [];
     for (const [idx, { start, stop }] of cursorsToIterateOver.entries()) {
       this.multicursorIndex = idx;
 
@@ -2132,7 +2132,7 @@ class ActionJoin extends BaseCommand {
 
       await this.execJoinLines(start, stop, vimState, vimState.recordedState.count || 1);
 
-      resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
+      resultingCursors.push(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
       for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
@@ -2409,7 +2409,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       vimState.cursorStopPosition,
       vimState.cursorStartPosition
     );
-    vimState.cursors = [new Range(topLeft, topLeft)];
+    vimState.cursors = [new Cursor(topLeft, topLeft)];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -2444,7 +2444,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
       vimState.cursorStartPosition
     );
 
-    vimState.cursors = [new Range(topLeft, topLeft)];
+    vimState.cursors = [new Cursor(topLeft, topLeft)];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -2472,7 +2472,7 @@ class ActionShiftDVisualBlock extends BaseCommand {
       vimState.cursorStartPosition
     );
 
-    vimState.cursors = [new Range(topLeft, topLeft)];
+    vimState.cursors = [new Cursor(topLeft, topLeft)];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -2494,7 +2494,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
       if (line === '' && start.character !== 0) {
         continue;
       }
-      vimState.cursors.push(new Range(start, start));
+      vimState.cursors.push(new Cursor(start, start));
     }
     vimState.cursors = vimState.cursors.slice(1);
   }
@@ -2522,7 +2522,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     vimState.isFakeMultiCursor = true;
 
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.cursors.push(new Range(start, start));
+      vimState.cursors.push(new Cursor(start, start));
     }
     vimState.cursors = vimState.cursors.slice(1);
   }
@@ -2537,7 +2537,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const cursors: Range[] = [];
+    const cursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
         vimState.recordedState.transformer.addTransformation({
@@ -2545,7 +2545,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
           range: new vscode.Range(start, start.getLineEnd()),
           collapseRange: true,
         });
-        cursors.push(new Range(end, end));
+        cursors.push(new Cursor(end, end));
       }
     }
     vimState.cursors = cursors;
@@ -2565,15 +2565,15 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
     line: vscode.TextLine,
     selectionStart: Position,
     selectionEnd: Position
-  ): Range;
+  ): Cursor;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
-    const resultingCursors: Range[] = [];
-    const cursorsOnBlankLines: Range[] = [];
+    const resultingCursors: Cursor[] = [];
+    const cursorsOnBlankLines: Cursor[] = [];
     for (const selection of vimState.editor.selections) {
       const { start, end } = selection;
 
@@ -2602,12 +2602,12 @@ class ActionGoToInsertVisualLineMode extends ActionGoToInsertVisualLineModeComma
   modes = [Mode.VisualLine];
   keys = ['I'];
 
-  getCursorRangeForLine(line: vscode.TextLine): Range {
+  getCursorRangeForLine(line: vscode.TextLine): Cursor {
     const startCharacterPosition = new Position(
       line.lineNumber,
       line.firstNonWhitespaceCharacterIndex
     );
-    return new Range(startCharacterPosition, startCharacterPosition);
+    return new Cursor(startCharacterPosition, startCharacterPosition);
   }
 }
 
@@ -2616,9 +2616,9 @@ class ActionGoToInsertVisualLineModeAppend extends ActionGoToInsertVisualLineMod
   modes = [Mode.VisualLine];
   keys = ['A'];
 
-  getCursorRangeForLine(line: vscode.TextLine): Range {
+  getCursorRangeForLine(line: vscode.TextLine): Cursor {
     const endCharacterPosition = new Position(line.lineNumber, line.range.end.character);
-    return new Range(endCharacterPosition, endCharacterPosition);
+    return new Cursor(endCharacterPosition, endCharacterPosition);
   }
 }
 
@@ -2631,12 +2631,12 @@ class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCommand {
     line: vscode.TextLine,
     selectionStart: Position,
     selectionEnd: Position
-  ): Range {
+  ): Cursor {
     const startCharacterPosition =
       line.lineNumber === selectionStart.line
         ? selectionStart
         : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
-    return new Range(startCharacterPosition, startCharacterPosition);
+    return new Cursor(startCharacterPosition, startCharacterPosition);
   }
 }
 
@@ -2649,12 +2649,12 @@ class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLineModeCom
     line: vscode.TextLine,
     selectionStart: Position,
     selectionEnd: Position
-  ): Range {
+  ): Cursor {
     const endCharacterPosition =
       line.lineNumber === selectionEnd.line
         ? selectionEnd
         : new Position(line.lineNumber, line.range.end.character);
-    return new Range(endCharacterPosition, endCharacterPosition);
+    return new Cursor(endCharacterPosition, endCharacterPosition);
   }
 }
 
@@ -2667,7 +2667,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const newCursors: Range[] = [];
+    const newCursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
       const [start, end] = sorted(cursor.start, cursor.stop);
       for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
@@ -2685,7 +2685,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
           );
         }
         const newCursor = new Position(lineNum, insertionColumn);
-        newCursors.push(new Range(newCursor, newCursor));
+        newCursors.push(new Cursor(newCursor, newCursor));
       }
     }
 
@@ -2913,31 +2913,31 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   /**
    * @returns a list of Ranges in which to search for numbers
    */
-  private getSearchRanges(vimState: VimState): Range[] {
-    const ranges: Range[] = [];
+  private getSearchRanges(vimState: VimState): Cursor[] {
+    const ranges: Cursor[] = [];
     const [start, stop] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     switch (vimState.currentMode) {
       case Mode.Normal: {
         ranges.push(
-          new Range(vimState.cursorStopPosition, vimState.cursorStopPosition.getLineEnd())
+          new Cursor(vimState.cursorStopPosition, vimState.cursorStopPosition.getLineEnd())
         );
         break;
       }
 
       case Mode.Visual: {
-        ranges.push(new Range(start, start.getLineEnd()));
+        ranges.push(new Cursor(start, start.getLineEnd()));
         for (let line = start.line + 1; line < stop.line; line++) {
           const lineStart = new Position(line, 0);
-          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+          ranges.push(new Cursor(lineStart, lineStart.getLineEnd()));
         }
-        ranges.push(new Range(stop.getLineBegin(), stop));
+        ranges.push(new Cursor(stop.getLineBegin(), stop));
         break;
       }
 
       case Mode.VisualLine: {
         for (let line = start.line; line <= stop.line; line++) {
           const lineStart = new Position(line, 0);
-          ranges.push(new Range(lineStart, lineStart.getLineEnd()));
+          ranges.push(new Cursor(lineStart, lineStart.getLineEnd()));
         }
         break;
       }
@@ -2947,7 +2947,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         const bottomRight = visualBlockGetBottomRightPosition(start, stop);
         for (let line = topLeft.line; line <= bottomRight.line; line++) {
           ranges.push(
-            new Range(
+            new Cursor(
               new Position(line, topLeft.character),
               new Position(line, bottomRight.character)
             )
