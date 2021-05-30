@@ -1,14 +1,13 @@
-import * as vscode from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
-import { TextEditor } from '../../textEditor';
 import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
-import { Position, TextDocument } from 'vscode';
+import { Position, Range } from 'vscode';
+import { PositionDiff } from '../../common/motion/position';
 
 @RegisterAction
 class ReplaceOperator extends BaseOperator {
@@ -26,8 +25,9 @@ class ReplaceOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range =
       vimState.currentRegisterMode === RegisterMode.LineWise
-        ? new vscode.Range(start.getLineBegin(), end.getLineEndIncludingEOL())
-        : new vscode.Range(start, end.getRight());
+        ? new Range(start.getLineBegin(), end.getLineEndIncludingEOL())
+        : new Range(start, end.getRight());
+
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
@@ -35,17 +35,19 @@ class ReplaceOperator extends BaseOperator {
     }
 
     const replaceWith = register.text as string;
-    await TextEditor.replace(vimState.editor, range, replaceWith);
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      range,
+      text: replaceWith,
+      diff: PositionDiff.exactPosition(getCursorPosition(vimState, range, replaceWith)),
+    });
+
     await vimState.setCurrentMode(Mode.Normal);
-    updateCursorPosition(vimState, range, replaceWith);
   }
 }
 
-const updateCursorPosition = (
-  vimState: VimState,
-  range: vscode.Range,
-  replaceWith: string
-): void => {
+const getCursorPosition = (vimState: VimState, range: Range, replaceWith: string): Position => {
   const {
     recordedState: { actionKeys },
   } = vimState;
@@ -54,16 +56,13 @@ const updateCursorPosition = (
   const registerAndRangeAreSingleLines = lines.length === 1 && range.isSingleLine;
   const singleLineAction = registerAndRangeAreSingleLines && !wasRunAsLineAction;
 
-  const cursorPosition = singleLineAction
+  return singleLineAction
     ? cursorAtEndOfReplacement(range, replaceWith)
-    : cursorAtFirstNonBlankCharOfLine(vimState.document, range);
-
-  vimState.cursorStopPosition = cursorPosition;
-  vimState.cursorStartPosition = cursorPosition;
+    : cursorAtFirstNonBlankCharOfLine(range.start.line, lines[0]);
 };
 
-const cursorAtEndOfReplacement = (range: vscode.Range, replacement: string) =>
+const cursorAtEndOfReplacement = (range: Range, replacement: string) =>
   new Position(range.start.line, Math.max(0, range.start.character + replacement.length - 1));
 
-const cursorAtFirstNonBlankCharOfLine = (document: TextDocument, range: vscode.Range) =>
-  TextEditor.getFirstNonWhitespaceCharOnLine(document, range.start.line);
+const cursorAtFirstNonBlankCharOfLine = (line: number, text: string) =>
+  new Position(line, text.match(/\S/)?.index ?? 0);
