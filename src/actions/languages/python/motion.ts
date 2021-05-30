@@ -204,9 +204,9 @@ type Direction = 'next' | 'prev';
 
 // Uses the specified findFunction to execute the motion coupled to the shortcut (keys)
 abstract class BasePythonMovement extends BaseMovement {
-  type: Type;
-  direction: Direction;
-  edge: Edge;
+  abstract type: Type;
+  abstract direction: Direction;
+  abstract edge: Edge;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const document = vimState.document;
