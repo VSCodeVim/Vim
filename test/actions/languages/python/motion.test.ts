@@ -144,8 +144,8 @@ suite('PythonDocument parse lines to extract structure', () => {
 suite('PythonDocument.isAhead and isBehind', () => {
   test('element is ahead of position', () => {
     // GIVEN
-    const position = { line: 3, character: 7 };
-    const elementPosition = { line: 4, character: 0 };
+    const position = { line: 3, character: 7 } as Position;
+    const elementPosition = { line: 4, character: 0 } as Position;
 
     // WHEN
     const ahead = PythonDocument.isAhead(position, elementPosition);
@@ -158,8 +158,8 @@ suite('PythonDocument.isAhead and isBehind', () => {
 
   test('element is not ahead of position', () => {
     // GIVEN
-    const position = { line: 4, character: 0 };
-    const elementPosition = { line: 3, character: 7 };
+    const position = { line: 4, character: 0 } as Position;
+    const elementPosition = { line: 3, character: 7 } as Position;
 
     // WHEN
     const ahead = PythonDocument.isAhead(position, elementPosition);
@@ -172,7 +172,7 @@ suite('PythonDocument.isAhead and isBehind', () => {
 
   test('element and position are co-located so element is not ahead of position', () => {
     // GIVEN
-    const position = { line: 3, character: 7 };
+    const position = { line: 3, character: 7 } as Position;
     const elementPosition = position;
 
     // WHEN

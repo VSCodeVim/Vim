@@ -9,15 +9,10 @@ interface LineInfo {
   text: string;
 }
 
-interface MinimalPosition {
-  line: number;
-  character: number;
-}
-
 interface StructureElement {
   type: 'function' | 'class';
-  start: MinimalPosition;
-  end: MinimalPosition;
+  start: Position;
+  end: Position;
 }
 
 /*
@@ -111,11 +106,11 @@ export class PythonDocument {
           start: {
             line: info.line,
             character: info.indentation,
-          },
+          } as Position,
           end: {
             line: endLine.line,
             character: endLine.text.search(/(?<=\S)\s*$/) - 1, // Calculate position of last non-white character
-          },
+          } as Position,
         });
       }
     }
@@ -127,7 +122,7 @@ export class PythonDocument {
    * Filter function that returns true if an element is strictly ahead (false if equal)
    * of the specified (first arg) position.
    */
-  static isAhead(position: MinimalPosition, elementPosition: MinimalPosition) {
+  static isAhead(position: Position, elementPosition: Position) {
     return (
       elementPosition.line > position.line ||
       (elementPosition.line === position.line && elementPosition.character > position.character)
@@ -138,7 +133,7 @@ export class PythonDocument {
    * Filter function that returns true if an element is strictly behind (false if equal)
    * of the specified (first arg) position.
    */
-  static isBehind(position: MinimalPosition, elementPosition: MinimalPosition) {
+  static isBehind(position: Position, elementPosition: Position) {
     return (
       elementPosition.line < position.line ||
       (elementPosition.line === position.line && elementPosition.character < position.character)
