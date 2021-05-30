@@ -2855,7 +2855,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
           // Use suffix offset to check if current cursor is in or before detected number.
           if (position.character < start.character + suffixOffset) {
             const pos = await this.replaceNum(
-              vimState.editor,
+              vimState,
               num,
               this.offset * stepNum * (vimState.recordedState.count || 1),
               start,
@@ -2867,9 +2867,10 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
             }
 
             if (vimState.currentMode === Mode.Normal) {
-              vimState.cursorStartPosition = vimState.cursorStopPosition = pos.getLeft(
-                num.suffix.length
-              );
+              vimState.recordedState.transformer.addTransformation({
+                type: 'moveCursor',
+                diff: PositionDiff.exactPosition(pos.getLeft(num.suffix.length)),
+              });
             }
             break wordLoop;
           } else {
@@ -2882,14 +2883,17 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
     }
 
     if (isVisualMode(vimState.currentMode)) {
-      vimState.cursorStopPosition = ranges[0].start;
+      vimState.recordedState.transformer.addTransformation({
+        type: 'moveCursor',
+        diff: PositionDiff.exactPosition(ranges[0].start),
+      });
     }
 
     vimState.setCurrentMode(Mode.Normal);
   }
 
   private async replaceNum(
-    editor: vscode.TextEditor,
+    vimState: VimState,
     start: NumericString,
     offset: number,
     startPos: Position,
@@ -2901,7 +2905,11 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    await TextEditor.replace(editor, range, newNum);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      range,
+      text: newNum,
+    });
     if (oldLength !== newNum.length) {
       // Adjust end position according to difference in width of number-string
       endPos = new Position(endPos.line, startPos.character + newNum.length - 1);

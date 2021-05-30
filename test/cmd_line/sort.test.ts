@@ -4,7 +4,7 @@ import { VimState } from '../../src/state/vimState';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
-suite.only(':sort', () => {
+suite(':sort', () => {
   let modeHandler: ModeHandler;
   let vimState: VimState;
 
