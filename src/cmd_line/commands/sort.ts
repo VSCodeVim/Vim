@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
+import { PositionDiff } from '../../common/motion/position';
 
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
@@ -58,11 +58,14 @@ export class SortCommand extends node.CommandBase {
 
     const sortedContent = sortedLines.join('\n');
 
-    await TextEditor.replace(
-      vimState.editor,
-      new vscode.Range(startLine, 0, endLine, lastLineLength),
-      sortedContent
-    );
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      range: new vscode.Range(startLine, 0, endLine, lastLineLength),
+      text: sortedContent,
+      diff: PositionDiff.exactPosition(
+        new vscode.Position(startLine, sortedLines[0].match(/\S/)?.index ?? 0)
+      ),
+    });
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
