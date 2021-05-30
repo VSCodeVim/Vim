@@ -3,10 +3,7 @@ import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import * as node from '../node';
-import { configuration } from '../../configuration/configuration';
 import { Position } from 'vscode';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
-import { Range } from '../../common/motion/range';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
@@ -27,10 +24,8 @@ export class DeleteRangeCommand extends node.CommandBase {
   /**
    * Deletes text between `startLine` and `endLine`, inclusive.
    * Puts the cursor at the start of the line where the deleted range was.
-   *
-   * @returns The deleted text, excluding leading/trailing newline
    */
-  async deleteRange(startLine: number, endLine: number, vimState: VimState): Promise<string> {
+  private deleteRange(startLine: number, endLine: number, vimState: VimState): void {
     let start = new Position(startLine, 0);
     let end = new Position(endLine, 0).getLineEndIncludingEOL();
 
@@ -49,30 +44,25 @@ export class DeleteRangeCommand extends node.CommandBase {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       manuallySetCursorPositions: true,
     });
     vimState.cursorStopPosition = start.getLineBegin();
 
-    return text;
+    if (this.arguments.register) {
+      vimState.recordedState.registerName = this.arguments.register;
+    }
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    Register.put(vimState, text, 0, true);
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (!vimState.editor) {
-      return;
-    }
-
     const line = vimState.cursorStopPosition.line;
-    const text = await this.deleteRange(line, line, vimState);
-    const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
-    Register.putByKey(register, text, RegisterMode.LineWise);
+    this.deleteRange(line, line, vimState);
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
-
-    const text = await this.deleteRange(start, end, vimState);
-    const register = this.arguments.register ?? (configuration.useSystemClipboard ? '*' : '"');
-    Register.putByKey(register, text, RegisterMode.LineWise);
+    this.deleteRange(start, end, vimState);
   }
 }

@@ -9,3 +9,5 @@ import './commands/replace';
 import './commands/actions';
 import './commands/commandLine';
 import './commands/search';
+import './commands/put';
+import './commands/digraphs';

@@ -35,6 +35,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['ic', 'ignorecase'],
   ['is', 'incsearch'],
   ['isk', 'iskeyword'],
+  ['js', 'joinspaces'],
   ['mmd', 'maxmapdepth'],
   ['nu', 'number'],
   ['rnu', 'relativenumber'],
@@ -218,6 +219,8 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
+  joinspaces = true;
+
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
   };
@@ -304,10 +307,10 @@ class Configuration implements IConfiguration {
   };
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
-  tabstop: number;
+  tabstop: number = 8;
 
   @overlapSetting({ settingName: 'cursorStyle', defaultValue: 'line' })
-  private editorCursorStyleRaw: string;
+  private editorCursorStyleRaw: string = 'line';
 
   get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
     return this.cursorStyleFromString(this.editorCursorStyleRaw);
@@ -317,7 +320,7 @@ class Configuration implements IConfiguration {
   }
 
   @overlapSetting({ settingName: 'insertSpaces', defaultValue: false })
-  expandtab: boolean;
+  expandtab: boolean = false;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -329,7 +332,7 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  number: boolean;
+  number: boolean = true;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -341,13 +344,13 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  relativenumber: boolean;
+  relativenumber: boolean = false;
 
   @overlapSetting({
     settingName: 'wordSeparators',
     defaultValue: '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-',
   })
-  iskeyword: string;
+  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
   @overlapSetting({
     settingName: 'wordWrap',
@@ -359,7 +362,7 @@ class Configuration implements IConfiguration {
       ['bounded', true],
     ]),
   })
-  wrap: boolean;
+  wrap: boolean = false;
 
   boundKeyCombinations: IKeyBinding[] = [];
 
@@ -434,11 +437,11 @@ class Configuration implements IConfiguration {
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
-  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
 
   private static unproxify(obj: object): object {
     const result = {};

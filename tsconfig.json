@@ -10,7 +10,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
     "strict": true,
-    "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {

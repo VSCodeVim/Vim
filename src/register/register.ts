@@ -55,9 +55,16 @@ export class Register {
   private static registers: Map<string, IRegisterContent[]>;
 
   /**
-   * Puts content in a register. If none is specified, uses the default register ".
+   * Puts given content in the currently selected register, using the current RegisterMode.
+   *
+   * @param copyToUnnamed: If true, set the unnamed register (") as well
    */
-  public static put(vimState: VimState, content: RegisterContent, multicursorIndex?: number): void {
+  public static put(
+    vimState: VimState,
+    content: RegisterContent,
+    multicursorIndex?: number,
+    copyToUnnamed?: boolean
+  ): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -72,6 +79,10 @@ export class Register {
       Register.appendToRegister(vimState, register.toLowerCase(), content, multicursorIndex ?? 0);
     } else {
       Register.overwriteRegister(vimState, register, content, multicursorIndex ?? 0);
+    }
+
+    if (copyToUnnamed && register !== '"') {
+      Register.registers.set('"', Register.registers.get(register)!);
     }
   }
 
@@ -184,6 +195,7 @@ export class Register {
     }
   }
 
+  /** @deprecated Currently used only by tests */
   public static putByKey(
     register: string,
     content: RegisterContent,
@@ -298,14 +310,17 @@ export class Register {
     const contentByCursor = Register.registers.get(register);
 
     if (Register.isClipboardRegister(register)) {
-      /* Read from system clipboard */
-      const registerContent = {
-        text: (await Clipboard.Paste()).replace(/\r\n/g, '\n'),
-        registerMode:
-          contentByCursor?.[multicursorIndex]?.registerMode ?? RegisterMode.CharacterWise,
-      };
-      Register.registers.set(register, [registerContent]);
-      return registerContent;
+      const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
+      const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
+      if (currentRegisterContent !== clipboardContent) {
+        // System clipboard seems to have changed
+        const registerContent = {
+          text: clipboardContent,
+          registerMode: RegisterMode.CharacterWise,
+        };
+        Register.registers.set(register, [registerContent]);
+        return registerContent;
+      }
     }
 
     // Default to the first cursor.

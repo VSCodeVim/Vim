@@ -19,7 +19,7 @@ suite('historyTracker unit tests', () => {
   const retrieveFileMark = (markName: string): IMark | undefined =>
     historyTracker.getGlobalMarks().find((mark) => mark.name === markName);
 
-  const setupVimState = () => (sandbox.createStubInstance(VimState) as unknown) as VimState;
+  const setupVimState = () => sandbox.createStubInstance(VimState) as unknown as VimState;
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
@@ -179,11 +179,11 @@ suite('historyTracker unit tests', () => {
 
 // tslint:disable: no-empty
 class TextEditorStub implements vscode.TextEditor {
-  readonly document: vscode.TextDocument;
-  selection: vscode.Selection;
-  selections: vscode.Selection[];
-  readonly visibleRanges: vscode.Range[];
-  options: vscode.TextEditorOptions;
+  readonly document!: vscode.TextDocument;
+  selection!: vscode.Selection;
+  selections!: vscode.Selection[];
+  readonly visibleRanges!: vscode.Range[];
+  options!: vscode.TextEditorOptions;
   viewColumn?: vscode.ViewColumn;
 
   constructor() {}

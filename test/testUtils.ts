@@ -38,8 +38,8 @@ export class TestExtensionContext implements vscode.ExtensionContext {
   }
 
   storagePath: string | undefined;
-  globalStoragePath: string;
-  logPath: string;
+  globalStoragePath!: string;
+  logPath!: string;
 }
 
 export function rndName(): string {
@@ -179,7 +179,8 @@ export async function cleanUpWorkspace(): Promise<void> {
 }
 
 export async function reloadConfiguration() {
-  const validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  const validatorResults =
+    (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
   for (const validatorResult of validatorResults.get()) {
     console.log(validatorResult);
   }

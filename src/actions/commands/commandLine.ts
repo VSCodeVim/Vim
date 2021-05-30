@@ -94,11 +94,12 @@ class CommandTabInCommandline extends BaseCommand {
       const currentUri = vimState.document.uri;
       const isRemote = !!vscode.env.remoteName;
 
-      const { fullDirPath, baseName, partialPath, path: p } = getPathDetails(
-        filePathInCmd,
-        currentUri,
-        isRemote
-      );
+      const {
+        fullDirPath,
+        baseName,
+        partialPath,
+        path: p,
+      } = getPathDetails(filePathInCmd, currentUri, isRemote);
       // Update the evalCmd in case of windows, where we change / to \
       evalCmd = evalCmd.slice(0, fileRegex.lastIndex) + partialPath;
 
@@ -578,6 +579,10 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!Register.isValidRegister(this.keysPressed[1])) {
+      return;
+    }
+
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
@@ -618,6 +623,10 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
+      return;
+    }
+
+    if (!Register.isValidRegister(this.keysPressed[1])) {
       return;
     }
 

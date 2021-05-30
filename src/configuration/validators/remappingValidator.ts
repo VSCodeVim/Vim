@@ -3,9 +3,10 @@ import { IConfiguration, IKeyRemapping } from '../iconfiguration';
 import { Notation } from '../notation';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { configurationValidator } from '../configurationValidator';
+import { PluginDefaultMappings } from '../../actions/plugins/pluginDefaultMappings';
 
 export class RemappingValidator implements IConfigurationValidator {
-  private commandMap: Map<string, boolean>;
+  private commandMap!: Map<string, boolean>;
 
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
@@ -23,6 +24,16 @@ export class RemappingValidator implements IConfigurationValidator {
     ];
     for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
       const keybindings = config[modeKeyBindingsKey];
+      // add default mappings for activated plugins
+      // because we process keybindings backwards in next loop, user mapping will override
+      for (const pluginMapping of PluginDefaultMappings.getPluginDefaultMappings(
+        modeKeyBindingsKey,
+        config
+      )) {
+        // note concat(all mappings) does not work somehow
+        keybindings.push(pluginMapping);
+      }
+
       const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
 
       const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
