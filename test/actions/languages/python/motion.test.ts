@@ -144,8 +144,8 @@ suite('PythonDocument parse lines to extract structure', () => {
 suite('PythonDocument.isAhead and isBehind', () => {
   test('element is ahead of position', () => {
     // GIVEN
-    const position = { line: 3, character: 7 } as Position;
-    const elementPosition = { line: 4, character: 0 } as Position;
+    const position = new Position(3, 7);
+    const elementPosition = new Position(4, 0);
 
     // WHEN
     const ahead = PythonDocument.isAhead(position, elementPosition);
@@ -158,8 +158,8 @@ suite('PythonDocument.isAhead and isBehind', () => {
 
   test('element is not ahead of position', () => {
     // GIVEN
-    const position = { line: 4, character: 0 } as Position;
-    const elementPosition = { line: 3, character: 7 } as Position;
+    const position = new Position(4, 0);
+    const elementPosition = new Position(3, 7);
 
     // WHEN
     const ahead = PythonDocument.isAhead(position, elementPosition);
@@ -172,7 +172,7 @@ suite('PythonDocument.isAhead and isBehind', () => {
 
   test('element and position are co-located so element is not ahead of position', () => {
     // GIVEN
-    const position = { line: 3, character: 7 } as Position;
+    const position = new Position(3, 7);
     const elementPosition = position;
 
     // WHEN
@@ -309,7 +309,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFunctionStart, start of file', () => {
     // GIVEN
-    const position = { line: 0, character: 0 } as Position;
+    const position = new Position(0, 0);
 
     // WHEN
     const newPosition = findNextFunctionStart(position);
@@ -323,7 +323,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFunctionStart, past outer function', () => {
     // GIVEN
-    const position = { line: 8, character: 2 } as Position;
+    const position = new Position(8, 2);
 
     // WHEN
     const newPosition = findNextFunctionStart(position);
@@ -337,7 +337,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('Invalid findNextFunctionStart, past last function', () => {
     // GIVEN
-    const position = { line: 10, character: 6 } as Position;
+    const position = new Position(10, 6);
 
     // WHEN
     const newPosition = findNextFunctionStart(position);
@@ -348,7 +348,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionStart, middle of function', () => {
     // GIVEN
-    const position = { line: 3, character: 8 } as Position;
+    const position = new Position(3, 8);
 
     // WHEN
     const newPosition = findPrevFunctionStart(position);
@@ -362,7 +362,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionStart, start of inner function', () => {
     // GIVEN
-    const position = { line: 10, character: 4 } as Position;
+    const position = new Position(10, 4);
 
     // WHEN
     const newPosition = findPrevFunctionStart(position);
@@ -376,7 +376,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionStart, start of second function', () => {
     // GIVEN
-    const position = { line: 8, character: 0 } as Position;
+    const position = new Position(8, 0);
 
     // WHEN
     const newPosition = findPrevFunctionStart(position);
@@ -390,7 +390,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('invalid findPrevFunctionStart, above first function', () => {
     // GIVEN
-    const position = { line: 0, character: 7 } as Position;
+    const position = new Position(0, 7);
 
     // WHEN
     const newPosition = findPrevFunctionStart(position);
@@ -401,7 +401,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('Invalid findNextFunctionEnd, past last indented block', () => {
     // GIVEN
-    const position = { line: 13, character: 2 } as Position;
+    const position = new Position(13, 2);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -412,7 +412,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFuntionEnd, inside inner function', () => {
     // GIVEN
-    const position = { line: 10, character: 10 } as Position;
+    const position = new Position(10, 10);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -426,7 +426,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFuntionEnd, from inside outer function', () => {
     // GIVEN
-    const position = { line: 9, character: 0 } as Position;
+    const position = new Position(9, 0);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -440,7 +440,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFunctionEnd, from start of function', () => {
     // GIVEN
-    const position = { line: 2, character: 0 } as Position;
+    const position = new Position(2, 0);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -454,7 +454,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFunctionEnd, in middle from outside any function', () => {
     // GIVEN
-    const position = { line: 6, character: 2 } as Position;
+    const position = new Position(6, 2);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -468,7 +468,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findNextFunctionEnd, at exact end of first function', () => {
     // GIVEN
-    const position = { line: 4, character: 7 } as Position;
+    const position = new Position(4, 7);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -482,7 +482,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionEnd, after first function, outside any function', () => {
     // GIVEN
-    const position = { line: 6, character: 2 } as Position;
+    const position = new Position(6, 2);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -496,7 +496,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionEnd, inside second function', () => {
     // GIVEN
-    const position = { line: 9, character: 0 } as Position;
+    const position = new Position(9, 0);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -510,7 +510,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionEnd, inside second function-s inner function', () => {
     // GIVEN
-    const position = { line: 10, character: 7 } as Position;
+    const position = new Position(10, 7);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -524,7 +524,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('valid findPrevFunctionEnd, after last function', () => {
     // GIVEN
-    const position = { line: 13, character: 4 } as Position;
+    const position = new Position(13, 4);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -538,7 +538,7 @@ suite('PythonDocument find function functionality', () => {
 
   test('invalid findPrevFunctionEnd, before first function', () => {
     // GIVEN
-    const position = { line: 1, character: 0 } as Position;
+    const position = new Position(1, 0);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -572,7 +572,7 @@ suite('PythonDocument find function functionality in doc containing class', () =
 
   test('valid findNextFunctionEnd, from within a class that follows a function', () => {
     // GIVEN
-    const position = { line: 4, character: 0 } as Position;
+    const position = new Position(4, 0);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -586,7 +586,7 @@ suite('PythonDocument find function functionality in doc containing class', () =
 
   test('valid findNextFunctionEnd, from inside last function at end of file', () => {
     // GIVEN
-    const position = { line: 8, character: 6 } as Position;
+    const position = new Position(8, 6);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -615,7 +615,7 @@ suite('PythonDocument find function functionality near end of file', () => {
 
   test('valid findNextFunctionEnd, function ends with single empty line after it before file ends', () => {
     // GIVEN
-    const position = { line: 0, character: 6 } as Position;
+    const position = new Position(0, 6);
 
     // WHEN
     const newPosition = findNextFunctionEnd(position);
@@ -650,7 +650,7 @@ suite('findPrevFunctionEnd with nested functions', () => {
 
   test('findPrevFunctoinEnd from after nested function should find outer function-s end', () => {
     // GIVEN
-    const position = { line: 7, character: 4 } as Position;
+    const position = new Position(7, 4);
 
     // WHEN
     const newPosition = findPrevFunctionEnd(position);
@@ -701,7 +701,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassStart, start of file', () => {
     // GIVEN
-    const position = { line: 0, character: 0 } as Position;
+    const position = new Position(0, 0);
 
     // WHEN
     const newPosition = findNextClassStart(position);
@@ -715,7 +715,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassStart, past first class', () => {
     // GIVEN
-    const position = { line: 8, character: 2 } as Position;
+    const position = new Position(8, 2);
 
     // WHEN
     const newPosition = findNextClassStart(position);
@@ -729,7 +729,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassStart, past second outer class', () => {
     // GIVEN
-    const position = { line: 9, character: 3 } as Position;
+    const position = new Position(9, 3);
 
     // WHEN
     const newPosition = findNextClassStart(position);
@@ -743,7 +743,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('Invalid findNextClassStart, past last class', () => {
     // GIVEN
-    const position = { line: 14, character: 6 } as Position;
+    const position = new Position(14, 6);
 
     // WHEN
     const newPosition = findNextClassStart(position);
@@ -754,7 +754,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassStart, end of file', () => {
     // GIVEN
-    const position = { line: 18, character: 0 } as Position;
+    const position = new Position(18, 0);
 
     // WHEN
     const newPosition = findPrevClassStart(position);
@@ -768,7 +768,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassStart, past first class', () => {
     // GIVEN
-    const position = { line: 7, character: 2 } as Position;
+    const position = new Position(7, 2);
 
     // WHEN
     const newPosition = findPrevClassStart(position);
@@ -782,7 +782,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassStart, past second outer class, before inner class', () => {
     // GIVEN
-    const position = { line: 11, character: 8 } as Position;
+    const position = new Position(11, 8);
 
     // WHEN
     const newPosition = findPrevClassStart(position);
@@ -796,7 +796,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('Invalid findPrevClassStart, before first class', () => {
     // GIVEN
-    const position = { line: 0, character: 6 } as Position;
+    const position = new Position(0, 6);
 
     // WHEN
     const newPosition = findPrevClassStart(position);
@@ -807,7 +807,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassEnd, start of file', () => {
     // GIVEN
-    const position = { line: 0, character: 0 } as Position;
+    const position = new Position(0, 0);
 
     // WHEN
     const newPosition = findNextClassEnd(position);
@@ -821,7 +821,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassEnd, past first class', () => {
     // GIVEN
-    const position = { line: 7, character: 2 } as Position;
+    const position = new Position(7, 2);
 
     // WHEN
     const newPosition = findNextClassEnd(position);
@@ -835,7 +835,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findNextClassEnd, past second outer class', () => {
     // GIVEN
-    const position = { line: 9, character: 3 } as Position;
+    const position = new Position(9, 3);
 
     // WHEN
     const newPosition = findNextClassEnd(position);
@@ -849,7 +849,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('Invalid findNextClassEnd, past last class', () => {
     // GIVEN
-    const position = { line: 18, character: 3 } as Position;
+    const position = new Position(18, 3);
 
     // WHEN
     const newPosition = findNextClassEnd(position);
@@ -860,7 +860,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassEnd, end of file', () => {
     // GIVEN
-    const position = { line: 18, character: 4 } as Position;
+    const position = new Position(18, 4);
 
     // WHEN
     const newPosition = findPrevClassEnd(position);
@@ -874,7 +874,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassEnd, past first class', () => {
     // GIVEN
-    const position = { line: 7, character: 2 } as Position;
+    const position = new Position(7, 2);
 
     // WHEN
     const newPosition = findPrevClassEnd(position);
@@ -888,7 +888,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('valid findPrevClassEnd, past second outer class', () => {
     // GIVEN
-    const position = { line: 9, character: 3 } as Position;
+    const position = new Position(9, 3);
 
     // WHEN
     const newPosition = findPrevClassEnd(position);
@@ -902,7 +902,7 @@ suite('PythonDocument find class functionality', () => {
 
   test('Invalid findPrevClassEnd, before end of first class', () => {
     // GIVEN
-    const position = { line: 4, character: 8 } as Position;
+    const position = new Position(4, 8);
 
     // WHEN
     const newPosition = findPrevClassEnd(position);

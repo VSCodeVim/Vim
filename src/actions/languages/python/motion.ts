@@ -109,14 +109,9 @@ export class PythonDocument {
 
         structure.push({
           type,
-          start: {
-            line: info.line,
-            character: info.indentation,
-          } as Position,
-          end: {
-            line: endLine.line,
-            character: endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1, // Calculate position of last non-white character
-          } as Position,
+          start: new Position(info.line, info.indentation),
+          // Calculate position of last non-white character)
+          end: new Position(endLine.line, endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1),
         });
       }
     }
@@ -129,10 +124,7 @@ export class PythonDocument {
    * of the specified (first arg) position.
    */
   static isAhead(position: Position, elementPosition: Position) {
-    return (
-      elementPosition.line > position.line ||
-      (elementPosition.line === position.line && elementPosition.character > position.character)
-    );
+    return elementPosition.isAfter(position);
   }
 
   /*
@@ -140,10 +132,7 @@ export class PythonDocument {
    * of the specified (first arg) position.
    */
   static isBehind(position: Position, elementPosition: Position) {
-    return (
-      elementPosition.line < position.line ||
-      (elementPosition.line === position.line && elementPosition.character < position.character)
-    );
+    return elementPosition.isBefore(position);
   }
 
   /*
