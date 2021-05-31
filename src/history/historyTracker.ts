@@ -126,8 +126,9 @@ class HistoryStep {
 
   /**
    * The cursor position at the start of this history step.
+   * Restored by `u`. Currently, only one cursor is remembered.
    */
-  public cursorStart: Position[] | undefined;
+  public cursorStart: Position | undefined;
 
   /**
    * The position of every mark at the start of this history step.
@@ -692,7 +693,7 @@ export class HistoryTracker {
       currentHistoryStep.isFinished = true;
       currentHistoryStep.timestamp = new Date();
 
-      currentHistoryStep.cursorStart ??= [this.nextStepStartPosition!];
+      currentHistoryStep.cursorStart ??= this.nextStepStartPosition;
       this.nextStepStartPosition = undefined;
 
       currentHistoryStep.merge(this.vimState.document);
@@ -714,7 +715,7 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to undo
    */
-  public async goBackHistoryStep(): Promise<Position[] | undefined> {
+  public async goBackHistoryStep(): Promise<Position | undefined> {
     const step = this.undoStack.stepBackward();
     if (step === undefined) {
       return undefined;
@@ -739,7 +740,7 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to redo
    */
-  public async goForwardHistoryStep(): Promise<Position[] | undefined> {
+  public async goForwardHistoryStep(): Promise<Position | undefined> {
     const step = this.undoStack.stepForward();
     if (step === undefined) {
       return undefined;
@@ -776,7 +777,7 @@ export class HistoryTracker {
    * This worst-case scenario tends to offset line values and make it harder to
    * determine the line of the change, so this behavior is also compensated.
    */
-  public async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
+  public async goBackHistoryStepsOnLine(): Promise<Position | undefined> {
     const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
     if (currentHistoryStep === undefined) {
       return undefined;
@@ -844,7 +845,7 @@ export class HistoryTracker {
      * Since this function reverses change-by-change, rather than step-by-step,
      * the cursor position is based on the start of the last change that is undone.
      */
-    return lastChange && [lastChange.start];
+    return lastChange?.start;
   }
 
   /**
@@ -868,7 +869,7 @@ export class HistoryTracker {
     return lastChange.afterRange.end;
   }
 
-  public getLastHistoryStartPosition(): Position[] | undefined {
+  public getLastHistoryStartPosition(): Position | undefined {
     return this.undoStack.getCurrentHistoryStep()?.cursorStart;
   }
 

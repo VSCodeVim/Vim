@@ -1150,12 +1150,12 @@ export class CommandUndo extends BaseCommand {
   mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPositions = await vimState.historyTracker.goBackHistoryStep();
+    const newPosition = await vimState.historyTracker.goBackHistoryStep();
 
-    if (newPositions === undefined) {
+    if (newPosition === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
+      vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
 
     vimState.alteredHistory = true;
@@ -1172,10 +1172,10 @@ class CommandUndoOnLine extends BaseCommand {
   mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPositions = await vimState.historyTracker.goBackHistoryStepsOnLine();
+    const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
 
-    if (newPositions !== undefined) {
-      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
+    if (newPosition !== undefined) {
+      vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
 
     vimState.alteredHistory = true;
@@ -1191,12 +1191,12 @@ class CommandRedo extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPositions = await vimState.historyTracker.goForwardHistoryStep();
+    const newPosition = await vimState.historyTracker.goForwardHistoryStep();
 
-    if (newPositions === undefined) {
+    if (newPosition === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      vimState.cursors = newPositions.map((x) => new Cursor(x, x));
+      vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
 
     vimState.alteredHistory = true;
@@ -1510,9 +1510,8 @@ class CommandGoLastChange extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const lastPos = vimState.historyTracker.getLastHistoryStartPosition();
-
     if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos[0];
+      vimState.cursorStopPosition = lastPos;
     }
   }
 }
