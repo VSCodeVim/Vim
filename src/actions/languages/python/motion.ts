@@ -31,7 +31,6 @@ export class PythonDocument {
   static readonly reDefOrClass = /^\s*(def|class) /;
   static readonly reDef = /def/;
 
-
   constructor(document: TextDocument) {
     this._document = document;
     const parsed = PythonDocument._parseLines(document);
@@ -111,7 +110,10 @@ export class PythonDocument {
           type,
           start: new Position(info.line, info.indentation),
           // Calculate position of last non-white character)
-          end: new Position(endLine.line, endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1),
+          end: new Position(
+            endLine.line,
+            endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1
+          ),
         });
       }
     }
