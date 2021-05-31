@@ -120,22 +120,6 @@ export class PythonDocument {
   }
 
   /*
-   * Filter function that returns true if an element is strictly ahead (false if equal)
-   * of the specified (first arg) position.
-   */
-  static isAhead(position: Position, elementPosition: Position) {
-    return elementPosition.isAfter(position);
-  }
-
-  /*
-   * Filter function that returns true if an element is strictly behind (false if equal)
-   * of the specified (first arg) position.
-   */
-  static isBehind(position: Position, elementPosition: Position) {
-    return elementPosition.isBefore(position);
-  }
-
-  /*
    * Find the position of the specified:
    *    type: function or class
    *    direction: next or prev
@@ -144,12 +128,12 @@ export class PythonDocument {
    * With this information one can determine all of the required motions
    */
   find(type: Type, direction: Direction, edge: Edge, position: Position): Position | null {
-    // Choose the filtering utility based on direction
-    const isDirection = direction === 'next' ? PythonDocument.isAhead : PythonDocument.isBehind;
+    // Choose the ordering method name based on direction
+    const isDirection = direction === 'next' ? 'isAfter' : 'isBefore';
 
     // Filter function for all elements whose "edge" is in the correct "direction"
     // relative to the cursor's position
-    const dir = (element: StructureElement) => isDirection(position, element[edge]);
+    const dir = (element: StructureElement) => element[edge][isDirection](position);
 
     // Filter out elements from structure based on type and direction
     const elements = this.structure.filter((elem) => elem.type === type).filter(dir);

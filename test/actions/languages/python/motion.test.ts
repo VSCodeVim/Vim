@@ -141,50 +141,6 @@ suite('PythonDocument parse lines to extract structure', () => {
   });
 });
 
-suite('PythonDocument.isAhead and isBehind', () => {
-  test('element is ahead of position', () => {
-    // GIVEN
-    const position = new Position(3, 7);
-    const elementPosition = new Position(4, 0);
-
-    // WHEN
-    const ahead = PythonDocument.isAhead(position, elementPosition);
-    const behind = PythonDocument.isBehind(position, elementPosition);
-
-    // THEN
-    assert.equal(ahead, true);
-    assert.equal(behind, false);
-  });
-
-  test('element is not ahead of position', () => {
-    // GIVEN
-    const position = new Position(4, 0);
-    const elementPosition = new Position(3, 7);
-
-    // WHEN
-    const ahead = PythonDocument.isAhead(position, elementPosition);
-    const behind = PythonDocument.isBehind(position, elementPosition);
-
-    // THEN
-    assert.equal(ahead, false);
-    assert.equal(behind, true);
-  });
-
-  test('element and position are co-located so element is not ahead of position', () => {
-    // GIVEN
-    const position = new Position(3, 7);
-    const elementPosition = position;
-
-    // WHEN
-    const ahead = PythonDocument.isAhead(position, elementPosition);
-    const behind = PythonDocument.isBehind(position, elementPosition);
-
-    // THEN
-    assert.equal(ahead, false);
-    assert.equal(behind, false);
-  });
-});
-
 suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
   test('indentation of line with none', () => {
     // GIVEN
