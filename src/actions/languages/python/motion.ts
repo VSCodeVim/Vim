@@ -127,7 +127,7 @@ export class PythonDocument {
    *
    * With this information one can determine all of the required motions
    */
-  find(type: Type, direction: Direction, edge: Edge, position: Position): Position | null {
+  find(type: Type, direction: Direction, edge: Edge, position: Position): Position | undefined {
     // Choose the ordering method name based on direction
     const isDirection = direction === 'next' ? 'isAfter' : 'isBefore';
 
@@ -155,7 +155,7 @@ export class PythonDocument {
       return new Position(pos.line, pos.character);
     }
 
-    return null;
+    return undefined;
   }
 
   // Use PythonDocument instance to move to specified class boundary
@@ -200,7 +200,7 @@ abstract class BasePythonMovement extends BaseMovement {
 @RegisterAction
 class MovePythonNextFunctionStart extends BasePythonMovement {
   keys = [']', 'm'];
-  type = 'function' as Type;
+  type: Type = 'function';
   direction = 'next' as Direction;
   edge = 'start' as Edge;
 }
@@ -208,7 +208,7 @@ class MovePythonNextFunctionStart extends BasePythonMovement {
 @RegisterAction
 class MovePythonPrevFunctionStart extends BasePythonMovement {
   keys = ['[', 'm'];
-  type = 'function' as Type;
+  type: Type = 'function';
   direction = 'prev' as Direction;
   edge = 'start' as Edge;
 }
@@ -216,7 +216,7 @@ class MovePythonPrevFunctionStart extends BasePythonMovement {
 @RegisterAction
 class MovePythonNextFunctionEnd extends BasePythonMovement {
   keys = [']', 'M'];
-  type = 'function' as Type;
+  type: Type = 'function';
   direction = 'next' as Direction;
   edge = 'end' as Edge;
 }
@@ -224,7 +224,7 @@ class MovePythonNextFunctionEnd extends BasePythonMovement {
 @RegisterAction
 class MovePythonPrevFunctionEnd extends BasePythonMovement {
   keys = ['[', 'M'];
-  type = 'function' as Type;
+  type: Type = 'function';
   direction = 'prev' as Direction;
   edge = 'end' as Edge;
 }

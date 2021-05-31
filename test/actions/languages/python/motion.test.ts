@@ -219,7 +219,7 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
 });
 
 // Type of the find function after all but the last arg have been binded
-type Find = (position: Position) => Position | null;
+type Find = (position: Position) => Position | undefined;
 
 /*
  * Use fakeDocument to create a fake PythonDocument based on the passed in
@@ -271,8 +271,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 2);
     assert.equal(newPosition.character, 0);
   });
@@ -285,8 +285,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 10);
     assert.equal(newPosition.character, 4);
   });
@@ -299,7 +299,7 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionStart(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('valid findPrevFunctionStart, middle of function', () => {
@@ -310,8 +310,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 2);
     assert.equal(newPosition.character, 0);
   });
@@ -324,8 +324,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 8);
     assert.equal(newPosition.character, 0);
   });
@@ -338,8 +338,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 2);
     assert.equal(newPosition.character, 0);
   });
@@ -352,7 +352,7 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionStart(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('Invalid findNextFunctionEnd, past last indented block', () => {
@@ -363,7 +363,7 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('valid findNextFuntionEnd, inside inner function', () => {
@@ -374,8 +374,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 11);
     assert.equal(newPosition.character, 11);
   });
@@ -388,8 +388,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 11);
     assert.equal(newPosition.character, 11);
   });
@@ -402,8 +402,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 4);
     assert.equal(newPosition.character, 7);
   });
@@ -416,8 +416,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 11);
     assert.equal(newPosition.character, 11);
   });
@@ -430,8 +430,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 11);
     assert.equal(newPosition.character, 11);
   });
@@ -444,8 +444,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 4);
     assert.equal(newPosition.character, 7);
   });
@@ -458,8 +458,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 4);
     assert.equal(newPosition.character, 7);
   });
@@ -472,8 +472,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 4);
     assert.equal(newPosition.character, 7);
   });
@@ -486,8 +486,8 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 11);
     assert.equal(newPosition.character, 11);
   });
@@ -500,7 +500,7 @@ suite('PythonDocument find function functionality', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 });
 
@@ -534,8 +534,8 @@ suite('PythonDocument find function functionality in doc containing class', () =
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 6);
     assert.equal(newPosition.character, 11);
   });
@@ -548,8 +548,8 @@ suite('PythonDocument find function functionality in doc containing class', () =
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 9);
     assert.equal(newPosition.character, 7);
   });
@@ -577,8 +577,8 @@ suite('PythonDocument find function functionality near end of file', () => {
     const newPosition = findNextFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 1);
     assert.equal(newPosition.character, 7);
   });
@@ -612,8 +612,8 @@ suite('findPrevFunctionEnd with nested functions', () => {
     const newPosition = findPrevFunctionEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 5);
     assert.equal(newPosition.character, 15);
   });
@@ -663,8 +663,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 2);
     assert.equal(newPosition.character, 0);
   });
@@ -677,8 +677,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 9);
     assert.equal(newPosition.character, 0);
   });
@@ -691,8 +691,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 14);
     assert.equal(newPosition.character, 4);
   });
@@ -705,7 +705,7 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassStart(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('valid findPrevClassStart, end of file', () => {
@@ -716,8 +716,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 14);
     assert.equal(newPosition.character, 4);
   });
@@ -730,8 +730,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 2);
     assert.equal(newPosition.character, 0);
   });
@@ -744,8 +744,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassStart(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 9);
     assert.equal(newPosition.character, 0);
   });
@@ -758,7 +758,7 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassStart(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('valid findNextClassEnd, start of file', () => {
@@ -769,8 +769,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 5);
     assert.equal(newPosition.character, 11);
   });
@@ -783,8 +783,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 16);
     assert.equal(newPosition.character, 15);
   });
@@ -797,8 +797,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 16);
     assert.equal(newPosition.character, 15);
   });
@@ -811,7 +811,7 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findNextClassEnd(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 
   test('valid findPrevClassEnd, end of file', () => {
@@ -822,8 +822,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 16);
     assert.equal(newPosition.character, 15);
   });
@@ -836,8 +836,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 5);
     assert.equal(newPosition.character, 11);
   });
@@ -850,8 +850,8 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassEnd(position);
 
     // THEN
-    assert.notEqual(newPosition, null);
-    assert(newPosition !== null);
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
     assert.equal(newPosition.line, 5);
     assert.equal(newPosition.character, 11);
   });
@@ -864,6 +864,6 @@ suite('PythonDocument find class functionality', () => {
     const newPosition = findPrevClassEnd(position);
 
     // THEN
-    assert.equal(newPosition, null);
+    assert.equal(newPosition, undefined);
   });
 });
