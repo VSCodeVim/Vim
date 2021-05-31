@@ -753,7 +753,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
-        prevMode !== Mode.CommandlineInProgress &&
         prevMode !== Mode.EasyMotionInputMode &&
         prevMode !== Mode.EasyMotionMode
       ) {
