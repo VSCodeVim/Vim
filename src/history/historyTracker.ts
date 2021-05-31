@@ -20,9 +20,12 @@ import { Jump } from '../jumps/jump';
 import { globalState } from '../state/globalState';
 import { Mode } from '../mode/mode';
 import { ErrorCode, VimError } from '../error';
+import { Logger } from '../util/logger';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
+
+const logger = Logger.get('HistoryTracker');
 
 class DocumentChange {
   /**
@@ -701,6 +704,8 @@ export class HistoryTracker {
         const changePos = changes[0].after ? changes[0].afterRange.end.getLeft() : changes[0].start;
         this.changeList.addChangePosition(changePos);
       }
+
+      logger.debug(`Finished history step with ${changes.length} change(s)`);
     }
   }
 
