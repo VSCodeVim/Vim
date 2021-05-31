@@ -26,6 +26,12 @@ export class PythonDocument {
   _document: TextDocument;
   structure: StructureElement[];
 
+  static readonly reOnlyWhitespace = /\S/;
+  static readonly reLastNonWhiteSpaceCharacter = /(?<=\S)\s*$/;
+  static readonly reDefOrClass = /^\s*(def|class) /;
+  static readonly reDef = /def/;
+
+
   constructor(document: TextDocument) {
     this._document = document;
     const parsed = PythonDocument._parseLines(document);
@@ -47,7 +53,7 @@ export class PythonDocument {
    * to have an indentation of "null".
    */
   static _indentation(line: string): number | null {
-    const index: number = line.search(/\S/);
+    const index: number = line.search(PythonDocument.reOnlyWhitespace);
 
     // Return null if line is empty, just whitespace, or starts with a comment
     if (index === -1 || line[index] === '#') {
@@ -83,8 +89,8 @@ export class PythonDocument {
       const info = lines[index];
       const text = info.text;
 
-      if (text.match(/^\s*(def|class) /)) {
-        const type = text.match(/def/) ? 'function' : 'class';
+      if (text.match(PythonDocument.reDefOrClass)) {
+        const type = text.match(PythonDocument.reDef) ? 'function' : 'class';
 
         // Find the end of the current function/class
         let idx = index + 1;
@@ -109,7 +115,7 @@ export class PythonDocument {
           } as Position,
           end: {
             line: endLine.line,
-            character: endLine.text.search(/(?<=\S)\s*$/) - 1, // Calculate position of last non-white character
+            character: endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1, // Calculate position of last non-white character
           } as Position,
         });
       }
