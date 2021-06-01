@@ -1523,7 +1523,7 @@ export class CommandInsertAtLastChange extends BaseCommand {
   keys = ['g', 'i'];
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.cursorStopPosition =
+    vimState.cursorStopPosition = vimState.cursorStartPosition =
       vimState.historyTracker.getLastChangeEndPosition() ?? new Position(0, 0);
 
     await vimState.setCurrentMode(Mode.Insert);
@@ -1537,10 +1537,8 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.document,
-      position.line
-    );
+    vimState.cursorStopPosition = vimState.cursorStartPosition =
+      TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line);
   }
 }
 
@@ -1552,7 +1550,7 @@ export class CommandInsertAtLineBegin extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = position.getLineBegin();
+    vimState.cursorStopPosition = vimState.cursorStartPosition = position.getLineBegin();
   }
 }
 
@@ -1563,7 +1561,7 @@ export class CommandInsertAfterCursor extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = position.getRight();
+    vimState.cursorStopPosition = vimState.cursorStartPosition = position.getRight();
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -1583,7 +1581,7 @@ export class CommandInsertAtLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = position.getLineEnd();
+    vimState.cursorStopPosition = vimState.cursorStartPosition = position.getLineEnd();
   }
 }
 

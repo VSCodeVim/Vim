@@ -85,6 +85,20 @@ suite('Undo', () => {
       keysPressed: 'dwdw2u',
       end: ['one |two three four five'],
     });
+
+    newTest({
+      title: 'Undo Visual delete',
+      start: ['one |two three four five'],
+      keysPressed: 'vww' + 'd' + 'u',
+      end: ['one |two three four five'],
+    });
+
+    newTest({
+      title: 'Undo VisualBlock delete',
+      start: ['one two', 'th|ree four', 'five six', 'seven eight'],
+      keysPressed: '<C-v>jll' + 'd' + 'u',
+      end: ['one two', 'th|ree four', 'five six', 'seven eight'],
+    });
   });
 
   suite('U', () => {

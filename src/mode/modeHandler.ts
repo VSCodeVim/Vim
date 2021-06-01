@@ -563,7 +563,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // Catch any text change not triggered by us (example: tab completion).
-    this.vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map((c) => c.stop));
+    this.vimState.historyTracker.addChange();
 
     this.vimState.keyHistory.push(key);
 
@@ -842,9 +842,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.alteredHistory = false;
         this.vimState.historyTracker.ignoreChange();
       } else {
-        this.vimState.historyTracker.addChange(
-          this.vimState.cursorsInitialState.map((c) => c.stop)
-        );
+        this.vimState.historyTracker.addChange();
       }
     }
 

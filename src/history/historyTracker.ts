@@ -21,6 +21,7 @@ import { globalState } from '../state/globalState';
 import { Mode } from '../mode/mode';
 import { ErrorCode, VimError } from '../error';
 import { Logger } from '../util/logger';
+import { earlierOf } from '../common/motion/position';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -383,7 +384,7 @@ export class HistoryTracker {
   public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
-  public nextStepStartPosition: Position | undefined;
+  private nextStepStartPosition: Position | undefined;
 
   private readonly undoStack: UndoStack;
 
@@ -614,12 +615,16 @@ export class HistoryTracker {
    *
    * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(cursorPosition = [new Position(0, 0)]): void {
+  public addChange(): void {
     if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
       return;
     }
 
-    this.nextStepStartPosition ??= cursorPosition[0];
+    if (this.nextStepStartPosition === undefined) {
+      const cursor = this.vimState.cursorsInitialState[0];
+      this.nextStepStartPosition = earlierOf(cursor.start, cursor.stop);
+      logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
+    }
 
     if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
       // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
