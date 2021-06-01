@@ -49,14 +49,14 @@ export class PythonDocument {
   /*
    * Calculate the indentation of a line of text.
    * Lines consisting entirely of whitespace of "starting" with a comment are defined
-   * to have an indentation of "null".
+   * to have an indentation of "undefined".
    */
-  static _indentation(line: string): number | null {
+  static _indentation(line: string): number | undefined {
     const index: number = line.search(PythonDocument.reOnlyWhitespace);
 
-    // Return null if line is empty, just whitespace, or starts with a comment
+    // Return undefined if line is empty, just whitespace, or starts with a comment
     if (index === -1 || line[index] === '#') {
-      return null;
+      return undefined;
     }
 
     return index;
@@ -64,20 +64,20 @@ export class PythonDocument {
 
   /*
    * Parse a line of text to extract LineInfo
-   * Return null if the line is empty or starts with a comment
+   * Return undefined if the line is empty or starts with a comment
    */
-  static _parseLine(index: number, text: string): LineInfo | null {
+  static _parseLine(index: number, text: string): LineInfo | undefined {
     const indentation = this._indentation(text);
 
-    // Since indentation === 0 is a valid result we need to check for null explicitly
-    return indentation !== null ? { line: index, indentation, text } : null;
+    // Since indentation === 0 is a valid result we need to check for undefined explicitly
+    return indentation !== undefined ? { line: index, indentation, text } : undefined;
   }
 
   static _parseLines(document: TextDocument): LineInfo[] {
     const lines = [...this.lines(document)]; // convert generator to Array
     const infos = lines.map((text, index) => this._parseLine(index, text));
 
-    return infos.filter((x) => x) as LineInfo[]; // filter out empty/comment lines (null info)
+    return infos.filter((x) => x) as LineInfo[]; // filter out empty/comment lines (undefined info)
   }
 
   static _parseStructure(lines: LineInfo[]): StructureElement[] {

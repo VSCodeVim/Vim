@@ -153,8 +153,8 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
     // THEN
     assert.equal(indent, 0);
 
-    assert.notEqual(info, null);
-    assert(info !== null);
+    assert.notEqual(info, undefined);
+    assert(info !== undefined);
     assert.equal(info.line, 42);
     assert.equal(info.indentation, 0);
     assert.equal(info.text, line);
@@ -171,8 +171,8 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
     // THEN
     assert.equal(indent, 4);
 
-    assert.notEqual(info, null);
-    assert(info !== null);
+    assert.notEqual(info, undefined);
+    assert(info !== undefined);
     assert.equal(info.line, 42);
     assert.equal(info.indentation, 4);
     assert.equal(info.text, line);
@@ -187,8 +187,8 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
     const info = PythonDocument._parseLine(42, line);
 
     // THEN
-    assert.equal(indent, null);
-    assert.equal(info, null);
+    assert.equal(indent, undefined);
+    assert.equal(info, undefined);
   });
 
   test('indentation of line containing only whitespace', () => {
@@ -200,8 +200,8 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
     const info = PythonDocument._parseLine(42, line);
 
     // THEN
-    assert.equal(indent, null);
-    assert.equal(info, null);
+    assert.equal(indent, undefined);
+    assert.equal(info, undefined);
   });
 
   test('indentation of empty line', () => {
@@ -213,8 +213,8 @@ suite('PythonDocument._textIndentation and PythonDocument._parseLine', () => {
     const info = PythonDocument._parseLine(42, line);
 
     // THEN
-    assert.equal(indent, null);
-    assert.equal(info, null);
+    assert.equal(indent, undefined);
+    assert.equal(info, undefined);
   });
 });
 
