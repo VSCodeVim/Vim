@@ -203,30 +203,30 @@ abstract class BasePythonMovement extends BaseMovement {
 class MovePythonNextFunctionStart extends BasePythonMovement {
   keys = [']', 'm'];
   type: Type = 'function';
-  direction = 'next' as Direction;
-  edge = 'start' as Edge;
+  direction: Direction = 'next';
+  edge: Edge = 'start';
 }
 
 @RegisterAction
 class MovePythonPrevFunctionStart extends BasePythonMovement {
   keys = ['[', 'm'];
   type: Type = 'function';
-  direction = 'prev' as Direction;
-  edge = 'start' as Edge;
+  direction: Direction = 'prev';
+  edge: Edge = 'start';
 }
 
 @RegisterAction
 class MovePythonNextFunctionEnd extends BasePythonMovement {
   keys = [']', 'M'];
   type: Type = 'function';
-  direction = 'next' as Direction;
-  edge = 'end' as Edge;
+  direction: Direction = 'next';
+  edge: Edge = 'end';
 }
 
 @RegisterAction
 class MovePythonPrevFunctionEnd extends BasePythonMovement {
   keys = ['[', 'M'];
   type: Type = 'function';
-  direction = 'prev' as Direction;
-  edge = 'end' as Edge;
+  direction: Direction = 'prev';
+  edge: Edge = 'end';
 }
