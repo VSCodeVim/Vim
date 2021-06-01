@@ -1464,14 +1464,14 @@ suite('Mode Normal', () => {
 
   newTest({
     title: '`. works correctly',
-    start: ['one|'],
+    start: ['on|e'],
     keysPressed: 'atwo<Esc>`.',
     end: ['one|two'],
   });
 
   newTest({
     title: "'. works correctly",
-    start: ['one|'],
+    start: ['on|e'],
     keysPressed: "atwo<Esc>'.",
     end: ['one|two'],
   });
