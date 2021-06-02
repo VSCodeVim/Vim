@@ -288,10 +288,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       return;
     }
 
-    if (e.selections.length === 1) {
-      this.vimState.isMultiCursor = false;
-    }
-
     if (isStatusBarMode(this.vimState.currentMode)) {
       return;
     }

@@ -106,7 +106,6 @@ export class CommandEscInsertMode extends BaseCommand {
 
     if (vimState.isFakeMultiCursor) {
       vimState.cursors = [vimState.cursors[0]];
-      vimState.isMultiCursor = false;
       vimState.isFakeMultiCursor = false;
     }
   }

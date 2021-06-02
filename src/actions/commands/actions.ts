@@ -436,8 +436,6 @@ class CommandEsc extends BaseCommand {
         ]);
 
         return;
-      } else {
-        vimState.isMultiCursor = false;
       }
     }
 
@@ -1615,7 +1613,6 @@ class CommandInsertNewLineAbove extends BaseCommand {
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
-    vimState.isMultiCursor = true;
   }
 }
 
@@ -1654,7 +1651,6 @@ class CommandInsertNewLineBefore extends BaseCommand {
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
-    vimState.isMultiCursor = true;
   }
 }
 
@@ -2489,7 +2485,6 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { line, start } of TextEditor.iterateLinesInBlock(vimState)) {
@@ -2520,7 +2515,6 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     }
 
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
@@ -2553,7 +2547,6 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     vimState.cursors = cursors;
 
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
   }
 }
@@ -2571,7 +2564,6 @@ abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
 
     const resultingCursors: Cursor[] = [];
@@ -2693,7 +2685,6 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
 
     vimState.cursors = newCursors;
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.isMultiCursor = true;
     vimState.isFakeMultiCursor = true;
   }
 }
