@@ -3,6 +3,10 @@ import { VimState } from '../../../state/vimState';
 import { BaseMovement } from '../../baseMotion';
 import { Position, TextDocument } from 'vscode';
 
+type Type = 'function' | 'class';
+type Edge = 'start' | 'end';
+type Direction = 'next' | 'prev';
+
 interface LineInfo {
   line: number;
   indentation: number;
@@ -10,7 +14,7 @@ interface LineInfo {
 }
 
 interface StructureElement {
-  type: 'function' | 'class';
+  type: Type;
   start: Position;
   end: Position;
 }
@@ -29,7 +33,6 @@ export class PythonDocument {
   static readonly reOnlyWhitespace = /\S/;
   static readonly reLastNonWhiteSpaceCharacter = /(?<=\S)\s*$/;
   static readonly reDefOrClass = /^\s*(def|class) /;
-  static readonly reDef = /def/;
 
   constructor(document: TextDocument) {
     this._document = document;
@@ -87,9 +90,10 @@ export class PythonDocument {
     for (let index = 0; index < last; index++) {
       const info = lines[index];
       const text = info.text;
+      const match = text.match(PythonDocument.reDefOrClass);
 
-      if (text.match(PythonDocument.reDefOrClass)) {
-        const type = text.match(PythonDocument.reDef) ? 'function' : 'class';
+      if (match) {
+        const type = match[1] === 'def' ? 'function' : 'class';
 
         // Find the end of the current function/class
         let idx = index + 1;
@@ -173,10 +177,6 @@ export class PythonDocument {
     return new PythonDocument(document).find('class', direction, edge, position) || position;
   }
 }
-
-type Type = 'function' | 'class';
-type Edge = 'start' | 'end';
-type Direction = 'next' | 'prev';
 
 // Uses the specified findFunction to execute the motion coupled to the shortcut (keys)
 abstract class BasePythonMovement extends BaseMovement {
