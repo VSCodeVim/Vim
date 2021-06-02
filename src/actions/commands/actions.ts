@@ -534,7 +534,9 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     const { visibleRanges } = vimState.editor;
-    const smoothScrolling = configuration.getConfiguration('editor').smoothScrolling;
+    const smoothScrolling = configuration
+      .getConfiguration('editor')
+      .get<boolean>('smoothScrolling', false);
     const moveLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
 
     let scrollLines = moveLines;
