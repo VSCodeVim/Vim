@@ -21,6 +21,10 @@ export abstract class BaseAction {
    */
   public isJump = false;
 
+  /**
+   * TODO: This property is a lie - it pertains to whether an action creates an undo point...
+   *       See #5058 and rationalize ASAP.
+   */
   public canBeRepeatedWithDot = false;
 
   /**
@@ -200,8 +204,6 @@ export abstract class BaseCommand extends BaseAction {
    * handle count prefixes (e.g. the 3 in 3w) yourself.
    */
   runsOnceForEachCountPrefix = false;
-
-  canBeRepeatedWithDot = false;
 
   /**
    * Run the command a single time.

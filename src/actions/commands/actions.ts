@@ -851,6 +851,7 @@ class CommandDot extends BaseCommand {
 class CommandRepeatSubstitution extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['&'];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
