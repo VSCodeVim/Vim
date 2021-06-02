@@ -1564,12 +1564,12 @@ abstract class MoveSectionBoundary extends BaseMovement {
   abstract forward: boolean;
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const document = vimState.document;
 
     switch (document.languageId) {
       case 'python':
-        return PythonDocument.moveClassBoundary(document, position, this.forward, this.begin);
+        return PythonDocument.moveClassBoundary(document, position, vimState, this.forward, this.begin);
     }
 
     const boundary = this.begin ? '{' : '}';

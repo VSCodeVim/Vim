@@ -1,6 +1,6 @@
 import { RegisterAction } from '../../base';
 import { VimState } from '../../../state/vimState';
-import { BaseMovement } from '../../baseMotion';
+import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 import { Position, TextDocument } from 'vscode';
 
 type Type = 'function' | 'class';
@@ -168,13 +168,17 @@ export class PythonDocument {
   static moveClassBoundary(
     document: TextDocument,
     position: Position,
+    vimState: VimState,
     forward: boolean,
     start: boolean
-  ): Position {
+  ): Position | IMovement {
     const direction = forward ? 'next' : 'prev';
     const edge = start ? 'start' : 'end';
 
-    return new PythonDocument(document).find('class', direction, edge, position) || position;
+    return (
+      new PythonDocument(document).find('class', direction, edge, position) ??
+          failedMovement(vimState)
+    );
   }
 }
 
@@ -184,13 +188,13 @@ abstract class BasePythonMovement extends BaseMovement {
   abstract direction: Direction;
   abstract edge: Edge;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const document = vimState.document;
     switch (document.languageId) {
       case 'python':
         return (
-          new PythonDocument(document).find(this.type, this.direction, this.edge, position) ||
-          position
+          new PythonDocument(document).find(this.type, this.direction, this.edge, position) ??
+          failedMovement(vimState)
         );
 
       default:
