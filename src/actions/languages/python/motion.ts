@@ -158,7 +158,7 @@ export class PythonDocument {
       const pos = element[edge];
 
       // execAction MUST return a fully realized Position object created using new
-      return new Position(pos.line, pos.character);
+      return pos;
     }
 
     return undefined;
