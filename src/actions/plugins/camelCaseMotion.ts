@@ -1,12 +1,12 @@
-import { TextObjectMovement } from '../textobject';
+import { TextObjectMovement } from '../../textobject/textobject';
 import { RegisterAction } from '../base';
 import { Mode } from '../../mode/mode';
-import { Position } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { IMovement, BaseMovement } from '../baseMotion';
-import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 import { ChangeOperator } from '../operator';
+import { WordType } from '../../textobject/word';
+import { Position } from 'vscode';
 
 abstract class CamelCaseBaseMovement extends BaseMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {
@@ -41,9 +41,9 @@ class MoveCamelCaseWordBegin extends CamelCaseBaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.getCurrentCamelCaseWordEnd().getRight();
+      return position.nextWordEnd(vimState.document, { wordType: WordType.CamelCase }).getRight();
     } else {
-      return position.getCamelCaseWordRight();
+      return position.nextWordStart(vimState.document, { wordType: WordType.CamelCase });
     }
   }
 }
@@ -54,11 +54,11 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
   keys = ['<leader>', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentCamelCaseWordEnd();
+    return position.nextWordEnd(vimState.document, { wordType: WordType.CamelCase });
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    let end = position.getCurrentCamelCaseWordEnd();
+    const end = position.nextWordEnd(vimState.document, { wordType: WordType.CamelCase });
 
     return new Position(end.line, end.character + 1);
   }
@@ -70,7 +70,7 @@ class MoveBeginningCamelCaseWord extends CamelCaseBaseMovement {
   keys = ['<leader>', 'b'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCamelCaseWordLeft();
+    return position.prevWordStart(vimState.document, { wordType: WordType.CamelCase });
   }
 }
 
@@ -83,14 +83,22 @@ class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = vimState.document.lineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      start = position.getLastCamelCaseWordEnd().getRight();
-      stop = position.getCamelCaseWordRight().getLeftThroughLineBreaks();
+      start = position.prevWordEnd(vimState.document, { wordType: WordType.CamelCase }).getRight();
+      stop = position
+        .nextWordStart(vimState.document, { wordType: WordType.CamelCase })
+        .getLeftThroughLineBreaks();
     } else {
-      start = position.getCamelCaseWordLeft(true);
-      stop = position.getCurrentCamelCaseWordEnd(true);
+      start = position.prevWordStart(vimState.document, {
+        wordType: WordType.CamelCase,
+        inclusive: true,
+      });
+      stop = position.nextWordEnd(vimState.document, {
+        wordType: WordType.CamelCase,
+        inclusive: true,
+      });
     }
 
     if (
@@ -102,16 +110,21 @@ class SelectInnerCamelCaseWord extends CamelCaseTextObjectMovement {
       if (vimState.cursorStopPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting words in reverser order.
         if (/\s/.test(currentChar)) {
-          stop = position.getLastCamelCaseWordEnd().getRight();
+          stop = position
+            .prevWordEnd(vimState.document, { wordType: WordType.CamelCase })
+            .getRight();
         } else {
-          stop = position.getCamelCaseWordLeft(true);
+          stop = position.prevWordStart(vimState.document, {
+            wordType: WordType.CamelCase,
+            inclusive: true,
+          });
         }
       }
     }
 
     return {
-      start: start,
-      stop: stop,
+      start,
+      stop,
     };
   }
 }

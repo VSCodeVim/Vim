@@ -1,5 +1,5 @@
-import { Position } from './../common/motion/position';
-import { TextEditor } from './../textEditor';
+import { Position } from 'vscode';
+import { VimState } from './vimState';
 
 /**
  * State involved with entering Replace mode (R).
@@ -10,26 +10,24 @@ export class ReplaceState {
    */
   public replaceCursorStartPosition: Position;
 
-  public originalChars: string[] = [];
+  public readonly originalChars: readonly string[];
 
   /**
    * The characters the user inserted in replace mode. Useful for when
    * we repeat a replace action with .
    */
-  public newChars: string[] = [];
+  public readonly newChars: string[] = [];
 
   /**
    * Number of times we're going to repeat this replace action.
+   * Comes from the count applied to the `R` command.
    */
-  public timesToRepeat: number;
+  public readonly timesToRepeat: number;
 
-  constructor(startPosition: Position, timesToRepeat: number = 1) {
+  constructor(vimState: VimState, startPosition: Position, timesToRepeat: number = 1) {
     this.replaceCursorStartPosition = startPosition;
     this.timesToRepeat = timesToRepeat;
 
-    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
-    for (let [key, value] of text.split('').entries()) {
-      this.originalChars[key + startPosition.character] = value;
-    }
+    this.originalChars = vimState.document.lineAt(startPosition).text.split('');
   }
 }

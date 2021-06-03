@@ -2,15 +2,15 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { getTestingFunctions } from './testSimplifier';
 import { Configuration } from './testConfiguration';
+import { newTest } from './testSimplifier';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -104,11 +104,23 @@ suite('Multicursor', () => {
     assertEqualLines(['<div></div> asd', '<div></div>']);
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
   });
+
+  newTest({
+    title: 'Can use "/" search with multicursors',
+    start: ['|line 1', 'line 2', 'line 3', 'line 4', 'line 5'],
+    keysPressed: '3<C-alt+down>v/ne \nd<Esc>',
+    end: ['|e 1', 'e 2', 'e 3', 'e 4', 'line 5'],
+  });
+
+  newTest({
+    title: 'Can use "?" search with multicursors',
+    start: ['line 1', 'line 2', 'line 3', 'line 4', 'line |5'],
+    keysPressed: '3<C-alt+up>v?ine\nd<Esc>',
+    end: ['line 1', '|l', 'l', 'l', 'l'],
+  });
 });
 
 suite('Multicursor with remaps', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.insertModeKeyBindings = [
@@ -132,8 +144,6 @@ suite('Multicursor with remaps', () => {
 });
 
 suite('Multicursor selections', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.normalModeKeyBindings = [

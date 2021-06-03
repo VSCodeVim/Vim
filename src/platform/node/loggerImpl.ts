@@ -2,7 +2,7 @@ import * as TransportStream from 'winston-transport';
 import * as vscode from 'vscode';
 import * as winston from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
-import { configuration } from '../../configuration/configuration';
+import { IConfiguration } from '../../configuration/iconfiguration';
 import { ILogger } from '../common/logger';
 
 interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
@@ -15,6 +15,7 @@ interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
  */
 class VsCodeMessage extends TransportStream {
   prefix?: string;
+  configuration?: IConfiguration;
   actionMessages = ['Dismiss', 'Suppress Errors'];
 
   constructor(options: VsCodeMessageOptions) {
@@ -23,8 +24,8 @@ class VsCodeMessage extends TransportStream {
     this.prefix = options.prefix;
   }
 
-  public async log(info: { level: string; message: string }, callback: Function) {
-    if (configuration.debug.silent) {
+  public async log(info: { level: string; message: string }, callback: () => void) {
+    if (this.configuration && this.configuration.debug.silent) {
       return;
     }
     let showMessage: (message: string, ...items: string[]) => Thenable<string | undefined>;
@@ -41,16 +42,16 @@ class VsCodeMessage extends TransportStream {
         showMessage = vscode.window.showInformationMessage;
         break;
       default:
-        throw 'Unsupported ' + info.level;
+        throw Error(`Unsupported log level ${info.level}`);
     }
 
     const message = `${this.prefix}: ${info.message}`;
     const selectedAction = await showMessage(message, ...this.actionMessages);
-    if (selectedAction === 'Suppress Errors') {
+    if (selectedAction === 'Suppress Errors' && this.configuration) {
       vscode.window.showInformationMessage(
         'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.silent`.'
       );
-      configuration.debug.silent = true;
+      this.configuration.debug.silent = true;
     }
 
     if (callback) {
@@ -60,46 +61,47 @@ class VsCodeMessage extends TransportStream {
 }
 
 class NodeLogger implements ILogger {
-  private _logger: winston.Logger;
+  private logger: winston.Logger;
 
   constructor(prefix: string) {
-    this._logger = winston.createLogger({
+    this.logger = winston.createLogger({
       format: winston.format.simple(),
       level: 'debug', // filtering will be done at the transport level
       transports: [
         new ConsoleForElectron({
-          level: configuration.debug.loggingLevelForConsole,
-          silent: configuration.debug.silent,
-          prefix: prefix,
+          level: 'error',
+          silent: false,
+          prefix,
         }),
         new VsCodeMessage({
-          level: configuration.debug.loggingLevelForAlert,
-          prefix: prefix,
+          level: 'error',
+          prefix,
         }),
       ],
     });
   }
 
   public error(errorMessage: string): void {
-    this._logger.error(errorMessage);
+    this.logger.error(errorMessage);
   }
 
   public debug(debugMessage: string): void {
-    this._logger.debug(debugMessage);
+    this.logger.debug(debugMessage);
   }
 
   public warn(warnMessage: string): void {
-    this._logger.warn(warnMessage);
+    this.logger.warn(warnMessage);
   }
 
   public verbose(verboseMessage: string): void {
-    this._logger.verbose(verboseMessage);
+    this.logger.verbose(verboseMessage);
   }
 
-  public configChanged() {
-    this._logger.transports[0].level = configuration.debug.loggingLevelForConsole;
-    this._logger.transports[0].silent = configuration.debug.silent;
-    this._logger.transports[1].level = configuration.debug.loggingLevelForAlert;
+  public configChanged(configuration: IConfiguration) {
+    this.logger.transports[0].level = configuration.debug.loggingLevelForConsole;
+    this.logger.transports[0].silent = configuration.debug.silent;
+    this.logger.transports[1].level = configuration.debug.loggingLevelForAlert;
+    (this.logger.transports[1] as VsCodeMessage).configuration = configuration;
   }
 }
 

@@ -1,15 +1,14 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
   setup(async () => {
     const configuration = new Configuration();
@@ -17,7 +16,7 @@ suite('Mode Normal', () => {
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -247,6 +246,14 @@ suite('Mode Normal', () => {
     start: ['|const a = 1;'],
     keysPressed: 'cw',
     end: ['| a = 1;'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cw' on white space",
+    start: ['|  const a = 1;'],
+    keysPressed: '0cw',
+    end: ['|const a = 1;'],
     endMode: Mode.Insert,
   });
 
@@ -1319,19 +1326,30 @@ suite('Mode Normal', () => {
     end: ['|t text'],
   });
 
-  newTest({
-    title: 'Can handle backspace',
-    start: ['text |text'],
-    keysPressed: '<BS><BS>',
-    end: ['tex|t text'],
-  });
+  for (const key of ['<BS>', '<C-BS>', '<S-BS>']) {
+    newTest({
+      title: `${key} moves one character to the left`,
+      start: ['text |text'],
+      keysPressed: key,
+      end: ['text| text'],
+    });
 
-  newTest({
-    title: 'Can handle backspace across lines',
-    start: ['one', '|two'],
-    keysPressed: '<BS><BS>',
-    end: ['o|ne', 'two'],
-  });
+    newTest({
+      title: `${key} goes across line boundaries when 'whichwrap' contains 'b'`,
+      config: { whichwrap: 'b' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['on|e', 'two'],
+    });
+
+    newTest({
+      title: `${key} does not go across line boundaries when 'whichwrap' does not contain 'b'`,
+      config: { whichwrap: '' },
+      start: ['one', '|two'],
+      keysPressed: key,
+      end: ['one', '|two'],
+    });
+  }
 
   newTest({
     title: 'Can handle A and backspace',
@@ -1375,228 +1393,112 @@ suite('Mode Normal', () => {
     end: ['one', 'tw|o'],
   });
 
-  newTest({
-    title: "Can handle 'P' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyP',
-    end: ['one', '|two', 'two'],
+  suite('I', () => {
+    newTest({
+      title: 'I enters insert mode at start of line after any whitespace',
+      start: ['  on|e'],
+      keysPressed: 'I',
+      end: ['  |one'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '[count]I',
+      start: ['  on|e'],
+      keysPressed: '2Itest<Esc>',
+      end: ['  testtes|tone'],
+    });
   });
 
-  newTest({
-    title: "Can handle 'p' after 'yy'",
-    start: ['one', 'tw|o'],
-    keysPressed: 'yyp',
-    end: ['one', 'two', '|two'],
+  suite('gI', () => {
+    newTest({
+      title: 'gI enters insert mode at start of line',
+      start: ['    o|ne'],
+      keysPressed: 'gItest',
+      end: ['test|    one'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '[count]gI',
+      start: ['    o|ne'],
+      keysPressed: '3gIab<Esc>',
+      end: ['ababa|b    one'],
+      endMode: Mode.Normal,
+    });
   });
 
-  newTest({
-    title: "Can handle 'P' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyP',
-    end: ['|one', 'two', 'three', 'one', 'two', 'three'],
-  });
+  suite('gi', () => {
+    newTest({
+      title: '`gi` enters insert mode at point of last insertion',
+      start: ['|'],
+      keysPressed: 'ione<Esc>otwo<Esc>0gi',
+      end: ['one', 'two|'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: "Can handle 'p' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '3yyp',
-    end: ['one', '|one', 'two', 'three', 'two', 'three'],
-  });
+    newTest({
+      title: '`[count]gi`',
+      start: ['|'],
+      keysPressed: 'ione<Esc>otwo<Esc>03giab<Esc>',
+      end: ['one', 'twoababa|b'],
+      endMode: Mode.Normal,
+    });
 
-  newTest({
-    title: "Can handle 'p' after 'yy' with correct cursor position",
-    start: ['|  one', 'two'],
-    keysPressed: 'yyjp',
-    end: ['  one', 'two', '  |one'],
-  });
+    newTest({
+      title: "`gi` enters insert mode at start of document if there's no prior insertion",
+      start: ['one', 'two', 'thr|ee'],
+      keysPressed: 'gi',
+      end: ['|one', 'two', 'three'],
+      endMode: Mode.Insert,
+    });
 
-  newTest({
-    title: "Can handle 'gp' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygp',
-    end: ['one', 'two', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjgp',
-    end: ['one', 'two', 'one', 'two', '|three'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yyGgp',
-    end: ['one', 'two', 'three', 'four', 'one', 'two', 'three', '|four'],
-  });
-
-  newTest({
-    title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yyjjgp',
-    end: ['one', 'two', 'three', 'one', '|two'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'yy'",
-    start: ['one', 'tw|o', 'three'],
-    keysPressed: 'yygP',
-    end: ['one', 'two', '|two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy'",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: '2yygP',
-    end: ['one', 'two', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'gP' after 'Nyy' if pasting more than three lines",
-    start: ['on|e', 'two', 'three', 'four'],
-    keysPressed: '4yygP',
-    end: ['one', 'two', 'three', 'four', '|one', 'two', 'three', 'four'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after yy",
-    start: ['  |one', '   two'],
-    keysPressed: 'yyj]p',
-    end: ['  one', '   two', '   |one'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy'",
-    start: [' |one', '  two', '  three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '  three', '  |one', '   two'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and indent with tabs first",
-    start: [' |one', '  two', '   three'],
-    keysPressed: '2yyjj]p',
-    end: [' one', '  two', '   three', '   |one', '\ttwo'],
-  });
-
-  newTest({
-    title: "Can handle ']p' after 'Nyy' and decrease indents if possible",
-    start: ['    |one', ' two', ' three'],
-    keysPressed: '2yyjj]p',
-    end: ['    one', ' two', ' three', ' |one', 'two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after yy",
-    start: ['   two', '  |one'],
-    keysPressed: 'yyk[p',
-    end: ['   |one', '   two', '  one'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy'",
-    start: ['  three', '|one', ' two'],
-    keysPressed: '2yyk[p',
-    end: ['  |one', '   two', '  three', 'one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and indent with tabs first",
-    start: ['   three', '| one', '  two'],
-    keysPressed: '2yyk[p',
-    end: ['   |one', '\ttwo', '   three', ' one', '  two'],
-  });
-
-  newTest({
-    title: "Can handle '[p' after 'Nyy' and decrease indents if possible",
-    start: [' three', '    |one', ' two'],
-    keysPressed: '2yyk[p',
-    end: [' |one', 'two', ' three', '    one', ' two'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after y'a",
-    start: ['|one', 'two', 'three'],
-    keysPressed: "majjy'ap",
-    end: ['one', 'two', 'three', '|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y])' without including closing parenthesis",
-    start: ['(hello, |world)'],
-    keysPressed: 'y])$p',
-    end: ['(hello, world)worl|d'],
-  });
-
-  newTest({
-    title: "Can handle 'p' after 'y]}' without including closing bracket",
-    start: ['{hello, |world}'],
-    keysPressed: 'y]}$p',
-    end: ['{hello, world}worl|d'],
-  });
-
-  newTest({
-    title: 'Can handle pasting in visual mode over selection',
-    start: ['|foo', 'bar', 'fun'],
-    keysPressed: 'Yjvll"ayjV"app',
-    end: ['foo', 'bar', 'bar', '|fun'],
-  });
-
-  newTest({
-    title: 'Can repeat w',
-    start: ['|one two three four'],
-    keysPressed: '2w',
-    end: ['one two |three four'],
-  });
-
-  newTest({
-    title: 'Can repeat p',
-    start: ['|one'],
-    keysPressed: 'yy2p',
-    end: ['one', '|one', 'one'],
-  });
-
-  newTest({
-    title: 'I works correctly',
-    start: ['|    one'],
-    keysPressed: 'Itest <Esc>',
-    end: ['    test| one'],
-  });
-
-  newTest({
-    title: 'gI works correctly',
-    start: ['|    one'],
-    keysPressed: 'gItest<Esc>',
-    end: ['tes|t    one'],
-  });
-
-  newTest({
-    title: 'gi works correctly',
-    start: ['|'],
-    keysPressed: 'ione<Esc>otwo<Esc>0gi',
-    end: ['one', 'two|'],
+    newTest({
+      title: '`gi` after (c)hange',
+      start: ['one |two three'],
+      keysPressed: 'cwab<Esc>0gi',
+      end: ['one ab| three'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
     title: '`. works correctly',
-    start: ['one|'],
+    start: ['on|e'],
     keysPressed: 'atwo<Esc>`.',
     end: ['one|two'],
   });
 
   newTest({
     title: "'. works correctly",
-    start: ['one|'],
+    start: ['on|e'],
     keysPressed: "atwo<Esc>'.",
     end: ['one|two'],
   });
 
-  newTest({
-    title: 'g; works correctly',
-    start: ['|'],
-    keysPressed: 'ione<Esc>atwo<Esc>g;g;',
-    end: ['one|two'],
+  suite('g;', () => {
+    newTest({
+      title: 'g; works correctly after insert',
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'iXYZ<Esc>Gg;',
+      end: ['one', 'twXY|Zo', 'three'],
+    });
+
+    newTest({
+      title: 'g; works correctly after delete',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'xggg;',
+      end: ['one', 'two', 'th|ee'],
+    });
+
+    newTest({
+      title: 'g; works correctly after change',
+      start: ['one', 'two', 'th|ree'],
+      keysPressed: 'clXYZ<Esc>ggg;',
+      end: ['one', 'two', 'thXY|Zee'],
+    });
+
+    // TODO: Test with multiple changes
   });
 
   newTest({
@@ -1627,8 +1529,8 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'Vgq',
     end: [
-      '//    We choose to write a vim extension, not because it is easy, but because it is',
-      '|//    hard.',
+      '//    We choose to write a vim extension, not because it is easy, but because it',
+      '|//    is hard.',
     ],
   });
 
@@ -1665,170 +1567,154 @@ suite('Mode Normal', () => {
     keysPressed: 'gqj',
     end: [
       '|// We choose to write a vim extension, not because it is easy, but because it is',
-      '// hard. We choose to write a vim extension, not because it is easy, but because',
-      '// it is hard.',
+      '// hard.  We choose to write a vim extension, not because it is easy, but',
+      '// because it is hard.',
     ],
   });
 
   newTest({
-    title: 'Can handle space',
+    title: 'gq preserves newlines',
+    start: ['|abc', '', '', '', 'def'],
+    keysPressed: 'gqG',
+    end: ['|abc', '', '', '', 'def'],
+  });
+
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
+
+  newTest({
+    title: 'gq handles multiline comments with start and final on same line',
+    start: ['|/* abc def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def */'],
+  });
+
+  newTest({
+    title: 'gq preserves blank lines in multiline comments',
+    start: ['|/* abc', ' *', ' *', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' *', ' *', ' * def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
+
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
+  });
+
+  newTest({
+    title: 'gq leaves alone whitespace within a line',
+    start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
+    keysPressed: 'gqG',
+    end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
+  });
+
+  newTest({
+    title: 'gq breaks at exactly textwidth',
+    start: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9x split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9x',
+      'split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks before textwidth',
+    start: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9xs split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7',
+      '9xs split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks at exactly textwidth with indent and comment',
+    start: [
+      '| // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9xs split',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '| // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9',
+      ' // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9',
+      ' // 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7',
+      ' // 9xs split',
+    ],
+  });
+
+  newTest({
+    title: 'gq breaks around long words',
+    start: [
+      '|this is a suuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuper long looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong                    word',
+    ],
+    keysPressed: 'gqG',
+    end: [
+      '|this is a',
+      'suuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuper',
+      'long looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
+      'word',
+    ],
+  });
+
+  newTest({
+    title: '<Space> moves cursor one character right',
     start: ['|abc', 'def'],
-    keysPressed: '  ',
+    keysPressed: ' ',
+    end: ['a|bc', 'def'],
+  });
+
+  newTest({
+    title: "<Space> goes over line break when whichwrap includes 's'",
+    config: { whichwrap: 's' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
+    end: ['abc', '|def'],
+  });
+
+  newTest({
+    title: "<Space> does not go over line break when whichwrap does not include 's'",
+    config: { whichwrap: '' },
+    start: ['ab|c', 'def'],
+    keysPressed: ' ',
     end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: 'Can handle space',
-    start: ['|abc', 'def'],
-    keysPressed: '    ',
-    end: ['abc', 'd|ef'],
-  });
-
-  newTest({
-    title: 'Undo 1',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo 2',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>u',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Undo cursor',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uuu',
-    end: ['|'],
-  });
-
-  newTest({
-    title: 'Undo cursor 2',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Undo cursor 3',
-    start: ['|'],
-    keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>u',
-    end: ['|defabc'],
-  });
-
-  newTest({
-    title: 'Undo with movement first',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>hlhlu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: "Can handle 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for multiple changes",
-    start: ['|'],
-    keysPressed: 'idef<Esc>aghi<Esc>U',
-    end: ['|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line below",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>U',
-    end: ['abc', '|'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for new line above",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Odef<Esc>U',
-    end: ['|', 'abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' for consecutive changes only",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
-    end: ['ab|c', 'def'],
-  });
-
-  newTest({
-    title: "Can handle 'u' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>Uu',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'U' to undo 'U'",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>UU',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: "Can handle 'u' after :s/abc/def",
-    start: ['|'],
-    keysPressed: 'iabc<Esc>:s/abc/def/\nu',
-    end: ['ab|c'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwu',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete twice',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdwuu',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u',
-    end: ['one |two three four five'],
-  });
-
-  newTest({
-    title: 'Can handle undo delete with count and redo',
-    start: ['one |two three four five'],
-    keysPressed: 'dwdw2u<C-r>',
-    end: ['one |three four five'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
-    end: ['|abc'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uu<C-r><C-r>',
-    end: ['abc|def'],
-  });
-
-  newTest({
-    title: 'Redo',
-    start: ['|'],
-    keysPressed: 'iabc<Esc>adef<Esc>uuhlhl<C-r><C-r>',
-    end: ['abc|def'],
   });
 
   newTest({
@@ -1892,35 +1778,6 @@ suite('Mode Normal', () => {
     start: ['|abc def ghi'],
     keysPressed: 'vwshi <Esc>',
     end: ['hi| ef ghi'],
-  });
-
-  newTest({
-    title: 'can handle p with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwp',
-    end: ['abc abc |dhi'],
-  });
-
-  // test works when run manually
-  // newTest({
-  //   title: "can handle p with selection",
-  //   start: ["one", "two", "|three"],
-  //   keysPressed: "yykVp",
-  //   end: ["|three", "three"]
-  // });
-
-  newTest({
-    title: 'can handle P with selection',
-    start: ['|abc def ghi'],
-    keysPressed: 'vwywvwP',
-    end: ['abc abc |dhi'],
-  });
-
-  newTest({
-    title: 'can handle p in visual to end of line',
-    start: ['1234 |5678', 'test test'],
-    keysPressed: 'vllllyjvllllp',
-    end: ['1234 5678', 'test |5678', ''],
   });
 
   newTest({
@@ -2062,7 +1919,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'can ctrl-a on an octal ',
-    start: ['07|'],
+    start: ['0|7'],
     keysPressed: '<C-a>',
     end: ['01|0'],
   });
@@ -2334,6 +2191,20 @@ suite('Mode Normal', () => {
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
+  newTest({
+    title: '/ search $, walk over matches',
+    start: ['|start', '', '', 'end'],
+    keysPressed: '/$\nnnn',
+    end: ['start', '', '', 'en|d'],
+  });
+
+  newTest({
+    title: '?, match at EOL, walk over matches',
+    start: ['x end', 'x', 'x', '|start'],
+    keysPressed: '?x\nnn',
+    end: ['|x end', 'x', 'x', 'start'],
+  });
+
   /**
    * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
    */
@@ -2366,26 +2237,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: '<BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '<S-BS> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<shift+BS>d\n',
-    end: ['foo', 'bar', '|abd'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '<C-h> deletes the last character in search in progress mode',
-    start: ['|foo', 'bar', 'abd'],
-    keysPressed: '/abc<C-h>d\n',
-    end: ['foo', 'bar', '|abd'],
+    title: '<C-l> adds the next character in the first match to search term',
+    start: ['|foo', 'bar', 'abcd'],
+    keysPressed: '/ab<C-l>d\n',
+    end: ['foo', 'bar', '|abcd'],
     endMode: Mode.Normal,
   });
 
@@ -2507,6 +2362,20 @@ suite('Mode Normal', () => {
     keysPressed: 'cit',
     end: ['<div>|</div>'],
     endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'yk moves cursor up',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'yk',
+    end: ['o|ne', 'two', 'three'],
+  });
+
+  newTest({
+    title: 'yh moves cursor left',
+    start: ['one', 'two', 'thr|ee'],
+    keysPressed: 'yh',
+    end: ['one', 'two', 'th|ree'],
   });
 
   newTest({
@@ -2994,8 +2863,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3010,8 +2878,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3042,7 +2909,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
+      const selection = modeHandler.vimState.editor.selection;
 
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 2);
@@ -3143,11 +3010,11 @@ suite('Mode Normal', () => {
     });
 
     newTest({
-      title: 'cgn deletes the next word when cursor is at hello|',
-      start: ['|foo', 'hello world', 'hello', 'hello'],
-      keysPressed: '/hello\nelcgn',
-      end: ['foo', 'hello world', '|', 'hello'],
-      endMode: Mode.Insert,
+      title: '`cgn` can be repeated by dot',
+      start: ['|', 'one', 'two', 'one', 'three'],
+      keysPressed: '/one\n' + 'cgn' + 'XYZ' + '<Esc>' + '..',
+      end: ['', 'XYZ', 'two', 'XY|Z', 'three'],
+      endMode: Mode.Normal,
     });
   });
 
@@ -3160,8 +3027,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3176,8 +3042,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
       assert.strictEqual(selection.start.line, 2);
       assert.strictEqual(selection.end.character, 'hi hello'.length);
@@ -3208,8 +3073,7 @@ suite('Mode Normal', () => {
 
       assert.strictEqual(modeHandler.currentMode, Mode.Visual);
 
-      const selection = TextEditor.getSelection();
-
+      const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
       assert.strictEqual(selection.start.line, 1);
       assert.strictEqual(selection.end.character, 'hello'.length);
@@ -3340,23 +3204,23 @@ suite('Mode Normal', () => {
 
   suite('marks', async () => {
     const jumpToNewFile = async () => {
-      let configuration = new Configuration();
+      const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
       await setupWorkspace(configuration);
-      return getAndUpdateModeHandler();
+      return (await getAndUpdateModeHandler())!;
     };
 
     test('capital marks can change the editors active document', async () => {
-      const firstDocumentName = TextEditor.getDocumentName();
+      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
       await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 
       const otherModeHandler = await jumpToNewFile();
-      const otherDocumentName = TextEditor.getDocumentName();
+      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
       assert.notStrictEqual(firstDocumentName, otherDocumentName);
 
       await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-      assert.strictEqual(TextEditor.getDocumentName(), firstDocumentName);
+      assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
     });
 
     newTest({

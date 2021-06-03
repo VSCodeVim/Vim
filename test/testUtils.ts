@@ -10,7 +10,6 @@ import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
-import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
@@ -29,7 +28,7 @@ class TestMemento implements vscode.Memento {
   }
 }
 export class TestExtensionContext implements vscode.ExtensionContext {
-  subscriptions: { dispose(): any }[] = [];
+  subscriptions: Array<{ dispose(): any }> = [];
   workspaceState: vscode.Memento = new TestMemento();
   globalState: vscode.Memento = new TestMemento();
   extensionPath: string = 'inmem:///test';
@@ -39,8 +38,8 @@ export class TestExtensionContext implements vscode.ExtensionContext {
   }
 
   storagePath: string | undefined;
-  globalStoragePath: string;
-  logPath: string;
+  globalStoragePath!: string;
+  logPath!: string;
 }
 
 export function rndName(): string {
@@ -86,7 +85,7 @@ export async function removeDir(fsPath: string) {
  * @param numExpectedEditors Expected number of editors in the window
  */
 export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  const waitForTextEditorsToClose = new Promise((c, e) => {
+  const waitForTextEditorsToClose = new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
@@ -101,13 +100,13 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
   try {
     await waitForTextEditorsToClose;
   } catch (error) {
-    assert.fail(null, null, error.toString(), '');
+    assert.fail(error);
   }
 }
 
 export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(
-    TextEditor.getText(),
+    vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
     'Document content does not match.'
   );
@@ -136,21 +135,20 @@ export async function setupWorkspace(
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor!.options.tabSize = config.tabstop;
-  activeTextEditor!.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   await mockAndEnable();
 }
 
 const mockAndEnable = async () => {
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
-  const mh = await getAndUpdateModeHandler();
-  Globals.mockModeHandler = mh;
+  const mh = (await getAndUpdateModeHandler())!;
   await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
 };
 
 export async function cleanUpWorkspace(): Promise<void> {
-  return new Promise((c, e) => {
+  return new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
     }
@@ -181,7 +179,8 @@ export async function cleanUpWorkspace(): Promise<void> {
 }
 
 export async function reloadConfiguration() {
-  const validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  const validatorResults =
+    (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
   for (const validatorResult of validatorResults.get()) {
     console.log(validatorResult);
   }

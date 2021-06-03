@@ -4,7 +4,7 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { globalState } from '../../state/globalState';
 import { Jump } from '../../jumps/jump';
-import { Range } from '../../common/motion/range';
+import { Cursor } from '../../common/motion/cursor';
 
 class JumpPickItem implements QuickPickItem {
   jump: Jump;
@@ -20,7 +20,7 @@ class JumpPickItem implements QuickPickItem {
     this.label = jump.fileName;
     this.detail = `jump ${idx} line ${jump.position.line + 1} col ${jump.position.character}`;
     try {
-      this.description = jump.editor?.document.lineAt(jump.position)?.text;
+      this.description = jump.document.lineAt(jump.position).text;
     } catch (e) {
       this.description = undefined;
     }
@@ -35,9 +35,9 @@ export class JumpsCommand extends node.CommandBase {
       const item = await window.showQuickPick(quickPickItems, {
         canPickMany: false,
       });
-      if (item && item.jump.editor != null) {
-        window.showTextDocument(item.jump.editor.document);
-        vimState.cursors = [new Range(item.jump.position, item.jump.position)];
+      if (item && item.jump.document !== undefined) {
+        window.showTextDocument(item.jump.document);
+        vimState.cursors = [new Cursor(item.jump.position, item.jump.position)];
       }
     } else {
       window.showInformationMessage('No jumps available');

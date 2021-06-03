@@ -28,9 +28,10 @@ function parseCount(args: string): number | undefined {
   }
 }
 
-function parseCountOrOffset(
-  args: string
-): { count: number | undefined; direction?: 'left' | 'right' } {
+function parseCountOrOffset(args: string): {
+  count: number | undefined;
+  direction?: 'left' | 'right';
+} {
   if (!args) {
     return { count: undefined };
   }
@@ -122,7 +123,7 @@ export function parseTabNewCommandArgs(args: string): node.TabCommand {
   let name = '';
 
   if (args) {
-    let scanner = new Scanner(args);
+    const scanner = new Scanner(args);
     name = scanner.nextWord();
   }
 

@@ -1,40 +1,40 @@
-import * as vscode from 'vscode';
+import { Position, Range, TextEditor } from 'vscode';
 import { VimState } from '../../state/vimState';
 import { configuration } from './../../configuration/configuration';
 import { RegisterAction, BaseAction, BaseCommand } from './../base';
-import { Position } from '../../common/motion/position';
 import { BaseMovement, IMovement } from '../baseMotion';
 import { SneakHighlighter } from './sneakHighlighting';
-import { BaseOperator } from '../operator';
 import { Mode } from '../../mode/mode';
 import { getAndUpdateModeHandler } from '../../../extensionBase';
+import { IBaseOperator } from '../../state/recordedState';
 
-export class SneakAction extends BaseMovement {
+export abstract class SneakAction extends BaseMovement {
   isJump = true;
 
   /**
    * This is where we save the operator in the event of a z/Z motion and label mode so
    * SneakMarkInputJump can reuse it.
    */
-  protected operator: BaseOperator | undefined;
+  protected operator: IBaseOperator | undefined;
 
   protected highlighter: SneakHighlighter = new SneakHighlighter(this);
 
-  protected rangesToHighlight: vscode.Range[] = [];
+  protected rangesToHighlight: Range[] = [];
 
   private previousMode: Mode | undefined;
 
-  private previousCursorStart: Position;
+  // TODO: is this assertion justified?
+  private previousCursorStart!: Position;
 
   public isHighlightingOn(): boolean {
     return this.highlighter.isHighlightingOn;
   }
 
-  public getRangesToHighlight(): vscode.Range[] {
+  public getRangesToHighlight(): Range[] {
     return this.rangesToHighlight;
   }
 
-  public getOperator(): BaseOperator | undefined {
+  public getOperator(): IBaseOperator | undefined {
     return this.operator;
   }
 
@@ -46,12 +46,12 @@ export class SneakAction extends BaseMovement {
     return this.previousCursorStart;
   }
 
-  public clearDecorations(): void {
-    this.highlighter.clearDecorations();
+  public clearDecorations(editor: TextEditor): void {
+    this.highlighter.clearDecorations(editor);
   }
 
-  public updateDecorations(lastRecognizedAction: BaseAction | undefined) {
-    this.highlighter.updateDecorations(lastRecognizedAction);
+  public updateDecorations(editor: TextEditor, lastRecognizedAction: BaseAction | undefined) {
+    this.highlighter.updateDecorations(editor, lastRecognizedAction);
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -97,12 +97,11 @@ export class SneakAction extends BaseMovement {
     }
 
     if (vimState.sneak) {
-      vimState.sneak.clearDecorations();
+      vimState.sneak.clearDecorations(vimState.editor);
     }
     vimState.sneak = this;
 
-    const editor = vscode.window.activeTextEditor!;
-    const document = editor.document;
+    const document = vimState.document;
     const lineCount = document.lineCount;
 
     if (this.keysPressed[2] === '\n') {
@@ -155,7 +154,7 @@ export class SneakAction extends BaseMovement {
             positionFound = true;
           } else {
             this.rangesToHighlight.push(
-              new vscode.Range(i, matchIndex, i, matchIndex + searchString.length)
+              new Range(i, matchIndex, i, matchIndex + searchString.length)
             );
           }
         } else {
@@ -193,38 +192,24 @@ export class SneakAction extends BaseMovement {
     return position;
   }
 
-  protected getNextLineIndex(i: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract getNextLineIndex(i: number): number;
 
-  protected updateFromIndex(matchIndex: number, length: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract updateFromIndex(matchIndex: number, length: number): number;
 
-  protected search(lineText: string, searchString: string, fromIndex: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract search(lineText: string, searchString: string, fromIndex: number): number;
 
-  protected isLineProcessed(fromIndex: number, length: number): boolean {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract isLineProcessed(fromIndex: number, length: number): boolean;
 
-  protected calculateInitialSearchIndex(
+  protected abstract calculateInitialSearchIndex(
     position: Position,
     searchString: string,
     i: number,
     lineText: string
-  ): number {
-    throw new Error('Must be overriden.');
-  }
+  ): number;
 
-  protected getLineConditionStopNumber(lineCount: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract getLineConditionStopNumber(lineCount: number): number;
 
-  protected setRepeatableMovements(vimState: VimState): VimState {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract setRepeatableMovements(vimState: VimState): VimState;
 }
 
 @RegisterAction
@@ -385,7 +370,7 @@ class SneakMarkInputJump extends BaseCommand {
       // We only get to this operation if we are in label mode, so previous mode cannot be undefined.
       const modeHandler = await getAndUpdateModeHandler();
       // We execute the key if no mark belongs to it.
-      modeHandler.handleKeyEvent(this.keysPressed[0]);
+      modeHandler?.handleKeyEvent(this.keysPressed[0]);
       return;
     }
 

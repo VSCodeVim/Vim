@@ -11,8 +11,8 @@ import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 
 class CommandLine {
-  private _history: CommandLineHistory;
-  private readonly _logger = Logger.get('CommandLine');
+  private history!: CommandLineHistory;
+  private readonly logger = Logger.get('CommandLine');
 
   /**
    *  Index used for navigating commandline history with <up> and <down>
@@ -30,14 +30,14 @@ class CommandLine {
   public preCompleteCommand = '';
 
   public get historyEntries() {
-    return this._history?.get() || [];
+    return this.history?.get() || [];
   }
 
   public previousMode = Mode.Normal;
 
   public async load(context: vscode.ExtensionContext): Promise<void> {
-    this._history = new CommandLineHistory(context);
-    return this._history.load();
+    this.history = new CommandLineHistory(context);
+    return this.history.load();
   }
 
   public async Run(command: string, vimState: VimState): Promise<void> {
@@ -49,14 +49,14 @@ class CommandLine {
       command = command.slice(1);
     }
 
-    this._history.add(command);
-    this.commandLineHistoryIndex = this._history.get().length;
+    this.history.add(command);
+    this.commandLineHistoryIndex = this.history.get().length;
 
     if (!command.startsWith('reg')) {
-      let recState = new RecordedState();
+      const recState = new RecordedState();
       recState.registerName = ':';
       recState.commandList = command.split('');
-      Register.putByKey(recState, ':', undefined, true);
+      Register.setReadonlyRegister(':', recState);
     }
 
     try {
@@ -82,7 +82,7 @@ class CommandLine {
           StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
-        this._logger.error(`Error executing cmd=${command}. err=${e}.`);
+        this.logger.error(`Error executing cmd=${command}. err=${e}.`);
       }
     }
   }
@@ -91,11 +91,7 @@ class CommandLine {
    * Prompts the user for a command using an InputBox, and runs the provided command
    */
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document');
-      return;
-    }
-    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
+    const cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
     await this.Run(cmd!, vimState);
   }
 
@@ -109,19 +105,12 @@ class CommandLine {
   }
 
   public async showHistory(initialText: string): Promise<string | undefined> {
-    if (!vscode.window.activeTextEditor) {
-      this._logger.debug('No active document.');
-      return '';
-    }
+    this.history.add(initialText);
 
-    this._history.add(initialText);
-
-    let cmd = await vscode.window.showQuickPick(this._history.get().slice().reverse(), {
+    return vscode.window.showQuickPick(this.history.get().slice().reverse(), {
       placeHolder: 'Vim command history',
       ignoreFocusOut: false,
     });
-
-    return cmd;
   }
 }
 

@@ -1,5 +1,5 @@
 import * as node from '../node';
-import { configuration } from '../../configuration/configuration';
+import { configuration, optionAliases } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
@@ -50,58 +50,54 @@ export interface IOptionArgs extends node.ICommandArgs {
 }
 
 export class SetOptionsCommand extends node.CommandBase {
-  protected _arguments: IOptionArgs;
+  private readonly arguments: IOptionArgs;
 
   constructor(args: IOptionArgs) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IOptionArgs {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (!this._arguments.name) {
+    if (!this.arguments.name) {
       throw new Error('Missing argument.');
     }
 
-    if (configuration[this._arguments.name] == null) {
+    const optionName = optionAliases.get(this.arguments.name) ?? this.arguments.name;
+
+    if (configuration[optionName] == null) {
       throw VimError.fromCode(ErrorCode.UnknownOption);
     }
 
-    switch (this._arguments.operator) {
+    switch (this.arguments.operator) {
       case SetOptionOperator.Set:
-        configuration[this._arguments.name] = true;
+        configuration[optionName] = true;
         break;
       case SetOptionOperator.Reset:
-        configuration[this._arguments.name] = false;
+        configuration[optionName] = false;
         break;
       case SetOptionOperator.Equal:
-        configuration[this._arguments.name] = this._arguments.value!;
+        configuration[optionName] = this.arguments.value!;
         break;
       case SetOptionOperator.Invert:
-        configuration[this._arguments.name] = !configuration[this._arguments.name];
+        configuration[optionName] = !configuration[optionName];
         break;
       case SetOptionOperator.Append:
-        configuration[this._arguments.name] += this._arguments.value!;
+        configuration[optionName] += this.arguments.value!;
         break;
       case SetOptionOperator.Subtract:
-        if (typeof this._arguments.value! === 'number') {
-          configuration[this._arguments.name] -= this._arguments.value;
+        if (typeof this.arguments.value! === 'number') {
+          configuration[optionName] -= this.arguments.value;
         } else {
-          let initialValue = configuration[this._arguments.name];
-          configuration[this._arguments.name] = initialValue
-            .split(this._arguments.value! as string)
-            .join('');
+          const initialValue = configuration[optionName];
+          configuration[optionName] = initialValue.split(this.arguments.value! as string).join('');
         }
         break;
       case SetOptionOperator.Info:
-        let value = configuration[this._arguments.name];
+        const value = configuration[optionName];
         if (value === undefined) {
           throw VimError.fromCode(ErrorCode.UnknownOption);
         } else {
-          StatusBar.setText(vimState, `${this._arguments.name}=${value}`);
+          StatusBar.setText(vimState, `${optionName}=${value}`);
         }
         break;
       default:

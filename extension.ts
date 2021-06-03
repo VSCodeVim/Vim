@@ -15,9 +15,12 @@ import './src/configuration/validators/remappingValidator';
 import './src/configuration/validators/neovimValidator';
 import './src/configuration/validators/vimrcValidator';
 
+import { install as installSourceMapSupport } from 'source-map-support';
+
 import * as vscode from 'vscode';
 import { activate as activateFunc } from './extensionBase';
 import { Globals } from './src/globals';
+import { Register } from './src/register/register';
 
 export { getAndUpdateModeHandler } from './extensionBase';
 
@@ -25,5 +28,11 @@ export async function activate(context: vscode.ExtensionContext) {
   // Set the storage path to be used by history files
   Globals.extensionStoragePath = context.globalStoragePath;
 
+  installSourceMapSupport();
+
   activateFunc(context);
+}
+
+export async function deactivate() {
+  await Register.saveToDisk(true);
 }

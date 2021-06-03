@@ -15,19 +15,15 @@ export interface ICloseCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
 export class CloseCommand extends node.CommandBase {
-  protected _arguments: ICloseCommandArguments;
+  public readonly arguments: ICloseCommandArguments;
 
   constructor(args: ICloseCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ICloseCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (vimState.editor.document.isDirty && !this.arguments.bang) {
+    if (vimState.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 
@@ -35,7 +31,7 @@ export class CloseCommand extends node.CommandBase {
       throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
     }
 
-    let oldViewColumn = vimState.editor.viewColumn;
+    const oldViewColumn = vimState.editor.viewColumn;
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
     if (

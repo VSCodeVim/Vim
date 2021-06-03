@@ -4,17 +4,15 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Visual Block', () => {
   let modeHandler: ModeHandler;
 
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);
@@ -27,6 +25,20 @@ suite('Mode Visual Block', () => {
 
     await modeHandler.handleKeyEvent('<C-v>');
     assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  newTest({
+    title: '[count]<C-v>',
+    start: ['a|bcde'],
+    keysPressed: '3<C-v>d',
+    end: ['a|e'],
+  });
+
+  newTest({
+    title: '[count]<C-v> past EOL',
+    start: ['a|bcde', '12345'],
+    keysPressed: '100<C-v>d',
+    end: ['|a', '12345'],
   });
 
   newTest({
@@ -193,7 +205,7 @@ suite('Mode Visual Block', () => {
     title: 'Select register using " works in visual block mode',
     start: ['abcde', '0|1234', 'abcde', '01234'],
     keysPressed: '<C-v>llj"ayGo<C-r>a<Esc>',
-    end: ['abcde', '01234', 'abcde', '01234', '123', 'bcd', '|'],
+    end: ['abcde', '01234', 'abcde', '01234', '123', 'bc|d'],
   });
 
   newTest({

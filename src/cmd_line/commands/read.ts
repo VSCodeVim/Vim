@@ -15,15 +15,11 @@ export interface IReadCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
 export class ReadCommand extends node.CommandBase {
-  protected _arguments: IReadCommandArguments;
+  private readonly arguments: IReadCommandArguments;
 
   constructor(args: IReadCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IReadCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   public neovimCapable(): boolean {
@@ -33,7 +29,7 @@ export class ReadCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     const textToInsert = await this.getTextToInsert();
     if (textToInsert) {
-      await TextEditor.insert(textToInsert);
+      await TextEditor.insert(vimState.editor, textToInsert);
     }
   }
 

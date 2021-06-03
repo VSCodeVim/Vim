@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
-
-import { Position, PositionDiff } from './../common/motion/position';
-import { Range } from './../common/motion/range';
+import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
+import { RecordedState } from '../state/recordedState';
+import { PositionDiff } from './../common/motion/position';
 
 /**
  * This file contains definitions of objects that represent text
@@ -194,10 +193,11 @@ export interface ShowSearchHistory {
 }
 
 /**
- * Represents pressing '.'
+ * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
-  type: 'dot';
+  type: 'replayRecordedState';
+  recordedState: RecordedState;
 }
 
 /**
@@ -240,7 +240,7 @@ export interface Macro {
  */
 export interface ContentChangeTransformation {
   type: 'contentChange';
-  changes: vscode.TextDocumentContentChangeEvent[];
+  changes: TextDocumentContentChangeEvent[];
   diff: PositionDiff;
 }
 
@@ -291,7 +291,7 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
     x.type === 'moveCursor'
   );
 };
-export const isMultiCursorTextTransformation = (x: Transformation): Boolean => {
+export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
   return (x.type === 'insertTextVSCode' && x.isMultiCursor) ?? false;
 };
 
@@ -312,7 +312,9 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
   throw new Error('Unhandled text transformation: ' + transformation);
 };
 
-export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
+export function overlappingTransformations(
+  transformations: TextTransformations[]
+): [TextTransformations, TextTransformations] | undefined {
   for (let i = 0; i < transformations.length; i++) {
     for (let j = i + 1; j < transformations.length; j++) {
       const first = transformations[i];
@@ -325,16 +327,17 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
         continue;
       }
 
-      if (firstRange.overlaps(secondRange)) {
-        return true;
+      const intersection = firstRange.intersection(secondRange);
+      if (intersection && !intersection.start.isEqual(intersection.end)) {
+        return [first, second];
       }
     }
   }
 
-  return false;
-};
+  return undefined;
+}
 
-export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
+export const areAllSameTransformation = (transformations: Transformation[]): boolean => {
   const firstTransformation = transformations[0];
 
   return transformations.every((t) => {
@@ -343,3 +346,13 @@ export const areAllSameTransformation = (transformations: Transformation[]): Boo
     });
   });
 };
+
+export function stringify(transformation: Transformation): string {
+  if (transformation.type === 'replayRecordedState') {
+    return `Replay: ${transformation.recordedState.actionsRun
+      .map((x) => x.keysPressed.join(''))
+      .join('')}`;
+  } else {
+    return JSON.stringify(transformation);
+  }
+}

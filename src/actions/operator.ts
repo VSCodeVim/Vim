@@ -1,13 +1,6 @@
 import * as vscode from 'vscode';
 
-import {
-  Position,
-  PositionDiff,
-  PositionDiffType,
-  earlierOf,
-  sorted,
-} from './../common/motion/position';
-import { Range } from './../common/motion/range';
+import { PositionDiff, earlierOf, sorted } from './../common/motion/position';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
@@ -15,11 +8,13 @@ import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
-import { TextObjectMovement } from './textobject';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { commandLine } from './../cmd_line/commandLine';
+import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
+  isOperator = true;
+
   constructor(multicursorIndex?: number) {
     super();
     this.multicursorIndex = multicursorIndex;
@@ -137,19 +132,21 @@ export class DeleteOperator extends BaseOperator {
 
     end = new Position(end.line, end.character + 1);
 
-    const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
+    const isOnLastLine = end.line === vimState.document.lineCount - 1;
 
     // Vim does this weird thing where it allows you to select and delete
     // the newline character, which it places 1 past the last character
     // in the line. Here we interpret a character position 1 past the end
     // as selecting the newline character. Don't allow this in visual block mode
-    if (vimState.currentMode !== Mode.VisualBlock) {
-      if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-        end = end.getDownWithDesiredColumn(0);
-      }
+    if (
+      vimState.currentMode !== Mode.VisualBlock &&
+      !isOnLastLine &&
+      end.character === vimState.document.lineAt(end).text.length + 1
+    ) {
+      end = end.with({ character: 0 }).getDown();
     }
 
-    let text = vimState.editor.document.getText(new vscode.Range(start, end));
+    let text = vimState.document.getText(new vscode.Range(start, end));
 
     // If we delete linewise to the final line of the document, we expect the line
     // to be removed. This is actually a special case because the newline
@@ -164,7 +161,7 @@ export class DeleteOperator extends BaseOperator {
 
     // Now rebornix is confused as well.
     if (isOnLastLine && start.line !== 0 && registerMode === RegisterMode.LineWise) {
-      start = start.getPreviousLineBegin().getLineEnd();
+      start = start.getUp().getLineEnd();
     }
 
     if (registerMode === RegisterMode.LineWise) {
@@ -177,41 +174,39 @@ export class DeleteOperator extends BaseOperator {
     }
 
     if (yank) {
-      Register.put(text, vimState, this.multicursorIndex);
+      Register.put(vimState, text, this.multicursorIndex, true);
     }
 
-    let diff = new PositionDiff();
+    let diff: PositionDiff | undefined;
     let resultingPosition: Position;
 
     if (currentMode === Mode.Visual) {
       resultingPosition = earlierOf(start, end);
     }
 
-    if (start.character > TextEditor.getLineAt(start).text.length) {
+    if (start.character > vimState.document.lineAt(start).text.length) {
       resultingPosition = start.getLeft();
-      diff = new PositionDiff({ character: -1 });
+      diff = PositionDiff.offset({ character: -1 });
     } else {
       resultingPosition = start;
     }
 
     if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.obeyStartOfLine();
-      diff = new PositionDiff({
-        type: PositionDiffType.ObeyStartOfLine,
-      });
+      resultingPosition = resultingPosition.obeyStartOfLine(vimState.document);
+      diff = PositionDiff.startOfLine();
     }
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(start, end),
-      diff: diff,
+      range: new vscode.Range(start, end),
+      diff,
     });
 
     return resultingPosition;
   }
 
   public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<void> {
-    let newPos = await this.delete(
+    const newPos = await this.delete(
       start,
       end,
       vimState.currentMode,
@@ -231,7 +226,7 @@ export class DeleteOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class DeleteOperatorVisual extends BaseOperator {
+class DeleteOperatorVisual extends BaseOperator {
   public keys = ['D'];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -251,18 +246,6 @@ export class YankOperator extends BaseOperator {
   canBeRepeatedWithDot = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    // HACK: make Surround with y (which takes a motion) work.
-    if (vimState.surround) {
-      vimState.surround.range = new vscode.Range(start, end);
-      await vimState.setCurrentMode(Mode.SurroundInputMode);
-      vimState.cursorStopPosition = start;
-      vimState.cursorStartPosition = start;
-
-      return;
-    }
-
-    const originalMode = vimState.currentMode;
-
     [start, end] = sorted(start, end);
     let extendedEnd = new Position(end.line, end.character + 1);
 
@@ -272,41 +255,26 @@ export class YankOperator extends BaseOperator {
     }
 
     const range = new vscode.Range(start, extendedEnd);
-    let text = TextEditor.getText(range);
+    let text = vimState.document.getText(range);
 
     // If we selected the newline character, add it as well.
     if (
       vimState.currentMode === Mode.Visual &&
-      extendedEnd.character === TextEditor.getLineAt(extendedEnd).text.length + 1
+      extendedEnd.character === vimState.document.lineAt(extendedEnd).text.length + 1
     ) {
       text = text + '\n';
     }
 
     this.highlightYankedRanges(vimState, [range]);
 
-    Register.put(text, vimState, this.multicursorIndex);
+    Register.put(vimState, text, this.multicursorIndex, true);
 
-    if (vimState.currentMode === Mode.Visual || vimState.currentMode === Mode.VisualLine) {
-      vimState.historyTracker.addMark(start, '<');
-      vimState.historyTracker.addMark(end, '>');
-    }
+    vimState.cursorStopPosition =
+      vimState.currentMode === Mode.Normal && vimState.currentRegisterMode === RegisterMode.LineWise
+        ? start.with({ character: vimState.cursorStopPosition.character })
+        : start;
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStartPosition = start;
-
-    // Only change cursor position if we ran a text object movement
-    let moveCursor = false;
-    if (vimState.recordedState.actionsRun.length > 1) {
-      if (vimState.recordedState.actionsRun[1] instanceof TextObjectMovement) {
-        moveCursor = true;
-      }
-    }
-
-    if (originalMode === Mode.Normal && !moveCursor) {
-      vimState.cursors = vimState.cursorsInitialState;
-    } else {
-      vimState.cursorStopPosition = start;
-    }
 
     const numLinesYanked = text.split('\n').length;
     reportLinesYanked(numLinesYanked, vimState);
@@ -314,7 +282,7 @@ export class YankOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class FilterOperator extends BaseOperator {
+class FilterOperator extends BaseOperator {
   public keys = ['!'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -348,19 +316,19 @@ export class FilterOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class ShiftYankOperatorVisual extends BaseOperator {
+class ShiftYankOperatorVisual extends BaseOperator {
   public keys = ['Y'];
   public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    await new YankOperator().run(vimState, start, end);
+    await new YankOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
 @RegisterAction
-export class DeleteOperatorXVisual extends BaseOperator {
+class DeleteOperatorXVisual extends BaseOperator {
   public keys = [['x'], ['<Del>']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -370,7 +338,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
 }
 
 @RegisterAction
-export class ChangeOperatorSVisual extends BaseOperator {
+class ChangeOperatorSVisual extends BaseOperator {
   public keys = ['s'];
   public modes = [Mode.Visual, Mode.VisualLine];
 
@@ -380,12 +348,12 @@ export class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    await new ChangeOperator().run(vimState, start, end);
+    await new ChangeOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
 @RegisterAction
-export class FormatOperator extends BaseOperator {
+class FormatOperator extends BaseOperator {
   public keys = ['='];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -399,93 +367,108 @@ export class FormatOperator extends BaseOperator {
       line = vimState.cursorStopPosition.line;
     }
 
-    let newCursorPosition = TextEditor.getFirstNonWhitespaceCharOnLine(line);
+    const newCursorPosition = TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line);
     vimState.cursorStopPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
 
-@RegisterAction
-export class UpperCaseOperator extends BaseOperator {
-  public keys = [['g', 'U'], ['U']];
-  public modes = [Mode.Visual, Mode.VisualLine];
+abstract class ChangeCaseOperator extends BaseOperator {
+  public modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
+  abstract transformText(text: string): string;
 
-    await TextEditor.replace(range, text.toUpperCase());
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
+    if (vimState.currentMode === Mode.VisualBlock) {
+      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
+        const range = new vscode.Range(start, end);
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replaceText',
+          range,
+          text: this.transformText(vimState.document.getText(range)),
+        });
+      }
+
+      // HACK: currently must do this nonsense to collapse all cursors into one
+      for (let i = 0; i < vimState.editor.selections.length; i++) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'moveCursor',
+          diff: PositionDiff.exactPosition(earlierOf(startPos, endPos)),
+          cursorIndex: i,
+        });
+      }
+    } else {
+      if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+        startPos = startPos.getLineBegin();
+        endPos = endPos.getLineEnd();
+      }
+
+      const range = new vscode.Range(startPos, new Position(endPos.line, endPos.character + 1));
+
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replaceText',
+        range,
+        text: this.transformText(vimState.document.getText(range)),
+        diff: PositionDiff.exactPosition(startPos),
+      });
+    }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start;
   }
 }
 
 @RegisterAction
-export class UpperCaseWithMotion extends UpperCaseOperator {
+class UpperCaseOperator extends ChangeCaseOperator {
+  public keys = [['g', 'U'], ['U']];
+
+  public transformText(text: string): string {
+    return text.toUpperCase();
+  }
+}
+
+@RegisterAction
+class UpperCaseWithMotion extends UpperCaseOperator {
   public keys = [['g', 'U']];
   public modes = [Mode.Normal];
 }
 
 @RegisterAction
-class UpperCaseVisualBlockOperator extends BaseOperator {
-  public keys = [['g', 'U'], ['U']];
-  public modes = [Mode.VisualBlock];
-
-  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
-      await TextEditor.replace(range, text.toUpperCase());
-    }
-
-    const cursorPosition = earlierOf(startPos, endPos);
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Normal);
-  }
-}
-
-@RegisterAction
-export class LowerCaseOperator extends BaseOperator {
+class LowerCaseOperator extends ChangeCaseOperator {
   public keys = [['g', 'u'], ['u']];
-  public modes = [Mode.Visual, Mode.VisualLine];
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    let text = vimState.editor.document.getText(range);
-
-    await TextEditor.replace(range, text.toLowerCase());
-
-    await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start;
+  public transformText(text: string): string {
+    return text.toLowerCase();
   }
 }
 
 @RegisterAction
-export class LowerCaseWithMotion extends LowerCaseOperator {
+class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = [['g', 'u']];
   public modes = [Mode.Normal];
 }
 
 @RegisterAction
-class LowerCaseVisualBlockOperator extends BaseOperator {
-  public keys = [['g', 'u'], ['u']];
-  public modes = [Mode.VisualBlock];
+class ToggleCaseOperator extends ChangeCaseOperator {
+  public keys = [['g', '~'], ['~']];
 
-  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      const range = new vscode.Range(start, end);
-      let text = vimState.editor.document.getText(range);
-      await TextEditor.replace(range, text.toLowerCase());
+  public transformText(text: string): string {
+    let newText = '';
+    for (const char of text) {
+      let toggled = char.toLocaleLowerCase();
+      if (toggled === char) {
+        toggled = char.toLocaleUpperCase();
+      }
+      newText += toggled;
     }
-
-    const cursorPosition = earlierOf(startPos, endPos);
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Normal);
+    return newText;
   }
+}
+
+@RegisterAction
+class ToggleCaseWithMotion extends ToggleCaseOperator {
+  public keys = [['g', '~']];
+  public modes = [Mode.Normal];
 }
 
 @RegisterAction
@@ -499,7 +482,7 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.obeyStartOfLine();
+    vimState.cursorStopPosition = start.obeyStartOfLine(vimState.document);
   }
 }
 
@@ -514,7 +497,7 @@ class IndentOperator extends BaseOperator {
  */
 @RegisterAction
 class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
@@ -537,7 +520,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = start.obeyStartOfLine();
+    vimState.cursorStopPosition = start.obeyStartOfLine(vimState.document);
   }
 }
 
@@ -551,7 +534,10 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      start.line
+    );
   }
 }
 
@@ -560,7 +546,7 @@ class OutdentOperator extends BaseOperator {
  */
 @RegisterAction
 class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
@@ -583,7 +569,10 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(start.line);
+    vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
+      vimState.document,
+      start.line
+    );
   }
 }
 
@@ -599,10 +588,7 @@ export class ChangeOperator extends BaseOperator {
     // which means the insert cursor would be one to the left of the end of
     // the line. We do want to run delete if it is a multiline change though ex. c}
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    if (
-      TextEditor.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 ||
-      end.line !== start.line
-    ) {
+    if (TextEditor.getLineLength(start.line) !== 0 || end.line !== start.line) {
       if (isLineWise) {
         await new DeleteOperator(this.multicursorIndex).run(
           vimState,
@@ -631,8 +617,11 @@ export class ChangeOperator extends BaseOperator {
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
-    const thisLineIndent = vimState.editor.document.getText(
-      new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
+    const thisLineIndent = vimState.document.getText(
+      new vscode.Range(
+        position.getLineBegin(),
+        position.getLineBeginRespectingIndent(vimState.document)
+      )
     );
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
@@ -644,7 +633,7 @@ export class ChangeOperator extends BaseOperator {
     );
 
     if (configuration.autoindent) {
-      if (vimState.editor.document.languageId === 'plaintext') {
+      if (vimState.document.languageId === 'plaintext') {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
           text: thisLineIndent,
@@ -655,7 +644,7 @@ export class ChangeOperator extends BaseOperator {
         vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: new PositionDiff({ character: 1 }), // Handle transition from Normal to Insert modes
+          diff: PositionDiff.offset({ character: 1 }), // Handle transition from Normal to Insert modes
         });
       }
     }
@@ -663,7 +652,7 @@ export class ChangeOperator extends BaseOperator {
 }
 
 @RegisterAction
-export class YankVisualBlockMode extends BaseOperator {
+class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
   canBeRepeatedWithDot = false;
@@ -672,30 +661,23 @@ export class YankVisualBlockMode extends BaseOperator {
   }
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    let toCopy: string = '';
     const ranges: vscode.Range[] = [];
-
-    const isMultiline = startPos.line !== endPos.line;
-
+    const lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
+      lines.push(line);
       ranges.push(new vscode.Range(start, end));
-      if (isMultiline) {
-        toCopy += line + '\n';
-      } else {
-        toCopy = line;
-      }
     }
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
     this.highlightYankedRanges(vimState, ranges);
 
-    Register.put(toCopy, vimState, this.multicursorIndex);
+    Register.put(vimState, lines.join('\n'), this.multicursorIndex, true);
 
     vimState.historyTracker.addMark(startPos, '<');
     vimState.historyTracker.addMark(endPos, '>');
 
-    const numLinesYanked = toCopy.split('\n').length;
+    const numLinesYanked = lines.length;
     reportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -704,64 +686,7 @@ export class YankVisualBlockMode extends BaseOperator {
 }
 
 @RegisterAction
-export class ToggleCaseOperator extends BaseOperator {
-  public keys = [['g', '~'], ['~']];
-  public modes = [Mode.Visual, Mode.VisualLine];
-
-  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const range = new vscode.Range(start, end.getRight());
-
-    await ToggleCaseOperator.toggleCase(range);
-
-    const cursorPosition = earlierOf(start, end);
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Normal);
-  }
-
-  static async toggleCase(range: vscode.Range) {
-    const text = TextEditor.getText(range);
-
-    let newText = '';
-    for (const char of text) {
-      // Try lower-case
-      let toggled = char.toLocaleLowerCase();
-      if (toggled === char) {
-        // Try upper-case
-        toggled = char.toLocaleUpperCase();
-      }
-      newText += toggled;
-    }
-    await TextEditor.replace(range, newText);
-  }
-}
-
-@RegisterAction
-class ToggleCaseVisualBlockOperator extends BaseOperator {
-  public keys = [['g', '~'], ['~']];
-  public modes = [Mode.VisualBlock];
-
-  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      const range = new vscode.Range(start, end);
-      await ToggleCaseOperator.toggleCase(range);
-    }
-
-    const cursorPosition = earlierOf(startPos, endPos);
-    vimState.cursorStopPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    await vimState.setCurrentMode(Mode.Normal);
-  }
-}
-
-@RegisterAction
-class ToggleCaseWithMotion extends ToggleCaseOperator {
-  public keys = [['g', '~']];
-  public modes = [Mode.Normal];
-}
-
-@RegisterAction
-export class CommentOperator extends BaseOperator {
+class CommentOperator extends BaseOperator {
   public keys = ['g', 'c'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
@@ -790,14 +715,11 @@ export class ROT13Operator extends BaseOperator {
     }
 
     for (const range of selections) {
-      const original = TextEditor.getText(range);
+      const original = vimState.document.getText(range);
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: ROT13Operator.rot13(original),
-        range: new Range(
-          Position.FromVSCodePosition(range.start),
-          Position.FromVSCodePosition(range.end)
-        ),
+        range,
       });
     }
   }
@@ -828,7 +750,7 @@ export class ROT13Operator extends BaseOperator {
 }
 
 @RegisterAction
-export class CommentBlockOperator extends BaseOperator {
+class CommentBlockOperator extends BaseOperator {
   public keys = ['g', 'C'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
@@ -872,11 +794,13 @@ class ActionVisualReflowParagraph extends BaseOperator {
     { singleLine: false, start: '/*', inner: '*', final: '*/' },
     { singleLine: false, start: '{-', inner: '-', final: '-}' },
     { singleLine: true, start: '///' },
+    { singleLine: true, start: '//!' },
     { singleLine: true, start: '//' },
     { singleLine: true, start: '--' },
     { singleLine: true, start: '#' },
     { singleLine: true, start: ';' },
     { singleLine: true, start: '*' },
+    { singleLine: true, start: '%' },
 
     // Needs to come last, since everything starts with the empty string!
     { singleLine: true, start: '' },
@@ -904,41 +828,47 @@ class ActionVisualReflowParagraph extends BaseOperator {
     for (const char of indent) {
       indentLevel += char === '\t' ? configuration.tabstop : 1;
     }
-    const maximumLineLength = configuration.textwidth - indentLevel - 2;
+    const maximumLineLength = configuration.textwidth - indentLevel;
 
     // Chunk the lines by commenting style.
 
-    let chunksToReflow: {
+    interface Chunk {
       commentType: CommentType;
       content: string;
       indentLevelAfterComment: number;
-    }[] = [];
+      final: boolean;
+    }
+    const chunksToReflow: Chunk[] = [];
 
     for (const line of s.split('\n')) {
-      let lastChunk: { commentType: CommentType; content: string } | undefined =
-        chunksToReflow[chunksToReflow.length - 1];
-      const trimmedLine = line.trim();
+      let lastChunk: Chunk | undefined = chunksToReflow[chunksToReflow.length - 1];
+      const trimmedLine = line.trimStart();
 
       // See what comment type they are using.
 
       let commentType: CommentType | undefined;
 
       for (const type of ActionVisualReflowParagraph.CommentTypes) {
-        if (line.trim().startsWith(type.start)) {
+        if (trimmedLine.startsWith(type.start)) {
           commentType = type;
 
           break;
         }
 
         // If they're currently in a multiline comment, see if they continued it.
-        if (lastChunk && type.start === lastChunk.commentType.start && !type.singleLine) {
-          if (line.trim().startsWith(type.inner)) {
+        if (
+          lastChunk &&
+          !lastChunk.final &&
+          type.start === lastChunk.commentType.start &&
+          !type.singleLine
+        ) {
+          if (trimmedLine.startsWith(type.inner)) {
             commentType = type;
 
             break;
           }
 
-          if (line.trim().endsWith(type.final)) {
+          if (trimmedLine.endsWith(type.final)) {
             commentType = type;
 
             break;
@@ -951,15 +881,22 @@ class ActionVisualReflowParagraph extends BaseOperator {
       } // will never happen, just to satisfy typechecker.
 
       // Did they start a new comment type?
-      if (!lastChunk || commentType.start !== lastChunk.commentType.start) {
-        let chunk = {
+      if (!lastChunk || lastChunk.final || commentType.start !== lastChunk.commentType.start) {
+        const chunk = {
           commentType,
-          content: `${trimmedLine.substr(commentType.start.length).trim()}`,
+          content: `${trimmedLine.substr(commentType.start.length).trimStart()}`,
           indentLevelAfterComment: 0,
+          final: false,
         };
         if (commentType.singleLine) {
           chunk.indentLevelAfterComment =
             trimmedLine.substr(commentType.start.length).length - chunk.content.length;
+        } else if (chunk.content.endsWith(commentType.final)) {
+          // Multiline comment started and ended on one line
+          chunk.content = chunk.content
+            .substr(0, chunk.content.length - commentType.final.length)
+            .trim();
+          chunk.final = true;
         }
         chunksToReflow.push(chunk);
 
@@ -972,87 +909,125 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
       if (lastChunk.commentType.singleLine) {
         // is it a continuation of a comment like "//"
-        lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.start.length).trim()}`;
-      } else {
+        lastChunk.content += `\n${trimmedLine
+          .substr(lastChunk.commentType.start.length)
+          .trimStart()}`;
+      } else if (!lastChunk.final) {
         // are we in the middle of a multiline comment like "/*"
         if (trimmedLine.endsWith(lastChunk.commentType.final)) {
-          if (trimmedLine.length > lastChunk.commentType.final.length) {
-            lastChunk.content += `\n${trimmedLine
-              .substr(
-                lastChunk.commentType.inner.length,
-                trimmedLine.length - lastChunk.commentType.final.length
-              )
-              .trim()}`;
-          }
+          lastChunk.final = true;
+          const prefix = trimmedLine.startsWith(lastChunk.commentType.inner)
+            ? lastChunk.commentType.inner.length
+            : 0;
+          lastChunk.content += `\n${trimmedLine
+            .substr(prefix, trimmedLine.length - lastChunk.commentType.final.length - prefix)
+            .trim()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.inner)) {
-          lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.inner.length).trim()}`;
+          lastChunk.content += `\n${trimmedLine
+            .substr(lastChunk.commentType.inner.length)
+            .trimStart()}`;
         } else if (trimmedLine.startsWith(lastChunk.commentType.start)) {
-          lastChunk.content += `\n${trimmedLine.substr(lastChunk.commentType.start.length).trim()}`;
+          lastChunk.content += `\n${trimmedLine
+            .substr(lastChunk.commentType.start.length)
+            .trimStart()}`;
         }
       }
     }
 
     // Reflow each chunk.
-    let result: string[] = [];
+    const result: string[] = [];
 
     for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
+      const commentLength = commentType.start.length + indentAfterComment.length;
 
-      if (commentType.singleLine) {
-        lines = [``];
-      } else {
-        lines = [``, ``];
-      }
+      // Start with a single empty content line.
+      lines = [``];
 
-      // This tracks if we're pushing the first line of a chunk. If so, then we
-      // don't want to add an extra space. In addition, when there's a blank
-      // line, this needs to be reset.
-      let curIndex = 0;
-      for (const line of content.trim().split('\n')) {
-        // Preserve newlines.
-
+      for (let line of content.split('\n')) {
+        // Preserve blank lines in output.
         if (line.trim() === '') {
-          for (let i = 0; i < 2; i++) {
-            lines.push(``);
+          // Replace empty content line with blank line.
+          if (lines[lines.length - 1] === '') {
+            lines.pop();
           }
-          curIndex = 0;
+
+          lines.push(line);
+
+          // Add new empty content line for remaining content.
+          lines.push(``);
 
           continue;
         }
 
-        // Add word by word, wrapping when necessary.
-        const words = line.split(/\s+/);
-        for (let i = 0; i < words.length; i++) {
-          const word = words[i];
-          if (word === '') {
-            continue;
-          }
+        // Repeatedly partition line into pieces that fit in maximumLineLength
+        while (line) {
+          const lastLine = lines[lines.length - 1];
 
-          if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (curIndex === 0 && i === 0) {
-              lines[lines.length - 1] += `${word}`;
+          // Determine the separator that we'd need to add to the last line
+          // in order to join onto this line.
+          let separator;
+          if (!lastLine) {
+            separator = '';
+          } else if (
+            configuration.joinspaces &&
+            (lastLine.endsWith('.') || lastLine.endsWith('?') || lastLine.endsWith('!'))
+          ) {
+            separator = '  ';
+          } else if (lastLine.endsWith(' ')) {
+            if (
+              configuration.joinspaces &&
+              (lastLine.endsWith('. ') || lastLine.endsWith('? ') || lastLine.endsWith('! '))
+            ) {
+              separator = ' ';
             } else {
-              lines[lines.length - 1] += ` ${word}`;
+              separator = '';
             }
           } else {
-            lines.push(`${word}`);
+            separator = ' ';
+          }
+
+          // Consider appending separator and part of line to last line
+          const remaining = maximumLineLength - separator.length - lastLine.length - commentLength;
+          const trimmedLine = line.trimStart();
+          if (trimmedLine.length <= remaining) {
+            // Entire line fits on last line
+            lines[lines.length - 1] += `${separator}${trimmedLine}`;
+            break;
+          } else {
+            // Find largest portion of line that fits on last line,
+            // by searching backward for a whitespace character (space or tab).
+            let breakpoint = Math.max(
+              trimmedLine.lastIndexOf(' ', remaining),
+              trimmedLine.lastIndexOf('\t', remaining)
+            );
+            if (breakpoint < 0) {
+              // Next word is too long to fit on the current line.
+              if (lastLine) {
+                // Start a new line and try again next round.
+                lines.push('');
+                continue;
+              } else {
+                // Next word is too long to fit on a line by itself.
+                // Break it at the next word boundary, if there is one.
+                breakpoint = trimmedLine.search(/[ \t]/);
+                if (breakpoint < 0) breakpoint = line.length;
+              }
+            }
+
+            // Split the line into the part that fits on the last line
+            // and the remainder.  Start a new line for the remainder.
+            lines[lines.length - 1] += `${separator}${trimmedLine.slice(0, breakpoint).trimEnd()}`;
+            line = line.slice(breakpoint + 1);
+            lines.push('');
           }
         }
-        curIndex++;
       }
 
-      if (!commentType.singleLine) {
-        lines.push(``);
-      }
-
-      if (commentType.singleLine) {
-        if (lines.length > 1 && lines[0].trim() === '') {
-          lines = lines.slice(1);
-        }
-        if (lines.length > 1 && lines[lines.length - 1].trim() === '') {
-          lines = lines.slice(0, -1);
-        }
+      // Drop final empty content line.
+      if (lines[lines.length - 1] === '') {
+        lines.pop();
       }
 
       for (let i = 0; i < lines.length; i++) {
@@ -1060,19 +1035,33 @@ class ActionVisualReflowParagraph extends BaseOperator {
           lines[i] = `${indent}${commentType.start}${indentAfterComment}${lines[i]}`;
         } else {
           if (i === 0) {
-            lines[i] = `${indent}${commentType.start} ${lines[i]}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent}${commentType.start}`;
+            } else {
+              lines[i] = `${indent}${commentType.start} ${lines[i]}`;
+            }
+            if (i === lines.length - 1) {
+              lines[i] += ` ${commentType.final}`;
+            }
           } else if (i === lines.length - 1) {
-            lines[i] = `${indent} ${commentType.final}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent} ${commentType.final}`;
+            } else {
+              lines[i] = `${indent} ${commentType.inner} ${lines[i]} ${commentType.final}`;
+            }
           } else {
-            lines[i] = `${indent} ${commentType.inner} ${lines[i]}`;
+            if (lines[i] === '') {
+              lines[i] = `${indent} ${commentType.inner}`;
+            } else {
+              lines[i] = `${indent} ${commentType.inner} ${lines[i]}`;
+            }
           }
         }
       }
 
-      result = result.concat(lines);
+      result.push(...lines);
     }
 
-    // Gather up multiple empty lines into single empty lines.
     return result.join('\n');
   }
 
@@ -1082,15 +1071,15 @@ class ActionVisualReflowParagraph extends BaseOperator {
     start = start.getLineBegin();
     end = end.getLineEnd();
 
-    let textToReflow = TextEditor.getText(new vscode.Range(start, end));
+    let textToReflow = vimState.document.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: textToReflow,
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.newBOLDiff(),
+      diff: PositionDiff.exactCharacter({ character: 0 }),
     });
 
     await vimState.setCurrentMode(Mode.Normal);

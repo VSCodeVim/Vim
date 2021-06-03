@@ -1,24 +1,26 @@
 import * as vscode from 'vscode';
 
-import { Position } from './../../../common/motion/position';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { EasyMotionSearchAction } from './easymotion.cmd';
+import { IEasyMotion, EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
 import { Mode } from '../../../mode/mode';
+import { Position } from 'vscode';
 
-export class EasyMotion {
+export class EasyMotion implements IEasyMotion {
   /**
    * Refers to the accumulated keys for depth navigation
    */
   public accumulation = '';
 
-  public searchAction: EasyMotionSearchAction;
+  // TODO: is this actually always set?
+  public searchAction!: EasyMotionSearchAction;
 
   /**
    * Array of all markers and decorations
    */
-  private _markers: EasyMotion.Marker[];
-  private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
+  public readonly markers: Marker[];
+
+  private visibleMarkers: Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
 
   private static readonly fade = vscode.window.createTextEditorDecorationType({
@@ -38,17 +40,14 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
 
-  public get markers() {
-    return this._markers;
-  }
-
   /**
    * Mode to return to after attempting easymotion
    */
-  public previousMode: Mode;
+  // TODO: make this optional (in some circumstances it isn't actually set)
+  public previousMode!: Mode;
 
   constructor() {
-    this._markers = [];
+    this.markers = [];
     this.visibleMarkers = [];
     this.decorations = [];
   }
@@ -75,9 +74,7 @@ export class EasyMotion {
   /**
    * Clear all decorations
    */
-  public clearDecorations() {
-    const editor = vscode.window.activeTextEditor!;
-
+  public clearDecorations(editor: vscode.TextEditor) {
     for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
@@ -90,23 +87,21 @@ export class EasyMotion {
    * Clear all markers
    */
   public clearMarkers() {
-    this._markers = [];
+    while (this.markers.length) {
+      this.markers.pop();
+    }
     this.visibleMarkers = [];
   }
 
-  public addMarker(marker: EasyMotion.Marker) {
-    this._markers.push(marker);
-  }
-
-  public getMarker(index: number): EasyMotion.Marker {
-    return this._markers[index];
+  public addMarker(marker: Marker) {
+    this.markers.push(marker);
   }
 
   /**
    * Find markers beginning with a string
    */
-  public findMarkers(nail: string, onlyVisible: boolean): EasyMotion.Marker[] {
-    const markers = onlyVisible ? this.visibleMarkers : this._markers;
+  public findMarkers(nail: string, onlyVisible: boolean): Marker[] {
+    const markers = onlyVisible ? this.visibleMarkers : this.markers;
     return markers.filter((marker) => marker.name.startsWith(nail));
   }
 
@@ -114,28 +109,29 @@ export class EasyMotion {
    * Search and sort using the index of a match compared to the index of position (usually the cursor)
    */
   public sortedSearch(
+    document: vscode.TextDocument,
     position: Position,
     search: string | RegExp = '',
-    options: EasyMotion.SearchOptions = {}
-  ): EasyMotion.Match[] {
+    options: SearchOptions = {}
+  ): Match[] {
     const regex =
       typeof search === 'string'
         ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
         : search;
 
-    const matches: EasyMotion.Match[] = [];
+    const matches: Match[] = [];
 
     // Cursor index refers to the index of the marker that is on or to the right of the cursor
     let cursorIndex = position.character;
-    let prevMatch: EasyMotion.Match | undefined;
+    let prevMatch: Match | undefined;
 
     // Calculate the min/max bounds for the search
-    const lineCount = TextEditor.getLineCount();
+    const lineCount = document.lineCount;
     const lineMin = options.min ? Math.max(options.min.line, 0) : 0;
     const lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
 
     outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
-      const line = TextEditor.getLine(lineIdx).text;
+      const line = document.lineAt(lineIdx).text;
       let result = regex.exec(line);
 
       while (result) {
@@ -161,7 +157,7 @@ export class EasyMotion {
             if (pos.isEqual(position)) {
               result = regex.exec(line);
             } else {
-              prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
+              prevMatch = new Match(pos, result[0], matches.length);
               matches.push(prevMatch);
               result = regex.exec(line);
             }
@@ -171,7 +167,7 @@ export class EasyMotion {
     }
 
     // Sort by the index distance from the cursor index
-    matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
+    matches.sort((a: Match, b: Match): number => {
       const absDiffA = computeAboluteDiff(a.index);
       const absDiffB = computeAboluteDiff(b.index);
       return absDiffA - absDiffB;
@@ -225,14 +221,13 @@ export class EasyMotion {
     return this.getMarkerColor(configuration.easymotionDimColor, '#777777');
   }
 
-  public updateDecorations() {
-    this.clearDecorations();
+  public updateDecorations(editor: vscode.TextEditor) {
+    this.clearDecorations(editor);
 
     this.visibleMarkers = [];
     this.decorations = [];
 
     // Set the decorations for all the different marker lengths
-    const editor = vscode.window.activeTextEditor!;
     const dimmingZones: vscode.DecorationOptions[] = [];
     const dimmingRenderOptions: vscode.ThemableDecorationRenderOptions = {
       // we update the color here again in case the configuration has changed
@@ -244,7 +239,7 @@ export class EasyMotion {
     // the user to do more work, with this solution we temporarily hide the marked character
     // so no user specific setting is needed
     const hiddenChars: vscode.Range[] = [];
-    const markers = this._markers
+    const markers = this.markers
       .filter((m) => m.name.startsWith(this.accumulation))
       .sort((a, b) => (a.position.isBefore(b.position) ? -1 : 1));
 
@@ -300,7 +295,7 @@ export class EasyMotion {
       const firstCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
           contentText: keystroke.substring(0, 1),
-          backgroundColor: backgroundColor,
+          backgroundColor,
           color: firstCharFontColor,
           margin: `0 -1ch 0 0;
           position: absolute;
@@ -330,7 +325,7 @@ export class EasyMotion {
         const secondCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
           before: {
             contentText: keystroke.slice(1),
-            backgroundColor: backgroundColor,
+            backgroundColor,
             color: secondCharFontColor,
             margin: `0 -1ch 0 0;
             position: absolute;
@@ -397,13 +392,11 @@ export class EasyMotion {
     if (configuration.easymotionDimBackground) {
       const prevMarker = markers[markers.length - 1];
       const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
-      const prevDimPos = Position.FromVSCodePosition(
-        dimmingZones[dimmingZones.length - 1].range.end
-      );
+      const prevDimPos = dimmingZones[dimmingZones.length - 1].range.end;
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 
       // Don't create any more dimming ranges when the last marker is at document end
-      if (!offsetPrevDimPos.isEqual(TextEditor.getDocumentEnd())) {
+      if (!offsetPrevDimPos.isEqual(TextEditor.getDocumentEnd(editor.document))) {
         dimmingZones.push({
           range: new vscode.Range(
             offsetPrevDimPos,
@@ -425,40 +418,5 @@ export class EasyMotion {
     if (configuration.easymotionDimBackground) {
       editor.setDecorations(EasyMotion.fade, dimmingZones);
     }
-  }
-}
-
-export namespace EasyMotion {
-  export interface Marker {
-    name: string;
-    position: Position;
-  }
-
-  export class Match {
-    public position: Position;
-    public readonly text: string;
-    public readonly index: number;
-
-    constructor(position: Position, text: string, index: number) {
-      this.position = position;
-      this.text = text;
-      this.index = index;
-    }
-
-    public toRange(): vscode.Range {
-      return new vscode.Range(this.position, this.position.translate(0, this.text.length));
-    }
-  }
-
-  export interface SearchOptions {
-    /**
-     * The minimum bound of the search
-     */
-    min?: Position;
-
-    /**
-     * The maximum bound of the search
-     */
-    max?: Position;
   }
 }

@@ -1,10 +1,10 @@
-import { Position } from '../common/motion/position';
 import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
+import { Position } from 'vscode';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -113,7 +113,7 @@ export abstract class BaseMovement extends BaseAction {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
+    const recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
     let prevResult = failedMovement(vimState);
     let firstMovementStart: Position = new Position(position.line, position.character);

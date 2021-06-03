@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
-import { VsCodeContext } from '../util/vscode-context';
+import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import { vimrc } from './vimrc';
+import * as process from 'process';
+
 import {
   IConfiguration,
   IKeyRemapping,
@@ -17,8 +18,43 @@ import {
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
+import { SUPPORT_VIMRC } from 'platform/constants';
+
+// https://stackovrflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
+type RemoveIndex<T> = {
+  [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P];
+};
 
 export const extensionVersion = packagejson.version;
+
+/**
+ * Most options supported by Vim have a short alias. They are provided here.
+ * Please keep this list up to date and sorted alphabetically.
+ */
+export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
+  ['ai', 'autoindent'],
+  ['et', 'expandtab'],
+  ['gd', 'gdefault'],
+  ['hi', 'history'],
+  ['hls', 'hlsearch'],
+  ['ic', 'ignorecase'],
+  ['is', 'incsearch'],
+  ['isk', 'iskeyword'],
+  ['js', 'joinspaces'],
+  ['mmd', 'maxmapdepth'],
+  ['nu', 'number'],
+  ['rnu', 'relativenumber'],
+  ['sc', 'showcmd'],
+  ['scr', 'scroll'],
+  ['scs', 'smartcase'],
+  ['smd', 'showmode'],
+  ['sol', 'startofline'],
+  ['to', 'timeout'],
+  ['ts', 'tabstop'],
+  ['tw', 'textwidth'],
+  ['ws', 'wrapscan'],
+  ['ww', 'whichwrap'],
+]);
 
 type OptionValue = number | string | boolean;
 
@@ -69,12 +105,11 @@ class Configuration implements IConfiguration {
   };
 
   public async load(): Promise<ValidatorResults> {
-    let vimConfigs: any = Globals.isTesting
+    const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
 
-    /* tslint:disable:forin */
-    // Disable forin rule here as we make accessors enumerable.`
+    // tslint:disable-next-line: forin
     for (const option in this) {
       let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
@@ -85,8 +120,10 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (this.vimrc.enable) {
-      await vimrc.load(this);
+    if (SUPPORT_VIMRC && this.vimrc.enable) {
+      await import('./vimrc').then((vimrcModel) => {
+        return vimrcModel.vimrc.load(this);
+      });
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
@@ -95,17 +132,15 @@ class Configuration implements IConfiguration {
 
     const validatorResults = await configurationValidator.validate(configuration);
 
-    // wrap keys
-    this.wrapKeys = {};
-    for (const wrapKey of this.whichwrap.split(',')) {
-      this.wrapKeys[wrapKey] = true;
-    }
-
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
-    for (let keybinding of packagejson.contributes.keybindings) {
+    for (const keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.includes('listFocus')) {
+        continue;
+      }
+
+      if (keybinding.command.startsWith('notebook')) {
         continue;
       }
 
@@ -129,7 +164,7 @@ class Configuration implements IConfiguration {
       // By default, all key combinations are used
       let useKey = true;
 
-      let handleKey = this.handleKeys[boundKey.key];
+      const handleKey = this.handleKeys[boundKey.key];
       if (handleKey !== undefined) {
         // enabled/disabled through `vim.handleKeys`
         useKey = handleKey;
@@ -143,20 +178,18 @@ class Configuration implements IConfiguration {
         }
       }
 
-      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
+      VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
     }
 
-    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
-    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+    VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
+    VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
     return validatorResults;
   }
 
-  getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    const activeTextEditor = vscode.window.activeTextEditor;
-    const resource = activeTextEditor
-      ? { uri: activeTextEditor.document.uri, languageId: activeTextEditor.document.languageId }
-      : null;
+  getConfiguration(section: string = ''): RemoveIndex<vscode.WorkspaceConfiguration> {
+    const document = vscode.window.activeTextEditor?.document;
+    const resource = document ? { uri: document.uri, languageId: document.languageId } : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -190,6 +223,8 @@ class Configuration implements IConfiguration {
   smartcase = true;
 
   autoindent = true;
+
+  joinspaces = true;
 
   camelCaseMotion: ICamelCaseMotionConfiguration = {
     enable: true,
@@ -284,10 +319,10 @@ class Configuration implements IConfiguration {
   };
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
-  tabstop: number;
+  tabstop: number = 8;
 
   @overlapSetting({ settingName: 'cursorStyle', defaultValue: 'line' })
-  private editorCursorStyleRaw: string;
+  private editorCursorStyleRaw: string = 'line';
 
   get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
     return this.cursorStyleFromString(this.editorCursorStyleRaw);
@@ -297,7 +332,7 @@ class Configuration implements IConfiguration {
   }
 
   @overlapSetting({ settingName: 'insertSpaces', defaultValue: false })
-  expandtab: boolean;
+  expandtab: boolean = false;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -309,7 +344,7 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  number: boolean;
+  number: boolean = true;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -321,13 +356,25 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  relativenumber: boolean;
+  relativenumber: boolean = false;
 
   @overlapSetting({
     settingName: 'wordSeparators',
     defaultValue: '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-',
   })
-  iskeyword: string;
+  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+
+  @overlapSetting({
+    settingName: 'wordWrap',
+    defaultValue: false,
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['wordWrapColumn', true],
+      ['bounded', true],
+    ]),
+  })
+  wrap: boolean = false;
 
   boundKeyCombinations: IKeyBinding[] = [];
 
@@ -343,6 +390,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = '';
+  neovimUseConfigFile = false;
+  neovimConfigPath = '';
 
   vimrc = {
     enable: false,
@@ -354,10 +403,11 @@ class Configuration implements IConfiguration {
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
 
-  whichwrap = '';
-  wrapKeys = {};
+  whichwrap = 'b,s';
 
   startofline = true;
+
+  showMarksInGutter = false;
 
   report = 2;
   wrapscan = true;
@@ -399,16 +449,17 @@ class Configuration implements IConfiguration {
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
-  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+  commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
 
-  private static unproxify(obj: Object): Object {
-    let result = {};
+  private static unproxify(obj: object): object {
+    const result = {};
+    // tslint:disable-next-line: forin
     for (const key in obj) {
-      let val = obj[key] as any;
+      const val = obj[key] as any;
       if (val !== null && val !== undefined) {
         result[key] = val;
       }
@@ -423,9 +474,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function (target: any, propertyKey: string) {
+  return (target: any, propertyKey: string) => {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
+      get() {
         // retrieve value from vim configuration
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
@@ -442,7 +493,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function (value) {
+      set(value) {
         // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
@@ -451,7 +502,7 @@ function overlapSetting(args: {
         }
 
         if (args.map) {
-          for (let [vscodeSetting, vimSetting] of args.map.entries()) {
+          for (const [vscodeSetting, vimSetting] of args.map.entries()) {
             if (value === vimSetting) {
               value = vscodeSetting;
               break;

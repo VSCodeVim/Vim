@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, assertEqualLines } from '../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {
@@ -37,7 +37,7 @@ suite(':only command', () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    modeHandler = (await getAndUpdateModeHandler())!;
   });
 
   teardown(cleanUpWorkspace);

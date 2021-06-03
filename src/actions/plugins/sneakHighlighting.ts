@@ -1,7 +1,15 @@
-import * as vscode from 'vscode';
+import {
+  DecorationOptions,
+  Position,
+  Range,
+  TextEditor,
+  TextEditorDecorationType,
+  ThemableDecorationInstanceRenderOptions,
+  ThemeColor,
+  window,
+} from 'vscode';
 import { configuration } from './../../configuration/configuration';
 import { BaseAction } from './../base';
-import { Position } from '../../common/motion/position';
 import { MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MarkerGenerator } from './easymotion/markerGenerator';
 import { SneakAction } from './sneak';
@@ -11,55 +19,55 @@ export class SneakHighlighter {
 
   private sneak: SneakAction;
 
-  private style: vscode.TextEditorDecorationType = this.createHighlightStyle();
+  private style: TextEditorDecorationType = this.createHighlightStyle();
 
-  private fadeoutStyle: vscode.TextEditorDecorationType | undefined = this.createFadeoutStyle();
+  private fadeoutStyle: TextEditorDecorationType | undefined = this.createFadeoutStyle();
 
-  private markers: Map<string, vscode.Range> = new Map();
+  private markers: Map<string, Range> = new Map();
 
   constructor(sneak: SneakAction) {
     this.sneak = sneak;
   }
 
-  private getFontColor(): string | vscode.ThemeColor {
+  private getFontColor(): string | ThemeColor {
     if (configuration.sneakHighlightFontColor) {
       return configuration.sneakHighlightFontColor;
     } else {
-      return new vscode.ThemeColor('editor.background');
+      return new ThemeColor('editor.background');
     }
   }
 
-  private getBackgroundColor(): string | vscode.ThemeColor {
+  private getBackgroundColor(): string | ThemeColor {
     if (configuration.sneakHighlightBackgroundColor) {
       return configuration.sneakHighlightBackgroundColor;
     } else {
-      return new vscode.ThemeColor('editor.foreground');
+      return new ThemeColor('editor.foreground');
     }
   }
 
-  private getFadeoutColor(): string | vscode.ThemeColor {
+  private getFadeoutColor(): string | ThemeColor {
     if (configuration.sneakHighlightFadeColor) {
       return configuration.sneakHighlightFadeColor;
     } else {
-      return new vscode.ThemeColor('editorLineNumber.foreground');
+      return new ThemeColor('editorLineNumber.foreground');
     }
   }
 
-  public createHighlightStyle(): vscode.TextEditorDecorationType {
+  public createHighlightStyle(): TextEditorDecorationType {
     const styleForRegExp = {
       color: this.getFontColor(),
       backgroundColor: this.getBackgroundColor(),
     };
 
-    return vscode.window.createTextEditorDecorationType(styleForRegExp);
+    return window.createTextEditorDecorationType(styleForRegExp);
   }
 
-  private createFadeoutStyle(): vscode.TextEditorDecorationType | undefined {
+  private createFadeoutStyle(): TextEditorDecorationType | undefined {
     if (!configuration.sneakHighlightUseFadeout) {
       return;
     }
 
-    return vscode.window.createTextEditorDecorationType({
+    return window.createTextEditorDecorationType({
       color: this.getFadeoutColor(),
     });
   }
@@ -67,8 +75,7 @@ export class SneakHighlighter {
   /**
    * Clear all decorations
    */
-  public clearDecorations() {
-    const editor = vscode.window.activeTextEditor!;
+  public clearDecorations(editor: TextEditor) {
     editor.setDecorations(this.style, []);
 
     if (this.fadeoutStyle) {
@@ -87,15 +94,14 @@ export class SneakHighlighter {
     );
   }
 
-  public updateDecorations(lastRecognizedAction: BaseAction | undefined) {
-    this.clearDecorations();
+  public updateDecorations(editor: TextEditor, lastRecognizedAction: BaseAction | undefined) {
+    this.clearDecorations(editor);
 
     if (!this.isSneakTheLastAction(lastRecognizedAction)) {
       this.isHighlightingOn = false;
       return;
     }
 
-    const editor = vscode.window.activeTextEditor!;
     const rangesToHighlight = this.sneak.getRangesToHighlight();
 
     if (configuration.sneakLabelMode) {
@@ -109,7 +115,7 @@ export class SneakHighlighter {
         ? this.markers.size - 1
         : rangesToHighlight.length - 1;
       // we fade out the text up to the last match + 2 lines (only for aesthetic purposes)
-      const matchesRange = new vscode.Range(
+      const matchesRange = new Range(
         editor.visibleRanges[0].end,
         rangesToHighlight[fadeoutRangeEndIndex].end.translate(2, Number.MAX_SAFE_INTEGER)
       );
@@ -118,10 +124,10 @@ export class SneakHighlighter {
     }
   }
 
-  private updateMarkerDecorations(editor: vscode.TextEditor) {
+  private updateMarkerDecorations(editor: TextEditor) {
     this.generateMarkers();
 
-    const markerHighlights: vscode.DecorationOptions[] = [];
+    const markerHighlights: DecorationOptions[] = [];
 
     for (const [markerString, markerRange] of this.markers) {
       // when we don't use fadeout, we make the marker more prominent by widening the highlighting
@@ -130,9 +136,9 @@ export class SneakHighlighter {
         ? markerString
         : ' ' + markerString + ' ';
 
-      const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
+      const renderOptions: ThemableDecorationInstanceRenderOptions = {
         before: {
-          contentText: contentText,
+          contentText,
           color: this.getFontColor(),
           backgroundColor: this.getBackgroundColor(),
         },
@@ -166,7 +172,7 @@ export class SneakHighlighter {
       );
 
       if (marker) {
-        this.markers.set(marker.name, new vscode.Range(range.start, range.start));
+        this.markers.set(marker.name, new Range(range.start, range.start));
         index++;
       } else {
         break;

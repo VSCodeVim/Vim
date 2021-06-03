@@ -3,7 +3,7 @@ import {
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
 import { Configuration } from '../testConfiguration';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
@@ -11,8 +11,6 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.easymotion = true;
@@ -199,14 +197,14 @@ suite('easymotion plugin', () => {
 
   newTest({
     title: 'Can handle linebackward move (1)',
-    start: ['abcDefGhi|'],
+    start: ['abcDefGh|i'],
     keysPressed: easymotionCommand({ key: 'h', leaderCount: 2 }, '', 'k'),
     end: ['abc|DefGhi'],
   });
 
   newTest({
     title: 'Can handle linebackward move (2)',
-    start: ['abcDefGhi|'],
+    start: ['abcDefGh|i'],
     keysPressed: easymotionCommand({ key: 'h', leaderCount: 2 }, '', 'h'),
     end: ['abcDef|Ghi'],
   });

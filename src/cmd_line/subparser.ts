@@ -14,10 +14,11 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
-import { parseMarksCommandArgs } from './subparsers/marks';
+import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers/marks';
 import { parsePutExCommandArgs } from './subparsers/put';
 import { CommandBase } from './node';
 import { parseHistoryCommandArgs } from './subparsers/history';
+import { parseBufferDeleteCommandArgs } from './subparsers/bufferDelete';
 import { NohlCommand } from './commands/nohl';
 import { OnlyCommand } from './commands/only';
 import { SmileCommand } from './commands/smile';
@@ -27,6 +28,8 @@ import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
+import { GotoCommand } from './commands/goto';
+import { YankCommand } from './commands/yank';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -45,6 +48,41 @@ export const commandParsers = {
 
   bdelete: {
     abbrev: 'bd',
+    parser: parseBufferDeleteCommandArgs,
+  },
+
+  bfirst: {
+    abbrev: 'bf',
+    parser: undefined,
+  },
+
+  blast: {
+    abbrev: 'bl',
+    parser: undefined,
+  },
+
+  bmodified: {
+    abbrev: 'bm',
+    parser: undefined,
+  },
+
+  bnext: {
+    abbrev: 'bn',
+    parser: tabCmd.parseTabNCommandArgs,
+  },
+
+  bNext: {
+    abbrev: 'bN',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  bprevious: {
+    abbrev: 'bp',
+    parser: tabCmd.parseTabPCommandArgs,
+  },
+
+  brewind: {
+    abbrev: 'br',
     parser: undefined,
   },
 
@@ -75,6 +113,11 @@ export const commandParsers = {
   delete: {
     abbrev: 'd',
     parser: parseDeleteRangeLinesCommandArgs,
+  },
+
+  delmarks: {
+    abbrev: 'delm',
+    parser: parseMarksRemoveCommandArgs,
   },
 
   digraphs: {
@@ -109,6 +152,11 @@ export const commandParsers = {
   global: {
     abbrev: 'g',
     parser: undefined,
+  },
+
+  goto: {
+    abbrev: 'go',
+    parser: GotoCommand.parse,
   },
 
   help: {
@@ -150,7 +198,7 @@ export const commandParsers = {
 
   nohlsearch: {
     abbrev: 'noh',
-    parser: () => new NohlCommand({}),
+    parser: () => new NohlCommand(),
   },
 
   normal: {
@@ -160,7 +208,7 @@ export const commandParsers = {
 
   only: {
     abbrev: 'on',
-    parser: () => new OnlyCommand({}),
+    parser: () => new OnlyCommand(),
   },
 
   put: {
@@ -215,6 +263,11 @@ export const commandParsers = {
   sort: {
     abbrev: 'sor',
     parser: parseSortCommandArgs,
+  },
+
+  source: {
+    abbrev: 'so',
+    parser: undefined,
   },
 
   split: {
@@ -282,7 +335,12 @@ export const commandParsers = {
 
   undo: {
     abbrev: 'u',
-    parser: () => new UndoCommand({}),
+    parser: () => new UndoCommand(),
+  },
+
+  vglobal: {
+    abbrev: 'v',
+    parser: undefined,
   },
 
   vnew: {
@@ -322,13 +380,18 @@ export const commandParsers = {
     abbrev: 'xa',
     parser: parseWriteQuitAllCommandArgs,
   },
+
+  yank: {
+    abbrev: 'y',
+    parser: YankCommand.parse,
+  },
 };
 
 /**
  * Returns a command parser for the given `input`, if one exists.
  * Resolves `q`, `qu`, `qui`, and `quit` the same.
  */
-export function getParser(input: string): ((args?: string) => CommandBase) | undefined {
+export function getParser(input: string): ((args: string) => CommandBase) | undefined {
   if (input === '') {
     return undefined;
   }

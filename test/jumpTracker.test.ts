@@ -3,20 +3,18 @@ import * as vscode from 'vscode';
 
 import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
-import { Position } from '../src/common/motion/position';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { getTestingFunctions } from './testSimplifier';
+import { Position } from 'vscode';
+import { ITestObject, newTest } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  const { newTest } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
 
   teardown(cleanUpWorkspace);
 
-  const newJumpTest = (options) => {
+  const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({
       title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,
       ...options,
@@ -24,10 +22,9 @@ suite('Record and navigate jumps', () => {
   };
 
   suite('Jump Tracker unit tests', () => {
-    const jump = (lineNumber, columnNumber, fileName?) =>
+    const jump = (lineNumber: number, columnNumber: number, fileName?: string) =>
       new Jump({
-        editor: null,
-        fileName: fileName || 'Untitled',
+        document: { fileName: fileName ?? 'Untitled' } as vscode.TextDocument,
         position: new Position(lineNumber, columnNumber),
       });
     const file1 = jump(0, 0, 'file1');
@@ -45,7 +42,7 @@ suite('Record and navigate jumps', () => {
       jumpTracker.recordJumpBack(file3);
       jumpTracker.recordJumpBack(file2);
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3'],
         'Unexpected jumps found'
@@ -74,7 +71,7 @@ suite('Record and navigate jumps', () => {
       jumpTracker.recordJumpBack(file3);
       jumpTracker.handleFileJump(file3, file2);
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3', 'file4'],
         'Unexpected jumps found'
@@ -96,7 +93,7 @@ suite('Record and navigate jumps', () => {
       jumpTracker.recordJumpBack(file3);
       jumpTracker.handleFileJump(file2, file4);
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3', 'file2'],
         'Unexpected jumps found'
@@ -112,7 +109,7 @@ suite('Record and navigate jumps', () => {
       jumpTracker.handleFileJump(file2, file3);
       jumpTracker.handleFileJump(file3, file2);
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3'],
         'Unexpected jumps found'
@@ -128,10 +125,27 @@ suite('Record and navigate jumps', () => {
       });
 
       assert.strictEqual(jumpTracker.jumps.length, 100, 'Jump tracker should cut off jumps at 100');
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.position.line),
         range(102).slice(2, 102),
         "Jump tracker doesn't contain the expected jumps after removing old jumps"
+      );
+    });
+
+    test('Can handle recording "from" jump with no corresponding "to" jump', () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.recordJump(jump(0, 0));
+
+      assert.strictEqual(
+        jumpTracker.jumps.length,
+        1,
+        'Jump tracker failed to record "from"-only jump'
+      );
+      assert.deepEqual(
+        jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
+        [[0, 0, 'Untitled']],
+        `Jump tracker doesn't contain expected jumps after recording "from"-only jump`
       );
     });
 
@@ -145,7 +159,7 @@ suite('Record and navigate jumps', () => {
       jumpTracker.recordJump(jump(5, 5, 'file1'), jump(6, 0, 'file1'));
       jumpTracker.recordJump(jump(6, 0, 'file1'), jump(2, 0, 'file1'));
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
         [
           [0, 0, 'file2'],
@@ -168,7 +182,7 @@ suite('Record and navigate jumps', () => {
 
       // Vim doesn't delete jumps at the deleted line, it just shifts other lines down
       // Note the column number was preserved for newer jump when it found duplicates on a line.
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
         [
           [0, 0, 'file2'],
@@ -187,7 +201,7 @@ suite('Record and navigate jumps', () => {
 
       // If that results in multiple jumps on a line, though the duplicate is deleted
       // Preserve the newest jump in that case
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
         [
           [0, 0, 'file2'],
@@ -204,7 +218,7 @@ suite('Record and navigate jumps', () => {
       );
 
       // If you delete lines such that jumps are past EOF, delete the jumps
-      assert.deepEqual(
+      assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
         [
           [0, 0, 'file2'],

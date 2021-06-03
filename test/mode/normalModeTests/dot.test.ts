@@ -1,10 +1,9 @@
+import { Mode } from '../../../src/mode/mode';
 import { Configuration } from '../../testConfiguration';
-import { getTestingFunctions } from '../../testSimplifier';
+import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -66,8 +65,6 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
@@ -77,6 +74,78 @@ suite('Repeat content change', () => {
   });
 
   teardown(cleanUpWorkspace);
+
+  newTest({
+    title: 'Can repeat `<BS>`',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'i<BS><Esc>' + 'j$.',
+    end: ['abce', 'AB|CE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<BS><BS>`',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'i<BS><BS><Esc>' + 'j$.',
+    end: ['abe', 'A|BE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<BS>` within larger insertion',
+    start: ['abcd|e', 'ABCDE'],
+    keysPressed: 'ixy<BS>z<Esc>' + 'j$.',
+    end: ['abcdxze', 'ABCDx|zE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del>`',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'a<Del><Esc>' + 'j0.',
+    end: ['acde', '|ACDE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del><Del>`',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'a<Del><Del><Esc>' + 'j0.',
+    end: ['ade', '|ADE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<Del>` within larger insertion',
+    start: ['|abcde', 'ABCDE'],
+    keysPressed: 'axy<Del>z<Esc>' + 'j0.',
+    end: ['axyzcde', 'Axy|zCDE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat insertion with newline',
+    start: ['ab|cde', 'ABCDE'],
+    keysPressed: 'i1\n2<Esc>' + 'j0ll.',
+    end: ['ab1', '2cde', 'AB1', '|2CDE'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<C-y>`',
+    start: ['abcde', '|12', 'ABCDE', '12'],
+    keysPressed: 'A<C-y><C-y><Esc>' + 'jj0.',
+    end: ['abcde', '12cd', 'ABCDE', '12c|d'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can repeat `<C-e>`',
+    start: ['abcde', '|12', 'ABCDE', '12'],
+    keysPressed: 'A<C-e><C-e><Esc>' + 'jj0.',
+    end: ['abcde', '12CD', 'ABCDE', '12C|D'],
+    endMode: Mode.Normal,
+  });
 
   newTest({
     title: "Can repeat '<C-t>'",
@@ -115,8 +184,6 @@ suite('Repeat content change', () => {
 });
 
 suite('Dot Operator repeat with remap', () => {
-  const { newTest, newTestOnly } = getTestingFunctions();
-
   setup(async () => {
     const configuration = new Configuration();
     configuration.insertModeKeyBindings = [

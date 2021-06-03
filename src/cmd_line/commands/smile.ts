@@ -38,6 +38,6 @@ export class SmileCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
-    await TextEditor.insert(SmileCommand.smileText);
+    await TextEditor.insert(vscode.window.activeTextEditor!, SmileCommand.smileText);
   }
 }

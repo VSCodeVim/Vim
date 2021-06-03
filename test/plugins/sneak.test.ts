@@ -1,8 +1,6 @@
 import { Globals } from '../../src/globals';
-import { getTestingFunctions } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
-
-const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
 
 suite('sneak plugin', () => {
   setup(async () => {

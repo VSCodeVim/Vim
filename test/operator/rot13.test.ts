@@ -1,13 +1,10 @@
 import * as assert from 'assert';
 
-import { getTestingFunctions } from '../testSimplifier';
-
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { ROT13Operator } from '../../src/actions/operator';
+import { newTest } from '../testSimplifier';
 
 suite('rot13 operator', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });

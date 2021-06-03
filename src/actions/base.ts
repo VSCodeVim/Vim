@@ -1,5 +1,5 @@
-import { Position } from '../common/motion/position';
-import { Range } from '../common/motion/range';
+import { Position } from 'vscode';
+import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
@@ -13,11 +13,18 @@ export abstract class BaseAction {
    */
   public isMotion = false;
 
+  public isOperator = false;
+  public isCommand = false;
+
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
   public isJump = false;
 
+  /**
+   * TODO: This property is a lie - it pertains to whether an action creates an undo point...
+   *       See #5058 and rationalize ASAP.
+   */
   public canBeRepeatedWithDot = false;
 
   /**
@@ -36,12 +43,12 @@ export abstract class BaseAction {
   /**
    * Modes that this action can be run in.
    */
-  public modes: Mode[];
+  public abstract readonly modes: readonly Mode[];
 
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public keys: string[] | string[][];
+  public abstract readonly keys: readonly string[] | readonly string[][];
 
   public mustBeFirstKey = false;
 
@@ -96,7 +103,10 @@ export abstract class BaseAction {
     return true;
   }
 
-  public static CompareKeypressSequence(one: string[] | string[][], two: string[]): boolean {
+  public static CompareKeypressSequence(
+    one: readonly string[] | readonly string[][],
+    two: readonly string[]
+  ): boolean {
     if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
         if (BaseAction.CompareKeypressSequence(sequence, two)) {
@@ -112,8 +122,8 @@ export abstract class BaseAction {
     }
 
     for (let i = 0, j = 0; i < one.length; i++, j++) {
-      const left = one[i],
-        right = two[j];
+      const left = one[i];
+      const right = two[j];
 
       if (left === '<any>' || right === '<any>') {
         continue;
@@ -163,7 +173,7 @@ export abstract class BaseAction {
     return this.keys.join('');
   }
 
-  private static is2DArray<T>(x: any): x is T[][] {
+  private static is2DArray<T>(x: readonly T[] | readonly T[][]): x is readonly T[][] {
     return Array.isArray(x[0]);
   }
 }
@@ -172,6 +182,8 @@ export abstract class BaseAction {
  * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
+  isCommand = true;
+
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
    * that means that we'll go and try to run it.
@@ -193,8 +205,6 @@ export abstract class BaseCommand extends BaseAction {
    */
   runsOnceForEachCountPrefix = false;
 
-  canBeRepeatedWithDot = false;
-
   /**
    * Run the command a single time.
    */
@@ -206,7 +216,7 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<void> {
-    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    const timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (!this.runsOnceForEveryCursor()) {
       for (let i = 0; i < timesToRepeat; i++) {
@@ -222,10 +232,10 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
-    let resultingCursors: Range[] = [];
+    const resultingCursors: Cursor[] = [];
 
     const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Range(x.start, x.stop))
+      .map((x) => new Cursor(x.start, x.stop))
       .sort((a, b) =>
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -244,7 +254,7 @@ export abstract class BaseCommand extends BaseAction {
         await this.exec(stop, vimState);
       }
 
-      resultingCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition));
+      resultingCursors.push(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition));
 
       for (const transformation of vimState.recordedState.transformer.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
@@ -265,7 +275,7 @@ export enum KeypressState {
 /**
  * Every Vim action will be added here with the @RegisterAction decorator.
  */
-const actionMap = new Map<Mode, Array<{ new (): BaseAction }>>();
+const actionMap = new Map<Mode, Array<new () => BaseAction>>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -299,7 +309,7 @@ export function getRelevantAction(
   return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
-export function RegisterAction(action: { new (): BaseAction }): void {
+export function RegisterAction(action: new () => BaseAction): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
     let actions = actionMap.get(modeName);

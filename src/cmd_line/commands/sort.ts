@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
+import { PositionDiff } from '../../common/motion/position';
 
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
@@ -12,15 +12,11 @@ export interface ISortCommandArguments extends node.ICommandArgs {
 }
 
 export class SortCommand extends node.CommandBase {
-  protected _arguments: ISortCommandArguments;
+  private readonly arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ISortCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   public neovimCapable(): boolean {
@@ -30,47 +26,61 @@ export class SortCommand extends node.CommandBase {
   async execute(vimState: VimState): Promise<void> {
     if (isVisualMode(vimState.currentMode)) {
       const { start, end } = vimState.editor.selection;
-      await this.sortLines(start.line, end.line);
+      await this.sortLines(vimState, start.line, end.line);
     } else {
-      await this.sortLines(0, TextEditor.getLineCount() - 1);
+      await this.sortLines(vimState, 0, vimState.document.lineCount - 1);
     }
   }
 
-  async sortLines(startLine: number, endLine: number) {
+  async sortLines(vimState: VimState, startLine: number, endLine: number) {
     let originalLines: string[] = [];
 
     for (
       let currentLine = startLine;
-      currentLine <= endLine && currentLine < TextEditor.getLineCount();
+      currentLine <= endLine && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
-      originalLines.push(TextEditor.readLineAt(currentLine));
-    }
-    if (this._arguments.unique) {
-      originalLines = [...new Set(originalLines)];
+      originalLines.push(vimState.document.lineAt(currentLine).text);
     }
 
-    let lastLineLength = originalLines[originalLines.length - 1].length;
+    if (this.arguments.unique) {
+      const seen = new Set<string>();
+      const uniqueLines: string[] = [];
+      for (const line of originalLines) {
+        const adjustedLine = this.arguments.ignoreCase ? line.toLowerCase() : line;
+        if (!seen.has(adjustedLine)) {
+          seen.add(adjustedLine);
+          uniqueLines.push(line);
+        }
+      }
+      originalLines = uniqueLines;
+    }
 
-    let sortedLines = this._arguments.ignoreCase
+    const lastLineLength = originalLines[originalLines.length - 1].length;
+
+    const sortedLines = this.arguments.ignoreCase
       ? originalLines.sort((a: string, b: string) => a.localeCompare(b))
       : originalLines.sort();
 
-    if (this._arguments.reverse) {
+    if (this.arguments.reverse) {
       sortedLines.reverse();
     }
 
-    let sortedContent = sortedLines.join('\n');
+    const sortedContent = sortedLines.join('\n');
 
-    await TextEditor.replace(
-      new vscode.Range(startLine, 0, endLine, lastLineLength),
-      sortedContent
-    );
+    vimState.recordedState.transformer.addTransformation({
+      type: 'replaceText',
+      range: new vscode.Range(startLine, 0, endLine, lastLineLength),
+      text: sortedContent,
+      diff: PositionDiff.exactPosition(
+        new vscode.Position(startLine, sortedLines[0].match(/\S/)?.index ?? 0)
+      ),
+    });
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
 
-    await this.sortLines(start, end);
+    await this.sortLines(vimState, start, end);
   }
 }

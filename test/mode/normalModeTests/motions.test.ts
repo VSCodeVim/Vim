@@ -1,15 +1,57 @@
-import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 import { Mode } from '../../../src/mode/mode';
+import { newTest, newTestSkip } from '../../testSimplifier';
 
 suite('Motions in Normal Mode', () => {
-  const { newTest, newTestOnly, newTestSkip } = getTestingFunctions();
-
   setup(async () => {
     await setupWorkspace();
   });
 
   teardown(cleanUpWorkspace);
+
+  suite('w', () => {
+    newTest({
+      title: 'w moves to next word',
+      start: ['one |two three four'],
+      keysPressed: 'w',
+      end: ['one two |three four'],
+    });
+
+    newTest({
+      title: 'w goes over all whitespace',
+      start: ['one |two \t  \t three four'],
+      keysPressed: 'w',
+      end: ['one two \t  \t |three four'],
+    });
+
+    newTest({
+      title: 'w stops at punctuation',
+      start: ['one |two,.;/three four'],
+      keysPressed: 'w',
+      end: ['one two|,.;/three four'],
+    });
+
+    newTest({
+      title: 'w on punctuation jumps over punctuation',
+      start: ['one two|,.;/three four'],
+      keysPressed: 'w',
+      end: ['one two,.;/|three four'],
+    });
+
+    newTest({
+      title: 'w goes over EOL',
+      start: ['o|ne  ', '  two three'],
+      keysPressed: 'w',
+      end: ['one  ', '  |two three'],
+    });
+
+    newTest({
+      title: '[count]w',
+      start: ['|one two three four'],
+      keysPressed: '2w',
+      end: ['one two |three four'],
+    });
+  });
 
   newTest({
     title: 'Can handle [(',
@@ -130,32 +172,116 @@ suite('Motions in Normal Mode', () => {
     end: ['tex|t text'],
   });
 
-  newTest({
-    title: "Can handle 'gg'",
-    start: ['text', 'text', 'tex|t'],
-    keysPressed: '$jkjgg',
-    end: ['|text', 'text', 'text'],
+  suite('gg', () => {
+    newTest({
+      title: 'gg (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'gg',
+      end: [' |123456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '3gg',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=true), count greater than last line',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9gg',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'gg (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'gg',
+      end: [' 123|456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '3gg',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]gg (startofline=false), count greater than last line',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9gg',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
   });
 
-  newTest({
-    title: "Can handle 'gg' to first non blank char on random line",
-    start: ['   te|xt', '  text', ' text', 'test'],
-    keysPressed: '3gg',
-    end: ['   text', '  text', ' |text', 'test'],
-  });
+  suite('G', () => {
+    newTest({
+      title: 'G (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'G',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
 
-  newTest({
-    title: "Can handle 'gg' to first non blank char on first line",
-    start: ['   text', 'text', 'tex|t'],
-    keysPressed: 'gg',
-    end: ['   |text', 'text', 'text'],
-  });
+    newTest({
+      title: '[count]G (startofline=true)',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '1G',
+      end: [' |123456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
 
-  newTest({
-    title: "'gg' obeys startofline",
-    start: ['   text', 'text', 'texttexttex|t'],
-    keysPressed: 'gg',
-    end: ['   |text', 'text', 'texttexttext'],
+    newTest({
+      title: '[count]G (startofline=true), count greater than last line',
+      config: { startofline: true },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9G',
+      end: [' 123456', ' 123456', ' |123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'G (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: 'G',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]G (startofline=false)',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '1G',
+      end: [' 123|456', ' 123456', ' 123456'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '[count]G (startofline=false), count greater than last line',
+      config: { startofline: false },
+      start: [' 123456', ' 123|456', ' 123456'],
+      keysPressed: '9G',
+      end: [' 123456', ' 123456', ' 123|456'],
+      endMode: Mode.Normal,
+    });
   });
 
   newTest({
@@ -558,41 +684,6 @@ suite('Motions in Normal Mode', () => {
     end: ['one one one', 'two', 'thre|e'],
   });
 
-  newTest({
-    title: 'Can handle G ',
-    start: ['|one', 'two', '  three'],
-    keysPressed: 'G',
-    end: ['one', 'two', '  |three'],
-  });
-
-  newTest({
-    title: 'Can handle G with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '2G',
-    end: ['one', '|two', 'three'],
-  });
-
-  newTest({
-    title: 'Can handle G with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '5G',
-    end: ['one', 'two', '|three'],
-  });
-
-  newTest({
-    title: 'Can handle gg',
-    start: ['one', '|two', 'three'],
-    keysPressed: 'gg',
-    end: ['|one', 'two', 'three'],
-  });
-
-  newTest({
-    title: 'Can handle gg with number prefix',
-    start: ['|one', 'two', 'three'],
-    keysPressed: '2gg',
-    end: ['one', '|two', 'three'],
-  });
-
   // This is still currently not possible.
   // newTest({
   //   title: "Can handle dot with I with tab",
@@ -829,6 +920,30 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'dur', 'hu|r'],
   });
 
+  suite('`go` motion', () => {
+    newTest({
+      title: '`go` without count goes to start of document',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: 'go',
+      end: ['|abc', 'def', 'ghi'],
+    });
+
+    newTest({
+      title: '`[count]go` goes to offset <count>',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: '3go',
+      end: ['ab|c', 'def', 'ghi'],
+    });
+
+    // TODO: this fails on Windows due to \r\n
+    newTest({
+      title: '`[count]go` goes to offset <count>, newlines disregarded',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: '10go',
+      end: ['abc', 'def', 'g|hi'],
+    });
+  });
+
   newTest({
     title: 'Can handle <up> key',
     start: ['blah', 'duh', '|dur', 'hur'],
@@ -919,6 +1034,34 @@ suite('Motions in Normal Mode', () => {
       start: ['short line', 'very long line of text....|.'],
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
+    });
+
+    newTest({
+      title: 'Jump to visual start `<',
+      start: ['one |Xx two three'],
+      keysPressed: 'v2ev`<',
+      end: ['one |Xx two three'],
+    });
+
+    newTest({
+      title: 'Jump to visual end `>',
+      start: ['|one two Xx three'],
+      keysPressed: 'v2wv1G`>',
+      end: ['one two |Xx three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual start '<",
+      start: ['one', 'Xx|x', 'two', '  three'],
+      keysPressed: "vjjv'<",
+      end: ['one', '|Xxx', 'two', '  three'],
+    });
+
+    newTest({
+      title: "Jump (line) to visual end '>",
+      start: ['|one', '  Xxx', 'two', '  three'],
+      keysPressed: "vjv1G'>",
+      end: ['one', '  |Xxx', 'two', '  three'],
     });
   });
 });
