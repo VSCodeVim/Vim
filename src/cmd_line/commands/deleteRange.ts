@@ -4,7 +4,6 @@ import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
 import * as node from '../node';
 import { Position } from 'vscode';
-import { Range } from '../../common/motion/range';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
@@ -45,7 +44,7 @@ export class DeleteRangeCommand extends node.CommandBase {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(start, end),
+      range: new vscode.Range(start, end),
       manuallySetCursorPositions: true,
     });
     vimState.cursorStopPosition = start.getLineBegin();

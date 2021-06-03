@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
-import { Range } from './common/motion/range';
+import { Cursor } from './common/motion/cursor';
 import { Position } from 'vscode';
 import { Logger } from './util/logger';
 import { clamp } from './util/util';
@@ -205,15 +205,15 @@ export class TextEditor {
    */
   public static *iterateLinesInBlock(
     vimState: VimState,
-    range?: Range,
+    cursor?: Cursor,
     options: { reverse?: boolean } = { reverse: false }
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
 
-    range ??= vimState.cursors[0];
+    cursor ??= vimState.cursors[0];
 
-    const topLeft = visualBlockGetTopLeftPosition(range.start, range.stop);
-    const bottomRight = visualBlockGetBottomRightPosition(range.start, range.stop);
+    const topLeft = visualBlockGetTopLeftPosition(cursor.start, cursor.stop);
+    const bottomRight = visualBlockGetBottomRightPosition(cursor.start, cursor.stop);
 
     const [itrStart, itrEnd] = reverse
       ? [bottomRight.line, topLeft.line]

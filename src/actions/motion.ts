@@ -22,6 +22,7 @@ import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
+import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
@@ -44,7 +45,7 @@ export abstract class ExpandingSelection extends BaseMovement {
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   abstract movementType: CursorMovePosition;
-  by: CursorMoveByUnit;
+  by?: CursorMoveByUnit;
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState) {
@@ -159,12 +160,14 @@ abstract class MoveByScreenLine extends BaseMovement {
 }
 
 class MoveUpByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
 }
 
 class MoveDownByScreenLine extends MoveByScreenLine {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'wrappedLine';
   value = 1;
@@ -237,19 +240,8 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   }
 }
 
-class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'down';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
-class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
-  movementType: CursorMovePosition = 'up';
-  by: CursorMoveByUnit = 'wrappedLine';
-  value = 1;
-}
-
 class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -337,6 +329,7 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -547,10 +540,10 @@ enum VisualMark {
   SelectionEnd,
 }
 abstract class MarkMovementVisual extends BaseMovement {
-  isJump = true;
-  registerMode: RegisterMode;
   modes = [Mode.Normal];
-  mark: VisualMark;
+  isJump = true;
+  abstract registerMode: RegisterMode;
+  abstract mark: VisualMark;
 
   private startOrEnd(lastVisualSelection: {
     start: vscode.Position;
@@ -1322,7 +1315,7 @@ class EndOfSpecificLine extends BaseMovement {
 }
 
 @RegisterAction
-class MoveWordBegin extends BaseMovement {
+export class MoveWordBegin extends BaseMovement {
   keys = ['w'];
 
   public async execAction(
@@ -1388,7 +1381,7 @@ class MoveWordBegin extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFullWordBegin extends BaseMovement {
+export class MoveFullWordBegin extends BaseMovement {
   keys = [['W'], ['<C-right>']];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1567,11 +1560,25 @@ class MoveParagraphBegin extends BaseMovement {
 }
 
 abstract class MoveSectionBoundary extends BaseMovement {
-  abstract boundary: string;
+  abstract begin: boolean;
   abstract forward: boolean;
   isJump = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const document = vimState.document;
+
+    switch (document.languageId) {
+      case 'python':
+        return PythonDocument.moveClassBoundary(
+          document,
+          position,
+          vimState,
+          this.forward,
+          this.begin
+        );
+    }
+
+    const boundary = this.begin ? '{' : '}';
     let line = position.line;
 
     if (
@@ -1583,7 +1590,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
 
     line = this.forward ? line + 1 : line - 1;
 
-    while (!vimState.document.lineAt(line).text.startsWith(this.boundary)) {
+    while (!vimState.document.lineAt(line).text.startsWith(boundary)) {
       if (this.forward) {
         if (line === vimState.document.lineCount - 1) {
           break;
@@ -1606,28 +1613,28 @@ abstract class MoveSectionBoundary extends BaseMovement {
 @RegisterAction
 class MoveNextSectionBegin extends MoveSectionBoundary {
   keys = [']', ']'];
-  boundary = '{';
+  begin = true;
   forward = true;
 }
 
 @RegisterAction
 class MoveNextSectionEnd extends MoveSectionBoundary {
   keys = [']', '['];
-  boundary = '}';
+  begin = false;
   forward = true;
 }
 
 @RegisterAction
 class MovePreviousSectionBegin extends MoveSectionBoundary {
   keys = ['[', '['];
-  boundary = '{';
+  begin = true;
   forward = false;
 }
 
 @RegisterAction
 class MovePreviousSectionEnd extends MoveSectionBoundary {
   keys = ['[', ']'];
-  boundary = '}';
+  begin = false;
   forward = false;
 }
 
@@ -1716,7 +1723,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-abstract class MoveInsideCharacter extends ExpandingSelection {
+export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   protected abstract charToMatch: string;
 
@@ -1877,7 +1884,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-abstract class MoveQuoteMatch extends BaseMovement {
+export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract charToMatch: string;
   protected includeSurrounding = false;

@@ -1,4 +1,4 @@
-import { Range } from '../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { Mode } from '../mode/mode';
 import { RegisterMode } from '../register/register';
 import { VimState } from '../state/vimState';
@@ -204,10 +204,10 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
       return !range.failed;
     });
 
-    let smallestRange: Range | undefined;
+    let smallestRange: Cursor | undefined;
 
     for (const iMotion of ranges) {
-      const currentSelectedRange = new Range(
+      const currentSelectedRange = new Cursor(
         vimState.cursorStartPosition,
         vimState.cursorStopPosition
       );
@@ -215,8 +215,8 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         continue;
       }
 
-      const range = new Range(iMotion.start, iMotion.stop);
-      let contender: Range | undefined;
+      const range = new Cursor(iMotion.start, iMotion.stop);
+      let contender: Cursor | undefined;
 
       if (
         range.start.isBefore(currentSelectedRange.start) &&
@@ -233,7 +233,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
       if (contender) {
         const areTheyEqual =
-          contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorStopPosition)) ||
+          contender.equals(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition)) ||
           (vimState.currentMode === Mode.VisualLine &&
             contender.start.line === vimState.cursorStartPosition.line &&
             contender.stop.line === vimState.cursorStopPosition.line);

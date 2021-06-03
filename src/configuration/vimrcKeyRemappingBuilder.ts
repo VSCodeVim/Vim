@@ -125,7 +125,7 @@ class VimrcKeyRemappingBuilderImpl {
    * `.` -> any key\
    * `)`
    */
-  private static readonly KEY_LIST_REG_EX = /(<[^>]+>|.)/g;
+  private static readonly KEY_LIST_REG_EX = /(<[^<>]+>|.)/g;
 
   /**
    * Regex to match a Vim command like `:edit {file}<CR>`

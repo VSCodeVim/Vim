@@ -25,7 +25,7 @@ class GlobalState {
   /**
    * Tracks search history
    */
-  private searchHistory: SearchHistory;
+  private searchHistory!: SearchHistory;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be

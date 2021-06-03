@@ -12,7 +12,8 @@ export class EasyMotion implements IEasyMotion {
    */
   public accumulation = '';
 
-  public searchAction: EasyMotionSearchAction;
+  // TODO: is this actually always set?
+  public searchAction!: EasyMotionSearchAction;
 
   /**
    * Array of all markers and decorations
@@ -42,7 +43,8 @@ export class EasyMotion implements IEasyMotion {
   /**
    * Mode to return to after attempting easymotion
    */
-  public previousMode: Mode;
+  // TODO: make this optional (in some circumstances it isn't actually set)
+  public previousMode!: Mode;
 
   constructor() {
     this.markers = [];

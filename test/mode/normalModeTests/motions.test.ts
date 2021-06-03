@@ -9,6 +9,50 @@ suite('Motions in Normal Mode', () => {
 
   teardown(cleanUpWorkspace);
 
+  suite('w', () => {
+    newTest({
+      title: 'w moves to next word',
+      start: ['one |two three four'],
+      keysPressed: 'w',
+      end: ['one two |three four'],
+    });
+
+    newTest({
+      title: 'w goes over all whitespace',
+      start: ['one |two \t  \t three four'],
+      keysPressed: 'w',
+      end: ['one two \t  \t |three four'],
+    });
+
+    newTest({
+      title: 'w stops at punctuation',
+      start: ['one |two,.;/three four'],
+      keysPressed: 'w',
+      end: ['one two|,.;/three four'],
+    });
+
+    newTest({
+      title: 'w on punctuation jumps over punctuation',
+      start: ['one two|,.;/three four'],
+      keysPressed: 'w',
+      end: ['one two,.;/|three four'],
+    });
+
+    newTest({
+      title: 'w goes over EOL',
+      start: ['o|ne  ', '  two three'],
+      keysPressed: 'w',
+      end: ['one  ', '  |two three'],
+    });
+
+    newTest({
+      title: '[count]w',
+      start: ['|one two three four'],
+      keysPressed: '2w',
+      end: ['one two |three four'],
+    });
+  });
+
   newTest({
     title: 'Can handle [(',
     start: ['({|})'],
@@ -874,6 +918,30 @@ suite('Motions in Normal Mode', () => {
     start: ['blah', 'duh', '|dur', 'hur'],
     keysPressed: '2g_',
     end: ['blah', 'duh', 'dur', 'hu|r'],
+  });
+
+  suite('`go` motion', () => {
+    newTest({
+      title: '`go` without count goes to start of document',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: 'go',
+      end: ['|abc', 'def', 'ghi'],
+    });
+
+    newTest({
+      title: '`[count]go` goes to offset <count>',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: '3go',
+      end: ['ab|c', 'def', 'ghi'],
+    });
+
+    // TODO: this fails on Windows due to \r\n
+    newTest({
+      title: '`[count]go` goes to offset <count>, newlines disregarded',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: '10go',
+      end: ['abc', 'def', 'g|hi'],
+    });
   });
 
   newTest({

@@ -4,7 +4,7 @@ import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { globalState } from '../../state/globalState';
 import { Jump } from '../../jumps/jump';
-import { Range } from '../../common/motion/range';
+import { Cursor } from '../../common/motion/cursor';
 
 class JumpPickItem implements QuickPickItem {
   jump: Jump;
@@ -37,7 +37,7 @@ export class JumpsCommand extends node.CommandBase {
       });
       if (item && item.jump.document !== undefined) {
         window.showTextDocument(item.jump.document);
-        vimState.cursors = [new Range(item.jump.position, item.jump.position)];
+        vimState.cursors = [new Cursor(item.jump.position, item.jump.position)];
       }
     } else {
       window.showInformationMessage('No jumps available');

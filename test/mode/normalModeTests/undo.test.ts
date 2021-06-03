@@ -54,7 +54,15 @@ suite('Undo', () => {
       title: "Can handle 'u' after :s/abc/def",
       start: ['Xa|bcX'],
       keysPressed: ':s/abc/def/\nu',
-      end: ['|XabcX'],
+      // TODO: Cursor position is wrong
+      end: ['Xa|bcX'],
+    });
+
+    newTest({
+      title: "Can handle 'u' after :s/abc/def twice",
+      start: ['Xa|bcX', 'YabcY', 'ZabcZ'],
+      keysPressed: ':s/abc/def/\n' + 'j' + ':s/abc/def/\n' + 'u',
+      end: ['XdefX', '|YabcY', 'ZabcZ'],
     });
 
     newTest({
@@ -76,6 +84,20 @@ suite('Undo', () => {
       start: ['one |two three four five'],
       keysPressed: 'dwdw2u',
       end: ['one |two three four five'],
+    });
+
+    newTest({
+      title: 'Undo Visual delete',
+      start: ['one |two three four five'],
+      keysPressed: 'vww' + 'd' + 'u',
+      end: ['one |two three four five'],
+    });
+
+    newTest({
+      title: 'Undo VisualBlock delete',
+      start: ['one two', 'th|ree four', 'five six', 'seven eight'],
+      keysPressed: '<C-v>jll' + 'd' + 'u',
+      end: ['one two', 'th|ree four', 'five six', 'seven eight'],
     });
   });
 

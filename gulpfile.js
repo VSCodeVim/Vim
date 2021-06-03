@@ -1,21 +1,21 @@
-var gulp = require('gulp'),
-  bump = require('gulp-bump'),
-  git = require('gulp-git'),
-  sourcemaps = require('gulp-sourcemaps'),
-  tag_version = require('gulp-tag-version'),
-  tslint = require('gulp-tslint'),
-  ts = require('gulp-typescript'),
-  PluginError = require('plugin-error'),
-  minimist = require('minimist'),
-  path = require('path'),
-  webpack = require('webpack'),
-  webpack_stream = require('webpack-stream'),
-  webpack_config = require('./webpack.config.js'),
-  es = require('event-stream');
-webpack_dev_config = require('./webpack.dev.js');
+const gulp = require('gulp');
+const bump = require('gulp-bump');
+const git = require('gulp-git');
+const sourcemaps = require('gulp-sourcemaps');
+const tag_version = require('gulp-tag-version');
+const tslint = require('gulp-tslint');
+const ts = require('gulp-typescript');
+const PluginError = require('plugin-error');
+const minimist = require('minimist');
+const path = require('path');
+const webpack = require('webpack');
+const webpack_stream = require('webpack-stream');
+const es = require('event-stream');
 
-const exec = require('child_process').exec;
-const spawn = require('child_process').spawn;
+const webpack_config = require('./webpack.config.js');
+const webpack_dev_config = require('./webpack.dev.js');
+
+const { exec, spawn } = require('child_process');
 
 const releaseOptions = {
   semver: '',
@@ -200,7 +200,7 @@ gulp.task('webpack-dev', function () {
   return webpack_stream(
     {
       config: webpack_dev_config,
-      entry: ['./extension.ts', './extensionWeb.ts'],
+      entry: ['./extension.ts'],
     },
     webpack
   ).pipe(gulp.dest('out'));

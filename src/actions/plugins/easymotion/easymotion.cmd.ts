@@ -35,12 +35,9 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public abstract getMatches(position: Position, vimState: VimState): Match[];
 
-  constructor(baseOptions: EasyMotionMoveOptionsBase, trigger?: EasymotionTrigger) {
+  constructor(baseOptions: EasyMotionMoveOptionsBase) {
     super();
     this._baseOptions = baseOptions;
-    if (trigger) {
-      this.keys = buildTriggerKeys(trigger);
-    }
   }
 
   public abstract resolveMatchPosition(match: Match): Position;
@@ -146,6 +143,7 @@ function getMatchesForString(
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
+  keys = [];
   public searchString: string = '';
   private _options: EasyMotionCharMoveOpions;
 
@@ -185,6 +183,7 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
 }
 
 export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
+  keys = [];
   public searchString: string = '';
 
   get searchCharCount() {
@@ -224,14 +223,13 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
   }
 }
 
-export class EasyMotionCharMoveCommandBase extends BaseCommand {
+export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   private _action: EasyMotionSearchAction;
 
-  constructor(trigger: EasymotionTrigger, action: EasyMotionSearchAction) {
+  constructor(action: EasyMotionSearchAction) {
     super();
     this._action = action;
-    this.keys = buildTriggerKeys(trigger);
   }
 
   public async exec(position: Position, vimState: VimState): Promise<void> {
@@ -247,11 +245,11 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
   }
 }
 
-export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
+export abstract class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionWordMoveOpions;
 
-  constructor(trigger: EasymotionTrigger, options: EasyMotionWordMoveOpions = {}) {
-    super(options, trigger);
+  constructor(options: EasyMotionWordMoveOpions = {}) {
+    super(options);
     this._options = options;
   }
 
@@ -281,11 +279,11 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   }
 }
 
-export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
+export abstract class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionMoveOptionsBase;
 
-  constructor(trigger: EasymotionTrigger, options: EasyMotionMoveOptionsBase = {}) {
-    super(options, trigger);
+  constructor(options: EasyMotionMoveOptionsBase = {}) {
+    super(options);
     this._options = options;
   }
 

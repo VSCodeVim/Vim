@@ -1,6 +1,5 @@
-import { Position } from 'vscode';
+import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
-import { Range } from '../../common/motion/range';
 import { Mode } from '../../mode/mode';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';

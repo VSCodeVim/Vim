@@ -184,10 +184,6 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
-  public hasRunSurround = false;
-  public surroundKeys: string[] = [];
-  public surroundKeyIndexStart = 0;
-
   /**
    * This is kind of a hack and should be associated with something like this:
    *
@@ -261,8 +257,6 @@ export class RecordedState {
     res.actionKeys = this.actionKeys.slice(0);
     res.actionsRun = this.actionsRun.slice(0);
     res.hasRunOperator = this.hasRunOperator;
-    res.hasRunSurround = this.hasRunSurround;
-    res.surroundKeys = this.surroundKeys;
 
     return res;
   }

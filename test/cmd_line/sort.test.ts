@@ -1,10 +1,10 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { VimState } from '../../src/state/vimState';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { newTest } from '../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
-suite('Basic sort', () => {
+suite(':sort', () => {
   let modeHandler: ModeHandler;
   let vimState: VimState;
 
@@ -16,171 +16,73 @@ suite('Basic sort', () => {
 
   teardown(cleanUpWorkspace);
 
-  test('Sort whole file, asc', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'B',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('sort', vimState);
-
-    assertEqualLines(['B', 'a', 'c']);
+  newTest({
+    title: 'Sort whole file, ascending',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':sort\n',
+    end: ['|Banana', 'Eggplant', 'apple', 'cabbage', 'dragonfruit'],
   });
 
-  test('Sort whole file, asc, ignoreCase', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'B',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('sort i', vimState);
-
-    assertEqualLines(['a', 'B', 'c']);
+  newTest({
+    title: 'Sort whole file, ascending, ignore case',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':sort i\n',
+    end: ['|apple', 'Banana', 'cabbage', 'dragonfruit', 'Eggplant'],
   });
 
-  test('Sort whole file, dsc', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'b',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('sort!', modeHandler.vimState);
-
-    assertEqualLines(['c', 'b', 'a']);
+  newTest({
+    title: 'Sort whole file, descending',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':sort!\n',
+    end: ['|dragonfruit', 'cabbage', 'apple', 'Eggplant', 'Banana'],
   });
 
-  test('Sort whole file, dsc, ignoreCase', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'B',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('sort! i', modeHandler.vimState);
-
-    assertEqualLines(['c', 'B', 'a']);
+  newTest({
+    title: 'Sort whole file, descending, ignore case',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':sort! i\n',
+    end: ['|Eggplant', 'dragonfruit', 'cabbage', 'Banana', 'apple'],
   });
 
-  test('Sort range, asc', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'b',
-      '<Esc>',
-      'o',
-      'd',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('1,3sort', vimState);
-
-    assertEqualLines(['a', 'b', 'd', 'c']);
+  newTest({
+    title: 'Sort range, ascending',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':2,4sort\n',
+    end: ['Eggplant', '|Banana', 'apple', 'dragonfruit', 'cabbage'],
   });
 
-  test('Sort range, asc, ignoreCase', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'B',
-      '<Esc>',
-      'o',
-      'd',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('1,3sort i', vimState);
-
-    assertEqualLines(['a', 'B', 'd', 'c']);
+  newTest({
+    title: 'Sort range, ascending, ignore case',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':2,4sort i\n',
+    end: ['Eggplant', '|apple', 'Banana', 'dragonfruit', 'cabbage'],
   });
 
-  test('Sort range, dsc', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'b',
-      '<Esc>',
-      'o',
-      'd',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('2,4sort!', vimState);
-
-    assertEqualLines(['b', 'd', 'c', 'a']);
+  newTest({
+    title: 'Sort range, descending',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':2,4sort!\n',
+    end: ['Eggplant', '|dragonfruit', 'apple', 'Banana', 'cabbage'],
   });
 
-  test('Sort range, dsc, ignoreCase', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'b',
-      '<Esc>',
-      'o',
-      'd',
-      '<Esc>',
-      'o',
-      'A',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('2,4sort! i', vimState);
-
-    assertEqualLines(['b', 'd', 'c', 'A']);
+  newTest({
+    title: 'Sort range, descending, ignore case',
+    start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],
+    keysPressed: ':2,4sort! i\n',
+    end: ['Eggplant', '|dragonfruit', 'Banana', 'apple', 'cabbage'],
   });
 
-  test('Sort whole file, asc, unique', async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      'B',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'a',
-      '<Esc>',
-      'o',
-      'c',
-      '<Esc>',
-    ]);
-    await commandLine.Run('sort u', vimState);
+  newTest({
+    title: 'Sort whole file, ascending, unique',
+    start: ['Eggplant', 'apple', 'Banana', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage', 'apple'],
+    keysPressed: ':sort u\n',
+    end: ['|Banana', 'Eggplant', 'apple', 'cabbage', 'dragonfruit'],
+  });
 
-    assertEqualLines(['B', 'a', 'c']);
+  newTest({
+    title: 'Sort whole file, ascending, ignore case, unique',
+    start: ['Eggplant', 'Apple', 'banana', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage', 'apple'],
+    keysPressed: ':sort iu\n',
+    end: ['|Apple', 'banana', 'cabbage', 'dragonfruit', 'Eggplant'],
   });
 });

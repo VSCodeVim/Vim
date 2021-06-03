@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Range } from '../common/motion/range';
+import { Cursor } from '../common/motion/cursor';
 import { VimState } from '../state/vimState';
 
 /**
@@ -8,8 +8,8 @@ import { VimState } from '../state/vimState';
  * wouldn't yet be updated. So we waited for a selection change event, but
  * this doesn't seem to be necessary any more.
  */
-export function getCursorsAfterSync(): Range[] {
-  return vscode.window.activeTextEditor!.selections.map((x) => Range.FromVSCodeSelection(x));
+export function getCursorsAfterSync(): Cursor[] {
+  return vscode.window.activeTextEditor!.selections.map((x) => Cursor.FromVSCodeSelection(x));
 }
 
 export function clamp(num: number, min: number, max: number) {

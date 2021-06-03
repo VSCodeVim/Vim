@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
-import { Range } from '../common/motion/range';
 import { Position } from 'vscode';
 
 /**
@@ -160,7 +159,7 @@ export const lineCompletionProvider = {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new Range(
+      range: new vscode.Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
       ),

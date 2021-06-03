@@ -11,7 +11,7 @@ import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 
 class CommandLine {
-  private history: CommandLineHistory;
+  private history!: CommandLineHistory;
   private readonly logger = Logger.get('CommandLine');
 
   /**
