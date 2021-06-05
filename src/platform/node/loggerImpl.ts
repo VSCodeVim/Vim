@@ -24,7 +24,7 @@ class VsCodeMessage extends TransportStream {
     this.prefix = options.prefix;
   }
 
-  public async log(info: { level: string; message: string }, callback: () => void) {
+  public override async log(info: { level: string; message: string }, callback: () => void) {
     if (this.configuration && this.configuration.debug.silent) {
       return;
     }

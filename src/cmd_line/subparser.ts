@@ -423,7 +423,7 @@ class UnimplementedCommand extends CommandBase {
   fullName: string;
   parserMapping: CommandParserMapping;
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     // If the user has neovim integration enabled, don't stop them from using these commands
     return true;
   }

@@ -10,7 +10,7 @@ class ExitReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const replaceState = vimState.replaceState!;
 
     // `3Rabc` results in 'abc' replacing the next characters 2 more times
@@ -34,7 +34,7 @@ class ReplaceModeToInsertMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<Insert>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
   }
 }
@@ -44,7 +44,7 @@ class BackspaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = [['<BS>'], ['<S-BS>'], ['<C-BS>'], ['<C-h>']];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const replaceState = vimState.replaceState!;
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
@@ -84,9 +84,9 @@ class BackspaceInReplaceMode extends BaseCommand {
 class ReplaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<character>'];
-  canBeRepeatedWithDot = true;
+  override canBeRepeatedWithDot = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[0];
     const replaceState = vimState.replaceState!;
 

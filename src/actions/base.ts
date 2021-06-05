@@ -182,7 +182,7 @@ export abstract class BaseAction {
  * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
-  isCommand = true;
+  override isCommand = true;
 
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -

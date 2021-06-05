@@ -60,7 +60,7 @@ export const ErrorMessage: IErrorMessage = {
 
 export class VimError extends Error {
   public readonly code: number;
-  public readonly message: string;
+  public override readonly message: string;
 
   private constructor(code: number, message: string) {
     super();
@@ -76,7 +76,7 @@ export class VimError extends Error {
     throw new Error('unknown error code: ' + code);
   }
 
-  toString(): string {
+  override toString(): string {
     return `E${this.code}: ${this.message}`;
   }
 }

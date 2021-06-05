@@ -20,9 +20,9 @@ function firstNonBlankChar(text: string): number {
 
 abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  canBeRepeatedWithDot = true;
+  override canBeRepeatedWithDot = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
@@ -380,13 +380,13 @@ class PutCommand extends BasePutCommand {
 
 @RegisterAction
 class PutBeforeCommand extends PutCommand {
-  keys: string[] | string[][] = ['P'];
+  override keys: string[] | string[][] = ['P'];
 
-  protected putBefore(): boolean {
+  protected override putBefore(): boolean {
     return true;
   }
 
-  protected adjustLinewiseRegisterText(mode: Mode, text: string): string {
+  protected override adjustLinewiseRegisterText(mode: Mode, text: string): string {
     if (mode === Mode.Normal || mode === Mode.VisualBlock) {
       return text + '\n';
     }
@@ -394,7 +394,11 @@ class PutBeforeCommand extends PutCommand {
     return super.adjustLinewiseRegisterText(mode, text);
   }
 
-  protected getReplaceRange(mode: Mode, cursor: Cursor, registerMode: RegisterMode): vscode.Range {
+  protected override getReplaceRange(
+    mode: Mode,
+    cursor: Cursor,
+    registerMode: RegisterMode
+  ): vscode.Range {
     if (mode === Mode.Normal) {
       if (registerMode === RegisterMode.CharacterWise || registerMode === RegisterMode.BlockWise) {
         const pos = cursor.stop;
@@ -408,7 +412,7 @@ class PutBeforeCommand extends PutCommand {
     return super.getReplaceRange(mode, cursor, registerMode);
   }
 
-  protected getCursorPosition(
+  protected override getCursorPosition(
     document: TextDocument,
     mode: Mode,
     replaceRange: vscode.Range,
@@ -429,7 +433,7 @@ class PutBeforeCommand extends PutCommand {
 
 function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {
   return class CursorAfterText extends Base {
-    protected getCursorPosition(
+    protected override getCursorPosition(
       document: TextDocument,
       mode: Mode,
       replaceRange: vscode.Range,
@@ -492,18 +496,18 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
 @RegisterAction
 @PlaceCursorAfterText
 class GPutCommand extends PutCommand {
-  keys = ['g', 'p'];
+  override keys = ['g', 'p'];
 }
 
 @RegisterAction
 @PlaceCursorAfterText
 class GPutBeforeCommand extends PutBeforeCommand {
-  keys = ['g', 'P'];
+  override keys = ['g', 'P'];
 }
 
 function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {
   return class AdjustedIndent extends Base {
-    protected shouldAdjustIndent(mode: Mode, registerMode: RegisterMode): boolean {
+    protected override shouldAdjustIndent(mode: Mode, registerMode: RegisterMode): boolean {
       return (
         (mode === Mode.Normal || mode === Mode.VisualLine) && registerMode === RegisterMode.LineWise
       );
@@ -514,13 +518,13 @@ function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TB
 @RegisterAction
 @AdjustIndent
 class PutWithIndentCommand extends PutCommand {
-  keys = [']', 'p'];
+  override keys = [']', 'p'];
 }
 
 @RegisterAction
 @AdjustIndent
 class PutBeforeWithIndentCommand extends PutBeforeCommand {
-  keys = [
+  override keys = [
     ['[', 'P'],
     [']', 'P'],
     ['[', 'p'],
@@ -535,11 +539,11 @@ function ExCommand<TBase extends new (...args: any[]) => PutCommand>(Base: TBase
       this.insertLine = insertLine;
     }
 
-    protected getRegisterMode(register: IRegisterContent): RegisterMode {
+    protected override getRegisterMode(register: IRegisterContent): RegisterMode {
       return RegisterMode.LineWise;
     }
 
-    protected getReplaceRange(
+    protected override getReplaceRange(
       mode: Mode,
       cursor: Cursor,
       registerMode: RegisterMode
@@ -549,7 +553,7 @@ function ExCommand<TBase extends new (...args: any[]) => PutCommand>(Base: TBase
       return new vscode.Range(pos, pos);
     }
 
-    protected getCursorPosition(
+    protected override getCursorPosition(
       document: TextDocument,
       mode: Mode,
       replaceRange: vscode.Range,

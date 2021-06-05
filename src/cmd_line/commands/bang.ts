@@ -16,7 +16,7 @@ export class BangCommand extends node.CommandBase {
     this._arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -36,7 +36,7 @@ export class BangCommand extends node.CommandBase {
     await externalCommand.run(this._arguments.command);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [startLine, endLine] = range.resolve(vimState);
     const start = new Position(startLine, 0);
     const end = new Position(endLine, 0).getLineEnd();

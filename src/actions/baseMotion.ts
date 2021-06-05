@@ -50,7 +50,7 @@ export function failedMovement(vimState: VimState): IMovement {
 export abstract class BaseMovement extends BaseAction {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
-  isMotion = true;
+  override isMotion = true;
 
   /**
    * If movement can be repeated with semicolon or comma this will be true when

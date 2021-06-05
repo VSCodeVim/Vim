@@ -91,7 +91,7 @@ export class SubstituteCommand extends node.CommandBase {
     this.abort = false;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     // We need to use VSCode's quickpick capabilities to do confirmation
     return (this.arguments.flags & SubstituteFlags.ConfirmEach) === 0;
   }
@@ -281,7 +281,7 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let [startLine, endLine] = range.resolve(vimState);
 
     if (this.arguments.count && this.arguments.count >= 0) {

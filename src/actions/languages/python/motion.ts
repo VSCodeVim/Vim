@@ -188,13 +188,16 @@ abstract class BasePythonMovement extends BaseMovement {
   abstract direction: Direction;
   abstract edge: Edge;
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
       super.doesActionApply(vimState, keysPressed) && vimState.document.languageId === 'python'
     );
   }
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState
+  ): Promise<Position | IMovement> {
     const document = vimState.document;
     return (
       new PythonDocument(document).find(this.type, this.direction, this.edge, position) ??
