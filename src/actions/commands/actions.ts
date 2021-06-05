@@ -206,6 +206,7 @@ class DisableExtension extends BaseCommand {
     Mode.Replace,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
+    Mode.SneakLabelInputMode,
     Mode.SurroundInputMode,
   ];
   keys = [SpecialKeys.ExtensionDisable];

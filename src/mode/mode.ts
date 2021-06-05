@@ -12,6 +12,7 @@ export enum Mode {
   Replace,
   EasyMotionMode,
   EasyMotionInputMode,
+  SneakLabelInputMode,
   SurroundInputMode,
   OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,

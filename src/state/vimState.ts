@@ -11,6 +11,8 @@ import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { SneakAction } from '../actions/plugins/sneak';
+import { BaseAction } from '../actions/base';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
@@ -60,6 +62,9 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
+  // TODO: is this assertion justified?
+  public sneak!: SneakAction;
+
   public identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
@@ -99,6 +104,11 @@ export class VimState implements vscode.Disposable {
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
+
+  /**
+   * Tracks the last action
+   */
+  public lastRecognizedAction: BaseAction | undefined = undefined;
 
   /**
    * The last visual selection before running the dot command

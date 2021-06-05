@@ -7,14 +7,31 @@ export class MarkerGenerator {
   private keyTable: string[];
   private prefixKeyTable: string[];
 
-  constructor(matchesCount: number) {
+  constructor(matchesCount: number, keyTable?: string) {
     this.matchesCount = matchesCount;
-    this.keyTable = this.getKeyTable();
+    if (keyTable) {
+      this.keyTable = keyTable.split('');
+    } else {
+      this.keyTable = this.getKeyTable();
+    }
     this.prefixKeyTable = this.createPrefixKeyTable();
   }
 
-  public generateMarker(index: number, markerPosition: Position): Marker | null {
+  public generateMarker(
+    index: number,
+    markerPosition: Position,
+    generateTwoCharacterMarkers = true
+  ): Marker | null {
     const { keyTable, prefixKeyTable } = this;
+
+    if (!generateTwoCharacterMarkers) {
+      return index < keyTable.length
+        ? {
+            name: keyTable[index],
+            position: markerPosition,
+          }
+        : null;
+    }
 
     if (index >= keyTable.length - prefixKeyTable.length) {
       const remainder = index - (keyTable.length - prefixKeyTable.length);

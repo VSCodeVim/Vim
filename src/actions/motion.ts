@@ -926,7 +926,7 @@ class MoveTilBackward extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeat extends BaseMovement {
+export class MoveRepeat extends BaseMovement {
   keys = [';'];
 
   public async execActionWithCount(
@@ -943,7 +943,7 @@ class MoveRepeat extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeatReversed extends BaseMovement {
+export class MoveRepeatReversed extends BaseMovement {
   keys = [','];
 
   public async execActionWithCount(

@@ -171,6 +171,8 @@ export function statusBarText(vimState: VimState) {
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:
       return '-- EASYMOTION INPUT --';
+    case Mode.SneakLabelInputMode:
+      return '-- SNEAK LABEL INPUT --';
     case Mode.SurroundInputMode:
       return '-- SURROUND INPUT --';
     case Mode.Disabled:
