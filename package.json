@@ -43,6 +43,11 @@
   "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
   "browser": "./out/extensionWeb",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "contributes": {
     "commands": [
       {
