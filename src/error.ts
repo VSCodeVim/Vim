@@ -3,6 +3,7 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
+  InvalidAddress = 14,
   MarkNotSet = 20,
   NoAlternateFile = 23,
   NoInsertedTextYet = 29,
@@ -32,6 +33,7 @@ export enum ErrorCode {
 }
 
 export const ErrorMessage: IErrorMessage = {
+  14: 'Invalid address',
   20: 'Mark not set',
   23: 'No alternate file',
   29: 'No inserted text yet',
