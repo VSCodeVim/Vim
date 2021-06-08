@@ -3,7 +3,7 @@ import { VimState } from '../../state/vimState';
 import { CommandBase } from '../node';
 import { Scanner } from '../scanner';
 
-export class VscCommand extends CommandBase {
+export class VsCodeCommand extends CommandBase {
   private command?: string;
 
   constructor(command?: string) {
@@ -11,10 +11,10 @@ export class VscCommand extends CommandBase {
     this.command = command;
   }
 
-  public static parse(args: string): VscCommand {
+  public static parse(args: string): VsCodeCommand {
     const scanner = new Scanner(args);
     scanner.skipWhiteSpace();
-    return new VscCommand(scanner.isAtEof ? undefined : scanner.nextWord());
+    return new VsCodeCommand(scanner.isAtEof ? undefined : scanner.nextWord());
   }
 
   private async vsc() {

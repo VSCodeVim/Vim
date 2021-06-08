@@ -30,7 +30,7 @@ import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
 import { GotoCommand } from './commands/goto';
 import { YankCommand } from './commands/yank';
-import { VscCommand } from './commands/vsc';
+import { VsCodeCommand } from './commands/vscode';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -349,9 +349,9 @@ export const commandParsers = {
     parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
   },
 
-  vsc: {
+  vscode: {
     abbrev: 'vsc',
-    parser: VscCommand.parse,
+    parser: VsCodeCommand.parse,
   },
 
   vsplit: {
