@@ -1118,7 +1118,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.cursorsInitialState = this.vimState.cursors;
 
       recordedState.actionsRun.push(action);
-      this.vimState.keyHistory = this.vimState.keyHistory.concat(action.keysPressed);
+      this.vimState.keyHistory.push(...action.keysPressed);
 
       await this.runAction(recordedState, action);
 
