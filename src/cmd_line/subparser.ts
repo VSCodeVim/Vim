@@ -31,6 +31,7 @@ import { ShCommand } from './commands/sh';
 import { GotoCommand } from './commands/goto';
 import { YankCommand } from './commands/yank';
 import { CopyCommand } from './commands/copy';
+import { VsCodeCommand } from './commands/vscode';
 
 // Associates a name and an abbreviation with a command parser
 export type CommandParserMapping = {
@@ -347,6 +348,11 @@ export const commandParsers = {
   vnew: {
     abbrev: 'vne',
     parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  },
+
+  vscode: {
+    abbrev: 'vsc',
+    parser: VsCodeCommand.parse,
   },
 
   vsplit: {
