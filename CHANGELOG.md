@@ -1,5 +1,32 @@
 # Change Log
 
+## [v1.21.0](https://github.com/vscodevim/vim/tree/v1.21.0) (2021-06-06)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.3...v1.21.0)
+
+**Enhancements:**
+
+- `:s` should report \# of substitutions [\#6698](https://github.com/VSCodeVim/Vim/issues/6698)
+- Support virtual workspaces [\#6596](https://github.com/VSCodeVim/Vim/issues/6596)
+- Support Workspace Trust [\#6587](https://github.com/VSCodeVim/Vim/issues/6587)
+- Python Object Motions [\#6213](https://github.com/VSCodeVim/Vim/issues/6213)
+
+**Fixed Bugs:**
+
+- Bug with tab removal before odd number of characters [\#6327](https://github.com/VSCodeVim/Vim/issues/6327)
+
+**Closed issues:**
+
+- Enable `--noImplicitOverride` [\#6670](https://github.com/VSCodeVim/Vim/issues/6670)
+- Surround emulation gets positions wrong when tabs are involved [\#6564](https://github.com/VSCodeVim/Vim/issues/6564)
+
+**Merged pull requests:**
+
+- Implement :vsc to run VSCode commands [\#6694](https://github.com/VSCodeVim/Vim/pull/6694) ([meluskyc](https://github.com/meluskyc))
+- Surround Rewrite [\#6452](https://github.com/VSCodeVim/Vim/pull/6452) ([sql-koala](https://github.com/sql-koala))
+- Bugfix substitute with backslash\(fixes \#2710\) [\#6409](https://github.com/VSCodeVim/Vim/pull/6409) ([sekai013](https://github.com/sekai013))
+- Add Python specific motions \(fixes \#6213\) [\#6393](https://github.com/VSCodeVim/Vim/pull/6393) ([abid-mujtaba](https://github.com/abid-mujtaba))
+
 ## [v1.20.3](https://github.com/vscodevim/vim/tree/v1.20.3) (2021-05-18)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.2...v1.20.3)
@@ -136,8 +163,6 @@
 - Fix even more dependency cycles [\#6243](https://github.com/VSCodeVim/Vim/pull/6243) ([inspirer](https://github.com/inspirer))
 - Fix several dependency cycles [\#6208](https://github.com/VSCodeVim/Vim/pull/6208) ([inspirer](https://github.com/inspirer))
 - Implement previous context marks \(add to jump list on m' / m`\) [\#6174](https://github.com/VSCodeVim/Vim/pull/6174) ([jose-elias-alvarez](https://github.com/jose-elias-alvarez))
-- Add Erlang style comments [\#5970](https://github.com/VSCodeVim/Vim/pull/5970) ([maxnordlund](https://github.com/maxnordlund))
-- Potential fix for non latin chars issue [\#5951](https://github.com/VSCodeVim/Vim/pull/5951) ([berknam](https://github.com/berknam))
 
 ## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
 
@@ -164,17 +189,12 @@
 
 - Implement `ZZ` and `ZQ` [\#5998](https://github.com/VSCodeVim/Vim/issues/5998)
 
-**Fixed Bugs:**
-
-- Cannot read property 'warn' of undefined [\#5983](https://github.com/VSCodeVim/Vim/issues/5983)
-
 **Merged pull requests:**
 
 - off load vimrc module in web [\#6067](https://github.com/VSCodeVim/Vim/pull/6067) ([rebornix](https://github.com/rebornix))
 - Fix multicursor insert register new [\#6065](https://github.com/VSCodeVim/Vim/pull/6065) ([sql-koala](https://github.com/sql-koala))
 - Fix 'cw' behavior on whitespace [\#6033](https://github.com/VSCodeVim/Vim/pull/6033) ([edemaine](https://github.com/edemaine))
 - Remove stray console.log statements [\#6032](https://github.com/VSCodeVim/Vim/pull/6032) ([edemaine](https://github.com/edemaine))
-- Document build/test process better [\#5946](https://github.com/VSCodeVim/Vim/pull/5946) ([edemaine](https://github.com/edemaine))
 
 ## [v1.18.5](https://github.com/vscodevim/vim/tree/v1.18.5) (2020-12-10)
 
