@@ -139,16 +139,13 @@ export class DocumentContentChangeAction extends BaseCommand {
       first: vscode.TextDocumentContentChangeEvent,
       second: vscode.TextDocumentContentChangeEvent
     ): vscode.TextDocumentContentChangeEvent | undefined {
-      if (
-        first.rangeOffset + first.text.length === second.rangeOffset ||
-        second.rangeLength === 0
-      ) {
+      if (first.rangeOffset + first.text.length === second.rangeOffset) {
         // Simple concatenation
         return {
           text: first.text + second.text,
           range: first.range,
           rangeOffset: first.rangeOffset,
-          rangeLength: first.rangeLength,
+          rangeLength: first.rangeLength + second.rangeOffset,
         };
       } else if (
         first.rangeOffset <= second.rangeOffset &&
