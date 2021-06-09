@@ -31,7 +31,7 @@ export class GotoCommand extends node.CommandBase {
     this.gotoOffset(vimState, this.offset ?? 0);
   }
 
-  public async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  public override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     if (this.offset === undefined) {
       // TODO: this isn't perfect (% for instance), but does anyone care?
       this.offset = range.resolve(vimState, false)[1];

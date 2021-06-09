@@ -139,11 +139,11 @@ async function createSearchStateAndMoveToMatch(args: {
 class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['*'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
@@ -152,11 +152,11 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
 class CommandSearchCurrentWordForward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '*'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await searchCurrentWord(position, vimState, SearchDirection.Forward, false);
   }
 }
@@ -165,11 +165,11 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 class CommandSearchVisualForward extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['*'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (configuration.visualstar) {
       await searchCurrentSelection(vimState, SearchDirection.Forward);
     } else {
@@ -182,11 +182,11 @@ class CommandSearchVisualForward extends BaseCommand {
 class CommandSearchCurrentWordExactBackward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['#'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
   }
 }
@@ -195,11 +195,11 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
 class CommandSearchCurrentWordBackward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '#'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await searchCurrentWord(position, vimState, SearchDirection.Backward, false);
   }
 }
@@ -208,11 +208,11 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 class CommandSearchVisualBackward extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['#'];
-  isMotion = true;
-  runsOnceForEachCountPrefix = true;
-  isJump = true;
+  override isMotion = true;
+  override runsOnceForEachCountPrefix = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (configuration.visualstar) {
       await searchCurrentSelection(vimState, SearchDirection.Backward);
     } else {
@@ -225,13 +225,13 @@ class CommandSearchVisualBackward extends BaseCommand {
 class CommandSearchForwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['/'];
-  isMotion = true;
-  isJump = true;
-  runsOnceForEveryCursor() {
+  override isMotion = true;
+  override isJump = true;
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
       SearchDirection.Forward,
       vimState.cursorStopPosition,
@@ -250,13 +250,13 @@ class CommandSearchForwards extends BaseCommand {
 class CommandSearchBackwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['?'];
-  isMotion = true;
-  isJump = true;
-  runsOnceForEveryCursor() {
+  override isMotion = true;
+  override isJump = true;
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     globalState.searchState = new SearchState(
       SearchDirection.Backward,
       vimState.cursorStopPosition,
@@ -335,7 +335,7 @@ class CommandSelectNextLastSearchWord extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   keys = ['g', 'n'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await selectLastSearchWord(vimState, SearchDirection.Forward);
   }
 }
@@ -345,7 +345,7 @@ class CommandSelectPreviousLastSearchWord extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   keys = ['g', 'N'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await selectLastSearchWord(vimState, SearchDirection.Backward);
   }
 }

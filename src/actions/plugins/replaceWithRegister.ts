@@ -14,11 +14,11 @@ class ReplaceOperator extends BaseOperator {
   public keys = ['g', 'r'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
   }
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.replaceWithRegister && super.doesActionApply(vimState, keysPressed);
   }
 

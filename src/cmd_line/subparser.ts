@@ -30,6 +30,7 @@ import { StatusBar } from '../statusBar';
 import { ShCommand } from './commands/sh';
 import { GotoCommand } from './commands/goto';
 import { YankCommand } from './commands/yank';
+import { CopyCommand } from './commands/copy';
 import { VsCodeCommand } from './commands/vscode';
 
 // Associates a name and an abbreviation with a command parser
@@ -108,7 +109,7 @@ export const commandParsers = {
 
   copy: {
     abbrev: 'co',
-    parser: undefined,
+    parser: CopyCommand.parse,
   },
 
   delete: {
@@ -282,7 +283,7 @@ export const commandParsers = {
   },
 
   t: {
-    parser: undefined,
+    parser: CopyCommand.parse,
   },
 
   tabclose: {
@@ -429,7 +430,7 @@ class UnimplementedCommand extends CommandBase {
   fullName: string;
   parserMapping: CommandParserMapping;
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     // If the user has neovim integration enabled, don't stop them from using these commands
     return true;
   }

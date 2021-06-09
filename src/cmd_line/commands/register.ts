@@ -11,6 +11,8 @@ export interface IRegisterCommandArguments extends node.ICommandArgs {
   registers: string[];
 }
 export class RegisterCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
+
   private readonly arguments: IRegisterCommandArguments;
 
   constructor(args: IRegisterCommandArguments) {

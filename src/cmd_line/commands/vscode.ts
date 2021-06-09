@@ -6,9 +6,10 @@ import { CommandBase } from '../node';
 import { Scanner } from '../scanner';
 
 export class VsCodeCommand extends CommandBase {
-  private command?: string;
+  public override readonly acceptsRange = false;
 
-  constructor(command?: string) {
+  private command?: string;
+  private constructor(command?: string) {
     super();
     this.command = command;
   }
@@ -19,15 +20,11 @@ export class VsCodeCommand extends CommandBase {
     return new VsCodeCommand(scanner.isAtEof ? undefined : scanner.nextWord());
   }
 
-  private async vsc(vimState: VimState) {
+  async execute(vimState: VimState): Promise<void> {
     if (!this.command) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.ArgumentRequired));
       return;
     }
     await vscode.commands.executeCommand(this.command);
-  }
-
-  async execute(vimState: VimState): Promise<void> {
-    await this.vsc(vimState);
   }
 }

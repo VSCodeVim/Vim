@@ -19,7 +19,7 @@ export class SortCommand extends node.CommandBase {
     this.arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -78,7 +78,7 @@ export class SortCommand extends node.CommandBase {
     });
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
 
     await this.sortLines(vimState, start, end);

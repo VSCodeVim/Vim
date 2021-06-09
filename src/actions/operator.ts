@@ -13,15 +13,15 @@ import { commandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
-  isOperator = true;
+  override isOperator = true;
 
   constructor(multicursorIndex?: number) {
     super();
     this.multicursorIndex = multicursorIndex;
   }
-  canBeRepeatedWithDot = true;
+  override canBeRepeatedWithDot = true;
 
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
       return true;
     }
@@ -44,7 +44,7 @@ export abstract class BaseOperator extends BaseAction {
     return true;
   }
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
@@ -243,7 +243,7 @@ class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  canBeRepeatedWithDot = false;
+  override canBeRepeatedWithDot = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     [start, end] = sorted(start, end);
@@ -343,7 +343,7 @@ class ChangeOperatorSVisual extends BaseOperator {
   public modes = [Mode.Visual, Mode.VisualLine];
 
   // Don't clash with Sneak plugin
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
   }
 
@@ -429,8 +429,8 @@ class UpperCaseOperator extends ChangeCaseOperator {
 
 @RegisterAction
 class UpperCaseWithMotion extends UpperCaseOperator {
-  public keys = [['g', 'U']];
-  public modes = [Mode.Normal];
+  public override keys = [['g', 'U']];
+  public override modes = [Mode.Normal];
 }
 
 @RegisterAction
@@ -444,8 +444,8 @@ class LowerCaseOperator extends ChangeCaseOperator {
 
 @RegisterAction
 class LowerCaseWithMotion extends LowerCaseOperator {
-  public keys = [['g', 'u']];
-  public modes = [Mode.Normal];
+  public override keys = [['g', 'u']];
+  public override modes = [Mode.Normal];
 }
 
 @RegisterAction
@@ -467,8 +467,8 @@ class ToggleCaseOperator extends ChangeCaseOperator {
 
 @RegisterAction
 class ToggleCaseWithMotion extends ToggleCaseOperator {
-  public keys = [['g', '~']];
-  public modes = [Mode.Normal];
+  public override keys = [['g', '~']];
+  public override modes = [Mode.Normal];
 }
 
 @RegisterAction
@@ -616,7 +616,11 @@ export class ChangeOperator extends BaseOperator {
     }
   }
 
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
+  public override async runRepeat(
+    vimState: VimState,
+    position: Position,
+    count: number
+  ): Promise<void> {
     const thisLineIndent = vimState.document.getText(
       new vscode.Range(
         position.getLineBegin(),
@@ -655,7 +659,7 @@ export class ChangeOperator extends BaseOperator {
 class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
-  canBeRepeatedWithDot = false;
+  override canBeRepeatedWithDot = false;
   runsOnceForEveryCursor() {
     return false;
   }

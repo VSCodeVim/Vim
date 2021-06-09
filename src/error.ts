@@ -3,6 +3,7 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
+  InvalidAddress = 14,
   MarkNotSet = 20,
   NoAlternateFile = 23,
   NoInsertedTextYet = 29,
@@ -20,6 +21,7 @@ export enum ErrorCode {
   CannotCloseLastWindow = 444,
   ArgumentRequired = 471,
   InvalidArgument = 474,
+  NoRangeAllowed = 481,
   PatternNotFound = 486,
   TrailingCharacters = 488,
   NotAnEditorCommand = 492,
@@ -31,6 +33,7 @@ export enum ErrorCode {
 }
 
 export const ErrorMessage: IErrorMessage = {
+  14: 'Invalid address',
   20: 'Mark not set',
   23: 'No alternate file',
   29: 'No inserted text yet',
@@ -48,6 +51,7 @@ export const ErrorMessage: IErrorMessage = {
   444: 'Cannot close last window',
   471: 'Argument required',
   474: 'Invalid argument',
+  481: 'No range allowed',
   486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
@@ -60,7 +64,7 @@ export const ErrorMessage: IErrorMessage = {
 
 export class VimError extends Error {
   public readonly code: number;
-  public readonly message: string;
+  public override readonly message: string;
 
   private constructor(code: number, message: string) {
     super();
@@ -76,7 +80,7 @@ export class VimError extends Error {
     throw new Error('unknown error code: ' + code);
   }
 
-  toString(): string {
+  override toString(): string {
     return `E${this.code}: ${this.message}`;
   }
 }

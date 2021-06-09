@@ -28,6 +28,8 @@ class JumpPickItem implements QuickPickItem {
 }
 
 export class JumpsCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
+
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     if (jumpTracker.hasJumps) {
@@ -46,6 +48,8 @@ export class JumpsCommand extends node.CommandBase {
 }
 
 export class ClearJumpsCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
+
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();
