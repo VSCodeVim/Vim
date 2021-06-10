@@ -289,7 +289,6 @@ export class SearchState {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      // TODO(bell)
       return { start: startPosition, end: startPosition, match: false, index: -1 };
     }
 
@@ -307,7 +306,6 @@ export class SearchState {
         }
       }
       // We've hit the bottom of the file. Wrap around if configured to do so, or return undefined.
-      // TODO(bell)
       if (configuration.wrapscan) {
         const range = matchRanges[0];
         return {
@@ -332,7 +330,6 @@ export class SearchState {
       }
 
       // We've hit the top of the file. Wrap around if configured to do so, or return undefined.
-      // TODO(bell)
       if (configuration.wrapscan) {
         const range = matchRanges[matchRanges.length - 1];
         return {
@@ -354,7 +351,6 @@ export class SearchState {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      // TODO(bell)
       return { start: pos, end: pos, match: false, index: -1 };
     }
 
@@ -369,7 +365,6 @@ export class SearchState {
       }
     }
 
-    // TODO(bell)
     return { start: pos, end: pos, match: false, index: -1 };
   }
 
