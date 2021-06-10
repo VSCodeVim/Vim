@@ -1,6 +1,15 @@
 # Change Log
 
-## [v1.21.0](https://github.com/vscodevim/vim/tree/v1.21.0) (2021-06-06)
+## [v1.21.1](https://github.com/vscodevim/vim/tree/v1.21.1) (2021-06-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.0...v1.21.1)
+
+**Fixed Bugs:**
+
+- User Settings Getting Overridden [\#6717](https://github.com/VSCodeVim/Vim/issues/6717)
+- incorrect placement of brackets when using macros [\#6692](https://github.com/VSCodeVim/Vim/issues/6692)
+
+## [v1.21.0](https://github.com/vscodevim/vim/tree/v1.21.0) (2021-06-09)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.3...v1.21.0)
 
@@ -184,10 +193,6 @@
 ## [v1.18.7](https://github.com/vscodevim/vim/tree/v1.18.7) (2021-02-01)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.5...v1.18.7)
-
-**Enhancements:**
-
-- Implement `ZZ` and `ZQ` [\#5998](https://github.com/VSCodeVim/Vim/issues/5998)
 
 **Merged pull requests:**
 
