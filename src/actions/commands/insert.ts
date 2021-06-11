@@ -230,6 +230,8 @@ class CommandBackspaceInInsertMode extends BaseCommand {
     const line = vimState.document.lineAt(position).text;
     const selection = vimState.editor.selections.find((s) => s.contains(position));
 
+    const leadingSpaces = line.match(/\S/)?.index ?? line.length;
+
     if (selection && !selection.isEmpty) {
       // If a selection is active, delete it
       vimState.recordedState.transformer.addTransformation({
@@ -238,23 +240,18 @@ class CommandBackspaceInInsertMode extends BaseCommand {
       });
     } else if (
       position.character > 0 &&
-      line.length > 0 &&
-      line.match(/^\s+$/) &&
+      position.character <= leadingSpaces &&
       configuration.expandtab
     ) {
-      // If the line is empty except whitespace and we're not on the first
-      // character of the line, backspace should return to the next lowest
-      // level of indentation.
-      // TODO: similar logic is needed for whitespace at the start or end of a line. See #1691
-
+      // We're in the leading whitespace - delete a tabstop
       const tabSize = vimState.editor.options.tabSize as number;
-      const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
+      const spacesToDelete = position.character % tabSize || tabSize;
 
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
         range: new vscode.Range(
-          position.withColumn(desiredLineLength),
-          position.withColumn(line.length)
+          position.with({ character: position.character - spacesToDelete }),
+          position
         ),
       });
     } else if (!position.isAtDocumentBegin()) {

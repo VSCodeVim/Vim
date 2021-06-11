@@ -72,6 +72,7 @@ export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
 interface ITestObject {
   title: string;
   config?: Partial<IConfiguration>;
+  editorOptions?: vscode.TextEditorOptions;
   start: string[];
   keysPressed: string;
   end: string[];
@@ -328,6 +329,10 @@ async function testIt(testObj: ITestObject): Promise<void> {
 
   const helper = new TestObjectHelper(testObj);
   assert(helper.isValid, "Missing '|' in test object.");
+
+  if (testObj.editorOptions) {
+    editor.options = testObj.editorOptions;
+  }
 
   // Initialize the editor with the starting text and cursor selection
   await editor.edit((builder) => {
