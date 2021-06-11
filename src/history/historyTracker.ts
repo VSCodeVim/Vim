@@ -183,7 +183,7 @@ class HistoryStep {
 
       const intersect = current.afterRange.intersection(next.beforeRange);
       if (intersect) {
-        const [first, second] = current.start.isBefore(next.start)
+        const [first, second] = current.start.isBeforeOrEqual(next.start)
           ? [current, next]
           : [next, current];
         const intersectLength =
