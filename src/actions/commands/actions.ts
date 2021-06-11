@@ -422,7 +422,9 @@ class CommandEsc extends BaseCommand {
     if (vimState.currentMode === Mode.Normal) {
       vimState.surround = undefined;
 
-      if (!vimState.isMultiCursor) {
+      if (vimState.isMultiCursor) {
+        vimState.cursors = [vimState.cursors[0]];
+      } else {
         // If there's nothing to do on the vim side, we might as well call some
         // of vscode's default "close notification" actions. I think we should
         // just add to this list as needed.
@@ -431,24 +433,15 @@ class CommandEsc extends BaseCommand {
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
         ]);
-
-        return;
       }
-    }
+    } else {
+      if (vimState.currentMode === Mode.EasyMotionMode) {
+        vimState.easyMotion.clearDecorations(vimState.editor);
+      } else if (vimState.currentMode === Mode.SurroundInputMode) {
+        vimState.surround = undefined;
+      }
 
-    if (vimState.currentMode === Mode.EasyMotionMode) {
-      vimState.easyMotion.clearDecorations(vimState.editor);
-    }
-
-    // Abort surround operation
-    if (vimState.currentMode === Mode.SurroundInputMode) {
-      vimState.surround = undefined;
-    }
-
-    await vimState.setCurrentMode(Mode.Normal);
-
-    if (vimState.isMultiCursor) {
-      vimState.cursors = [vimState.cursors[0]];
+      await vimState.setCurrentMode(Mode.Normal);
     }
   }
 }
