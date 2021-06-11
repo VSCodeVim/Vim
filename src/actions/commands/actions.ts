@@ -447,7 +447,7 @@ class CommandEsc extends BaseCommand {
 
     await vimState.setCurrentMode(Mode.Normal);
 
-    if (!vimState.isMultiCursor) {
+    if (vimState.isMultiCursor) {
       vimState.cursors = [vimState.cursors[0]];
     }
   }
