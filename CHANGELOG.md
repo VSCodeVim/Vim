@@ -1,6 +1,15 @@
 # Change Log
 
-## [v1.21.1](https://github.com/vscodevim/vim/tree/v1.21.1) (2021-06-07)
+## [v1.21.2](https://github.com/vscodevim/vim/tree/v1.21.2) (2021-06-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.1...v1.21.2)
+
+**Fixed Bugs:**
+
+- `\<Esc\>` does not cancel multi-cursor [\#6719](https://github.com/VSCodeVim/Vim/issues/6719)
+- incorrect undo of macro execution containing delete after join [\#6645](https://github.com/VSCodeVim/Vim/issues/6645)
+
+## [v1.21.1](https://github.com/vscodevim/vim/tree/v1.21.1) (2021-06-10)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.0...v1.21.1)
 
