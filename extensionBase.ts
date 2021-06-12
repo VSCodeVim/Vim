@@ -350,10 +350,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.window.onDidChangeTextEditorVisibleRanges,
     async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
+      // Scrolling the viewport clears any status bar message, even errors.
       const mh = await getAndUpdateModeHandler();
-      if (mh) {
-        // Scrolling the viewport clears any status bar message, even errors.
-        StatusBar.clear(mh.vimState, true);
+      if (mh && StatusBar.lastMessageTime) {
+        // TODO: Using the time elapsed works most of the time, but is a bit of a hack
+        const timeElapsed = Number(new Date()) - Number(StatusBar.lastMessageTime);
+        if (timeElapsed > 100) {
+          StatusBar.clear(mh.vimState, true);
+        }
       }
     }
   );
