@@ -241,7 +241,7 @@ class CommandBackspaceInInsertMode extends BaseCommand {
     } else if (
       position.character > 0 &&
       position.character <= leadingSpaces &&
-      configuration.expandtab
+      vimState.editor.options.insertSpaces
     ) {
       // We're in the leading whitespace - delete a tabstop
       const tabSize = vimState.editor.options.tabSize as number;
