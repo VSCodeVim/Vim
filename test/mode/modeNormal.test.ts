@@ -602,6 +602,39 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
+  // TODO: these tests should be organanized and combined with the ones below - vi'c should be the same as ci', for instance
+  newTest({
+    title: "Can handle 'vi'c' on first quote",
+    start: ["one |'two' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' inside quoted string",
+    start: ["one 't|wo' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' on closing quote",
+    start: ["one 'two|' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' when string is ahead",
+    start: ["on|e 'two' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
   newTest({
     title: "Can handle 'ci'' on first quote",
     start: ["|'one'"],

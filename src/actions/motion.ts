@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
-import { Mode } from './../mode/mode';
+import { isVisualMode, Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
@@ -1849,7 +1849,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
       }
     }
 
-    if (position.isBefore(startPos)) {
+    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
       vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
     }
 
@@ -1973,7 +1973,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       endPos = endPos.getLeft();
     }
 
-    if (position.isBefore(startPos)) {
+    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
       vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
     }
 
