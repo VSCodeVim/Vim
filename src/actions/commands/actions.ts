@@ -119,17 +119,9 @@ export class DocumentContentChangeAction extends BaseCommand {
       rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
       if (replaceRange.start.isEqual(replaceRange.end)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'insertText',
-          position: replaceRange.start,
-          text: change.text,
-        });
+        vimState.recordedState.transformer.insert(replaceRange.start, change.text);
       } else {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          range: replaceRange,
-          text: change.text,
-        });
+        vimState.recordedState.transformer.replace(replaceRange, change.text);
       }
     }
   }
@@ -2250,10 +2242,7 @@ class ActionReplaceCharacter extends BaseCommand {
     }
 
     if (toReplace === '<tab>') {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new vscode.Range(position, endPos),
-      });
+      vimState.recordedState.transformer.delete(new vscode.Range(position, endPos));
       vimState.recordedState.transformer.addTransformation({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
@@ -2263,10 +2252,7 @@ class ActionReplaceCharacter extends BaseCommand {
       // A newline replacement always inserts exactly one newline (regardless
       // of count prefix) and puts the cursor on the next line.
       // We use `insertTextVSCode` so we get the right indentation
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new vscode.Range(position, endPos),
-      });
+      vimState.recordedState.transformer.delete(new vscode.Range(position, endPos));
       vimState.recordedState.transformer.addTransformation({
         type: 'insertTextVSCode',
         text: '\n',
@@ -2902,11 +2888,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     const range = new vscode.Range(startPos, endPos.getRight());
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      range,
-      text: newNum,
-    });
+    vimState.recordedState.transformer.replace(range, newNum);
     if (oldLength !== newNum.length) {
       // Adjust end position according to difference in width of number-string
       endPos = new Position(endPos.line, startPos.character + newNum.length - 1);

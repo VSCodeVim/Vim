@@ -569,16 +569,8 @@ class SurroundHelper {
           // throw ?
           continue;
         }
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: surroundState.tag.tag,
-          range: leftTagName,
-        });
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: surroundState.tag.tag,
-          range: rightTagName,
-        });
+        vimState.recordedState.transformer.replace(leftTagName, surroundState.tag.tag);
+        vimState.recordedState.transformer.replace(rightTagName, surroundState.tag.tag);
       }
     }
     // all other cases: ys, ds, cs

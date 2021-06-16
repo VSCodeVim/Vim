@@ -157,13 +157,12 @@ export const lineCompletionProvider = {
       return;
     }
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteRange',
-      range: new vscode.Range(
+    vimState.recordedState.transformer.delete(
+      new vscode.Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
-      ),
-    });
+      )
+    );
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',

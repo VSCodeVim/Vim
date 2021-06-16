@@ -383,11 +383,10 @@ abstract class ChangeCaseOperator extends BaseOperator {
     if (vimState.currentMode === Mode.VisualBlock) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
         const range = new vscode.Range(start, end);
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
+        vimState.recordedState.transformer.replace(
           range,
-          text: this.transformText(vimState.document.getText(range)),
-        });
+          this.transformText(vimState.document.getText(range))
+        );
       }
 
       // HACK: currently must do this nonsense to collapse all cursors into one
@@ -720,11 +719,7 @@ export class ROT13Operator extends BaseOperator {
 
     for (const range of selections) {
       const original = vimState.document.getText(range);
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
-        text: ROT13Operator.rot13(original),
-        range,
-      });
+      vimState.recordedState.transformer.replace(range, ROT13Operator.rot13(original));
     }
   }
 

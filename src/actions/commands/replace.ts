@@ -16,11 +16,10 @@ class ExitReplaceMode extends BaseCommand {
     // `3Rabc` results in 'abc' replacing the next characters 2 more times
     if (replaceState.timesToRepeat > 1) {
       const newText = replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1);
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
-        range: new Range(position, position.getRight(newText.length)),
-        text: newText,
-      });
+      vimState.recordedState.transformer.replace(
+        new Range(position, position.getRight(newText.length)),
+        newText
+      );
     } else {
       vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
     }
@@ -98,11 +97,7 @@ class ReplaceInReplaceMode extends BaseCommand {
         diff: PositionDiff.offset({ character: 1 }),
       });
     } else {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'insertText',
-        text: char,
-        position,
-      });
+      vimState.recordedState.transformer.insert(position, char);
     }
 
     replaceState.newChars.push(char);
