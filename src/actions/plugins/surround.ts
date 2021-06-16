@@ -419,15 +419,20 @@ class SurroundHelper {
       left: '"',
       right: '"',
       removeSpace: false,
-      movement: () => new MoveAroundDoubleQuotes(),
+      movement: () => new MoveAroundDoubleQuotes(false),
     },
     "'": {
       left: "'",
       right: "'",
       removeSpace: false,
-      movement: () => new MoveAroundSingleQuotes(),
+      movement: () => new MoveAroundSingleQuotes(false),
     },
-    '`': { left: '`', right: '`', removeSpace: false, movement: () => new MoveAroundBacktick() },
+    '`': {
+      left: '`',
+      right: '`',
+      removeSpace: false,
+      movement: () => new MoveAroundBacktick(false),
+    },
     '<': { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
     '*': {
       left: '*',

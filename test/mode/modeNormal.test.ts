@@ -687,7 +687,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca\"' starting behind the quoted word",
     start: ['|one "two"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 
@@ -695,7 +695,31 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca\"' starting on the opening quote",
     start: ['one |"two"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes trailing whitespace",
+    start: ['one "t|wo"            three'],
+    keysPressed: 'ca"',
+    end: ['one |three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes trailing whitespace 2",
+    start: ['one "t|wo"   ', 'three'],
+    keysPressed: 'ca"',
+    end: ['one |', 'three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes leading whitespace if there is no trailing whitespace",
+    start: ['one      "t|wo"three'],
+    keysPressed: 'ca"',
+    end: ['one|three'],
     endMode: Mode.Insert,
   });
 
@@ -743,7 +767,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca\"' starting on the closing quote",
     start: ['one "two|"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 
@@ -775,7 +799,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca`' inside word",
     start: ['one `t|wo`'],
     keysPressed: 'ca`',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 

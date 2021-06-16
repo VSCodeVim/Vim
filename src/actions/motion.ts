@@ -1947,8 +1947,15 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   protected includeSurrounding = false;
   override isJump = true;
 
+  // HACK: surround uses these classes, but does not want trailing whitespace to be included
+  private readonly adjustForTrailingWhitespace: boolean = true;
+
+  constructor(adjustForTrailingWhitespace: boolean = true) {
+    super();
+    this.adjustForTrailingWhitespace = adjustForTrailingWhitespace;
+  }
+
   public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    // TODO: Don't limit quote matching to the same line
     const text = vimState.document.lineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
     let start = quoteMatcher.findOpening(position.character);
@@ -1965,13 +1972,23 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       return failedMovement(vimState);
     }
 
-    let startPos = new Position(position.line, start);
-    let endPos = new Position(position.line, end);
-
     if (!this.includeSurrounding) {
-      startPos = startPos.getRight();
-      endPos = endPos.getLeft();
+      // Don't include the quotes
+      start++;
+      end--;
+    } else if (this.adjustForTrailingWhitespace) {
+      // Include trailing whitespace if there is any...
+      const trailingWhitespace = text.substring(end + 1).search(/\S|$/);
+      if (trailingWhitespace > 0) {
+        end += trailingWhitespace;
+      } else {
+        // ...otherwise include leading whitespace
+        start = text.substring(0, start).search(/\S\s+$/) + 1;
+      }
     }
+
+    const startPos = new Position(position.line, start);
+    const endPos = new Position(position.line, end);
 
     if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
       vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
