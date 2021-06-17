@@ -332,15 +332,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      taskQueue.enqueueTask(
-        () => mh.handleSelectionChange(e),
-        undefined,
-        /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
-        true
-      );
+      taskQueue.enqueueTask(() => mh.handleSelectionChange(e));
     },
     true,
     false
