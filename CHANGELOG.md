@@ -1,6 +1,19 @@
 # Change Log
 
-## [v1.21.2](https://github.com/vscodevim/vim/tree/v1.21.2) (2021-06-07)
+## [v1.21.3](https://github.com/vscodevim/vim/tree/v1.21.3) (2021-06-17)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.2...v1.21.3)
+
+**Fixed Bugs:**
+
+- `i"`/`a"` should match quotes on line when cursor is on quote [\#6761](https://github.com/VSCodeVim/Vim/issues/6761)
+- `a"` should include the space after the closing quote [\#6747](https://github.com/VSCodeVim/Vim/issues/6747)
+- Incorrect cursor position after `vi"c` when cursor on quote [\#6740](https://github.com/VSCodeVim/Vim/issues/6740)
+- `\<BS\>` deletes too much leading whitespace when using hard tabstops with `expandtab` enabled [\#6735](https://github.com/VSCodeVim/Vim/issues/6735)
+- `gd` that causes a file load followed by `h`/`j`/`k`/`l` jumps to random spot [\#6544](https://github.com/VSCodeVim/Vim/issues/6544)
+- The message on the status bar about how many to look for conflicts with "Normal" [\#6039](https://github.com/VSCodeVim/Vim/issues/6039)
+
+## [v1.21.2](https://github.com/vscodevim/vim/tree/v1.21.2) (2021-06-11)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.1...v1.21.2)
 
