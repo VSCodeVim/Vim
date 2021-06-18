@@ -1943,7 +1943,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
 
 export abstract class MoveQuoteMatch extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
-  protected abstract charToMatch: string;
+  protected abstract readonly charToMatch: '"' | "'" | '`';
   protected includeSurrounding = false;
   override isJump = true;
 
@@ -1958,19 +1958,12 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = vimState.document.lineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
-    let start = quoteMatcher.findOpening(position.character);
-    let end = quoteMatcher.findClosing(start + 1);
-
-    if (end < start && start === position.character) {
-      // start character is a match and no forward match found
-      // search backwards instead
-      end = start;
-      start = quoteMatcher.findOpening(end - 1);
-    }
-
-    if (start === -1 || end === -1 || end === start || end < position.character) {
+    const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
+    if (quoteIndices === undefined) {
       return failedMovement(vimState);
     }
+
+    let [start, end] = quoteIndices;
 
     if (!this.includeSurrounding) {
       // Don't include the quotes
@@ -2020,42 +2013,42 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 @RegisterAction
 class MoveInsideSingleQuotes extends MoveQuoteMatch {
   keys = ['i', "'"];
-  charToMatch = "'";
+  readonly charToMatch = "'";
   override includeSurrounding = false;
 }
 
 @RegisterAction
 export class MoveAroundSingleQuotes extends MoveQuoteMatch {
   keys = ['a', "'"];
-  charToMatch = "'";
+  readonly charToMatch = "'";
   override includeSurrounding = true;
 }
 
 @RegisterAction
 class MoveInsideDoubleQuotes extends MoveQuoteMatch {
   keys = ['i', '"'];
-  charToMatch = '"';
+  readonly charToMatch = '"';
   override includeSurrounding = false;
 }
 
 @RegisterAction
 export class MoveAroundDoubleQuotes extends MoveQuoteMatch {
   keys = ['a', '"'];
-  charToMatch = '"';
+  readonly charToMatch = '"';
   override includeSurrounding = true;
 }
 
 @RegisterAction
 class MoveInsideBacktick extends MoveQuoteMatch {
   keys = ['i', '`'];
-  charToMatch = '`';
+  readonly charToMatch = '`';
   override includeSurrounding = false;
 }
 
 @RegisterAction
 export class MoveAroundBacktick extends MoveQuoteMatch {
   keys = ['a', '`'];
-  charToMatch = '`';
+  readonly charToMatch = '`';
   override includeSurrounding = true;
 }
 

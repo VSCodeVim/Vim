@@ -684,6 +684,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'ci\"' correctly matches quotes on line when starting on quote character",
+    start: ['one "two|" three "four"'],
+    keysPressed: 'ci"',
+    end: ['one "|" three "four"'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ci\"' fails when starting on unmatched quote character",
+    start: ['one "two" three "four" five|" six'],
+    keysPressed: 'ci"',
+    end: ['one "two" three "four" five|" six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'ca\"' starting behind the quoted word",
     start: ['|one "two"'],
     keysPressed: 'ca"',
