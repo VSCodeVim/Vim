@@ -1976,7 +1976,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
         end += trailingWhitespace;
       } else {
         // ...otherwise include leading whitespace
-        start = text.substring(0, start).search(/\S\s+$/) + 1;
+        start = text.substring(0, start).search(/\s*$/);
       }
     }
 
