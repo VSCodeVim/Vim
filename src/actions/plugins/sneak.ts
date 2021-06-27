@@ -10,9 +10,9 @@ export class SneakForward extends BaseMovement {
     ['s', '<character>', '<character>'],
     ['z', '<character>', '<character>'],
   ];
-  isJump = true;
+  override isJump = true;
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
 
     return (
@@ -22,7 +22,10 @@ export class SneakForward extends BaseMovement {
     );
   }
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState
+  ): Promise<Position | IMovement> {
     if (!this.isRepeat) {
       vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
       vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
@@ -74,9 +77,9 @@ export class SneakBackward extends BaseMovement {
     ['S', '<character>', '<character>'],
     ['Z', '<character>', '<character>'],
   ];
-  isJump = true;
+  override isJump = true;
 
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
 
     return (
@@ -86,7 +89,10 @@ export class SneakBackward extends BaseMovement {
     );
   }
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState
+  ): Promise<Position | IMovement> {
     if (!this.isRepeat) {
       vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
       vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);

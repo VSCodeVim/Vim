@@ -1,3 +1,4 @@
+import { ErrorCode, VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { TokenType, Token } from './token';
 
@@ -221,8 +222,10 @@ export class CommandLine {
     if (this.command) {
       if (this.range.isEmpty) {
         await this.command.execute(vimState);
-      } else {
+      } else if (this.command.acceptsRange) {
         await this.command.executeWithRange(vimState, this.range);
+      } else {
+        throw VimError.fromCode(ErrorCode.NoRangeAllowed);
       }
     } else {
       const [_, end] = this.range.resolve(vimState);
@@ -239,6 +242,11 @@ export interface ICommandArgs {
 }
 
 export abstract class CommandBase {
+  /**
+   * If false, trying to use this command with a range will throw E481 ("No range allowed")
+   */
+  public readonly acceptsRange: boolean = true;
+
   public neovimCapable(): boolean {
     return false;
   }

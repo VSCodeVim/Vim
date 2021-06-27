@@ -22,7 +22,7 @@ export class ReadCommand extends node.CommandBase {
     this.arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 

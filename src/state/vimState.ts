@@ -132,7 +132,7 @@ export class VimState implements vscode.Disposable {
   /**
    * All the keys we've pressed so far.
    */
-  public keyHistory: string[] = [];
+  public readonly keyHistory: string[] = [];
 
   /**
    * The cursor position (start, stop) when this action finishes.

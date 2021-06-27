@@ -602,6 +602,39 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
+  // TODO: these tests should be organanized and combined with the ones below - vi'c should be the same as ci', for instance
+  newTest({
+    title: "Can handle 'vi'c' on first quote",
+    start: ["one |'two' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' inside quoted string",
+    start: ["one 't|wo' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' on closing quote",
+    start: ["one 'two|' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'vi'c' when string is ahead",
+    start: ["on|e 'two' three"],
+    keysPressed: "vi'c",
+    end: ["one '|' three"],
+    endMode: Mode.Insert,
+  });
+
   newTest({
     title: "Can handle 'ci'' on first quote",
     start: ["|'one'"],
@@ -651,10 +684,26 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'ci\"' correctly matches quotes on line when starting on quote character",
+    start: ['one "two|" three "four"'],
+    keysPressed: 'ci"',
+    end: ['one "|" three "four"'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ci\"' fails when starting on unmatched quote character",
+    start: ['one "two" three "four" five|" six'],
+    keysPressed: 'ci"',
+    end: ['one "two" three "four" five|" six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'ca\"' starting behind the quoted word",
     start: ['|one "two"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 
@@ -662,7 +711,31 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca\"' starting on the opening quote",
     start: ['one |"two"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes trailing whitespace",
+    start: ['one "t|wo"            three'],
+    keysPressed: 'ca"',
+    end: ['one |three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes trailing whitespace 2",
+    start: ['one "t|wo"   ', 'three'],
+    keysPressed: 'ca"',
+    end: ['one |', 'three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'ca\"' includes leading whitespace if there is no trailing whitespace",
+    start: ['one      "t|wo"three'],
+    keysPressed: 'ca"',
+    end: ['one|three'],
     endMode: Mode.Insert,
   });
 
@@ -710,7 +783,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca\"' starting on the closing quote",
     start: ['one "two|"'],
     keysPressed: 'ca"',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 
@@ -742,7 +815,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'ca`' inside word",
     start: ['one `t|wo`'],
     keysPressed: 'ca`',
-    end: ['one |'],
+    end: ['one|'],
     endMode: Mode.Insert,
   });
 

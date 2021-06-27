@@ -284,7 +284,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      const mh = await getAndUpdateModeHandler();
+      const mh = ModeHandlerMap.get(EditorIdentity.fromEditor(vscode.window.activeTextEditor));
       if (mh === undefined) {
         // We don't care if there is no active editor
         return;
@@ -332,15 +332,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      taskQueue.enqueueTask(
-        () => mh.handleSelectionChange(e),
-        undefined,
-        /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
-        true
-      );
+      taskQueue.enqueueTask(() => mh.handleSelectionChange(e));
     },
     true,
     false
@@ -350,11 +342,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.window.onDidChangeTextEditorVisibleRanges,
     async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh) {
+      taskQueue.enqueueTask(async () => {
         // Scrolling the viewport clears any status bar message, even errors.
-        StatusBar.clear(mh.vimState, true);
-      }
+        const mh = await getAndUpdateModeHandler();
+        if (mh && StatusBar.lastMessageTime) {
+          // TODO: Using the time elapsed works most of the time, but is a bit of a hack
+          const timeElapsed = Number(new Date()) - Number(StatusBar.lastMessageTime);
+          if (timeElapsed > 100) {
+            StatusBar.clear(mh.vimState, true);
+          }
+        }
+      });
     }
   );
 
@@ -493,15 +491,20 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
-          const didStopRemap = await forceStopRecursiveRemap();
-          if (!didStopRemap) {
-            handleKeyEvent(`${boundKey.key}`);
+          const mh = await getAndUpdateModeHandler();
+          if (mh && !(await forceStopRecursiveRemap(mh))) {
+            await mh.handleKeyEvent(`${boundKey.key}`);
           }
         }
-      : () => {
-          handleKeyEvent(`${boundKey.key}`);
+      : async () => {
+          const mh = await getAndUpdateModeHandler();
+          if (mh) {
+            await mh.handleKeyEvent(`${boundKey.key}`);
+          }
         };
-    registerCommand(context, boundKey.command, command);
+    registerCommand(context, boundKey.command, async () => {
+      taskQueue.enqueueTask(command);
+    });
   }
 
   {
@@ -621,21 +624,11 @@ function registerEventListener<T>(
   context.subscriptions.push(disposable);
 }
 
-async function handleKeyEvent(key: string): Promise<void> {
-  const mh = await getAndUpdateModeHandler();
-  if (mh) {
-    taskQueue.enqueueTask(async () => {
-      await mh.handleKeyEvent(key);
-    });
-  }
-}
-
 /**
  * @returns true if there was a remap being executed to stop
  */
-async function forceStopRecursiveRemap(): Promise<boolean> {
-  const mh = await getAndUpdateModeHandler();
-  if (mh?.remapState.isCurrentlyPerformingRecursiveRemapping) {
+async function forceStopRecursiveRemap(mh: ModeHandler): Promise<boolean> {
+  if (mh.remapState.isCurrentlyPerformingRecursiveRemapping) {
     mh.remapState.forceStopRecursiveRemapping = true;
     return true;
   }

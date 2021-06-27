@@ -4,6 +4,7 @@
     "module": "commonjs",
     "target": "ES2019",
     "outDir": "out",
+    "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

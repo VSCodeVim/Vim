@@ -1,5 +1,4 @@
 enum QuoteMatch {
-  None,
   Opening,
   Closing,
 }
@@ -8,46 +7,63 @@ enum QuoteMatch {
  * QuoteMatcher matches quoted strings, respecting escaped quotes (\") and friends
  */
 export class QuoteMatcher {
-  static escapeChar = '\\';
+  static readonly escapeChar = '\\';
 
-  private quoteMap: QuoteMatch[] = [];
+  private readonly quoteMap: QuoteMatch[] = [];
 
-  constructor(char: string, corpus: string) {
-    let openingQuote = false;
+  constructor(quote: '"' | "'" | '`', corpus: string) {
+    let openingQuote = true;
     // Loop over corpus, marking quotes and respecting escape characters.
     for (let i = 0; i < corpus.length; i++) {
       if (corpus[i] === QuoteMatcher.escapeChar) {
         i += 1;
         continue;
       }
-      if (corpus[i] === char) {
-        openingQuote = !openingQuote;
+      if (corpus[i] === quote) {
         this.quoteMap[i] = openingQuote ? QuoteMatch.Opening : QuoteMatch.Closing;
+        openingQuote = !openingQuote;
       }
     }
   }
 
-  findOpening(start: number): number {
-    // First, search backwards to see if we could be inside a quote
-    for (let i = start; i >= 0; i--) {
-      if (this.quoteMap[i]) {
-        return i;
+  public surroundingQuotes(cursorIndex: number): [number, number] | undefined {
+    const cursorQuoteType = this.quoteMap[cursorIndex];
+    if (cursorQuoteType === QuoteMatch.Opening) {
+      const closing = this.getNextQuote(cursorIndex);
+      return closing !== undefined ? [cursorIndex, closing] : undefined;
+    } else if (cursorQuoteType === QuoteMatch.Closing) {
+      return [this.getPrevQuote(cursorIndex)!, cursorIndex];
+    } else {
+      const opening = this.getPrevQuote(cursorIndex) ?? this.getNextQuote(cursorIndex);
+
+      if (opening !== undefined) {
+        const closing = this.getNextQuote(opening);
+        if (closing !== undefined) {
+          return [opening, closing];
+        }
       }
     }
 
-    // Didn't find one behind us, the string may start ahead of us. This happens
-    // to be the same logic we use to search forwards.
-    return this.findClosing(start);
+    return undefined;
   }
 
-  findClosing(start: number): number {
-    // Search forwards from start, looking for a non-escaped char
-    for (let i = start; i <= this.quoteMap.length; i++) {
-      if (this.quoteMap[i]) {
+  private getNextQuote(start: number): number | undefined {
+    for (let i = start + 1; i < this.quoteMap.length; i++) {
+      if (this.quoteMap[i] !== undefined) {
         return i;
       }
     }
 
-    return -1;
+    return undefined;
+  }
+
+  private getPrevQuote(start: number): number | undefined {
+    for (let i = start - 1; i >= 0; i--) {
+      if (this.quoteMap[i] !== undefined) {
+        return i;
+      }
+    }
+
+    return undefined;
   }
 }

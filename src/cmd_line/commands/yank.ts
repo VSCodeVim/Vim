@@ -37,7 +37,7 @@ export class YankCommand extends CommandBase {
     await this.yank(vimState, vimState.cursorStartPosition, vimState.cursorStopPosition);
   }
 
-  async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
     await this.yank(vimState, new Position(start, 0), new Position(end, 0));
   }

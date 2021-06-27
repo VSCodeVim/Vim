@@ -227,13 +227,6 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: 'Backspace works on whitespace only lines',
-    start: ['abcd', '     |    '],
-    keysPressed: 'a<BS><Esc>',
-    end: ['abcd', '   | '],
-  });
-
-  newTest({
     title: 'Backspace works on end of whitespace only lines',
     start: ['abcd', '     | '],
     keysPressed: 'a<BS><Esc>',
@@ -245,6 +238,28 @@ suite('Mode Insert', () => {
     start: ['|bcd'],
     keysPressed: 'i<BS>a<Esc>',
     end: ['|abcd'],
+  });
+
+  newTest({
+    title: 'Backspace in leading whitespace 1',
+    start: ['        |    xyz'],
+    editorOptions: {
+      tabSize: 4,
+    },
+    keysPressed: 'i<BS>',
+    end: ['    |    xyz'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'Backspace in leading whitespace 2',
+    start: ['       |    xyz'],
+    editorOptions: {
+      tabSize: 4,
+    },
+    keysPressed: 'i<BS>',
+    end: ['    |    xyz'],
+    endMode: Mode.Insert,
   });
 
   newTest({

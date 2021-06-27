@@ -99,6 +99,13 @@ suite('Undo', () => {
       keysPressed: '<C-v>jll' + 'd' + 'u',
       end: ['one two', 'th|ree four', 'five six', 'seven eight'],
     });
+
+    newTest({
+      title: 'Undo macro (`Jx`)',
+      start: ['ap|ple', 'banana', 'carrot'],
+      keysPressed: 'qq' + 'Jx' + 'q' + '@q' + 'u',
+      end: ['apple|banana', 'carrot'],
+    });
   });
 
   suite('U', () => {

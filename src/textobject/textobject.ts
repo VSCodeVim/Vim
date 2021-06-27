@@ -22,9 +22,12 @@ import { Position, TextDocument } from 'vscode';
 import { WordType } from './word';
 
 export abstract class TextObjectMovement extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
@@ -34,7 +37,7 @@ export abstract class TextObjectMovement extends BaseMovement {
     return res;
   }
 
-  public abstract execAction(position: Position, vimState: VimState): Promise<IMovement>;
+  public abstract override execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction
@@ -175,9 +178,9 @@ export class SelectABigWord extends TextObjectMovement {
 @RegisterAction
 export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
-  modes = [Mode.Visual, Mode.VisualLine];
+  override modes = [Mode.Visual, Mode.VisualLine];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const blocks = [
       new MoveAroundDoubleQuotes(),
       new MoveAroundSingleQuotes(),
@@ -269,7 +272,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 
 @RegisterAction
 export class SelectInnerWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -310,7 +313,7 @@ export class SelectInnerWord extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerBigWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -574,7 +577,7 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
 }
 
 abstract class IndentObjectMatch extends TextObjectMovement {
-  setsDesiredColumnToEOL = true;
+  override setsDesiredColumnToEOL = true;
 
   protected includeLineAbove = false;
   protected includeLineBelow = false;
@@ -638,7 +641,10 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
     return this.execAction(position, vimState);
   }
 
@@ -689,18 +695,18 @@ class InsideIndentObject extends IndentObjectMatch {
 @RegisterAction
 class InsideIndentObjectAbove extends IndentObjectMatch {
   keys = ['a', 'i'];
-  includeLineAbove = true;
+  override includeLineAbove = true;
 }
 
 @RegisterAction
 class InsideIndentObjectBoth extends IndentObjectMatch {
   keys = ['a', 'I'];
-  includeLineAbove = true;
-  includeLineBelow = true;
+  override includeLineAbove = true;
+  override includeLineBelow = true;
 }
 
 abstract class SelectArgument extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
 
   private static openingDelimiterCharacters(): string[] {
     return configuration.argumentObjectOpeningDelimiters;
@@ -955,13 +961,13 @@ abstract class SelectArgument extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'a'];
 }
 
 @RegisterAction
 export class SelectAroundArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['a', 'a'];
-  selectAround = true;
+  override selectAround = true;
 }

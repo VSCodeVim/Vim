@@ -139,11 +139,10 @@ export class PairMatcher {
     }
 
     const stackHeight = 0;
-    let matchedPos: Position | undefined;
     const charToFind = pairing.match;
     const charToStack = charToMatch;
 
-    matchedPos = PairMatcher.findPairedChar(
+    return PairMatcher.findPairedChar(
       position,
       charToFind,
       charToStack,
@@ -152,12 +151,6 @@ export class PairMatcher {
       vimState,
       allowCurrentPosition
     );
-
-    if (matchedPos) {
-      return matchedPos;
-    }
-    // TODO(bell)
-    return undefined;
   }
 
   static shouldDeleteMatchingBracket(type: 'bracket' | 'quote') {

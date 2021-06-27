@@ -26,7 +26,7 @@ export class PutExCommand extends node.CommandBase {
     this.arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -48,7 +48,7 @@ export class PutExCommand extends node.CommandBase {
     await this.doPut(vimState, vimState.cursorStopPosition);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [_, end] = range.resolve(vimState);
     await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }

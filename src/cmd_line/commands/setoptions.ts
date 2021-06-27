@@ -50,6 +50,7 @@ export interface IOptionArgs extends node.ICommandArgs {
 }
 
 export class SetOptionsCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private readonly arguments: IOptionArgs;
 
   constructor(args: IOptionArgs) {

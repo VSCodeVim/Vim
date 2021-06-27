@@ -71,7 +71,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Only execute the action if the configuration is set
     if (configuration.easymotion) {
       // Search all occurences of the character pressed
@@ -232,7 +232,7 @@ export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
     this._action = action;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Only execute the action if easymotion is enabled
     if (configuration.easymotion) {
       vimState.easyMotion = new EasyMotion();
@@ -322,7 +322,7 @@ class EasyMotionCharInputMode extends BaseCommand {
   modes = [Mode.EasyMotionInputMode];
   keys = ['<character>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const action = vimState.easyMotion.searchAction;
     action.searchString =
@@ -342,7 +342,7 @@ class CommandEscEasyMotionCharInputMode extends BaseCommand {
   modes = [Mode.EasyMotionInputMode];
   keys = ['<Esc>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -351,9 +351,9 @@ class CommandEscEasyMotionCharInputMode extends BaseCommand {
 class MoveEasyMotion extends BaseCommand {
   modes = [Mode.EasyMotionMode];
   keys = ['<character>'];
-  isJump = true;
+  override isJump = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     if (key) {
       // "nail" refers to the accumulated depth keys

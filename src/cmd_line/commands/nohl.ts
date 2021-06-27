@@ -4,6 +4,8 @@ import { globalState } from '../../state/globalState';
 import { StatusBar } from '../../statusBar';
 
 export class NohlCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
+
   async execute(vimState: VimState): Promise<void> {
     globalState.hl = false;
 

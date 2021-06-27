@@ -182,7 +182,7 @@ export abstract class BaseAction {
  * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
-  isCommand = true;
+  override isCommand = true;
 
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
@@ -291,22 +291,22 @@ export function getRelevantAction(
   keysPressed: string[],
   vimState: VimState
 ): BaseAction | KeypressState {
-  let isPotentialMatch = false;
+  const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 
-  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  let hasPotentialMatch = false;
   for (const actionType of possibleActionsForMode) {
+    // TODO: Constructing up to several hundred Actions every time we hit a key is moronic.
+    //       I think we can make `doesActionApply` and `couldActionApply` static...
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
       action.keysPressed = vimState.recordedState.actionKeys.slice(0);
       return action;
     }
 
-    if (action.couldActionApply(vimState, keysPressed)) {
-      isPotentialMatch = true;
-    }
+    hasPotentialMatch ||= action.couldActionApply(vimState, keysPressed);
   }
 
-  return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+  return hasPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
 export function RegisterAction(action: new () => BaseAction): void {

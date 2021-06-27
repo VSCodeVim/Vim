@@ -312,10 +312,10 @@ class Configuration implements IConfiguration {
   };
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
-  tabstop: number = 8;
+  tabstop!: number;
 
   @overlapSetting({ settingName: 'cursorStyle', defaultValue: 'line' })
-  private editorCursorStyleRaw: string = 'line';
+  private editorCursorStyleRaw!: string;
 
   get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
     return this.cursorStyleFromString(this.editorCursorStyleRaw);
@@ -325,7 +325,7 @@ class Configuration implements IConfiguration {
   }
 
   @overlapSetting({ settingName: 'insertSpaces', defaultValue: false })
-  expandtab: boolean = false;
+  expandtab!: boolean;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -337,7 +337,7 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  number: boolean = true;
+  number!: boolean;
 
   @overlapSetting({
     settingName: 'lineNumbers',
@@ -349,13 +349,13 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
-  relativenumber: boolean = false;
+  relativenumber!: boolean;
 
   @overlapSetting({
     settingName: 'wordSeparators',
     defaultValue: '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-',
   })
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  iskeyword!: string;
 
   @overlapSetting({
     settingName: 'wordWrap',
@@ -367,7 +367,7 @@ class Configuration implements IConfiguration {
       ['bounded', true],
     ]),
   })
-  wrap: boolean = false;
+  wrap!: boolean;
 
   boundKeyCombinations: IKeyBinding[] = [];
 

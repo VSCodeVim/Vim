@@ -25,6 +25,7 @@ class MarkQuickPickItem implements QuickPickItem {
 }
 
 export class MarksCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private marksFilter?: string[];
 
   constructor(marksFilter?: string[]) {
@@ -54,6 +55,7 @@ export class MarksCommand extends node.CommandBase {
 }
 
 export class DeleteMarksCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private numbers = '0123456789';
   private numberRange = /([0-9])-([0-9])/;
   private letterRange = /([a-zA-Z])-([a-zA-Z])/;

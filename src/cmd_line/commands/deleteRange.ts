@@ -17,7 +17,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     this.arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -61,7 +61,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     this.deleteRange(line, line, vimState);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     const [start, end] = range.resolve(vimState);
     this.deleteRange(start, end, vimState);
   }

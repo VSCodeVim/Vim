@@ -132,6 +132,14 @@ suite('Repeat content change', () => {
   });
 
   newTest({
+    title: 'Can repeat insertion with auto-matched brackets',
+    start: ['|', ''],
+    keysPressed: 'ifoo(bar<Esc>' + 'j.',
+    end: ['foo(bar)', 'foo(bar|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can repeat `<C-y>`',
     start: ['abcde', '|12', 'ABCDE', '12'],
     keysPressed: 'A<C-y><C-y><Esc>' + 'jj0.',
