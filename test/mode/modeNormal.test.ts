@@ -740,6 +740,30 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "'c2i\"' includes quotes, but not trailing whitespace",
+    start: ['one "t|wo"   ', 'three'],
+    keysPressed: 'c2i"',
+    end: ['one |   ', 'three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'c2i\"' includes quotes, but not trailing whitespace 2",
+    start: ['one "t|wo"   ', 'three'],
+    keysPressed: 'c2i"',
+    end: ['one |   ', 'three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "'c2i\"' includes quotes, but not leading whitespace",
+    start: ['one      "t|wo"three'],
+    keysPressed: 'c2i"',
+    end: ['one      |three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'ci\"' with escaped quotes",
     start: ['"one \\"tw|o\\""'],
     keysPressed: 'ci"',
