@@ -121,11 +121,22 @@ export async function executeTransformations(
        * (this is primarily necessary for multi-cursor mode, since most
        * actions will trigger at most one text operation).
        */
-      await vimState.editor.edit((edit) => {
-        for (const command of textTransformations) {
-          doTextEditorEdit(command, edit);
-        }
-      });
+      try {
+        await vimState.editor.edit((edit) => {
+          for (const command of textTransformations) {
+            doTextEditorEdit(command, edit);
+          }
+        });
+      } catch (e) {
+        e.context = {
+          currentMode: Mode[vimState.currentMode],
+          cursors: vimState.cursors.map((cursor) => cursor.toString()),
+          actionsRunPressedKeys: vimState.recordedState.actionsRunPressedKeys,
+          actionsRun: vimState.recordedState.actionsRun.map((action) => action.constructor.name),
+          textTransformations,
+        };
+        throw e;
+      }
     }
   }
 
