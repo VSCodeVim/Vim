@@ -1,6 +1,14 @@
 # Change Log
 
-## [v1.21.3](https://github.com/vscodevim/vim/tree/v1.21.3) (2021-06-17)
+## [v1.21.4](https://github.com/vscodevim/vim/tree/v1.21.4) (2021-07-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.3...v1.21.4)
+
+**Fixed Bugs:**
+
+- `2i"` should act like `a"`, but exclude whitespace before/after the quotes [\#6806](https://github.com/VSCodeVim/Vim/issues/6806)
+
+## [v1.21.3](https://github.com/vscodevim/vim/tree/v1.21.3) (2021-06-18)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.2...v1.21.3)
 
