@@ -34,7 +34,7 @@ jobs:
       - name: Build extension package
         id: build_vsix
         run: |
-          yarn run vsce package --web;
+          yarn run vsce package;
           echo ::set-output name=vsix_path::$(ls *.vsix);
 
       - name: Create release on GitHub
@@ -59,6 +59,6 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish to VSCode Extension Marketplace
-        run: yarn run vsce publish --yarn --web
+        run: yarn run vsce publish --yarn
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
