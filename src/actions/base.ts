@@ -125,19 +125,43 @@ export abstract class BaseAction {
       const left = one[i];
       const right = two[j];
 
-      if (left === right) {
+      if (left === '<any>' || right === '<any>') {
         continue;
-      } else if (left === '<any>') {
+      }
+
+      if (left === '<number>' && this.isSingleNumber.test(right)) {
         continue;
-      } else if (left === '<leader>' && right === configuration.leader) {
+      }
+      if (right === '<number>' && this.isSingleNumber.test(left)) {
         continue;
-      } else if (left === '<number>' && this.isSingleNumber.test(right)) {
+      }
+
+      if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
-      } else if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
+      }
+      if (right === '<alpha>' && this.isSingleAlpha.test(left)) {
         continue;
-      } else if (left === '<character>' && !Notation.IsControlKey(right)) {
+      }
+
+      if (left === '<character>' && !Notation.IsControlKey(right)) {
         continue;
-      } else {
+      }
+      if (right === '<character>' && !Notation.IsControlKey(left)) {
+        continue;
+      }
+
+      if (left === '<leader>' && right === configuration.leader) {
+        continue;
+      }
+      if (right === '<leader>' && left === configuration.leader) {
+        continue;
+      }
+
+      if (left === configuration.leader || right === configuration.leader) {
+        return false;
+      }
+
+      if (left !== right) {
         return false;
       }
     }
