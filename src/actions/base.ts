@@ -125,7 +125,7 @@ export abstract class BaseAction {
       const left = one[i];
       const right = two[j];
 
-      if (left === right) {
+      if (left === right && right !== configuration.leader) {
         continue;
       } else if (left === '<any>') {
         continue;
