@@ -217,40 +217,14 @@ class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const line = vimState.document.lineAt(position).text;
-    const selection = vimState.editor.selections.find((s) => s.contains(position));
-
-    const leadingSpaces = line.match(/\S/)?.index ?? line.length;
-
-    if (selection && !selection.isEmpty) {
-      // If a selection is active, delete it
-      vimState.recordedState.transformer.delete(selection);
-    } else if (
-      position.character > 0 &&
-      position.character <= leadingSpaces &&
-      vimState.editor.options.insertSpaces
-    ) {
-      // We're in the leading whitespace - delete a tabstop
-      const tabSize = vimState.editor.options.tabSize as number;
-      const spacesToDelete = position.character % tabSize || tabSize;
-
-      vimState.recordedState.transformer.delete(
-        new vscode.Range(
-          position.with({ character: position.character - spacesToDelete }),
-          position
-        )
-      );
-    } else if (!position.isAtDocumentBegin()) {
-      // Otherwise, just delete a character (unless we're at the start of the document)
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteText',
-        position,
-      });
-    }
-
-    vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
-    vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteLeft',
+    });
   }
 }
 
@@ -259,19 +233,14 @@ class CommandDeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
 
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const selection = vimState.editor.selection;
+  override runsOnceForEveryCursor() {
+    return false;
+  }
 
-    if (!selection.isEmpty) {
-      // If a selection is active, delete it
-      vimState.recordedState.transformer.delete(selection);
-    } else if (!position.isAtDocumentEnd()) {
-      // Otherwise, just delete a character (unless we're at the end of the document)
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteText',
-        position: position.getRightThroughLineBreaks(true),
-      });
-    }
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.addTransformation({
+      type: 'deleteRight',
+    });
   }
 }
 

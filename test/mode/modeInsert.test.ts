@@ -216,14 +216,24 @@ suite('Mode Insert', () => {
     assertEqualLines(['  ']);
   });
 
-  test('will remove closing bracket', async () => {
+  test('<BS> removes closing bracket just inserted', async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', '(']);
+
+    assertEqualLines(['()']);
+
+    await modeHandler.handleMultipleKeyEvents(['<BS>', '<Esc>']);
+
+    assertEqualLines(['']);
+  });
+
+  test('<BS> does not remove closing bracket inserted before', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', '(', '<Esc>']);
 
     assertEqualLines(['()']);
 
     await modeHandler.handleMultipleKeyEvents(['a', '<BS>', '<Esc>']);
 
-    assertEqualLines(['']);
+    assertEqualLines([')']);
   });
 
   newTest({

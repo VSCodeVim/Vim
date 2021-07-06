@@ -67,15 +67,6 @@ export async function executeTransformations(
       case 'replaceText':
         edit.replace(command.range, command.text);
         break;
-      case 'deleteText':
-        const matchRange = PairMatcher.immediateMatchingBracket(vimState, command.position);
-        if (matchRange) {
-          edit.delete(matchRange);
-        }
-        edit.delete(
-          new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
-        );
-        break;
       case 'deleteRange':
         edit.delete(command.range);
         break;
@@ -167,6 +158,14 @@ export async function executeTransformations(
       case 'insertTextVSCode':
         await TextEditor.insert(vimState.editor, transformation.text);
         vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
+        break;
+
+      case 'deleteLeft':
+        await vscode.commands.executeCommand('deleteLeft');
+        break;
+
+      case 'deleteRight':
+        await vscode.commands.executeCommand('deleteRight');
         break;
 
       case 'showCommandHistory':
