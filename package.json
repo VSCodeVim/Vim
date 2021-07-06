@@ -1143,7 +1143,7 @@
     "@types/mocha": "8.2.2",
     "@types/node": "12.20.15",
     "@types/sinon": "10.0.2",
-    "@types/source-map-support": "0.5.3",
+    "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.42.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",

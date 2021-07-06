@@ -240,10 +240,10 @@
   resolved "https://registry.yarnpkg.com/@types/source-list-map/-/source-list-map-0.1.2.tgz#0078836063ffaf17412349bba364087e0ac02ec9"
   integrity sha512-K5K+yml8LTo9bWJI/rECfIPrGgxdpeNbj+d53lwN4QjW1MCwlkhUms+gtdzigTeUyBr09+u8BwOIY3MXvHdcsA==
 
-"@types/source-map-support@0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@types/source-map-support/-/source-map-support-0.5.3.tgz#acb6b3e499c20692552d16934c16162c84594e16"
-  integrity sha512-fvjMjVH8Rmokw2dWh1dkj90iX5R8FPjeZzjNH+6eFXReh0QnHFf1YBl3B0CF0RohIAA3SDRJsGeeUWKl6d7HqA==
+"@types/source-map-support@0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@types/source-map-support/-/source-map-support-0.5.4.tgz#574ff6a8636bc0ebae78a8014136f749b3177d58"
+  integrity sha512-9zGujX1sOPg32XLyfgEB/0G9ZnrjthL/Iv1ZfuAjj8LEilHZEpQSQs1scpRXPhHzGYgWiLz9ldF1cI8JhL+yMw==
   dependencies:
     source-map "^0.6.0"
 
