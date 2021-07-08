@@ -1,4 +1,4 @@
-import { TextObjectMovement } from '../../textobject/textobject';
+import { TextObject } from '../../textobject/textobject';
 import { RegisterAction } from '../base';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
@@ -18,7 +18,7 @@ abstract class CamelCaseBaseMovement extends BaseMovement {
   }
 }
 
-abstract class CamelCaseTextObjectMovement extends TextObjectMovement {
+abstract class CamelCaseTextObjectMovement extends TextObject {
   public override doesActionApply(vimState: VimState, keysPressed: string[]) {
     return configuration.camelCaseMotion.enable && super.doesActionApply(vimState, keysPressed);
   }

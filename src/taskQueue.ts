@@ -12,6 +12,11 @@ class TaskQueue {
       if (err instanceof Error) {
         const reportButton = 'Report bug';
         const stack = err.stack;
+
+        // TODO: this is a bit janky - should probably create custom ContextualError class or find a library
+        // tslint:disable:no-string-literal
+        const context = err['context'];
+
         vscode.window
           .showErrorMessage(err.message, reportButton)
           .then((picked: string | undefined) => {
@@ -19,6 +24,15 @@ class TaskQueue {
               let body = `**To Reproduce**\nSteps to reproduce the behavior:\n\n1.  Go to '...'\n2.  Click on '....'\n3.  Scroll down to '....'\n4.  See error\n\n**VSCodeVim version**: ${extensionVersion}`;
               if (stack) {
                 body += `\n\n<details><summary>Stack trace</summary>\n\n\`\`\`\n${stack}\n\`\`\`\n\n</details>`;
+              }
+              if (context) {
+                body += `\n\n<details><summary>Additional context</summary>\n\n\`\`\``;
+                for (const prop in context) {
+                  if (context.hasOwnProperty(prop)) {
+                    body += `\n${prop}: ${JSON.stringify(context[prop], undefined, 2)}`;
+                  }
+                }
+                body += `\n\`\`\`\n\n</details>`;
               }
               vscode.commands.executeCommand(
                 'vscode.open',

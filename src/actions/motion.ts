@@ -1941,21 +1941,41 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
   override includeSurrounding = true;
 }
 
+// TODO: Shouldn't this be a TextObject? A clearer delineation between motions and objects should be made.
 export abstract class MoveQuoteMatch extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected abstract readonly charToMatch: '"' | "'" | '`';
-  protected includeSurrounding = false;
+  protected includeQuotes = false;
   override isJump = true;
 
   // HACK: surround uses these classes, but does not want trailing whitespace to be included
-  private readonly adjustForTrailingWhitespace: boolean = true;
+  private adjustForTrailingWhitespace: boolean = true;
 
   constructor(adjustForTrailingWhitespace: boolean = true) {
     super();
     this.adjustForTrailingWhitespace = adjustForTrailingWhitespace;
   }
 
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<IMovement> {
+    // TODO: this is super janky
+    return (await super.execActionWithCount(position, vimState, 1)) as IMovement;
+  }
+
   public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    if (
+      !this.includeQuotes &&
+      (vimState.recordedState.count > 1 || vimState.recordedState.operatorCount > 1)
+    ) {
+      // i" special case: With a count of 2 the quotes are included, but no extra white space as with a"/a'/a`.
+      // (a" does not make use of count)
+      this.includeQuotes = true;
+      this.adjustForTrailingWhitespace = false;
+    }
+
     const text = vimState.document.lineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
     const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
@@ -1965,7 +1985,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 
     let [start, end] = quoteIndices;
 
-    if (!this.includeSurrounding) {
+    if (!this.includeQuotes) {
       // Don't include the quotes
       start++;
       end--;
@@ -2014,42 +2034,42 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 class MoveInsideSingleQuotes extends MoveQuoteMatch {
   keys = ['i', "'"];
   readonly charToMatch = "'";
-  override includeSurrounding = false;
+  override includeQuotes = false;
 }
 
 @RegisterAction
 export class MoveAroundSingleQuotes extends MoveQuoteMatch {
   keys = ['a', "'"];
   readonly charToMatch = "'";
-  override includeSurrounding = true;
+  override includeQuotes = true;
 }
 
 @RegisterAction
 class MoveInsideDoubleQuotes extends MoveQuoteMatch {
   keys = ['i', '"'];
   readonly charToMatch = '"';
-  override includeSurrounding = false;
+  override includeQuotes = false;
 }
 
 @RegisterAction
 export class MoveAroundDoubleQuotes extends MoveQuoteMatch {
   keys = ['a', '"'];
   readonly charToMatch = '"';
-  override includeSurrounding = true;
+  override includeQuotes = true;
 }
 
 @RegisterAction
 class MoveInsideBacktick extends MoveQuoteMatch {
   keys = ['i', '`'];
   readonly charToMatch = '`';
-  override includeSurrounding = false;
+  override includeQuotes = false;
 }
 
 @RegisterAction
 export class MoveAroundBacktick extends MoveQuoteMatch {
   keys = ['a', '`'];
   readonly charToMatch = '`';
-  override includeSurrounding = true;
+  override includeQuotes = true;
 }
 
 @RegisterAction

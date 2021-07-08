@@ -21,7 +21,7 @@ import { MoveFullWordBegin, MoveWordBegin } from '../motion';
 import { BaseOperator } from './../operator';
 import {
   SelectInnerWord,
-  TextObjectMovement,
+  TextObject,
   SelectABigWord,
   SelectWord,
 } from '../../textobject/textobject';
@@ -387,7 +387,7 @@ class SurroundHelper {
       right: string;
       /** do we consume space on the edges? "(" vs ")" */
       removeSpace: boolean;
-      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObjectMovement;
+      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObject;
       /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
       extraChars?: number;
     };
