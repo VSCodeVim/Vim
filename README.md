@@ -674,11 +674,11 @@ Usage examples:
 - `cia` - change the argument under the cursor while preserving separators like comma `,`.
 - `daa` - will delete the whole argument under the cursor and the separators if applicable.
 
-| Setting                             | Description                        | Type        | Default Value |
-| ----------------------------------- | ---------------------------------- | ----------- | ------------- |
-| vim.argumentObjectOpeningDelimiters | A list of opening delimiters       | String list | ["(", "["]    |
-| vim.argumentObjectClosingDelimiters | A list of closing delimiters       | String list | [")", "]"]    |
-| vim.argumentObjectSeparators        | Enable/disable ReplaceWithRegister | String list | [","]         |
+| Setting                             | Description                  | Type        | Default Value |
+| ----------------------------------- | ---------------------------- | ----------- | ------------- |
+| vim.argumentObjectOpeningDelimiters | A list of opening delimiters | String list | ["(", "["]    |
+| vim.argumentObjectClosingDelimiters | A list of closing delimiters | String list | [")", "]"]    |
+| vim.argumentObjectSeparators        | A list of object separators  | String list | [","]         |
 
 ## 🎩 VSCodeVim tricks!
 
