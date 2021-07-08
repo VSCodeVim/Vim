@@ -61,7 +61,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     npx gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
 
     # Alternatively, build .vsix extension and load it into VSCode for manual testing
-    yarn run vsce package --web     # build vim-xxx.vsix
+    yarn run vsce package           # build vim-xxx.vsix
     ```
 
 ## Code Architecture
