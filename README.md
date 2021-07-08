@@ -660,6 +660,26 @@ Usage examples:
 - `yie` - will yank the buffer content except leading and trailing blank lines.
 - `gUae` - transform the whole buffer to uppercase.
 
+### vim-textobj-arguments
+
+Similar to the argument text object in [targets.vim](https://github.com/wellle/targets.vim). It is an easy way to deal with arguments inside functions in most programming languages.
+
+| Motion Command | Description                        |
+| -------------- | ---------------------------------- |
+| `<operator>ia` | The argument exluding separators.  |
+| `<operator>aa` | The argument including separators. |
+
+Usage examples:
+
+- `cia` - change the argument under the cursor while preserving separators like comma `,`.
+- `daa` - will delete the whole argument under the cursor and the separators if applicable.
+
+| Setting                             | Description                  | Type        | Default Value |
+| ----------------------------------- | ---------------------------- | ----------- | ------------- |
+| vim.argumentObjectOpeningDelimiters | A list of opening delimiters | String list | ["(", "["]    |
+| vim.argumentObjectClosingDelimiters | A list of closing delimiters | String list | [")", "]"]    |
+| vim.argumentObjectSeparators        | A list of object separators  | String list | [","]         |
+
 ## 🎩 VSCodeVim tricks!
 
 VS Code has a lot of nifty tricks and we try to preserve some of them:
