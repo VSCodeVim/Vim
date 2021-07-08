@@ -678,7 +678,7 @@ Usage examples:
 | ----------------------------------- | ---------------------------------- | ----------- | ------------- |
 | vim.argumentObjectOpeningDelimiters | A list of opening delimiters       | String list | ["(", "["]    |
 | vim.argumentObjectClosingDelimiters | A list of closing delimiters       | String list | [")", "]"]    |
-| vim.argumentObjectSeparators        | Enable/disable ReplaceWithRegister | String list | [","]         |
+| vim.argumentObjectSeparators        | A list of object separators | String list | [","]         |
 
 ## 🎩 VSCodeVim tricks!
 
