@@ -27,6 +27,7 @@ export class Configuration implements IConfiguration {
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
   surround = false;
+  disableDefaultPluginMappings = false;
   argumentObjectSeparators = [','];
   argumentObjectOpeningDelimiters = ['(', '['];
   argumentObjectClosingDelimiters = [')', ']'];
