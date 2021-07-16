@@ -478,6 +478,32 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
+  registerCommand(context, 'vim.switchToInsertModeSelection', async () => {
+    const activeEditor = vscode.window.activeTextEditor!;
+    const prevSelection = activeEditor.selections;
+    const mh = await getAndUpdateModeHandler();
+    if (mh) {
+      await mh.handleMultipleKeyEvents(['<Esc>', 'i']);
+      return new Promise<void>((resolve) => {
+        /**
+         * VSCode's selection won't change while current selection's range is equal to previous
+         * selection. Thus we should set selection property to another one first for forcing
+         * vscode doing selection changes.
+         */
+        activeEditor.selection = new vscode.Selection(0, 0, 0, 0);
+        activeEditor.selections = prevSelection.map((sel) => {
+          return new vscode.Selection(
+            sel.start.line,
+            sel.start.character,
+            sel.end.line,
+            sel.end.character
+          );
+        });
+        resolve();
+      });
+    }
+  });
+
   registerCommand(
     context,
     'vim.editVimrc',

@@ -62,6 +62,10 @@
       {
         "command": "vim.editVimrc",
         "title": "Vim: Edit .vimrc"
+      },
+      {
+        "command": "vim.switchToInsertModeSelection",
+        "title": "Vim: switch to insert mode selection"
       }
     ],
     "keybindings": [

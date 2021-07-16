@@ -1,5 +1,6 @@
+import { newTestOnly } from './../testSimplifier';
 import * as assert from 'assert';
-
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
@@ -1734,4 +1735,63 @@ suite('Mode Visual', () => {
       endMode: Mode.Normal,
     });
   });
+
+  suite(
+    'Command vim.switchToInsertModeSelection enter insert mode with previous selection at visual mode',
+    () => {
+      test('Can handle single selection with vim.switchToInsertModeSelection command', async () => {
+        await modeHandler.handleMultipleKeyEvents(['i', 'h', 'e', 'l', 'l', 'o']);
+        await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'e']);
+
+        /**
+         * Since `vscode.commands.executeCommand` api's returned thenable object doesn't works well with async/await,
+         * we invoke assert function at thenable's callback function directly.
+         */
+        vscode.commands.executeCommand('vim.switchToInsertModeSelection').then((_) => {
+          assert.strictEqual(modeHandler.currentMode, Mode.Insert, 'switch to insert mode');
+
+          const selection = modeHandler.vimState.editor.selection;
+
+          assert.strictEqual(selection.start.character, 0);
+          assert.strictEqual(selection.start.line, 0);
+          assert.strictEqual(selection.end.character, 5);
+          assert.strictEqual(selection.end.line, 0);
+        });
+      });
+      test('Can handle multiple selection with vim.switchToInsertModeSelection command', async () => {
+        await modeHandler.handleMultipleKeyEvents([
+          'i',
+          'h',
+          'e',
+          'l',
+          'l',
+          'o',
+          '\n',
+          'h',
+          'e',
+          'l',
+          'l',
+          'o',
+          '\n',
+        ]);
+        await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'g', 'b', 'g', 'b']);
+
+        vscode.commands.executeCommand('vim.switchToInsertModeSelection').then((_) => {
+          assert.strictEqual(modeHandler.currentMode, Mode.Insert, 'switch to insert mode');
+
+          const selection = modeHandler.vimState.editor.selections;
+
+          assert.strictEqual(selection[0].start.character, 0);
+          assert.strictEqual(selection[0].start.line, 0);
+          assert.strictEqual(selection[0].end.character, 5);
+          assert.strictEqual(selection[0].end.line, 0);
+
+          assert.strictEqual(selection[1].start.character, 0);
+          assert.strictEqual(selection[1].start.line, 1);
+          assert.strictEqual(selection[1].end.character, 5);
+          assert.strictEqual(selection[1].end.line, 1);
+        });
+      });
+    }
+  );
 });
