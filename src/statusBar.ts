@@ -133,6 +133,10 @@ class StatusBarImpl implements vscode.Disposable {
 
     const colorCustomizations = { ...currentColorCustomizations };
 
+    if (configuration.lineHighlightColorControl) {
+      colorCustomizations['editor.lineHighlightBackground'] = `${background}`;
+    }
+
     // If colors are undefined, return to VSCode defaults
     if (background !== undefined) {
       colorCustomizations['statusBar.background'] = background;
