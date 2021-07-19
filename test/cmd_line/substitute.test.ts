@@ -154,6 +154,20 @@ suite('Basic substitute', () => {
   });
 
   newTest({
+    title: 'Preserve \\b in regular expression',
+    start: ['one |two three thirteen'],
+    keysPressed: sub('\\bt', 'x', { flags: 'g' }),
+    end: ['|one xwo xhree xhirteen'],
+  });
+
+  newTest({
+    title: 'Preserve \\\\ in regular expression',
+    start: ['one |\\two \\three thirteen'],
+    keysPressed: sub('\\\\t', 'x', { flags: 'g' }),
+    end: ['|one xwo xhree thirteen'],
+  });
+
+  newTest({
     title: 'Replace with \\n',
     start: ['one |two three'],
     keysPressed: sub('t', '\\n', { flags: 'g' }),

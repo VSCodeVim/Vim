@@ -18,7 +18,11 @@ function parsePattern(scanner: Scanner, delimiter: string): [string, boolean] {
     } else if (currentChar === '\\') {
       if (!scanner.isAtEof) {
         currentChar = scanner.next();
-        pattern += '\\' + currentChar;
+        if (currentChar === delimiter) {
+          pattern += delimiter;
+        } else {
+          pattern += '\\' + currentChar;
+        }
       } else {
         pattern += '\\\\'; // :s/\ is treated like :s/\\
       }
@@ -59,7 +63,9 @@ function parseReplace(scanner: Scanner, delimiter: string): string {
     } else if (currentChar === '\\') {
       if (!scanner.isAtEof) {
         currentChar = scanner.next();
-        if (replaceEscapes.hasOwnProperty(currentChar)) {
+        if (currentChar === delimiter) {
+          replace += delimiter;
+        } else if (replaceEscapes.hasOwnProperty(currentChar)) {
           replace += replaceEscapes[currentChar];
         } else {
           replace += currentChar;
