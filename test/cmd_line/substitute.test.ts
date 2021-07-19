@@ -175,6 +175,13 @@ suite('Basic substitute', () => {
   });
 
   newTest({
+    title: 'Replace trailing \\ with \\',
+    start: ['one |two three'],
+    keysPressed: sub('t', '\\'),
+    end: ['|one \\wo three'],
+  });
+
+  newTest({
     title: 'Replace specific single equal lines',
     start: ['|aba', 'ab'],
     keysPressed: sub('a', 'd', { lineRange: '1,1', flags: 'g' }),
