@@ -8,49 +8,76 @@ function isValidDelimiter(char: string): boolean {
   return !!/^[^\w\s\\|"]{1}$/g.exec(char);
 }
 
-function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [string, boolean] {
-  if (scanner.isAtEof) {
-    return [pattern, false];
-  } else {
+function parsePattern(scanner: Scanner, delimiter: string): [string, boolean] {
+  let pattern = '';
+  while (!scanner.isAtEof) {
     let currentChar = scanner.next();
 
     if (currentChar === delimiter) {
-      // TODO skip delimiter
-      return [pattern, true];
+      return [pattern, true]; // found second delimiter
     } else if (currentChar === '\\') {
       if (!scanner.isAtEof) {
         currentChar = scanner.next();
-
-        if (currentChar !== delimiter) {
-          switch (currentChar) {
-            case 'r':
-              pattern += '\r';
-              break;
-            case 'n':
-              pattern += '\n';
-              break;
-            case 't':
-              pattern += '\t';
-              break;
-            case '\\':
-              pattern += '\\';
-              break;
-            default:
-              pattern += '\\';
-              pattern += currentChar;
-              break;
-          }
+        if (currentChar === delimiter) {
+          pattern += delimiter;
         } else {
-          pattern += currentChar;
+          pattern += '\\' + currentChar;
         }
+      } else {
+        pattern += '\\\\'; // :s/\ is treated like :s/\\
       }
-
-      return parsePattern(pattern, scanner, delimiter);
     } else {
       pattern += currentChar;
-      return parsePattern(pattern, scanner, delimiter);
     }
   }
+  return [pattern, false];
+}
+
+// See Vim's sub-replace-special documentation
+// TODO: \u, \U, \l, \L, \e, \E
+const replaceEscapes = {
+  b: '\b',
+  r: '\r',
+  n: '\n',
+  t: '\t',
+  '&': '$&',
+  '0': '$0',
+  '1': '$1',
+  '2': '$2',
+  '3': '$3',
+  '4': '$4',
+  '5': '$5',
+  '6': '$6',
+  '7': '$7',
+  '8': '$8',
+  '9': '$9',
+};
+
+function parseReplace(scanner: Scanner, delimiter: string): string {
+  let replace = '';
+  while (!scanner.isAtEof) {
+    let currentChar = scanner.next();
+
+    if (currentChar === delimiter) {
+      return replace; // found second delimiter
+    } else if (currentChar === '\\') {
+      if (!scanner.isAtEof) {
+        currentChar = scanner.next();
+        if (currentChar === delimiter) {
+          replace += delimiter;
+        } else if (replaceEscapes.hasOwnProperty(currentChar)) {
+          replace += replaceEscapes[currentChar];
+        } else {
+          replace += currentChar;
+        }
+      } else {
+        replace += '\\'; // :s/.../\ is treated like :s/.../\\
+      }
+    } else {
+      replace += currentChar;
+    }
+  }
+  return replace;
 }
 
 function parseSubstituteFlags(scanner: Scanner): number {
@@ -165,7 +192,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
       let secondDelimiterFound: boolean;
 
       scanner = new Scanner(args.substr(1, args.length - 1));
-      [searchPattern, secondDelimiterFound] = parsePattern('', scanner, delimiter);
+      [searchPattern, secondDelimiterFound] = parsePattern(scanner, delimiter);
 
       if (!secondDelimiterFound) {
         // special case for :s/search
@@ -175,7 +202,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
           flags: node.SubstituteFlags.None,
         });
       }
-      replaceString = parsePattern('', scanner, delimiter)[0];
+      replaceString = parseReplace(scanner, delimiter);
     } else {
       // if it's not a valid delimiter, it must be flags, so start parsing from here
       searchPattern = undefined;

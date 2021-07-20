@@ -28,6 +28,18 @@ suite(':substitute args parser', () => {
     assert.strictEqual(args.arguments.replace, 'b');
   });
 
+  test('can use pattern escapes', () => {
+    const args = commandParsers.substitute.parser('/\\ba/b/');
+    assert.strictEqual(args.arguments.pattern, '\\ba');
+    assert.strictEqual(args.arguments.replace, 'b');
+  });
+
+  test('can escape replacement', () => {
+    const args = commandParsers.substitute.parser('/a/\\b/');
+    assert.strictEqual(args.arguments.pattern, 'a');
+    assert.strictEqual(args.arguments.replace, '\b');
+  });
+
   test('can parse flag KeepPreviousFlags', () => {
     const args = commandParsers.substitute.parser('/a/b/&');
     assert.strictEqual(args.arguments.flags, 1);
