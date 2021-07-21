@@ -119,6 +119,6 @@ suite('Record and execute a macro', () => {
     start: ['one t|wo three'],
     keysPressed: '@~',
     end: ['one t|wo three'],
-    statusBar: "E354: Invalid register name: '~'"
+    statusBar: "E354: Invalid register name: '~'",
   });
 });
