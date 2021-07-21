@@ -2334,6 +2334,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/\\\\c does not trigger case (in)sensitivity',
+    start: ['|__\\c__'],
+    keysPressed: '/\\\\c\n',
+    end: ['__|\\c__'],
+  });
+
+  newTest({
+    title: '/\\\\\\c triggers case insensitivity',
+    start: ['|__\\ASDF', 'asdf'],
+    keysPressed: '/\\\\\\c\n',
+    end: ['__|\\ASDF', 'asdf'],
+  });
+
+  newTest({
     title: '<C-l> adds the next character in the first match to search term',
     start: ['|foo', 'bar', 'abcd'],
     keysPressed: '/ab<C-l>d\n',

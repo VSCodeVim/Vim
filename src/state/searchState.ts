@@ -26,7 +26,8 @@ export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
-  private static readonly caseOverrideRegex = /\\[Cc]/g;
+  // c or C with an odd number of preceding \'s triggers "case override"
+  private static readonly caseOverrideRegex = /(?<=(?:^|[^\\])(?:\\\\)*)\\[Cc]/g;
   private static readonly notEscapedSlashRegex = supportsLookbehind
     ? new RegExp('(?<=[^\\\\])\\/', 'g')
     : /\//g;
