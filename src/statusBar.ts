@@ -54,12 +54,17 @@ class StatusBarImpl implements vscode.Disposable {
     // Text
     this.updateText(text);
 
-    // Foreground color
+    // StatusBarItem color
     if (!configuration.statusBarColorControl) {
-      this.statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
+      this.statusBarItem.color = isError
+        ? new vscode.ThemeColor('statusBarItem.errorForeground')
+        : undefined;
+      this.statusBarItem.backgroundColor = isError
+        ? new vscode.ThemeColor('statusBarItem.errorBackground')
+        : undefined;
     }
 
-    // Background color
+    // StatusBar color
     const shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
     if (shouldUpdateColor) {
       this.updateColor(vimState.currentMode);

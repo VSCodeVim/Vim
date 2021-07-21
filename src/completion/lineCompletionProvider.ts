@@ -9,7 +9,7 @@ import { Position } from 'vscode';
  * @param startingFileName File that will be first in the array, typically current file
  */
 const documentsStartingWith = (startingFileName: string) => {
-  return vscode.workspace.textDocuments.sort((a, b) => {
+  return [...vscode.workspace.textDocuments].sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;
     } else if (b.fileName === startingFileName) {
