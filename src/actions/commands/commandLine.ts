@@ -586,7 +586,10 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+      );
       return;
     }
 
@@ -632,7 +635,10 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 
     const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+      );
       return;
     }
 

@@ -11,6 +11,14 @@ suite('put operator', () => {
   suite('p', () => {
     suite('Normal mode', () => {
       newTest({
+        title: 'Putting empty register throws E353',
+        start: ['one t|wo three'],
+        keysPressed: '"xp',
+        end: ['one t|wo three'],
+        statusBar: 'E353: Nothing in register x',
+      });
+
+      newTest({
         title: 'Yank character-wise, <count>p',
         start: ['|XYZone two three'],
         keysPressed: 'd3l' + 'w' + '2p',

@@ -113,4 +113,12 @@ suite('Record and execute a macro', () => {
     keysPressed: '/two\n0' + 'qq' + 'nea XXX<Esc>q' + '5@q',
     end: ['one two XXX three', 'one two XXX three', 'one two XX|X three'],
   });
+
+  newTest({
+    title: 'Invalid register throws E354',
+    start: ['one t|wo three'],
+    keysPressed: '@~',
+    end: ['one t|wo three'],
+    statusBar: "E354: Invalid register name: '~'"
+  });
 });

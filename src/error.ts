@@ -44,7 +44,7 @@ export const ErrorMessage: IErrorMessage = {
   208: 'Error writing to file',
   223: 'Recursive mapping',
   348: 'No string under cursor',
-  353: 'Nothing in register', // TODO: this needs an extra value ("Nothing in register x")
+  353: 'Nothing in register',
   354: 'Invalid register name',
   384: 'Search hit TOP without match for',
   385: 'Search hit BOTTOM without match for',
@@ -74,7 +74,14 @@ export class VimError extends Error {
 
   static fromCode(code: ErrorCode, extraValue?: string): VimError {
     if (ErrorMessage[code]) {
-      return new VimError(code, ErrorMessage[code] + (extraValue ? `: ${extraValue}` : ''));
+      if (extraValue) {
+        if (code === ErrorCode.NothingInRegister) {
+          extraValue = ` ${extraValue}`;
+        } else {
+          extraValue = `: ${extraValue}`;
+        }
+      }
+      return new VimError(code, ErrorMessage[code] + (extraValue ?? ''));
     }
 
     throw new Error('unknown error code: ' + code);

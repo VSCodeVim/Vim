@@ -25,7 +25,10 @@ abstract class BasePutCommand extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+      );
       return;
     }
 

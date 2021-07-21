@@ -458,12 +458,13 @@ suite('Mode Insert', () => {
       endMode: Mode.Insert,
     });
 
-    test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
-      try {
-        await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
-      } catch (e) {
-        assert(false);
-      }
+    newTest({
+      title: '<C-a> before entering any text',
+      start: ['tes|t'],
+      keysPressed: 'i' + '<C-a>',
+      end: ['tes|t'],
+      endMode: Mode.Insert,
+      statusBar: 'E29: No inserted text yet',
     });
   });
 

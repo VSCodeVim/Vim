@@ -771,6 +771,7 @@ suite('Motions in Normal Mode', () => {
     start: ['one  |   ', 'one two one two'],
     keysPressed: '*',
     end: ['one  |   ', 'one two one two'],
+    statusBar: 'E348: No string under cursor'
   });
 
   newTest({

@@ -331,7 +331,10 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+      );
       return;
     }
 
