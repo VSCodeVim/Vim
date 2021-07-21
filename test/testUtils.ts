@@ -31,7 +31,9 @@ class TestMemento implements vscode.Memento {
     this.mapping.set(key, value);
   }
 }
+
 export class TestExtensionContext implements vscode.ExtensionContext {
+  extension!: vscode.Extension<any>;
   subscriptions: Array<{ dispose(): any }> = [];
   workspaceState: vscode.Memento = new TestMemento();
   globalState: vscode.Memento & {
