@@ -26,6 +26,7 @@ import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
+import { CommandInsertAtCursor } from './commands/actions';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -384,18 +385,14 @@ export class ArrowsInInsertMode extends BaseMovement {
   keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
-    // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    const firstAction = vimState.recordedState.actionsRun.shift();
-    const lastAction = vimState.recordedState.actionsRun.pop();
-    vimState.recordedState.actionsRun = [];
-    if (firstAction) {
-      vimState.recordedState.actionsRun.push(firstAction);
-    }
-    if (lastAction) {
-      vimState.recordedState.actionsRun.push(lastAction);
-    }
-    // TODO: assert vimState.recordedState.actionsRun.length === 2?
+    // Moving with the arrow keys in Insert mode "resets" our insertion for the purpose of repeating with dot or `<C-a>`.
+    // No matter how we got into Insert mode, repeating will now be done as if we started with `i`.
+    // Note that this does not affect macros, which re-construct a list of actions based on keypresses.
+    // TODO: ACTUALLY, we should reset this only after something is typed (`Axyz<Left><Esc>.` does repeat the insertion)
+    // TODO: This also should mark an "insertion end" for the purpose of `<C-a>` (try `ixyz<Right><C-a>`)
+    vimState.recordedState.actionsRun = [new CommandInsertAtCursor()];
+
+    // TODO: It seems this should also create an undo point
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {
@@ -414,6 +411,7 @@ export class ArrowsInInsertMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
+    // TODO: Is resetting ReplaceState necessary?
     vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }

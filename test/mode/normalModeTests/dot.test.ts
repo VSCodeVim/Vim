@@ -177,10 +177,17 @@ suite('Repeat content change', () => {
   });
 
   newTest({
-    title: 'Only one arrow key can be repeated in Insert Mode',
-    start: ['on|e', 'two'],
-    keysPressed: 'a<left><left>b<Esc>j$.',
-    end: ['obne', 'tw|bo'],
+    title: 'Repeating insertion with arrows ignores everything before last arrow',
+    start: ['one |two three'],
+    keysPressed: 'i' + 'X<left>Y<left>Z' + '<Esc>' + 'W.',
+    end: ['one ZYXtwo |Zthree'],
+  });
+
+  newTest({
+    title: 'Repeating insertion with arrows always inserts just before cursor',
+    start: ['o|ne two three'],
+    keysPressed: 'A' + 'X<left>Y<left>Z' + '<Esc>' + '0W.',
+    end: ['one |Ztwo threeZYX'],
   });
 
   newTest({

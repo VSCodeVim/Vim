@@ -459,6 +459,22 @@ suite('Mode Insert', () => {
     });
 
     newTest({
+      title: '<C-a> with arrows ignores everything before last arrow',
+      start: ['one |two three'],
+      keysPressed: 'i' + 'X<left>Y<left>Z' + '<Esc>' + 'W' + 'i' + '<C-a>',
+      end: ['one ZYXtwo Z|three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-a> insertion with arrows always inserts just before cursor',
+      start: ['o|ne two three'],
+      keysPressed: 'A' + 'X<left>Y<left>Z' + '<Esc>' + '0W' + 'i' + '<C-a>',
+      end: ['one Z|two threeZYX'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
       title: '<C-a> before entering any text',
       start: ['tes|t'],
       keysPressed: 'i' + '<C-a>',

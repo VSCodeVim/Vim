@@ -44,6 +44,13 @@ suite('Record and execute a macro', () => {
   });
 
   newTest({
+    title: 'Repeat insertion with arrow keys and <BS>',
+    start: ['o|ne two three', 'four five six'],
+    keysPressed: 'qk' + 'A' + ' tpyo' + '<left><BS><left>y' + '<Esc>' + 'q' + 'j0' + '@k',
+    end: ['one two three typo', 'four five six t|ypo'],
+  });
+
+  newTest({
     title: 'Append command to a macro',
     start: ['1. |one', '2. two', '3. three', '4. four'],
     keysPressed: 'qa0f.r)qqAw~jq3@a',
