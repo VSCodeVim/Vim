@@ -615,7 +615,7 @@ export class HistoryTracker {
    *
    * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(): void {
+  public addChange(force: boolean = false): void {
     if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
       return;
     }
@@ -626,7 +626,10 @@ export class HistoryTracker {
       logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
     }
 
-    if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
+    if (
+      !force &&
+      (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace)
+    ) {
       // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
       // This allows us to avoid a little bit of work per keystroke, but more importantly, it means we'll get bigger contiguous edit chunks to merge.
       // This is particularly impactful when there are multiple cursors, which are otherwise difficult to optimize.

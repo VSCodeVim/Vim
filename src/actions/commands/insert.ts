@@ -536,3 +536,14 @@ class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
     await new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
   }
 }
+
+@RegisterAction
+class CreateUndoPoint extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-g>', 'u'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
+  }
+}

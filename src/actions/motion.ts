@@ -392,7 +392,9 @@ export class ArrowsInInsertMode extends BaseMovement {
     // TODO: This also should mark an "insertion end" for the purpose of `<C-a>` (try `ixyz<Right><C-a>`)
     vimState.recordedState.actionsRun = [new CommandInsertAtCursor()];
 
-    // TODO: It seems this should also create an undo point
+    // Force an undo point to be created
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {
@@ -423,8 +425,11 @@ class ArrowsInReplaceMode extends BaseMovement {
   keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    let newPosition: Position = position;
+    // Force an undo point to be created
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
 
+    let newPosition: Position = position;
     switch (this.keysPressed[0]) {
       case '<up>':
         newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
