@@ -628,7 +628,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           actionToRecord = undefined;
         } else {
           // Push document content change to the stack
-          lastAction.addChanges(this.vimState.historyTracker.currentContentChanges);
+          lastAction.addChanges(
+            this.vimState.historyTracker.currentContentChanges,
+            this.vimState.cursorStopPosition
+          );
           this.vimState.historyTracker.currentContentChanges = [];
           recordedState.actionsRun.push(action);
         }

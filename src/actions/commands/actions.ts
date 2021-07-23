@@ -49,17 +49,20 @@ export class DocumentContentChangeAction extends BaseCommand {
   modes = [];
   keys = [];
   private readonly cursorStart: Position;
+  private cursorEnd: Position;
 
   constructor(cursorStart: Position) {
     super();
     this.cursorStart = cursorStart;
+    this.cursorEnd = cursorStart;
   }
 
   private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-  public addChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
+  public addChanges(changes: vscode.TextDocumentContentChangeEvent[], cursorPosition: Position) {
     this.contentChanges = [...this.contentChanges, ...changes];
     this.compressChanges();
+    this.cursorEnd = cursorPosition;
   }
 
   public getTransformation(positionDiff: PositionDiff): Transformation {
@@ -121,9 +124,17 @@ export class DocumentContentChangeAction extends BaseCommand {
       rightBoundary = laterOf(rightBoundary, newRightBoundary);
 
       if (replaceRange.start.isEqual(replaceRange.end)) {
-        vimState.recordedState.transformer.insert(replaceRange.start, change.text);
+        vimState.recordedState.transformer.insert(
+          replaceRange.start,
+          change.text,
+          PositionDiff.exactPosition(translate(this.cursorEnd))
+        );
       } else {
-        vimState.recordedState.transformer.replace(replaceRange, change.text);
+        vimState.recordedState.transformer.replace(
+          replaceRange,
+          change.text,
+          PositionDiff.exactPosition(translate(this.cursorEnd))
+        );
       }
     }
   }

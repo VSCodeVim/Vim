@@ -143,8 +143,15 @@ suite('Repeat content change', () => {
     title: 'Can repeat insertion with auto-matched brackets',
     start: ['|', ''],
     keysPressed: 'ifoo(bar<Esc>' + 'j.',
-    end: ['foo(bar)', 'foo(bar|)'],
+    end: ['foo(bar)', 'foo(ba|r)'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Repeat insertion with auto-matched parentheses in the middle',
+    start: ['geometry.append(|width);', 'geometry.append(height);'],
+    keysPressed: 'ce' + 'std::to_string(' + '<C-r>"' + '<Esc>' + 'j0fh' + '.',
+    end: ['geometry.append(std::to_string(width));', 'geometry.append(std::to_string(height|));'],
   });
 
   newTest({

@@ -1,4 +1,5 @@
 import { Position, Range } from 'vscode';
+import { PositionDiff } from '../common/motion/position';
 import { Logger } from '../util/logger';
 import { stringify, Transformation } from './transformations';
 
@@ -12,15 +13,15 @@ export class Transformer {
     this.transformations.push(transformation);
   }
 
-  public insert(position: Position, text: string): void {
-    this.addTransformation({ type: 'insertText', position, text });
+  public insert(position: Position, text: string, diff?: PositionDiff): void {
+    this.addTransformation({ type: 'insertText', position, text, diff });
   }
 
-  public delete(range: Range): void {
-    this.addTransformation({ type: 'deleteRange', range });
+  public delete(range: Range, diff?: PositionDiff): void {
+    this.addTransformation({ type: 'deleteRange', range, diff });
   }
 
-  public replace(range: Range, text: string): void {
-    this.addTransformation({ type: 'replaceText', range, text });
+  public replace(range: Range, text: string, diff?: PositionDiff): void {
+    this.addTransformation({ type: 'replaceText', range, text, diff });
   }
 }
