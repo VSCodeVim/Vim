@@ -75,8 +75,8 @@ export async function getAndUpdateModeHandler(
 /**
  * Loads and validates the user's configuration
  */
-async function loadConfiguration(event?: vscode.ConfigurationChangeEvent) {
-  const validatorResults = await configuration.load(event);
+async function loadConfiguration() {
+  const validatorResults = await configuration.load();
 
   Logger.configChanged(configuration);
 
@@ -123,8 +123,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   registerEventListener(
     context,
     vscode.workspace.onDidChangeConfiguration,
-    async (event: vscode.ConfigurationChangeEvent) => {
-      await loadConfiguration(event);
+    async () => {
+      await loadConfiguration();
     },
     false
   );
