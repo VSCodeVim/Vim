@@ -104,7 +104,7 @@ class Configuration implements IConfiguration {
     'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
   };
 
-  public async load(): Promise<ValidatorResults> {
+  public async load(event?: vscode.ConfigurationChangeEvent): Promise<ValidatorResults> {
     const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
@@ -120,7 +120,13 @@ class Configuration implements IConfiguration {
       }
     }
 
-    if (SUPPORT_VIMRC && this.vimrc.enable) {
+    if (
+      SUPPORT_VIMRC &&
+      this.vimrc.enable &&
+      (!event ||
+        event.affectsConfiguration('vim.vimrc.enable') ||
+        event.affectsConfiguration('vim.vimrc.path'))
+    ) {
       await import('./vimrc').then((vimrcModel) => {
         return vimrcModel.vimrc.load(this);
       });
