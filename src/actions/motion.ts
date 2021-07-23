@@ -1302,10 +1302,10 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const lineNumber = clamp(count, 1, vimState.document.lineCount) - 1;
+    const line = clamp(count, 1, vimState.document.lineCount) - 1;
     return {
       start: vimState.cursorStartPosition,
-      stop: position.withLine(lineNumber).obeyStartOfLine(vimState.document),
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
       registerMode: RegisterMode.LineWise,
     };
   }
