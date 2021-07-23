@@ -151,7 +151,14 @@ suite('Repeat content change', () => {
     title: 'Repeat insertion with auto-matched parentheses in the middle',
     start: ['geometry.append(|width);', 'geometry.append(height);'],
     keysPressed: 'ce' + 'std::to_string(' + '<C-r>"' + '<Esc>' + 'j0fh' + '.',
-    end: ['geometry.append(std::to_string(width));', 'geometry.append(std::to_string(height|));'],
+    end: ['geometry.append(std::to_string(width));', 'geometry.append(std::to_string(heigh|t));'],
+  });
+
+  newTest({
+    title: 'Repeat insertion that deletes auto-matched closing parenthesis',
+    start: ['|', ''],
+    keysPressed: 'i' + '[(' + '<Del>' + 'xyz' + '<Esc>' + 'j.',
+    end: ['[(xyz]', '[(xy|z]'],
   });
 
   newTest({

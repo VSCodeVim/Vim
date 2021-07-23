@@ -1166,13 +1166,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   ): Promise<void> {
     // Draw selection (or cursor)
-
-    if (
-      args.drawSelection &&
-      !this.vimState.recordedState.actionsRun.some(
-        (action) => action instanceof DocumentContentChangeAction
-      )
-    ) {
+    if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
         selectionMode = globalState.searchState!.previousMode;
