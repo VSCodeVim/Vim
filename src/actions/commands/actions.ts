@@ -170,6 +170,7 @@ export class DocumentContentChangeAction extends BaseCommand {
         };
       } else {
         // TODO: Do any of the cases falling into this `else` matter?
+        // TODO: YES - make an insertion and then autocomplete to something totally different (replace subsumes insert)
         return undefined;
       }
     }
