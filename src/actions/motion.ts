@@ -579,12 +579,16 @@ abstract class MarkMovementVisual extends BaseMovement {
   abstract mark: VisualMark;
 
   private startOrEnd(lastVisualSelection: {
+    mode: Mode;
     start: vscode.Position;
     end: vscode.Position;
   }): Position {
     // marks from vimstate are sorted by direction of selection (moving forward vs backwards).
     // must sort to document order
-    const [start, end] = sorted(lastVisualSelection.start, lastVisualSelection.end);
+    let [start, end] = sorted(lastVisualSelection.start, lastVisualSelection.end);
+    if (lastVisualSelection.mode === Mode.VisualLine) {
+      [start, end] = [start.getLineBegin(), end.getLineEnd()];
+    }
     return this.mark === VisualMark.SelectionStart ? start : end;
   }
 
@@ -602,7 +606,6 @@ abstract class MarkMovementVisual extends BaseMovement {
     vimState.currentRegisterMode = this.registerMode;
 
     if (vimState.lastVisualSelection !== undefined) {
-      // todo: wait for pipe operator ;-)
       return this.inLineCorrection(
         vimState.document,
         this.startOrEnd(vimState.lastVisualSelection)
