@@ -315,8 +315,12 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
  * @returns the Position `count` lines down from this Position
  */
 Position.prototype.getDown = function (this: Position, count = 1): Position {
-  const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
-  return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  if (vscode.window.activeTextEditor) {
+    const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
+    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  } else {
+    return this.translate({ lineDelta: count });
+  }
 };
 
 /**

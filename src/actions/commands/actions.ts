@@ -87,7 +87,8 @@ export class DocumentContentChangeAction extends BaseCommand {
         const linesAffected = change.range.end.line - change.range.start.line + 1;
         const resultLines = change.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesAffected
+          originalLeftBoundary.line + resultLines - linesAffected,
+          Math.max(0, originalLeftBoundary.line + resultLines - linesAffected)
         );
         continue;
       }
