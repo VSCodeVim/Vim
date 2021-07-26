@@ -128,4 +128,12 @@ suite('Record and execute a macro', () => {
     end: ['one t|wo three'],
     statusBar: "E354: Invalid register name: '~'",
   });
+
+  newTest({
+    title: '`@@` before a macro has been run throws E748',
+    start: ['one t|wo three'],
+    keysPressed: '@@',
+    end: ['one t|wo three'],
+    statusBar: 'E748: No previously used register',
+  });
 });

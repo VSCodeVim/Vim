@@ -30,6 +30,7 @@ export enum ErrorCode {
   AtStartOfChangeList = 662,
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
+  NoPreviouslyUsedRegister = 748,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -60,6 +61,7 @@ export const ErrorMessage: IErrorMessage = {
   662: 'At start of changelist',
   663: 'At end of changelist',
   664: 'changelist is empty',
+  748: 'No previously used register',
 };
 
 export class VimError extends Error {

@@ -27,7 +27,7 @@ import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { StatusBar } from '../../statusBar';
+import { StatusBar, statusBarCommandText } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
@@ -372,6 +372,8 @@ class CommandExecuteLastMacro extends BaseCommand {
         register: lastInvokedMacro.registerName,
         replay: 'contentChange',
       });
+    } else {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoPreviouslyUsedRegister));
     }
   }
 }
