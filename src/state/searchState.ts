@@ -250,12 +250,12 @@ export class SearchState {
     editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
-  ): { pos: Position; match: boolean; index: number } | undefined {
+  ): { pos: Position; index: number } | undefined {
     const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
-    const { start, end, match, index } = nextMatch;
+    const { start, end, index } = nextMatch;
 
     let pos = start;
     if (this.offset) {
@@ -271,7 +271,7 @@ export class SearchState {
       }
     }
 
-    return { pos, match, index };
+    return { pos, index };
   }
 
   /**
@@ -286,11 +286,11 @@ export class SearchState {
     editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
-  ): { start: Position; end: Position; match: boolean; index: number } | undefined {
+  ): { start: Position; end: Position; index: number } | undefined {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      return { start: startPosition, end: startPosition, match: false, index: -1 };
+      return undefined;
     }
 
     const effectiveDirection = (direction * this.searchDirection) as SearchDirection;
@@ -301,7 +301,6 @@ export class SearchState {
           return {
             start: matchRange.start,
             end: matchRange.end,
-            match: true,
             index,
           };
         }
@@ -312,7 +311,6 @@ export class SearchState {
         return {
           start: range.start,
           end: range.end,
-          match: true,
           index: 0,
         };
       } else {
@@ -324,7 +322,6 @@ export class SearchState {
           return {
             start: matchRange.start,
             end: matchRange.end,
-            match: true,
             index: matchRanges.length - index - 1,
           };
         }
@@ -336,7 +333,6 @@ export class SearchState {
         return {
           start: range.start,
           end: range.end,
-          match: true,
           index: matchRanges.length - 1,
         };
       } else {
@@ -348,11 +344,11 @@ export class SearchState {
   public getSearchMatchRangeOf(
     editor: vscode.TextEditor,
     pos: Position
-  ): { start: Position; end: Position; match: boolean; index: number } {
+  ): { start: Position; end: Position; index: number } | undefined {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      return { start: pos, end: pos, match: false, index: -1 };
+      return undefined;
     }
 
     for (const [index, matchRange] of matchRanges.entries()) {
@@ -360,13 +356,12 @@ export class SearchState {
         return {
           start: matchRange.start,
           end: matchRange.end,
-          match: true,
           index,
         };
       }
     }
 
-    return { start: pos, end: pos, match: false, index: -1 };
+    return undefined;
   }
 
   constructor(

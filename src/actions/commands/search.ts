@@ -289,7 +289,6 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
     | {
         start: Position;
         end: Position;
-        match: boolean;
         index: number;
       }
     | undefined;
@@ -299,16 +298,17 @@ async function selectLastSearchWord(vimState: VimState, direction: SearchDirecti
   // if the cursor is at the end of a match string in visual-mode.
   result = newSearchState.getSearchMatchRangeOf(vimState.editor, vimState.cursorStopPosition);
   if (
+    result &&
     vimState.currentMode === Mode.Visual &&
     vimState.cursorStopPosition.isEqual(result.end.getLeftThroughLineBreaks())
   ) {
-    result.match = false;
+    result = undefined;
   }
 
-  if (!result.match) {
+  if (result === undefined) {
     // Try to search for the next word
     result = newSearchState.getNextSearchMatchRange(vimState.editor, vimState.cursorStopPosition);
-    if (!result?.match) {
+    if (result === undefined) {
       // TODO: `gn` should just be a TextObject, I think - setting this directly is a bit of a hack
       vimState.lastMovementFailed = true;
       return; // no match...

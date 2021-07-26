@@ -1361,7 +1361,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           this.vimState.cursorStopPosition
         );
 
-        if (nextMatch?.match) {
+        if (nextMatch) {
           this.vimState.editor.revealRange(
             new vscode.Range(nextMatch.pos, nextMatch.pos),
             revealType

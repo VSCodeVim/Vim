@@ -459,7 +459,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       const count = vimState.recordedState.count || 1;
       let searchPos = vimState.cursorStopPosition;
-      let nextMatch: { pos: Position; match: boolean; index: number } | undefined;
+      let nextMatch: { pos: Position; index: number } | undefined;
       for (let i = 0; i < count; i++) {
         // Move cursor to next match
         nextMatch = searchState.getNextSearchMatchPosition(vimState.editor, searchPos);
@@ -788,7 +788,7 @@ class CommandCtrlLInSearchMode extends BaseCommand {
     }
 
     const nextMatch = globalState.searchState.getNextSearchMatchRange(vimState.editor, position);
-    if (nextMatch?.match) {
+    if (nextMatch) {
       const line = vimState.document.lineAt(nextMatch.end).text;
       if (nextMatch.end.character < line.length) {
         globalState.searchState.searchString += line[nextMatch.end.character];
