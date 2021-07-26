@@ -340,6 +340,10 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
+  public static clearAllRegisters(): void {
+    Register.registers.clear();
+  }
+
   public static async saveToDisk(supportNode: boolean): Promise<void> {
     if (supportNode) {
       const serializableRegisters = new Array<[string, IRegisterContent[]]>();

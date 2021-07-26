@@ -230,7 +230,7 @@ export class CommandLine {
     } else {
       const [_, end] = this.range.resolve(vimState);
       vimState.cursorStartPosition = vimState.cursorStopPosition = vimState.cursorStopPosition
-        .withLine(end)
+        .with({ line: end })
         .obeyStartOfLine(vimState.document);
     }
   }

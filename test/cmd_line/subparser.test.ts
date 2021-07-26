@@ -1,8 +1,19 @@
 import * as assert from 'assert';
+import { getAndUpdateModeHandler } from '../../extensionBase';
 
 import { commandParsers, getParser } from '../../src/cmd_line/subparser';
+import { Mode } from '../../src/mode/mode';
+import { newTest } from '../testSimplifier';
+import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('getParser', () => {
+  setup(async () => {
+    await setupWorkspace();
+    await getAndUpdateModeHandler();
+  });
+
+  suiteTeardown(cleanUpWorkspace);
+
   test('empty', () => {
     assert.strictEqual(getParser(''), undefined);
   });
@@ -127,6 +138,15 @@ suite('getParser', () => {
       assert.strictEqual(args.arguments.opt, undefined);
       assert.strictEqual(args.arguments.optValue, undefined);
       assert.strictEqual(args.arguments.range, undefined);
+    });
+
+    newTest({
+      title: 'Unknown ex command throws E492',
+      start: ['tes|t'],
+      keysPressed: ':fakecmd\n',
+      end: ['tes|t'],
+      endMode: Mode.Normal,
+      statusBar: 'E492: Not an editor command: fakecmd',
     });
   });
 });

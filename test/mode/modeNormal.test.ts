@@ -98,6 +98,7 @@ suite('Mode Normal', () => {
     start: ['|one', 'two', 'three', 'four', 'five'],
     keysPressed: '3dd',
     end: ['|four', 'five'],
+    statusBar: '3 fewer lines',
   });
 
   newTest({
@@ -1575,6 +1576,14 @@ suite('Mode Normal', () => {
 
   suite('g;', () => {
     newTest({
+      title: 'g; before any changes throws E664',
+      start: ['one t|wo three'],
+      keysPressed: 'g;',
+      end: ['one t|wo three'],
+      statusBar: 'E664: changelist is empty',
+    });
+
+    newTest({
       title: 'g; works correctly after insert',
       start: ['one', 'tw|o', 'three'],
       keysPressed: 'iXYZ<Esc>Gg;',
@@ -1596,6 +1605,14 @@ suite('Mode Normal', () => {
     });
 
     // TODO: Test with multiple changes
+  });
+
+  newTest({
+    title: 'g, before any changes throws E664',
+    start: ['one t|wo three'],
+    keysPressed: 'g,',
+    end: ['one t|wo three'],
+    statusBar: 'E664: changelist is empty',
   });
 
   newTest({
@@ -3340,6 +3357,59 @@ suite('Mode Normal', () => {
       keysPressed: 'wma2w`a',
       end: ['hello |world and mars'],
       endMode: Mode.Normal,
+    });
+  });
+
+  suite('<C-g>', () => {
+    // TODO: test with untitled file
+    // TODO: test [count]<C-g>
+
+    newTest({
+      title: '<C-g> displays info about the file in status bar (line 1 of 3)',
+      start: ['o|ne', 'two', 'three'],
+      keysPressed: '<C-g>',
+      end: ['o|ne', 'two', 'three'],
+      statusBar: '"{FILENAME}" 3 lines --33%--',
+    });
+
+    newTest({
+      title: '<C-g> displays info about the file in status bar (line 2 of 3)',
+      start: ['one', '|two', 'three'],
+      keysPressed: '<C-g>',
+      end: ['one', '|two', 'three'],
+      statusBar: '"{FILENAME}" 3 lines --66%--',
+    });
+
+    newTest({
+      title: '<C-g> displays info about the file in status bar (line 3 of 3)',
+      start: ['one', 'two', 'thr|ee'],
+      keysPressed: '<C-g>',
+      end: ['one', 'two', 'thr|ee'],
+      statusBar: '"{FILENAME}" 3 lines --100%--',
+    });
+
+    newTest({
+      title: '<C-g> displays info about the file in status bar (line 1 of 1)',
+      start: ['o|ne'],
+      keysPressed: '<C-g>',
+      end: ['o|ne'],
+      statusBar: '"{FILENAME}" 1 line --100%--',
+    });
+
+    newTest({
+      title: '<C-g> has special message for empty file',
+      start: ['|'],
+      keysPressed: '<C-g>',
+      end: ['|'],
+      statusBar: '"{FILENAME}" --No lines in buffer--',
+    });
+
+    newTest({
+      title: '<C-g> includes "[Modified]" when file is dirty',
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'x' + '<C-g>',
+      end: ['one', 't|o', 'three'],
+      statusBar: '"{FILENAME}" [Modified] 3 lines --66%--',
     });
   });
 });

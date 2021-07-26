@@ -124,6 +124,14 @@ suite('Repeat content change', () => {
   });
 
   newTest({
+    title: 'Can repeat `<BS>` and `<Del>`',
+    start: ['abc|def', 'ABCDEF'],
+    keysPressed: 'i<BS><Del>0<Esc>' + 'j0fD.',
+    end: ['ab0ef', 'AB|0EF'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can repeat insertion with newline',
     start: ['ab|cde', 'ABCDE'],
     keysPressed: 'i1\n2<Esc>' + 'j0ll.',
@@ -135,8 +143,22 @@ suite('Repeat content change', () => {
     title: 'Can repeat insertion with auto-matched brackets',
     start: ['|', ''],
     keysPressed: 'ifoo(bar<Esc>' + 'j.',
-    end: ['foo(bar)', 'foo(bar|)'],
+    end: ['foo(bar)', 'foo(ba|r)'],
     endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Repeat insertion with auto-matched parentheses in the middle',
+    start: ['geometry.append(|width);', 'geometry.append(height);'],
+    keysPressed: 'ce' + 'std::to_string(' + '<C-r>"' + '<Esc>' + 'j0fh' + '.',
+    end: ['geometry.append(std::to_string(width));', 'geometry.append(std::to_string(heigh|t));'],
+  });
+
+  newTest({
+    title: 'Repeat insertion that deletes auto-matched closing parenthesis',
+    start: ['|', ''],
+    keysPressed: 'i' + '[(' + '<Del>' + 'xyz' + '<Esc>' + 'j.',
+    end: ['[(xyz]', '[(xy|z]'],
   });
 
   newTest({
@@ -177,10 +199,17 @@ suite('Repeat content change', () => {
   });
 
   newTest({
-    title: 'Only one arrow key can be repeated in Insert Mode',
-    start: ['on|e', 'two'],
-    keysPressed: 'a<left><left>b<Esc>j$.',
-    end: ['obne', 'tw|bo'],
+    title: 'Repeating insertion with arrows ignores everything before last arrow',
+    start: ['one |two three'],
+    keysPressed: 'i' + 'X<left>Y<left>Z' + '<Esc>' + 'W.',
+    end: ['one ZYXtwo |Zthree'],
+  });
+
+  newTest({
+    title: 'Repeating insertion with arrows always inserts just before cursor',
+    start: ['o|ne two three'],
+    keysPressed: 'A' + 'X<left>Y<left>Z' + '<Esc>' + '0W.',
+    end: ['one |Ztwo threeZYX'],
   });
 
   newTest({

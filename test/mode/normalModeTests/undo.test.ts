@@ -106,6 +106,51 @@ suite('Undo', () => {
       keysPressed: 'qq' + 'Jx' + 'q' + '@q' + 'u',
       end: ['apple|banana', 'carrot'],
     });
+
+    newTest({
+      title: '<Left> in Insert mode creates undo point',
+      start: ['Say a |word for '],
+      keysPressed:
+        'A' + 'Jimmy Brown' + '<left>'.repeat(6) + '<BS>'.repeat(5) + 'Ginger' + '<Esc>' + 'u',
+      end: ['Say a word for Jimmy| Brown'],
+    });
+
+    newTest({
+      title: '<Down> in Insert mode creates undo point',
+      start: ['|', '', ''],
+      keysPressed: 'i' + 'one' + '<down>' + 'two' + '<down>' + 'three' + '<Esc>' + 'u',
+      end: ['one', 'two', '|'],
+    });
+
+    newTest({
+      title: '<C-g>u in Insert mode creates undo point',
+      start: ['|'],
+      keysPressed: 'i' + 'one' + '<C-g>u' + ' two' + '<Esc>' + 'u',
+      end: ['on|e'],
+    });
+
+    newTest({
+      title: '<Left> in Replace mode creates undo point',
+      start: ['|one_two_three'],
+      keysPressed: 'R' + 'ONE' + '<left>' + 'TWO' + '<Esc>' + 'u',
+      // TODO: Cursor position is wrong
+      end: ['ON|E_two_three'],
+    });
+
+    newTest({
+      title: '<Down> in Replace mode creates undo point',
+      start: ['|one', 'two', 'three'],
+      keysPressed: 'R' + 'ONE' + '<down>' + 'TWO' + '<Esc>' + 'u',
+      // TODO: Cursor position is wrong
+      end: ['ONE', 'tw|o', 'three'],
+    });
+
+    newTest({
+      title: '<C-g>u in Replace mode creates undo point',
+      start: ['|ABCDEF'],
+      keysPressed: 'R' + '123' + '<C-g>u' + '456' + '<Esc>' + 'u',
+      end: ['123|DEF'],
+    });
   });
 
   suite('U', () => {

@@ -26,6 +26,7 @@ import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
+import { CommandInsertAtCursor } from './commands/actions';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -384,18 +385,16 @@ export class ArrowsInInsertMode extends BaseMovement {
   keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
-    // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    const firstAction = vimState.recordedState.actionsRun.shift();
-    const lastAction = vimState.recordedState.actionsRun.pop();
-    vimState.recordedState.actionsRun = [];
-    if (firstAction) {
-      vimState.recordedState.actionsRun.push(firstAction);
-    }
-    if (lastAction) {
-      vimState.recordedState.actionsRun.push(lastAction);
-    }
-    // TODO: assert vimState.recordedState.actionsRun.length === 2?
+    // Moving with the arrow keys in Insert mode "resets" our insertion for the purpose of repeating with dot or `<C-a>`.
+    // No matter how we got into Insert mode, repeating will now be done as if we started with `i`.
+    // Note that this does not affect macros, which re-construct a list of actions based on keypresses.
+    // TODO: ACTUALLY, we should reset this only after something is typed (`Axyz<Left><Esc>.` does repeat the insertion)
+    // TODO: This also should mark an "insertion end" for the purpose of `<C-a>` (try `ixyz<Right><C-a>`)
+    vimState.recordedState.actionsRun = [new CommandInsertAtCursor()];
+
+    // Force an undo point to be created
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
 
     let newPosition: Position;
     switch (this.keysPressed[0]) {
@@ -414,6 +413,7 @@ export class ArrowsInInsertMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
+    // TODO: Is resetting ReplaceState necessary?
     vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }
@@ -425,8 +425,11 @@ class ArrowsInReplaceMode extends BaseMovement {
   keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    let newPosition: Position = position;
+    // Force an undo point to be created
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
 
+    let newPosition: Position = position;
     switch (this.keysPressed[0]) {
       case '<up>':
         newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
@@ -576,12 +579,16 @@ abstract class MarkMovementVisual extends BaseMovement {
   abstract mark: VisualMark;
 
   private startOrEnd(lastVisualSelection: {
+    mode: Mode;
     start: vscode.Position;
     end: vscode.Position;
   }): Position {
     // marks from vimstate are sorted by direction of selection (moving forward vs backwards).
     // must sort to document order
-    const [start, end] = sorted(lastVisualSelection.start, lastVisualSelection.end);
+    let [start, end] = sorted(lastVisualSelection.start, lastVisualSelection.end);
+    if (lastVisualSelection.mode === Mode.VisualLine) {
+      [start, end] = [start.getLineBegin(), end.getLineEnd()];
+    }
     return this.mark === VisualMark.SelectionStart ? start : end;
   }
 
@@ -599,7 +606,6 @@ abstract class MarkMovementVisual extends BaseMovement {
     vimState.currentRegisterMode = this.registerMode;
 
     if (vimState.lastVisualSelection !== undefined) {
-      // todo: wait for pipe operator ;-)
       return this.inLineCorrection(
         vimState.document,
         this.startOrEnd(vimState.lastVisualSelection)
@@ -1299,10 +1305,10 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const lineNumber = clamp(count, 1, vimState.document.lineCount) - 1;
+    const line = clamp(count, 1, vimState.document.lineCount) - 1;
     return {
       start: vimState.cursorStartPosition,
-      stop: position.withLine(lineNumber).obeyStartOfLine(vimState.document),
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
       registerMode: RegisterMode.LineWise,
     };
   }

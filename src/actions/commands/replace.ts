@@ -104,3 +104,14 @@ class ReplaceInReplaceMode extends BaseCommand {
     replaceState.newChars.push(char);
   }
 }
+
+@RegisterAction
+class CreateUndoPoint extends BaseCommand {
+  modes = [Mode.Replace];
+  keys = ['<C-g>', 'u'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
+  }
+}

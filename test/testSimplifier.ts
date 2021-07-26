@@ -14,6 +14,8 @@ import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Position } from 'vscode';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../src/editorIdentity';
+import { StatusBar } from '../src/statusBar';
+import { Register } from '../src/register/register';
 
 function getNiceStack(stack: string | undefined): string {
   return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
@@ -77,6 +79,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  statusBar?: string;
   jumps?: string[];
   stub?: {
     stubClass: any;
@@ -338,6 +341,7 @@ async function testIt(testObj: ITestObject): Promise<void> {
   await editor.edit((builder) => {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
+  await editor.document.save();
   editor.selections = [new vscode.Selection(helper.startPosition, helper.startPosition)];
 
   // Generate a brand new ModeHandler for this editor
@@ -351,6 +355,8 @@ async function testIt(testObj: ITestObject): Promise<void> {
 
   const jumpTracker = globalState.jumpTracker;
   jumpTracker.clearJumps();
+
+  Register.clearAllRegisters();
 
   if (testObj.stub) {
     const confirmStub = sinon
@@ -381,6 +387,14 @@ async function testIt(testObj: ITestObject): Promise<void> {
     const actualMode = Mode[modeHandler.currentMode].toUpperCase();
     const expectedMode = Mode[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
+  }
+
+  if (testObj.statusBar !== undefined) {
+    assert.strictEqual(
+      StatusBar.getText(),
+      testObj.statusBar.replace('{FILENAME}', modeHandler.vimState.document.fileName),
+      'Status bar text is wrong.'
+    );
   }
 
   // jumps: check jumps are correct if given

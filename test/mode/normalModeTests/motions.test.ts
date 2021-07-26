@@ -771,6 +771,7 @@ suite('Motions in Normal Mode', () => {
     start: ['one  |   ', 'one two one two'],
     keysPressed: '*',
     end: ['one  |   ', 'one two one two'],
+    statusBar: 'E348: No string under cursor',
   });
 
   newTest({
@@ -1035,7 +1036,9 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
     });
+  });
 
+  suite('Special marks', () => {
     newTest({
       title: 'Jump to visual start `<',
       start: ['one |Xx two three'],
@@ -1062,6 +1065,20 @@ suite('Motions in Normal Mode', () => {
       start: ['|one', '  Xxx', 'two', '  three'],
       keysPressed: "vjv1G'>",
       end: ['one', '  |Xxx', 'two', '  three'],
+    });
+
+    newTest({
+      title: 'Jump to visual line start `<',
+      start: ['one', 't|wo', 'three', 'four'],
+      keysPressed: 'Vj<Esc>' + 'gg' + '`<',
+      end: ['one', '|two', 'three', 'four'],
+    });
+
+    newTest({
+      title: 'Jump to visual line end `>',
+      start: ['one', 't|wo', 'three', 'four'],
+      keysPressed: 'Vj<Esc>' + 'gg' + '`>',
+      end: ['one', 'two', 'thre|e', 'four'],
     });
   });
 });

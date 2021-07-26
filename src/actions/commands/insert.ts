@@ -213,7 +213,7 @@ class DecreaseIndent extends BaseCommand {
 // }
 
 @RegisterAction
-class CommandBackspaceInInsertMode extends BaseCommand {
+export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = [['<BS>'], ['<C-h>']];
 
@@ -331,7 +331,10 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+      );
       return;
     }
 
@@ -531,5 +534,16 @@ class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await new CommandReplaceAtCursorFromNormalMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
+class CreateUndoPoint extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-g>', 'u'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.historyTracker.addChange(true);
+    vimState.historyTracker.finishCurrentStep();
   }
 }

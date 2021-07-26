@@ -30,7 +30,10 @@ class ReplaceOperator extends BaseOperator {
 
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+      );
       return;
     }
 

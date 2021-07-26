@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { BaseAction, KeypressState, BaseCommand, getRelevantAction } from './../actions/base';
 import { BaseMovement } from '../actions/baseMotion';
 import {
+  CommandBackspaceInInsertMode,
   CommandEscInsertMode,
   CommandInsertInInsertMode,
   CommandInsertPreviousText,
@@ -611,6 +612,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       const actionCanBeMergedWithDocumentChange =
         action instanceof CommandInsertInInsertMode ||
+        action instanceof CommandBackspaceInInsertMode ||
         action instanceof CommandInsertPreviousText ||
         action instanceof InsertCharAbove ||
         action instanceof InsertCharBelow;
@@ -626,7 +628,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           actionToRecord = undefined;
         } else {
           // Push document content change to the stack
-          lastAction.addChanges(this.vimState.historyTracker.currentContentChanges);
+          lastAction.addChanges(
+            this.vimState.historyTracker.currentContentChanges,
+            this.vimState.cursorStopPosition
+          );
           this.vimState.historyTracker.currentContentChanges = [];
           recordedState.actionsRun.push(action);
         }
@@ -634,7 +639,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           this.vimState.historyTracker.currentContentChanges = [];
-          const newContentChange = new DocumentContentChangeAction();
+          const newContentChange = new DocumentContentChangeAction(
+            this.vimState.cursorStopPosition
+          );
           newContentChange.keysPressed.push(key);
           recordedState.actionsRun.push(newContentChange);
           actionToRecord = newContentChange;
@@ -1159,13 +1166,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   ): Promise<void> {
     // Draw selection (or cursor)
-
-    if (
-      args.drawSelection &&
-      !this.vimState.recordedState.actionsRun.some(
-        (action) => action instanceof DocumentContentChangeAction
-      )
-    ) {
+    if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
         selectionMode = globalState.searchState!.previousMode;
