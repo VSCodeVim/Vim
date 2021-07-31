@@ -266,6 +266,37 @@ export class TextEditor {
       wordEnd = start.nextWordEnd(document, { inclusive: true });
     } while (true);
   }
+
+  /**
+   * This function requests the list of symbols parsed by the VSCodeSymbol
+   * provider and returns it. Most LSPs should be working out of the box.
+   * A way to check for correct support is to see if VSCode's breadcrumbs
+   * work properly. If they do then requestSymbols should work too.
+   *
+   * See breadcrumbs documentation: https://code.visualstudio.com/updates/v1_26#_breadcrumbs
+   *
+   * Throws an error if no symbols were found.
+   *
+   * @param editor, the active editor containing the document that is parsed.
+   * @returns the list of symbols found for th
+   */
+  public static async getSymbols(editor: vscode.TextEditor) {
+    const uri = editor.document.uri;
+    const symbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+      'vscode.executeDocumentSymbolProvider',
+      uri
+    );
+
+    if (symbols === undefined) {
+      // Not quite sure how errors are handled yet.
+      // Should I define my own error in error.ts and if so, is there a logic to
+      // the error numbers???
+      const errorMessage = 'No symbol providers found for this file';
+      throw new Error(errorMessage);
+    }
+
+    return symbols;
+  }
 }
 
 /**
