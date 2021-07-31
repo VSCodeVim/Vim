@@ -566,8 +566,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // Catch any text change not triggered by us (example: tab completion).
     this.vimState.historyTracker.addChange();
 
-    this.vimState.keyHistory.push(key);
-
     const recordedState = this.vimState.recordedState;
     recordedState.actionKeys.push(key);
 
@@ -1126,7 +1124,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.cursorsInitialState = this.vimState.cursors;
 
       recordedState.actionsRun.push(action);
-      this.vimState.keyHistory.push(...action.keysPressed);
 
       await this.runAction(recordedState, action);
 
