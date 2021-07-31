@@ -1584,7 +1584,7 @@ export class CommandInsertAtLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineAbove extends BaseCommand {
+export class CommandInsertNewLineAbove extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['O'];
   override runsOnceForEveryCursor() {
@@ -1613,7 +1613,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineBefore extends BaseCommand {
+export class CommandInsertNewLineBefore extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['o'];
   override runsOnceForEveryCursor() {

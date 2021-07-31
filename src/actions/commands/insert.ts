@@ -19,6 +19,8 @@ import {
   CommandReplaceAtCursorFromNormalMode,
   CommandInsertAtLineBegin,
   CommandInsertAtLastChange,
+  CommandInsertNewLineAbove,
+  CommandInsertNewLineBefore,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { StatusBar } from '../../statusBar';
@@ -45,22 +47,21 @@ export class CommandEscInsertMode extends BaseCommand {
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    for (let i = 0; i < vimState.cursors.length; i++) {
-      const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
-      if (
-        ['o', 'O', '\n'].includes(lastActionBeforeEsc) &&
-        vimState.document.languageId !== 'plaintext' &&
-        /^\s+$/.test(vimState.document.lineAt(vimState.cursors[i].stop).text)
-      ) {
-        vimState.recordedState.transformer.delete(
-          new vscode.Range(
-            vimState.cursors[i].stop.getLineBegin(),
-            vimState.cursors[i].stop.getLineEnd()
-          )
-        );
-        vimState.cursors[i] = vimState.cursors[i].withNewStop(
-          vimState.cursors[i].stop.getLineBegin()
-        );
+    const lastActionBeforeEsc =
+      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2];
+    if (
+      vimState.document.languageId !== 'plaintext' &&
+      (lastActionBeforeEsc instanceof CommandInsertNewLineBefore ||
+        lastActionBeforeEsc instanceof CommandInsertNewLineAbove ||
+        (lastActionBeforeEsc instanceof DocumentContentChangeAction &&
+          lastActionBeforeEsc.keysPressed[lastActionBeforeEsc.keysPressed.length - 1] === '\n'))
+    ) {
+      for (const cursor of vimState.cursors) {
+        if (/^\s+$/.test(vimState.document.lineAt(cursor.stop).text)) {
+          vimState.recordedState.transformer.delete(
+            new vscode.Range(cursor.stop.getLineBegin(), cursor.stop.getLineEnd())
+          );
+        }
       }
     }
     await vimState.setCurrentMode(Mode.Normal);
