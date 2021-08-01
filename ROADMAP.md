@@ -422,6 +422,8 @@ moving around:
 | :white_check_mark: | :1234: i"         | Select "inner double quoted string"                         |
 | :white_check_mark: | :1234: a`         | Select "a backward quoted string"                           |
 | :white_check_mark: | :1234: i`         | Select "inner backward quoted string"                       |
+| :white_check_mark: | :1234: ia         | Select "inner argument"                                     |
+| :white_check_mark: | :1234: aa         | Select "a argument"                                         |
 
 ## Repeating commands
 
