@@ -370,6 +370,32 @@ Custom remappings are defined on a per-mode basis.
 
     As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
 
+### Vim modes
+
+Here are all the modes used by VSCodeVim:
+
+| Mode                  |
+| --------------------- |
+| Normal                |
+| Insert                |
+| Visual                |
+| VisualBlock           |
+| VisualLine            |
+| SearchInProgressMode  |
+| CommandlineInProgress |
+| Replace               |
+| EasyMotionMode        |
+| EasyMotionInputMode   |
+| SurroundInputMode     |
+| OperatorPendingMode   |
+| Disabled              |
+
+When rebinding keys in [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings) using ["when clause context"](https://code.visualstudio.com/api/references/when-clause-contexts), it can be useful to know in which mode vim currently is. For example to write a "when clause" that checks if vim is currently in normal mode or visual mode it is possible to write the following:
+
+```json
+"when": "vim.mode == 'Normal' && vim.mode == 'Visual'",
+```
+
 ### Vim settings
 
 Configuration settings that have been copied from vim. Vim settings are loaded in the following sequence:
