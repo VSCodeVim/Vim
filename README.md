@@ -398,7 +398,7 @@ Custom remappings are defined on a per-mode basis.
     },
     ```
 
-    If keybindings.json is empty the first time you open it, make sure to add opening and closing square brackets to the file as the keybindings should be inside a list.
+    If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a list.
 
 ### Vim settings
 
