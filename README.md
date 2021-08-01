@@ -376,24 +376,25 @@ Custom remappings are defined on a per-mode basis.
 
     ```json
     {
-    "key": "YOUR_KEY_COMBINATION",
-    "command": "vim.remap",
-    "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
-    "args": {
-      "after": ["YOUR_VIM_ACTION"],
-    },
+      "key": "YOUR_KEY_COMBINATION",
+      "command": "vim.remap",
+      "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
+      "args": {
+        "after": ["YOUR_VIM_ACTION"]
+      }
+    }
     ```
 
     For example, if one wanted to rebind `ctrl+shift+y` to VSCodeVim's `yank line` in normal mode, one could add this to his keybindings.json:
 
     ```json
     {
-    "key": "ctrl+shift+y",
-    "command": "vim.remap",
-    "when": "inputFocus && vim.mode == 'Normal'",
-    "args": {
-      "after": ["y", "y"],
-    }
+      "key": "ctrl+shift+y",
+      "command": "vim.remap",
+      "when": "inputFocus && vim.mode == 'Normal'",
+      "args": {
+        "after": ["y", "y"],
+      }
     },
     ```
 
