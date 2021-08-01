@@ -368,7 +368,9 @@ Custom remappings are defined on a per-mode basis.
     debug: ModeHandler: handling key=<C-a>.
     ```
 
-    As you press the key that you are trying to remap, do you see it outputted here? If not, it means that we don't subscribe to those key events. It is still possible to remap those keys by using VSCode's keybindings.json and creating vim commands there instead of using the usual way with "vim.normalModeKeyBindings" or others. To do so: open up keybindings.json in VSCode using `CTRL-SHIFT-P` and select `Open keyboard shortcuts (JSON)`.
+    As you press the key that you are trying to remap, do you see it outputted here? If not, it means that we don't subscribe to those key events.
+
+    It is still possible to remap those keys by using VSCode's [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference) and creating vim commands there instead of using the usual way with "vim.normalModeKeyBindings" or others. To do so: open up keybindings.json in VSCode using `CTRL+SHIFT+P` and select `Open keyboard shortcuts (JSON)`.
 
     You can then add a new entry to the keybindings like so:
 
