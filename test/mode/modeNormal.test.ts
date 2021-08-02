@@ -2574,6 +2574,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Vc preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'Vj' + 'c',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'cj preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'cj',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: 'Indent current line with correct Vim Mode',
     start: ['|one', 'two'],
     keysPressed: '>>',
