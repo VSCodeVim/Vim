@@ -275,6 +275,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'v$c deletes newline',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'v$c',
+    end: ['one', 't|three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c])' without deleting closing parenthesis",
     start: ['(hello, |world)'],
     keysPressed: 'c])',
