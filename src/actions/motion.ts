@@ -1369,10 +1369,11 @@ export class MoveWordBegin extends BaseMovement {
   public override async execAction(
     position: Position,
     vimState: VimState,
-    isLastIteration: boolean = false
+    firstIteration: boolean,
+    lastIteration: boolean
   ): Promise<Position> {
     if (
-      isLastIteration &&
+      lastIteration &&
       !configuration.changeWordIncludesWhitespace &&
       vimState.recordedState.operator instanceof ChangeOperator
     ) {
@@ -1403,9 +1404,11 @@ export class MoveWordBegin extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
   ): Promise<Position> {
-    const result = await this.execAction(position, vimState, true);
+    const result = await this.execAction(position, vimState, firstIteration, lastIteration);
 
     /*
     From the Vim documentation:
@@ -1577,6 +1580,7 @@ class MoveParagraphEnd extends BaseMovement {
 
       const isLineWise = position.isLineBeginning() && vimState.currentMode === Mode.Normal;
 
+      // TODO: `execAction` receives `firstIteration` and `lastIteration` - don't reinvent the wheel
       const isLastIteration = vimState.recordedState.count
         ? vimState.recordedState.count === this.iteration
         : true;
@@ -1794,75 +1798,70 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
   protected includeSurrounding = false;
   override isJump = true;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
-    let cursorStartPos = vimState.cursorStartPosition;
-    const failure = failedMovement(vimState);
+    const [selStart, selEnd] = sorted(vimState.cursorStartPosition, position);
 
-    // when matching inside content of a pair, search for the next pair if
-    // the inner content is already selected in full
-    if (!this.includeSurrounding) {
-      const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks(false);
-      let adjacentPosRight = vimState.recordedState.operator
-        ? position
-        : position.getRightThroughLineBreaks();
-      if (adjacentPosRight.isLineBeginning()) {
-        adjacentPosRight = adjacentPosRight.getLineBeginRespectingIndent(vimState.document);
-      }
-      const adjacentCharLeft = TextEditor.getCharAt(vimState.document, adjacentPosLeft);
-      const adjacentCharRight = TextEditor.getCharAt(vimState.document, adjacentPosRight);
-      if (adjacentCharLeft === this.charToMatch && adjacentCharRight === closingChar) {
-        cursorStartPos = adjacentPosLeft;
-        vimState.cursorStartPosition = adjacentPosLeft;
-        position = adjacentPosRight;
-        vimState.cursorStopPosition = adjacentPosRight;
-      }
-    }
     // First, search backwards for the opening character of the sequence
-    let startPos = PairMatcher.nextPairedChar(cursorStartPos, closingChar, vimState, true);
-    if (startPos === undefined) {
-      return failure;
+    let openPos = PairMatcher.nextPairedChar(selStart, closingChar, vimState, true);
+    if (openPos === undefined) {
+      return failedMovement(vimState);
     }
 
-    let startPlusOne: Position;
-
-    if (startPos.isAfterOrEqual(startPos.getLineEnd().getLeft())) {
-      startPlusOne = new Position(startPos.line + 1, 0);
-    } else {
-      startPlusOne = new Position(startPos.line, startPos.character + 1);
+    // Next, search forwards for the closing character which matches
+    let closePos = PairMatcher.nextPairedChar(openPos, this.charToMatch, vimState, true);
+    if (closePos === undefined) {
+      return failedMovement(vimState);
     }
 
-    let endPos = PairMatcher.nextPairedChar(position, this.charToMatch, vimState, true);
+    if (
+      !this.includeSurrounding &&
+      (isVisualMode(vimState.currentMode) || !firstIteration) &&
+      selStart.getLeftThroughLineBreaks(false).isBeforeOrEqual(openPos) &&
+      selEnd.getRightThroughLineBreaks(false).isAfterOrEqual(closePos)
+    ) {
+      // Special case: inner, with all inner content already selected
+      const outerOpenPos = PairMatcher.nextPairedChar(openPos, closingChar, vimState, false);
+      const outerClosePos = outerOpenPos
+        ? PairMatcher.nextPairedChar(outerOpenPos, this.charToMatch, vimState, false)
+        : undefined;
 
-    if (endPos === undefined) {
-      return failure;
+      if (outerOpenPos && outerClosePos) {
+        openPos = outerOpenPos;
+        closePos = outerClosePos;
+      }
     }
 
     if (this.includeSurrounding) {
       if (vimState.currentMode !== Mode.Visual) {
-        endPos = new Position(endPos.line, endPos.character + 1);
+        closePos = new Position(closePos.line, closePos.character + 1);
       }
     } else {
-      startPos = startPlusOne;
-
+      openPos = openPos.getRightThroughLineBreaks();
       // If the closing character is the first on the line, don't swallow it.
-      if (endPos.isInLeadingWhitespace(vimState.document)) {
-        endPos = endPos.getLineBegin();
+      if (closePos.isInLeadingWhitespace(vimState.document)) {
+        closePos = closePos.getLineBegin();
       }
 
       if (vimState.currentMode === Mode.Visual) {
-        endPos = endPos.getLeftThroughLineBreaks();
+        closePos = closePos.getLeftThroughLineBreaks();
       }
     }
 
-    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
-      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    if (lastIteration && !isVisualMode(vimState.currentMode) && selStart.isBefore(openPos)) {
+      vimState.recordedState.operatorPositionDiff = openPos.subtract(selStart);
     }
 
-    vimState.cursorStartPosition = startPos;
+    // TODO: setting the cursor manually like this shouldn't be necessary (probably a Cursor, not Position, should be passed to `exec`)
+    vimState.cursorStartPosition = openPos;
     return {
-      start: startPos,
-      stop: endPos,
+      start: openPos,
+      stop: closePos,
     };
   }
 }
