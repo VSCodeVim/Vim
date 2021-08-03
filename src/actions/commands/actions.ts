@@ -2719,7 +2719,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
     await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       start.getLineBegin(),
-      end.getLineEndIncludingEOL()
+      end.getLineEnd().getLeftIfEOL()
     );
   }
 }
