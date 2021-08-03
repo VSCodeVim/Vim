@@ -77,11 +77,11 @@ export async function executeTransformations(
         break;
     }
 
-    if (command.cursorIndex === undefined) {
-      throw new Error('No cursor index - this should never ever happen!');
-    }
-
     if (command.diff) {
+      if (command.cursorIndex === undefined) {
+        throw new Error('No cursor index - this should never ever happen!');
+      }
+
       if (!accumulatedPositionDifferences[command.cursorIndex]) {
         accumulatedPositionDifferences[command.cursorIndex] = [];
       }
