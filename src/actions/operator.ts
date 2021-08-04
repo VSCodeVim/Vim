@@ -615,7 +615,7 @@ export class ChangeOperator extends BaseOperator {
         vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.offset({ character: 1 }), // Handle transition from Normal to Insert modes
+          diff: PositionDiff.endOfLine(),
         });
       }
     } else {
