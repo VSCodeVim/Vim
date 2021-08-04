@@ -581,76 +581,48 @@ export class ChangeOperator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const isEndOfLine = end.character === end.getLineEnd().character;
-    const isLineWise = vimState.currentRegisterMode === RegisterMode.LineWise;
-    await new YankOperator(this.multicursorIndex).run(vimState, start, end);
-    // which means the insert cursor would be one to the left of the end of
-    // the line. We do want to run delete if it is a multiline change though ex. c}
-    vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    if (TextEditor.getLineLength(start.line) !== 0 || end.line !== start.line) {
-      if (isLineWise) {
-        await new DeleteOperator(this.multicursorIndex).run(
-          vimState,
-          start.getLineBegin(),
-          end.getLineEnd().getLeftThroughLineBreaks(),
-          false
-        );
-      } else if (isEndOfLine) {
-        await new DeleteOperator(this.multicursorIndex).run(
-          vimState,
-          start,
-          end.getLeftThroughLineBreaks(),
-          false
-        );
-      } else {
-        await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
-      }
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
+      start = start.getLineBegin();
+      end = end.getLineEnd();
+    } else if (vimState.currentMode === Mode.Visual && end.isLineEnd()) {
+      end = end.getRightThroughLineBreaks();
+    } else {
+      end = end.getRight();
     }
-    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
-    await vimState.setCurrentMode(Mode.Insert);
+    const deleteRange = new vscode.Range(start, end);
 
-    if (isEndOfLine) {
-      vimState.cursorStopPosition = end.getRight();
-    }
-  }
+    Register.put(vimState, vimState.document.getText(deleteRange), this.multicursorIndex, true);
 
-  public override async runRepeat(
-    vimState: VimState,
-    position: Position,
-    count: number
-  ): Promise<void> {
-    const thisLineIndent = vimState.document.getText(
-      new vscode.Range(
-        position.getLineBegin(),
-        position.getLineBeginRespectingIndent(vimState.document)
-      )
-    );
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise && configuration.autoindent) {
+      // Linewise is a bit of a special case - we want to preserve the first line's indentation,
+      // then let the language server adjust that indentation if it can.
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
+      const firstLineIndent = vimState.document.getText(
+        new vscode.Range(
+          deleteRange.start.getLineBegin(),
+          deleteRange.start.getLineBeginRespectingIndent(vimState.document)
+        )
+      );
 
-    await this.run(
-      vimState,
-      position.getLineBegin(),
-      position.getDown(Math.max(0, count - 1)).getLineEnd()
-    );
+      vimState.recordedState.transformer.replace(
+        deleteRange,
+        firstLineIndent,
+        PositionDiff.exactPosition(new Position(deleteRange.start.line, firstLineIndent.length))
+      );
 
-    if (configuration.autoindent) {
-      if (vimState.document.languageId === 'plaintext') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'insertText',
-          text: thisLineIndent,
-          position: position.getLineBegin(),
-          cursorIndex: this.multicursorIndex,
-        });
-      } else {
+      if (vimState.document.languageId !== 'plaintext') {
         vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.offset({ character: 1 }), // Handle transition from Normal to Insert modes
+          diff: PositionDiff.endOfLine(),
         });
       }
+    } else {
+      vimState.recordedState.transformer.delete(deleteRange);
     }
+
+    vimState.setCurrentMode(Mode.Insert);
   }
 }
 

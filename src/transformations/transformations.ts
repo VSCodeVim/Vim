@@ -285,8 +285,12 @@ export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
 const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
   switch (transformation.type) {
     case 'insertText':
-      return new Range(transformation.position, transformation.position);
+      return new Range(
+        transformation.position,
+        transformation.position.advancePositionByText(transformation.text)
+      );
     case 'replaceText':
+      // TODO: Do we need to do the same sort of thing here as for insertText?
       return transformation.range;
     case 'deleteRange':
       return transformation.range;

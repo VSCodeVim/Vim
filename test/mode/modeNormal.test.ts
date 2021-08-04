@@ -275,6 +275,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'v$c deletes newline',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'v$c',
+    end: ['one', 't|three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c])' without deleting closing parenthesis",
     start: ['(hello, |world)'],
     keysPressed: 'c])',
@@ -2571,6 +2579,22 @@ suite('Mode Normal', () => {
     start: ['foo', '|fun', 'bar'],
     keysPressed: 'cc<Esc>jp',
     end: ['foo', '', 'bar', '|fun'],
+  });
+
+  newTest({
+    title: 'Vc preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'Vj' + 'c',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'cj preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'cj',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
   });
 
   newTest({

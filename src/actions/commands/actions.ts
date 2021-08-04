@@ -170,6 +170,7 @@ export class DocumentContentChangeAction extends BaseCommand {
         };
       } else {
         // TODO: Do any of the cases falling into this `else` matter?
+        // TODO: YES - make an insertion and then autocomplete to something totally different (replace subsumes insert)
         return undefined;
       }
     }
@@ -2718,7 +2719,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
     await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       start.getLineBegin(),
-      end.getLineEndIncludingEOL()
+      end.getLineEnd().getLeftIfEOL()
     );
   }
 }

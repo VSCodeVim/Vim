@@ -100,10 +100,17 @@ suite('Record and execute a macro', () => {
   });
 
   newTest({
-    title: ': (command) register can be used as a macro',
+    title: ': (command) register can be used as a macro to repeat :s',
     start: ['|old', 'old', 'old'],
     keysPressed: ':s/old/new\nj@:j@@',
     end: ['new', 'new', '|new'],
+  });
+
+  newTest({
+    title: ': (command) register can be used as a macro to repeat :d',
+    start: ['one', 't|wo', 'three', 'four', 'five'],
+    keysPressed: ':d/\n' + '@:' + '@@',
+    end: ['one', '|five'],
   });
 
   newTest({
