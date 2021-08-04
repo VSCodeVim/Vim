@@ -2,7 +2,6 @@ import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
-import { RecordedState } from '../state/recordedState';
 import { clamp } from '../util/util';
 import { Position } from 'vscode';
 
@@ -113,17 +112,16 @@ export abstract class BaseMovement extends BaseAction {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const recordedState = vimState.recordedState;
-    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    let result!: Position | IMovement;
     let prevResult = failedMovement(vimState);
-    let firstMovementStart: Position = new Position(position.line, position.character);
+    let firstMovementStart = position;
 
     count = clamp(count, this.minCount, this.maxCount);
 
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
+      result = await this.createMovementResult(position, vimState, lastIteration);
 
       if (result instanceof Position) {
         /**
@@ -137,7 +135,7 @@ export abstract class BaseMovement extends BaseAction {
         }
 
         if (firstIteration) {
-          firstMovementStart = new Position(result.start.line, result.start.character);
+          firstMovementStart = result.start;
         }
 
         position = this.adjustPosition(position, result, lastIteration);
@@ -155,11 +153,10 @@ export abstract class BaseMovement extends BaseAction {
   protected async createMovementResult(
     position: Position,
     vimState: VimState,
-    recordedState: RecordedState,
     lastIteration: boolean
   ): Promise<Position | IMovement> {
     const result =
-      recordedState.operator && lastIteration
+      vimState.recordedState.operator && lastIteration
         ? await this.execActionForOperator(position, vimState)
         : await this.execAction(position, vimState);
     return result;
