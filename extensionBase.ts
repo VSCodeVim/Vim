@@ -175,7 +175,12 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
     if (handleLocal) {
       setTimeout(() => {
-        if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
+        if (
+          event.document.uri.scheme !== 'vscode-notebook-cell' &&
+          !event.document.isDirty &&
+          !event.document.isUntitled &&
+          event.contentChanges.length
+        ) {
           handleContentChangedFromDisk(event.document);
         }
       }, 0);
