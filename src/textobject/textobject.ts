@@ -982,8 +982,7 @@ abstract class SelectASymbol extends TextObject {
   // The whitelist is the filter used to only select the Symbol type that we want
   abstract whitelist: Set<SymbolKind>;
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    // If we do not find anything we do not move and use the current cursor pos
+  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position = vimState.cursorStartPosition;
     let stop: Position = vimState.cursorStopPosition;
 
@@ -992,19 +991,20 @@ abstract class SelectASymbol extends TextObject {
 
     const classSymbol = AstSymbols.searchParentFiltered(currentNode, this.whitelist);
 
-    // We found a class symbol
-    if (classSymbol.symbol) {
-      // We are looking forward
-      if (start.isBeforeOrEqual(stop)) {
-        start = classSymbol.symbol.range.start;
-        stop = classSymbol.symbol.range.end;
-      }
+    if (!classSymbol.symbol) {
+      return failedMovement(vimState);
+    }
 
-      // We are looking backwards so we revert start and end
-      else {
-        start = classSymbol.symbol.range.end;
-        stop = classSymbol.symbol.range.start;
-      }
+    // We are looking forward
+    if (start.isBeforeOrEqual(stop)) {
+      start = classSymbol.symbol.range.start;
+      stop = classSymbol.symbol.range.end;
+    }
+
+    // We are looking backwards so we revert start and end
+    else {
+      start = classSymbol.symbol.range.end;
+      stop = classSymbol.symbol.range.start;
     }
 
     return {
