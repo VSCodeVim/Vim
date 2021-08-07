@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as error from '../src/error';
 
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
@@ -291,8 +292,7 @@ export class TextEditor {
       // Not quite sure how errors are handled yet.
       // Should I define my own error in error.ts and if so, is there a logic to
       // the error numbers???
-      const errorMessage = 'No symbol providers found for this file';
-      throw new Error(errorMessage);
+      throw error.VimError.fromCode(error.ErrorCode.SymbolProviderNotFound);
     }
 
     return symbols;

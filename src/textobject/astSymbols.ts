@@ -66,8 +66,7 @@ export class AstSymbols {
    * @param startNode , the symbolNode to start the search from
    * @param whitelist , a set of SymbolKind containing the type of symbol to search
    *
-   * @returns the first ancestor that has the right SymbolKind or undefined if
-   *  the search fails
+   * @returns the first ancestor that has the right SymbolKind
    */
   public static searchParentFiltered(
     startNode: SymbolNode,

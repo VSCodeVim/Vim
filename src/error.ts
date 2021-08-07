@@ -31,6 +31,7 @@ export enum ErrorCode {
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
   NoPreviouslyUsedRegister = 748,
+  SymbolProviderNotFound = 800,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -62,6 +63,7 @@ export const ErrorMessage: IErrorMessage = {
   663: 'At end of changelist',
   664: 'changelist is empty',
   748: 'No previously used register',
+  800: 'Symbol provider not found',
 };
 
 export class VimError extends Error {
