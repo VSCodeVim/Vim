@@ -129,6 +129,31 @@ suite('Record and execute a macro', () => {
   });
 
   newTest({
+    title: 'q[A-Z] (action) Can record and append to a macro',
+    start: ['|'],
+    keysPressed:
+      'qb' +
+      'i' +
+      'one two ' +
+      '<Esc>q' +
+      'o<Esc>@b' +
+      'o<Esc>' +
+      'qB' +
+      'i' +
+      'three four' +
+      '<Esc>q' +
+      'o<Esc>@b',
+    end: ['one two ', 'one two ', 'three four', 'one twothree fou|r '],
+  });
+
+  newTest({
+    title: 'q[A-Z] (action) Creates new register, accessible by [a-z]',
+    start: ['|'],
+    keysPressed: 'qB' + 'i' + 'one two' + '<Esc>q' + 'o<Esc>@b',
+    end: ['one two', 'one tw|o'],
+  });
+
+  newTest({
     title: 'Invalid register throws E354',
     start: ['one t|wo three'],
     keysPressed: '@~',

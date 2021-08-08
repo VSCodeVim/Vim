@@ -249,6 +249,14 @@ export class RecordedState {
    */
   public registerName: string;
 
+  /**
+   * The key used to access the register. Used to determine whether the
+   * value in the register will be appended to or replaced.
+   * Example: if 'q5' then key=5
+   * Or:      if 'qA' then key=A
+   */
+  public registerKey: string = '';
+
   public clone(): RecordedState {
     const res = new RecordedState();
 

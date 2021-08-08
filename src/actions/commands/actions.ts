@@ -317,10 +317,10 @@ class CommandRecordMacro extends BaseCommand {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
     vimState.macro = new RecordedState();
+    vimState.macro.registerKey = registerKey;
     vimState.macro.registerName = register;
 
     if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
-      // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       // TODO: this seems suspect - why are we not putting `vimState.macro` in the register? Why are we setting `registerName`?
       const newRegister = new RecordedState();
       newRegister.registerName = register;
@@ -341,7 +341,11 @@ export class CommandQuitRecordMacro extends BaseCommand {
 
     const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
-      existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
+      if (/^[A-Z]+$/.test(macro.registerKey)) {
+        existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
+      } else {
+        existingMacro.actionsRun = macro.actionsRun;
+      }
     }
 
     vimState.macro = undefined;
