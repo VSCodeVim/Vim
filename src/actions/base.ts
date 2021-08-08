@@ -6,6 +6,12 @@ import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
+export enum ActionApplicability {
+  DoesApply,
+  CouldApply,
+  CannotApply,
+}
+
 export abstract class BaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
@@ -76,6 +82,41 @@ export abstract class BaseAction {
       this.modes.includes(vimState.currentMode) &&
       BaseAction.CompareKeypressSequence(this.keys, keysPressed)
     );
+  }
+
+  /**
+   * What is the applicability of this action in the current Vim state?
+   */
+  public getActionApplicability(vimState: VimState, keysPressed: string[]): ActionApplicability {
+    if (this.doesActionApply(vimState, keysPressed)) {
+      return ActionApplicability.DoesApply;
+    } else if (this.couldActionApply(vimState, keysPressed)) {
+      return ActionApplicability.CouldApply;
+    } else {
+      return ActionApplicability.CannotApply;
+    }
+
+    // if (!this.modes.includes(vimState.currentMode)) {
+    //   return ActionApplicability.CannotApply;
+    // }
+    // const exceededLen =
+    //   vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length;
+    // if (this.mustBeFirstKey && (exceededLen || vimState.recordedState.operator)) {
+    //   return ActionApplicability.CannotApply;
+    // }
+
+    // if (BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
+    //   return ActionApplicability.DoesApply;
+    // }
+
+    // const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
+    // const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
+
+    // if (BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
+    //   return ActionApplicability.CouldApply;
+    // }
+
+    // return ActionApplicability.CannotApply;
   }
 
   /**
@@ -249,9 +290,11 @@ export enum KeypressState {
 }
 
 /**
- * Every Vim action will be added here with the @RegisterAction decorator.
+ * Every Vim action and an action instance will be added here with the @RegisterAction decorator.
+ * Action's instance is included to avoid having to create a new instance of each action
+ * on each call to getRelevantAction.
  */
-const actionMap = new Map<Mode, Array<new () => BaseAction>>();
+const actionMap = new Map<Mode, Array<[new () => BaseAction, BaseAction]>>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -270,16 +313,19 @@ export function getRelevantAction(
   const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 
   let hasPotentialMatch = false;
-  for (const actionType of possibleActionsForMode) {
-    // TODO: Constructing up to several hundred Actions every time we hit a key is moronic.
-    //       I think we can make `doesActionApply` and `couldActionApply` static...
-    const action = new actionType();
-    if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+  for (const [actionType, actionInstance] of possibleActionsForMode) {
+    const applicability: ActionApplicability = actionInstance.getActionApplicability(
+      vimState,
+      keysPressed
+    );
+    if (applicability === ActionApplicability.DoesApply) {
+      // if (actionInstance.doesActionApply(vimState, keysPressed)) {
+      const action = new actionType();
+      action.keysPressed = [...vimState.recordedState.actionKeys];
       return action;
     }
-
-    hasPotentialMatch ||= action.couldActionApply(vimState, keysPressed);
+    hasPotentialMatch ||= applicability === ActionApplicability.CouldApply;
+    // hasPotentialMatch ||= actionInstance.couldActionApply(vimState, keysPressed);
   }
 
   return hasPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
@@ -299,6 +345,6 @@ export function RegisterAction(action: new () => BaseAction): void {
       continue;
     }
 
-    actions.push(action);
+    actions.push([action, actionInstance]);
   }
 }
