@@ -278,7 +278,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     async (e: vscode.TextEditorSelectionChangeEvent) => {
       if (
         vscode.window.activeTextEditor === undefined ||
-        e.textEditor.document !== vscode.window.activeTextEditor.document
+        e.textEditor.document !== vscode.window.activeTextEditor.document ||
+        e.textEditor.document.uri.scheme === 'vscode-interactive-input'
       ) {
         // We don't care if user selection changed in a paneled window (e.g debug console/terminal)
         return;
@@ -577,7 +578,8 @@ function overrideCommand(
 
     if (
       vscode.window.activeTextEditor.document &&
-      vscode.window.activeTextEditor.document.uri.toString() === 'debug:input'
+      (vscode.window.activeTextEditor.document.uri.toString() === 'debug:input' ||
+      vscode.window.activeTextEditor.document.uri.scheme === 'vscode-interactive-input')
     ) {
       return vscode.commands.executeCommand('default:' + command, args);
     }

@@ -68,7 +68,7 @@
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "Escape",
@@ -78,67 +78,67 @@
       {
         "key": "Home",
         "command": "extension.vim_home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+home",
         "command": "extension.vim_ctrl+home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "End",
         "command": "extension.vim_end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+end",
         "command": "extension.vim_ctrl+end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "Insert",
         "command": "extension.vim_insert",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "shift+tab",
         "command": "extension.vim_shift+tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "left",
         "command": "extension.vim_left",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "right",
         "command": "extension.vim_right",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "up",
         "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "down",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "g g",
@@ -178,22 +178,22 @@
       {
         "key": "ctrl+a",
         "command": "extension.vim_ctrl+a",
-        "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+b",
         "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+c",
         "command": "extension.vim_ctrl+c",
-        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
+        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.overrideCtrlC"
       },
       {
         "key": "ctrl+d",
         "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.active && vim.use<C-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-d> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+d",
@@ -203,82 +203,82 @@
       {
         "key": "ctrl+e",
         "command": "extension.vim_ctrl+e",
-        "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+g",
         "command": "extension.vim_ctrl+g",
-        "when": "editorTextFocus && vim.active && vim.use<C-g> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-g> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+h",
         "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+i",
         "command": "extension.vim_ctrl+i",
-        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+j",
         "command": "extension.vim_ctrl+j",
-        "when": "editorTextFocus && vim.active && vim.use<C-j> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-j> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+k",
         "command": "extension.vim_ctrl+k",
-        "when": "editorTextFocus && vim.active && vim.use<C-k> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-k> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+l",
         "command": "extension.vim_navigateCtrlL",
-        "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+m",
         "command": "extension.vim_ctrl+m",
-        "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-m> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-m> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-m> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-n> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-n> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+o",
         "command": "extension.vim_ctrl+o",
-        "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl"
+        "when": "suggestWidgetVisible && vim.active && vim.use<C-p> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'CommandlineInProgress' && vim.active && vim.use<C-p> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' || vim.mode == 'SearchInProgressMode' && vim.active && vim.use<C-p> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+q",
         "command": "extension.vim_winCtrlQ",
-        "when": "editorTextFocus && vim.active && vim.use<C-q> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-q> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+r",
         "command": "extension.vim_ctrl+r",
-        "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
-        "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+u",
         "command": "extension.vim_ctrl+u",
-        "when": "editorTextFocus && vim.active && vim.use<C-u> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-u> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+u",
@@ -288,42 +288,42 @@
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.active && vim.use<C-v> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-v> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+w",
         "command": "extension.vim_ctrl+w",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+x",
         "command": "extension.vim_ctrl+x",
-        "when": "editorTextFocus && vim.active && vim.use<C-x> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-x> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+y",
         "command": "extension.vim_ctrl+y",
-        "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+6",
         "command": "extension.vim_ctrl+6",
-        "when": "editorTextFocus && vim.active && vim.use<C-6> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-6> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+^",
         "command": "extension.vim_ctrl+^",
-        "when": "editorTextFocus && vim.active && vim.use<C-^> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-^> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+[",
         "command": "extension.vim_ctrl+[",
-        "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+]",
         "command": "extension.vim_ctrl+]",
-        "when": "editorTextFocus && vim.active && vim.use<C-]> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-]> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+shift+2",
@@ -333,37 +333,37 @@
       {
         "key": "ctrl+up",
         "command": "extension.vim_ctrl+up",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+down",
         "command": "extension.vim_ctrl+down",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+left",
         "command": "extension.vim_ctrl+left",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+right",
         "command": "extension.vim_ctrl+right",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+pagedown",
         "command": "extension.vim_ctrl+pagedown",
-        "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+pageup",
         "command": "extension.vim_ctrl+pageup",
-        "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+space",
         "command": "extension.vim_ctrl+space",
-        "when": "editorTextFocus && vim.active && vim.use<C-space> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<C-space> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "shift+G",
@@ -373,56 +373,56 @@
       {
         "key": "ctrl+backspace",
         "command": "extension.vim_ctrl+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-BS> && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<S-BS> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<S-BS> && vim.mode != 'Insert' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "cmd+left",
         "command": "extension.vim_cmd+left",
-        "when": "editorTextFocus && vim.active && vim.use<D-left> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-left> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+right",
         "command": "extension.vim_cmd+right",
-        "when": "editorTextFocus && vim.active && vim.use<D-right> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-right> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+a",
         "command": "extension.vim_cmd+a",
-        "when": "editorTextFocus && vim.active && vim.use<D-a> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-a> && !inDebugRepl && resourceScheme != 'vscode-interactive-input' && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+c",
         "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "cmd+d",
         "command": "extension.vim_cmd+d",
-        "when": "editorTextFocus && vim.active && vim.use<D-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-d> && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+alt+down",
         "linux": "shift+alt+down",
         "mac": "cmd+alt+down",
         "command": "extension.vim_cmd+alt+down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "ctrl+alt+up",
         "linux": "shift+alt+up",
         "mac": "cmd+alt+up",
         "command": "extension.vim_cmd+alt+up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && resourceScheme != 'vscode-interactive-input'"
       },
       {
         "key": "j",
