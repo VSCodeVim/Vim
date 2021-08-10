@@ -41,7 +41,7 @@ export class PythonDocument {
 
   static readonly reOnlyWhitespace = /\S/;
   static readonly reLastNonWhiteSpaceCharacter = supportsLookbehind
-    ? new RegExp('/(?<=\\S)\\s*$/')
+    ? new RegExp('(?<=\\S)\\s*$')
     : /(\S)\s*$/;
   static readonly reDefOrClass = /^\s*(def|class) /;
 
