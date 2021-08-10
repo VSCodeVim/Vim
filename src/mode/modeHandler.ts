@@ -784,7 +784,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     ranRepeatableAction =
       (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
       this.createUndoPointForBrackets();
-    ranAction = ranAction && this.vimState.currentMode === Mode.Normal;
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
@@ -796,7 +795,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // Update desiredColumn
-    if (!action.preservesDesiredColumn()) {
+    const preservesDesiredColumn =
+      action instanceof BaseOperator && !ranAction ? true : action.preservesDesiredColumn();
+    if (!preservesDesiredColumn) {
       if (action instanceof BaseMovement) {
         // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
         if (action.setsDesiredColumnToEOL && !recordedState.operator) {
@@ -824,7 +825,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       );
     }
 
-    if (ranAction) {
+    if (ranAction && this.vimState.currentMode === Mode.Normal) {
       this.vimState.recordedState = new RecordedState();
 
       // Return to insert mode after 1 command in this case for <C-o>

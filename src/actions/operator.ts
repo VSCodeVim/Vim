@@ -114,18 +114,11 @@ export class DeleteOperator extends BaseOperator {
   public keys = ['d'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
-  /**
-   * Deletes from the position of start to 1 past the position of end.
-   */
-  public async delete(
-    start: Position,
-    end: Position,
-    currentMode: Mode,
-    registerMode: RegisterMode,
-    vimState: VimState,
-    yank = true
-  ): Promise<Position> {
-    if (registerMode === RegisterMode.LineWise) {
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    // TODO: this is off by one when character-wise and not including last EOL
+    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
+
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
     }
@@ -143,57 +136,36 @@ export class DeleteOperator extends BaseOperator {
       !isOnLastLine &&
       end.character === vimState.document.lineAt(end).text.length + 1
     ) {
-      end = end.with({ character: 0 }).getDown();
+      end = new Position(end.line + 1, 0);
     }
 
+    // Yank the text
     let text = vimState.document.getText(new vscode.Range(start, end));
-
-    // If we delete linewise to the final line of the document, we expect the line
-    // to be removed. This is actually a special case because the newline
-    // character we've selected to delete is the newline on the end of the document,
-    // but we actually delete the newline on the second to last line.
-
-    // Just writing about this is making me more confused. -_-
-
-    // rebornix: johnfn's description about this corner case is perfectly correct. The only catch is
-    // that we definitely don't want to put the EOL in the register. So here we run the `getText`
-    // expression first and then update the start position.
-
-    // Now rebornix is confused as well.
-    if (isOnLastLine && start.line !== 0 && registerMode === RegisterMode.LineWise) {
-      start = start.getUp().getLineEnd();
-    }
-
-    if (registerMode === RegisterMode.LineWise) {
-      // slice final newline in linewise mode - linewise put will add it back.
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      // When deleting linewise, exclude final newline
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
         : text.endsWith('\n')
         ? text.slice(0, -1)
         : text;
     }
+    Register.put(vimState, text, this.multicursorIndex, true);
 
-    if (yank) {
-      Register.put(vimState, text, this.multicursorIndex, true);
+    // When deleting the last line linewise, we need to delete the newline
+    // character BEFORE the range because there isn't one after the range.
+    if (
+      isOnLastLine &&
+      start.line !== 0 &&
+      vimState.effectiveRegisterMode === RegisterMode.LineWise
+    ) {
+      start = start.getUp().getLineEnd();
     }
 
     let diff: PositionDiff | undefined;
-    let resultingPosition: Position;
-
-    if (currentMode === Mode.Visual) {
-      resultingPosition = earlierOf(start, end);
-    }
-
-    if (start.character > vimState.document.lineAt(start).text.length) {
-      resultingPosition = start.getLeft();
-      diff = PositionDiff.offset({ character: -1 });
-    } else {
-      resultingPosition = start;
-    }
-
-    if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.obeyStartOfLine(vimState.document);
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       diff = PositionDiff.startOfLine();
+    } else if (start.character > vimState.document.lineAt(start).text.length) {
+      diff = PositionDiff.offset({ character: -1 });
     }
 
     vimState.recordedState.transformer.addTransformation({
@@ -202,25 +174,8 @@ export class DeleteOperator extends BaseOperator {
       diff,
     });
 
-    return resultingPosition;
-  }
-
-  public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<void> {
-    const newPos = await this.delete(
-      start,
-      end,
-      vimState.currentMode,
-      vimState.effectiveRegisterMode,
-      vimState,
-      yank
-    );
-
     await vimState.setCurrentMode(Mode.Normal);
-    if (vimState.currentMode === Mode.Visual) {
-      vimState.desiredColumn = newPos.character;
-    }
 
-    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
     reportLinesChanged(-numLinesDeleted, vimState);
   }
 }

@@ -460,6 +460,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'ci(' on closing inner parenthesis",
+    start: ['one ((|)) two'],
+    keysPressed: 'ci(',
+    end: ['one ((|)) two'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'ci(' backwards through nested parens",
     start: ['call(() => |5)'],
     keysPressed: 'ci(',

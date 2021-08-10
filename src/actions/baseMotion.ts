@@ -86,7 +86,12 @@ export abstract class BaseMovement extends BaseAction {
    * Note: If returning an IMovement, make sure that repeated actions on a
    * visual selection work. For example, V}}
    */
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<Position | IMovement> {
     throw new Error('Not implemented!');
   }
 
@@ -97,9 +102,11 @@ export abstract class BaseMovement extends BaseAction {
    */
   public async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
   ): Promise<Position | IMovement> {
-    return this.execAction(position, vimState);
+    return this.execAction(position, vimState, firstIteration, lastIteration);
   }
 
   /**
@@ -121,7 +128,7 @@ export abstract class BaseMovement extends BaseAction {
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      result = await this.createMovementResult(position, vimState, lastIteration);
+      result = await this.createMovementResult(position, vimState, firstIteration, lastIteration);
 
       if (result instanceof Position) {
         /**
@@ -153,12 +160,13 @@ export abstract class BaseMovement extends BaseAction {
   protected async createMovementResult(
     position: Position,
     vimState: VimState,
+    firstIteration: boolean,
     lastIteration: boolean
   ): Promise<Position | IMovement> {
     const result =
       vimState.recordedState.operator && lastIteration
-        ? await this.execActionForOperator(position, vimState)
-        : await this.execAction(position, vimState);
+        ? await this.execActionForOperator(position, vimState, firstIteration, lastIteration)
+        : await this.execAction(position, vimState, firstIteration, lastIteration);
     return result;
   }
 

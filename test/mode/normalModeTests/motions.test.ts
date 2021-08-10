@@ -1036,6 +1036,13 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
     });
+
+    newTest({
+      title: 'Preserves desired cursor position when starting, but not completing, operator',
+      start: ['short line', 'very long line of text....|.'],
+      keysPressed: 'k' + 'd<Esc>' + 'j',
+      end: ['short line', 'very long line of text....|.'],
+    });
   });
 
   suite('Special marks', () => {
