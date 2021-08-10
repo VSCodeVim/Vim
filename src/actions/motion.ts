@@ -299,6 +299,7 @@ class MoveDown extends BaseMovement {
     vimState: VimState
   ): Promise<Position | IMovement> {
     if (
+      vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<down>' &&
       vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
       position.line === vimState.document.lineCount - 1
@@ -340,6 +341,7 @@ class MoveUp extends BaseMovement {
     vimState: VimState
   ): Promise<Position | IMovement> {
     if (
+      vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<up>' &&
       vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
       position.line === 0
