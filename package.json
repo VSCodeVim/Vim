@@ -1147,7 +1147,7 @@
     "@types/vscode": "1.57.0",
     "clean-webpack-plugin": "3.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "6.2.12",
+    "fork-ts-checker-webpack-plugin": "6.3.2",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
