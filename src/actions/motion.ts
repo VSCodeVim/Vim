@@ -298,6 +298,18 @@ class MoveDown extends BaseMovement {
     position: Position,
     vimState: VimState
   ): Promise<Position | IMovement> {
+    if (
+      vimState.currentMode === Mode.Insert &&
+      this.keysPressed[0] === '<down>' &&
+      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
+      position.line === vimState.document.lineCount - 1 &&
+      vimState.editor.selection.isEmpty
+    ) {
+      // navigate history in interactive window
+      await vscode.commands.executeCommand('interactive.history.next');
+      return vimState.editor.selection.active;
+    }
+
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
@@ -329,6 +341,18 @@ class MoveUp extends BaseMovement {
     position: Position,
     vimState: VimState
   ): Promise<Position | IMovement> {
+    if (
+      vimState.currentMode === Mode.Insert &&
+      this.keysPressed[0] === '<up>' &&
+      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
+      position.line === 0 &&
+      vimState.editor.selection.isEmpty
+    ) {
+      // navigate history in interactive window
+      await vscode.commands.executeCommand('interactive.history.previous');
+      return vimState.editor.selection.active;
+    }
+
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
@@ -399,10 +423,16 @@ export class ArrowsInInsertMode extends BaseMovement {
     let newPosition: Position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
+        newPosition = (await new MoveUp(this.keysPressed).execAction(
+          position,
+          vimState
+        )) as Position;
         break;
       case '<down>':
-        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
+        newPosition = (await new MoveDown(this.keysPressed).execAction(
+          position,
+          vimState
+        )) as Position;
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
