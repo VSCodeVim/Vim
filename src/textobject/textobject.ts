@@ -986,7 +986,7 @@ abstract class SelectASymbol extends TextObject {
     let start: Position = vimState.cursorStartPosition;
     let stop: Position = vimState.cursorStopPosition;
 
-    const symbols = await TextEditor.getSymbols(vimState.editor);
+    const symbols = await TextEditor.getSymbols(vimState.document);
     const currentNode = AstSymbols.searchSymbolFromPosition(symbols, vimState.cursorStartPosition);
 
     const classSymbol = AstSymbols.searchParentFiltered(currentNode, this.whitelist);

@@ -278,11 +278,11 @@ export class TextEditor {
    *
    * Throws an error if no symbols were found.
    *
-   * @param editor, the active editor containing the document that is parsed.
-   * @returns the list of symbols found for th
+   * @param document, the current document to be parsed.
+   * @returns the list of symbols found for the present document
    */
-  public static async getSymbols(editor: vscode.TextEditor) {
-    const uri = editor.document.uri;
+  public static async getSymbols(document: vscode.TextDocument) {
+    const uri = document.uri;
     const symbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
       'vscode.executeDocumentSymbolProvider',
       uri
