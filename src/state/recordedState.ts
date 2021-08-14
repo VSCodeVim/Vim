@@ -249,6 +249,13 @@ export class RecordedState {
    */
   public registerName: string;
 
+  /**
+   * The key used to access the register with `registerName`
+   * Example: if 'q5' then key=5 and name=5
+   * Or:      if 'qA' then key=A and name=a
+   */
+  public registerKey: string = '';
+
   public clone(): RecordedState {
     const res = new RecordedState();
 
