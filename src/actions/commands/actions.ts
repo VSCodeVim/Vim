@@ -320,7 +320,7 @@ class CommandRecordMacro extends BaseCommand {
     vimState.macro.registerKey = registerKey;
     vimState.macro.registerName = register;
 
-    if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
+    if (!Register.isValidUppercaseRegister(registerKey) || !Register.has(register)) {
       // TODO: this seems suspect - why are we not putting `vimState.macro` in the register? Why are we setting `registerName`?
       const newRegister = new RecordedState();
       newRegister.registerName = register;
@@ -341,7 +341,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
 
     const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
-      if (/^[A-Z]+$/.test(macro.registerKey)) {
+      if (Register.isValidUppercaseRegister(macro.registerKey)) {
         existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
       } else {
         existingMacro.actionsRun = macro.actionsRun;
