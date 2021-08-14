@@ -89,13 +89,21 @@ class ReplaceInReplaceMode extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[0];
     const replaceState = vimState.replaceState!;
+    const isNewLineOrTab = char === '\n' || char === '<tab>';
 
-    if (!position.isLineEnd() && char !== '\n') {
+    if (!position.isLineEnd() && !isNewLineOrTab) {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: char,
         range: new Range(position, position.getRight()),
         diff: PositionDiff.offset({ character: 1 }),
+      });
+    } else if (char === '<tab>') {
+      vimState.recordedState.transformer.delete(new Range(position, position.getRight()));
+      vimState.recordedState.transformer.addTransformation({
+        type: 'tab',
+        cursorIndex: this.multicursorIndex,
+        diff: PositionDiff.offset({ character: 0 }),
       });
     } else {
       vimState.recordedState.transformer.insert(position, char);
