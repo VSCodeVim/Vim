@@ -63,8 +63,8 @@ export class AstSymbols {
    * in the whitelist (for example a function symbol or a class symbol depending
    * on the whitelist). The starting node is included here.
    *
-   * @param startNode , the symbolNode to start the search from
-   * @param whitelist , a set of SymbolKind containing the type of symbol to search
+   * @param startNode, the symbolNode to start the search from
+   * @param whitelist, a set of SymbolKind containing the type of symbol to search
    *
    * @returns the first ancestor that has the right SymbolKind
    */
@@ -82,10 +82,10 @@ export class AstSymbols {
   }
 
   /**
-   * Returns a list containing all the ancestors of a symbol. We go from
-   * left to right in the list where index 0 is the child symbol and last index
-   * is the root symbol.
-   *
+   * Returns a list containing all the ancestors of a symbol. We go from left (child) to
+   * right (ancestor) in the list where index 0 is the child symbol and last index is the
+   * root symbol. This is the opposite of VSCode's breadcrumbs that go from
+   * ancestor (left) to children (right).
    */
   public static listSymbolAncestry(startNode: SymbolNode): SymbolNode[] {
     let currNode: SymbolNode | undefined = startNode;
@@ -102,9 +102,13 @@ export class AstSymbols {
    * cursor position. This function returns a symbolNode object.
    *
    * In case the search fails the symbol attribute of SymbolNode will be
-   * undefined. It is still possible to determine where exactly the cursor is (ie. in between 2
-   * symbols) by using the previous and next siblings attributes.
+   * undefined. It is still possible to determine where exactly the cursor is
+   * (ie. in between 2 symbols) by using the previous and next siblings
+   * attributes.
    *
+   * @param symbols, the symbols to search
+   * @param cursorPos, the cursor position
+   * @param parent, the optional parent of the created Node
    */
   public static binarySearch(
     symbols: vscode.DocumentSymbol[],
@@ -124,7 +128,9 @@ export class AstSymbols {
 
       // We found the right symbol
       if (midRange.contains(cursorPos)) {
-        // slice returns empty list if middle is at beginning or end of list
+        // slice returns an empty list if middle is at beginning or end of list so
+        // the appropriate nextSibling or previousSibling list contains all the
+        // remaining symbols.
         return new SymbolNode(
           symbols.slice(0, middle),
           symbols.slice(middle + 1),
