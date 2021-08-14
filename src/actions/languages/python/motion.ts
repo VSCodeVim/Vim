@@ -19,6 +19,15 @@ interface StructureElement {
   end: Position;
 }
 
+// Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
+let supportsLookbehind = true;
+try {
+  // tslint:disable-next-line
+  new RegExp('(?<=x)');
+} catch {
+  supportsLookbehind = false;
+}
+
 /*
  * Utility class used to parse the lines in the document and
  * determine class and function boundaries
@@ -31,7 +40,9 @@ export class PythonDocument {
   structure: StructureElement[];
 
   static readonly reOnlyWhitespace = /\S/;
-  static readonly reLastNonWhiteSpaceCharacter = /(?<=\S)\s*$/;
+  static readonly reLastNonWhiteSpaceCharacter = supportsLookbehind
+    ? new RegExp('(?<=\\S)\\s*$')
+    : /(\S)\s*$/;
   static readonly reDefOrClass = /^\s*(def|class) /;
 
   constructor(document: TextDocument) {

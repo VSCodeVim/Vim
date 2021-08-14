@@ -27,7 +27,9 @@ export class SearchState {
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   // c or C with an odd number of preceding \'s triggers "case override"
-  private static readonly caseOverrideRegex = /(?<=(?:^|[^\\])(?:\\\\)*)\\[Cc]/g;
+  private static readonly caseOverrideRegex = supportsLookbehind
+    ? new RegExp('(?<=(?:^|[^\\\\])(?:\\\\\\\\)*)\\\\[Cc]', 'g')
+    : /\\[Cc]/g;
   private static readonly notEscapedSlashRegex = supportsLookbehind
     ? new RegExp('(?<=[^\\\\])\\/', 'g')
     : /\//g;
