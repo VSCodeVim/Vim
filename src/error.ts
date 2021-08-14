@@ -3,6 +3,10 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
+  // These are vim standard error codes. All code number below 1000 are reserved
+  // for native vim errors. If you need to add new errors that are not part of
+  // standard vim then make sure to create new ones with errorCode >= 1000
+  // (1000 chosen arbitrarly here).  See #6940 for more info.
   InvalidAddress = 14,
   MarkNotSet = 20,
   NoAlternateFile = 23,
@@ -31,10 +35,14 @@ export enum ErrorCode {
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
   NoPreviouslyUsedRegister = 748,
-  SymbolProviderNotFound = 800,
+
+  // VSCodeVim custom errors codes (>= 1000).
+  // If you need to throw new errors codes that is where you add them.
+  SymbolProviderNotFound = 1000,
 }
 
 export const ErrorMessage: IErrorMessage = {
+  // Vim standard error codes
   14: 'Invalid address',
   20: 'Mark not set',
   23: 'No alternate file',
@@ -63,7 +71,9 @@ export const ErrorMessage: IErrorMessage = {
   663: 'At end of changelist',
   664: 'changelist is empty',
   748: 'No previously used register',
-  800: 'Symbol provider not found',
+
+  // VSCodeVim's custom errors
+  1000: 'Symbol provider not found',
 };
 
 export class VimError extends Error {
