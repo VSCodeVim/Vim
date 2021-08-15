@@ -115,7 +115,7 @@ export class Register {
     return /^[a-z]$/.test(register);
   }
 
-  private static isValidUppercaseRegister(register: string): boolean {
+  public static isValidUppercaseRegister(register: string): boolean {
     return /^[A-Z]$/.test(register);
   }
 
