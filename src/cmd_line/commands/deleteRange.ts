@@ -6,6 +6,7 @@ import * as node from '../node';
 import { Position } from 'vscode';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
+  linesToRemove?: number;
   register?: string;
 }
 
@@ -57,10 +58,9 @@ export class DeleteRangeCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const register = this.arguments.register;
-    const linesToRemove = register && +register ? +register : 1;
+    const linesToRemove = this.arguments.linesToRemove ?? 1;
     // :d[elete] removes 1 line
-    // :d[elete][cnt] removes cnt lines
+    // :d[elete][cnt] removes [cnt] lines
     const startLine = vimState.cursorStopPosition.line;
     const endLine = startLine + linesToRemove - 1;
     this.deleteRange(startLine, endLine, vimState);

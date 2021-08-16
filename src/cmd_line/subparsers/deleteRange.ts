@@ -6,7 +6,15 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
     return new node.DeleteRangeCommand({});
   }
 
+  /**
+   * Note that to specify a register, a [cnt] for :d[elete][cnt]
+   * must be specified.
+   * Ex: :d4 i -> specifies register i
+   *     :d  i -> does not specify a register
+   */
+  const scanner = new Scanner(args);
   return new node.DeleteRangeCommand({
-    register: new Scanner(args).nextWord(),
+    linesToRemove: +scanner.nextWord() ?? 1,
+    register: scanner.isAtEof ? undefined : scanner.nextWord(),
   });
 }
