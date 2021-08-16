@@ -57,8 +57,13 @@ export class DeleteRangeCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursorStopPosition.line;
-    this.deleteRange(line, line, vimState);
+    const register = this.arguments.register;
+    const linesToRemove = register && +register ? +register : 1;
+    // :d[elete] removes 1 line
+    // :d[elete][cnt] removes cnt lines
+    const startLine = vimState.cursorStopPosition.line;
+    const endLine = startLine + linesToRemove - 1;
+    this.deleteRange(startLine, endLine, vimState);
   }
 
   override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
