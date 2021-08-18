@@ -62,11 +62,10 @@ export class YankCommand extends CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     const linesToYank = this.arguments.linesToYank;
-    if (linesToYank === undefined) {
-      return await this.yank(vimState, vimState.cursorStartPosition, vimState.cursorStopPosition);
-    }
     const startPosition = vimState.cursorStartPosition;
-    const endPosition = startPosition.getDown(linesToYank - 1).getLineEnd();
+    const endPosition = linesToYank
+      ? startPosition.getDown(linesToYank - 1).getLineEnd()
+      : vimState.cursorStopPosition;
     await this.yank(vimState, startPosition, endPosition);
   }
 
