@@ -8,8 +8,7 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
 
   /**
    * :d[elete] [register] [cnt]
-   * Note: the first argument is a [register], unless it's a number, in which case
-   * it's the [cnt]
+   * :d[elete] [cnt] (if the first argument is a number)
    */
   const scanner = new Scanner(args);
   const arg1 = scanner.nextWord(); // [cnt] or [register]

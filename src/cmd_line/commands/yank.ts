@@ -5,24 +5,51 @@ import { VimState } from '../../state/vimState';
 import { CommandBase, LineRange } from '../node';
 import { Scanner } from '../scanner';
 
-export class YankCommand extends CommandBase {
-  private register?: string;
+export interface YankCommandArguments {
+  linesToYank?: number;
+  register?: string;
+}
 
-  constructor(register?: string) {
+export class YankCommand extends CommandBase {
+  private readonly arguments: YankCommandArguments;
+
+  constructor(args: YankCommandArguments) {
     super();
-    this.register = register;
+    this.arguments = args;
   }
 
   public static parse(args: string): YankCommand {
+    if (!args || !args.trim()) {
+      return new YankCommand({});
+    }
+    /**
+     * :y[ank] [register] [cnt]
+     * :y[ank] [cnt] (if the first argument is a number)
+     */
     const scanner = new Scanner(args);
-    scanner.skipWhiteSpace();
-    return new YankCommand(scanner.isAtEof ? undefined : scanner.nextWord());
+    const arg1 = scanner.nextWord(); // [cnt] or [register]
+    const arg2 = scanner.nextWord(); // [cnt] or EOF
+
+    let register;
+    let linesToYank;
+
+    if (isNaN(+arg1)) {
+      register = arg1;
+      linesToYank = isNaN(+arg2) ? 1 : +arg2;
+    } else {
+      linesToYank = +arg1;
+    }
+
+    return new YankCommand({
+      register,
+      linesToYank,
+    });
   }
 
   private async yank(vimState: VimState, start: Position, end: Position) {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    if (this.register) {
-      vimState.recordedState.registerName = this.register;
+    if (this.arguments.register) {
+      vimState.recordedState.registerName = this.arguments.register;
     }
 
     const cursorPosition = vimState.cursorStopPosition;
@@ -34,7 +61,13 @@ export class YankCommand extends CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    await this.yank(vimState, vimState.cursorStartPosition, vimState.cursorStopPosition);
+    const linesToYank = this.arguments.linesToYank;
+    if (linesToYank === undefined) {
+      return await this.yank(vimState, vimState.cursorStartPosition, vimState.cursorStopPosition);
+    }
+    const startPosition = vimState.cursorStartPosition;
+    const endPosition = startPosition.getDown(linesToYank - 1).getLineEnd();
+    await this.yank(vimState, startPosition, endPosition);
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
