@@ -45,6 +45,7 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'bold';
   easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
+  smartQuotes = false;
   autoSwitchInputMethod = {
     enable: false,
     defaultIM: '',

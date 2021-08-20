@@ -5,7 +5,7 @@ import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 suite('smartQuotes plugin', () => {
   setup(async () => {
     const configuration = new Configuration();
-    // configuration.smartQuotes = true;
+    configuration.smartQuotes = true;
     await setupWorkspace(configuration, '.js');
   });
 

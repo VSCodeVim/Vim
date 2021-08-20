@@ -719,6 +719,11 @@
           "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
           "default": false
         },
+        "vim.smartQuotes": {
+          "type": "boolean",
+          "markdownDescription": "Enable smart quotes movements (similar to targets.vim)",
+          "default": false
+        },
         "vim.sneak": {
           "type": "boolean",
           "markdownDescription": "Enable the [Sneak](https://github.com/justinmk/vim-sneak) plugin for Vim.",

@@ -27,7 +27,7 @@ import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
 import { CommandInsertAtCursor } from './commands/actions';
-import { SmartQuoteMatcher } from './plugins/smartQuoteMatcher';
+import { SmartQuoteMatcher } from './plugins/smartQuotes';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -2014,9 +2014,8 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 
     const text = vimState.document.lineAt(position).text;
 
-    const smart = true;
     let quoteMatcher;
-    if (smart) {
+    if (configuration.smartQuotes) {
       quoteMatcher = new SmartQuoteMatcher(this.charToMatch, text);
     } else {
       quoteMatcher = new QuoteMatcher(this.charToMatch, text);
