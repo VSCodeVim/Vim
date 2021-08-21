@@ -1141,7 +1141,7 @@
     "@types/glob": "7.1.4",
     "@types/lodash": "4.14.172",
     "@types/mocha": "9.0.0",
-    "@types/node": "12.20.19",
+    "@types/node": "12.20.20",
     "@types/sinon": "10.0.2",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
