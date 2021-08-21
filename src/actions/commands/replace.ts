@@ -103,7 +103,6 @@ class ReplaceInReplaceMode extends BaseCommand {
       vimState.recordedState.transformer.addTransformation({
         type: 'tab',
         cursorIndex: this.multicursorIndex,
-        diff: PositionDiff.offset({ character: 0 }),
       });
     } else {
       vimState.recordedState.transformer.insert(position, char);
