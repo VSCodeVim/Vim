@@ -19,7 +19,7 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
 
   if (isNaN(+arg1)) {
     register = arg1;
-    linesToRemove = isNaN(+arg2) ? 1 : +arg2;
+    linesToRemove = isNaN(+arg2) ? undefined : +arg2;
   } else {
     linesToRemove = +arg1;
   }

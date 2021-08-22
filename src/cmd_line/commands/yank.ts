@@ -35,7 +35,7 @@ export class YankCommand extends CommandBase {
 
     if (isNaN(+arg1)) {
       register = arg1;
-      linesToYank = isNaN(+arg2) ? 1 : +arg2;
+      linesToYank = isNaN(+arg2) ? undefined : +arg2;
     } else {
       linesToYank = +arg1;
     }
@@ -61,7 +61,7 @@ export class YankCommand extends CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const linesToYank = this.arguments.linesToYank;
+    const linesToYank = this.arguments.linesToYank ?? 1;
     const startPosition = vimState.cursorStartPosition;
     const endPosition = linesToYank
       ? startPosition.getDown(linesToYank - 1).getLineEnd()
@@ -70,7 +70,19 @@ export class YankCommand extends CommandBase {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    /**
+     * If a [cnt] and [range] is specified (e.g. :.+2y3), :yank [cnt] is called from
+     * the end of the [range].
+     * Ex. if two lines are VisualLine highlighted, :<,>y3 will :y3
+     * from the end of the selected lines.
+     */
     const [start, end] = range.resolve(vimState);
+    if (this.arguments.linesToYank) {
+      vimState.cursorStartPosition = new Position(end, 0);
+      await this.execute(vimState);
+      return;
+    }
+
     await this.yank(vimState, new Position(start, 0), new Position(end, 0));
   }
 }
