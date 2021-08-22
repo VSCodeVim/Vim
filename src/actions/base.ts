@@ -1,12 +1,13 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
+import { IBaseAction } from '../state/recordedState';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
-export abstract class BaseAction {
+export abstract class BaseAction implements IBaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
@@ -31,7 +32,7 @@ export abstract class BaseAction {
    * If this is being run in multi cursor mode, the index of the cursor
    * this action is being applied to.
    */
-  multicursorIndex: number | undefined = undefined;
+  public multicursorIndex: number | undefined;
 
   /**
    * Whether we should change `vimState.desiredColumn`
@@ -55,6 +56,7 @@ export abstract class BaseAction {
   /**
    * The keys pressed at the time that this action was triggered.
    */
+  // TODO: make readonly
   public keysPressed: string[] = [];
 
   private static readonly isSingleNumber: RegExp = /^[0-9]$/;
@@ -164,7 +166,7 @@ export abstract class BaseCommand extends BaseAction {
    * If isCompleteAction is true, then triggering this command is a complete action -
    * that means that we'll go and try to run it.
    */
-  isCompleteAction = true;
+  public isCompleteAction = true;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
@@ -179,7 +181,7 @@ export abstract class BaseCommand extends BaseAction {
    * If false, exec() will only be called once, and you are expected to
    * handle count prefixes (e.g. the 3 in 3w) yourself.
    */
-  runsOnceForEachCountPrefix = false;
+  public readonly runsOnceForEachCountPrefix: boolean = false;
 
   /**
    * Run the command a single time.
