@@ -95,8 +95,6 @@ export class VimState implements vscode.Disposable {
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
 
-  public alteredHistory = false;
-
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
 
