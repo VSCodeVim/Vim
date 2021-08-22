@@ -1160,8 +1160,6 @@ export class CommandUndo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1180,8 +1178,6 @@ class CommandUndoOnLine extends BaseCommand {
     if (newPosition !== undefined) {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1201,8 +1197,6 @@ class CommandRedo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 

@@ -826,12 +826,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      if (this.vimState.alteredHistory) {
-        this.vimState.alteredHistory = false;
-        this.vimState.historyTracker.ignoreChange();
-      } else {
-        this.vimState.historyTracker.addChange();
-      }
+      this.vimState.historyTracker.addChange();
     }
 
     // Don't record an undo point for every action of a macro, only at the very end
