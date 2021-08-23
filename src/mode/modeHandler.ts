@@ -839,7 +839,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     recordedState.actionKeys = [];
-    this.vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
+    this.vimState.currentRegisterMode = undefined;
 
     // If we're in Normal mode, collapse each cursor down to one character
     if (this.currentMode === Mode.Normal) {

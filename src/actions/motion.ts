@@ -1622,9 +1622,7 @@ class MoveParagraphEnd extends BaseMovement {
        */
       this.isFirstLineWise = this.iteration === 1 ? isLineWise : this.isFirstLineWise;
 
-      vimState.currentRegisterMode = this.isFirstLineWise
-        ? RegisterMode.LineWise
-        : RegisterMode.AscertainFromCurrentMode;
+      vimState.currentRegisterMode = this.isFirstLineWise ? RegisterMode.LineWise : undefined;
 
       /**
        * `paragraphEnd` is the first blank line after the last word in the
