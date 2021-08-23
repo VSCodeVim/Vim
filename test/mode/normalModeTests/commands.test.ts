@@ -1,4 +1,3 @@
-import { once } from 'lodash';
 import { Mode } from '../../../src/mode/mode';
 import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';

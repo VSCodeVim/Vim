@@ -1,4 +1,3 @@
-import { RegisterMode } from '../register/register';
 import { BaseAction } from './base';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
