@@ -56,6 +56,12 @@ const quoteDirs: Record<string, QuotesAction | undefined> = {
     skipToLeft: 2,
     skipToRight: 2,
   },
+  '011': {
+    //  |"a" "b" "c"
+    search: { first: '>', second: '>', includeCurrent: true },
+    skipToLeft: undefined,
+    skipToRight: 2,
+  },
   '110': {
     //  "a" "b" "c|"
     search: { first: '<', second: '<', includeCurrent: true },
