@@ -33,9 +33,6 @@ export interface IMovement {
    * happens when multiple selections combine into one.
    */
   removed?: boolean;
-
-  // It /so/ annoys me that I have to put this here.
-  registerMode?: RegisterMode;
 }
 
 export function failedMovement(vimState: VimState): IMovement {

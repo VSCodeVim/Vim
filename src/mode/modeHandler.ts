@@ -961,10 +961,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         } else {
           this.vimState.cursors[i] = new Cursor(result.start, result.stop);
         }
-
-        if (result.registerMode) {
-          this.vimState.currentRegisterMode = result.registerMode;
-        }
       }
     }
 
