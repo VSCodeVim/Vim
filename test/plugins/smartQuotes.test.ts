@@ -15,13 +15,13 @@ suite('smartQuotes plugin', () => {
   newTest({
     title: 'single quote - 1',
     start: ['|a "b" c \'d\' '],
-    keysPressed: 'di\'',
+    keysPressed: "di'",
     end: ['a "b" c \'|\' '],
   });
   newTest({
     title: 'single quote - 2',
     start: ['a "b" |c \'d\' '],
-    keysPressed: 'di\'',
+    keysPressed: "di'",
     end: ['a "b" c \'|\' '],
   });
   newTest({
@@ -61,6 +61,36 @@ suite('smartQuotes plugin', () => {
     start: ['a"|b'],
     keysPressed: 'di"',
     end: ['a"|b'],
+  });
+  newTest({
+    title: 'one quotes object - 1',
+    start: ['|a "b" c'],
+    keysPressed: 'di"',
+    end: ['a "|" c'],
+  });
+  newTest({
+    title: 'one quotes object - 2',
+    start: ['a |"b" c'],
+    keysPressed: 'di"',
+    end: ['a "|" c'],
+  });
+  newTest({
+    title: 'one quotes object - 3',
+    start: ['a "|b" c'],
+    keysPressed: 'di"',
+    end: ['a "|" c'],
+  });
+  newTest({
+    title: 'one quotes object - 4',
+    start: ['a "b|" c'],
+    keysPressed: 'di"',
+    end: ['a "|" c'],
+  });
+  newTest({
+    title: 'one quotes object - 5',
+    start: ['a "b"| c'],
+    keysPressed: 'di"',
+    end: ['a "|" c'],
   });
   newTest({
     title: 'even quotes - 1',
@@ -251,6 +281,36 @@ suite('smartQuotes plugin', () => {
     end: ['a"|b'],
   });
   newTest({
+    title: 'next: one quotes object - 1',
+    start: ['|a "b" c'],
+    keysPressed: 'din"',
+    end: ['a "|" c'],
+  });
+  newTest({
+    title: 'next: one quotes object - 2',
+    start: ['a |"b" c'],
+    keysPressed: 'din"',
+    end: ['a |"b" c'],
+  });
+  newTest({
+    title: 'next: one quotes object - 3',
+    start: ['a "|b" c'],
+    keysPressed: 'din"',
+    end: ['a "|b" c'],
+  });
+  newTest({
+    title: 'next: one quotes object - 4',
+    start: ['a "b|" c'],
+    keysPressed: 'din"',
+    end: ['a "b|" c'],
+  });
+  newTest({
+    title: 'next: one quotes object - 5',
+    start: ['a "b"| c'],
+    keysPressed: 'din"',
+    end: ['a "b"| c'],
+  });
+  newTest({
     title: 'next: even quotes - 1',
     start: ['|a "b" c "d" e '],
     keysPressed: 'din"',
@@ -437,6 +497,36 @@ suite('smartQuotes plugin', () => {
     start: ['a"|b'],
     keysPressed: 'dil"',
     end: ['a"|b'],
+  });
+  newTest({
+    title: 'last: one quotes object - 1',
+    start: ['|a "b" c'],
+    keysPressed: 'dil"',
+    end: ['|a "b" c'],
+  });
+  newTest({
+    title: 'last: one quotes object - 2',
+    start: ['a |"b" c'],
+    keysPressed: 'dil"',
+    end: ['a |"b" c'],
+  });
+  newTest({
+    title: 'last: one quotes object - 3',
+    start: ['a "|b" c'],
+    keysPressed: 'dil"',
+    end: ['a "|b" c'],
+  });
+  newTest({
+    title: 'last: one quotes object - 4',
+    start: ['a "b|" c'],
+    keysPressed: 'dil"',
+    end: ['a "b|" c'],
+  });
+  newTest({
+    title: 'last: one quotes object - 5',
+    start: ['a "b"| c'],
+    keysPressed: 'dil"',
+    end: ['a "|" c'],
   });
   newTest({
     title: 'last: even quotes - 1',
