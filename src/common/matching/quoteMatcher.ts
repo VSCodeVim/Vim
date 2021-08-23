@@ -9,7 +9,7 @@ enum QuoteMatch {
 export class QuoteMatcher {
   static readonly escapeChar = '\\';
 
-  protected readonly quoteMap: QuoteMatch[] = [];
+  private readonly quoteMap: QuoteMatch[] = [];
 
   constructor(quote: '"' | "'" | '`', corpus: string) {
     let openingQuote = true;
@@ -47,7 +47,7 @@ export class QuoteMatcher {
     return undefined;
   }
 
-  protected getNextQuote(start: number): number | undefined {
+  private getNextQuote(start: number): number | undefined {
     for (let i = start + 1; i < this.quoteMap.length; i++) {
       if (this.quoteMap[i] !== undefined) {
         return i;
@@ -57,7 +57,7 @@ export class QuoteMatcher {
     return undefined;
   }
 
-  protected getPrevQuote(start: number): number | undefined {
+  private getPrevQuote(start: number): number | undefined {
     for (let i = start - 1; i >= 0; i--) {
       if (this.quoteMap[i] !== undefined) {
         return i;
