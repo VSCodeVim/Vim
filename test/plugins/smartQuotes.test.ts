@@ -227,189 +227,189 @@ suite('smartQuotes plugin', () => {
 
   // test next usage
   newTest({
-    title: 'no quotes at all',
+    title: 'next: no quotes at all',
     start: ['|abcd'],
     keysPressed: 'din"',
     end: ['|abcd'],
   });
   newTest({
-    title: 'single quote - 1',
+    title: 'next: single quote - 1',
     start: ['|a"b'],
     keysPressed: 'din"',
     end: ['|a"b'],
   });
   newTest({
-    title: 'single quote - 2',
+    title: 'next: single quote - 2',
     start: ['a|"b'],
     keysPressed: 'din"',
     end: ['a|"b'],
   });
   newTest({
-    title: 'single quote - 3',
+    title: 'next: single quote - 3',
     start: ['a"|b'],
     keysPressed: 'din"',
     end: ['a"|b'],
   });
   newTest({
-    title: 'even quotes - 1',
+    title: 'next: even quotes - 1',
     start: ['|a "b" c "d" e '],
     keysPressed: 'din"',
     end: ['a "|" c "d" e '],
   });
   newTest({
-    title: 'even quotes - 2',
+    title: 'next: even quotes - 2',
     start: ['a |"b" c "d" e '],
     keysPressed: 'din"',
     end: ['a "b" c "|" e '],
   });
   newTest({
-    title: 'even quotes - 3',
+    title: 'next: even quotes - 3',
     start: ['a "|b" c "d" e '],
     keysPressed: 'din"',
     end: ['a "b" c "|" e '],
   });
   newTest({
-    title: 'even quotes - 4',
+    title: 'next: even quotes - 4',
     start: ['a "b|" c "d" e '],
     keysPressed: 'din"',
     end: ['a "b" c "|" e '],
   });
   newTest({
-    title: 'even quotes - 5',
+    title: 'next: even quotes - 5',
     start: ['a "b"| c "d" e '],
     keysPressed: 'din"',
     end: ['a "b" c "|" e '],
   });
   newTest({
-    title: 'even quotes - 6',
+    title: 'next: even quotes - 6',
     start: ['a "b" c |"d" e '],
     keysPressed: 'din"',
     end: ['a "b" c |"d" e '],
   });
   newTest({
-    title: 'even quotes - 7',
+    title: 'next: even quotes - 7',
     start: ['a "b" c "|d" e '],
     keysPressed: 'din"',
     end: ['a "b" c "|d" e '],
   });
   newTest({
-    title: 'even quotes - 8',
+    title: 'next: even quotes - 8',
     start: ['a "b" c "d|" e '],
     keysPressed: 'din"',
-    end: ['a "b" c "d"| e '],
+    end: ['a "b" c "d|" e '],
   });
   newTest({
-    title: 'even quotes - 9',
+    title: 'next: even quotes - 9',
     start: ['a "b" c "d"| e '],
     keysPressed: 'din"',
     end: ['a "b" c "d"| e '],
   });
   newTest({
-    title: 'odd quotes - 1',
+    title: 'next: odd quotes - 1',
     start: ['|a "b" c "d" e " f'],
     keysPressed: 'din"',
     end: ['a "|" c "d" e " f'],
   });
   newTest({
-    title: 'odd quotes - 2',
+    title: 'next: odd quotes - 2',
     start: ['a |"b" c "d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "|" e " f'],
   });
   newTest({
-    title: 'odd quotes - 3',
+    title: 'next: odd quotes - 3',
     start: ['a "|b" c "d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "|" e " f'],
   });
   newTest({
-    title: 'odd quotes - 4',
+    title: 'next: odd quotes - 4',
     start: ['a "b|" c "d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "|" e " f'],
   });
   newTest({
-    title: 'odd quotes - 5',
+    title: 'next: odd quotes - 5',
     start: ['a "b"| c "d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "|" e " f'],
   });
   newTest({
-    title: 'odd quotes - 6',
+    title: 'next: odd quotes - 6',
     start: ['a "b" c |"d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c |"d" e " f'],
   });
   newTest({
-    title: 'odd quotes - 7',
+    title: 'next: odd quotes - 7',
     start: ['a "b" c "|d" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "|d" e " f'],
   });
   newTest({
-    title: 'odd quotes - 8',
+    title: 'next: odd quotes - 8',
     start: ['a "b" c "d|" e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "d|" e " f'],
   });
   newTest({
-    title: 'odd quotes - 9',
+    title: 'next: odd quotes - 9',
     start: ['a "b" c "d"| e " f'],
     keysPressed: 'din"',
     end: ['a "b" c "d"| e " f'],
   });
   newTest({
-    title: 'odd quotes - 10',
+    title: 'next: odd quotes - 10',
     start: ['a "b" c "d" e |" f'],
     keysPressed: 'din"',
     end: ['a "b" c "d" e |" f'],
   });
   newTest({
-    title: 'odd quotes - 11',
+    title: 'next: odd quotes - 11',
     start: ['a "b" c "d" e "| f'],
     keysPressed: 'din"',
     end: ['a "b" c "d" e "| f'],
   });
   newTest({
-    title: 'no space between - 1',
+    title: 'next: no space between - 1',
     start: ['|"a""b"'],
     keysPressed: 'din"',
     end: ['"a""|"'],
   });
   newTest({
-    title: 'no space between - 2',
+    title: 'next: no space between - 2',
     start: ['"|a""b"'],
     keysPressed: 'din"',
     end: ['"a""|"'],
   });
   newTest({
-    title: 'no space between - 3',
+    title: 'next: no space between - 3',
     start: ['"a|""b"'],
     keysPressed: 'din"',
     end: ['"a""|"'],
   });
   newTest({
-    title: 'no space between - 4',
+    title: 'next: no space between - 4',
     start: ['"a"|"b"'],
     keysPressed: 'din"',
     end: ['"a"|"b"'],
   });
   newTest({
-    title: 'no space between - 5',
+    title: 'next: no space between - 5',
     start: ['"a""|b"'],
     keysPressed: 'din"',
     end: ['"a""|b"'],
   });
   newTest({
-    title: 'no space between - 6',
+    title: 'next: no space between - 6',
     start: ['"a""b|"'],
     keysPressed: 'din"',
     end: ['"a""b|"'],
   });
   newTest({
-    title: 'no space between - 7',
-    start: ['"a""b"|'],
+    title: 'next: no space between - 7',
+    start: ['"a""b"| '],
     keysPressed: 'din"',
-    end: ['"a""b"|'],
+    end: ['"a""b"| '],
   });
 });
