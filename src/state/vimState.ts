@@ -60,7 +60,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public identity: EditorIdentity;
+  public readonly identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
 

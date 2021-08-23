@@ -300,11 +300,11 @@ export class RecordedState {
 }
 
 export interface IBaseAction {
-  isMotion: boolean;
-  isOperator: boolean;
-  isCommand: boolean;
-  isJump: boolean;
-  canBeRepeatedWithDot: boolean;
+  readonly isMotion: boolean;
+  readonly isOperator: boolean;
+  readonly isCommand: boolean;
+  readonly isJump: boolean;
+  readonly canBeRepeatedWithDot: boolean;
 
   keysPressed: string[];
   multicursorIndex: number | undefined;

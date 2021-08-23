@@ -12,21 +12,21 @@ export abstract class BaseAction implements IBaseAction {
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  public isMotion = false;
+  public readonly isMotion: boolean = false;
 
-  public isOperator = false;
-  public isCommand = false;
+  public readonly isOperator: boolean = false;
+  public readonly isCommand: boolean = false;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
-  public isJump = false;
+  public readonly isJump: boolean = false;
 
   /**
    * TODO: This property is a lie - it pertains to whether an action creates an undo point...
    *       See #5058 and rationalize ASAP.
    */
-  public canBeRepeatedWithDot = false;
+  public readonly canBeRepeatedWithDot: boolean = false;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
@@ -51,7 +51,7 @@ export abstract class BaseAction implements IBaseAction {
    */
   public abstract readonly keys: readonly string[] | readonly string[][];
 
-  public mustBeFirstKey = false;
+  public readonly mustBeFirstKey: boolean = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
