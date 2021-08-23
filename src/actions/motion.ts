@@ -27,7 +27,7 @@ import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
 import { CommandInsertAtCursor } from './commands/actions';
-import { SmartQuoteMatcher } from './plugins/smartQuotes';
+import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -1983,6 +1983,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   protected abstract readonly charToMatch: '"' | "'" | '`';
   protected includeQuotes = false;
   override isJump = true;
+  readonly which: WhichQuotes = 'current';
 
   // HACK: surround uses these classes, but does not want trailing whitespace to be included
   private adjustForTrailingWhitespace: boolean = true;
@@ -2014,14 +2015,15 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 
     const text = vimState.document.lineAt(position).text;
 
-    let quoteMatcher;
+    let quoteIndices;
     if (configuration.smartQuotes) {
-      quoteMatcher = new SmartQuoteMatcher(this.charToMatch, text);
+      const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, text);
+      quoteIndices = quoteMatcher.smartSurroundingQuotes(position.character, this.which);
     } else {
-      quoteMatcher = new QuoteMatcher(this.charToMatch, text);
+      const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
+      quoteIndices = quoteMatcher.surroundingQuotes(position.character);
     }
 
-    const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
     if (quoteIndices === undefined) {
       return failedMovement(vimState);
     }
@@ -2046,8 +2048,13 @@ export abstract class MoveQuoteMatch extends BaseMovement {
     const startPos = new Position(position.line, start);
     const endPos = new Position(position.line, end);
 
-    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
-      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    if (!isVisualMode(vimState.currentMode)) {
+      if (position.isBefore(startPos)) {
+        vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+      } else if (configuration.smartQuotes && position.isAfter(startPos)) {
+        // added configuration.smartQuotes to the above condition to not change current behavior
+        vimState.recordedState.operatorPositionDiff = endPos.getRight(1).subtract(position);
+      }
     }
 
     return {
