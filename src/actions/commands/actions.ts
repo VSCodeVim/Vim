@@ -27,7 +27,7 @@ import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { StatusBar, statusBarCommandText } from '../../statusBar';
+import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
@@ -87,7 +87,6 @@ export class DocumentContentChangeAction extends BaseCommand {
         const linesAffected = change.range.end.line - change.range.start.line + 1;
         const resultLines = change.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesAffected,
           Math.max(0, originalLeftBoundary.line + resultLines - linesAffected)
         );
         continue;
@@ -1161,8 +1160,6 @@ export class CommandUndo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1181,8 +1178,6 @@ class CommandUndoOnLine extends BaseCommand {
     if (newPosition !== undefined) {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1202,8 +1197,6 @@ class CommandRedo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 

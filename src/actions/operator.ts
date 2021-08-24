@@ -118,7 +118,7 @@ export class DeleteOperator extends BaseOperator {
     // TODO: this is off by one when character-wise and not including last EOL
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;
 
-    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
     }
@@ -141,7 +141,7 @@ export class DeleteOperator extends BaseOperator {
 
     // Yank the text
     let text = vimState.document.getText(new vscode.Range(start, end));
-    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       // When deleting linewise, exclude final newline
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
@@ -156,13 +156,13 @@ export class DeleteOperator extends BaseOperator {
     if (
       isOnLastLine &&
       start.line !== 0 &&
-      vimState.effectiveRegisterMode === RegisterMode.LineWise
+      vimState.currentRegisterMode === RegisterMode.LineWise
     ) {
       start = start.getUp().getLineEnd();
     }
 
     let diff: PositionDiff | undefined;
-    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       diff = PositionDiff.startOfLine();
     } else if (start.character > vimState.document.lineAt(start).text.length) {
       diff = PositionDiff.offset({ character: -1 });
@@ -353,7 +353,7 @@ abstract class ChangeCaseOperator extends BaseOperator {
         });
       }
     } else {
-      if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      if (vimState.currentRegisterMode === RegisterMode.LineWise) {
         startPos = startPos.getLineBegin();
         endPos = endPos.getLineEnd();
       }
@@ -549,7 +549,7 @@ export class ChangeOperator extends BaseOperator {
 
     Register.put(vimState, vimState.document.getText(deleteRange), this.multicursorIndex, true);
 
-    if (vimState.effectiveRegisterMode === RegisterMode.LineWise && configuration.autoindent) {
+    if (vimState.currentRegisterMode === RegisterMode.LineWise && configuration.autoindent) {
       // Linewise is a bit of a special case - we want to preserve the first line's indentation,
       // then let the language server adjust that indentation if it can.
 

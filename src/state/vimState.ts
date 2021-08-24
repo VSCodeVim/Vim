@@ -60,7 +60,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public identity: EditorIdentity;
+  public readonly identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
 
@@ -94,8 +94,6 @@ export class VimState implements vscode.Disposable {
 
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
-
-  public alteredHistory = false;
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
@@ -275,11 +273,17 @@ export class VimState implements vscode.Disposable {
     }
   }
 
-  public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
-
-  public get effectiveRegisterMode(): RegisterMode {
-    if (this.currentRegisterMode !== RegisterMode.AscertainFromCurrentMode) {
-      return this.currentRegisterMode;
+  /**
+   * The currently active `RegisterMode`.
+   *
+   * When setting, `undefined` means "default for current `Mode`".
+   */
+  public set currentRegisterMode(registerMode: RegisterMode | undefined) {
+    this._currentRegisterMode = registerMode;
+  }
+  public get currentRegisterMode(): RegisterMode {
+    if (this._currentRegisterMode) {
+      return this._currentRegisterMode;
     }
     switch (this.currentMode) {
       case Mode.VisualLine:
@@ -290,6 +294,7 @@ export class VimState implements vscode.Disposable {
         return RegisterMode.CharacterWise;
     }
   }
+  private _currentRegisterMode: RegisterMode | undefined;
 
   public currentCommandlineText = '';
   public statusBarCursorCharacterPos = 0;
