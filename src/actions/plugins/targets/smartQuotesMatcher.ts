@@ -1,6 +1,5 @@
 import { Position } from 'vscode';
 import { TextDocument } from 'vscode';
-import { QuoteMatcher } from '../../../common/matching/quoteMatcher';
 import { configuration } from '../../../configuration/configuration';
 
 type Quote = '"' | "'" | '`';
@@ -133,7 +132,6 @@ const quoteDirs: Record<string, QuotesAction> = {
   },
 };
 
-type SearchState = { position: Position; quoteMap: QuoteMatch[] };
 export class SmartQuoteMatcher {
   static readonly escapeChar = '\\';
 
@@ -150,7 +148,7 @@ export class SmartQuoteMatcher {
     let openingQuote = true;
     // Loop over text, marking quotes and respecting escape characters.
     for (let i = 0; i < text.length; i++) {
-      if (text[i] === QuoteMatcher.escapeChar) {
+      if (text[i] === SmartQuoteMatcher.escapeChar) {
         i += 1;
         continue;
       }
