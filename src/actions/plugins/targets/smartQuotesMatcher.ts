@@ -162,54 +162,6 @@ export class SmartQuoteMatcher {
     return quoteMap;
   }
 
-  // static createMatcher(
-  //   quote: '"' | "'" | '`',
-  //   document: TextDocument,
-  //   position: Position,
-  //   which: WhichQuotes
-  // ): [SmartQuoteMatcher, Position, WhichQuotes] | undefined {
-  //   const searchLine = (
-  //     i: number,
-  //     direction: Dir
-  //   ): [SmartQuoteMatcher, Position, WhichQuotes] | undefined => {
-  //     const sameAsInputLine = i === position.line;
-  //     const lineText = document.lineAt(i).text;
-  //     let matchIndex = -1;
-  //     if (direction === '<') {
-  //       const fromIndex = sameAsInputLine ? position.character - 1 : +Infinity;
-  //       matchIndex = lineText.lastIndexOf(quote, fromIndex);
-  //     } else {
-  //       const fromIndex = sameAsInputLine ? position.character + 1 : 0;
-  //       matchIndex = lineText.indexOf(quote, fromIndex);
-  //     }
-
-  //     if (matchIndex >= 0) {
-  //       const positionToReturn = sameAsInputLine ? position : new Position(i, matchIndex);
-  //       const whichToReturn = sameAsInputLine ? which : 'current';
-  //       return [new SmartQuoteMatcher(quote, lineText), positionToReturn, whichToReturn];
-  //     } else {
-  //       return undefined;
-  //     }
-  //   };
-
-  //   if (!configuration.smartQuotes.breakThroughLines || which === 'current') {
-  //     return [new SmartQuoteMatcher(quote, document.lineAt(position.line).text), position, which];
-  //   } else if (which === 'next') {
-  //     // search forward
-  //     for (let i = position.line; i < document.lineCount; ++i) {
-  //       const lineRes = searchLine(i, '>');
-  //       if (lineRes) return lineRes;
-  //     }
-  //   } else {
-  //     // which === 'last'
-  //     // search backward
-  //     for (let i = position.line; i >= 0; --i) {
-  //       const lineRes = searchLine(i, '<');
-  //       if (lineRes) return lineRes;
-  //     }
-  //   }
-  //   return undefined;
-  // }
   private static lineSearchAction(cursorIndex: number, quoteMap: QuoteMatch[]) {
     // base on ideas from targets.vim
 
