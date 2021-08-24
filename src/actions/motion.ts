@@ -2013,54 +2013,86 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       this.adjustForTrailingWhitespace = false;
     }
 
-    const text = vimState.document.lineAt(position).text;
-
-    let quoteIndices;
     if (configuration.smartQuotes) {
-      const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, text);
-      quoteIndices = quoteMatcher.smartSurroundingQuotes(position.character, this.which);
+      const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, vimState.document);
+      const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
+
+      if (res === undefined) {
+        return failedMovement(vimState);
+      }
+      let { start, stop, lineText } = res;
+
+      if (!this.includeQuotes) {
+        // Don't include the quotes
+        start = start.translate({ characterDelta: 1 });
+        stop = stop.translate({ characterDelta: -1 });
+      } else if (this.adjustForTrailingWhitespace) {
+        // Include trailing whitespace if there is any...
+        const trailingWhitespace = lineText.substring(stop.character + 1).search(/\S|$/);
+        if (trailingWhitespace > 0) {
+          stop = stop.translate({ characterDelta: trailingWhitespace });
+        } else {
+          // ...otherwise include leading whitespace
+          start = start.with({ character: lineText.substring(0, start.character).search(/\s*$/) });
+        }
+      }
+
+      if (!isVisualMode(vimState.currentMode)) {
+        if (position.isBefore(start)) {
+          vimState.recordedState.operatorPositionDiff = start.subtract(position);
+        } else if (position.isAfter(start)) {
+          // TODO: workaround. I don't quite sure why it's not working out of the box;
+          if (stop.line === position.line) {
+            vimState.recordedState.operatorPositionDiff = stop.getRight().subtract(position);
+          } else {
+            vimState.recordedState.operatorPositionDiff = start.subtract(position);
+          }
+        }
+      }
+
+      vimState.cursorStartPosition = start;
+      return {
+        start,
+        stop,
+      };
     } else {
+      const text = vimState.document.lineAt(position).text;
       const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
-      quoteIndices = quoteMatcher.surroundingQuotes(position.character);
-    }
+      const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
 
-    if (quoteIndices === undefined) {
-      return failedMovement(vimState);
-    }
-
-    let [start, end] = quoteIndices;
-
-    if (!this.includeQuotes) {
-      // Don't include the quotes
-      start++;
-      end--;
-    } else if (this.adjustForTrailingWhitespace) {
-      // Include trailing whitespace if there is any...
-      const trailingWhitespace = text.substring(end + 1).search(/\S|$/);
-      if (trailingWhitespace > 0) {
-        end += trailingWhitespace;
-      } else {
-        // ...otherwise include leading whitespace
-        start = text.substring(0, start).search(/\s*$/);
+      if (quoteIndices === undefined) {
+        return failedMovement(vimState);
       }
-    }
 
-    const startPos = new Position(position.line, start);
-    const endPos = new Position(position.line, end);
+      let [start, end] = quoteIndices;
 
-    if (!isVisualMode(vimState.currentMode)) {
-      if (position.isBefore(startPos)) {
+      if (!this.includeQuotes) {
+        // Don't include the quotes
+        start++;
+        end--;
+      } else if (this.adjustForTrailingWhitespace) {
+        // Include trailing whitespace if there is any...
+        const trailingWhitespace = text.substring(end + 1).search(/\S|$/);
+        if (trailingWhitespace > 0) {
+          end += trailingWhitespace;
+        } else {
+          // ...otherwise include leading whitespace
+          start = text.substring(0, start).search(/\s*$/);
+        }
+      }
+
+      const startPos = new Position(position.line, start);
+      const endPos = new Position(position.line, end);
+
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
         vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
-      } else if (configuration.smartQuotes && position.isAfter(startPos)) {
-        // added configuration.smartQuotes to the above condition to not change current behavior
-        vimState.recordedState.operatorPositionDiff = endPos.getRight(1).subtract(position);
       }
-    }
 
-    return {
-      start: startPos,
-      stop: endPos,
-    };
+      return {
+        start: startPos,
+        stop: endPos,
+      };
+    }
   }
 
   public override async execActionForOperator(

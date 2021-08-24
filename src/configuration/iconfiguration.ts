@@ -79,6 +79,17 @@ export interface ICamelCaseMotionConfiguration {
   enable: boolean;
 }
 
+export interface ISmartQuotesConfiguration {
+  /**
+   * Enable SmartQuotes plugin or not
+   */
+  enable: boolean;
+  /**
+   * Whether to break through lines when using [n]ext/[l]ast motion
+   */
+  breakThroughLines: boolean;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
