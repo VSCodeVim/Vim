@@ -435,7 +435,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // is disabled. This makes it possible to map zero without making it impossible
       // to type a count with a zero.
       const preventZeroRemap =
-        key === '0' && this.vimState.recordedState.getLastActionRun() instanceof CommandNumber;
+        key === '0' &&
+        this.vimState.recordedState.actionsRun[
+          this.vimState.recordedState.actionsRun.length - 1
+        ] instanceof CommandNumber;
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
@@ -742,7 +745,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // If there's an operator pending and we have a motion or visual selection, run the operator
-    if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
+    if (recordedState.getOperatorState(this.vimState.currentMode) === 'ready') {
       const operator = this.vimState.recordedState.operator;
       if (operator) {
         await this.executeOperator();
@@ -1302,7 +1305,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
        * Extend this condition if it is the desired behaviour for other actions as well.
        */
       const isLastCursorTracked =
-        this.vimState.recordedState.getLastActionRun() instanceof ActionOverrideCmdD;
+        this.vimState.recordedState.actionsRun[
+          this.vimState.recordedState.actionsRun.length - 1
+        ] instanceof ActionOverrideCmdD;
 
       let cursorToTrack: Cursor;
       if (isLastCursorTracked) {

@@ -242,7 +242,7 @@ export class VimState implements vscode.Disposable {
    * use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.isOperatorPending(this._currentMode)
+    return this.recordedState.getOperatorState(this._currentMode) === 'pending'
       ? Mode.OperatorPendingMode
       : this._currentMode;
   }
