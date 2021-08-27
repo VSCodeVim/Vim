@@ -195,7 +195,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelection:
     | {
-        mode: Mode;
+        mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
         start: Position;
         end: Position;
       }
