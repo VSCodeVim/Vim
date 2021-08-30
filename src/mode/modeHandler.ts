@@ -1145,7 +1145,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
-        selectionMode = globalState.searchState!.previousMode;
+        selectionMode = globalState.searchState?.previousMode ?? Mode.Normal;
       } else if (this.vimState.currentMode === Mode.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
       } else if (this.vimState.currentMode === Mode.SurroundInputMode) {
