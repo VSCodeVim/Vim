@@ -1514,10 +1514,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     if (configuration.showMarksInGutter) {
-      for (const { position, name } of this.vimState.historyTracker.getMarks()) {
-        const markDecoration = decoration.getOrCreateMarkDecoration(name);
+      for (const mark of this.vimState.historyTracker.getMarks()) {
+        if (mark.isUppercaseMark && mark.editor !== this.vimState.editor) {
+          continue;
+        }
 
-        const markLine = position.getLineBegin();
+        const markDecoration = decoration.getOrCreateMarkDecoration(mark.name);
+        const markLine = mark.position.getLineBegin();
         const markRange = new vscode.Range(markLine, markLine);
 
         this.vimState.editor.setDecorations(markDecoration, [markRange]);
