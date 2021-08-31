@@ -39,6 +39,6 @@ export class Cursor {
   }
 
   public toString(): string {
-    return `[ ${this.start.toString()} | ${this.stop.toString()}]`;
+    return `[${this.start.toString()} | ${this.stop.toString()}]`;
   }
 }

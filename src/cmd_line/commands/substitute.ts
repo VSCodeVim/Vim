@@ -11,6 +11,7 @@ import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { Position } from 'vscode';
+import { StatusBar } from '../../statusBar';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -91,7 +92,7 @@ export class SubstituteCommand extends node.CommandBase {
     this.abort = false;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     // We need to use VSCode's quickpick capabilities to do confirmation
     return (this.arguments.flags & SubstituteFlags.ConfirmEach) === 0;
   }
@@ -149,19 +150,21 @@ export class SubstituteCommand extends node.CommandBase {
   }
 
   /**
-   * @returns whether the search pattern existed on the line
+   * @returns the number of substitutions made on the given line
    */
-  async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState): Promise<boolean> {
+  async replaceTextAtLine(line: number, regex: RegExp, vimState: VimState): Promise<number> {
     const originalContent = vimState.document.lineAt(line).text;
 
-    if (!regex.test(originalContent)) {
-      return false;
+    const matches = originalContent.match(regex);
+    if (!matches) {
+      return 0;
     }
+
+    let count = 0;
 
     if (this.arguments.flags & SubstituteFlags.ConfirmEach) {
       // Loop through each match on this line and get confirmation before replacing
       let newContent = originalContent;
-      const matches = newContent.match(regex)!;
 
       const nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
       let matchPos = 0;
@@ -174,9 +177,10 @@ export class SubstituteCommand extends node.CommandBase {
         matchPos = newContent.indexOf(match, matchPos);
 
         if (
-          !(this.arguments.flags & SubstituteFlags.ConfirmEach) ||
-          (await this.confirmReplacement(this.arguments.replace, line, vimState, match, matchPos))
+          await this.confirmReplacement(this.arguments.replace, line, vimState, match, matchPos)
         ) {
+          count++;
+
           const rangeEnd = newContent.length;
           newContent =
             newContent.slice(0, matchPos) +
@@ -200,6 +204,8 @@ export class SubstituteCommand extends node.CommandBase {
         matchPos += this.arguments.replace.length;
       }
     } else {
+      count = matches.length;
+
       const newContent = originalContent.replace(regex, this.arguments.replace);
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
@@ -219,7 +225,7 @@ export class SubstituteCommand extends node.CommandBase {
       );
     }
 
-    return true;
+    return count;
   }
 
   async confirmReplacement(
@@ -274,14 +280,12 @@ export class SubstituteCommand extends node.CommandBase {
       : selection.end.line;
 
     if (!this.abort) {
-      const foundPattern = await this.replaceTextAtLine(line, regex, vimState);
-      if (!foundPattern) {
-        throw VimError.fromCode(ErrorCode.PatternNotFound);
-      }
+      const substitutions = await this.replaceTextAtLine(line, regex, vimState);
+      this.setStatusBarText(vimState, substitutions, 1, regex);
     }
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let [startLine, endLine] = range.resolve(vimState);
 
     if (this.arguments.count && this.arguments.count >= 0) {
@@ -292,7 +296,8 @@ export class SubstituteCommand extends node.CommandBase {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
     const regex = this.getRegex(this.arguments, vimState);
-    let foundPattern = false;
+    let lines = 0;
+    let substitutions = 0;
     for (
       let currentLine = startLine;
       currentLine <= endLine && currentLine < vimState.document.lineCount;
@@ -301,10 +306,31 @@ export class SubstituteCommand extends node.CommandBase {
       if (this.abort) {
         break;
       }
-      foundPattern = (await this.replaceTextAtLine(currentLine, regex, vimState)) || foundPattern;
+      const count = await this.replaceTextAtLine(currentLine, regex, vimState);
+      if (count > 0) {
+        substitutions += count;
+        lines++;
+      }
     }
-    if (!foundPattern) {
-      throw VimError.fromCode(ErrorCode.PatternNotFound);
+
+    this.setStatusBarText(vimState, substitutions, lines, regex);
+  }
+
+  private setStatusBarText(
+    vimState: VimState,
+    substitutions: number,
+    lines: number,
+    regex: RegExp
+  ) {
+    if (substitutions === 0) {
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, regex.source));
+    } else if (substitutions > configuration.report) {
+      StatusBar.setText(
+        vimState,
+        `${substitutions} substitution${substitutions > 1 ? 's' : ''} on ${lines} line${
+          lines > 1 ? 's' : ''
+        }`
+      );
     }
   }
 }

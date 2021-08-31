@@ -10,7 +10,6 @@ import {
   overlappingTransformations,
 } from './transformations';
 import { commandLine } from '../cmd_line/commandLine';
-import { PairMatcher } from '../common/matching/matcher';
 import { PositionDiff } from '../common/motion/position';
 import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
@@ -67,15 +66,6 @@ export async function executeTransformations(
       case 'replaceText':
         edit.replace(command.range, command.text);
         break;
-      case 'deleteText':
-        const matchRange = PairMatcher.immediateMatchingBracket(vimState, command.position);
-        if (matchRange) {
-          edit.delete(matchRange);
-        }
-        edit.delete(
-          new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
-        );
-        break;
       case 'deleteRange':
         edit.delete(command.range);
         break;
@@ -86,11 +76,11 @@ export async function executeTransformations(
         break;
     }
 
-    if (command.cursorIndex === undefined) {
-      throw new Error('No cursor index - this should never ever happen!');
-    }
-
     if (command.diff) {
+      if (command.cursorIndex === undefined) {
+        throw new Error('No cursor index - this should never ever happen!');
+      }
+
       if (!accumulatedPositionDifferences[command.cursorIndex]) {
         accumulatedPositionDifferences[command.cursorIndex] = [];
       }
@@ -121,11 +111,26 @@ export async function executeTransformations(
        * (this is primarily necessary for multi-cursor mode, since most
        * actions will trigger at most one text operation).
        */
-      await vimState.editor.edit((edit) => {
-        for (const command of textTransformations) {
-          doTextEditorEdit(command, edit);
+      try {
+        await vimState.editor.edit((edit) => {
+          for (const command of textTransformations) {
+            doTextEditorEdit(command, edit);
+          }
+        });
+      } catch (e) {
+        // Messages like "TextEditor(vs.editor.ICodeEditor:1,$model8) has been disposed" can be ignored.
+        // They occur when the user switches to a new tab while an action is running.
+        if (e.name !== 'DISPOSED') {
+          e.context = {
+            currentMode: Mode[vimState.currentMode],
+            cursors: vimState.cursors.map((cursor) => cursor.toString()),
+            actionsRunPressedKeys: vimState.recordedState.actionsRunPressedKeys,
+            actionsRun: vimState.recordedState.actionsRun.map((action) => action.constructor.name),
+            textTransformations,
+          };
+          throw e;
         }
-      });
+      }
     }
   }
 
@@ -152,6 +157,14 @@ export async function executeTransformations(
       case 'insertTextVSCode':
         await TextEditor.insert(vimState.editor, transformation.text);
         vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
+        break;
+
+      case 'deleteLeft':
+        await vscode.commands.executeCommand('deleteLeft');
+        break;
+
+      case 'deleteRight':
+        await vscode.commands.executeCommand('deleteRight');
         break;
 
       case 'showCommandHistory':

@@ -216,21 +216,24 @@ suite('Mode Insert', () => {
     assertEqualLines(['  ']);
   });
 
-  test('will remove closing bracket', async () => {
+  test('<BS> removes closing bracket just inserted', async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', '(']);
+
+    assertEqualLines(['()']);
+
+    await modeHandler.handleMultipleKeyEvents(['<BS>', '<Esc>']);
+
+    assertEqualLines(['']);
+  });
+
+  test('<BS> does not remove closing bracket inserted before', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', '(', '<Esc>']);
 
     assertEqualLines(['()']);
 
     await modeHandler.handleMultipleKeyEvents(['a', '<BS>', '<Esc>']);
 
-    assertEqualLines(['']);
-  });
-
-  newTest({
-    title: 'Backspace works on whitespace only lines',
-    start: ['abcd', '     |    '],
-    keysPressed: 'a<BS><Esc>',
-    end: ['abcd', '   | '],
+    assertEqualLines([')']);
   });
 
   newTest({
@@ -245,6 +248,28 @@ suite('Mode Insert', () => {
     start: ['|bcd'],
     keysPressed: 'i<BS>a<Esc>',
     end: ['|abcd'],
+  });
+
+  newTest({
+    title: 'Backspace in leading whitespace 1',
+    start: ['        |    xyz'],
+    editorOptions: {
+      tabSize: 4,
+    },
+    keysPressed: 'i<BS>',
+    end: ['    |    xyz'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'Backspace in leading whitespace 2',
+    start: ['       |    xyz'],
+    editorOptions: {
+      tabSize: 4,
+    },
+    keysPressed: 'i<BS>',
+    end: ['    |    xyz'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -433,12 +458,29 @@ suite('Mode Insert', () => {
       endMode: Mode.Insert,
     });
 
-    test('Can handle no inserted text yet when executing <ctrl-a>', async () => {
-      try {
-        await modeHandler.handleMultipleKeyEvents(['i', '<C-a>']);
-      } catch (e) {
-        assert(false);
-      }
+    newTest({
+      title: '<C-a> with arrows ignores everything before last arrow',
+      start: ['one |two three'],
+      keysPressed: 'i' + 'X<left>Y<left>Z' + '<Esc>' + 'W' + 'i' + '<C-a>',
+      end: ['one ZYXtwo Z|three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-a> insertion with arrows always inserts just before cursor',
+      start: ['o|ne two three'],
+      keysPressed: 'A' + 'X<left>Y<left>Z' + '<Esc>' + '0W' + 'i' + '<C-a>',
+      end: ['one Z|two threeZYX'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-a> before entering any text',
+      start: ['tes|t'],
+      keysPressed: 'i' + '<C-a>',
+      end: ['tes|t'],
+      endMode: Mode.Insert,
+      statusBar: 'E29: No inserted text yet',
     });
   });
 

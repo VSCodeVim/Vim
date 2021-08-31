@@ -9,7 +9,7 @@ import { Position } from 'vscode';
  * @param startingFileName File that will be first in the array, typically current file
  */
 const documentsStartingWith = (startingFileName: string) => {
-  return vscode.workspace.textDocuments.sort((a, b) => {
+  return [...vscode.workspace.textDocuments].sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;
     } else if (b.fileName === startingFileName) {
@@ -157,13 +157,12 @@ export const lineCompletionProvider = {
       return;
     }
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteRange',
-      range: new vscode.Range(
+    vimState.recordedState.transformer.delete(
+      new vscode.Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
         position.getLineEnd()
-      ),
-    });
+      )
+    );
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',

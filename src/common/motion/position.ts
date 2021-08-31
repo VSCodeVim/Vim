@@ -25,6 +25,8 @@ enum PositionDiffType {
   ExactCharacter,
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   ObeyStartOfLine,
+  /** Brings the Position to the end of the line */
+  EndOfLine,
 }
 
 /**
@@ -58,8 +60,13 @@ export class PositionDiff {
   }
 
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
-  public static startOfLine(lineOffset?: number): PositionDiff {
-    return new PositionDiff(PositionDiffType.ObeyStartOfLine, lineOffset ?? 0, 0);
+  public static startOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.ObeyStartOfLine, 0, 0);
+  }
+
+  /** Brings the Position to the end of the line */
+  public static endOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.EndOfLine, 0, 0);
   }
 
   /** Offsets the Position's line and sets its character exactly */
@@ -83,6 +90,8 @@ export class PositionDiff {
         return `[ Diff: ExactPosition ${this.line} ${this.character} ]`;
       case PositionDiffType.ObeyStartOfLine:
         return `[ Diff: ObeyStartOfLine ${this.line} ]`;
+      case PositionDiffType.EndOfLine:
+        return `[ Diff: EndOfLine ${this.line} ]`;
       default:
         const guard: never = this.type;
         throw new Error(`Unknown PositionDiffType: ${this.type}`);
@@ -119,13 +128,9 @@ declare module 'vscode' {
     subtract(other: Position): PositionDiff;
 
     /**
-     * @returns a new Position with the same character and the given line.
-     * Does bounds-checking to make sure the result is valid.
-     */
-    withLine(line: number): Position;
-    /**
      * @returns a new Position with the same line and the given character.
      * Does bounds-checking to make sure the result is valid.
+     * @deprecated use `Position.with` instead
      */
     withColumn(column: number): Position;
 
@@ -273,7 +278,9 @@ Position.prototype.add = function (
   } else if (diff.type === PositionDiffType.ExactCharacter) {
     resultChar = diff.character;
   } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
-    resultChar = this.withLine(resultLine).obeyStartOfLine(document).character;
+    resultChar = this.obeyStartOfLine(document).character;
+  } else if (diff.type === PositionDiffType.EndOfLine) {
+    resultChar = this.getLineEnd().character;
   } else {
     throw new Error(`Unknown PositionDiffType: ${diff.type}`);
   }
@@ -287,15 +294,6 @@ Position.prototype.subtract = function (this: Position, other: Position): Positi
     line: this.line - other.line,
     character: this.character - other.character,
   });
-};
-
-/**
- * @returns a new Position with the same character and the given line.
- * Does bounds-checking to make sure the result is valid.
- */
-Position.prototype.withLine = function (this: Position, line: number): Position {
-  line = clamp(line, 0, TextEditor.getLineCount() - 1);
-  return new Position(line, this.character);
 };
 
 /**
@@ -328,8 +326,12 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
  * @returns the Position `count` lines down from this Position
  */
 Position.prototype.getDown = function (this: Position, count = 1): Position {
-  const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
-  return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  if (vscode.window.activeTextEditor) {
+    const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
+    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  } else {
+    return this.translate({ lineDelta: count });
+  }
 };
 
 /**

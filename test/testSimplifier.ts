@@ -14,6 +14,8 @@ import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Position } from 'vscode';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../src/editorIdentity';
+import { StatusBar } from '../src/statusBar';
+import { Register } from '../src/register/register';
 
 function getNiceStack(stack: string | undefined): string {
   return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
@@ -72,10 +74,12 @@ export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
 interface ITestObject {
   title: string;
   config?: Partial<IConfiguration>;
+  editorOptions?: vscode.TextEditorOptions;
   start: string[];
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  statusBar?: string;
   jumps?: string[];
   stub?: {
     stubClass: any;
@@ -329,10 +333,15 @@ async function testIt(testObj: ITestObject): Promise<void> {
   const helper = new TestObjectHelper(testObj);
   assert(helper.isValid, "Missing '|' in test object.");
 
+  if (testObj.editorOptions) {
+    editor.options = testObj.editorOptions;
+  }
+
   // Initialize the editor with the starting text and cursor selection
   await editor.edit((builder) => {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
+  await editor.document.save();
   editor.selections = [new vscode.Selection(helper.startPosition, helper.startPosition)];
 
   // Generate a brand new ModeHandler for this editor
@@ -346,6 +355,8 @@ async function testIt(testObj: ITestObject): Promise<void> {
 
   const jumpTracker = globalState.jumpTracker;
   jumpTracker.clearJumps();
+
+  Register.clearAllRegisters();
 
   if (testObj.stub) {
     const confirmStub = sinon
@@ -378,8 +389,17 @@ async function testIt(testObj: ITestObject): Promise<void> {
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
   }
 
+  if (testObj.statusBar !== undefined) {
+    assert.strictEqual(
+      StatusBar.getText(),
+      testObj.statusBar.replace('{FILENAME}', modeHandler.vimState.document.fileName),
+      'Status bar text is wrong.'
+    );
+  }
+
   // jumps: check jumps are correct if given
   if (testObj.jumps !== undefined) {
+    // TODO: Jumps should be specified by Positions, not line contents
     assert.deepStrictEqual(
       jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),

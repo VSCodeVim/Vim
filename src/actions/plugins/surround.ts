@@ -21,7 +21,7 @@ import { MoveFullWordBegin, MoveWordBegin } from '../motion';
 import { BaseOperator } from './../operator';
 import {
   SelectInnerWord,
-  TextObjectMovement,
+  TextObject,
   SelectABigWord,
   SelectWord,
 } from '../../textobject/textobject';
@@ -66,7 +66,7 @@ export interface SurroundState {
 }
 
 abstract class SurroundOperator extends BaseOperator {
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return configuration.surround && super.doesActionApply(vimState, keysPressed);
   }
 }
@@ -120,7 +120,11 @@ class YankSurroundOperator extends SurroundOperator {
     }
   }
 
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<void> {
+  public override async runRepeat(
+    vimState: VimState,
+    position: Position,
+    count: number
+  ): Promise<void> {
     // we want to act on range: first non whitespace to last non whitespace
     await this.run(
       vimState,
@@ -181,11 +185,11 @@ class CommandSurroundModeStartVisualLine extends SurroundOperator {
 
 abstract class CommandSurround extends BaseCommand {
   modes = [Mode.Normal];
-  canBeRepeatedWithDot = true;
-  runsOnceForEveryCursor() {
+  override canBeRepeatedWithDot = true;
+  override runsOnceForEveryCursor() {
     return true;
   }
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const target = keysPressed[keysPressed.length - 1];
     return (
       configuration.surround &&
@@ -200,7 +204,7 @@ class CommandSurroundDeleteSurround extends CommandSurround {
   keys = ['<plugds>', '<any>'];
   keysHasCnt = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const target = this.keysPressed[this.keysPressed.length - 1];
     // for derived class, support ds2X
     if (this.keysHasCnt) {
@@ -234,17 +238,17 @@ class CommandSurroundDeleteSurround extends CommandSurround {
 @RegisterAction
 class CommandSurroundDeleteSurroundCnt extends CommandSurroundDeleteSurround {
   // supports cnt up to 9, should be enough
-  keys = ['<plugds>', '<number>', '<any>'];
-  keysHasCnt = true;
+  override keys = ['<plugds>', '<number>', '<any>'];
+  override keysHasCnt = true;
 }
 
 @RegisterAction
 class CommandSurroundChangeSurround extends CommandSurround {
   keys = ['<plugcs>', '<any>'];
-  isCompleteAction = false;
+  override isCompleteAction = false;
   keysHasCnt = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const target = this.keysPressed[this.keysPressed.length - 1];
     // for derived class, support ds2X
     if (this.keysHasCnt) {
@@ -281,8 +285,8 @@ class CommandSurroundChangeSurround extends CommandSurround {
 @RegisterAction
 class CommandSurroundChangeSurroundCnt extends CommandSurroundChangeSurround {
   // supports cnt up to 9, should be enough
-  keys = ['<plugcs>', '<number>', '<any>'];
-  keysHasCnt = true;
+  override keys = ['<plugcs>', '<number>', '<any>'];
+  override keysHasCnt = true;
 }
 
 @RegisterAction
@@ -290,11 +294,11 @@ class CommandSurroundAddSurrounding extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   // add surrounding / read X when: ys + motion + X. or csYX
   keys = ['<any>'];
-  isCompleteAction = true;
-  runsOnceForEveryCursor() {
+  override isCompleteAction = true;
+  override runsOnceForEveryCursor() {
     return false;
   }
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const replacement = keysPressed[keysPressed.length - 1];
     return (
       configuration.surround &&
@@ -304,7 +308,7 @@ class CommandSurroundAddSurrounding extends BaseCommand {
     );
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const replacement = this.keysPressed[this.keysPressed.length - 1];
 
     if (!vimState.surround || !SurroundHelper.edgePairings[replacement]) {
@@ -326,12 +330,12 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   // add surrounding / read X when: ys + motion + X
   keys = [['<'], ['t']];
-  isCompleteAction = true;
+  override isCompleteAction = true;
   recordedTag = ''; // to save for repeat
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (!vimState.surround) {
       return;
     }
@@ -383,7 +387,7 @@ class SurroundHelper {
       right: string;
       /** do we consume space on the edges? "(" vs ")" */
       removeSpace: boolean;
-      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObjectMovement;
+      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObject;
       /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
       extraChars?: number;
     };
@@ -415,15 +419,20 @@ class SurroundHelper {
       left: '"',
       right: '"',
       removeSpace: false,
-      movement: () => new MoveAroundDoubleQuotes(),
+      movement: () => new MoveAroundDoubleQuotes(false),
     },
     "'": {
       left: "'",
       right: "'",
       removeSpace: false,
-      movement: () => new MoveAroundSingleQuotes(),
+      movement: () => new MoveAroundSingleQuotes(false),
     },
-    '`': { left: '`', right: '`', removeSpace: false, movement: () => new MoveAroundBacktick() },
+    '`': {
+      left: '`',
+      right: '`',
+      removeSpace: false,
+      movement: () => new MoveAroundBacktick(false),
+    },
     '<': { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
     '*': {
       left: '*',
@@ -560,16 +569,8 @@ class SurroundHelper {
           // throw ?
           continue;
         }
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: surroundState.tag.tag,
-          range: leftTagName,
-        });
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: surroundState.tag.tag,
-          range: rightTagName,
-        });
+        vimState.recordedState.transformer.replace(leftTagName, surroundState.tag.tag);
+        vimState.recordedState.transformer.replace(rightTagName, surroundState.tag.tag);
       }
     }
     // all other cases: ys, ds, cs

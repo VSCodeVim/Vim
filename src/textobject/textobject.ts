@@ -21,10 +21,13 @@ import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragrap
 import { Position, TextDocument } from 'vscode';
 import { WordType } from './word';
 
-export abstract class TextObjectMovement extends BaseMovement {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+export abstract class TextObject extends BaseMovement {
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
@@ -34,11 +37,11 @@ export abstract class TextObjectMovement extends BaseMovement {
     return res;
   }
 
-  public abstract execAction(position: Position, vimState: VimState): Promise<IMovement>;
+  public abstract override execAction(position: Position, vimState: VimState): Promise<IMovement>;
 }
 
 @RegisterAction
-export class SelectWord extends TextObjectMovement {
+export class SelectWord extends TextObject {
   keys = ['a', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -99,7 +102,7 @@ export class SelectWord extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectABigWord extends TextObjectMovement {
+export class SelectABigWord extends TextObject {
   keys = ['a', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -175,9 +178,14 @@ export class SelectABigWord extends TextObjectMovement {
 @RegisterAction
 export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
-  modes = [Mode.Visual, Mode.VisualLine];
+  override modes = [Mode.Visual, Mode.VisualLine];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
     const blocks = [
       new MoveAroundDoubleQuotes(),
       new MoveAroundSingleQuotes(),
@@ -196,7 +204,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         vimState.cursorStartPosition.line,
         vimState.cursorStartPosition.character
       );
-      ranges.push(await block.execAction(cursorPos, vimState));
+      ranges.push(await block.execAction(cursorPos, vimState, firstIteration, lastIteration));
       vimState.cursorStartPosition = cursorStartPos;
     }
 
@@ -268,8 +276,8 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
 }
 
 @RegisterAction
-export class SelectInnerWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+export class SelectInnerWord extends TextObject {
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -309,8 +317,8 @@ export class SelectInnerWord extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectInnerBigWord extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+export class SelectInnerBigWord extends TextObject {
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -356,7 +364,7 @@ export class SelectInnerBigWord extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectSentence extends TextObjectMovement {
+export class SelectSentence extends TextObject {
   keys = ['a', 's'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -413,7 +421,7 @@ export class SelectSentence extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectInnerSentence extends TextObjectMovement {
+export class SelectInnerSentence extends TextObject {
   keys = ['i', 's'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -456,7 +464,7 @@ export class SelectInnerSentence extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectParagraph extends TextObjectMovement {
+export class SelectParagraph extends TextObject {
   keys = ['a', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -493,7 +501,7 @@ export class SelectParagraph extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectInnerParagraph extends TextObjectMovement {
+export class SelectInnerParagraph extends TextObject {
   keys = ['i', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -538,7 +546,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectEntire extends TextObjectMovement {
+export class SelectEntire extends TextObject {
   keys = ['a', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -550,7 +558,7 @@ export class SelectEntire extends TextObjectMovement {
 }
 
 @RegisterAction
-export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
+export class SelectEntireIgnoringLeadingTrailing extends TextObject {
   keys = ['i', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -573,8 +581,8 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObjectMovement {
   }
 }
 
-abstract class IndentObjectMatch extends TextObjectMovement {
-  setsDesiredColumnToEOL = true;
+abstract class IndentObjectMatch extends TextObject {
+  override setsDesiredColumnToEOL = true;
 
   protected includeLineAbove = false;
   protected includeLineBelow = false;
@@ -638,7 +646,10 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
     return this.execAction(position, vimState);
   }
 
@@ -689,18 +700,18 @@ class InsideIndentObject extends IndentObjectMatch {
 @RegisterAction
 class InsideIndentObjectAbove extends IndentObjectMatch {
   keys = ['a', 'i'];
-  includeLineAbove = true;
+  override includeLineAbove = true;
 }
 
 @RegisterAction
 class InsideIndentObjectBoth extends IndentObjectMatch {
   keys = ['a', 'I'];
-  includeLineAbove = true;
-  includeLineBelow = true;
+  override includeLineAbove = true;
+  override includeLineBelow = true;
 }
 
-abstract class SelectArgument extends TextObjectMovement {
-  modes = [Mode.Normal, Mode.Visual];
+abstract class SelectArgument extends TextObject {
+  override modes = [Mode.Normal, Mode.Visual];
 
   private static openingDelimiterCharacters(): string[] {
     return configuration.argumentObjectOpeningDelimiters;
@@ -955,13 +966,13 @@ abstract class SelectArgument extends TextObjectMovement {
 
 @RegisterAction
 export class SelectInnerArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['i', 'a'];
 }
 
 @RegisterAction
 export class SelectAroundArgument extends SelectArgument {
-  modes = [Mode.Normal, Mode.Visual];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['a', 'a'];
-  selectAround = true;
+  override selectAround = true;
 }

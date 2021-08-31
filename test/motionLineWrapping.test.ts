@@ -167,6 +167,7 @@ suite('motion line wrapping', () => {
       start: ['|line 1', 'line 2'],
       keysPressed: '/line\nn',
       end: ['line 1', '|line 2'],
+      statusBar: 'E385: Search hit BOTTOM without match for: line',
     });
 
     newTest({
@@ -174,6 +175,7 @@ suite('motion line wrapping', () => {
       start: ['|line 1', 'line 2'],
       keysPressed: '/line\nNN',
       end: ['|line 1', 'line 2'],
+      statusBar: 'E384: Search hit TOP without match for: line',
     });
   });
 });

@@ -41,9 +41,21 @@ export function reportLinesYanked(numLinesYanked: number, vimState: VimState) {
  */
 export function reportFileInfo(position: Position, vimState: VimState) {
   const doc = vimState.document;
-  const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
+  const fileName = doc.isUntitled ? '[No Name]' : doc.fileName;
+  const modified = doc.isDirty ? ' [Modified]' : '';
 
-  StatusBar.setText(vimState, `"${doc.fileName}" ${doc.lineCount} lines --${progress}%--`);
+  if (doc.lineCount === 1 && doc.lineAt(0).text.length === 0) {
+    // TODO: Vim behaves slightly differently - seems this is only shown for new buffer that hasn't been saved to disk
+    StatusBar.setText(vimState, `"${fileName}"${modified} --No lines in buffer--`);
+  } else {
+    const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
+    StatusBar.setText(
+      vimState,
+      `"${fileName}"${modified} ${doc.lineCount} line${
+        doc.lineCount > 1 ? 's' : ''
+      } --${progress}%--`
+    );
+  }
 }
 
 /**

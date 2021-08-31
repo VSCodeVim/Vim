@@ -1,33 +1,38 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
+import { IBaseAction } from '../state/recordedState';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
-export abstract class BaseAction {
+export abstract class BaseAction implements IBaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  public isMotion = false;
+  public readonly isMotion: boolean = false;
 
-  public isOperator = false;
-  public isCommand = false;
+  public readonly isOperator: boolean = false;
+  public readonly isCommand: boolean = false;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
-  public isJump = false;
+  public readonly isJump: boolean = false;
 
-  public canBeRepeatedWithDot = false;
+  /**
+   * TODO: This property is a lie - it pertains to whether an action creates an undo point...
+   *       See #5058 and rationalize ASAP.
+   */
+  public readonly canBeRepeatedWithDot: boolean = false;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
    * this action is being applied to.
    */
-  multicursorIndex: number | undefined = undefined;
+  public multicursorIndex: number | undefined;
 
   /**
    * Whether we should change `vimState.desiredColumn`
@@ -46,11 +51,12 @@ export abstract class BaseAction {
    */
   public abstract readonly keys: readonly string[] | readonly string[][];
 
-  public mustBeFirstKey = false;
+  public readonly mustBeFirstKey: boolean = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
    */
+  // TODO: make readonly
   public keysPressed: string[] = [];
 
   private static readonly isSingleNumber: RegExp = /^[0-9]$/;
@@ -121,43 +127,19 @@ export abstract class BaseAction {
       const left = one[i];
       const right = two[j];
 
-      if (left === '<any>' || right === '<any>') {
+      if (left === right && right !== configuration.leader) {
         continue;
-      }
-
-      if (left === '<number>' && this.isSingleNumber.test(right)) {
+      } else if (left === '<any>') {
         continue;
-      }
-      if (right === '<number>' && this.isSingleNumber.test(left)) {
+      } else if (left === '<leader>' && right === configuration.leader) {
         continue;
-      }
-
-      if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
+      } else if (left === '<number>' && this.isSingleNumber.test(right)) {
         continue;
-      }
-      if (right === '<alpha>' && this.isSingleAlpha.test(left)) {
+      } else if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
-      }
-
-      if (left === '<character>' && !Notation.IsControlKey(right)) {
+      } else if (left === '<character>' && !Notation.IsControlKey(right)) {
         continue;
-      }
-      if (right === '<character>' && !Notation.IsControlKey(left)) {
-        continue;
-      }
-
-      if (left === '<leader>' && right === configuration.leader) {
-        continue;
-      }
-      if (right === '<leader>' && left === configuration.leader) {
-        continue;
-      }
-
-      if (left === configuration.leader || right === configuration.leader) {
-        return false;
-      }
-
-      if (left !== right) {
+      } else {
         return false;
       }
     }
@@ -178,13 +160,13 @@ export abstract class BaseAction {
  * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
-  isCommand = true;
+  override isCommand = true;
 
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
    * that means that we'll go and try to run it.
    */
-  isCompleteAction = true;
+  public isCompleteAction = true;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
@@ -199,9 +181,7 @@ export abstract class BaseCommand extends BaseAction {
    * If false, exec() will only be called once, and you are expected to
    * handle count prefixes (e.g. the 3 in 3w) yourself.
    */
-  runsOnceForEachCountPrefix = false;
-
-  canBeRepeatedWithDot = false;
+  public readonly runsOnceForEachCountPrefix: boolean = false;
 
   /**
    * Run the command a single time.
@@ -289,22 +269,22 @@ export function getRelevantAction(
   keysPressed: string[],
   vimState: VimState
 ): BaseAction | KeypressState {
-  let isPotentialMatch = false;
+  const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 
-  const possibleActionsForMode = actionMap.get(vimState.currentMode) || [];
+  let hasPotentialMatch = false;
   for (const actionType of possibleActionsForMode) {
+    // TODO: Constructing up to several hundred Actions every time we hit a key is moronic.
+    //       I think we can make `doesActionApply` and `couldActionApply` static...
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
       action.keysPressed = vimState.recordedState.actionKeys.slice(0);
       return action;
     }
 
-    if (action.couldActionApply(vimState, keysPressed)) {
-      isPotentialMatch = true;
-    }
+    hasPotentialMatch ||= action.couldActionApply(vimState, keysPressed);
   }
 
-  return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+  return hasPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
 }
 
 export function RegisterAction(action: new () => BaseAction): void {

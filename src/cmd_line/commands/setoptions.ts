@@ -50,6 +50,7 @@ export interface IOptionArgs extends node.ICommandArgs {
 }
 
 export class SetOptionsCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private readonly arguments: IOptionArgs;
 
   constructor(args: IOptionArgs) {
@@ -65,7 +66,7 @@ export class SetOptionsCommand extends node.CommandBase {
     const optionName = optionAliases.get(this.arguments.name) ?? this.arguments.name;
 
     if (configuration[optionName] == null) {
-      throw VimError.fromCode(ErrorCode.UnknownOption);
+      throw VimError.fromCode(ErrorCode.UnknownOption, optionName);
     }
 
     switch (this.arguments.operator) {
@@ -95,7 +96,7 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         const value = configuration[optionName];
         if (value === undefined) {
-          throw VimError.fromCode(ErrorCode.UnknownOption);
+          throw VimError.fromCode(ErrorCode.UnknownOption, optionName);
         } else {
           StatusBar.setText(vimState, `${optionName}=${value}`);
         }

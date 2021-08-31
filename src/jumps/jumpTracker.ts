@@ -7,6 +7,8 @@ import { Jump } from './jump';
 import { existsAsync } from 'platform/fs';
 import { Position } from 'vscode';
 
+const MAX_JUMPS = 100;
+
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState
  * in relation to the 'workbench.action.navigateBack' command.
@@ -294,16 +296,18 @@ export class JumpTracker {
 
   private pushJump(from: Jump | null, to?: Jump) {
     if (from) {
-      this.clearJumpsOnSamePosition(from);
+      this.clearJumpsOnSameLine(from);
     }
 
     if (from && (!to || !from.isSamePosition(to))) {
+      if (this._jumps.length === MAX_JUMPS) {
+        this._jumps.splice(0, 1);
+      }
+
       this._jumps.push(from);
     }
 
     this._currentJumpNumber = this._jumps.length;
-
-    this.clearOldJumps();
   }
 
   private changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
@@ -317,14 +321,10 @@ export class JumpTracker {
     );
   }
 
-  private clearOldJumps(): void {
-    if (this._jumps.length > 100) {
-      this._jumps.splice(0, this._jumps.length - 100);
-    }
-  }
-
-  private clearJumpsOnSamePosition(jump: Jump): void {
-    this._jumps = this._jumps.filter((j) => j === jump || !j.isSamePosition(jump));
+  private clearJumpsOnSameLine(jump: Jump): void {
+    this._jumps = this._jumps.filter(
+      (j) => j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line)
+    );
   }
 
   private removeDuplicateJumps() {

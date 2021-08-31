@@ -74,6 +74,7 @@ suite('Basic substitute', () => {
     start: ['|aba', 'ab'],
     keysPressed: sub('a', 'd', { lineRange: '%', flags: 'g' }),
     end: ['|dbd', 'db'],
+    statusBar: '3 substitutions on 2 lines',
   });
 
   newTest({
@@ -109,6 +110,7 @@ suite('Basic substitute', () => {
     start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.-1,.+1' }),
     end: ['yay blah', '|yay', 'yay blah', 'blah blah'],
+    statusBar: '3 substitutions on 3 lines',
   });
 
   newTest({
@@ -116,6 +118,7 @@ suite('Basic substitute', () => {
     start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
     keysPressed: '3' + sub('blah', 'yay'),
     end: ['blah blah', '|yay', 'yay blah', 'yay blah'],
+    statusBar: '3 substitutions on 3 lines',
   });
 
   newTest({
@@ -123,6 +126,7 @@ suite('Basic substitute', () => {
     start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay') + 'j' + '3:s\n',
     end: ['yay blah', '|yay', 'yay blah', 'yay blah'],
+    statusBar: '3 substitutions on 3 lines',
   });
 
   newTest({
@@ -154,6 +158,21 @@ suite('Basic substitute', () => {
   });
 
   newTest({
+    title: 'Preserve \\b in regular expression',
+    start: ['one |two three thirteen'],
+    keysPressed: sub('\\bt', 'x', { flags: 'g' }),
+    end: ['|one xwo xhree xhirteen'],
+    statusBar: '3 substitutions on 1 line',
+  });
+
+  newTest({
+    title: 'Preserve \\\\ in regular expression',
+    start: ['one |\\two \\three thirteen'],
+    keysPressed: sub('\\\\t', 'x', { flags: 'g' }),
+    end: ['|one xwo xhree thirteen'],
+  });
+
+  newTest({
     title: 'Replace with \\n',
     start: ['one |two three'],
     keysPressed: sub('t', '\\n', { flags: 'g' }),
@@ -172,6 +191,13 @@ suite('Basic substitute', () => {
     start: ['one |two three'],
     keysPressed: sub('t', '\\\\', { flags: 'g' }),
     end: ['|one \\wo \\hree'],
+  });
+
+  newTest({
+    title: 'Replace trailing \\ with \\',
+    start: ['one |two three'],
+    keysPressed: sub('t', '\\'),
+    end: ['|one \\wo three'],
   });
 
   newTest({

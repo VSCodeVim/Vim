@@ -60,7 +60,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public identity: EditorIdentity;
+  public readonly identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
 
@@ -71,8 +71,9 @@ export class VimState implements vscode.Disposable {
   /**
    * Are multiple cursors currently present?
    */
-  // TODO: why isn't this a function?
-  public isMultiCursor = false;
+  public get isMultiCursor(): boolean {
+    return this._cursors.length > 1;
+  }
 
   /**
    * Is the multicursor something like visual block "multicursor", where
@@ -94,8 +95,6 @@ export class VimState implements vscode.Disposable {
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
 
-  public alteredHistory = false;
-
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
 
@@ -108,9 +107,6 @@ export class VimState implements vscode.Disposable {
    * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
-
-  // TODO: move into ModeHandler
-  public focusChanged = false;
 
   public surround: SurroundState | undefined = undefined;
 
@@ -127,11 +123,6 @@ export class VimState implements vscode.Disposable {
    * This array is used to cache every VSCode view updating event and they will be triggered once we run the inhouse `viewUpdate`.
    */
   public postponedCodeViewChanges: ViewChange[] = [];
-
-  /**
-   * All the keys we've pressed so far.
-   */
-  public keyHistory: string[] = [];
 
   /**
    * The cursor position (start, stop) when this action finishes.
@@ -181,7 +172,6 @@ export class VimState implements vscode.Disposable {
     }
 
     this._cursors = [...map.values()];
-    this.isMultiCursor = this._cursors.length > 1;
   }
 
   /**
@@ -202,7 +192,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelection:
     | {
-        mode: Mode;
+        mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
         start: Position;
         end: Position;
       }
@@ -249,7 +239,7 @@ export class VimState implements vscode.Disposable {
    * use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.isOperatorPending(this._currentMode)
+    return this.recordedState.getOperatorState(this._currentMode) === 'pending'
       ? Mode.OperatorPendingMode
       : this._currentMode;
   }
@@ -280,11 +270,17 @@ export class VimState implements vscode.Disposable {
     }
   }
 
-  public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
-
-  public get effectiveRegisterMode(): RegisterMode {
-    if (this.currentRegisterMode !== RegisterMode.AscertainFromCurrentMode) {
-      return this.currentRegisterMode;
+  /**
+   * The currently active `RegisterMode`.
+   *
+   * When setting, `undefined` means "default for current `Mode`".
+   */
+  public set currentRegisterMode(registerMode: RegisterMode | undefined) {
+    this._currentRegisterMode = registerMode;
+  }
+  public get currentRegisterMode(): RegisterMode {
+    if (this._currentRegisterMode) {
+      return this._currentRegisterMode;
     }
     switch (this.currentMode) {
       case Mode.VisualLine:
@@ -295,6 +291,7 @@ export class VimState implements vscode.Disposable {
         return RegisterMode.CharacterWise;
     }
   }
+  private _currentRegisterMode: RegisterMode | undefined;
 
   public currentCommandlineText = '';
   public statusBarCursorCharacterPos = 0;

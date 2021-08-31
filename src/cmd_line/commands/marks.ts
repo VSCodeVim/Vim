@@ -19,12 +19,17 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    this.description = vimState.document.lineAt(mark.position).text.trim();
+    if (mark.editor && mark.editor !== vimState.editor) {
+      this.description = mark.editor.document.fileName;
+    } else {
+      this.description = vimState.document.lineAt(mark.position).text.trim();
+    }
     this.detail = `line ${mark.position.line} col ${mark.position.character}`;
   }
 }
 
 export class MarksCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private marksFilter?: string[];
 
   constructor(marksFilter?: string[]) {
@@ -54,6 +59,7 @@ export class MarksCommand extends node.CommandBase {
 }
 
 export class DeleteMarksCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
   private numbers = '0123456789';
   private numberRange = /([0-9])-([0-9])/;
   private letterRange = /([a-zA-Z])-([a-zA-Z])/;

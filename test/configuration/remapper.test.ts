@@ -77,7 +77,7 @@ suite('Remapper', () => {
       super('configKey', [Mode.Insert]);
     }
 
-    public findMatchingRemap(
+    public override findMatchingRemap(
       userDefinedRemappings: Map<string, IKeyRemapping>,
       inputtedKeys: string[],
       currentMode: Mode

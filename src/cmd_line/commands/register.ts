@@ -11,6 +11,8 @@ export interface IRegisterCommandArguments extends node.ICommandArgs {
   registers: string[];
 }
 export class RegisterCommand extends node.CommandBase {
+  public override readonly acceptsRange = false;
+
   private readonly arguments: IRegisterCommandArguments;
 
   constructor(args: IRegisterCommandArguments) {
@@ -32,7 +34,7 @@ export class RegisterCommand extends node.CommandBase {
   async displayRegisterValue(vimState: VimState, register: string): Promise<void> {
     let result = await this.getRegisterDisplayValue(register);
     if (result === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, register));
     } else {
       result = result.replace(/\n/g, '\\n');
       vscode.window.showInformationMessage(`${register} ${result}`);

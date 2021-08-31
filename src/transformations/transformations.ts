@@ -113,28 +113,17 @@ export interface InsertTextVSCodeTransformation {
 }
 
 /**
- * Represents deleting a character at a position in the document.
+ * <BS>
  */
-export interface DeleteTextTransformation {
-  type: 'deleteText';
+export interface DeleteLeft {
+  type: 'deleteLeft';
+}
 
-  /**
-   * Position at which to delete a character.
-   */
-  position: Position;
-
-  /**
-   * The index of the cursor that this transformation applies to.
-   */
-  cursorIndex?: number;
-
-  /**
-   * A position diff that will be added to the position of the cursor after
-   * the replace transformation has been applied.
-   *
-   * If you don't know what this is, just ignore it. You probably don't need it.
-   */
-  diff?: PositionDiff;
+/**
+ * <Del>
+ */
+export interface DeleteRight {
+  type: 'deleteRight';
 }
 
 /**
@@ -249,14 +238,14 @@ export type Transformation =
   | InsertTextVSCodeTransformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
-  | DeleteTextTransformation
+  | DeleteLeft
+  | DeleteRight
   | MoveCursorTransformation
   | ShowCommandHistory
   | ShowSearchHistory
   | Dot
   | Macro
   | ContentChangeTransformation
-  | DeleteTextTransformation
   | Tab
   | Reindent;
 
@@ -279,14 +268,12 @@ export type TextTransformations =
   | InsertTextVSCodeTransformation
   | DeleteTextRangeTransformation
   | MoveCursorTransformation
-  | DeleteTextTransformation
   | ReplaceTextTransformation;
 
 export const isTextTransformation = (x: Transformation): x is TextTransformations => {
   return (
     x.type === 'insertText' ||
     x.type === 'replaceText' ||
-    x.type === 'deleteText' ||
     x.type === 'deleteRange' ||
     x.type === 'moveCursor'
   );
@@ -298,11 +285,13 @@ export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
 const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
   switch (transformation.type) {
     case 'insertText':
-      return new Range(transformation.position, transformation.position);
+      return new Range(
+        transformation.position,
+        transformation.position.advancePositionByText(transformation.text)
+      );
     case 'replaceText':
+      // TODO: Do we need to do the same sort of thing here as for insertText?
       return transformation.range;
-    case 'deleteText':
-      return new Range(transformation.position, transformation.position);
     case 'deleteRange':
       return transformation.range;
     case 'moveCursor':

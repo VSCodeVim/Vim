@@ -32,7 +32,7 @@ import { Position } from 'vscode';
 class CommandTabInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<tab>'], ['<S-tab>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
@@ -56,7 +56,7 @@ class CommandTabInCommandline extends BaseCommand {
     vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length - restCmd.length;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const isTabForward = key === '<tab>';
 
@@ -137,11 +137,11 @@ class CommandTabInCommandline extends BaseCommand {
 class CommandEnterInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['\n'], ['<C-m>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     await commandLine.Run(vimState.currentCommandlineText, vimState);
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -151,11 +151,11 @@ class CommandEnterInCommandline extends BaseCommand {
 class CommandRemoveWordCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<C-w>'], ['<C-BS>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const pos = vimState.statusBarCursorCharacterPos;
     const cmdText = vimState.currentCommandlineText;
@@ -176,11 +176,11 @@ class CommandRemoveWordCommandline extends BaseCommand {
 class CommandRemoveWordInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = [['<C-w>'], ['<C-BS>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchState = globalState.searchState;
     if (searchState === undefined) {
       // TODO: log warning, at least
@@ -204,11 +204,11 @@ class CommandRemoveWordInSearchMode extends BaseCommand {
 class WordLeftInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = ['<C-left>'];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const cmdText = vimState.currentCommandlineText;
     vimState.statusBarCursorCharacterPos =
       getWordLeftInText(cmdText, vimState.statusBarCursorCharacterPos, WordType.Big) ?? 0;
@@ -219,11 +219,11 @@ class WordLeftInCommandline extends BaseCommand {
 class WordRightInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = ['<C-right>'];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const cmdText = vimState.currentCommandlineText;
     vimState.statusBarCursorCharacterPos =
       getWordRightInText(cmdText, vimState.statusBarCursorCharacterPos, WordType.Big) ??
@@ -235,11 +235,11 @@ class WordRightInCommandline extends BaseCommand {
 class WordLeftInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = ['<C-left>'];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchState = globalState.searchState;
     if (searchState === undefined) {
       // TODO: log warning, at least
@@ -256,11 +256,11 @@ class WordLeftInSearchMode extends BaseCommand {
 class WordRightInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = ['<C-right>'];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchState = globalState.searchState;
     if (searchState === undefined) {
       // TODO: log warning, at least
@@ -293,11 +293,11 @@ class CommandInsertInCommandline extends BaseCommand {
     ['<End>'],
     ['<Del>'],
   ];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
 
     // handle special keys first
@@ -390,13 +390,13 @@ class CommandInsertInSearchMode extends BaseCommand {
     ['<End>'],
     ['<Del>'],
   ];
-  isJump = true;
+  override isJump = true;
 
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
       return;
@@ -459,7 +459,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       const count = vimState.recordedState.count || 1;
       let searchPos = vimState.cursorStopPosition;
-      let nextMatch: { pos: Position; match: boolean; index: number } | undefined;
+      let nextMatch: { pos: Position; index: number } | undefined;
       for (let i = 0; i < count; i++) {
         // Move cursor to next match
         nextMatch = searchState.getNextSearchMatchPosition(vimState.editor, searchPos);
@@ -523,11 +523,11 @@ class CommandInsertInSearchMode extends BaseCommand {
 class CommandEscInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -540,11 +540,11 @@ class CommandEscInCommandline extends BaseCommand {
 class CommandEscInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchState = globalState.searchState;
     if (searchState === undefined) {
       // TODO: log warning, at least
@@ -576,9 +576,9 @@ class CommandEscInSearchMode extends BaseCommand {
 class CommandInsertRegisterContentInCommandLine extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = ['<C-r>', '<character>'];
-  isCompleteAction = false;
+  override isCompleteAction = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (!Register.isValidRegister(this.keysPressed[1])) {
       return;
     }
@@ -586,7 +586,10 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
     vimState.recordedState.registerName = this.keysPressed[1];
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+      );
       return;
     }
 
@@ -618,9 +621,9 @@ class CommandInsertRegisterContentInCommandLine extends BaseCommand {
 class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = ['<C-r>', '<character>'];
-  isCompleteAction = false;
+  override isCompleteAction = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
       return;
@@ -632,7 +635,10 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 
     const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister));
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+      );
       return;
     }
 
@@ -665,7 +671,7 @@ class CommandInsertWord extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
   keys = ['<C-r>', '<C-w>'];
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
       return;
@@ -689,7 +695,7 @@ class CommandInsertWord extends BaseCommand {
 class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
   keys = [['<left>'], ['<right>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
 
@@ -702,7 +708,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
     return trimmedStatusBarText;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const statusBarText = this.getTrimmedStatusBarText();
     if (key === '<right>') {
@@ -722,11 +728,11 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
 class CommandPasteInCommandline extends BaseCommand {
   modes = [Mode.CommandlineInProgress];
   keys = [['<C-v>'], ['<D-v>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const pos = vimState.statusBarCursorCharacterPos;
     const cmdText = vimState.currentCommandlineText;
@@ -746,11 +752,11 @@ class CommandPasteInCommandline extends BaseCommand {
 class CommandPasteInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = [['<C-v>'], ['<D-v>']];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
       return;
@@ -771,18 +777,18 @@ class CommandPasteInSearchMode extends BaseCommand {
 class CommandCtrlLInSearchMode extends BaseCommand {
   modes = [Mode.SearchInProgressMode];
   keys = ['<C-l>'];
-  runsOnceForEveryCursor() {
+  override runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<void> {
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (globalState.searchState === undefined) {
       // TODO: log warning, at least
       return;
     }
 
     const nextMatch = globalState.searchState.getNextSearchMatchRange(vimState.editor, position);
-    if (nextMatch?.match) {
+    if (nextMatch) {
       const line = vimState.document.lineAt(nextMatch.end).text;
       if (nextMatch.end.character < line.length) {
         globalState.searchState.searchString += line[nextMatch.end.character];

@@ -26,7 +26,10 @@ export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
 
   private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
-  private static readonly caseOverrideRegex = /\\[Cc]/g;
+  // c or C with an odd number of preceding \'s triggers "case override"
+  private static readonly caseOverrideRegex = supportsLookbehind
+    ? new RegExp('(?<=(?:^|[^\\\\])(?:\\\\\\\\)*)\\\\[Cc]', 'g')
+    : /\\[Cc]/g;
   private static readonly notEscapedSlashRegex = supportsLookbehind
     ? new RegExp('(?<=[^\\\\])\\/', 'g')
     : /\//g;
@@ -249,12 +252,12 @@ export class SearchState {
     editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
-  ): { pos: Position; match: boolean; index: number } | undefined {
+  ): { pos: Position; index: number } | undefined {
     const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
-    const { start, end, match, index } = nextMatch;
+    const { start, end, index } = nextMatch;
 
     let pos = start;
     if (this.offset) {
@@ -270,7 +273,7 @@ export class SearchState {
       }
     }
 
-    return { pos, match, index };
+    return { pos, index };
   }
 
   /**
@@ -285,12 +288,11 @@ export class SearchState {
     editor: vscode.TextEditor,
     startPosition: Position,
     direction = SearchDirection.Forward
-  ): { start: Position; end: Position; match: boolean; index: number } | undefined {
+  ): { start: Position; end: Position; index: number } | undefined {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      // TODO(bell)
-      return { start: startPosition, end: startPosition, match: false, index: -1 };
+      return undefined;
     }
 
     const effectiveDirection = (direction * this.searchDirection) as SearchDirection;
@@ -301,19 +303,16 @@ export class SearchState {
           return {
             start: matchRange.start,
             end: matchRange.end,
-            match: true,
             index,
           };
         }
       }
       // We've hit the bottom of the file. Wrap around if configured to do so, or return undefined.
-      // TODO(bell)
       if (configuration.wrapscan) {
         const range = matchRanges[0];
         return {
           start: range.start,
           end: range.end,
-          match: true,
           index: 0,
         };
       } else {
@@ -325,20 +324,17 @@ export class SearchState {
           return {
             start: matchRange.start,
             end: matchRange.end,
-            match: true,
             index: matchRanges.length - index - 1,
           };
         }
       }
 
       // We've hit the top of the file. Wrap around if configured to do so, or return undefined.
-      // TODO(bell)
       if (configuration.wrapscan) {
         const range = matchRanges[matchRanges.length - 1];
         return {
           start: range.start,
           end: range.end,
-          match: true,
           index: matchRanges.length - 1,
         };
       } else {
@@ -350,12 +346,11 @@ export class SearchState {
   public getSearchMatchRangeOf(
     editor: vscode.TextEditor,
     pos: Position
-  ): { start: Position; end: Position; match: boolean; index: number } {
+  ): { start: Position; end: Position; index: number } | undefined {
     const matchRanges = this.recalculateSearchRanges(editor);
 
     if (matchRanges.length === 0) {
-      // TODO(bell)
-      return { start: pos, end: pos, match: false, index: -1 };
+      return undefined;
     }
 
     for (const [index, matchRange] of matchRanges.entries()) {
@@ -363,14 +358,12 @@ export class SearchState {
         return {
           start: matchRange.start,
           end: matchRange.end,
-          match: true,
           index,
         };
       }
     }
 
-    // TODO(bell)
-    return { start: pos, end: pos, match: false, index: -1 };
+    return undefined;
   }
 
   constructor(

@@ -6,6 +6,7 @@ import * as node from '../node';
 import { Position } from 'vscode';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
+  linesToRemove?: number;
   register?: string;
 }
 
@@ -17,7 +18,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     this.arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -57,12 +58,26 @@ export class DeleteRangeCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursorStopPosition.line;
-    this.deleteRange(line, line, vimState);
+    const linesToRemove = this.arguments.linesToRemove ?? 1;
+    // :d[elete][cnt] removes [cnt] lines
+    const startLine = vimState.cursorStartPosition.line;
+    const endLine = startLine + (linesToRemove - 1);
+    this.deleteRange(startLine, endLine, vimState);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+    /**
+     * If a [cnt] and [range] is specified (e.g. :.+2d3), :delete [cnt] is called from
+     * the end of the [range].
+     * Ex. if two lines are VisualLine highlighted, :<,>d3 will :d3
+     * from the end of the selected lines.
+     */
     const [start, end] = range.resolve(vimState);
+    if (this.arguments.linesToRemove) {
+      vimState.cursorStartPosition = new Position(end, 0);
+      await this.execute(vimState);
+      return;
+    }
     this.deleteRange(start, end, vimState);
   }
 }

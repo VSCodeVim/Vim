@@ -3,6 +3,7 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
+  InvalidAddress = 14,
   MarkNotSet = 20,
   NoAlternateFile = 23,
   NoInsertedTextYet = 29,
@@ -20,6 +21,7 @@ export enum ErrorCode {
   CannotCloseLastWindow = 444,
   ArgumentRequired = 471,
   InvalidArgument = 474,
+  NoRangeAllowed = 481,
   PatternNotFound = 486,
   TrailingCharacters = 488,
   NotAnEditorCommand = 492,
@@ -28,9 +30,11 @@ export enum ErrorCode {
   AtStartOfChangeList = 662,
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
+  NoPreviouslyUsedRegister = 748,
 }
 
 export const ErrorMessage: IErrorMessage = {
+  14: 'Invalid address',
   20: 'Mark not set',
   23: 'No alternate file',
   29: 'No inserted text yet',
@@ -41,13 +45,14 @@ export const ErrorMessage: IErrorMessage = {
   208: 'Error writing to file',
   223: 'Recursive mapping',
   348: 'No string under cursor',
-  353: 'Nothing in register', // TODO: this needs an extra value ("Nothing in register x")
+  353: 'Nothing in register',
   354: 'Invalid register name',
   384: 'Search hit TOP without match for',
   385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',
   471: 'Argument required',
   474: 'Invalid argument',
+  481: 'No range allowed',
   486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
@@ -56,11 +61,12 @@ export const ErrorMessage: IErrorMessage = {
   662: 'At start of changelist',
   663: 'At end of changelist',
   664: 'changelist is empty',
+  748: 'No previously used register',
 };
 
 export class VimError extends Error {
   public readonly code: number;
-  public readonly message: string;
+  public override readonly message: string;
 
   private constructor(code: number, message: string) {
     super();
@@ -70,13 +76,20 @@ export class VimError extends Error {
 
   static fromCode(code: ErrorCode, extraValue?: string): VimError {
     if (ErrorMessage[code]) {
-      return new VimError(code, ErrorMessage[code] + (extraValue ? `: ${extraValue}` : ''));
+      if (extraValue) {
+        if (code === ErrorCode.NothingInRegister) {
+          extraValue = ` ${extraValue}`;
+        } else {
+          extraValue = `: ${extraValue}`;
+        }
+      }
+      return new VimError(code, ErrorMessage[code] + (extraValue ?? ''));
     }
 
     throw new Error('unknown error code: ' + code);
   }
 
-  toString(): string {
+  override toString(): string {
     return `E${this.code}: ${this.message}`;
   }
 }

@@ -23,23 +23,38 @@ class TestMemento implements vscode.Memento {
     return this.mapping.get(key) || defaultValue;
   }
 
+  setKeysForSync(keys: string[]): void {
+    throw new Error('`TestMemento.setKeysForSync` is currently unimplemented');
+  }
+
   async update(key: string, value: any): Promise<void> {
     this.mapping.set(key, value);
   }
 }
+
 export class TestExtensionContext implements vscode.ExtensionContext {
+  extension!: vscode.Extension<any>;
   subscriptions: Array<{ dispose(): any }> = [];
   workspaceState: vscode.Memento = new TestMemento();
-  globalState: vscode.Memento = new TestMemento();
+  globalState: vscode.Memento & {
+    setKeysForSync(keys: string[]): void;
+  } = new TestMemento();
+  secrets!: vscode.SecretStorage;
+  extensionUri!: vscode.Uri;
   extensionPath: string = 'inmem:///test';
+  environmentVariableCollection!: vscode.EnvironmentVariableCollection;
 
   asAbsolutePath(relativePath: string): string {
     return path.resolve(this.extensionPath, relativePath);
   }
 
+  storageUri: vscode.Uri | undefined;
   storagePath: string | undefined;
+  globalStorageUri!: vscode.Uri;
   globalStoragePath!: string;
+  logUri!: vscode.Uri;
   logPath!: string;
+  extensionMode!: vscode.ExtensionMode;
 }
 
 export function rndName(): string {
