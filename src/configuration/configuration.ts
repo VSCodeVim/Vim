@@ -225,7 +225,7 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
-  matchpairs = '';
+  matchpairs = '(:),{:},[:]';
 
   joinspaces = true;
 

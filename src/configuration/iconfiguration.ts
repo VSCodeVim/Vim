@@ -292,8 +292,10 @@ export interface IConfiguration {
   iskeyword: string;
 
   /**
-   * addional chars for pairwise jumping with %.
-   * for now only: <  >
+   * Characters that form pairs. The % command jumps from one to the other.
+   * Only character pairs are allowed that are different, thus you cannot jump between two double quotes.
+   * The characters must be separated by a colon.
+   * The pairs must be separated by a comma.
    */
   matchpairs: string;
 

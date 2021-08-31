@@ -87,7 +87,7 @@ export class Configuration implements IConfiguration {
   number = true;
   relativenumber = false;
   iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
-  matchpairs = '';
+  matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;

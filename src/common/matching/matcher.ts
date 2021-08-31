@@ -6,7 +6,6 @@ export type Pairing = {
   match: string;
   isNextMatchForward: boolean;
   directionless?: boolean;
-  matchesWithPercentageMotion?: boolean;
 };
 
 /**
@@ -17,18 +16,18 @@ export class PairMatcher {
   static pairings: {
     [key: string]: Pairing;
   } = {
-    '(': { match: ')', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    '{': { match: '}', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    '[': { match: ']', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    ')': { match: '(', isNextMatchForward: false, matchesWithPercentageMotion: true },
-    '}': { match: '{', isNextMatchForward: false, matchesWithPercentageMotion: true },
-    ']': { match: '[', isNextMatchForward: false, matchesWithPercentageMotion: true },
+    '(': { match: ')', isNextMatchForward: true },
+    '{': { match: '}', isNextMatchForward: true },
+    '[': { match: ']', isNextMatchForward: true },
+    ')': { match: '(', isNextMatchForward: false },
+    '}': { match: '{', isNextMatchForward: false },
+    ']': { match: '[', isNextMatchForward: false },
 
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
     // matchesWithPercentageMotion can be overwritten with configuration.matchpairs
-    '<': { match: '>', isNextMatchForward: true, matchesWithPercentageMotion: false },
-    '>': { match: '<', isNextMatchForward: false, matchesWithPercentageMotion: false },
+    '<': { match: '>', isNextMatchForward: true },
+    '>': { match: '<', isNextMatchForward: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
     '"': { match: '"', isNextMatchForward: false, directionless: true },
@@ -116,15 +115,24 @@ export class PairMatcher {
     }
   }
 
-  static getPairing(pair: string): Pairing {
-    const pairing = this.pairings[pair];
-    if (pairing !== undefined && pairing.matchesWithPercentageMotion === false) {
-      // we look up config if it overwrites matchesWithPercentageMotion setting
-      pairing.matchesWithPercentageMotion = configuration.matchpairs.includes(pair);
-      return pairing;
-    } else {
-      return pairing;
+  static getPercentPairing(char: string): Pairing | undefined {
+    for (const pairing of configuration.matchpairs.split(',')) {
+      const components = pairing.split(':');
+      if (components.length === 2) {
+        if (components[0] === char) {
+          return {
+            match: components[1],
+            isNextMatchForward: true,
+          };
+        } else if (components[1] === char) {
+          return {
+            match: components[0],
+            isNextMatchForward: false,
+          };
+        }
+      }
     }
+    return undefined;
   }
 
   static nextPairedChar(
