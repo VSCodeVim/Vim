@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.21.6",
+  "version": "1.21.7",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -613,6 +613,11 @@
           "type": "boolean",
           "markdownDescription": "Override the `ignorecase` option if the search pattern contains upper case characters.",
           "default": true
+        },
+        "vim.matchpairs": {
+          "type": "string",
+          "markdownDescription": "Characters that form pairs. The % command jumps from one to the other. Only character pairs are allowed that are different, thus you cannot jump between two double quotes. The characters must be separated by a colon. The pairs must be separated by a comma.",
+          "default": "(:),{:},[:]"
         },
         "vim.camelCaseMotion.enable": {
           "type": "boolean",

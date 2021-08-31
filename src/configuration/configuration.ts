@@ -43,6 +43,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['isk', 'iskeyword'],
   ['js', 'joinspaces'],
   ['mmd', 'maxmapdepth'],
+  ['mps', 'matchpairs'],
   ['nu', 'number'],
   ['rnu', 'relativenumber'],
   ['sc', 'showcmd'],
@@ -224,6 +225,8 @@ class Configuration implements IConfiguration {
   smartcase = true;
 
   autoindent = true;
+
+  matchpairs = '(:),{:},[:]';
 
   joinspaces = true;
 

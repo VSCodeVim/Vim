@@ -108,9 +108,6 @@ export class VimState implements vscode.Disposable {
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
 
-  // TODO: move into ModeHandler
-  public focusChanged = false;
-
   public surround: SurroundState | undefined = undefined;
 
   /**
@@ -195,7 +192,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelection:
     | {
-        mode: Mode;
+        mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
         start: Position;
         end: Position;
       }

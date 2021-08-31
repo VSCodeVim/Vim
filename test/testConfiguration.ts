@@ -91,6 +91,7 @@ export class Configuration implements IConfiguration {
   number = true;
   relativenumber = false;
   iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;
