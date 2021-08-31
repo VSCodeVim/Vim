@@ -27,7 +27,7 @@ import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { StatusBar, statusBarCommandText } from '../../statusBar';
+import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
@@ -87,7 +87,6 @@ export class DocumentContentChangeAction extends BaseCommand {
         const linesAffected = change.range.end.line - change.range.start.line + 1;
         const resultLines = change.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesAffected,
           Math.max(0, originalLeftBoundary.line + resultLines - linesAffected)
         );
         continue;
@@ -467,10 +466,14 @@ abstract class CommandEditorScroll extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const timesToRepeat = vimState.recordedState.count || 1;
-    const visibleRange = vimState.editor.visibleRanges[0];
     const scrolloff = configuration
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
+
+    const visibleRange = vimState.editor.visibleRanges[0];
+    if (visibleRange === undefined) {
+      return;
+    }
 
     const linesAboveCursor =
       visibleRange.end.line - vimState.cursorStopPosition.line - timesToRepeat;
@@ -531,14 +534,17 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   /**
    * @returns the number of lines this command should move the cursor
    */
-  protected abstract getNumLines(vimState: VimState): number;
+  protected abstract getNumLines(visibleRanges: vscode.Range[]): number;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const { visibleRanges } = vimState.editor;
+    if (visibleRanges.length === 0) {
+      return;
+    }
     const smoothScrolling = configuration
       .getConfiguration('editor')
       .get<boolean>('smoothScrolling', false);
-    const moveLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
+    const moveLines = (vimState.actionCount || 1) * this.getNumLines(visibleRanges);
 
     let scrollLines = moveLines;
     if (this.to === 'down') {
@@ -584,9 +590,8 @@ class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-b>'];
   to: EditorScrollDirection = 'up';
 
-  protected getNumLines(vimState: VimState) {
-    const visible = vimState.editor.visibleRanges[0];
-    return visible.end.line - visible.start.line;
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return visibleRanges[0].end.line - visibleRanges[0].start.line;
   }
 }
 
@@ -595,9 +600,8 @@ class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
   keys = ['<C-f>'];
   to: EditorScrollDirection = 'down';
 
-  protected getNumLines(vimState: VimState) {
-    const visible = vimState.editor.visibleRanges[0];
-    return visible.end.line - visible.start.line;
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return visibleRanges[0].end.line - visibleRanges[0].start.line;
   }
 }
 
@@ -606,8 +610,8 @@ class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
 
-  protected getNumLines(vimState: VimState) {
-    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return configuration.getScrollLines(visibleRanges);
   }
 }
 
@@ -616,8 +620,8 @@ class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
 
-  protected getNumLines(vimState: VimState) {
-    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return configuration.getScrollLines(visibleRanges);
   }
 }
 
@@ -1161,8 +1165,6 @@ export class CommandUndo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1181,8 +1183,6 @@ class CommandUndoOnLine extends BaseCommand {
     if (newPosition !== undefined) {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1202,8 +1202,6 @@ class CommandRedo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 

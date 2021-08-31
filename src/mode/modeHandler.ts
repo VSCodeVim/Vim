@@ -61,6 +61,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly vimState: VimState;
   public readonly remapState: RemapState;
 
+  public focusChanged = false;
+
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
   private readonly remappers: Remappers;
@@ -435,7 +437,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // is disabled. This makes it possible to map zero without making it impossible
       // to type a count with a zero.
       const preventZeroRemap =
-        key === '0' && this.vimState.recordedState.getLastActionRun() instanceof CommandNumber;
+        key === '0' &&
+        this.vimState.recordedState.actionsRun[
+          this.vimState.recordedState.actionsRun.length - 1
+        ] instanceof CommandNumber;
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
@@ -677,28 +682,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   private async runAction(recordedState: RecordedState, action: IBaseAction): Promise<void> {
-    let ranRepeatableAction = false;
-    let ranAction = false;
     this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
-
-    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
-    // this needs to happen before any changes are made
-
-    /*
-
-    TODO: This causes . to crash vscodevim for some reason.
-
-    if (!this.vimState.isMultiCursor) {
-      let prevPos = this.vimState.historyTracker.getLastHistoryEndPosition();
-      if (prevPos !== undefined && !this.vimState.isRunningDotCommand) {
-        if (this.vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
-          this.vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
-          globalState.previousFullAction = recordedState;
-          this.vimState.historyTracker.finishCurrentStep();
-        }
-      }
-    }
-    */
 
     // We handle the end of selections different to VSCode. In order for VSCode to select
     // including the last character we will at the end of 'runAction' shift our stop position
@@ -720,12 +704,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         )
     );
 
+    let ranRepeatableAction = false;
+    let ranAction = false;
+
     if (action instanceof BaseMovement) {
       recordedState = await this.executeMovement(action);
       ranAction = true;
-    }
-
-    if (action instanceof BaseCommand) {
+    } else if (action instanceof BaseCommand) {
       await action.execCount(this.vimState.cursorStopPosition, this.vimState);
 
       const transformer = this.vimState.recordedState.transformer;
@@ -738,10 +723,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (action.canBeRepeatedWithDot) {
         ranRepeatableAction = true;
       }
-    }
-
-    if (action instanceof BaseOperator) {
+    } else if (action instanceof BaseOperator) {
       recordedState.operatorCount = recordedState.count;
+    } else {
+      throw new Error('Unknown action type');
     }
 
     // Update mode (note the ordering allows you to go into search mode,
@@ -761,7 +746,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    if (recordedState.operatorReadyToExecute(this.vimState.currentMode)) {
+    // If there's an operator pending and we have a motion or visual selection, run the operator
+    if (recordedState.getOperatorState(this.vimState.currentMode) === 'ready') {
       const operator = this.vimState.recordedState.operator;
       if (operator) {
         await this.executeOperator();
@@ -825,6 +811,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       );
     }
 
+    // We've run a complete action sequence - wipe the slate clean with a new RecordedState
     if (ranAction && this.vimState.currentMode === Mode.Normal) {
       this.vimState.recordedState = new RecordedState();
 
@@ -839,17 +826,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // track undo history
-    if (!this.vimState.focusChanged) {
+    if (!this.focusChanged) {
       // important to ensure that focus didn't change, otherwise
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
 
-      if (this.vimState.alteredHistory) {
-        this.vimState.alteredHistory = false;
-        this.vimState.historyTracker.ignoreChange();
-      } else {
-        this.vimState.historyTracker.addChange();
-      }
+      this.vimState.historyTracker.addChange();
     }
 
     // Don't record an undo point for every action of a macro, only at the very end
@@ -862,8 +844,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     recordedState.actionKeys = [];
-    this.vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
+    this.vimState.currentRegisterMode = undefined;
 
+    // If we're in Normal mode, collapse each cursor down to one character
     if (this.currentMode === Mode.Normal) {
       this.vimState.cursors = this.vimState.cursors.map(
         (cursor) => new Cursor(cursor.stop, cursor.stop)
@@ -875,10 +858,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !this.vimState.document.isClosed &&
       this.vimState.editor === vscode.window.activeTextEditor
     ) {
+      const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.document);
+      const documentLineCount = this.vimState.document.lineCount;
+
       this.vimState.cursors = this.vimState.cursors.map((cursor: Cursor) => {
         // adjust start/stop
-        const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.document);
-        const documentLineCount = this.vimState.document.lineCount;
         if (cursor.start.line >= documentLineCount) {
           cursor = cursor.withNewStart(documentEndPosition);
         }
@@ -981,10 +965,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           cursorsToRemove.push(i);
         } else {
           this.vimState.cursors[i] = new Cursor(result.start, result.stop);
-        }
-
-        if (result.registerMode) {
-          this.vimState.currentRegisterMode = result.registerMode;
         }
       }
     }
@@ -1167,7 +1147,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
-        selectionMode = globalState.searchState!.previousMode;
+        selectionMode = globalState.searchState?.previousMode ?? Mode.Normal;
       } else if (this.vimState.currentMode === Mode.CommandlineInProgress) {
         selectionMode = commandLine.previousMode;
       } else if (this.vimState.currentMode === Mode.SurroundInputMode) {
@@ -1327,7 +1307,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
        * Extend this condition if it is the desired behaviour for other actions as well.
        */
       const isLastCursorTracked =
-        this.vimState.recordedState.getLastActionRun() instanceof ActionOverrideCmdD;
+        this.vimState.recordedState.actionsRun[
+          this.vimState.recordedState.actionsRun.length - 1
+        ] instanceof ActionOverrideCmdD;
 
       let cursorToTrack: Cursor;
       if (isLastCursorTracked) {

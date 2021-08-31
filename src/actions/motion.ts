@@ -1335,11 +1335,13 @@ class MoveNonBlankFirst extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
     const line = clamp(count, 1, vimState.document.lineCount) - 1;
+
     return {
       start: vimState.cursorStartPosition,
       stop: position.with({ line }).obeyStartOfLine(vimState.document),
-      registerMode: RegisterMode.LineWise,
     };
   }
 }
@@ -1354,8 +1356,9 @@ class MoveNonBlankLast extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    let stop: Position;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
+    let stop: Position;
     if (count === 0) {
       stop = new Position(vimState.document.lineCount - 1, position.character).obeyStartOfLine(
         vimState.document
@@ -1370,7 +1373,6 @@ class MoveNonBlankLast extends BaseMovement {
     return {
       start: vimState.cursorStartPosition,
       stop,
-      registerMode: RegisterMode.LineWise,
     };
   }
 }
@@ -1622,9 +1624,7 @@ class MoveParagraphEnd extends BaseMovement {
        */
       this.isFirstLineWise = this.iteration === 1 ? isLineWise : this.isFirstLineWise;
 
-      vimState.currentRegisterMode = this.isFirstLineWise
-        ? RegisterMode.LineWise
-        : RegisterMode.AscertainFromCurrentMode;
+      vimState.currentRegisterMode = this.isFirstLineWise ? RegisterMode.LineWise : undefined;
 
       /**
        * `paragraphEnd` is the first blank line after the last word in the
@@ -1747,8 +1747,12 @@ class MoveToMatchingBracket extends BaseMovement {
     const failure = failedMovement(vimState);
 
     for (let col = position.character; col < lineText.length; col++) {
-      const pairing = PairMatcher.pairings[lineText[col]];
-      if (pairing && pairing.matchesWithPercentageMotion) {
+      const currentChar = lineText[col];
+      const pairing = PairMatcher.getPercentPairing(currentChar);
+
+      // we need to check pairing, because with text: bla |bla < blub > blub
+      // this for loop will walk over bla and check for a pairing till it finds <
+      if (pairing) {
         // We found an opening char, now move to the matching closing char
         return (
           PairMatcher.nextPairedChar(

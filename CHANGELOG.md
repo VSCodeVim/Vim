@@ -1,5 +1,32 @@
 # Change Log
 
+## [v1.21.7](https://github.com/vscodevim/vim/tree/v1.21.7) (2021-08-31)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.6...v1.21.7)
+
+**Enhancements:**
+
+- `:delete` and `:yank` should support `{count}` argument [\#6995](https://github.com/VSCodeVim/Vim/issues/6995)
+
+**Fixed Bugs:**
+
+- Failed to handle key=\<C-e\>. Cannot read property 'end' of undefined [\#7027](https://github.com/VSCodeVim/Vim/issues/7027)
+- Failed to handle key=\<Esc\>. e.getTransformation is not a function [\#7009](https://github.com/VSCodeVim/Vim/issues/7009)
+- Pressing tab while in Replace mode resulting \<tab\> [\#6641](https://github.com/VSCodeVim/Vim/issues/6641)
+- Failed to handle key=\<Esc\>. Cannot read property 'previousMode' of undefined [\#6343](https://github.com/VSCodeVim/Vim/issues/6343)
+
+**Closed issues:**
+
+- Why vim-surround command csw" \(word surround\) is not working now? [\#7003](https://github.com/VSCodeVim/Vim/issues/7003)
+- Allow for appending to \[a-z\] registers [\#6965](https://github.com/VSCodeVim/Vim/issues/6965)
+
+**Merged pull requests:**
+
+- Show command and search when showmodename is disabled [\#7021](https://github.com/VSCodeVim/Vim/pull/7021) ([BlakeWilliams](https://github.com/BlakeWilliams))
+- Adds count argument to `:yank` and `:delete` commands [\#7007](https://github.com/VSCodeVim/Vim/pull/7007) ([DevinLeamy](https://github.com/DevinLeamy))
+- fix: \<tab\> behavior in replace mode [\#6997](https://github.com/VSCodeVim/Vim/pull/6997) ([Komar0ff](https://github.com/Komar0ff))
+- Append to \[a-z\] registers [\#6971](https://github.com/VSCodeVim/Vim/pull/6971) ([DevinLeamy](https://github.com/DevinLeamy))
+
 ## [v1.21.6](https://github.com/vscodevim/vim/tree/v1.21.6) (2021-08-11)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.5...v1.21.6)
@@ -25,7 +52,6 @@
 - s [\#6959](https://github.com/VSCodeVim/Vim/issues/6959)
 - Status bar shows -- NORMAL -- but no commands working [\#6929](https://github.com/VSCodeVim/Vim/issues/6929)
 - Make "gd" Open definition to the side in Search Editor [\#6921](https://github.com/VSCodeVim/Vim/issues/6921)
-- vim undo vs vscode undo [\#6919](https://github.com/VSCodeVim/Vim/issues/6919)
 - Simple copy-paste key bindings don't work in --INSERT-- mode [\#6914](https://github.com/VSCodeVim/Vim/issues/6914)
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///home/fabrice/CRIStAL/Speed/examples/train_example.py". [\#6868](https://github.com/VSCodeVim/Vim/issues/6868)
 - Failed to handle key=2. Cannot read property 'length' of undefined [\#6861](https://github.com/VSCodeVim/Vim/issues/6861)
@@ -215,24 +241,14 @@
 
 - Failed to handle key=.. Illegal argument: character must be non-negative [\#6339](https://github.com/VSCodeVim/Vim/issues/6339)
 - Failed to handle key=\<C-a\>. Illegal value for `line` [\#6331](https://github.com/VSCodeVim/Vim/issues/6331)
-- Illegal value for `line` [\#6273](https://github.com/VSCodeVim/Vim/issues/6273)
-- Failed to handle key=d. Illegal value for `line` [\#6258](https://github.com/VSCodeVim/Vim/issues/6258)
 
 ## [v1.19.1](https://github.com/vscodevim/vim/tree/v1.19.1) (2021-03-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.0...v1.19.1)
 
-**Fixed Bugs:**
-
-- Failed to handle key=\<right\>. Cannot read property 'isOperator' of undefined [\#6309](https://github.com/VSCodeVim/Vim/issues/6309)
-
 ## [v1.19.0](https://github.com/vscodevim/vim/tree/v1.19.0) (2021-03-19)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.18.9...v1.19.0)
-
-**Closed issues:**
-
-- Failed to handle key=c. Illegal value for `line` [\#6301](https://github.com/VSCodeVim/Vim/issues/6301)
 
 ## [v1.18.9](https://github.com/vscodevim/vim/tree/v1.18.9) (2021-02-05)
 

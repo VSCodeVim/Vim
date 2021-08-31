@@ -399,6 +399,7 @@ async function testIt(testObj: ITestObject): Promise<void> {
 
   // jumps: check jumps are correct if given
   if (testObj.jumps !== undefined) {
+    // TODO: Jumps should be specified by Positions, not line contents
     assert.deepStrictEqual(
       jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),

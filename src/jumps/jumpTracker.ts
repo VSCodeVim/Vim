@@ -296,7 +296,7 @@ export class JumpTracker {
 
   private pushJump(from: Jump | null, to?: Jump) {
     if (from) {
-      this.clearJumpsOnSamePosition(from);
+      this.clearJumpsOnSameLine(from);
     }
 
     if (from && (!to || !from.isSamePosition(to))) {
@@ -321,8 +321,10 @@ export class JumpTracker {
     );
   }
 
-  private clearJumpsOnSamePosition(jump: Jump): void {
-    this._jumps = this._jumps.filter((j) => j === jump || !j.isSamePosition(jump));
+  private clearJumpsOnSameLine(jump: Jump): void {
+    this._jumps = this._jumps.filter(
+      (j) => j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line)
+    );
   }
 
   private removeDuplicateJumps() {

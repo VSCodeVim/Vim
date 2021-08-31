@@ -1,37 +1,38 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
+import { IBaseAction } from '../state/recordedState';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
-export abstract class BaseAction {
+export abstract class BaseAction implements IBaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  public isMotion = false;
+  public readonly isMotion: boolean = false;
 
-  public isOperator = false;
-  public isCommand = false;
+  public readonly isOperator: boolean = false;
+  public readonly isCommand: boolean = false;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
-  public isJump = false;
+  public readonly isJump: boolean = false;
 
   /**
    * TODO: This property is a lie - it pertains to whether an action creates an undo point...
    *       See #5058 and rationalize ASAP.
    */
-  public canBeRepeatedWithDot = false;
+  public readonly canBeRepeatedWithDot: boolean = false;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
    * this action is being applied to.
    */
-  multicursorIndex: number | undefined = undefined;
+  public multicursorIndex: number | undefined;
 
   /**
    * Whether we should change `vimState.desiredColumn`
@@ -50,11 +51,12 @@ export abstract class BaseAction {
    */
   public abstract readonly keys: readonly string[] | readonly string[][];
 
-  public mustBeFirstKey = false;
+  public readonly mustBeFirstKey: boolean = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
    */
+  // TODO: make readonly
   public keysPressed: string[] = [];
 
   private static readonly isSingleNumber: RegExp = /^[0-9]$/;
@@ -164,7 +166,7 @@ export abstract class BaseCommand extends BaseAction {
    * If isCompleteAction is true, then triggering this command is a complete action -
    * that means that we'll go and try to run it.
    */
-  isCompleteAction = true;
+  public isCompleteAction = true;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
@@ -179,7 +181,7 @@ export abstract class BaseCommand extends BaseAction {
    * If false, exec() will only be called once, and you are expected to
    * handle count prefixes (e.g. the 3 in 3w) yourself.
    */
-  runsOnceForEachCountPrefix = false;
+  public readonly runsOnceForEachCountPrefix: boolean = false;
 
   /**
    * Run the command a single time.

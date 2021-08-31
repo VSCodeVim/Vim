@@ -10,7 +10,6 @@ import {
   overlappingTransformations,
 } from './transformations';
 import { commandLine } from '../cmd_line/commandLine';
-import { PairMatcher } from '../common/matching/matcher';
 import { PositionDiff } from '../common/motion/position';
 import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';

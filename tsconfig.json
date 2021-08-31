@@ -11,6 +11,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {

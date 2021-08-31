@@ -733,6 +733,8 @@ export class HistoryTracker {
       await change.undo(this.vimState.editor);
     }
 
+    this.ignoreChange();
+
     // TODO: if there are more/fewer lines after undoing the change, it should say so
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
@@ -758,6 +760,8 @@ export class HistoryTracker {
     for (const change of step.changes) {
       await change.do(this.vimState.editor);
     }
+
+    this.ignoreChange();
 
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
@@ -846,6 +850,8 @@ export class HistoryTracker {
 
       this.finishCurrentStep();
     }
+
+    this.ignoreChange();
 
     /*
      * Unlike the goBackHistoryStep() function, this function does not trust the

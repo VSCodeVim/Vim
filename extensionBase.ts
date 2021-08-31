@@ -60,12 +60,12 @@ export async function getAndUpdateModeHandler(
 
   previousActiveEditorId = activeEditorId;
 
-  if (curHandler.vimState.focusChanged) {
-    curHandler.vimState.focusChanged = false;
+  if (curHandler.focusChanged) {
+    curHandler.focusChanged = false;
 
     if (previousActiveEditorId) {
       const prevHandler = ModeHandlerMap.get(previousActiveEditorId);
-      prevHandler!.vimState.focusChanged = true;
+      prevHandler!.focusChanged = true;
     }
   }
 
@@ -323,8 +323,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (mh.vimState.focusChanged) {
-        mh.vimState.focusChanged = false;
+      if (mh.focusChanged) {
+        mh.focusChanged = false;
         return;
       }
 
