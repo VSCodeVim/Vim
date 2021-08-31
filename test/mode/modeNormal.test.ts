@@ -1576,20 +1576,6 @@ suite('Mode Normal', () => {
     });
   });
 
-  newTest({
-    title: '`. works correctly',
-    start: ['on|e'],
-    keysPressed: 'atwo<Esc>`.',
-    end: ['one|two'],
-  });
-
-  newTest({
-    title: "'. works correctly",
-    start: ['on|e'],
-    keysPressed: "atwo<Esc>'.",
-    end: ['one|two'],
-  });
-
   suite('g;', () => {
     newTest({
       title: 'g; before any changes throws E664',
@@ -2984,34 +2970,6 @@ suite('Mode Normal', () => {
     keysPressed: 'daa',
     end: ['(', '   foo,', '   ba|r', ')'],
     endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '`] go to the end of the previously operated or put text',
-    start: ['hello|'],
-    keysPressed: 'a world<Esc>`]',
-    end: ['hello worl|d'],
-  });
-
-  newTest({
-    title: "'] go to the end of the previously operated or put text",
-    start: ['hello|'],
-    keysPressed: "a world<Esc>']",
-    end: ['hello worl|d'],
-  });
-
-  newTest({
-    title: '`[ go to the start of the previously operated or put text',
-    start: ['hello|'],
-    keysPressed: 'a world<Esc>`[',
-    end: ['hello| world'],
-  });
-
-  newTest({
-    title: "'[ go to the start of the previously operated or put text",
-    start: ['hello|'],
-    keysPressed: "a world<Esc>'[",
-    end: ['hello| world'],
   });
 
   suite('can handle gn', () => {
