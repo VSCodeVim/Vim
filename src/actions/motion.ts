@@ -639,6 +639,10 @@ class MarkMovement extends BaseMovement {
     }
 
     if (mark.isUppercaseMark && mark.editor !== undefined) {
+      if (vimState.recordedState.operator && mark.editor !== vimState.editor) {
+        // Operators don't work across files
+        throw VimError.fromCode(ErrorCode.MarkNotSet);
+      }
       await ensureEditorIsActive(mark.editor);
     }
 
