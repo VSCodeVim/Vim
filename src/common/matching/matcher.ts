@@ -1,5 +1,6 @@
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
+import { configuration } from '../../configuration/configuration';
 
 export type Pairing = {
   match: string;
