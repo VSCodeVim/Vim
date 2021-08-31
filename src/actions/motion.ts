@@ -1747,7 +1747,11 @@ class MoveToMatchingBracket extends BaseMovement {
     const failure = failedMovement(vimState);
 
     for (let col = position.character; col < lineText.length; col++) {
-      const pairing = PairMatcher.pairings[lineText[col]];
+      const currentChar = lineText[col];
+      const pairing = PairMatcher.getPairing(currentChar);
+
+      // we need to check pairing, because with text: bla |bla < blub > blub
+      // this for loop will walk over bla and check for a pairing till it finds <
       if (pairing && pairing.matchesWithPercentageMotion) {
         // We found an opening char, now move to the matching closing char
         return (

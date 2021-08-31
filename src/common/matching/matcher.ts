@@ -1,5 +1,13 @@
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
+import { configuration } from '../../configuration/configuration';
+
+export type Pairing = {
+  match: string;
+  isNextMatchForward: boolean;
+  directionless?: boolean;
+  matchesWithPercentageMotion?: boolean;
+};
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -7,12 +15,7 @@ import { Position } from 'vscode';
  */
 export class PairMatcher {
   static pairings: {
-    [key: string]: {
-      match: string;
-      isNextMatchForward: boolean;
-      directionless?: boolean;
-      matchesWithPercentageMotion?: boolean;
-    };
+    [key: string]: Pairing;
   } = {
     '(': { match: ')', isNextMatchForward: true, matchesWithPercentageMotion: true },
     '{': { match: '}', isNextMatchForward: true, matchesWithPercentageMotion: true },
@@ -23,8 +26,9 @@ export class PairMatcher {
 
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
-    '<': { match: '>', isNextMatchForward: true },
-    '>': { match: '<', isNextMatchForward: false },
+    // matchesWithPercentageMotion can be overwritten with configuration.matchpairs
+    '<': { match: '>', isNextMatchForward: true, matchesWithPercentageMotion: false },
+    '>': { match: '<', isNextMatchForward: false, matchesWithPercentageMotion: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
     '"': { match: '"', isNextMatchForward: false, directionless: true },
@@ -109,6 +113,17 @@ export class PairMatcher {
       return lineNumber <= lineCount - 1;
     } else {
       return lineNumber >= 0;
+    }
+  }
+
+  static getPairing(pair: string): Pairing {
+    const pairing = this.pairings[pair];
+    if (pairing !== undefined && pairing.matchesWithPercentageMotion === false) {
+      // we look up config if it overwrites matchesWithPercentageMotion setting
+      pairing.matchesWithPercentageMotion = configuration.matchpairs.includes(pair);
+      return pairing;
+    } else {
+      return pairing;
     }
   }
 
