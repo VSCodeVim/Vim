@@ -61,6 +61,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly vimState: VimState;
   public readonly remapState: RemapState;
 
+  public focusChanged = false;
+
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
   private readonly remappers: Remappers;
@@ -824,7 +826,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // track undo history
-    if (!this.vimState.focusChanged) {
+    if (!this.focusChanged) {
       // important to ensure that focus didn't change, otherwise
       // we'll grab the text of the incorrect active window and assume the
       // whole document changed!
