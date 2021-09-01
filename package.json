@@ -31,9 +31,7 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "ui",
-    "web",
-    "workspace"
+    "ui"
   ],
   "sideEffects": false,
   "activationEvents": [
