@@ -1468,57 +1468,6 @@ class CommandGoForwardInChangelist extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoStartPrevOperatedText extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [
-    ['`', '['],
-    ["'", '['],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeStartPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
-class CommandGoEndPrevOperatedText extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [
-    ['`', ']'],
-    ["'", ']'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
-class CommandGoLastChange extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = [
-    ['`', '.'],
-    ["'", '.'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastHistoryStartPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
 export class CommandInsertAtLastChange extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'i'];
@@ -1678,43 +1627,6 @@ class CommandNavigateForward extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await globalState.jumpTracker.jumpForward(position, vimState);
-  }
-}
-
-@RegisterAction
-class CommandNavigateLast extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = ['`', '`'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await globalState.jumpTracker.jumpBack(position, vimState);
-  }
-}
-
-@RegisterAction
-class CommandNavigateLastBOL extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = ["'", "'"];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
-  override isJump = true;
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastJump = globalState.jumpTracker.end;
-    if (lastJump == null) {
-      // This command goes to the last jump, and there is no previous jump, so there's nothing to do.
-      return;
-    }
-    const jump = new Jump({
-      document: vimState.document,
-      position: lastJump.position.getLineBegin(),
-    });
-    globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
-    vimState.cursorStopPosition = jump.position;
   }
 }
 

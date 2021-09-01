@@ -564,9 +564,38 @@ export class HistoryTracker {
   /**
    * Retrieves a mark from either the global or local array depending on mark.isUppercaseMark.
    */
-  public getMark(markName: string): IMark | undefined {
-    const marks = this.getMarkList(markName.toUpperCase() === markName);
-    return marks.find((mark) => mark.name === markName);
+  public getMark(name: string): IMark | undefined {
+    // First, handle "special" marks
+    let position: Position | undefined;
+    if (name === '<') {
+      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
+      position = linewise
+        ? this.vimState.lastVisualSelection?.start.with({ character: 0 })
+        : this.vimState.lastVisualSelection?.start;
+    } else if (name === '>') {
+      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
+      position = linewise
+        ? this.vimState.lastVisualSelection?.end.getLineEnd()
+        : this.vimState.lastVisualSelection?.end.getLeft();
+    } else if (name === '[') {
+      position = this.getLastChangeStartPosition();
+    } else if (name === ']') {
+      position = this.getLastChangeEndPosition();
+    } else if (name === '.') {
+      position = this.getLastHistoryStartPosition();
+    } else if (name === "'" || name === '`') {
+      position = globalState.jumpTracker.end?.position;
+    }
+    if (position) {
+      return {
+        name,
+        position,
+        isUppercaseMark: false,
+      };
+    }
+
+    const marks = this.getMarkList(name.toUpperCase() === name);
+    return marks.find((mark) => mark.name === name);
   }
 
   /**
@@ -887,7 +916,7 @@ export class HistoryTracker {
     return this.undoStack.getCurrentHistoryStep()?.cursorStart;
   }
 
-  public getLastChangeStartPosition(): Position | undefined {
+  private getLastChangeStartPosition(): Position | undefined {
     const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
     if (currentHistoryStep === undefined) {
       return undefined;
