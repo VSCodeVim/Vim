@@ -650,6 +650,68 @@ class MarkMovement extends BaseMovement {
   }
 }
 
+@RegisterAction
+class NextMark extends BaseMovement {
+  keys = [']', '`'];
+  override isJump = true;
+
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const positions = vimState.historyTracker
+      .getLocalMarks()
+      .filter((mark) => mark.position.isAfter(position))
+      .map((mark) => mark.position)
+      .sort((x, y) => x.compareTo(y));
+    return positions.length === 0 ? position : positions[0];
+  }
+}
+
+@RegisterAction
+class PrevMark extends BaseMovement {
+  keys = ['[', '`'];
+  override isJump = true;
+
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const positions = vimState.historyTracker
+      .getLocalMarks()
+      .filter((mark) => mark.position.isBefore(position))
+      .map((mark) => mark.position)
+      .sort((x, y) => y.compareTo(x));
+    return positions.length === 0 ? position : positions[0];
+  }
+}
+
+@RegisterAction
+class NextMarkLinewise extends BaseMovement {
+  keys = [']', "'"];
+  override isJump = true;
+
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const lines = vimState.historyTracker
+      .getLocalMarks()
+      .filter((mark) => mark.position.line > position.line)
+      .map((mark) => mark.position.line);
+    const line = lines.length === 0 ? position.line : Math.min(...lines);
+    return new Position(line, 0).getLineBeginRespectingIndent(vimState.document);
+  }
+}
+
+@RegisterAction
+class PrevMarkLinewise extends BaseMovement {
+  keys = ['[', "'"];
+  override isJump = true;
+
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    const lines = vimState.historyTracker
+      .getLocalMarks()
+      .filter((mark) => mark.position.line < position.line)
+      .map((mark) => mark.position.line);
+    const line = lines.length === 0 ? position.line : Math.max(...lines);
+    return new Position(line, 0).getLineBeginRespectingIndent(vimState.document);
+  }
+}
+
 async function ensureEditorIsActive(editor: vscode.TextEditor) {
   if (editor !== vscode.window.activeTextEditor) {
     await vscode.window.showTextDocument(editor.document);
