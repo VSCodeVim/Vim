@@ -614,12 +614,12 @@ class MarkMovementBOL extends BaseMovement {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      if (vimState.recordedState.operator && mark.editor !== vimState.editor) {
+    if (mark.isUppercaseMark && mark.document !== undefined) {
+      if (vimState.recordedState.operator && mark.document !== vimState.document) {
         // Operators don't work across files
         throw VimError.fromCode(ErrorCode.MarkNotSet);
       }
-      await ensureEditorIsActive(mark.editor);
+      await ensureEditorIsActive(mark.document);
     }
 
     return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
@@ -639,12 +639,12 @@ class MarkMovement extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    if (mark.isUppercaseMark && mark.editor !== undefined) {
-      if (vimState.recordedState.operator && mark.editor !== vimState.editor) {
+    if (mark.isUppercaseMark && mark.document !== undefined) {
+      if (vimState.recordedState.operator && mark.document !== vimState.document) {
         // Operators don't work across files
         throw VimError.fromCode(ErrorCode.MarkNotSet);
       }
-      await ensureEditorIsActive(mark.editor);
+      await ensureEditorIsActive(mark.document);
     }
 
     return mark.position;
@@ -713,9 +713,9 @@ class PrevMarkLinewise extends BaseMovement {
   }
 }
 
-async function ensureEditorIsActive(editor: vscode.TextEditor) {
-  if (editor !== vscode.window.activeTextEditor) {
-    await vscode.window.showTextDocument(editor.document);
+async function ensureEditorIsActive(document: vscode.TextDocument) {
+  if (document !== vscode.window.activeTextEditor?.document) {
+    await vscode.window.showTextDocument(document);
   }
 }
 

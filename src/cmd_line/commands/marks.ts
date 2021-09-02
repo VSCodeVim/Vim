@@ -19,8 +19,8 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    if (mark.editor && mark.editor !== vimState.editor) {
-      this.description = mark.editor.document.fileName;
+    if (mark.document && mark.document !== vimState.document) {
+      this.description = mark.document.fileName;
     } else {
       this.description = vimState.document.lineAt(mark.position).text.trim();
     }

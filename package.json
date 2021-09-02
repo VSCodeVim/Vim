@@ -31,9 +31,7 @@
     "Keymaps"
   ],
   "extensionKind": [
-    "ui",
-    "web",
-    "workspace"
+    "ui"
   ],
   "sideEffects": false,
   "activationEvents": [
@@ -1160,7 +1158,7 @@
     "@types/sinon": "10.0.2",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
-    "clean-webpack-plugin": "3.0.0",
+    "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "6.3.2",
     "gulp": "4.0.2",
@@ -1178,7 +1176,7 @@
     "ts-loader": "9.2.5",
     "tslint": "6.1.3",
     "typescript": "4.4.2",
-    "vsce": "1.96.2",
+    "vsce": "1.96.3",
     "vscode-test": "1.6.1",
     "webpack": "5.51.1",
     "webpack-cli": "4.8.0",

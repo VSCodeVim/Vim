@@ -102,7 +102,7 @@ export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
-  editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
+  document?: vscode.TextDocument; // only required when using global marks (isUppercaseMark is true)
 }
 
 /**
@@ -523,7 +523,7 @@ export class HistoryTracker {
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.editor === vscode.window.activeTextEditor
+      (mark) => mark.document === vscode.window.activeTextEditor?.document
     );
     return [...this.getLocalMarks(), ...globalMarks];
   }
@@ -543,7 +543,7 @@ export class HistoryTracker {
       position,
       name: markName,
       isUppercaseMark,
-      editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
+      document: isUppercaseMark ? vscode.window.activeTextEditor?.document : undefined,
     };
     this.putMarkInList(newMark);
   }

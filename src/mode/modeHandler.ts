@@ -1515,7 +1515,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     if (configuration.showMarksInGutter) {
       for (const mark of this.vimState.historyTracker.getMarks()) {
-        if (mark.isUppercaseMark && mark.editor !== this.vimState.editor) {
+        if (mark.isUppercaseMark && mark.document !== this.vimState.document) {
           continue;
         }
 
