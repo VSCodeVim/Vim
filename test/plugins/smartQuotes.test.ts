@@ -897,5 +897,55 @@ suite('smartQuotes plugin', () => {
         'g "h" k',
       ],
     });
+
+    // test case after - bug fix
+    newTest({
+      title: 'last: long string cursor after',
+      start: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "property ${properyName} is not defined";          |   ',
+        ' this.message = message `property ${properyName} is not defined`; ',
+        ' } ',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "|";             ',
+        ' this.message = message `property ${properyName} is not defined`; ',
+        ' } ',
+      ],
+    });
+    newTest({
+      title: 'last: long string cursor after, next line - 1',
+      start: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "property ${properyName} is not defined";             ',
+        '| this.message = message `property ${properyName} is not defined`; ',
+        ' } ',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "|";             ',
+        ' this.message = message `property ${properyName} is not defined`; ',
+        ' } ',
+      ],
+    });
+    newTest({
+      title: 'last: long string cursor after, next line - 2',
+      start: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "property ${properyName} is not defined";             ',
+        ' this.message = message `property ${properyName} is not defined|`; ',
+        ' } ',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        ' function MissingProperty(properyName) { ',
+        ' this.name = "|";             ',
+        ' this.message = message `property ${properyName} is not defined`; ',
+        ' } ',
+      ],
+    });
   });
 });

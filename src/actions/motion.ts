@@ -2035,16 +2035,13 @@ export abstract class MoveQuoteMatch extends BaseMovement {
         }
       }
 
-      if (!isVisualMode(vimState.currentMode)) {
-        if (position.isBefore(start)) {
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(start)) {
+        vimState.recordedState.operatorPositionDiff = start.subtract(position);
+      } else if (!isVisualMode(vimState.currentMode) && position.isAfter(stop)) {
+        if (position.line === stop.line) {
+          vimState.recordedState.operatorPositionDiff = stop.getRight().subtract(position);
+        } else {
           vimState.recordedState.operatorPositionDiff = start.subtract(position);
-        } else if (position.isAfter(start)) {
-          // TODO: workaround. I don't quite sure why it's not working out of the box;
-          if (stop.line === position.line) {
-            vimState.recordedState.operatorPositionDiff = stop.getRight().subtract(position);
-          } else {
-            vimState.recordedState.operatorPositionDiff = start.subtract(position);
-          }
         }
       }
 
