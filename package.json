@@ -732,6 +732,11 @@
           "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion",
           "default": true
         },
+        "vim.smartQuotes.aIncludesSurrouningSpaces": {
+          "type": "boolean",
+          "markdownDescription": "Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.",
+          "default": true
+        },
         "vim.sneak": {
           "type": "boolean",
           "markdownDescription": "Enable the [Sneak](https://github.com/justinmk/vim-sneak) plugin for Vim.",

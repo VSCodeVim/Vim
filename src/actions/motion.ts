@@ -2024,7 +2024,10 @@ export abstract class MoveQuoteMatch extends BaseMovement {
         // Don't include the quotes
         start = start.translate({ characterDelta: 1 });
         stop = stop.translate({ characterDelta: -1 });
-      } else if (this.adjustForTrailingWhitespace) {
+      } else if (
+        this.adjustForTrailingWhitespace &&
+        configuration.smartQuotes.aIncludesSurrouningSpaces
+      ) {
         // Include trailing whitespace if there is any...
         const trailingWhitespace = lineText.substring(stop.character + 1).search(/\S|$/);
         if (trailingWhitespace > 0) {

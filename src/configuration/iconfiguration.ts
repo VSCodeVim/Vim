@@ -88,6 +88,10 @@ export interface ISmartQuotesConfiguration {
    * Whether to break through lines when using [n]ext/[l]ast motion
    */
   breakThroughLines: boolean;
+  /**
+   * Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.
+   */
+  aIncludesSurrouningSpaces: boolean;
 }
 
 export interface IConfiguration {

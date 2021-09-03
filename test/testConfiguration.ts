@@ -6,6 +6,7 @@ import {
   IHighlightedYankConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
+  ISmartQuotesConfiguration,
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
@@ -45,9 +46,10 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'bold';
   easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-  smartQuotes = {
+  smartQuotes: ISmartQuotesConfiguration = {
     enable: false,
     breakThroughLines: false,
+    aIncludesSurrouningSpaces: true,
   };
   autoSwitchInputMethod = {
     enable: false,

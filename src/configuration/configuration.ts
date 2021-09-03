@@ -268,6 +268,7 @@ class Configuration implements IConfiguration {
   smartQuotes: ISmartQuotesConfiguration = {
     enable: false,
     breakThroughLines: false,
+    aIncludesSurrouningSpaces: true,
   };
 
   autoSwitchInputMethod: IAutoSwitchInputMethod = {
