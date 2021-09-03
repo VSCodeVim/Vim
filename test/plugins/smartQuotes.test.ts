@@ -856,6 +856,48 @@ suite('smartQuotes plugin', () => {
       ],
     });
     newTest({
+      title: 'last: should go previous line - 5',
+      start: [
+        'aaa "bbb" c', //
+        '|"e" f', //
+        'g "h" k',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        'aaa "|" c', //
+        '"e" f', //
+        'g "h" k',
+      ],
+    });
+    newTest({
+      title: 'last: should go previous line - 6',
+      start: [
+        'aaa "bbb" c', //
+        '"|e" f', //
+        'g "h" k',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        'aaa "|" c', //
+        '"e" f', //
+        'g "h" k',
+      ],
+    });
+    newTest({
+      title: 'last: should go previous line - 7',
+      start: [
+        'aaa "bbb" c', //
+        '"e|" f', //
+        'g "h" k',
+      ],
+      keysPressed: 'dil"',
+      end: [
+        'aaa "|" c', //
+        '"e" f', //
+        'g "h" k',
+      ],
+    });
+    newTest({
       title: 'last: should not go previous line - 1',
       start: [
         'aaa "bbb" c', //

@@ -241,6 +241,7 @@ export class SmartQuoteMatcher {
       let lastPos;
       position = position.with({ character: index });
       if (found === undefined && configuration.smartQuotes.breakThroughLines) {
+        position = position.getLeftThroughLineBreaks();
         lastPos = this.getLastQuoteThroughLineBreaks(position);
       } else {
         lastPos = found !== undefined ? position : undefined;
