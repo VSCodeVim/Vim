@@ -232,6 +232,7 @@ export class CommandNumber extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
   override isCompleteAction = false;
+  override isNumber = true;
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -1141,8 +1142,6 @@ export class CommandUndo extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  // to prevent undo for accidental key chords like: cu, du...
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStep();
@@ -1162,7 +1161,6 @@ class CommandUndoOnLine extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
@@ -1482,7 +1480,6 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 @RegisterAction
 export class CommandInsertAtLineBegin extends BaseCommand {
   modes = [Mode.Normal];
-  override mustBeFirstKey = true;
   keys = ['g', 'I'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2673,7 +2670,6 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
-  override mustBeFirstKey = true;
   override canBeRepeatedWithDot = true;
 
   private toggleCase(text: string): string {
