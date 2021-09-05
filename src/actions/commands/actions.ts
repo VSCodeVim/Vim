@@ -26,7 +26,6 @@ import { isTextTransformation, Transformation } from './../../transformations/tr
 import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
-import { Jump } from '../../jumps/jump';
 import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
@@ -2389,16 +2388,19 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { line, start } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        if (line === '' && start.character !== 0) {
+          continue;
+        }
+        cursors.push(new Cursor(start, start));
+      }
+    }
+    vimState.cursors = cursors;
+
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { line, start } of TextEditor.iterateLinesInBlock(vimState)) {
-      if (line === '' && start.character !== 0) {
-        continue;
-      }
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
@@ -2411,21 +2413,21 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new vscode.Range(start, end),
-        manuallySetCursorPositions: true,
-      });
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new vscode.Range(start, end),
+          manuallySetCursorPositions: true,
+        });
+        cursors.push(new Cursor(start, start));
+      }
     }
+    vimState.cursors = cursors;
 
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
