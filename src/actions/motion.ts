@@ -178,9 +178,8 @@ class MoveDownByScreenLine extends MoveByScreenLine {
 }
 
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
+
   public override async execAction(
     position: Position,
     vimState: VimState
@@ -290,9 +289,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 @RegisterAction
 class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async execAction(
     position: Position,
@@ -333,9 +330,7 @@ class MoveDown extends BaseMovement {
 @RegisterAction
 class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async execAction(
     position: Position,
@@ -1164,9 +1159,7 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     ['g', 'k'],
     ['g', '<up>'],
   ];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async execAction(
     position: Position,
@@ -1195,9 +1188,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     ['g', 'j'],
     ['g', '<down>'],
   ];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async execAction(
     position: Position,

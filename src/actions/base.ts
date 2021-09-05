@@ -37,9 +37,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * Whether we should change `vimState.desiredColumn`
    */
-  public preservesDesiredColumn(): boolean {
-    return false;
-  }
+  public readonly preservesDesiredColumn: boolean = false;
 
   /**
    * Modes that this action can be run in.

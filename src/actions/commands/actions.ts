@@ -425,9 +425,7 @@ class CommandEsc extends BaseCommand {
     return false;
   }
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (vimState.currentMode === Mode.Normal) {
@@ -504,9 +502,7 @@ abstract class CommandEditorScroll extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends CommandEditorScroll {
   keys = ['<C-e>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'down';
   by: EditorScrollByUnit = 'line';
 }
@@ -514,9 +510,7 @@ class CommandCtrlE extends CommandEditorScroll {
 @RegisterAction
 class CommandCtrlY extends CommandEditorScroll {
   keys = ['<C-y>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'up';
   by: EditorScrollByUnit = 'line';
 }
@@ -942,9 +936,7 @@ class CommandCenterScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'z'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -995,9 +987,7 @@ class CommandTopScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 't'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1053,9 +1043,7 @@ class CommandBottomScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'b'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
