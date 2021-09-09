@@ -2011,7 +2011,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       this.adjustForTrailingWhitespace = false;
     }
 
-    if (configuration.smartQuotes) {
+    if (configuration.smartQuotes.enable) {
       const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, vimState.document);
       const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
 
