@@ -16,6 +16,7 @@ export abstract class BaseAction implements IBaseAction {
 
   public readonly isOperator: boolean = false;
   public readonly isCommand: boolean = false;
+  public readonly isNumber: boolean = false;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
@@ -37,9 +38,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * Whether we should change `vimState.desiredColumn`
    */
-  public preservesDesiredColumn(): boolean {
-    return false;
-  }
+  public readonly preservesDesiredColumn: boolean = false;
 
   /**
    * Modes that this action can be run in.
@@ -50,8 +49,6 @@ export abstract class BaseAction implements IBaseAction {
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
   public abstract readonly keys: readonly string[] | readonly string[][];
-
-  public readonly mustBeFirstKey: boolean = false;
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -67,9 +64,10 @@ export abstract class BaseAction implements IBaseAction {
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (
-      this.mustBeFirstKey &&
-      (vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length ||
-        vimState.recordedState.operator)
+      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode &&
+      !this.isMotion &&
+      !this.isOperator &&
+      !this.isNumber
     ) {
       return false;
     }
@@ -84,6 +82,15 @@ export abstract class BaseAction implements IBaseAction {
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (
+      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode &&
+      !this.isMotion &&
+      !this.isOperator &&
+      !this.isNumber
+    ) {
+      return false;
+    }
+
     if (!this.modes.includes(vimState.currentMode)) {
       return false;
     }
@@ -91,14 +98,6 @@ export abstract class BaseAction implements IBaseAction {
     const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
     const keysSlice = keys2D.map((x) => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
-      return false;
-    }
-
-    if (
-      this.mustBeFirstKey &&
-      (vimState.recordedState.commandWithoutCountPrefix.length > keysPressed.length ||
-        vimState.recordedState.operator)
-    ) {
       return false;
     }
 

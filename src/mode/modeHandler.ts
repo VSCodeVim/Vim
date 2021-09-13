@@ -782,7 +782,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // Update desiredColumn
     const preservesDesiredColumn =
-      action instanceof BaseOperator && !ranAction ? true : action.preservesDesiredColumn();
+      action instanceof BaseOperator && !ranAction ? true : action.preservesDesiredColumn;
     if (!preservesDesiredColumn) {
       if (action instanceof BaseMovement) {
         // We check !operator here because e.g. d$ should NOT set the desired column to EOL.

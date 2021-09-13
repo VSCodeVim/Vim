@@ -287,7 +287,7 @@ export interface IBaseAction {
   keysPressed: string[];
   multicursorIndex: number | undefined;
 
-  preservesDesiredColumn(): boolean;
+  readonly preservesDesiredColumn: boolean;
 }
 
 export interface IBaseCommand extends IBaseAction {

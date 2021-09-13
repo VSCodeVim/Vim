@@ -26,7 +26,6 @@ import { isTextTransformation, Transformation } from './../../transformations/tr
 import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
-import { Jump } from '../../jumps/jump';
 import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
@@ -233,6 +232,7 @@ export class CommandNumber extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
   override isCompleteAction = false;
+  override isNumber = true;
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -426,9 +426,7 @@ class CommandEsc extends BaseCommand {
     return false;
   }
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (vimState.currentMode === Mode.Normal) {
@@ -505,9 +503,7 @@ abstract class CommandEditorScroll extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends CommandEditorScroll {
   keys = ['<C-e>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'down';
   by: EditorScrollByUnit = 'line';
 }
@@ -515,9 +511,7 @@ class CommandCtrlE extends CommandEditorScroll {
 @RegisterAction
 class CommandCtrlY extends CommandEditorScroll {
   keys = ['<C-y>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'up';
   by: EditorScrollByUnit = 'line';
 }
@@ -943,9 +937,7 @@ class CommandCenterScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'z'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -996,9 +988,7 @@ class CommandTopScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 't'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1054,9 +1044,7 @@ class CommandBottomScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'b'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1154,8 +1142,6 @@ export class CommandUndo extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  // to prevent undo for accidental key chords like: cu, du...
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStep();
@@ -1175,7 +1161,6 @@ class CommandUndoOnLine extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
@@ -1495,7 +1480,6 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 @RegisterAction
 export class CommandInsertAtLineBegin extends BaseCommand {
   modes = [Mode.Normal];
-  override mustBeFirstKey = true;
   keys = ['g', 'I'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2389,16 +2373,19 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { line, start } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        if (line === '' && start.character !== 0) {
+          continue;
+        }
+        cursors.push(new Cursor(start, start));
+      }
+    }
+    vimState.cursors = cursors;
+
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { line, start } of TextEditor.iterateLinesInBlock(vimState)) {
-      if (line === '' && start.character !== 0) {
-        continue;
-      }
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
@@ -2411,21 +2398,21 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new vscode.Range(start, end),
-        manuallySetCursorPositions: true,
-      });
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new vscode.Range(start, end),
+          manuallySetCursorPositions: true,
+        });
+        cursors.push(new Cursor(start, start));
+      }
     }
+    vimState.cursors = cursors;
 
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
@@ -2683,7 +2670,6 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
-  override mustBeFirstKey = true;
   override canBeRepeatedWithDot = true;
 
   private toggleCase(text: string): string {
