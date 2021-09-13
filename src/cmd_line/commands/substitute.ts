@@ -45,13 +45,14 @@ export interface ISubstituteCommandArguments extends node.ICommandArgs {
  */
 export enum SubstituteFlags {
   None = 0,
-  KeepPreviousFlags = 0x1,
+  KeepPreviousFlags = 0x1, // TODO: use this flag
   ConfirmEach = 0x2,
-  SuppressError = 0x4,
+  SuppressError = 0x4, // TODO: use this flag
   ReplaceAll = 0x8,
   IgnoreCase = 0x10,
-  NoIgnoreCase = 0x20,
+  NoIgnoreCase = 0x20, // TODO: use this flag
   PrintCount = 0x40,
+  // TODO: use the following flags:
   PrintLastMatchedLine = 0x80,
   PrintLastMatchedLineWithNumber = 0x100,
   PrintLastMatchedLineWithList = 0x200,
@@ -162,7 +163,9 @@ export class SubstituteCommand extends node.CommandBase {
 
     let count = 0;
 
-    if (this.arguments.flags & SubstituteFlags.ConfirmEach) {
+    if (this.arguments.flags & SubstituteFlags.PrintCount) {
+      return matches.length;
+    } else if (this.arguments.flags & SubstituteFlags.ConfirmEach) {
       // Loop through each match on this line and get confirmation before replacing
       let newContent = originalContent;
 
@@ -324,6 +327,13 @@ export class SubstituteCommand extends node.CommandBase {
   ) {
     if (substitutions === 0) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, regex.source));
+    } else if (this.arguments.flags & SubstituteFlags.PrintCount) {
+      StatusBar.setText(
+        vimState,
+        `${substitutions} match${substitutions > 1 ? 'es' : ''} on ${lines} line${
+          lines > 1 ? 's' : ''
+        }`
+      );
     } else if (substitutions > configuration.report) {
       StatusBar.setText(
         vimState,
