@@ -2017,7 +2017,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
         stop = stop.translate({ characterDelta: -1 });
       } else if (
         this.adjustForTrailingWhitespace &&
-        configuration.smartQuotes.aIncludesSurrouningSpaces
+        configuration.smartQuotes.aIncludesSurroundingSpaces
       ) {
         // Include trailing whitespace if there is any...
         const trailingWhitespace = lineText.substring(stop.character + 1).search(/\S|$/);
