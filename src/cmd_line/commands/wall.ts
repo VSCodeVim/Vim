@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-import * as node from '../node';
-
-export interface IWallCommandArguments extends node.ICommandArgs {
+export interface IWallCommandArguments {
   bang?: boolean;
-  range?: node.LineRange;
+  range?: LineRange;
 }
 
 //
 //  Implements :wall (write all)
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:wall
 //
-export class WallCommand extends node.CommandBase {
+export class WallCommand extends ExCommand {
   private readonly arguments: IWallCommandArguments;
 
   constructor(args: IWallCommandArguments) {

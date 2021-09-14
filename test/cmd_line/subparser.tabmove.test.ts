@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-
-import { commandParsers } from '../../src/cmd_line/subparser';
+import { commandParsers } from '../../src/vimscript/exCommandParser';
 
 function testTabMoveParse(args: string, count?: number, direction?: 'left' | 'right'): void {
   const test = (args1: string) => {

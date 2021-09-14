@@ -1,11 +1,11 @@
-import * as node from '../commands/bufferDelete';
+import { BufferDeleteCommand, IBufferDeleteCommandArguments } from '../commands/bufferDelete';
 import { Scanner } from '../scanner';
 
-export function parseBufferDeleteCommandArgs(args: string): node.BufferDeleteCommand {
+export function parseBufferDeleteCommandArgs(args: string): BufferDeleteCommand {
   if (!args) {
-    return new node.BufferDeleteCommand({});
+    return new BufferDeleteCommand({});
   }
-  const scannedArgs: node.IBufferDeleteCommandArguments = {};
+  const scannedArgs: IBufferDeleteCommandArguments = {};
   const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
@@ -14,5 +14,5 @@ export function parseBufferDeleteCommandArgs(args: string): node.BufferDeleteCom
   }
   const tabPosition = scanner.remaining();
   scannedArgs.tabPosition = tabPosition.trim();
-  return new node.BufferDeleteCommand(scannedArgs);
+  return new BufferDeleteCommand(scannedArgs);
 }

@@ -1,13 +1,13 @@
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 import * as wall from '../commands/wall';
-import * as node from '../node';
 import * as quit from './quit';
 
 //
 // Implements :writequitall
 // http://vimdoc.sourceforge.net/htmldoc/editing.html#:wqall
 //
-export interface IWriteQuitAllCommandArguments extends node.ICommandArgs {
+export interface IWriteQuitAllCommandArguments {
   // arguments
   // [++opt]
   opt?: string;
@@ -16,7 +16,7 @@ export interface IWriteQuitAllCommandArguments extends node.ICommandArgs {
   bang?: boolean;
 }
 
-export class WriteQuitAllCommand extends node.CommandBase {
+export class WriteQuitAllCommand extends ExCommand {
   private readonly arguments: IWriteQuitAllCommandArguments;
 
   constructor(args: IWriteQuitAllCommandArguments) {

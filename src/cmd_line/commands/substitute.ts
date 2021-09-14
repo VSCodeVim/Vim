@@ -1,7 +1,6 @@
 /* tslint:disable:no-bitwise */
 
 import * as vscode from 'vscode';
-import * as node from '../node';
 import { Jump } from '../../jumps/jump';
 import { SearchState, SearchDirection } from '../../state/searchState';
 import { SubstituteState } from '../../state/substituteState';
@@ -12,6 +11,8 @@ import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { Position } from 'vscode';
 import { StatusBar } from '../../statusBar';
+import { LineRange } from '../../vimscript/lineRange';
+import { ExCommand } from '../../vimscript/exCommand';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -19,7 +20,7 @@ import { StatusBar } from '../../statusBar';
  * when it's an empty string, it means to use the previous SEARCH (not replacement) state,
  * and replace with whatever's set by "replace" (even an empty string).
  */
-export interface ISubstituteCommandArguments extends node.ICommandArgs {
+export interface ISubstituteCommandArguments {
   pattern: string | undefined;
   replace: string;
   flags: number;
@@ -84,7 +85,7 @@ export enum SubstituteFlags {
  *   - update replacement state
  *   - update search state too!
  */
-export class SubstituteCommand extends node.CommandBase {
+export class SubstituteCommand extends ExCommand {
   public readonly arguments: ISubstituteCommandArguments;
   protected abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
@@ -122,7 +123,7 @@ export class SubstituteCommand extends node.CommandBase {
       // i.e. :s
       const prevSubstituteState = globalState.substituteState;
       if (prevSubstituteState === undefined || prevSubstituteState.searchPattern === '') {
-        throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+        throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
       } else {
         args.pattern = prevSubstituteState.searchPattern;
         args.replace = prevSubstituteState.replaceString;
@@ -288,12 +289,12 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let [startLine, endLine] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    let { start, end } = range.resolve(vimState)!;
 
     if (this.arguments.count && this.arguments.count >= 0) {
-      startLine = endLine;
-      endLine = endLine + this.arguments.count - 1;
+      start = end;
+      end = end + this.arguments.count - 1;
     }
 
     // TODO: Global Setting.
@@ -302,8 +303,8 @@ export class SubstituteCommand extends node.CommandBase {
     let lines = 0;
     let substitutions = 0;
     for (
-      let currentLine = startLine;
-      currentLine <= endLine && currentLine < vimState.document.lineCount;
+      let currentLine = start;
+      currentLine <= end && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
       if (this.abort) {

@@ -1,12 +1,12 @@
-import * as node from '../commands/digraph';
+import { DigraphsCommand } from '../commands/digraph';
 import { Scanner } from '../scanner';
 
-export function parseDigraphCommandArgs(args: string): node.DigraphsCommand {
+export function parseDigraphCommandArgs(args: string): DigraphsCommand {
   if (!args || !args.trim()) {
-    return new node.DigraphsCommand({});
+    return new DigraphsCommand({});
   }
 
-  return new node.DigraphsCommand({
+  return new DigraphsCommand({
     arg: new Scanner(args).nextWord(),
   });
 }

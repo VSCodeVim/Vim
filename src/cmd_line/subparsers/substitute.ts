@@ -1,8 +1,8 @@
 /* tslint:disable:no-bitwise */
 
-import * as node from '../commands/substitute';
 import { Scanner } from '../scanner';
 import * as error from '../../error';
+import { SubstituteCommand, SubstituteFlags } from '../commands/substitute';
 
 function isValidDelimiter(char: string): boolean {
   return !!/^[^\w\s\\|"]{1}$/g.exec(char);
@@ -92,41 +92,41 @@ function parseSubstituteFlags(scanner: Scanner): number {
     switch (c) {
       case '&':
         if (index === 0) {
-          flags |= node.SubstituteFlags.KeepPreviousFlags;
+          flags |= SubstituteFlags.KeepPreviousFlags;
         } else {
           // Raise Error
-          return node.SubstituteFlags.None;
+          return SubstituteFlags.None;
         }
         break;
       case 'c':
-        flags |= node.SubstituteFlags.ConfirmEach;
+        flags |= SubstituteFlags.ConfirmEach;
         break;
       case 'e':
-        flags |= node.SubstituteFlags.SuppressError;
+        flags |= SubstituteFlags.SuppressError;
         break;
       case 'g':
-        flags |= node.SubstituteFlags.ReplaceAll;
+        flags |= SubstituteFlags.ReplaceAll;
         break;
       case 'i':
-        flags |= node.SubstituteFlags.IgnoreCase;
+        flags |= SubstituteFlags.IgnoreCase;
         break;
       case 'I':
-        flags |= node.SubstituteFlags.NoIgnoreCase;
+        flags |= SubstituteFlags.NoIgnoreCase;
         break;
       case 'n':
-        flags |= node.SubstituteFlags.PrintCount;
+        flags |= SubstituteFlags.PrintCount;
         break;
       case 'p':
-        flags |= node.SubstituteFlags.PrintLastMatchedLine;
+        flags |= SubstituteFlags.PrintLastMatchedLine;
         break;
       case '#':
-        flags |= node.SubstituteFlags.PrintLastMatchedLineWithNumber;
+        flags |= SubstituteFlags.PrintLastMatchedLineWithNumber;
         break;
       case 'l':
-        flags |= node.SubstituteFlags.PrintLastMatchedLineWithList;
+        flags |= SubstituteFlags.PrintLastMatchedLineWithList;
         break;
       case 'r':
-        flags |= node.SubstituteFlags.UsePreviousPattern;
+        flags |= SubstituteFlags.UsePreviousPattern;
         break;
       default:
         scanner.backup();
@@ -160,7 +160,7 @@ function parseCount(scanner: Scanner): number {
  * For each line in [range] replace a match of {pattern} with {string}.
  * {string} can be a literal string, or something special; see |sub-replace-special|.
  */
-export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand {
+export function parseSubstituteCommandArgs(args: string): SubstituteCommand {
   try {
     let searchPattern: string | undefined;
     let replaceString: string;
@@ -169,10 +169,10 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
 
     if (!args || !args.trim()) {
       // special case for :s
-      return new node.SubstituteCommand({
+      return new SubstituteCommand({
         pattern: undefined,
         replace: '', // ignored in this context
-        flags: node.SubstituteFlags.None,
+        flags: SubstituteFlags.None,
       });
     }
     let scanner: Scanner;
@@ -182,10 +182,10 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     if (isValidDelimiter(delimiter)) {
       if (args.length === 1) {
         // special case for :s/ or other delimiters
-        return new node.SubstituteCommand({
+        return new SubstituteCommand({
           pattern: '',
           replace: '',
-          flags: node.SubstituteFlags.None,
+          flags: SubstituteFlags.None,
         });
       }
 
@@ -196,10 +196,10 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
 
       if (!secondDelimiterFound) {
         // special case for :s/search
-        return new node.SubstituteCommand({
+        return new SubstituteCommand({
           pattern: searchPattern,
           replace: '',
-          flags: node.SubstituteFlags.None,
+          flags: SubstituteFlags.None,
         });
       }
       replaceString = parseReplace(scanner, delimiter);
@@ -215,7 +215,7 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
     scanner.skipWhiteSpace();
     count = parseCount(scanner);
 
-    return new node.SubstituteCommand({
+    return new SubstituteCommand({
       pattern: searchPattern,
       replace: replaceString,
       flags,

@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-
-import { commandParsers } from '../../src/cmd_line/subparser';
+import { commandParsers } from '../../src/vimscript/exCommandParser';
 
 suite(':close args parser', () => {
   test('can parse empty args', () => {

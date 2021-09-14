@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
-import * as node from '../node';
 import { doesFileExist } from 'platform/fs';
 import untildify = require('untildify');
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
   NewWindowHorizontalSplit,
 }
 
-export interface IFileCommandArguments extends node.ICommandArgs {
+export interface IFileCommandArguments {
   name: string | undefined;
   bang?: boolean;
   position?: FilePosition;
@@ -19,7 +19,7 @@ export interface IFileCommandArguments extends node.ICommandArgs {
   createFileIfNotExists?: boolean;
 }
 
-export class FileCommand extends node.CommandBase {
+export class FileCommand extends ExCommand {
   private readonly arguments: IFileCommandArguments;
   private readonly logger = Logger.get('File');
 

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extensionBase';
 
-import { commandParsers, getParser } from '../../src/cmd_line/subparser';
 import { Mode } from '../../src/mode/mode';
+import { commandParsers, getParser } from '../../src/vimscript/exCommandParser';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
@@ -15,7 +15,7 @@ suite('getParser', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('empty', () => {
-    assert.strictEqual(getParser(''), undefined);
+    assert.notStrictEqual(getParser(''), undefined);
   });
 
   test(':marks', () => {

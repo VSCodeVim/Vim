@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { commandParsers } from '../../src/cmd_line/subparser';
+import { commandParsers } from '../../src/vimscript/exCommandParser';
 
 suite(':put args parser', () => {
   test('can parse empty args', () => {
@@ -11,7 +11,6 @@ suite(':put args parser', () => {
   test('can parse !', () => {
     const args = commandParsers.put.parser('!');
     assert.strictEqual(args.arguments.bang, true);
-    assert.strictEqual(args.arguments.range, undefined);
   });
 
   test('can parse register', () => {

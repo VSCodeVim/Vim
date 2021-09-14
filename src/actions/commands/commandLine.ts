@@ -11,7 +11,6 @@ import { reportSearch } from '../../util/statusBarTextUtils';
 import { RecordedState } from '../../state/recordedState';
 import { TextEditor } from '../../textEditor';
 import { StatusBar } from '../../statusBar';
-import { commandParsers } from '../../cmd_line/subparser';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
 import { VimError, ErrorCode } from '../../error';
@@ -19,6 +18,7 @@ import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
 import { getWordLeftInText, getWordRightInText, WordType } from '../../textobject/word';
 import { Position } from 'vscode';
+import { commandParsers } from '../../vimscript/exCommandParser';
 
 /**
  * Commands that are only relevant when entering a command or search

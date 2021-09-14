@@ -1,8 +1,8 @@
-import * as node from '../node';
 import { configuration, optionAliases } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
+import { ExCommand } from '../../vimscript/exCommand';
 
 export enum SetOptionOperator {
   /*
@@ -43,14 +43,13 @@ export enum SetOptionOperator {
   Info,
 }
 
-export interface IOptionArgs extends node.ICommandArgs {
+export interface IOptionArgs {
   name?: string;
   operator?: SetOptionOperator;
   value?: string | number | boolean;
 }
 
-export class SetOptionsCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
+export class SetOptionsCommand extends ExCommand {
   private readonly arguments: IOptionArgs;
 
   constructor(args: IOptionArgs) {
