@@ -91,7 +91,7 @@ export interface ISmartQuotesConfiguration {
   /**
    * Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.
    */
-  aIncludesSurrouningSpaces: boolean;
+  aIncludesSurroundingSpaces: boolean;
 }
 
 export interface IConfiguration {

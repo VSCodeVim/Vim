@@ -724,17 +724,17 @@
         },
         "vim.smartQuotes.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable smart quotes movements (similar to targets.vim)",
+          "markdownDescription": "Enable smart quotes movements (similar to [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects))",
           "default": true
         },
         "vim.smartQuotes.breakThroughLines": {
           "type": "boolean",
-          "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion",
+          "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion.",
           "default": true
         },
-        "vim.smartQuotes.aIncludesSurrouningSpaces": {
+        "vim.smartQuotes.aIncludesSurroundingSpaces": {
           "type": "boolean",
-          "markdownDescription": "Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.",
+          "markdownDescription": "Whether to use default Vim behavior when using `a` (e.g. `da'`) which include surrounding spaces, or not, as for other text objects.",
           "default": true
         },
         "vim.sneak": {

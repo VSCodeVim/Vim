@@ -49,7 +49,7 @@ export class Configuration implements IConfiguration {
   smartQuotes: ISmartQuotesConfiguration = {
     enable: false,
     breakThroughLines: false,
-    aIncludesSurrouningSpaces: true,
+    aIncludesSurroundingSpaces: true,
   };
   autoSwitchInputMethod = {
     enable: false,
