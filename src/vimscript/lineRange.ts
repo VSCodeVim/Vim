@@ -4,6 +4,7 @@ import { ErrorCode, VimError } from '../error';
 import { globalState } from '../state/globalState';
 import { SearchDirection, SearchState } from '../state/searchState';
 import { VimState } from '../state/vimState';
+import { numberParser } from './parserUtils';
 
 /**
  * Specifies the start or end of a line range.
@@ -60,16 +61,18 @@ type LineSpecifier =
     };
 
 const lineSpecifierParser: Parser<LineSpecifier> = alt(
-  regexp(/\d+/).map((num) => {
-    return { type: 'number', num: Number.parseInt(num, 10) };
+  numberParser.map((num) => {
+    return { type: 'number', num };
   }),
   string('.').result({ type: 'current_line' }),
   string('$').result({ type: 'last_line' }),
   string('%').result({ type: 'entire_file' }),
   string('*').result({ type: 'last_visual_range' }),
-  seq(string("'"), any).map(([tick, mark]) => {
-    return { type: 'mark', mark };
-  }),
+  string("'")
+    .then(any)
+    .map((mark) => {
+      return { type: 'mark', mark };
+    }),
   // TODO: pattern_next
   // TODO: pattern_prev
   string('\\/').result({ type: 'last_search_pattern_next' }),
@@ -78,15 +81,11 @@ const lineSpecifierParser: Parser<LineSpecifier> = alt(
 );
 
 const offsetParser: Parser<number> = alt(
-  seq(string('+'), regexp(/\d+/).fallback('1')).map(([plus, num]) => {
-    return Number.parseInt(num, 10);
-  }),
-  seq(string('-'), regexp(/\d+/).fallback('1')).map(([minus, num]) => {
-    return -1 * Number.parseInt(num, 10);
-  }),
-  regexp(/\d+/).map((num) => {
-    return Number.parseInt(num, 10);
-  })
+  string('+').then(numberParser.fallback(1)),
+  string('-')
+    .then(numberParser.fallback(1))
+    .map((num) => -num),
+  numberParser
 )
   .skip(optWhitespace)
   .atLeast(1)
