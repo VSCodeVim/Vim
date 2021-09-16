@@ -20,7 +20,6 @@ import {
   visualBlockGetBottomRightPosition,
 } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
-import { SearchDirection } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
@@ -35,6 +34,7 @@ import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
+import { SearchDirection } from '../../vimscript/pattern';
 
 /**
  * A very special snowflake.

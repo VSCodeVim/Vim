@@ -1,5 +1,6 @@
 import assert = require('assert');
 import { Address, LineRange } from '../../src/vimscript/lineRange';
+import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
 function parseTest(name: string, input: string, output: LineRange) {
   test(name, () => {
@@ -17,17 +18,46 @@ suite('LineRange parsing', () => {
     parseTest("mark ('a)", "'a", new LineRange(new Address({ type: 'mark', mark: 'a' })));
     parseTest("mark ('A)", "'A", new LineRange(new Address({ type: 'mark', mark: 'A' })));
     parseTest("mark ('<)", "'<", new LineRange(new Address({ type: 'mark', mark: '<' })));
-    // TODO: uncomment these
-    // parseTest(
-    //   'pattern_next (no closing /)',
-    //   '/abc',
-    //   new LineRange(new Address({ type: 'pattern_next', pattern: 'abc' }))
-    // );
-    // parseTest(
-    //   'pattern_next (closing /)',
-    //   '/abc/',
-    //   new LineRange(new Address({ type: 'pattern_next', pattern: 'abc' }))
-    // );
+    parseTest(
+      'pattern_next (no closing /)',
+      '/abc',
+      new LineRange(
+        new Address({
+          type: 'pattern_next',
+          pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_next (closing /)',
+      '/abc/',
+      new LineRange(
+        new Address({
+          type: 'pattern_next',
+          pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_prev (no closing ?)',
+      '?abc',
+      new LineRange(
+        new Address({
+          type: 'pattern_prev',
+          pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_prev (closing ?)',
+      '?abc?',
+      new LineRange(
+        new Address({
+          type: 'pattern_prev',
+          pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
+        })
+      )
+    );
     parseTest(
       'last_search_pattern_next',
       '\\/',

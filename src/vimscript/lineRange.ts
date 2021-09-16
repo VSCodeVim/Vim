@@ -1,10 +1,11 @@
-import { alt, any, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { ErrorCode, VimError } from '../error';
 import { globalState } from '../state/globalState';
-import { SearchDirection, SearchState } from '../state/searchState';
+import { SearchState } from '../state/searchState';
 import { VimState } from '../state/vimState';
 import { numberParser } from './parserUtils';
+import { Pattern, SearchDirection } from './pattern';
 
 /**
  * Specifies the start or end of a line range.
@@ -40,12 +41,12 @@ type LineSpecifier =
   | {
       // /{pattern}[/]
       type: 'pattern_next';
-      pattern: string;
+      pattern: Pattern;
     }
   | {
       // ?{pattern}[?]
       type: 'pattern_prev';
-      pattern: string;
+      pattern: Pattern;
     }
   | {
       // \/
@@ -73,8 +74,22 @@ const lineSpecifierParser: Parser<LineSpecifier> = alt(
     .map((mark) => {
       return { type: 'mark', mark };
     }),
-  // TODO: pattern_next
-  // TODO: pattern_prev
+  string('/')
+    .then(Pattern.parser({ direction: SearchDirection.Forward }))
+    .map((pattern) => {
+      return {
+        type: 'pattern_next',
+        pattern,
+      };
+    }),
+  string('?')
+    .then(Pattern.parser({ direction: SearchDirection.Backward }))
+    .map((pattern) => {
+      return {
+        type: 'pattern_prev',
+        pattern,
+      };
+    }),
   string('\\/').result({ type: 'last_search_pattern_next' }),
   string('\\?').result({ type: 'last_search_pattern_prev' }),
   string('\\&').result({ type: 'last_substitute_pattern_next' })
@@ -134,9 +149,21 @@ export class Address {
           }
           return mark.position.line;
         case 'pattern_next':
-          throw new Error('Using a pattern in a line range is not yet supported'); // TODO
+          const m = this.specifier.pattern.nextMatch(
+            vimState.document,
+            vimState.cursorStopPosition
+          );
+          if (m === undefined) {
+            // TODO: throw proper errors for nowrapscan
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              this.specifier.pattern.patternString
+            );
+          } else {
+            return m.start.line;
+          }
         case 'pattern_prev':
-          throw new Error('Using a pattern in a line range is not yet supported'); // TODO
+          throw new Error('Using a backward pattern in a line range is not yet supported'); // TODO
         case 'last_search_pattern_next':
           if (!globalState.searchState) {
             throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
@@ -148,7 +175,10 @@ export class Address {
           );
           if (nextMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              globalState.searchState.searchString
+            );
           }
           return nextMatch.pos.line;
         case 'last_search_pattern_prev':
@@ -162,7 +192,10 @@ export class Address {
           );
           if (prevMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              globalState.searchState.searchString
+            );
           }
           return prevMatch.pos.line;
         case 'last_substitute_pattern_next':
@@ -172,7 +205,7 @@ export class Address {
           const searchState = new SearchState(
             SearchDirection.Forward,
             vimState.cursorStopPosition,
-            globalState.substituteState.searchPattern,
+            globalState.substituteState.searchPattern.patternString,
             {},
             vimState.currentMode
           );
@@ -182,7 +215,7 @@ export class Address {
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
           }
           return match.pos.line;
         default:

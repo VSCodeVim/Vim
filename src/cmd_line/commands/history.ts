@@ -3,8 +3,8 @@ import {
   CommandShowSearchHistory,
   CommandShowCommandHistory,
 } from '../../actions/commands/actions';
-import { SearchDirection } from '../../state/searchState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { SearchDirection } from '../../vimscript/pattern';
 
 export enum HistoryCommandType {
   Cmd,

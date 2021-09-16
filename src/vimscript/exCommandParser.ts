@@ -25,7 +25,7 @@ import { parseReadCommandArgs } from '../cmd_line/subparsers/read';
 import { parseRegisterCommandArgs } from '../cmd_line/subparsers/register';
 import { parseOptionsCommandArgs } from '../cmd_line/subparsers/setoptions';
 import { parseSortCommandArgs } from '../cmd_line/subparsers/sort';
-import { parseSubstituteCommandArgs } from '../cmd_line/subparsers/substitute';
+import { substituteCommandArgs } from '../cmd_line/subparsers/substitute';
 import * as tabCmd from '../cmd_line/subparsers/tab';
 import { parseWallCommandArgs } from '../cmd_line/subparsers/wall';
 import { parseWriteCommandArgs } from '../cmd_line/subparsers/write';
@@ -433,7 +433,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['rubyd', 'o'], undefined],
   [['rubyf', 'ile'], undefined],
   [['rund', 'o'], undefined],
-  [['s', 'ubstitute'], parseSubstituteCommandArgs],
+  [['s', 'ubstitute'], (args: string) => substituteCommandArgs.tryParse(args)],
   [['sN', 'ext'], undefined],
   [['sa', 'rgument'], undefined],
   [['sal', 'l'], undefined],

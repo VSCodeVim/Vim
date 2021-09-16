@@ -7,9 +7,9 @@ suite(':substitute args parser', () => {
 
   test('can parse pattern, replace, and flags', () => {
     const args = subParser('/a/b/g').arguments;
-    assert.strictEqual(args.pattern, 'a');
+    assert.strictEqual(args.pattern?.patternString, 'a');
     assert.strictEqual(args.replace, 'b');
-    assert.strictEqual(args.flags, 8);
+    assert.deepStrictEqual(args.flags, { replaceAll: true });
   });
 
   test('can parse count', () => {
@@ -19,31 +19,32 @@ suite(':substitute args parser', () => {
 
   test('can parse custom delimiter', () => {
     const args = subParser('#a#b#g').arguments;
-    assert.strictEqual(args.pattern, 'a');
+    assert.strictEqual(args.pattern?.patternString, 'a');
     assert.strictEqual(args.replace, 'b');
-    assert.strictEqual(args.flags, 8);
+    assert.deepStrictEqual(args.flags, { replaceAll: true });
   });
 
   test('can escape delimiter', () => {
     const args = subParser('/\\/\\/a/b/').arguments;
-    assert.strictEqual(args.pattern, '//a');
+    assert.strictEqual(args.pattern?.patternString, '\\/\\/a');
+    assert.strictEqual(args.pattern?.regex.source, '\\/\\/a');
     assert.strictEqual(args.replace, 'b');
   });
 
   test('can use pattern escapes', () => {
     const args = subParser('/\\ba/b/').arguments;
-    assert.strictEqual(args.pattern, '\\ba');
+    assert.strictEqual(args.pattern?.patternString, '\\ba');
     assert.strictEqual(args.replace, 'b');
   });
 
   test('can escape replacement', () => {
     const args = subParser('/a/\\b/').arguments;
-    assert.strictEqual(args.pattern, 'a');
+    assert.strictEqual(args.pattern?.patternString, 'a');
     assert.strictEqual(args.replace, '\b');
   });
 
   test('can parse flag KeepPreviousFlags', () => {
     const args = subParser('/a/b/&').arguments;
-    assert.strictEqual(args.flags, 1);
+    assert.deepStrictEqual(args.flags, { keepPreviousFlags: true });
   });
 });
