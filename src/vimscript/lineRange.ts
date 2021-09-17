@@ -92,8 +92,8 @@ const offsetParser: Parser<number> = alt(
   .map((nums) => nums.reduce((x, y) => x + y, 0));
 
 export class Address {
-  private readonly specifier: LineSpecifier;
-  private readonly offset: number;
+  public readonly specifier: LineSpecifier;
+  public readonly offset: number;
 
   constructor(specifier: LineSpecifier, offset?: number) {
     this.specifier = specifier;
@@ -117,7 +117,7 @@ export class Address {
         case 'last_line':
           return vimState.document.lineCount - 1;
         case 'entire_file':
-          return side === 'left' ? 0 : vimState.document.lineCount - 1;
+          return vimState.document.lineCount - 1;
         case 'last_visual_range':
           const res =
             side === 'left'
@@ -224,6 +224,20 @@ export class LineRange {
   });
 
   public resolve(vimState: VimState): { start: number; end: number } | undefined {
+    // TODO: *,4 is not a valid range
+
+    if (this.end.specifier.type === 'entire_file') {
+      return { start: 0, end: vimState.document.lineCount - 1 };
+    } else if (this.end.specifier.type === 'last_visual_range') {
+      if (vimState.lastVisualSelection === undefined) {
+        throw VimError.fromCode(ErrorCode.MarkNotSet);
+      }
+      return {
+        start: vimState.lastVisualSelection.start.line,
+        end: vimState.lastVisualSelection.end.line,
+      };
+    }
+
     const left = this.start.resolve(vimState, 'left');
     if (this.separator === ';') {
       vimState.cursorStartPosition = vimState.cursorStopPosition = new Position(left, 0);

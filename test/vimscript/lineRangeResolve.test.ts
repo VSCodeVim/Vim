@@ -54,8 +54,11 @@ suite('LineRange resolving', () => {
     keysPressed: 'v' + 'j' + 'j' + '<Esc>',
     end: ['one', 'two', 'three', 'four', 'fi|ve', 'six'],
     lineRanges: {
+      // TODO: *,4 is not a valid range
       '*': [2, 4],
       "'<,'>": [2, 4],
+      '1,*': [2, 4],
+      '1;*': [2, 4],
     },
   });
 
@@ -98,8 +101,8 @@ suite('LineRange resolving', () => {
     end: ['one', 'two', 'th|ree', 'four', 'five', 'six'],
     lineRanges: {
       '%,%': [0, 5],
-      // '4,%': [0, 5], TODO
-      // '%,4': [4, 5], TODO
+      '4,%': [0, 5],
+      '%,4': [3, 5],
     },
   });
 
