@@ -196,39 +196,70 @@ export class Address {
     }
     return result;
   }
+
+  public toString(): string {
+    switch (this.specifier.type) {
+      case 'number':
+        return this.specifier.num.toString();
+      case 'current_line':
+        return '.';
+      case 'last_line':
+        return '$';
+      case 'entire_file':
+        return '%';
+      case 'last_visual_range':
+        return '*';
+      case 'mark':
+        return `'${this.specifier.mark}`;
+      case 'pattern_next':
+        return `/${this.specifier.pattern}/`;
+      case 'pattern_prev':
+        return `?${this.specifier.pattern}?`;
+      case 'last_search_pattern_next':
+        return '\\/';
+      case 'last_search_pattern_prev':
+        return '\\?';
+      case 'last_substitute_pattern_next':
+        return '\\&';
+      default:
+        const guard: never = this.specifier;
+        throw new Error('Got unexpected LineSpecifier.type');
+    }
+  }
 }
 
 export class LineRange {
   private readonly start: Address;
-  private readonly end: Address;
-  public readonly separator: ',' | ';';
+  private readonly end?: Address;
+  public readonly separator?: ',' | ';';
 
-  constructor(start: Address, end?: Address, separator?: ',' | ';') {
+  constructor(start: Address, separator?: ',' | ';', end?: Address) {
     this.start = start;
-    this.end = end ?? start;
-    this.separator = separator ?? ',';
+    this.end = end;
+    this.separator = separator;
   }
 
   public static parser: Parser<LineRange> = seq(
     Address.parser.skip(optWhitespace),
     seq(
       alt(string(','), string(';')).skip(optWhitespace),
-      Address.parser.fallback(new Address({ type: 'current_line' }))
+      Address.parser.fallback(undefined)
     ).fallback(undefined)
   ).map(([start, sepEnd]) => {
     if (sepEnd) {
       const [sep, end] = sepEnd;
-      return new LineRange(start, end, sep);
+      return new LineRange(start, sep, end);
     }
-    return new LineRange(start, start);
+    return new LineRange(start);
   });
 
   public resolve(vimState: VimState): { start: number; end: number } | undefined {
     // TODO: *,4 is not a valid range
+    const end = this.end ?? this.start;
 
-    if (this.end.specifier.type === 'entire_file') {
+    if (end.specifier.type === 'entire_file') {
       return { start: 0, end: vimState.document.lineCount - 1 };
-    } else if (this.end.specifier.type === 'last_visual_range') {
+    } else if (end.specifier.type === 'last_visual_range') {
       if (vimState.lastVisualSelection === undefined) {
         throw VimError.fromCode(ErrorCode.MarkNotSet);
       }
@@ -242,18 +273,18 @@ export class LineRange {
     if (this.separator === ';') {
       vimState.cursorStartPosition = vimState.cursorStopPosition = new Position(left, 0);
     }
-    const right = this.end.resolve(vimState, 'right');
+    const right = end.resolve(vimState, 'right');
     if (left > right) {
       // Reverse the range to keep start < end
       // NOTE: Vim generally makes you confirm before doing this, but we do it automatically.
       return {
-        start: this.end.resolve(vimState, 'left'),
+        start: end.resolve(vimState, 'left'),
         end: this.start.resolve(vimState, 'right'),
       };
     } else {
       return {
         start: this.start.resolve(vimState, 'left'),
-        end: this.end.resolve(vimState, 'right'),
+        end: end.resolve(vimState, 'right'),
       };
     }
   }
@@ -261,5 +292,9 @@ export class LineRange {
   public resolveToRange(vimState: VimState): Range {
     const { start, end } = this.resolve(vimState)!;
     return new Range(new Position(start, 0), new Position(end, 0).getLineEnd());
+  }
+
+  public toString(): string {
+    return `${this.start.toString()}${this.separator ?? ''}${this.end?.toString() ?? ''}`;
   }
 }
