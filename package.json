@@ -1173,7 +1173,7 @@
     "tslint": "6.1.3",
     "typescript": "4.4.3",
     "vsce": "1.100.1",
-    "webpack": "5.55.0",
+    "webpack": "5.55.1",
     "webpack-cli": "4.8.0",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"
