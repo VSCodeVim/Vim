@@ -1,49 +1,76 @@
-import { parseCloseCommandArgs } from './subparsers/close';
-import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
-import { parseDigraphCommandArgs } from './subparsers/digraph';
-import * as fileCmd from './subparsers/file';
-import { parseQuitAllCommandArgs, parseQuitCommandArgs } from './subparsers/quit';
-import { parseReadCommandArgs } from './subparsers/read';
-import { parseRegisterCommandArgs } from './subparsers/register';
-import { parseOptionsCommandArgs } from './subparsers/setoptions';
-import { parseSortCommandArgs } from './subparsers/sort';
-import { parseSubstituteCommandArgs } from './subparsers/substitute';
-import * as tabCmd from './subparsers/tab';
-import { parseWallCommandArgs } from './subparsers/wall';
-import { parseWriteCommandArgs } from './subparsers/write';
-import { parseWriteQuitCommandArgs } from './subparsers/writequit';
-import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
-import { parseFileInfoCommandArgs } from './subparsers/fileInfo';
-import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from './subparsers/marks';
-import { parsePutExCommandArgs } from './subparsers/put';
-import { CommandBase } from './node';
-import { parseHistoryCommandArgs } from './subparsers/history';
-import { parseBufferDeleteCommandArgs } from './subparsers/bufferDelete';
-import { NohlCommand } from './commands/nohl';
-import { OnlyCommand } from './commands/only';
-import { SmileCommand } from './commands/smile';
-import { UndoCommand } from './commands/undo';
-import { parseBangCommand } from './subparsers/bang';
-import { ClearJumpsCommand, JumpsCommand } from './commands/jumps';
+import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
+import { CopyCommand } from '../cmd_line/commands/copy';
+import { GotoCommand } from '../cmd_line/commands/goto';
+import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
+import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
+import { NohlCommand } from '../cmd_line/commands/nohl';
+import { OnlyCommand } from '../cmd_line/commands/only';
+import { ShCommand } from '../cmd_line/commands/sh';
+import { SmileCommand } from '../cmd_line/commands/smile';
+import { UndoCommand } from '../cmd_line/commands/undo';
+import { VsCodeCommand } from '../cmd_line/commands/vscode';
+import { YankCommand } from '../cmd_line/commands/yank';
+import { parseBangCommand } from '../cmd_line/subparsers/bang';
+import { parseBufferDeleteCommandArgs } from '../cmd_line/subparsers/bufferDelete';
+import { parseCloseCommandArgs } from '../cmd_line/subparsers/close';
+import { parseDeleteRangeLinesCommandArgs } from '../cmd_line/subparsers/deleteRange';
+import { parseDigraphCommandArgs } from '../cmd_line/subparsers/digraph';
+import * as fileCmd from '../cmd_line/subparsers/file';
+import { parseFileInfoCommandArgs } from '../cmd_line/subparsers/fileInfo';
+import { parseHistoryCommandArgs } from '../cmd_line/subparsers/history';
+import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from '../cmd_line/subparsers/marks';
+import { parsePutExCommandArgs } from '../cmd_line/subparsers/put';
+import { parseQuitAllCommandArgs, parseQuitCommandArgs } from '../cmd_line/subparsers/quit';
+import { parseReadCommandArgs } from '../cmd_line/subparsers/read';
+import { parseRegisterCommandArgs } from '../cmd_line/subparsers/register';
+import { parseOptionsCommandArgs } from '../cmd_line/subparsers/setoptions';
+import { parseSortCommandArgs } from '../cmd_line/subparsers/sort';
+import { parseSubstituteCommandArgs } from '../cmd_line/subparsers/substitute';
+import * as tabCmd from '../cmd_line/subparsers/tab';
+import { parseWallCommandArgs } from '../cmd_line/subparsers/wall';
+import { parseWriteCommandArgs } from '../cmd_line/subparsers/write';
+import { parseWriteQuitCommandArgs } from '../cmd_line/subparsers/writequit';
+import { parseWriteQuitAllCommandArgs } from '../cmd_line/subparsers/writequitall';
+import { ErrorCode, VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
-import { ShCommand } from './commands/sh';
-import { GotoCommand } from './commands/goto';
-import { YankCommand } from './commands/yank';
-import { CopyCommand } from './commands/copy';
-import { VsCodeCommand } from './commands/vscode';
+import { ExCommand } from './exCommand';
+import { LineRange } from './lineRange';
+
+export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
+  optWhitespace
+    .then(string(':').skip(optWhitespace).many())
+    .then(
+      seq(
+        LineRange.parser.fallback(undefined).skip(optWhitespace),
+        alt(string('!'), regexp(/[a-z]*/i)).skip(optWhitespace),
+        all
+      )
+    )
+    .map(([lineRange, commandName, args]) => {
+      const parser = getParser(commandName);
+      if (!parser) {
+        // TODO: This should show entire command (with range and args)
+        throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandName);
+      }
+      return { lineRange, command: parser(args) };
+    });
 
 // Associates a name and an abbreviation with a command parser
-export type CommandParserMapping = {
+type CommandParserMapping = {
   /** The shortest abbreviation that will work, such as `:q` */
   abbrev?: string;
 
   /** The parser for this command. Undefined if no implementation exists yet. */
-  parser?: (args: string) => CommandBase;
+  parser?: (args: string) => ExCommand;
 };
 
 // Keep this sorted, please :)
 export const commandParsers = {
+  '': {
+    parser: () => new GotoLineCommand(),
+  },
+
   '!': {
     parser: parseBangCommand,
   },
@@ -109,7 +136,7 @@ export const commandParsers = {
 
   copy: {
     abbrev: 'co',
-    parser: CopyCommand.parse,
+    parser: CopyCommand.parseArgs,
   },
 
   delete: {
@@ -158,7 +185,7 @@ export const commandParsers = {
 
   goto: {
     abbrev: 'go',
-    parser: GotoCommand.parse,
+    parser: GotoCommand.parseArgs,
   },
 
   help: {
@@ -283,7 +310,7 @@ export const commandParsers = {
   },
 
   t: {
-    parser: CopyCommand.parse,
+    parser: CopyCommand.parseArgs,
   },
 
   tabclose: {
@@ -352,7 +379,7 @@ export const commandParsers = {
 
   vscode: {
     abbrev: 'vsc',
-    parser: VsCodeCommand.parse,
+    parser: VsCodeCommand.parseArgs,
   },
 
   vsplit: {
@@ -390,7 +417,7 @@ export const commandParsers = {
 
   yank: {
     abbrev: 'y',
-    parser: YankCommand.parse,
+    parser: YankCommand.parseArgs,
   },
 };
 
@@ -398,11 +425,7 @@ export const commandParsers = {
  * Returns a command parser for the given `input`, if one exists.
  * Resolves `q`, `qu`, `qui`, and `quit` the same.
  */
-export function getParser(input: string): ((args: string) => CommandBase) | undefined {
-  if (input === '') {
-    return undefined;
-  }
-
+export function getParser(input: string): ((args: string) => ExCommand) | undefined {
   for (const fullName of Object.keys(commandParsers)) {
     const parserMapping: CommandParserMapping = commandParsers[fullName];
 
@@ -426,7 +449,7 @@ export function getParser(input: string): ((args: string) => CommandBase) | unde
   return undefined;
 }
 
-class UnimplementedCommand extends CommandBase {
+class UnimplementedCommand extends ExCommand {
   fullName: string;
   parserMapping: CommandParserMapping;
 

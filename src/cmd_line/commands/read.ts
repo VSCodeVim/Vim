@@ -1,10 +1,10 @@
 import { TextEditor } from '../../textEditor';
-import * as node from '../node';
 import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export interface IReadCommandArguments extends node.ICommandArgs {
+export interface IReadCommandArguments {
   file?: string;
   cmd?: string;
 }
@@ -14,7 +14,7 @@ export interface IReadCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
-export class ReadCommand extends node.CommandBase {
+export class ReadCommand extends ExCommand {
   private readonly arguments: IReadCommandArguments;
 
   constructor(args: IReadCommandArguments) {

@@ -3,11 +3,12 @@ import { PositionDiff } from '../../common/motion/position';
 import { ErrorCode, VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 import { Scanner } from '../scanner';
 
-export class CopyCommand extends node.CommandBase {
-  public static parse(args: string): CopyCommand {
+export class CopyCommand extends ExCommand {
+  public static parseArgs(args: string): CopyCommand {
     if (args.trim() === '') {
       return new CopyCommand();
     }
@@ -75,8 +76,8 @@ export class CopyCommand extends node.CommandBase {
     this.copyLines(vimState, line, line);
   }
 
-  public override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [start, end] = range.resolve(vimState);
+  public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const { start, end } = range.resolve(vimState)!;
     this.copyLines(vimState, start, end);
   }
 }

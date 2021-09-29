@@ -1,11 +1,11 @@
 import { window, QuickPickItem } from 'vscode';
 
-import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { IMark } from '../../history/historyTracker';
 import { Cursor } from '../../common/motion/cursor';
 import { StatusBar } from '../../statusBar';
 import { ErrorCode, VimError } from '../../error';
+import { ExCommand } from '../../vimscript/exCommand';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -28,8 +28,7 @@ class MarkQuickPickItem implements QuickPickItem {
   }
 }
 
-export class MarksCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
+export class MarksCommand extends ExCommand {
   private marksFilter?: string[];
 
   constructor(marksFilter?: string[]) {
@@ -58,8 +57,7 @@ export class MarksCommand extends node.CommandBase {
   }
 }
 
-export class DeleteMarksCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
+export class DeleteMarksCommand extends ExCommand {
   private numbers = '0123456789';
   private numberRange = /([0-9])-([0-9])/;
   private letterRange = /([a-zA-Z])-([a-zA-Z])/;

@@ -1,4 +1,3 @@
-import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
 import { Mode } from './../mode/mode';
@@ -9,6 +8,7 @@ import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
+import { exCommandParser } from '../vimscript/exCommandParser';
 
 class CommandLine {
   private history!: CommandLineHistory;
@@ -40,34 +40,34 @@ class CommandLine {
     return this.history.load();
   }
 
-  public async Run(command: string, vimState: VimState): Promise<void> {
-    if (!command || command.length === 0) {
+  public async Run(commandName: string, vimState: VimState): Promise<void> {
+    if (!commandName || commandName.length === 0) {
       return;
     }
 
-    if (command.startsWith(':')) {
-      command = command.slice(1);
-    }
-
-    this.history.add(command);
+    this.history.add(commandName);
     this.commandLineHistoryIndex = this.history.get().length;
 
-    if (!command.startsWith('reg')) {
+    if (!commandName.startsWith('reg')) {
       const recState = new RecordedState();
       recState.registerName = ':';
-      recState.commandList = command.split('');
+      recState.commandList = commandName.split('');
       Register.setReadonlyRegister(':', recState);
     }
 
     try {
-      const cmd = parser.parse(command);
-      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
+      const { lineRange, command } = exCommandParser.tryParse(commandName);
+      const useNeovim = configuration.enableNeovim && command.neovimCapable();
 
       if (useNeovim && vimState.nvim) {
-        const { statusBarText, error } = await vimState.nvim.run(vimState, command);
+        const { statusBarText, error } = await vimState.nvim.run(vimState, commandName);
         StatusBar.setText(vimState, statusBarText, error);
       } else {
-        await cmd.execute(vimState);
+        if (lineRange) {
+          await command.executeWithRange(vimState, lineRange);
+        } else {
+          await command.execute(vimState);
+        }
       }
     } catch (e) {
       if (e instanceof VimError) {
@@ -76,13 +76,13 @@ class CommandLine {
           configuration.enableNeovim &&
           vimState.nvim
         ) {
-          const { statusBarText } = await vimState.nvim.run(vimState, command);
+          const { statusBarText } = await vimState.nvim.run(vimState, commandName);
           StatusBar.setText(vimState, statusBarText, true);
         } else {
           StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
-        this.logger.error(`Error executing cmd=${command}. err=${e}.`);
+        this.logger.error(`Error executing cmd=${commandName}. err=${e}.`);
       }
     }
   }

@@ -3,15 +3,16 @@ import { PositionDiff } from '../../common/motion/position';
 
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface ISortCommandArguments extends node.ICommandArgs {
+export interface ISortCommandArguments {
   reverse: boolean;
   ignoreCase: boolean;
   unique: boolean;
 }
 
-export class SortCommand extends node.CommandBase {
+export class SortCommand extends ExCommand {
   private readonly arguments: ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {
@@ -78,8 +79,8 @@ export class SortCommand extends node.CommandBase {
     });
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [start, end] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const { start, end } = range.resolve(vimState)!;
 
     await this.sortLines(vimState, start, end);
   }
