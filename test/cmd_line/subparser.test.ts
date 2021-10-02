@@ -1,8 +1,9 @@
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extensionBase';
+import { WriteCommand } from '../../src/cmd_line/commands/write';
 
 import { Mode } from '../../src/mode/mode';
-import { commandParsers, getParser } from '../../src/vimscript/exCommandParser';
+import { commandNameParser } from '../../src/vimscript/exCommandParser';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
@@ -15,129 +16,131 @@ suite('getParser', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('empty', () => {
-    assert.notStrictEqual(getParser(''), undefined);
+    assert.notStrictEqual(commandNameParser.tryParse(''), undefined);
   });
 
   test(':marks', () => {
-    assert.notStrictEqual(getParser('marks'), undefined);
-    assert.strictEqual(getParser('marksx'), undefined);
+    assert.notStrictEqual(commandNameParser.tryParse('marks'), undefined);
+    assert.strictEqual(commandNameParser.parse('marksx').status, false);
   });
 
   test(':ju', () => {
-    const j = getParser('ju');
+    const j = commandNameParser.tryParse('ju');
     assert.notStrictEqual(j, undefined);
-    assert.strictEqual(getParser('jumps'), j);
-    assert.strictEqual(getParser('jump'), j);
+    assert.strictEqual(commandNameParser.tryParse('jumps'), j);
+    assert.strictEqual(commandNameParser.tryParse('jump'), j);
   });
 
   test(':sh', () => {
-    const s = getParser('shell');
+    const s = commandNameParser.tryParse('shell');
     assert.notStrictEqual(s, undefined);
-    assert.strictEqual(getParser('sh'), s);
+    assert.strictEqual(commandNameParser.tryParse('sh'), s);
   });
 
   test(':write', () => {
-    const w = getParser('w');
+    const w = commandNameParser.tryParse('w');
     assert.notStrictEqual(w, undefined);
 
-    assert.strictEqual(getParser('wr'), w);
-    assert.strictEqual(getParser('wri'), w);
-    assert.strictEqual(getParser('writ'), w);
-    assert.strictEqual(getParser('write'), w);
+    assert.strictEqual(commandNameParser.tryParse('wr'), w);
+    assert.strictEqual(commandNameParser.tryParse('wri'), w);
+    assert.strictEqual(commandNameParser.tryParse('writ'), w);
+    assert.strictEqual(commandNameParser.tryParse('write'), w);
 
-    assert.strictEqual(getParser('writex'), undefined);
+    assert.strictEqual(commandNameParser.parse('writex').status, false);
   });
 
   test(':nohlsearch', () => {
-    assert.strictEqual(getParser('no'), undefined);
+    assert.notDeepStrictEqual(commandNameParser.parse('no'), commandNameParser.parse('nohl'));
 
-    const noh = getParser('noh');
+    const noh = commandNameParser.tryParse('noh');
     assert.notStrictEqual(noh, undefined);
 
-    assert.strictEqual(getParser('nohl'), noh);
-    assert.strictEqual(getParser('nohls'), noh);
-    assert.strictEqual(getParser('nohlse'), noh);
-    assert.strictEqual(getParser('nohlsea'), noh);
-    assert.strictEqual(getParser('nohlsear'), noh);
-    assert.strictEqual(getParser('nohlsearc'), noh);
-    assert.strictEqual(getParser('nohlsearch'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohl'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohls'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohlse'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohlsea'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohlsear'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohlsearc'), noh);
+    assert.strictEqual(commandNameParser.tryParse('nohlsearch'), noh);
 
-    assert.strictEqual(getParser('nohlsearchx'), undefined);
+    assert.strictEqual(commandNameParser.parse('nohlsearchx').status, false);
   });
 
   test(':quitall', () => {
-    const qa = getParser('qa');
+    const qa = commandNameParser.tryParse('qa');
     assert.notStrictEqual(qa, undefined);
 
-    assert.strictEqual(getParser('qal'), qa);
-    assert.strictEqual(getParser('qall'), qa);
+    assert.strictEqual(commandNameParser.tryParse('qal'), qa);
+    assert.strictEqual(commandNameParser.tryParse('qall'), qa);
 
-    assert.strictEqual(getParser('quita'), qa);
-    assert.strictEqual(getParser('quital'), qa);
-    assert.strictEqual(getParser('quitall'), qa);
+    assert.strictEqual(commandNameParser.tryParse('quita'), qa);
+    assert.strictEqual(commandNameParser.tryParse('quital'), qa);
+    assert.strictEqual(commandNameParser.tryParse('quitall'), qa);
   });
 
   suite(':write args parser', () => {
+    const writeParser = commandNameParser.tryParse('write') as (args: string) => WriteCommand;
+
     test('can parse empty args', () => {
       // TODO: perhaps we don't need to export this func at all.
       // TODO: this func must return args only, not a command?
       // TODO: the range must be passed separately, not as arg.
-      const args = commandParsers.write.parser('');
-      assert.strictEqual(args.arguments.append, undefined);
-      assert.strictEqual(args.arguments.bang, undefined);
-      assert.strictEqual(args.arguments.cmd, undefined);
-      assert.strictEqual(args.arguments.file, undefined);
-      assert.strictEqual(args.arguments.opt, undefined);
-      assert.strictEqual(args.arguments.optValue, undefined);
-      assert.strictEqual(args.arguments.range, undefined);
+      const args = writeParser('').arguments;
+      assert.strictEqual(args.append, undefined);
+      assert.strictEqual(args.bang, undefined);
+      assert.strictEqual(args.cmd, undefined);
+      assert.strictEqual(args.file, undefined);
+      assert.strictEqual(args.opt, undefined);
+      assert.strictEqual(args.optValue, undefined);
+      assert.strictEqual(args.range, undefined);
     });
 
     test('can parse ++opt', () => {
-      const args = commandParsers.write.parser('++enc=foo');
-      assert.strictEqual(args.arguments.append, undefined);
-      assert.strictEqual(args.arguments.bang, undefined);
-      assert.strictEqual(args.arguments.cmd, undefined);
-      assert.strictEqual(args.arguments.file, undefined);
-      assert.strictEqual(args.arguments.opt, 'enc');
-      assert.strictEqual(args.arguments.optValue, 'foo');
-      assert.strictEqual(args.arguments.range, undefined);
+      const args = writeParser('++enc=foo').arguments;
+      assert.strictEqual(args.append, undefined);
+      assert.strictEqual(args.bang, undefined);
+      assert.strictEqual(args.cmd, undefined);
+      assert.strictEqual(args.file, undefined);
+      assert.strictEqual(args.opt, 'enc');
+      assert.strictEqual(args.optValue, 'foo');
+      assert.strictEqual(args.range, undefined);
     });
 
     test('throws if bad ++opt name', () => {
-      assert.throws(() => commandParsers.write.parser('++foo=foo'));
+      assert.throws(() => writeParser('++foo=foo'));
     });
 
     test('can parse bang', () => {
-      const args = commandParsers.write.parser('!');
-      assert.strictEqual(args.arguments.append, undefined);
-      assert.strictEqual(args.arguments.bang, true);
-      assert.strictEqual(args.arguments.cmd, undefined);
-      assert.strictEqual(args.arguments.file, undefined);
-      assert.strictEqual(args.arguments.opt, undefined);
-      assert.strictEqual(args.arguments.optValue, undefined);
-      assert.strictEqual(args.arguments.range, undefined);
+      const args = writeParser('!').arguments;
+      assert.strictEqual(args.append, undefined);
+      assert.strictEqual(args.bang, true);
+      assert.strictEqual(args.cmd, undefined);
+      assert.strictEqual(args.file, undefined);
+      assert.strictEqual(args.opt, undefined);
+      assert.strictEqual(args.optValue, undefined);
+      assert.strictEqual(args.range, undefined);
     });
 
     test("can parse ' !cmd'", () => {
-      const args = commandParsers.write.parser(' !foo');
-      assert.strictEqual(args.arguments.append, undefined);
-      assert.strictEqual(args.arguments.bang, undefined);
-      assert.strictEqual(args.arguments.cmd, 'foo');
-      assert.strictEqual(args.arguments.file, undefined);
-      assert.strictEqual(args.arguments.opt, undefined);
-      assert.strictEqual(args.arguments.optValue, undefined);
-      assert.strictEqual(args.arguments.range, undefined);
+      const args = writeParser(' !foo').arguments;
+      assert.strictEqual(args.append, undefined);
+      assert.strictEqual(args.bang, undefined);
+      assert.strictEqual(args.cmd, 'foo');
+      assert.strictEqual(args.file, undefined);
+      assert.strictEqual(args.opt, undefined);
+      assert.strictEqual(args.optValue, undefined);
+      assert.strictEqual(args.range, undefined);
     });
 
     test("can parse ' !cmd' when cmd is empty", () => {
-      const args = commandParsers.write.parser(' !');
-      assert.strictEqual(args.arguments.append, undefined);
-      assert.strictEqual(args.arguments.bang, undefined);
-      assert.strictEqual(args.arguments.cmd, undefined);
-      assert.strictEqual(args.arguments.file, undefined);
-      assert.strictEqual(args.arguments.opt, undefined);
-      assert.strictEqual(args.arguments.optValue, undefined);
-      assert.strictEqual(args.arguments.range, undefined);
+      const args = writeParser(' !').arguments;
+      assert.strictEqual(args.append, undefined);
+      assert.strictEqual(args.bang, undefined);
+      assert.strictEqual(args.cmd, undefined);
+      assert.strictEqual(args.file, undefined);
+      assert.strictEqual(args.opt, undefined);
+      assert.strictEqual(args.optValue, undefined);
+      assert.strictEqual(args.range, undefined);
     });
 
     newTest({

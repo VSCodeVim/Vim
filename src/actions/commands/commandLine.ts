@@ -18,7 +18,7 @@ import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
 import { getWordLeftInText, getWordRightInText, WordType } from '../../textobject/word';
 import { Position } from 'vscode';
-import { commandParsers } from '../../vimscript/exCommandParser';
+import { builtinExCommands } from '../../vimscript/exCommandParser';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -82,7 +82,8 @@ class CommandTabInCommandline extends BaseCommand {
     const fileRegex = /^\s*\w+\s+/g;
     if (cmdRegex.test(evalCmd)) {
       // Command completion
-      newCompletionItems = Object.keys(commandParsers)
+      newCompletionItems = builtinExCommands
+        .map((pair) => pair[0][0] + pair[0][1])
         .filter((cmd) => cmd.startsWith(evalCmd))
         // Remove the already typed portion in the array
         .map((cmd) => cmd.slice(cmd.search(evalCmd) + evalCmd.length))

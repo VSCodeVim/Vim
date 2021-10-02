@@ -1,33 +1,36 @@
 import * as assert from 'assert';
-import { commandParsers } from '../../src/vimscript/exCommandParser';
+import { PutExCommand } from '../../src/cmd_line/commands/put';
+import { commandNameParser } from '../../src/vimscript/exCommandParser';
 
 suite(':put args parser', () => {
+  const putParser = commandNameParser.tryParse('put') as (args: string) => PutExCommand;
+
   test('can parse empty args', () => {
-    const args = commandParsers.put.parser('');
-    assert.strictEqual(args.arguments.bang, undefined);
-    assert.strictEqual(args.arguments.register, undefined);
+    const args = putParser('').arguments;
+    assert.strictEqual(args.bang, undefined);
+    assert.strictEqual(args.register, undefined);
   });
 
   test('can parse !', () => {
-    const args = commandParsers.put.parser('!');
-    assert.strictEqual(args.arguments.bang, true);
+    const args = putParser('!').arguments;
+    assert.strictEqual(args.bang, true);
   });
 
   test('can parse register', () => {
-    const args = commandParsers.put.parser(' *');
-    assert.strictEqual(args.arguments.bang, undefined);
-    assert.strictEqual(args.arguments.register, '*');
+    const args = putParser(' *').arguments;
+    assert.strictEqual(args.bang, undefined);
+    assert.strictEqual(args.register, '*');
   });
 
   test('can parse register with no whitespace', () => {
-    const args = commandParsers.put.parser('*');
-    assert.strictEqual(args.arguments.bang, undefined);
-    assert.strictEqual(args.arguments.register, '*');
+    const args = putParser('*').arguments;
+    assert.strictEqual(args.bang, undefined);
+    assert.strictEqual(args.register, '*');
   });
 
   test('can parse register with no whitespace and !', () => {
-    const args = commandParsers.put.parser('!*');
-    assert.strictEqual(args.arguments.bang, true);
-    assert.strictEqual(args.arguments.register, '*');
+    const args = putParser('!*').arguments;
+    assert.strictEqual(args.bang, true);
+    assert.strictEqual(args.register, '*');
   });
 });

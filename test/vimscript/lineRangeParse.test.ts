@@ -50,19 +50,15 @@ suite('LineRange parsing', () => {
       parseTest(
         'Separator but no second address',
         `5${sep}`,
-        new LineRange(
-          new Address({ type: 'number', num: 5 }),
-          new Address({ type: 'current_line' }),
-          sep
-        )
+        new LineRange(new Address({ type: 'number', num: 5 }), sep)
       );
       parseTest(
         'Two numbers',
         `14${sep}23`,
         new LineRange(
           new Address({ type: 'number', num: 14 }),
-          new Address({ type: 'number', num: 23 }),
-          sep
+          sep,
+          new Address({ type: 'number', num: 23 })
         )
       );
       parseTest(
@@ -70,8 +66,8 @@ suite('LineRange parsing', () => {
         `123${sep}6`,
         new LineRange(
           new Address({ type: 'number', num: 123 }),
-          new Address({ type: 'number', num: 6 }),
-          sep
+          sep,
+          new Address({ type: 'number', num: 6 })
         )
       );
       parseTest(
@@ -79,8 +75,8 @@ suite('LineRange parsing', () => {
         `'<${sep}'>`,
         new LineRange(
           new Address({ type: 'mark', mark: '<' }),
-          new Address({ type: 'mark', mark: '>' }),
-          sep
+          sep,
+          new Address({ type: 'mark', mark: '>' })
         )
       );
     });
@@ -91,6 +87,7 @@ suite('LineRange parsing', () => {
         '1 2 3 , 4  5  6',
         new LineRange(
           new Address({ type: 'number', num: 1 }, 5),
+          ',',
           new Address({ type: 'number', num: 4 }, 11)
         )
       );

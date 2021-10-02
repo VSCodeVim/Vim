@@ -37,437 +37,626 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 
-export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
-  optWhitespace
-    .then(string(':').skip(optWhitespace).many())
-    .then(
-      seq(
-        LineRange.parser.fallback(undefined).skip(optWhitespace),
-        alt(string('!'), regexp(/[a-z]*/i)).skip(optWhitespace),
-        all
-      )
-    )
-    .map(([lineRange, commandName, args]) => {
-      const parser = getParser(commandName);
-      if (!parser) {
-        // TODO: This should show entire command (with range and args)
-        throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandName);
-      }
-      return { lineRange, command: parser(args) };
-    });
-
-// Associates a name and an abbreviation with a command parser
-type CommandParserMapping = {
-  /** The shortest abbreviation that will work, such as `:q` */
-  abbrev?: string;
-
-  /** The parser for this command. Undefined if no implementation exists yet. */
-  parser?: (args: string) => ExCommand;
-};
-
-// Keep this sorted, please :)
-export const commandParsers = {
-  '': {
-    parser: () => new GotoLineCommand(),
-  },
-
-  '!': {
-    parser: parseBangCommand,
-  },
-
-  bdelete: {
-    abbrev: 'bd',
-    parser: parseBufferDeleteCommandArgs,
-  },
-
-  bfirst: {
-    abbrev: 'bf',
-    parser: undefined,
-  },
-
-  blast: {
-    abbrev: 'bl',
-    parser: undefined,
-  },
-
-  bmodified: {
-    abbrev: 'bm',
-    parser: undefined,
-  },
-
-  bnext: {
-    abbrev: 'bn',
-    parser: tabCmd.parseTabNCommandArgs,
-  },
-
-  bNext: {
-    abbrev: 'bN',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  bprevious: {
-    abbrev: 'bp',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  brewind: {
-    abbrev: 'br',
-    parser: undefined,
-  },
-
-  buffers: {
-    parser: undefined,
-  },
-
-  center: {
-    abbrev: 'ce',
-    parser: undefined,
-  },
-
-  clearjumps: {
-    abbrev: 'cle',
-    parser: () => new ClearJumpsCommand(),
-  },
-
-  close: {
-    abbrev: 'clo',
-    parser: parseCloseCommandArgs,
-  },
-
-  copy: {
-    abbrev: 'co',
-    parser: CopyCommand.parseArgs,
-  },
-
-  delete: {
-    abbrev: 'd',
-    parser: parseDeleteRangeLinesCommandArgs,
-  },
-
-  delmarks: {
-    abbrev: 'delm',
-    parser: parseMarksRemoveCommandArgs,
-  },
-
-  digraphs: {
-    abbrev: 'dig',
-    parser: parseDigraphCommandArgs,
-  },
-
-  display: {
-    abbrev: 'di',
-    parser: parseRegisterCommandArgs,
-  },
-
-  edit: {
-    abbrev: 'e',
-    parser: fileCmd.parseEditFileCommandArgs,
-  },
-
-  enew: {
-    abbrev: 'ene',
-    parser: fileCmd.parseEditNewFileCommandArgs,
-  },
-
-  file: {
-    abbrev: 'f',
-    parser: parseFileInfoCommandArgs,
-  },
-
-  files: {
-    parser: undefined,
-  },
-
-  global: {
-    abbrev: 'g',
-    parser: undefined,
-  },
-
-  goto: {
-    abbrev: 'go',
-    parser: GotoCommand.parseArgs,
-  },
-
-  help: {
-    abbrev: 'h',
-    parser: undefined,
-  },
-
-  history: {
-    abbrev: 'his',
-    parser: parseHistoryCommandArgs,
-  },
-
-  jumps: {
-    abbrev: 'ju',
-    parser: () => new JumpsCommand(),
-  },
-
-  left: {
-    abbrev: 'le',
-    parser: undefined,
-  },
-
-  ls: {
-    parser: undefined,
-  },
-
-  marks: {
-    parser: parseMarksCommandArgs,
-  },
-
-  move: {
-    abbrev: 'm',
-    parser: undefined,
-  },
-
-  new: {
-    parser: fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs,
-  },
-
-  nohlsearch: {
-    abbrev: 'noh',
-    parser: () => new NohlCommand(),
-  },
-
-  normal: {
-    abbrev: 'norm',
-    parser: undefined,
-  },
-
-  only: {
-    abbrev: 'on',
-    parser: () => new OnlyCommand(),
-  },
-
-  put: {
-    abbrev: 'pu',
-    parser: parsePutExCommandArgs,
-  },
-
-  qall: {
-    abbrev: 'qa',
-    parser: parseQuitAllCommandArgs,
-  },
-
-  quit: {
-    abbrev: 'q',
-    parser: parseQuitCommandArgs,
-  },
-
-  quitall: {
-    abbrev: 'quita',
-    parser: parseQuitAllCommandArgs,
-  },
-
-  read: {
-    abbrev: 'r',
-    parser: parseReadCommandArgs,
-  },
-
-  registers: {
-    abbrev: 'reg',
-    parser: parseRegisterCommandArgs,
-  },
-
-  right: {
-    abbrev: 'ri',
-    parser: undefined,
-  },
-
-  set: {
-    abbrev: 'se',
-    parser: parseOptionsCommandArgs,
-  },
-
-  shell: {
-    abbrev: 'sh',
-    parser: () => new ShCommand(),
-  },
-
-  smile: {
-    parser: () => new SmileCommand(),
-  },
-
-  sort: {
-    abbrev: 'sor',
-    parser: parseSortCommandArgs,
-  },
-
-  source: {
-    abbrev: 'so',
-    parser: undefined,
-  },
-
-  split: {
-    abbrev: 'sp',
-    parser: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
-  },
-
-  substitute: {
-    abbrev: 's',
-    parser: parseSubstituteCommandArgs,
-  },
-
-  t: {
-    parser: CopyCommand.parseArgs,
-  },
-
-  tabclose: {
-    abbrev: 'tabc',
-    parser: tabCmd.parseTabCloseCommandArgs,
-  },
-
-  tabedit: {
-    abbrev: 'tabe',
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabfirst: {
-    abbrev: 'tabfir',
-    parser: tabCmd.parseTabFirstCommandArgs,
-  },
-
-  tablast: {
-    abbrev: 'tabl',
-    parser: tabCmd.parseTabLastCommandArgs,
-  },
-
-  tabmove: {
-    abbrev: 'tabm',
-    parser: tabCmd.parseTabMovementCommandArgs,
-  },
-
-  tabnew: {
-    parser: tabCmd.parseTabNewCommandArgs,
-  },
-
-  tabnext: {
-    abbrev: 'tabn',
-    parser: tabCmd.parseTabNCommandArgs,
-  },
-
-  tabNext: {
-    abbrev: 'tabN',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  tabonly: {
-    abbrev: 'tabo',
-    parser: tabCmd.parseTabOnlyCommandArgs,
-  },
-
-  tabprevious: {
-    abbrev: 'tabp',
-    parser: tabCmd.parseTabPCommandArgs,
-  },
-
-  undo: {
-    abbrev: 'u',
-    parser: () => new UndoCommand(),
-  },
-
-  vglobal: {
-    abbrev: 'v',
-    parser: undefined,
-  },
-
-  vnew: {
-    abbrev: 'vne',
-    parser: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
-  },
-
-  vscode: {
-    abbrev: 'vsc',
-    parser: VsCodeCommand.parseArgs,
-  },
-
-  vsplit: {
-    abbrev: 'vs',
-    parser: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
-  },
-
-  wall: {
-    abbrev: 'wa',
-    parser: parseWallCommandArgs,
-  },
-
-  wq: {
-    parser: parseWriteQuitCommandArgs,
-  },
-
-  wqall: {
-    abbrev: 'wqa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  write: {
-    abbrev: 'w',
-    parser: parseWriteCommandArgs,
-  },
-
-  x: {
-    parser: parseWriteQuitCommandArgs,
-  },
-
-  xall: {
-    abbrev: 'xa',
-    parser: parseWriteQuitAllCommandArgs,
-  },
-
-  yank: {
-    abbrev: 'y',
-    parser: YankCommand.parseArgs,
-  },
-};
+type ArgParser = (args: string) => ExCommand;
 
 /**
- * Returns a command parser for the given `input`, if one exists.
- * Resolves `q`, `qu`, `qui`, and `quit` the same.
+ * A list of all builtin ex commands and their argument parsers
+ * Each element is [[abbrev, rest], argParser]
+ * If argParser is undefined, it's yet to be implemented (PRs are welcome!)
+ *
+ * This list comes directly from nvim's `:help index` (except a few additions, which are commented)
  */
-export function getParser(input: string): ((args: string) => ExCommand) | undefined {
-  for (const fullName of Object.keys(commandParsers)) {
-    const parserMapping: CommandParserMapping = commandParsers[fullName];
+export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | undefined]> = [
+  [['', ''], () => new GotoLineCommand()],
+  [['!', ''], parseBangCommand],
+  [['#', ''], undefined],
+  [['&', ''], undefined],
+  [['*', ''], undefined],
+  [['<', ''], undefined],
+  [['=', ''], undefined],
+  [['>', ''], undefined],
+  [['@', ''], undefined],
+  [['@@', ''], undefined],
+  [['N', 'ext'], undefined],
+  [['a', 'ppend'], undefined],
+  [['ab', 'breviate'], undefined],
+  [['abc', 'lear'], undefined],
+  [['abo', 'veleft'], undefined],
+  [['al', 'l'], undefined],
+  [['am', 'enu'], undefined],
+  [['an', 'oremenu'], undefined],
+  [['ar', 'gs'], undefined],
+  [['arga', 'dd'], undefined],
+  [['argd', 'elete'], undefined],
+  [['argdo', ''], undefined],
+  [['arge', 'dit'], undefined],
+  [['argg', 'lobal'], undefined],
+  [['argl', 'ocal'], undefined],
+  [['argu', 'ment'], undefined],
+  [['as', 'cii'], undefined],
+  [['au', 'tocmd'], undefined],
+  [['aug', 'roup'], undefined],
+  [['aun', 'menu'], undefined],
+  [['b', 'uffer'], undefined],
+  [['bN', 'ext'], tabCmd.parseTabPCommandArgs],
+  [['ba', 'll'], undefined],
+  [['bad', 'd'], undefined],
+  [['balt', ''], undefined],
+  [['bd', 'elete'], parseBufferDeleteCommandArgs],
+  [['be', 'have'], undefined],
+  [['bel', 'owright'], undefined],
+  [['bf', 'irst'], undefined],
+  [['bl', 'ast'], undefined],
+  [['bm', 'odified'], undefined],
+  [['bn', 'ext'], tabCmd.parseTabNCommandArgs],
+  [['bo', 'tright'], undefined],
+  [['bp', 'revious'], tabCmd.parseTabPCommandArgs],
+  [['br', 'ewind'], undefined],
+  [['brea', 'k'], undefined],
+  [['breaka', 'dd'], undefined],
+  [['breakd', 'el'], undefined],
+  [['breakl', 'ist'], undefined],
+  [['bro', 'wse'], undefined],
+  [['bufdo', ''], undefined],
+  [['buffers', ''], undefined],
+  [['bun', 'load'], undefined],
+  [['bw', 'ipeout'], undefined],
+  [['c', 'hange'], undefined],
+  [['cN', 'ext'], undefined],
+  [['cNf', 'ile'], undefined],
+  [['ca', 'bbrev'], undefined],
+  [['cabc', 'lear'], undefined],
+  [['cabo', 've'], undefined],
+  [['cad', 'dbuffer'], undefined],
+  [['cadde', 'xpr'], undefined],
+  [['caddf', 'ile'], undefined],
+  [['caf', 'ter'], undefined],
+  [['cal', 'l'], undefined],
+  [['cat', 'ch'], undefined],
+  [['cb', 'uffer'], undefined],
+  [['cbef', 'ore'], undefined],
+  [['cbel', 'ow'], undefined],
+  [['cbo', 'ttom'], undefined],
+  [['cc', ''], undefined],
+  [['ccl', 'ose'], undefined],
+  [['cd', ''], undefined],
+  [['cdo', ''], undefined],
+  [['ce', 'nter'], undefined],
+  [['cex', 'pr'], undefined],
+  [['cf', 'ile'], undefined],
+  [['cfd', 'o'], undefined],
+  [['cfir', 'st'], undefined],
+  [['cg', 'etfile'], undefined],
+  [['cgetb', 'uffer'], undefined],
+  [['cgete', 'xpr'], undefined],
+  [['changes', ''], undefined],
+  [['chd', 'ir'], undefined],
+  [['che', 'ckpath'], undefined],
+  [['checkh', 'ealth'], undefined],
+  [['checkt', 'ime'], undefined],
+  [['chi', 'story'], undefined],
+  [['cl', 'ist'], undefined],
+  [['cla', 'st'], undefined],
+  [['cle', 'arjumps'], () => new ClearJumpsCommand()],
+  [['clo', 'se'], parseCloseCommandArgs],
+  [['cm', 'ap'], undefined],
+  [['cmapc', 'lear'], undefined],
+  [['cme', 'nu'], undefined],
+  [['cn', 'ext'], undefined],
+  [['cnew', 'er'], undefined],
+  [['cnf', 'ile'], undefined],
+  [['cno', 'remap'], undefined],
+  [['cnorea', 'bbrev'], undefined],
+  [['cnoreme', 'nu'], undefined],
+  [['co', 'py'], CopyCommand.parseArgs],
+  [['col', 'der'], undefined],
+  [['colo', 'rscheme'], undefined],
+  [['com', 'mand'], undefined],
+  [['comc', 'lear'], undefined],
+  [['comp', 'iler'], undefined],
+  [['con', 'tinue'], undefined],
+  [['conf', 'irm'], undefined],
+  [['cons', 't'], undefined],
+  [['cope', 'n'], undefined],
+  [['cp', 'revious'], undefined],
+  [['cpf', 'ile'], undefined],
+  [['cq', 'uit'], undefined],
+  [['cr', 'ewind'], undefined],
+  [['cs', 'cope'], undefined],
+  [['cst', 'ag'], undefined],
+  [['cu', 'nmap'], undefined],
+  [['cuna', 'bbrev'], undefined],
+  [['cunme', 'nu'], undefined],
+  [['cw', 'indow'], undefined],
+  [['d', 'elete'], parseDeleteRangeLinesCommandArgs],
+  [['deb', 'ug'], undefined],
+  [['debugg', 'reedy'], undefined],
+  [['delc', 'ommand'], undefined],
+  [['delf', 'unction'], undefined],
+  [['delm', 'arks'], parseMarksRemoveCommandArgs],
+  [['di', 'splay'], parseRegisterCommandArgs],
+  [['dif', 'fupdate'], undefined],
+  [['diffg', 'et'], undefined],
+  [['diffo', 'ff'], undefined],
+  [['diffp', 'atch'], undefined],
+  [['diffpu', 't'], undefined],
+  [['diffs', 'plit'], undefined],
+  [['diffthis', ''], undefined],
+  [['dig', 'raphs'], parseDigraphCommandArgs],
+  [['dj', 'ump'], undefined],
+  [['dl', ''], undefined],
+  [['dli', 'st'], undefined],
+  [['do', 'autocmd'], undefined],
+  [['doautoa', 'll'], undefined],
+  [['dr', 'op'], undefined],
+  [['ds', 'earch'], undefined],
+  [['dsp', 'lit'], undefined],
+  [['e', 'dit'], fileCmd.parseEditFileCommandArgs],
+  [['ea', 'rlier'], undefined],
+  [['ec', 'ho'], undefined],
+  [['echoe', 'rr'], undefined],
+  [['echoh', 'l'], undefined],
+  [['echom', 'sg'], undefined],
+  [['echon', ''], undefined],
+  [['el', 'se'], undefined],
+  [['elsei', 'f'], undefined],
+  [['em', 'enu'], undefined],
+  [['en', 'dif'], undefined],
+  [['endf', 'unction'], undefined],
+  [['endfo', 'r'], undefined],
+  [['endt', 'ry'], undefined],
+  [['endw', 'hile'], undefined],
+  [['ene', 'w'], fileCmd.parseEditNewFileCommandArgs],
+  [['ev', 'al'], undefined],
+  [['ex', ''], undefined],
+  [['exe', 'cute'], undefined],
+  [['exi', 't'], undefined],
+  [['exu', 'sage'], undefined],
+  [['f', 'ile'], parseFileInfoCommandArgs],
+  [['files', ''], undefined],
+  [['filet', 'ype'], undefined],
+  [['filt', 'er'], undefined],
+  [['fin', 'd'], undefined],
+  [['fina', 'lly'], undefined],
+  [['fini', 'sh'], undefined],
+  [['fir', 'st'], undefined],
+  [['fo', 'ld'], undefined],
+  [['foldc', 'lose'], undefined],
+  [['foldd', 'oopen'], undefined],
+  [['folddoc', 'losed'], undefined],
+  [['foldo', 'pen'], undefined],
+  [['for', ''], undefined],
+  [['fu', 'nction'], undefined],
+  [['g', 'lobal'], undefined],
+  [['go', 'to'], GotoCommand.parseArgs],
+  [['gr', 'ep'], undefined],
+  [['grepa', 'dd'], undefined],
+  [['gu', 'i'], undefined],
+  [['gv', 'im'], undefined],
+  [['h', 'elp'], undefined],
+  [['ha', 'rdcopy'], undefined],
+  [['helpc', 'lose'], undefined],
+  [['helpg', 'rep'], undefined],
+  [['helpt', 'ags'], undefined],
+  [['hi', 'ghlight'], undefined],
+  [['hid', 'e'], undefined],
+  [['his', 'tory'], parseHistoryCommandArgs],
+  [['i', 'nsert'], undefined],
+  [['ia', 'bbrev'], undefined],
+  [['iabc', 'lear'], undefined],
+  [['if', ''], undefined],
+  [['ij', 'ump'], undefined],
+  [['il', 'ist'], undefined],
+  [['im', 'ap'], undefined],
+  [['imapc', 'lear'], undefined],
+  [['ime', 'nu'], undefined],
+  [['ino', 'remap'], undefined],
+  [['inorea', 'bbrev'], undefined],
+  [['inoreme', 'nu'], undefined],
+  [['int', 'ro'], undefined],
+  [['is', 'earch'], undefined],
+  [['isp', 'lit'], undefined],
+  [['iu', 'nmap'], undefined],
+  [['iuna', 'bbrev'], undefined],
+  [['iunme', 'nu'], undefined],
+  [['j', 'oin'], undefined],
+  [['ju', 'mps'], () => new JumpsCommand()],
+  [['k', ''], undefined],
+  [['kee', 'pmarks'], undefined],
+  [['keepa', 'lt'], undefined],
+  [['keepj', 'umps'], undefined],
+  [['keepp', 'atterns'], undefined],
+  [['l', 'ist'], undefined],
+  [['lN', 'ext'], undefined],
+  [['lNf', 'ile'], undefined],
+  [['la', 'st'], undefined],
+  [['lab', 'ove'], undefined],
+  [['lad', 'dexpr'], undefined],
+  [['laddb', 'uffer'], undefined],
+  [['laddf', 'ile'], undefined],
+  [['laf', 'ter'], undefined],
+  [['lan', 'guage'], undefined],
+  [['lat', 'er'], undefined],
+  [['lb', 'uffer'], undefined],
+  [['lbef', 'ore'], undefined],
+  [['lbel', 'ow'], undefined],
+  [['lbo', 'ttom'], undefined],
+  [['lc', 'd'], undefined],
+  [['lch', 'dir'], undefined],
+  [['lcl', 'ose'], undefined],
+  [['lcs', 'cope'], undefined],
+  [['ld', 'o'], undefined],
+  [['le', 'ft'], undefined],
+  [['lefta', 'bove'], undefined],
+  [['let', ''], undefined],
+  [['lex', 'pr'], undefined],
+  [['lf', 'ile'], undefined],
+  [['lfd', 'o'], undefined],
+  [['lfir', 'st'], undefined],
+  [['lg', 'etfile'], undefined],
+  [['lgetb', 'uffer'], undefined],
+  [['lgete', 'xpr'], undefined],
+  [['lgr', 'ep'], undefined],
+  [['lgrepa', 'dd'], undefined],
+  [['lh', 'elpgrep'], undefined],
+  [['lhi', 'story'], undefined],
+  [['ll', ''], undefined],
+  [['lla', 'st'], undefined],
+  [['lli', 'st'], undefined],
+  [['lm', 'ap'], undefined],
+  [['lmak', 'e'], undefined],
+  [['lmapc', 'lear'], undefined],
+  [['ln', 'oremap'], undefined],
+  [['lne', 'xt'], undefined],
+  [['lnew', 'er'], undefined],
+  [['lnf', 'ile'], undefined],
+  [['lo', 'adview'], undefined],
+  [['loadk', 'eymap'], undefined],
+  [['loc', 'kmarks'], undefined],
+  [['lockv', 'ar'], undefined],
+  [['lol', 'der'], undefined],
+  [['lope', 'n'], undefined],
+  [['lp', 'revious'], undefined],
+  [['lpf', 'ile'], undefined],
+  [['lr', 'ewind'], undefined],
+  [['ls', ''], undefined],
+  [['lt', 'ag'], undefined],
+  [['lu', 'nmap'], undefined],
+  [['lua', ''], undefined],
+  [['luad', 'o'], undefined],
+  [['luaf', 'ile'], undefined],
+  [['lv', 'imgrep'], undefined],
+  [['lvimgrepa', 'dd'], undefined],
+  [['lw', 'indow'], undefined],
+  [['m', 'ove'], undefined],
+  [['ma', 'rk'], undefined],
+  [['mak', 'e'], undefined],
+  [['map', ''], undefined],
+  [['mapc', 'lear'], undefined],
+  [['marks', ''], parseMarksCommandArgs],
+  [['mat', 'ch'], undefined],
+  [['me', 'nu'], undefined],
+  [['menut', 'ranslate'], undefined],
+  [['mes', 'sages'], undefined],
+  [['mk', 'exrc'], undefined],
+  [['mks', 'ession'], undefined],
+  [['mksp', 'ell'], undefined],
+  [['mkv', 'imrc'], undefined],
+  [['mkvie', 'w'], undefined],
+  [['mod', 'e'], undefined],
+  [['n', 'ext'], undefined],
+  [['new', ''], fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs],
+  [['nm', 'ap'], undefined],
+  [['nmapc', 'lear'], undefined],
+  [['nme', 'nu'], undefined],
+  [['nn', 'oremap'], undefined],
+  [['nnoreme', 'nu'], undefined],
+  [['no', 'remap'], undefined],
+  [['noa', 'utocmd'], undefined],
+  [['noh', 'lsearch'], () => new NohlCommand()],
+  [['norea', 'bbrev'], undefined],
+  [['noreme', 'nu'], undefined],
+  [['norm', 'al'], undefined],
+  [['nos', 'wapfile'], undefined],
+  [['nu', 'mber'], undefined],
+  [['nun', 'map'], undefined],
+  [['nunme', 'nu'], undefined],
+  [['ol', 'dfiles'], undefined],
+  [['om', 'ap'], undefined],
+  [['omapc', 'lear'], undefined],
+  [['ome', 'nu'], undefined],
+  [['on', 'ly'], () => new OnlyCommand()],
+  [['ono', 'remap'], undefined],
+  [['onoreme', 'nu'], undefined],
+  [['opt', 'ions'], undefined],
+  [['ou', 'nmap'], undefined],
+  [['ounme', 'nu'], undefined],
+  [['ow', 'nsyntax'], undefined],
+  [['p', 'rint'], undefined],
+  [['pa', 'ckadd'], undefined],
+  [['packl', 'oadall'], undefined],
+  [['pc', 'lose'], undefined],
+  [['pe', 'rl'], undefined],
+  [['ped', 'it'], undefined],
+  [['perld', 'o'], undefined],
+  [['perlf', 'ile'], undefined],
+  [['po', 'p'], undefined],
+  [['popu', 'p'], undefined],
+  [['pp', 'op'], undefined],
+  [['pre', 'serve'], undefined],
+  [['prev', 'ious'], undefined],
+  [['prof', 'ile'], undefined],
+  [['profd', 'el'], undefined],
+  [['ps', 'earch'], undefined],
+  [['pt', 'ag'], undefined],
+  [['ptN', 'ext'], undefined],
+  [['ptf', 'irst'], undefined],
+  [['ptj', 'ump'], undefined],
+  [['ptl', 'ast'], undefined],
+  [['ptn', 'ext'], undefined],
+  [['ptp', 'revious'], undefined],
+  [['ptr', 'ewind'], undefined],
+  [['pts', 'elect'], undefined],
+  [['pu', 't'], parsePutExCommandArgs],
+  [['pw', 'd'], undefined],
+  [['py', 'thon'], undefined],
+  [['py3', ''], undefined],
+  [['py3d', 'o'], undefined],
+  [['py3f', 'ile'], undefined],
+  [['pyd', 'o'], undefined],
+  [['pyf', 'ile'], undefined],
+  [['python3', ''], undefined],
+  [['pythonx', ''], undefined],
+  [['pyx', ''], undefined],
+  [['pyxd', 'o'], undefined],
+  [['pyxf', 'ile'], undefined],
+  [['q', 'uit'], parseQuitCommandArgs],
+  [['qa', 'll'], parseQuitAllCommandArgs],
+  [['quita', 'll'], parseQuitAllCommandArgs],
+  [['r', 'ead'], parseReadCommandArgs],
+  [['rec', 'over'], undefined],
+  [['red', 'o'], undefined],
+  [['redi', 'r'], undefined],
+  [['redr', 'aw'], undefined],
+  [['redraws', 'tatus'], undefined],
+  [['redrawt', 'abline'], undefined],
+  [['reg', 'isters'], parseRegisterCommandArgs],
+  [['res', 'ize'], undefined],
+  [['ret', 'ab'], undefined],
+  [['retu', 'rn'], undefined],
+  [['rew', 'ind'], undefined],
+  [['ri', 'ght'], undefined],
+  [['rightb', 'elow'], undefined],
+  [['rsh', 'ada'], undefined],
+  [['ru', 'ntime'], undefined],
+  [['rub', 'y'], undefined],
+  [['rubyd', 'o'], undefined],
+  [['rubyf', 'ile'], undefined],
+  [['rund', 'o'], undefined],
+  [['s', 'ubstitute'], parseSubstituteCommandArgs],
+  [['sN', 'ext'], undefined],
+  [['sa', 'rgument'], undefined],
+  [['sal', 'l'], undefined],
+  [['san', 'dbox'], undefined],
+  [['sav', 'eas'], undefined],
+  [['sb', 'uffer'], undefined],
+  [['sbN', 'ext'], undefined],
+  [['sba', 'll'], undefined],
+  [['sbf', 'irst'], undefined],
+  [['sbl', 'ast'], undefined],
+  [['sbm', 'odified'], undefined],
+  [['sbn', 'ext'], undefined],
+  [['sbp', 'revious'], undefined],
+  [['sbr', 'ewind'], undefined],
+  [['scr', 'iptnames'], undefined],
+  [['scripte', 'ncoding'], undefined],
+  [['scs', 'cope'], undefined],
+  [['se', 't'], parseOptionsCommandArgs],
+  [['setf', 'iletype'], undefined],
+  [['setg', 'lobal'], undefined],
+  [['setl', 'ocal'], undefined],
+  [['sf', 'ind'], undefined],
+  [['sfir', 'st'], undefined],
+  [['sh', 'ell'], () => new ShCommand()], // Taken from Vim; not in nvim
+  [['sig', 'n'], undefined],
+  [['sil', 'ent'], undefined],
+  [['sl', 'eep'], undefined],
+  [['sla', 'st'], undefined],
+  [['sm', 'agic'], undefined],
+  [['smap', ''], undefined],
+  [['smapc', 'lear'], undefined],
+  [['sme', 'nu'], undefined],
+  [['smile', ''], () => new SmileCommand()], // Taken from Vim; not in nvim
+  [['sn', 'ext'], undefined],
+  [['sno', 'magic'], undefined],
+  [['snor', 'emap'], undefined],
+  [['snoreme', 'nu'], undefined],
+  [['so', 'urce'], undefined],
+  [['sor', 't'], parseSortCommandArgs],
+  [['sp', 'lit'], fileCmd.parseEditFileInNewHorizontalWindowCommandArgs],
+  [['spe', 'llgood'], undefined],
+  [['spelld', 'ump'], undefined],
+  [['spelli', 'nfo'], undefined],
+  [['spellr', 'epall'], undefined],
+  [['spellra', 're'], undefined],
+  [['spellu', 'ndo'], undefined],
+  [['spellw', 'rong'], undefined],
+  [['spr', 'evious'], undefined],
+  [['sre', 'wind'], undefined],
+  [['st', 'op'], undefined],
+  [['sta', 'g'], undefined],
+  [['star', 'tinsert'], undefined],
+  [['startg', 'replace'], undefined],
+  [['startr', 'eplace'], undefined],
+  [['stj', 'ump'], undefined],
+  [['stopi', 'nsert'], undefined],
+  [['sts', 'elect'], undefined],
+  [['sun', 'hide'], undefined],
+  [['sunm', 'ap'], undefined],
+  [['sunme', 'nu'], undefined],
+  [['sus', 'pend'], undefined],
+  [['sv', 'iew'], undefined],
+  [['sw', 'apname'], undefined],
+  [['sy', 'ntax'], undefined],
+  [['sync', 'bind'], undefined],
+  [['synti', 'me'], undefined],
+  [['t', ''], CopyCommand.parseArgs],
+  [['tN', 'ext'], undefined],
+  [['ta', 'g'], undefined],
+  [['tab', ''], undefined],
+  [['tabN', 'ext'], tabCmd.parseTabPCommandArgs],
+  [['tabc', 'lose'], tabCmd.parseTabCloseCommandArgs],
+  [['tabdo', ''], undefined],
+  [['tabe', 'dit'], tabCmd.parseTabNewCommandArgs],
+  [['tabf', 'ind'], undefined],
+  [['tabfir', 'st'], tabCmd.parseTabFirstCommandArgs],
+  [['tabl', 'ast'], tabCmd.parseTabLastCommandArgs],
+  [['tabm', 'ove'], tabCmd.parseTabMovementCommandArgs],
+  [['tabn', 'ext'], tabCmd.parseTabNCommandArgs],
+  [['tabnew', ''], tabCmd.parseTabNewCommandArgs],
+  [['tabo', 'nly'], tabCmd.parseTabOnlyCommandArgs],
+  [['tabp', 'revious'], tabCmd.parseTabPCommandArgs],
+  [['tabr', 'ewind'], undefined],
+  [['tabs', ''], undefined],
+  [['tags', ''], undefined],
+  [['tc', 'd'], undefined],
+  [['tch', 'dir'], undefined],
+  [['te', 'rminal'], undefined],
+  [['tf', 'irst'], undefined],
+  [['th', 'row'], undefined],
+  [['tj', 'ump'], undefined],
+  [['tl', 'ast'], undefined],
+  [['tm', 'enu'], undefined],
+  [['tma', 'p'], undefined],
+  [['tmapc', 'lear'], undefined],
+  [['tn', 'ext'], undefined],
+  [['tno', 'remap'], undefined],
+  [['to', 'pleft'], undefined],
+  [['tp', 'revious'], undefined],
+  [['tr', 'ewind'], undefined],
+  [['try', ''], undefined],
+  [['ts', 'elect'], undefined],
+  [['tu', 'nmenu'], undefined],
+  [['tunma', 'p'], undefined],
+  [['u', 'ndo'], () => new UndoCommand()],
+  [['una', 'bbreviate'], undefined],
+  [['undoj', 'oin'], undefined],
+  [['undol', 'ist'], undefined],
+  [['unh', 'ide'], undefined],
+  [['unl', 'et'], undefined],
+  [['unlo', 'ckvar'], undefined],
+  [['unm', 'ap'], undefined],
+  [['unme', 'nu'], undefined],
+  [['uns', 'ilent'], undefined],
+  [['up', 'date'], undefined],
+  [['v', 'global'], undefined],
+  [['ve', 'rsion'], undefined],
+  [['verb', 'ose'], undefined],
+  [['vert', 'ical'], undefined],
+  [['vi', 'sual'], undefined],
+  [['vie', 'w'], undefined],
+  [['vim', 'grep'], undefined],
+  [['vimgrepa', 'dd'], undefined],
+  [['viu', 'sage'], undefined],
+  [['vm', 'ap'], undefined],
+  [['vmapc', 'lear'], undefined],
+  [['vme', 'nu'], undefined],
+  [['vn', 'oremap'], undefined],
+  [['vne', 'w'], fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs],
+  [['vnoreme', 'nu'], undefined],
+  [['vs', 'plit'], fileCmd.parseEditFileInNewVerticalWindowCommandArgs],
+  [['vsc', 'ode'], VsCodeCommand.parseArgs], // Special: run VS Code command
+  [['vu', 'nmap'], undefined],
+  [['vunme', 'nu'], undefined],
+  [['w', 'rite'], parseWriteCommandArgs],
+  [['wN', 'ext'], undefined],
+  [['wa', 'll'], parseWallCommandArgs],
+  [['wh', 'ile'], undefined],
+  [['wi', 'nsize'], undefined],
+  [['winc', 'md'], undefined],
+  [['windo', ''], undefined],
+  [['winp', 'os'], undefined],
+  [['wn', 'ext'], undefined],
+  [['wp', 'revious'], undefined],
+  [['wq', ''], parseWriteQuitCommandArgs],
+  [['wqa', 'll'], parseWriteQuitAllCommandArgs],
+  [['wsh', 'ada'], undefined],
+  [['wu', 'ndo'], undefined],
+  [['x', 'it'], parseWriteQuitCommandArgs],
+  [['xa', 'll'], parseWriteQuitAllCommandArgs],
+  [['xm', 'ap'], undefined],
+  [['xmapc', 'lear'], undefined],
+  [['xme', 'nu'], undefined],
+  [['xn', 'oremap'], undefined],
+  [['xnoreme', 'nu'], undefined],
+  [['xu', 'nmap'], undefined],
+  [['xunme', 'nu'], undefined],
+  [['y', 'ank'], YankCommand.parseArgs],
+  [['z', ''], undefined],
+  [['~', ''], undefined],
+];
 
-    const parser =
-      parserMapping.parser ??
-      ((args: string) => {
-        return new UnimplementedCommand(fullName, parserMapping);
-      });
+function nameParser(
+  name: [string, string],
+  argParser: ArgParser | undefined
+): Parser<(args: string) => ExCommand> {
+  argParser ??= () => new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]);
 
-    if (parserMapping.abbrev !== undefined) {
-      if (input.startsWith(parserMapping.abbrev) && fullName.startsWith(input)) {
-        return parser;
-      }
-    } else {
-      if (input === fullName) {
-        return parser;
-      }
-    }
-  }
-
-  return undefined;
+  const fullName = name[0] + name[1];
+  const possibleNames = [...Array(name[1].length + 1).keys()]
+    .reverse()
+    .map((idx) => name[0] + name[1].substring(0, idx));
+  const p = alt(...possibleNames.map(string)).result(argParser);
+  return fullName === '' || /[a-z]$/i.test(fullName) ? p.notFollowedBy(regexp(/[a-z]/i)) : p;
 }
 
+export const commandNameParser: Parser<((args: string) => ExCommand) | undefined> = alt(
+  ...[...builtinExCommands].reverse().map(([name, argParser]) => nameParser(name, argParser))
+);
+
 class UnimplementedCommand extends ExCommand {
-  fullName: string;
-  parserMapping: CommandParserMapping;
+  name: string;
 
   public override neovimCapable(): boolean {
     // If the user has neovim integration enabled, don't stop them from using these commands
     return true;
   }
 
-  constructor(fullName: string, parserMapping: CommandParserMapping) {
+  constructor(name: string) {
     super();
-    this.fullName = fullName;
-    this.parserMapping = parserMapping;
+    this.name = name;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const commandText = this.parserMapping.abbrev
-      ? `${this.parserMapping.abbrev}[${this.fullName.substr(this.parserMapping.abbrev.length)}]`
-      : this.fullName;
-    StatusBar.setText(vimState, `Command :${commandText} is not yet implemented`, true);
+    StatusBar.setText(
+      vimState,
+      `Command :${this.name} is not yet implemented (PRs are welcome!)`,
+      true
+    );
+  }
+
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    await this.execute(vimState);
   }
 }
+
+export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
+  optWhitespace
+    .then(string(':').skip(optWhitespace).many())
+    .then(
+      seq(
+        LineRange.parser.fallback(undefined),
+        optWhitespace,
+        commandNameParser.fallback(undefined),
+        all
+      )
+    )
+    .map(([lineRange, whitespace, parseArgs, args]) => {
+      if (parseArgs === undefined) {
+        throw VimError.fromCode(
+          ErrorCode.NotAnEditorCommand,
+          `${lineRange?.toString() ?? ''}${whitespace}${args}`
+        );
+      }
+      return { lineRange, command: parseArgs(args) };
+    });
