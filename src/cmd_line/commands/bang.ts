@@ -40,7 +40,7 @@ export class BangCommand extends ExCommand {
     const resolvedRange = range.resolveToRange(vimState);
 
     // pipe in stdin from lines in range
-    const input = vimState.document.getText();
+    const input = vimState.document.getText(resolvedRange);
     const output = await externalCommand.run(this._arguments.command, input);
 
     // place cursor at the start of the replaced text and first non-whitespace character
