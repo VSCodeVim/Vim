@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export class SmileCommand extends node.CommandBase {
+export class SmileCommand extends ExCommand {
   static readonly smileText: string = `
                                oooo$$$$$$$$$$$$oooo
                           oo$$$$$$$$$$$$$$$$$$$$$$$$o

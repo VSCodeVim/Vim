@@ -31,12 +31,6 @@ export abstract class BaseOperator extends BaseAction {
     if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
       return false;
     }
-    if (
-      this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
-    ) {
-      return false;
-    }
     if (this instanceof BaseOperator && vimState.recordedState.operator) {
       return false;
     }
@@ -49,12 +43,6 @@ export abstract class BaseOperator extends BaseAction {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
-      return false;
-    }
-    if (
-      this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
-    ) {
       return false;
     }
     if (this instanceof BaseOperator && vimState.recordedState.operator) {

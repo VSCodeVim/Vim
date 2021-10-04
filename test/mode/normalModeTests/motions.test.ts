@@ -1087,5 +1087,47 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'Vj<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'thre|e', 'four'],
     });
+
+    newTest({
+      title: '`] go to the end of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`]',
+      end: ['hello worl|d'],
+    });
+
+    newTest({
+      title: "'] go to the end of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>']",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`[ go to the start of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`[',
+      end: ['hello| world'],
+    });
+
+    newTest({
+      title: "'[ go to the start of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>'[",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`. works correctly',
+      start: ['on|e'],
+      keysPressed: 'atwo<Esc>`.',
+      end: ['one|two'],
+    });
+
+    newTest({
+      title: "'. works correctly",
+      start: ['on|e'],
+      keysPressed: "atwo<Esc>'.",
+      end: ['|onetwo'],
+    });
   });
 });

@@ -1,29 +1,31 @@
 import * as assert from 'assert';
-
-import { commandParsers } from '../../src/cmd_line/subparser';
+import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
+import { commandNameParser } from '../../src/vimscript/exCommandParser';
 
 suite(':bufferDelete args parser', () => {
+  const bdParser = commandNameParser.tryParse('bd') as (args: string) => BufferDeleteCommand;
+
   test('can parse empty args', () => {
-    const args = commandParsers.bdelete.parser('');
-    assert.strictEqual(args.arguments.bang, undefined);
-    assert.strictEqual(args.arguments.tabPosition, undefined);
+    const args = bdParser('').arguments;
+    assert.strictEqual(args.bang, undefined);
+    assert.strictEqual(args.tabPosition, undefined);
   });
 
   test('can parse !', () => {
-    const args = commandParsers.bdelete.parser('!');
-    assert.ok(args.arguments.bang);
-    assert.strictEqual(args.arguments.tabPosition, '');
+    const args = bdParser('!').arguments;
+    assert.ok(args.bang);
+    assert.strictEqual(args.tabPosition, '');
   });
 
   test('can parse tab position', () => {
-    const args = commandParsers.bdelete.parser('1000');
-    assert.ok(args.arguments.tabPosition);
-    assert.strictEqual(args.arguments.bang, undefined);
-    assert.strictEqual(args.arguments.tabPosition, '1000');
+    const args = bdParser('1000').arguments;
+    assert.ok(args.tabPosition);
+    assert.strictEqual(args.bang, undefined);
+    assert.strictEqual(args.tabPosition, '1000');
   });
 
   test('ignores space after tab position', () => {
-    const args = commandParsers.bdelete.parser('3 ');
-    assert.strictEqual(args.arguments.tabPosition, '3');
+    const args = bdParser('3 ').arguments;
+    assert.strictEqual(args.tabPosition, '3');
   });
 });

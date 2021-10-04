@@ -1,12 +1,12 @@
 import { ErrorCode, VimError } from '../../error';
-import * as node from '../commands/quit';
+import { IQuitCommandArguments, QuitCommand } from '../commands/quit';
 import { Scanner } from '../scanner';
 
-export function parseQuitCommandArgs(args: string): node.QuitCommand {
+export function parseQuitCommandArgs(args: string): QuitCommand {
   if (!args) {
-    return new node.QuitCommand({});
+    return new QuitCommand({});
   }
-  const scannedArgs: node.IQuitCommandArguments = {};
+  const scannedArgs: IQuitCommandArguments = {};
   const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
@@ -19,10 +19,10 @@ export function parseQuitCommandArgs(args: string): node.QuitCommand {
   if (!scanner.isAtEof) {
     throw VimError.fromCode(ErrorCode.TrailingCharacters);
   }
-  return new node.QuitCommand(scannedArgs);
+  return new QuitCommand(scannedArgs);
 }
 
-export function parseQuitAllCommandArgs(args: string): node.QuitCommand {
+export function parseQuitAllCommandArgs(args: string): QuitCommand {
   const command = parseQuitCommandArgs(args);
   command.arguments.quitAll = true;
   return command;

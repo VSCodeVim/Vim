@@ -2,11 +2,12 @@ import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface ICloseCommandArguments extends node.ICommandArgs {
+export interface ICloseCommandArguments {
   bang?: boolean;
-  range?: node.LineRange;
+  range?: LineRange;
   quitAll?: boolean;
 }
 
@@ -14,7 +15,7 @@ export interface ICloseCommandArguments extends node.ICommandArgs {
 //  Implements :close
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
-export class CloseCommand extends node.CommandBase {
+export class CloseCommand extends ExCommand {
   public readonly arguments: ICloseCommandArguments;
 
   constructor(args: ICloseCommandArguments) {

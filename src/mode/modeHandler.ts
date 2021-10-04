@@ -782,7 +782,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // Update desiredColumn
     const preservesDesiredColumn =
-      action instanceof BaseOperator && !ranAction ? true : action.preservesDesiredColumn();
+      action instanceof BaseOperator && !ranAction ? true : action.preservesDesiredColumn;
     if (!preservesDesiredColumn) {
       if (action instanceof BaseMovement) {
         // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
@@ -1514,10 +1514,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     if (configuration.showMarksInGutter) {
-      for (const { position, name } of this.vimState.historyTracker.getMarks()) {
-        const markDecoration = decoration.getOrCreateMarkDecoration(name);
+      for (const mark of this.vimState.historyTracker.getMarks()) {
+        if (mark.isUppercaseMark && mark.document !== this.vimState.document) {
+          continue;
+        }
 
-        const markLine = position.getLineBegin();
+        const markDecoration = decoration.getOrCreateMarkDecoration(mark.name);
+        const markLine = mark.position.getLineBegin();
         const markRange = new vscode.Range(markLine, markLine);
 
         this.vimState.editor.setDecorations(markDecoration, [markRange]);

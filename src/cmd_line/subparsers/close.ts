@@ -1,12 +1,12 @@
 import { ErrorCode, VimError } from '../../error';
-import * as node from '../commands/close';
+import { CloseCommand, ICloseCommandArguments } from '../commands/close';
 import { Scanner } from '../scanner';
 
-export function parseCloseCommandArgs(args: string): node.CloseCommand {
+export function parseCloseCommandArgs(args: string): CloseCommand {
   if (!args) {
-    return new node.CloseCommand({});
+    return new CloseCommand({});
   }
-  const scannedArgs: node.ICloseCommandArguments = {};
+  const scannedArgs: ICloseCommandArguments = {};
   const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
@@ -19,5 +19,5 @@ export function parseCloseCommandArgs(args: string): node.CloseCommand {
   if (!scanner.isAtEof) {
     throw VimError.fromCode(ErrorCode.TrailingCharacters);
   }
-  return new node.CloseCommand(scannedArgs);
+  return new CloseCommand(scannedArgs);
 }

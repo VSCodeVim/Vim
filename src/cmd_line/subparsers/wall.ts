@@ -1,12 +1,12 @@
 import { ErrorCode, VimError } from '../../error';
-import * as node from '../commands/wall';
+import { IWallCommandArguments, WallCommand } from '../commands/wall';
 import { Scanner } from '../scanner';
 
-export function parseWallCommandArgs(args: string): node.WallCommand {
+export function parseWallCommandArgs(args: string): WallCommand {
   if (!args) {
-    return new node.WallCommand({});
+    return new WallCommand({});
   }
-  const scannedArgs: node.IWallCommandArguments = {};
+  const scannedArgs: IWallCommandArguments = {};
   const scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
@@ -19,5 +19,5 @@ export function parseWallCommandArgs(args: string): node.WallCommand {
   if (!scanner.isAtEof) {
     throw VimError.fromCode(ErrorCode.TrailingCharacters);
   }
-  return new node.WallCommand(scannedArgs);
+  return new WallCommand(scannedArgs);
 }

@@ -1,8 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
-
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
 
 export enum Tab {
   Next,
@@ -16,7 +15,7 @@ export enum Tab {
   Move,
 }
 
-export interface ITabCommandArguments extends node.ICommandArgs {
+export interface ITabCommandArguments {
   tab: Tab;
   count?: number;
   direction?: 'left' | 'right';
@@ -27,7 +26,7 @@ export interface ITabCommandArguments extends node.ICommandArgs {
 //  Implements tab
 //  http://vimdoc.sourceforge.net/htmldoc/tabpage.html
 //
-export class TabCommand extends node.CommandBase {
+export class TabCommand extends ExCommand {
   public readonly arguments: ITabCommandArguments;
 
   constructor(args: ITabCommandArguments) {

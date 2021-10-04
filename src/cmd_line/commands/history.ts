@@ -1,10 +1,10 @@
-import { CommandBase, ICommandArgs } from '../node';
 import { VimState } from '../../state/vimState';
 import {
   CommandShowSearchHistory,
   CommandShowCommandHistory,
 } from '../../actions/commands/actions';
-import { SearchDirection } from '../../state/searchState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { SearchDirection } from '../../vimscript/pattern';
 
 export enum HistoryCommandType {
   Cmd,
@@ -15,14 +15,14 @@ export enum HistoryCommandType {
   All,
 }
 
-export interface IHistoryCommandArguments extends ICommandArgs {
+export interface IHistoryCommandArguments {
   type: HistoryCommandType;
   // TODO: :history can accept multiple types
   // TODO: :history can also accept a range
 }
 
 // http://vimdoc.sourceforge.net/htmldoc/cmdline.html#:history
-export class HistoryCommand extends CommandBase {
+export class HistoryCommand extends ExCommand {
   private readonly arguments: IHistoryCommandArguments;
 
   constructor(args: IHistoryCommandArguments) {

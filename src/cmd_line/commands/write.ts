@@ -1,16 +1,17 @@
 import * as fs from 'platform/fs';
-import * as node from '../node';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface IWriteCommandArguments extends node.ICommandArgs {
+export interface IWriteCommandArguments {
   opt?: string;
   optValue?: string;
   bang?: boolean;
-  range?: node.LineRange;
+  range?: LineRange;
   file?: string;
   append?: boolean;
   cmd?: string;
@@ -21,7 +22,7 @@ export interface IWriteCommandArguments extends node.ICommandArgs {
 //  Implements :write
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:write
 //
-export class WriteCommand extends node.CommandBase {
+export class WriteCommand extends ExCommand {
   public readonly arguments: IWriteCommandArguments;
   private readonly logger = Logger.get('Write');
 
