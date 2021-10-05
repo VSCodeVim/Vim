@@ -18,7 +18,6 @@ import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
-import { SearchDirection } from '../state/searchState';
 import { StatusBar } from '../statusBar';
 import { clamp } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
@@ -27,7 +26,9 @@ import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
 import { CommandInsertAtCursor } from './commands/actions';
+import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
+
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -506,7 +507,8 @@ class CommandNextSearchMatch extends BaseMovement {
     // we have to handle a special case here: searching for $ or \n,
     // which we approximate by positionIsEOL. In that case (but only when searching forward)
     // we need to "offset" by getRight for searching the next match, otherwise we get stuck.
-    const searchForward = searchState.searchDirection === SearchDirection.Forward;
+    const searchForward = searchState.direction === 
+          .Forward;
     const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
     const nextMatch =
       positionIsEOL && searchForward
@@ -517,7 +519,7 @@ class CommandNextSearchMatch extends BaseMovement {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(
-          searchState.searchDirection === SearchDirection.Forward
+          searchState.direction === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
             : ErrorCode.SearchHitTop,
           searchState.searchString
@@ -558,7 +560,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return failedMovement(vimState);
     }
 
-    const searchForward = searchState.searchDirection === SearchDirection.Forward;
+    const searchForward = searchState.direction === SearchDirection.Forward;
     const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
 
     // see implementation of n, above.
@@ -579,7 +581,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(
-          searchState.searchDirection === SearchDirection.Forward
+          searchState.direction === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
             : ErrorCode.SearchHitBottom,
           searchState.searchString

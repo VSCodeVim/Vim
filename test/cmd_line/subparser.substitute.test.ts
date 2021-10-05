@@ -1,46 +1,50 @@
 import * as assert from 'assert';
-import { commandParsers } from '../../src/vimscript/exCommandParser';
+import { SubstituteCommand } from '../../src/cmd_line/commands/substitute';
+import { commandNameParser } from '../../src/vimscript/exCommandParser';
 
 suite(':substitute args parser', () => {
+  const subParser = commandNameParser.tryParse('s') as (args: string) => SubstituteCommand;
+
   test('can parse pattern, replace, and flags', () => {
-    const args = commandParsers.substitute.parser('/a/b/g');
-    assert.strictEqual(args.arguments.pattern, 'a');
-    assert.strictEqual(args.arguments.replace, 'b');
-    assert.strictEqual(args.arguments.flags, 8);
+    const args = subParser('/a/b/g').arguments;
+    assert.strictEqual(args.pattern?.patternString, 'a');
+    assert.strictEqual(args.replace, 'b');
+    assert.deepStrictEqual(args.flags, { replaceAll: true });
   });
 
   test('can parse count', () => {
-    const args = commandParsers.substitute.parser('/a/b/g 3');
-    assert.strictEqual(args.arguments.count, 3);
+    const args = subParser('/a/b/g 3').arguments;
+    assert.strictEqual(args.count, 3);
   });
 
   test('can parse custom delimiter', () => {
-    const args = commandParsers.substitute.parser('#a#b#g');
-    assert.strictEqual(args.arguments.pattern, 'a');
-    assert.strictEqual(args.arguments.replace, 'b');
-    assert.strictEqual(args.arguments.flags, 8);
+    const args = subParser('#a#b#g').arguments;
+    assert.strictEqual(args.pattern?.patternString, 'a');
+    assert.strictEqual(args.replace, 'b');
+    assert.deepStrictEqual(args.flags, { replaceAll: true });
   });
 
   test('can escape delimiter', () => {
-    const args = commandParsers.substitute.parser('/\\/\\/a/b/');
-    assert.strictEqual(args.arguments.pattern, '//a');
-    assert.strictEqual(args.arguments.replace, 'b');
+    const args = subParser('/\\/\\/a/b/').arguments;
+    assert.strictEqual(args.pattern?.patternString, '\\/\\/a');
+    assert.strictEqual(args.pattern?.regex.source, '\\/\\/a');
+    assert.strictEqual(args.replace, 'b');
   });
 
   test('can use pattern escapes', () => {
-    const args = commandParsers.substitute.parser('/\\ba/b/');
-    assert.strictEqual(args.arguments.pattern, '\\ba');
-    assert.strictEqual(args.arguments.replace, 'b');
+    const args = subParser('/\\ba/b/').arguments;
+    assert.strictEqual(args.pattern?.patternString, '\\ba');
+    assert.strictEqual(args.replace, 'b');
   });
 
   test('can escape replacement', () => {
-    const args = commandParsers.substitute.parser('/a/\\b/');
-    assert.strictEqual(args.arguments.pattern, 'a');
-    assert.strictEqual(args.arguments.replace, '\b');
+    const args = subParser('/a/\\b/').arguments;
+    assert.strictEqual(args.pattern?.patternString, 'a');
+    assert.strictEqual(args.replace, '\b');
   });
 
   test('can parse flag KeepPreviousFlags', () => {
-    const args = commandParsers.substitute.parser('/a/b/&');
-    assert.strictEqual(args.arguments.flags, 1);
+    const args = subParser('/a/b/&').arguments;
+    assert.deepStrictEqual(args.flags, { keepPreviousFlags: true });
   });
 });

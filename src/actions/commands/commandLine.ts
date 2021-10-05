@@ -14,11 +14,11 @@ import { StatusBar } from '../../statusBar';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
 import { VimError, ErrorCode } from '../../error';
-import { SearchDirection } from '../../state/searchState';
 import { scrollView } from '../../util/util';
 import { getWordLeftInText, getWordRightInText, WordType } from '../../textobject/word';
 import { Position } from 'vscode';
-import { commandParsers } from '../../vimscript/exCommandParser';
+import { builtinExCommands } from '../../vimscript/exCommandParser';
+import { SearchDirection } from '../../vimscript/pattern';
 
 /**
  * Commands that are only relevant when entering a command or search
@@ -82,7 +82,8 @@ class CommandTabInCommandline extends BaseCommand {
     const fileRegex = /^\s*\w+\s+/g;
     if (cmdRegex.test(evalCmd)) {
       // Command completion
-      newCompletionItems = Object.keys(commandParsers)
+      newCompletionItems = builtinExCommands
+        .map((pair) => pair[0][0] + pair[0][1])
         .filter((cmd) => cmd.startsWith(evalCmd))
         // Remove the already typed portion in the array
         .map((cmd) => cmd.slice(cmd.search(evalCmd) + evalCmd.length))
@@ -420,7 +421,7 @@ class CommandInsertInSearchMode extends BaseCommand {
         searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '<C-f>') {
-      await new CommandShowSearchHistory(searchState.searchDirection).exec(position, vimState);
+      await new CommandShowSearchHistory(searchState.direction).exec(position, vimState);
     } else if (key === '<C-u>') {
       searchState.searchString = searchState.searchString.slice(
         vimState.statusBarCursorCharacterPos
@@ -472,7 +473,7 @@ class CommandInsertInSearchMode extends BaseCommand {
         StatusBar.displayError(
           vimState,
           VimError.fromCode(
-            searchState.searchDirection === SearchDirection.Backward
+            searchState.direction === SearchDirection.Backward
               ? ErrorCode.SearchHitTop
               : ErrorCode.SearchHitBottom,
             searchState.searchString
@@ -789,9 +790,9 @@ class CommandCtrlLInSearchMode extends BaseCommand {
 
     const nextMatch = globalState.searchState.getNextSearchMatchRange(vimState.editor, position);
     if (nextMatch) {
-      const line = vimState.document.lineAt(nextMatch.end).text;
-      if (nextMatch.end.character < line.length) {
-        globalState.searchState.searchString += line[nextMatch.end.character];
+      const line = vimState.document.lineAt(nextMatch.range.end).text;
+      if (nextMatch.range.end.character < line.length) {
+        globalState.searchState.searchString += line[nextMatch.range.end.character];
         vimState.statusBarCursorCharacterPos++;
       }
     }

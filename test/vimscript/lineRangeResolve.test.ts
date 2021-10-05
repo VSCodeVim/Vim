@@ -107,6 +107,20 @@ suite('LineRange resolving', () => {
   });
 
   resolveTest({
+    title: 'Explicit pattern (forward)',
+    start: ['ap|ple', 'banana', 'carrot', 'dragonfruit', 'eggplant'],
+    keysPressed: '',
+    end: ['ap|ple', 'banana', 'carrot', 'dragonfruit', 'eggplant'],
+    lineRanges: {
+      '/carrot': [2, 2],
+      '/carrot/': [2, 2],
+      '/carrot/,/dragonfruit': [2, 3],
+      '/carrot/,/dragonfruit/': [2, 3],
+      '/(an){2}/,/[^a]g/': [1, 4],
+    },
+  });
+
+  resolveTest({
     title: 'Last searched pattern',
     start: ['apple', 'banana', '|carrot', 'dragonfruit', 'eggplant'],
     keysPressed: '/n\n',

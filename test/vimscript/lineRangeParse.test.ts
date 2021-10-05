@@ -1,5 +1,6 @@
 import assert = require('assert');
 import { Address, LineRange } from '../../src/vimscript/lineRange';
+import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
 function parseTest(name: string, input: string, output: LineRange) {
   test(name, () => {
@@ -17,17 +18,46 @@ suite('LineRange parsing', () => {
     parseTest("mark ('a)", "'a", new LineRange(new Address({ type: 'mark', mark: 'a' })));
     parseTest("mark ('A)", "'A", new LineRange(new Address({ type: 'mark', mark: 'A' })));
     parseTest("mark ('<)", "'<", new LineRange(new Address({ type: 'mark', mark: '<' })));
-    // TODO: uncomment these
-    // parseTest(
-    //   'pattern_next (no closing /)',
-    //   '/abc',
-    //   new LineRange(new Address({ type: 'pattern_next', pattern: 'abc' }))
-    // );
-    // parseTest(
-    //   'pattern_next (closing /)',
-    //   '/abc/',
-    //   new LineRange(new Address({ type: 'pattern_next', pattern: 'abc' }))
-    // );
+    parseTest(
+      'pattern_next (no closing /)',
+      '/abc',
+      new LineRange(
+        new Address({
+          type: 'pattern_next',
+          pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_next (closing /)',
+      '/abc/',
+      new LineRange(
+        new Address({
+          type: 'pattern_next',
+          pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_prev (no closing ?)',
+      '?abc',
+      new LineRange(
+        new Address({
+          type: 'pattern_prev',
+          pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
+        })
+      )
+    );
+    parseTest(
+      'pattern_prev (closing ?)',
+      '?abc?',
+      new LineRange(
+        new Address({
+          type: 'pattern_prev',
+          pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
+        })
+      )
+    );
     parseTest(
       'last_search_pattern_next',
       '\\/',
@@ -50,19 +80,15 @@ suite('LineRange parsing', () => {
       parseTest(
         'Separator but no second address',
         `5${sep}`,
-        new LineRange(
-          new Address({ type: 'number', num: 5 }),
-          new Address({ type: 'current_line' }),
-          sep
-        )
+        new LineRange(new Address({ type: 'number', num: 5 }), sep)
       );
       parseTest(
         'Two numbers',
         `14${sep}23`,
         new LineRange(
           new Address({ type: 'number', num: 14 }),
-          new Address({ type: 'number', num: 23 }),
-          sep
+          sep,
+          new Address({ type: 'number', num: 23 })
         )
       );
       parseTest(
@@ -70,8 +96,8 @@ suite('LineRange parsing', () => {
         `123${sep}6`,
         new LineRange(
           new Address({ type: 'number', num: 123 }),
-          new Address({ type: 'number', num: 6 }),
-          sep
+          sep,
+          new Address({ type: 'number', num: 6 })
         )
       );
       parseTest(
@@ -79,8 +105,8 @@ suite('LineRange parsing', () => {
         `'<${sep}'>`,
         new LineRange(
           new Address({ type: 'mark', mark: '<' }),
-          new Address({ type: 'mark', mark: '>' }),
-          sep
+          sep,
+          new Address({ type: 'mark', mark: '>' })
         )
       );
     });
@@ -91,6 +117,7 @@ suite('LineRange parsing', () => {
         '1 2 3 , 4  5  6',
         new LineRange(
           new Address({ type: 'number', num: 1 }, 5),
+          ',',
           new Address({ type: 'number', num: 4 }, 11)
         )
       );

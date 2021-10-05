@@ -3,10 +3,11 @@ import { JumpTracker } from '../jumps/jumpTracker';
 import { Mode } from '../mode/mode';
 import { RecordedState } from './../state/recordedState';
 import { SearchHistory } from '../history/historyFile';
-import { SearchState, SearchDirection } from './searchState';
+import { SearchState } from './searchState';
 import { SubstituteState } from './substituteState';
 import { configuration } from '../configuration/configuration';
 import { Position } from 'vscode';
+import { SearchDirection } from '../vimscript/pattern';
 
 /**
  * State which stores global state (across editors)

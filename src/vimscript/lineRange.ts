@@ -1,10 +1,11 @@
-import { alt, any, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { ErrorCode, VimError } from '../error';
 import { globalState } from '../state/globalState';
-import { SearchDirection, SearchState } from '../state/searchState';
+import { SearchState } from '../state/searchState';
 import { VimState } from '../state/vimState';
 import { numberParser } from './parserUtils';
+import { Pattern, SearchDirection } from './pattern';
 
 /**
  * Specifies the start or end of a line range.
@@ -40,12 +41,12 @@ type LineSpecifier =
   | {
       // /{pattern}[/]
       type: 'pattern_next';
-      pattern: string;
+      pattern: Pattern;
     }
   | {
       // ?{pattern}[?]
       type: 'pattern_prev';
-      pattern: string;
+      pattern: Pattern;
     }
   | {
       // \/
@@ -73,8 +74,22 @@ const lineSpecifierParser: Parser<LineSpecifier> = alt(
     .map((mark) => {
       return { type: 'mark', mark };
     }),
-  // TODO: pattern_next
-  // TODO: pattern_prev
+  string('/')
+    .then(Pattern.parser({ direction: SearchDirection.Forward }))
+    .map((pattern) => {
+      return {
+        type: 'pattern_next',
+        pattern,
+      };
+    }),
+  string('?')
+    .then(Pattern.parser({ direction: SearchDirection.Backward }))
+    .map((pattern) => {
+      return {
+        type: 'pattern_prev',
+        pattern,
+      };
+    }),
   string('\\/').result({ type: 'last_search_pattern_next' }),
   string('\\?').result({ type: 'last_search_pattern_prev' }),
   string('\\&').result({ type: 'last_substitute_pattern_next' })
@@ -134,9 +149,21 @@ export class Address {
           }
           return mark.position.line;
         case 'pattern_next':
-          throw new Error('Using a pattern in a line range is not yet supported'); // TODO
+          const m = this.specifier.pattern.nextMatch(
+            vimState.document,
+            vimState.cursorStopPosition
+          );
+          if (m === undefined) {
+            // TODO: throw proper errors for nowrapscan
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              this.specifier.pattern.patternString
+            );
+          } else {
+            return m.start.line;
+          }
         case 'pattern_prev':
-          throw new Error('Using a pattern in a line range is not yet supported'); // TODO
+          throw new Error('Using a backward pattern in a line range is not yet supported'); // TODO
         case 'last_search_pattern_next':
           if (!globalState.searchState) {
             throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
@@ -148,7 +175,10 @@ export class Address {
           );
           if (nextMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              globalState.searchState.searchString
+            );
           }
           return nextMatch.pos.line;
         case 'last_search_pattern_prev':
@@ -162,7 +192,10 @@ export class Address {
           );
           if (prevMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(
+              ErrorCode.PatternNotFound,
+              globalState.searchState.searchString
+            );
           }
           return prevMatch.pos.line;
         case 'last_substitute_pattern_next':
@@ -172,7 +205,7 @@ export class Address {
           const searchState = new SearchState(
             SearchDirection.Forward,
             vimState.cursorStopPosition,
-            globalState.substituteState.searchPattern,
+            globalState.substituteState.searchPattern.patternString,
             {},
             vimState.currentMode
           );
@@ -182,7 +215,7 @@ export class Address {
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound);
+            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
           }
           return match.pos.line;
         default:
@@ -196,39 +229,70 @@ export class Address {
     }
     return result;
   }
+
+  public toString(): string {
+    switch (this.specifier.type) {
+      case 'number':
+        return this.specifier.num.toString();
+      case 'current_line':
+        return '.';
+      case 'last_line':
+        return '$';
+      case 'entire_file':
+        return '%';
+      case 'last_visual_range':
+        return '*';
+      case 'mark':
+        return `'${this.specifier.mark}`;
+      case 'pattern_next':
+        return `/${this.specifier.pattern}/`;
+      case 'pattern_prev':
+        return `?${this.specifier.pattern}?`;
+      case 'last_search_pattern_next':
+        return '\\/';
+      case 'last_search_pattern_prev':
+        return '\\?';
+      case 'last_substitute_pattern_next':
+        return '\\&';
+      default:
+        const guard: never = this.specifier;
+        throw new Error('Got unexpected LineSpecifier.type');
+    }
+  }
 }
 
 export class LineRange {
   private readonly start: Address;
-  private readonly end: Address;
-  public readonly separator: ',' | ';';
+  private readonly end?: Address;
+  public readonly separator?: ',' | ';';
 
-  constructor(start: Address, end?: Address, separator?: ',' | ';') {
+  constructor(start: Address, separator?: ',' | ';', end?: Address) {
     this.start = start;
-    this.end = end ?? start;
-    this.separator = separator ?? ',';
+    this.end = end;
+    this.separator = separator;
   }
 
   public static parser: Parser<LineRange> = seq(
     Address.parser.skip(optWhitespace),
     seq(
       alt(string(','), string(';')).skip(optWhitespace),
-      Address.parser.fallback(new Address({ type: 'current_line' }))
+      Address.parser.fallback(undefined)
     ).fallback(undefined)
   ).map(([start, sepEnd]) => {
     if (sepEnd) {
       const [sep, end] = sepEnd;
-      return new LineRange(start, end, sep);
+      return new LineRange(start, sep, end);
     }
-    return new LineRange(start, start);
+    return new LineRange(start);
   });
 
   public resolve(vimState: VimState): { start: number; end: number } | undefined {
     // TODO: *,4 is not a valid range
+    const end = this.end ?? this.start;
 
-    if (this.end.specifier.type === 'entire_file') {
+    if (end.specifier.type === 'entire_file') {
       return { start: 0, end: vimState.document.lineCount - 1 };
-    } else if (this.end.specifier.type === 'last_visual_range') {
+    } else if (end.specifier.type === 'last_visual_range') {
       if (vimState.lastVisualSelection === undefined) {
         throw VimError.fromCode(ErrorCode.MarkNotSet);
       }
@@ -242,18 +306,18 @@ export class LineRange {
     if (this.separator === ';') {
       vimState.cursorStartPosition = vimState.cursorStopPosition = new Position(left, 0);
     }
-    const right = this.end.resolve(vimState, 'right');
+    const right = end.resolve(vimState, 'right');
     if (left > right) {
       // Reverse the range to keep start < end
       // NOTE: Vim generally makes you confirm before doing this, but we do it automatically.
       return {
-        start: this.end.resolve(vimState, 'left'),
+        start: end.resolve(vimState, 'left'),
         end: this.start.resolve(vimState, 'right'),
       };
     } else {
       return {
         start: this.start.resolve(vimState, 'left'),
-        end: this.end.resolve(vimState, 'right'),
+        end: end.resolve(vimState, 'right'),
       };
     }
   }
@@ -261,5 +325,9 @@ export class LineRange {
   public resolveToRange(vimState: VimState): Range {
     const { start, end } = this.resolve(vimState)!;
     return new Range(new Position(start, 0), new Position(end, 0).getLineEnd());
+  }
+
+  public toString(): string {
+    return `${this.start.toString()}${this.separator ?? ''}${this.end?.toString() ?? ''}`;
   }
 }
