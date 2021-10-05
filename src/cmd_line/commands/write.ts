@@ -58,8 +58,13 @@ export class WriteCommand extends ExCommand {
     } catch (accessErr) {
       if (this.arguments.bang) {
         try {
-          await fs.chmodAsync(vimState.document.fileName, 666);
-          return this.save(vimState);
+          const mode = await fs.getMode(vimState.document.fileName);
+          await fs.chmodAsync(vimState.document.fileName, 0o666);
+          // We must do a foreground write so we can await the save
+          // and chmod the file back to its original state
+          this.arguments.bgWrite = false;
+          await this.save(vimState);
+          await fs.chmodAsync(vimState.document.fileName, mode);
         } catch (e) {
           StatusBar.setText(vimState, e.message);
         }
