@@ -29,7 +29,6 @@ import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 
-
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
@@ -507,8 +506,7 @@ class CommandNextSearchMatch extends BaseMovement {
     // we have to handle a special case here: searching for $ or \n,
     // which we approximate by positionIsEOL. In that case (but only when searching forward)
     // we need to "offset" by getRight for searching the next match, otherwise we get stuck.
-    const searchForward = searchState.direction === 
-          .Forward;
+    const searchForward = searchState.direction === SearchDirection.Forward;
     const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
     const nextMatch =
       positionIsEOL && searchForward
