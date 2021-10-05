@@ -20,6 +20,17 @@ type QuotesAction = {
   skipToRight: number; // for next quotes, how many quotes need to skip while searching
 };
 
+/**
+ * This mapping is used to give a way to identify which action we need to take when operating on a line.
+ * The keys here are, in some sense, the number of quotes in the line, in the format of `lcr`, where:
+ * `l` means left of the cursor, `c` whether the cursor is on a quote, and `r` is right of the cursor.
+ * 
+ * It is based on the ideas used in `targets.vim`. For each line & cursor position, we count the number of quotes
+ * left (#L) and right (#R) of the cursor. Using those numbers and whether the cursor it on a quote, we know 
+ * what action to make.
+ * 
+ * For each entry we have an example of a line & position.
+ */
 const quoteDirs: Record<string, QuotesAction> = {
   '002': {
     // | "a" "b" "c"
