@@ -1,9 +1,9 @@
-import * as node from '../commands/deleteRange';
+import { DeleteRangeCommand } from '../commands/deleteRange';
 import { Scanner } from '../scanner';
 
-export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRangeCommand {
+export function parseDeleteRangeLinesCommandArgs(args: string): DeleteRangeCommand {
   if (!args || !args.trim()) {
-    return new node.DeleteRangeCommand({});
+    return new DeleteRangeCommand({});
   }
 
   /**
@@ -24,7 +24,7 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
     linesToRemove = +arg1;
   }
 
-  return new node.DeleteRangeCommand({
+  return new DeleteRangeCommand({
     register,
     linesToRemove,
   });

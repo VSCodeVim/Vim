@@ -1,5 +1,28 @@
 # Change Log
 
+## [v1.21.8](https://github.com/vscodevim/vim/tree/v1.21.8) (2021-09-29)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.7...v1.21.8)
+
+**Enhancements:**
+
+- Support `:substitute`'s `n` flag \(count matches without substituting\) [\#7081](https://github.com/VSCodeVim/Vim/issues/7081)
+- Support `\['` and `\]'` \(move to nearby lowercase mark\) commands [\#7041](https://github.com/VSCodeVim/Vim/issues/7041)
+
+**Closed issues:**
+
+- Inconsistent indentation? [\#7107](https://github.com/VSCodeVim/Vim/issues/7107)
+- Cannot change to normal mode. [\#7106](https://github.com/VSCodeVim/Vim/issues/7106)
+- Simple movement like HJKL should not be recorded in jump history for Ctrl-O and Ctrl-I [\#7102](https://github.com/VSCodeVim/Vim/issues/7102)
+- Failed to handle key=\<Esc\>. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#7047](https://github.com/VSCodeVim/Vim/issues/7047)
+- Failed to handle key=\<Esc\>. TextEditor\(vs.editor.ICodeEditor:1,$model162\) has been disposed [\#7030](https://github.com/VSCodeVim/Vim/issues/7030)
+
+**Merged pull requests:**
+
+- fix ROADMAP.md typo [\#7066](https://github.com/VSCodeVim/Vim/pull/7066) ([mly32](https://github.com/mly32))
+- make vim strict ui extension [\#7049](https://github.com/VSCodeVim/Vim/pull/7049) ([sandy081](https://github.com/sandy081))
+- Added documentation for all Vim Modes [\#6945](https://github.com/VSCodeVim/Vim/pull/6945) ([w-cantin](https://github.com/w-cantin))
+
 ## [v1.21.7](https://github.com/vscodevim/vim/tree/v1.21.7) (2021-08-31)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.6...v1.21.7)
@@ -13,7 +36,6 @@
 - Failed to handle key=\<C-e\>. Cannot read property 'end' of undefined [\#7027](https://github.com/VSCodeVim/Vim/issues/7027)
 - Failed to handle key=\<Esc\>. e.getTransformation is not a function [\#7009](https://github.com/VSCodeVim/Vim/issues/7009)
 - Pressing tab while in Replace mode resulting \<tab\> [\#6641](https://github.com/VSCodeVim/Vim/issues/6641)
-- Failed to handle key=\<Esc\>. Cannot read property 'previousMode' of undefined [\#6343](https://github.com/VSCodeVim/Vim/issues/6343)
 
 **Closed issues:**
 
@@ -130,10 +152,6 @@
 - Support virtual workspaces [\#6596](https://github.com/VSCodeVim/Vim/issues/6596)
 - Support Workspace Trust [\#6587](https://github.com/VSCodeVim/Vim/issues/6587)
 
-**Fixed Bugs:**
-
-- Bug with tab removal before odd number of characters [\#6327](https://github.com/VSCodeVim/Vim/issues/6327)
-
 **Closed issues:**
 
 - Enable `--noImplicitOverride` [\#6670](https://github.com/VSCodeVim/Vim/issues/6670)
@@ -181,10 +199,6 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.20.0...v1.20.1)
 
-**Enhancements:**
-
-- Visual mode + \<C-n\>/\<C-p\>/\<C-f\>/\<C-b\> doesn't work as expected [\#6363](https://github.com/VSCodeVim/Vim/issues/6363)
-
 **Fixed Bugs:**
 
 - `\<C-w\>` in Insert mode deletes line when used at start of document [\#6529](https://github.com/VSCodeVim/Vim/issues/6529)
@@ -223,24 +237,14 @@
 
 - Substitute, use transformations [\#6402](https://github.com/VSCodeVim/Vim/pull/6402) ([sql-koala](https://github.com/sql-koala))
 - Feature/vimrc source support [\#6394](https://github.com/VSCodeVim/Vim/pull/6394) ([Demiguise](https://github.com/Demiguise))
-- More consistent behavior of C-d [\#6364](https://github.com/VSCodeVim/Vim/pull/6364) ([artagnon](https://github.com/artagnon))
 
 ## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-29)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.2...v1.19.3)
 
-**Fixed Bugs:**
-
-- \<count\>p does not work in visual mode [\#6357](https://github.com/VSCodeVim/Vim/issues/6357)
-
 ## [v1.19.2](https://github.com/vscodevim/vim/tree/v1.19.2) (2021-03-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.19.1...v1.19.2)
-
-**Fixed Bugs:**
-
-- Failed to handle key=.. Illegal argument: character must be non-negative [\#6339](https://github.com/VSCodeVim/Vim/issues/6339)
-- Failed to handle key=\<C-a\>. Illegal value for `line` [\#6331](https://github.com/VSCodeVim/Vim/issues/6331)
 
 ## [v1.19.1](https://github.com/vscodevim/vim/tree/v1.19.1) (2021-03-21)
 

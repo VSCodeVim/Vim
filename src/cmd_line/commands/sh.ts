@@ -1,8 +1,8 @@
-import * as node from '../node';
 import { window } from 'vscode';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export class ShCommand extends node.CommandBase {
+export class ShCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     window.createTerminal().show();
   }

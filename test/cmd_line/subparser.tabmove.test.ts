@@ -1,10 +1,12 @@
 import * as assert from 'assert';
+import { TabCommand } from '../../src/cmd_line/commands/tab';
+import { commandNameParser } from '../../src/vimscript/exCommandParser';
 
-import { commandParsers } from '../../src/cmd_line/subparser';
+const tabmoveParser = commandNameParser.tryParse('tabmove') as (args: string) => TabCommand;
 
 function testTabMoveParse(args: string, count?: number, direction?: 'left' | 'right'): void {
   const test = (args1: string) => {
-    const cmd = commandParsers.tabmove.parser(args1);
+    const cmd = tabmoveParser(args1);
     assert.strictEqual(cmd.arguments.count, count);
     assert.strictEqual(cmd.arguments.direction, direction);
   };
@@ -15,7 +17,7 @@ function testTabMoveParse(args: string, count?: number, direction?: 'left' | 'ri
 
 function failsTabMoveParse(args: string): void {
   const test = (args1: string) => {
-    assert.throws(() => commandParsers.tabmove.parser(args1));
+    assert.throws(() => tabmoveParser(args1));
   };
 
   test(args);
@@ -24,7 +26,7 @@ function failsTabMoveParse(args: string): void {
 
 suite(':tabm[ove] args parser', () => {
   test('has :tabm alias', () => {
-    assert.strictEqual(commandParsers.tabmove.abbrev, 'tabm');
+    assert.strictEqual(tabmoveParser, commandNameParser.tryParse('tabm'));
   });
 
   test('can parse empty args', () => {

@@ -4,10 +4,12 @@ interface IErrorMessage {
 
 export enum ErrorCode {
   InvalidAddress = 14,
+  InvalidRange = 16,
   MarkNotSet = 20,
   NoAlternateFile = 23,
   NoInsertedTextYet = 29,
   NoFileName = 32,
+  NoPreviousSubstituteRegularExpression = 33,
   NoPreviousCommand = 34,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
@@ -35,10 +37,12 @@ export enum ErrorCode {
 
 export const ErrorMessage: IErrorMessage = {
   14: 'Invalid address',
+  16: 'Invalid range',
   20: 'Mark not set',
   23: 'No alternate file',
   29: 'No inserted text yet',
   32: 'No file name',
+  33: 'No previous substitute regular expression',
   34: 'No previous command',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',

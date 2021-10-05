@@ -1,5 +1,6 @@
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 import * as quit from './quit';
 import * as write from './write';
 
@@ -7,7 +8,7 @@ import * as write from './write';
 // Implements :writequit
 // http://vimdoc.sourceforge.net/htmldoc/editing.html#write-quit
 //
-export interface IWriteQuitCommandArguments extends node.ICommandArgs {
+export interface IWriteQuitCommandArguments {
   // arguments
   // [++opt]
   opt?: string;
@@ -18,10 +19,10 @@ export interface IWriteQuitCommandArguments extends node.ICommandArgs {
   file?: string;
   // wq! [++opt] {file}
   // [range]wq[!] [++opt] [file]
-  range?: node.LineRange;
+  range?: LineRange;
 }
 
-export class WriteQuitCommand extends node.CommandBase {
+export class WriteQuitCommand extends ExCommand {
   private readonly arguments: IWriteQuitCommandArguments;
 
   constructor(args: IWriteQuitCommandArguments) {

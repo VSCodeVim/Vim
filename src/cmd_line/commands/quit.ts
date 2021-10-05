@@ -2,11 +2,12 @@ import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface IQuitCommandArguments extends node.ICommandArgs {
+export interface IQuitCommandArguments {
   bang?: boolean;
-  range?: node.LineRange;
+  range?: LineRange;
   quitAll?: boolean;
 }
 
@@ -14,7 +15,7 @@ export interface IQuitCommandArguments extends node.ICommandArgs {
 //  Implements :quit
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
-export class QuitCommand extends node.CommandBase {
+export class QuitCommand extends ExCommand {
   public arguments: IQuitCommandArguments;
 
   constructor(args: IQuitCommandArguments) {

@@ -1,10 +1,11 @@
 import { ErrorCode, VimError } from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 import { Scanner } from '../scanner';
 
-export class GotoCommand extends node.CommandBase {
-  public static parse(args: string): GotoCommand {
+export class GotoCommand extends ExCommand {
+  public static parseArgs(args: string): GotoCommand {
     if (args.trim() === '') {
       return new GotoCommand();
     }
@@ -31,10 +32,9 @@ export class GotoCommand extends node.CommandBase {
     this.gotoOffset(vimState, this.offset ?? 0);
   }
 
-  public override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     if (this.offset === undefined) {
-      // TODO: this isn't perfect (% for instance), but does anyone care?
-      this.offset = range.resolve(vimState, false)[1];
+      this.offset = range.resolve(vimState)?.end ?? 0;
     }
     this.gotoOffset(vimState, this.offset);
   }

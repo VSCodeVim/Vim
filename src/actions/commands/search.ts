@@ -1,17 +1,20 @@
 import * as _ from 'lodash';
-import { Position, Selection } from 'vscode';
+import { escapeRegExp } from 'lodash';
+import {} from 'vscode';
+import { Position, Range, Selection } from 'vscode';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
-import { SearchDirection, SearchState } from '../../state/searchState';
+import { SearchState } from '../../state/searchState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { TextEditor } from '../../textEditor';
 import { TextObject } from '../../textobject/textobject';
 import { reportSearch } from '../../util/statusBarTextUtils';
+import { SearchDirection } from '../../vimscript/pattern';
 import { RegisterAction, BaseCommand } from '../base';
 import { failedMovement, IMovement } from '../baseMotion';
 
@@ -84,7 +87,7 @@ async function searchCurrentSelection(vimState: VimState, direction: SearchDirec
  * Used by [g]* and [g]#
  */
 async function createSearchStateAndMoveToMatch(args: {
-  needle?: string | undefined;
+  needle: string;
   vimState: VimState;
   direction: SearchDirection;
   isExact: boolean;
@@ -92,18 +95,18 @@ async function createSearchStateAndMoveToMatch(args: {
 }): Promise<void> {
   const { needle, vimState, isExact } = args;
 
-  if (needle === undefined || needle.length === 0) {
+  if (needle.length === 0) {
     return;
   }
 
-  const searchString = isExact ? `\\b${needle}\\b` : needle;
+  const searchString = isExact ? `\\<${escapeRegExp(needle)}\\>` : escapeRegExp(needle);
 
   // Start a search for the given term.
   globalState.searchState = new SearchState(
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { isRegex: isExact, ignoreSmartcase: true },
+    { ignoreSmartcase: true },
     vimState.currentMode
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
@@ -238,7 +241,7 @@ class CommandSearchForwards extends BaseCommand {
       SearchDirection.Forward,
       vimState.cursorStopPosition,
       '',
-      { isRegex: true },
+      {},
       vimState.currentMode
     );
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
@@ -263,7 +266,7 @@ class CommandSearchBackwards extends BaseCommand {
       SearchDirection.Backward,
       vimState.cursorStopPosition,
       '',
-      { isRegex: true },
+      {},
       vimState.currentMode
     );
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
@@ -287,14 +290,13 @@ abstract class SearchObject extends TextObject {
       this.direction,
       vimState.cursorStopPosition,
       searchState.searchString,
-      { isRegex: true },
+      {},
       vimState.currentMode
     );
 
     let result:
       | {
-          start: Position;
-          end: Position;
+          range: Range;
           index: number;
         }
       | undefined;
@@ -302,11 +304,11 @@ abstract class SearchObject extends TextObject {
     // At first, try to search for current word, and stop searching if matched.
     // Try to search for the next word if not matched or
     // if the cursor is at the end of a match string in visual-mode.
-    result = newSearchState.getSearchMatchRangeOf(vimState.editor, vimState.cursorStopPosition);
+    result = newSearchState.findContainingMatchRange(vimState.editor, vimState.cursorStopPosition);
     if (
       result &&
       vimState.currentMode === Mode.Visual &&
-      vimState.cursorStopPosition.isEqual(result.end.getLeftThroughLineBreaks())
+      vimState.cursorStopPosition.isEqual(result.range.end.getLeftThroughLineBreaks())
     ) {
       result = undefined;
     }
@@ -322,8 +324,8 @@ abstract class SearchObject extends TextObject {
     reportSearch(result.index, searchState.getMatchRanges(vimState.editor).length, vimState);
 
     let [start, stop] = [
-      vimState.currentMode === Mode.Normal ? result.start : vimState.cursorStopPosition,
-      result.end.getLeftThroughLineBreaks(),
+      vimState.currentMode === Mode.Normal ? result.range.start : vimState.cursorStopPosition,
+      result.range.end.getLeftThroughLineBreaks(),
     ];
 
     if (vimState.recordedState.operator) {

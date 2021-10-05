@@ -1,4 +1,3 @@
-import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
 
@@ -7,8 +6,10 @@ import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface IPutCommandArguments extends node.ICommandArgs {
+export interface IPutCommandArguments {
   bang?: boolean;
   register?: string;
 }
@@ -18,7 +19,7 @@ export interface IPutCommandArguments extends node.ICommandArgs {
 // http://vimdoc.sourceforge.net/htmldoc/change.html#:put
 //
 
-export class PutExCommand extends node.CommandBase {
+export class PutExCommand extends ExCommand {
   public readonly arguments: IPutCommandArguments;
 
   constructor(args: IPutCommandArguments) {
@@ -48,8 +49,8 @@ export class PutExCommand extends node.CommandBase {
     await this.doPut(vimState, vimState.cursorStopPosition);
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [_, end] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const { end } = range.resolve(vimState)!;
     await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }
 }

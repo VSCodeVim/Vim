@@ -1,6 +1,6 @@
-import * as node from '../commands/tab';
 import { Scanner } from '../scanner';
 import { ErrorCode, VimError } from '../../error';
+import { Tab, TabCommand } from '../commands/tab';
 
 const isDigit = (c: string) => '0' <= c && c <= '9';
 
@@ -79,9 +79,9 @@ function parseCountOrOffset(args: string): {
  * :tabn[ext] Go to the next tab page.
  * :tabn[ext] {count} Go to tab page {count}.
  */
-export function parseTabNCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.Next,
+export function parseTabNCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.Next,
     count: parseCount(args),
   });
 }
@@ -90,9 +90,9 @@ export function parseTabNCommandArgs(args: string): node.TabCommand {
  * :tabp[revious] Go to the previous tab page.  Wraps around from the first one  to the last one.
  * :tabp[revious] {count} Go {count} tab pages back.
  */
-export function parseTabPCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.Previous,
+export function parseTabPCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.Previous,
     count: parseCount(args),
   });
 }
@@ -100,18 +100,18 @@ export function parseTabPCommandArgs(args: string): node.TabCommand {
 /**
  * :tabfir[st]  Go to the first tab page.
  */
-export function parseTabFirstCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.First,
+export function parseTabFirstCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.First,
   });
 }
 
 /**
  * :tabl[ast]  Go to the last tab page.
  */
-export function parseTabLastCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.Last,
+export function parseTabLastCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.Last,
   });
 }
 
@@ -119,7 +119,7 @@ export function parseTabLastCommandArgs(args: string): node.TabCommand {
  * :tabe[dit]
  * :tabnew Open a new tab page with an empty window, after the current tab page.
  */
-export function parseTabNewCommandArgs(args: string): node.TabCommand {
+export function parseTabNewCommandArgs(args: string): TabCommand {
   let name = '';
 
   if (args) {
@@ -127,8 +127,8 @@ export function parseTabNewCommandArgs(args: string): node.TabCommand {
     name = scanner.nextWord();
   }
 
-  return new node.TabCommand({
-    tab: node.Tab.New,
+  return new TabCommand({
+    tab: Tab.New,
     file: name,
   });
 }
@@ -137,16 +137,16 @@ export function parseTabNewCommandArgs(args: string): node.TabCommand {
  * :tabc[lose][!]  Close current tab page.
  * :tabc[lose][!] {count}. Close tab page {count}.
  */
-export function parseTabCloseCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.Close,
+export function parseTabCloseCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.Close,
     count: parseCount(args),
   });
 }
 
-export function parseTabOnlyCommandArgs(args: string): node.TabCommand {
-  return new node.TabCommand({
-    tab: node.Tab.Only,
+export function parseTabOnlyCommandArgs(args: string): TabCommand {
+  return new TabCommand({
+    tab: Tab.Only,
   });
 }
 
@@ -155,10 +155,10 @@ export function parseTabOnlyCommandArgs(args: string): node.TabCommand {
  * :tabm[ove] +[N]
  * :tabm[ove] -[N]
  */
-export function parseTabMovementCommandArgs(args: string): node.TabCommand {
+export function parseTabMovementCommandArgs(args: string): TabCommand {
   const { count, direction } = parseCountOrOffset(args);
-  return new node.TabCommand({
-    tab: node.Tab.Move,
+  return new TabCommand({
+    tab: Tab.Move,
     count,
     direction,
   });

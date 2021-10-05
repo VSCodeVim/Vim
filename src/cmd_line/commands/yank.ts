@@ -2,7 +2,8 @@ import { Position } from 'vscode';
 import { YankOperator } from '../../actions/operator';
 import { RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
-import { CommandBase, LineRange } from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 import { Scanner } from '../scanner';
 
 export interface YankCommandArguments {
@@ -10,7 +11,7 @@ export interface YankCommandArguments {
   register?: string;
 }
 
-export class YankCommand extends CommandBase {
+export class YankCommand extends ExCommand {
   private readonly arguments: YankCommandArguments;
 
   constructor(args: YankCommandArguments) {
@@ -18,7 +19,7 @@ export class YankCommand extends CommandBase {
     this.arguments = args;
   }
 
-  public static parse(args: string): YankCommand {
+  public static parseArgs(args: string): YankCommand {
     if (!args || !args.trim()) {
       return new YankCommand({});
     }
@@ -76,7 +77,7 @@ export class YankCommand extends CommandBase {
      * Ex. if two lines are VisualLine highlighted, :<,>y3 will :y3
      * from the end of the selected lines.
      */
-    const [start, end] = range.resolve(vimState);
+    const { start, end } = range.resolve(vimState)!;
     if (this.arguments.linesToYank) {
       vimState.cursorStartPosition = new Position(end, 0);
       await this.execute(vimState);

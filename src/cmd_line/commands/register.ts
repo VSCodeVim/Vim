@@ -3,16 +3,14 @@ import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { Register } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
-import * as node from '../node';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export interface IRegisterCommandArguments extends node.ICommandArgs {
+export interface IRegisterCommandArguments {
   registers: string[];
 }
-export class RegisterCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
-
+export class RegisterCommand extends ExCommand {
   private readonly arguments: IRegisterCommandArguments;
 
   constructor(args: IRegisterCommandArguments) {

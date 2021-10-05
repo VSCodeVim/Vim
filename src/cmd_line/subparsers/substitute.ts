@@ -1,227 +1,120 @@
-/* tslint:disable:no-bitwise */
+import { SubstituteCommand, SubstituteFlags } from '../commands/substitute';
+import {
+  alt,
+  any,
+  noneOf,
+  oneOf,
+  optWhitespace,
+  Parser,
+  regexp,
+  seq,
+  string,
+  whitespace,
+} from 'parsimmon';
+import { Pattern, SearchDirection } from '../../vimscript/pattern';
+import { numberParser } from '../../vimscript/parserUtils';
 
-import * as node from '../commands/substitute';
-import { Scanner } from '../scanner';
-import * as error from '../../error';
-
-function isValidDelimiter(char: string): boolean {
-  return !!/^[^\w\s\\|"]{1}$/g.exec(char);
-}
-
-function parsePattern(scanner: Scanner, delimiter: string): [string, boolean] {
-  let pattern = '';
-  while (!scanner.isAtEof) {
-    let currentChar = scanner.next();
-
-    if (currentChar === delimiter) {
-      return [pattern, true]; // found second delimiter
-    } else if (currentChar === '\\') {
-      if (!scanner.isAtEof) {
-        currentChar = scanner.next();
-        if (currentChar === delimiter) {
-          pattern += delimiter;
+// TODO: `:help sub-replace-special`
+// TODO: `:help sub-replace-expression`
+const replaceStringParser = (delimiter: string): Parser<string> =>
+  alt(
+    string('\\').then(
+      any.fallback(undefined).map((escaped) => {
+        if (escaped === undefined || escaped === '\\') {
+          return '\\';
+        } else if (escaped === '/') {
+          return '/';
+        } else if (escaped === 'b') {
+          return '\b';
+        } else if (escaped === 'r') {
+          return '\r';
+        } else if (escaped === 'n') {
+          return '\n';
+        } else if (escaped === 't') {
+          return '\t';
+        } else if (/[&0-9]/.test(escaped)) {
+          return `$${escaped}`;
         } else {
-          pattern += '\\' + currentChar;
+          return `\\${escaped}`;
         }
-      } else {
-        pattern += '\\\\'; // :s/\ is treated like :s/\\
-      }
-    } else {
-      pattern += currentChar;
-    }
+      })
+    ),
+    noneOf(delimiter)
+  )
+    .many()
+    .map((chars) => chars.join(''));
+
+const substituteFlagsParser: Parser<SubstituteFlags> = seq(
+  string('&').fallback(undefined),
+  oneOf('cegiInp#lr').many()
+).map(([amp, flagChars]) => {
+  const flags: SubstituteFlags = {};
+  if (amp === '&') {
+    flags.keepPreviousFlags = true;
   }
-  return [pattern, false];
-}
-
-// See Vim's sub-replace-special documentation
-// TODO: \u, \U, \l, \L, \e, \E
-const replaceEscapes = {
-  b: '\b',
-  r: '\r',
-  n: '\n',
-  t: '\t',
-  '&': '$&',
-  '0': '$0',
-  '1': '$1',
-  '2': '$2',
-  '3': '$3',
-  '4': '$4',
-  '5': '$5',
-  '6': '$6',
-  '7': '$7',
-  '8': '$8',
-  '9': '$9',
-};
-
-function parseReplace(scanner: Scanner, delimiter: string): string {
-  let replace = '';
-  while (!scanner.isAtEof) {
-    let currentChar = scanner.next();
-
-    if (currentChar === delimiter) {
-      return replace; // found second delimiter
-    } else if (currentChar === '\\') {
-      if (!scanner.isAtEof) {
-        currentChar = scanner.next();
-        if (currentChar === delimiter) {
-          replace += delimiter;
-        } else if (replaceEscapes.hasOwnProperty(currentChar)) {
-          replace += replaceEscapes[currentChar];
-        } else {
-          replace += currentChar;
-        }
-      } else {
-        replace += '\\'; // :s/.../\ is treated like :s/.../\\
-      }
-    } else {
-      replace += currentChar;
-    }
-  }
-  return replace;
-}
-
-function parseSubstituteFlags(scanner: Scanner): number {
-  let flags: number = 0;
-  let index = 0;
-  while (true) {
-    if (scanner.isAtEof) {
-      break;
-    }
-
-    const c = scanner.next();
-    switch (c) {
-      case '&':
-        if (index === 0) {
-          flags |= node.SubstituteFlags.KeepPreviousFlags;
-        } else {
-          // Raise Error
-          return node.SubstituteFlags.None;
-        }
-        break;
+  for (const flag of flagChars) {
+    switch (flag) {
       case 'c':
-        flags |= node.SubstituteFlags.ConfirmEach;
+        flags.confirmEach = true;
         break;
       case 'e':
-        flags |= node.SubstituteFlags.SuppressError;
+        flags.suppressError = true;
         break;
       case 'g':
-        flags |= node.SubstituteFlags.ReplaceAll;
+        flags.replaceAll = true;
         break;
       case 'i':
-        flags |= node.SubstituteFlags.IgnoreCase;
+        flags.ignoreCase = true;
         break;
       case 'I':
-        flags |= node.SubstituteFlags.NoIgnoreCase;
+        flags.noIgnoreCase = true;
         break;
       case 'n':
-        flags |= node.SubstituteFlags.PrintCount;
+        flags.printCount = true;
         break;
       case 'p':
-        flags |= node.SubstituteFlags.PrintLastMatchedLine;
+        flags.printLastMatchedLine = true;
         break;
       case '#':
-        flags |= node.SubstituteFlags.PrintLastMatchedLineWithNumber;
+        flags.printLastMatchedLineWithNumber = true;
         break;
       case 'l':
-        flags |= node.SubstituteFlags.PrintLastMatchedLineWithList;
+        flags.printLastMatchedLineWithList = true;
         break;
       case 'r':
-        flags |= node.SubstituteFlags.UsePreviousPattern;
+        flags.usePreviousPattern = true;
         break;
-      default:
-        scanner.backup();
-        return flags;
     }
-
-    index++;
   }
-
   return flags;
-}
+});
 
-function parseCount(scanner: Scanner): number {
-  let countStr = '';
+const countParser: Parser<number | undefined> = whitespace.then(numberParser).fallback(undefined);
 
-  while (true) {
-    if (scanner.isAtEof) {
-      break;
-    }
-    countStr += scanner.next();
-  }
+export const substituteCommandArgs: Parser<SubstituteCommand> = optWhitespace.then(
+  alt(
+    // :s[ubstitute]/{pattern}/{string}/[flags] [count]
+    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
+      seq(
+        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+        replaceStringParser(delimiter),
+        string(delimiter).then(substituteFlagsParser).fallback({}),
+        countParser
+      ).map(
+        ([pattern, replace, flags, count]) =>
+          new SubstituteCommand({ pattern, replace, flags, count })
+      )
+    ),
 
-  const count = Number.parseInt(countStr, 10);
-
-  // TODO: If count is not valid number, raise error
-  return Number.isInteger(count) ? count : -1;
-}
-/**
- * Substitute
- * :[range]s[ubstitute]/{pattern}/{string}/[flags] [count]
- * For each line in [range] replace a match of {pattern} with {string}.
- * {string} can be a literal string, or something special; see |sub-replace-special|.
- */
-export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand {
-  try {
-    let searchPattern: string | undefined;
-    let replaceString: string;
-    let flags: number;
-    let count: number;
-
-    if (!args || !args.trim()) {
-      // special case for :s
-      return new node.SubstituteCommand({
-        pattern: undefined,
-        replace: '', // ignored in this context
-        flags: node.SubstituteFlags.None,
-      });
-    }
-    let scanner: Scanner;
-
-    const delimiter = args[0];
-
-    if (isValidDelimiter(delimiter)) {
-      if (args.length === 1) {
-        // special case for :s/ or other delimiters
-        return new node.SubstituteCommand({
-          pattern: '',
+    // :s[ubstitute] [flags] [count]
+    seq(substituteFlagsParser, countParser).map(
+      ([flags, count]) =>
+        new SubstituteCommand({
+          pattern: undefined,
           replace: '',
-          flags: node.SubstituteFlags.None,
-        });
-      }
-
-      let secondDelimiterFound: boolean;
-
-      scanner = new Scanner(args.substr(1, args.length - 1));
-      [searchPattern, secondDelimiterFound] = parsePattern(scanner, delimiter);
-
-      if (!secondDelimiterFound) {
-        // special case for :s/search
-        return new node.SubstituteCommand({
-          pattern: searchPattern,
-          replace: '',
-          flags: node.SubstituteFlags.None,
-        });
-      }
-      replaceString = parseReplace(scanner, delimiter);
-    } else {
-      // if it's not a valid delimiter, it must be flags, so start parsing from here
-      searchPattern = undefined;
-      replaceString = '';
-      scanner = new Scanner(args);
-    }
-
-    scanner.skipWhiteSpace();
-    flags = parseSubstituteFlags(scanner);
-    scanner.skipWhiteSpace();
-    count = parseCount(scanner);
-
-    return new node.SubstituteCommand({
-      pattern: searchPattern,
-      replace: replaceString,
-      flags,
-      count,
-    });
-  } catch (e) {
-    throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
-  }
-}
+          flags,
+          count,
+        })
+    )
+  )
+);

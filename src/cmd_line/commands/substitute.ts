@@ -1,9 +1,6 @@
-/* tslint:disable:no-bitwise */
-
 import * as vscode from 'vscode';
-import * as node from '../node';
 import { Jump } from '../../jumps/jump';
-import { SearchState, SearchDirection } from '../../state/searchState';
+import { SearchState } from '../../state/searchState';
 import { SubstituteState } from '../../state/substituteState';
 import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
@@ -12,6 +9,9 @@ import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { Position } from 'vscode';
 import { StatusBar } from '../../statusBar';
+import { LineRange } from '../../vimscript/lineRange';
+import { ExCommand } from '../../vimscript/exCommand';
+import { Pattern, SearchDirection } from '../../vimscript/pattern';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -19,10 +19,10 @@ import { StatusBar } from '../../statusBar';
  * when it's an empty string, it means to use the previous SEARCH (not replacement) state,
  * and replace with whatever's set by "replace" (even an empty string).
  */
-export interface ISubstituteCommandArguments extends node.ICommandArgs {
-  pattern: string | undefined;
+export interface ISubstituteCommandArguments {
+  pattern: Pattern | undefined;
   replace: string;
-  flags: number;
+  flags: SubstituteFlags;
   count?: number;
 }
 
@@ -43,20 +43,19 @@ export interface ISubstituteCommandArguments extends node.ICommandArgs {
  * [r] When the search pattern is empty, use the previously used search pattern
  *     instead of the search pattern from the last substitute or ":global".
  */
-export enum SubstituteFlags {
-  None = 0,
-  KeepPreviousFlags = 0x1, // TODO: use this flag
-  ConfirmEach = 0x2,
-  SuppressError = 0x4, // TODO: use this flag
-  ReplaceAll = 0x8,
-  IgnoreCase = 0x10,
-  NoIgnoreCase = 0x20, // TODO: use this flag
-  PrintCount = 0x40,
+export interface SubstituteFlags {
+  keepPreviousFlags?: true; // TODO: use this flag
+  confirmEach?: true;
+  suppressError?: true; // TODO: use this flag
+  replaceAll?: true;
+  ignoreCase?: true;
+  noIgnoreCase?: true; // TODO: use this flag
+  printCount?: true;
   // TODO: use the following flags:
-  PrintLastMatchedLine = 0x80,
-  PrintLastMatchedLineWithNumber = 0x100,
-  PrintLastMatchedLineWithList = 0x200,
-  UsePreviousPattern = 0x400,
+  printLastMatchedLine?: true;
+  printLastMatchedLineWithNumber?: true;
+  printLastMatchedLineWithList?: true;
+  usePreviousPattern?: true;
 }
 
 /**
@@ -84,7 +83,7 @@ export enum SubstituteFlags {
  *   - update replacement state
  *   - update search state too!
  */
-export class SubstituteCommand extends node.CommandBase {
+export class SubstituteCommand extends ExCommand {
   public readonly arguments: ISubstituteCommandArguments;
   protected abort: boolean;
   constructor(args: ISubstituteCommandArguments) {
@@ -95,25 +94,24 @@ export class SubstituteCommand extends node.CommandBase {
 
   public override neovimCapable(): boolean {
     // We need to use VSCode's quickpick capabilities to do confirmation
-    return (this.arguments.flags & SubstituteFlags.ConfirmEach) === 0;
+    return !this.arguments.flags.confirmEach;
   }
 
-  getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
+  private getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
     let jsRegexFlags = '';
-
     if (configuration.gdefault || configuration.substituteGlobalFlag) {
       // the gdefault flag is on, then /g if on by default and /g negates that
-      if (!(args.flags & SubstituteFlags.ReplaceAll)) {
+      if (!args.flags.replaceAll) {
         jsRegexFlags += 'g';
       }
     } else {
       // the gdefault flag is off, then /g means replace all
-      if (args.flags & SubstituteFlags.ReplaceAll) {
+      if (args.flags.replaceAll) {
         jsRegexFlags += 'g';
       }
     }
 
-    if (args.flags & SubstituteFlags.IgnoreCase) {
+    if (args.flags.ignoreCase) {
       jsRegexFlags += 'i';
     }
 
@@ -121,33 +119,36 @@ export class SubstituteCommand extends node.CommandBase {
       // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
       // i.e. :s
       const prevSubstituteState = globalState.substituteState;
-      if (prevSubstituteState === undefined || prevSubstituteState.searchPattern === '') {
-        throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+      if (
+        prevSubstituteState === undefined ||
+        prevSubstituteState.searchPattern.patternString === ''
+      ) {
+        throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
       } else {
         args.pattern = prevSubstituteState.searchPattern;
         args.replace = prevSubstituteState.replaceString;
       }
     } else {
-      if (args.pattern === '') {
+      if (args.pattern.patternString === '') {
         // If an explicitly empty pattern is entered, use previous search state (including search with * and #) and update both states
         // e.g :s/ or :s///
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
           throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
         } else {
-          args.pattern = prevSearchState.searchString;
+          args.pattern = prevSearchState.pattern;
         }
       }
       globalState.substituteState = new SubstituteState(args.pattern, args.replace);
       globalState.searchState = new SearchState(
         SearchDirection.Forward,
         vimState.cursorStopPosition,
-        args.pattern,
-        { isRegex: true },
+        args.pattern?.patternString,
+        {},
         vimState.currentMode
       );
     }
-    return new RegExp(args.pattern, jsRegexFlags);
+    return new RegExp(args.pattern.regex.source, jsRegexFlags);
   }
 
   /**
@@ -163,9 +164,9 @@ export class SubstituteCommand extends node.CommandBase {
 
     let count = 0;
 
-    if (this.arguments.flags & SubstituteFlags.PrintCount) {
+    if (this.arguments.flags.printCount) {
       return matches.length;
-    } else if (this.arguments.flags & SubstituteFlags.ConfirmEach) {
+    } else if (this.arguments.flags.confirmEach) {
       // Loop through each match on this line and get confirmation before replacing
       let newContent = originalContent;
 
@@ -269,7 +270,7 @@ export class SubstituteCommand extends node.CommandBase {
     if (selection === 'q' || selection === 'l' || !selection) {
       this.abort = true;
     } else if (selection === 'a') {
-      this.arguments.flags = this.arguments.flags & ~SubstituteFlags.ConfirmEach;
+      this.arguments.flags.confirmEach = undefined;
     }
 
     return selection === 'y' || selection === 'a' || selection === 'l';
@@ -288,12 +289,12 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    let [startLine, endLine] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    let { start, end } = range.resolve(vimState)!;
 
     if (this.arguments.count && this.arguments.count >= 0) {
-      startLine = endLine;
-      endLine = endLine + this.arguments.count - 1;
+      start = end;
+      end = end + this.arguments.count - 1;
     }
 
     // TODO: Global Setting.
@@ -302,8 +303,8 @@ export class SubstituteCommand extends node.CommandBase {
     let lines = 0;
     let substitutions = 0;
     for (
-      let currentLine = startLine;
-      currentLine <= endLine && currentLine < vimState.document.lineCount;
+      let currentLine = start;
+      currentLine <= end && currentLine < vimState.document.lineCount;
       currentLine++
     ) {
       if (this.abort) {
@@ -327,7 +328,7 @@ export class SubstituteCommand extends node.CommandBase {
   ) {
     if (substitutions === 0) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, regex.source));
-    } else if (this.arguments.flags & SubstituteFlags.PrintCount) {
+    } else if (this.arguments.flags.printCount) {
       StatusBar.setText(
         vimState,
         `${substitutions} match${substitutions > 1 ? 'es' : ''} on ${lines} line${

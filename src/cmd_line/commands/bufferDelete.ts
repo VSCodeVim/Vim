@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export interface IBufferDeleteCommandArguments extends node.ICommandArgs {
+export interface IBufferDeleteCommandArguments {
   bang?: boolean;
   tabPosition?: string;
 }
@@ -13,7 +13,7 @@ export interface IBufferDeleteCommandArguments extends node.ICommandArgs {
 //  Implements :bd
 // http://vimdoc.sourceforge.net/htmldoc/windows.html#buffers
 //
-export class BufferDeleteCommand extends node.CommandBase {
+export class BufferDeleteCommand extends ExCommand {
   public readonly arguments: IBufferDeleteCommandArguments;
 
   constructor(args: IBufferDeleteCommandArguments) {

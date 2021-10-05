@@ -3,10 +3,10 @@ import * as vscode from 'vscode';
 import { configuration } from './../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
-import * as node from '../node';
 import { TextEditor } from '../../textEditor';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export interface IDigraphsCommandArguments extends node.ICommandArgs {
+export interface IDigraphsCommandArguments {
   arg?: string;
 }
 
@@ -14,7 +14,7 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
   charCodes: number[];
 }
 
-export class DigraphsCommand extends node.CommandBase {
+export class DigraphsCommand extends ExCommand {
   private readonly arguments: IDigraphsCommandArguments;
 
   constructor(args: IDigraphsCommandArguments) {
