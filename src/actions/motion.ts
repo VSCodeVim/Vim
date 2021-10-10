@@ -28,6 +28,7 @@ import { WordType } from '../textobject/word';
 import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
+import { useSmartQuotes } from './plugins/targets/targetsConfig';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -2002,7 +2003,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       this.adjustForTrailingWhitespace = false;
     }
 
-    if (configuration.smartQuotes.enable) {
+    if (useSmartQuotes()) {
       const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, vimState.document);
       const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
 
@@ -2017,7 +2018,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
         stop = stop.translate({ characterDelta: -1 });
       } else if (
         this.adjustForTrailingWhitespace &&
-        configuration.smartQuotes.aIncludesSurroundingSpaces
+        configuration.targets.smartQuotes.aIncludesSurroundingSpaces
       ) {
         // Include trailing whitespace if there is any...
         const trailingWhitespace = lineText.substring(stop.character + 1).search(/\S|$/);

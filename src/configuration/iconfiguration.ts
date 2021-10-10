@@ -94,6 +94,14 @@ export interface ISmartQuotesConfiguration {
   aIncludesSurroundingSpaces: boolean;
 }
 
+export interface ITargetsConfiguration {
+  /**
+   * Enable Targets plugin or not
+   */
+  enable: boolean;
+  smartQuotes: ISmartQuotesConfiguration;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.

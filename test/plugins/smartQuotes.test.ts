@@ -6,8 +6,9 @@ suite('smartQuotes plugin', () => {
   suite('smartQuotes.breakThroughLines = false', () => {
     setup(async () => {
       const configuration = new Configuration();
-      configuration.smartQuotes.enable = true;
-      configuration.smartQuotes.breakThroughLines = false;
+      configuration.targets.enable = true;
+      configuration.targets.smartQuotes.enable = true;
+      configuration.targets.smartQuotes.breakThroughLines = false;
       await setupWorkspace(configuration, '.js');
     });
     teardown(cleanUpWorkspace);
@@ -692,8 +693,9 @@ suite('smartQuotes plugin', () => {
   suite('smartQuotes.breakThroughLines = true', () => {
     setup(async () => {
       const configuration = new Configuration();
-      configuration.smartQuotes.enable = true;
-      configuration.smartQuotes.breakThroughLines = true;
+      configuration.targets.enable = true;
+      configuration.targets.smartQuotes.enable = true;
+      configuration.targets.smartQuotes.breakThroughLines = true;
       await setupWorkspace(configuration, '.js');
     });
 

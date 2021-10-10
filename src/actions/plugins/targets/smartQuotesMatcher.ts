@@ -228,7 +228,7 @@ export class SmartQuoteMatcher {
       // find next position for surrounding quotes, possibly breaking through lines
       let nextPos;
       position = position.with({ character: index });
-      if (found === undefined && configuration.smartQuotes.breakThroughLines) {
+      if (found === undefined && configuration.targets.smartQuotes.breakThroughLines) {
         // nextPos = State.evalGenerator(this.getNextQuoteThroughLineBreaks(), position);
         nextPos = this.getNextQuoteThroughLineBreaks(position);
       } else {
@@ -251,7 +251,7 @@ export class SmartQuoteMatcher {
       // find last position for surrounding quotes, possibly breaking through lines
       let lastPos;
       position = position.with({ character: index });
-      if (found === undefined && configuration.smartQuotes.breakThroughLines) {
+      if (found === undefined && configuration.targets.smartQuotes.breakThroughLines) {
         position = position.getLeftThroughLineBreaks();
         lastPos = this.getLastQuoteThroughLineBreaks(position);
       } else {
