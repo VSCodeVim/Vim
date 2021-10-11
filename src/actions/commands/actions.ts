@@ -1777,6 +1777,58 @@ class EvenPaneWidths extends BaseCommand {
 }
 
 @RegisterAction
+class IncreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '<'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class IncreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '+'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '-'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
 class CommandTabNext extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 't'], ['<C-pagedown>']];
