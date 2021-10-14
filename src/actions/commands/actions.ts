@@ -35,6 +35,7 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
+import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -3138,10 +3139,18 @@ class ActionGoToAlternateFile extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const altFile = await Register.get('#');
-    if (altFile === undefined || altFile.text === '') {
+    if (altFile?.text instanceof RecordedState) {
+      throw new Error(`# register unexpectedly contained a RecordedState`);
+    } else if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {
-      const files = await vscode.workspace.findFiles(altFile.text as string);
+      let files: vscode.Uri[];
+      if (await doesFileExist(vscode.Uri.file(altFile.text))) {
+        files = [vscode.Uri.file(altFile.text)];
+      } else {
+        files = await vscode.workspace.findFiles(altFile.text);
+      }
+
       // TODO: if the path matches a file from multiple workspace roots, we may not choose the right one
       if (files.length > 0) {
         const document = await vscode.workspace.openTextDocument(files[0]);
