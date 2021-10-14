@@ -492,10 +492,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
         throw e;
       } else if (e instanceof Error) {
-        e.message = `Failed to handle key=${key}. ${e.message}`;
+        e.message = `Failed to handle key \`${key}\`: ${e.message}`;
         throw e;
       } else {
-        throw new Error(`Failed to handle key=${key} due to an unknown error.`);
+        throw new Error(`Failed to handle key \`${key}\` due to an unknown error.`);
       }
     }
 
