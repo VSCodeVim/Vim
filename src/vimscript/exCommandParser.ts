@@ -549,7 +549,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['unm', 'ap'], undefined],
   [['unme', 'nu'], undefined],
   [['uns', 'ilent'], undefined],
-  [['up', 'date'], undefined],
+  [['up', 'date'], WriteCommand.argParser],
   [['v', 'global'], undefined],
   [['ve', 'rsion'], undefined],
   [['verb', 'ose'], undefined],
