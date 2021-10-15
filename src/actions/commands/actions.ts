@@ -8,7 +8,7 @@ import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { Tab, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
@@ -1382,10 +1382,13 @@ class CommandOpenFile extends BaseCommand {
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
-      const lineNumber = parseInt(fileInfo[2], 10);
+      const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
-        name: filePath,
-        lineNumber,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: filePath,
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
@@ -1840,12 +1843,13 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       new TabCommand({
-        tab: Tab.Absolute,
+        type: TabCommandType.Absolute,
         count: vimState.recordedState.count - 1,
       }).execute(vimState);
     } else {
       new TabCommand({
-        tab: Tab.Next,
+        type: TabCommandType.Next,
+        bang: false,
         count: 1,
       }).execute(vimState);
     }
@@ -1860,7 +1864,8 @@ class CommandTabPrevious extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     new TabCommand({
-      tab: Tab.Previous,
+      type: TabCommandType.Previous,
+      bang: false,
       count: 1,
     }).execute(vimState);
   }
@@ -3110,7 +3115,7 @@ class WriteQuit extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await new WriteQuitCommand({}).execute(vimState);
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
   }
 }
 

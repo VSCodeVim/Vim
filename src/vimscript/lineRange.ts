@@ -122,11 +122,15 @@ export class Address {
     return new Address(specifier, offset);
   });
 
-  public resolve(vimState: VimState, side: 'left' | 'right'): number {
+  public resolve(vimState: VimState, side: 'left' | 'right', boundsCheck = true): number {
     const line = (() => {
       switch (this.specifier.type) {
         case 'number':
-          return this.specifier.num ? this.specifier.num - 1 : 0;
+          if (boundsCheck) {
+            return this.specifier.num ? this.specifier.num - 1 : 0;
+          } else {
+            return this.specifier.num - 1;
+          }
         case 'current_line':
           return vimState.cursorStopPosition.line;
         case 'last_line':
@@ -202,20 +206,22 @@ export class Address {
           if (!globalState.substituteState) {
             throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
           }
-          const searchState = new SearchState(
-            SearchDirection.Forward,
-            vimState.cursorStopPosition,
-            globalState.substituteState.searchPattern.patternString,
-            {},
-            vimState.currentMode
-          );
-          const match = searchState.getNextSearchMatchPosition(
+          const searchState = globalState.substituteState.searchPattern
+            ? new SearchState(
+                SearchDirection.Forward,
+                vimState.cursorStopPosition,
+                globalState.substituteState.searchPattern.patternString,
+                {},
+                vimState.currentMode
+              )
+            : undefined;
+          const match = searchState?.getNextSearchMatchPosition(
             vimState.editor,
             vimState.cursorStopPosition
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState?.searchString);
           }
           return match.pos.line;
         default:
@@ -224,7 +230,7 @@ export class Address {
       }
     })();
     const result = line + this.offset;
-    if (result < 0) {
+    if (boundsCheck && (result < 0 || result > vimState.document.lineCount)) {
       throw VimError.fromCode(ErrorCode.InvalidRange);
     }
     return result;

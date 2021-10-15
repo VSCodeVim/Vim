@@ -1,13 +1,13 @@
+import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { LineRange } from '../../vimscript/lineRange';
+import { bangParser } from '../../vimscript/parserUtils';
 
 export interface IQuitCommandArguments {
   bang?: boolean;
-  range?: LineRange;
   quitAll?: boolean;
 }
 
@@ -16,8 +16,18 @@ export interface IQuitCommandArguments {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
 export class QuitCommand extends ExCommand {
-  public arguments: IQuitCommandArguments;
+  public static readonly argParser: (quitAll: boolean) => Parser<QuitCommand> = (
+    quitAll: boolean
+  ) =>
+    bangParser.map(
+      (bang) =>
+        new QuitCommand({
+          bang,
+          quitAll,
+        })
+    );
 
+  public arguments: IQuitCommandArguments;
   constructor(args: IQuitCommandArguments) {
     super();
     this.arguments = args;

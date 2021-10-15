@@ -1,25 +1,16 @@
-import { ErrorCode, VimError } from '../../error';
+import { optWhitespace, Parser } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { Scanner } from '../scanner';
+import { numberParser } from '../../vimscript/parserUtils';
 
 export class GotoCommand extends ExCommand {
-  public static parseArgs(args: string): GotoCommand {
-    if (args.trim() === '') {
-      return new GotoCommand();
-    }
-
-    const scanner = new Scanner(args);
-    const offset = parseInt(scanner.nextWord(), 10);
-    if (isNaN(offset)) {
-      throw VimError.fromCode(ErrorCode.TrailingCharacters);
-    }
-    return new GotoCommand(offset);
-  }
+  public static readonly argParser: Parser<GotoCommand> = optWhitespace
+    .then(numberParser.fallback(undefined))
+    .map((count) => new GotoCommand(count));
 
   private offset?: number;
-  private constructor(offset?: number) {
+  constructor(offset?: number) {
     super();
     this.offset = offset;
   }

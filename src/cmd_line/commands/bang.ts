@@ -3,14 +3,21 @@ import { PositionDiff } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
 import { LineRange } from '../../vimscript/lineRange';
 import { ExCommand } from '../../vimscript/exCommand';
+import { all, Parser } from 'parsimmon';
 
 export interface IBangCommandArguments {
   command: string;
 }
 
 export class BangCommand extends ExCommand {
-  protected _arguments: IBangCommandArguments;
+  public static readonly argParser: Parser<BangCommand> = all.map(
+    (command) =>
+      new BangCommand({
+        command,
+      })
+  );
 
+  protected _arguments: IBangCommandArguments;
   constructor(args: IBangCommandArguments) {
     super();
     this._arguments = args;

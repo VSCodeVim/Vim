@@ -116,8 +116,11 @@ export class JumpTracker {
     } else if (await existsAsync(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
-        name: jump.fileName,
-        lineNumber: jump.position.line,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: jump.fileName,
+        cmd: { type: 'line_number', line: jump.position.line },
         createFileIfNotExists: false,
       }).execute(vimState);
     } else {

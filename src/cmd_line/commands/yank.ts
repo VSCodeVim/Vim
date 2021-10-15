@@ -1,50 +1,41 @@
+import { alt, any, optWhitespace, Parser, seq, succeed, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { YankOperator } from '../../actions/operator';
 import { RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { Scanner } from '../scanner';
+import { numberParser } from '../../vimscript/parserUtils';
 
 export interface YankCommandArguments {
-  linesToYank?: number;
   register?: string;
+  count?: number;
 }
 
 export class YankCommand extends ExCommand {
-  private readonly arguments: YankCommandArguments;
+  public static readonly argParser: Parser<YankCommand> = optWhitespace.then(
+    alt(
+      numberParser.map((count) => {
+        return { register: undefined, count };
+      }),
+      seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
+        ([register, count]) => {
+          return { register, count };
+        }
+      )
+    ).map(
+      ({ register, count }) =>
+        new YankCommand({
+          register,
+          count,
+        })
+    )
+  );
 
+  private readonly arguments: YankCommandArguments;
   constructor(args: YankCommandArguments) {
     super();
     this.arguments = args;
-  }
-
-  public static parseArgs(args: string): YankCommand {
-    if (!args || !args.trim()) {
-      return new YankCommand({});
-    }
-    /**
-     * :y[ank] [register] [cnt]
-     * :y[ank] [cnt] (if the first argument is a number)
-     */
-    const scanner = new Scanner(args);
-    const arg1 = scanner.nextWord(); // [cnt] or [register]
-    const arg2 = scanner.nextWord(); // [cnt] or EOF
-
-    let register;
-    let linesToYank;
-
-    if (isNaN(+arg1)) {
-      register = arg1;
-      linesToYank = isNaN(+arg2) ? undefined : +arg2;
-    } else {
-      linesToYank = +arg1;
-    }
-
-    return new YankCommand({
-      register,
-      linesToYank,
-    });
   }
 
   private async yank(vimState: VimState, start: Position, end: Position) {
@@ -62,7 +53,7 @@ export class YankCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const linesToYank = this.arguments.linesToYank ?? 1;
+    const linesToYank = this.arguments.count ?? 1;
     const startPosition = vimState.cursorStartPosition;
     const endPosition = linesToYank
       ? startPosition.getDown(linesToYank - 1).getLineEnd()
@@ -78,7 +69,7 @@ export class YankCommand extends ExCommand {
      * from the end of the selected lines.
      */
     const { start, end } = range.resolve(vimState)!;
-    if (this.arguments.linesToYank) {
+    if (this.arguments.count) {
       vimState.cursorStartPosition = new Position(end, 0);
       await this.execute(vimState);
       return;
