@@ -2321,6 +2321,13 @@ suite('Mode Normal', () => {
     end: ['|x end', 'x', 'x', 'start'],
   });
 
+  newTest({
+    title: 'Search for `(`',
+    start: ['|one (two) three'],
+    keysPressed: '/(\n',
+    end: ['one |(two) three'],
+  });
+
   /**
    * The escaped `/` and `?` the next tests are necessary because otherwise they denote a search offset.
    */

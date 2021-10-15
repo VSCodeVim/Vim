@@ -7,14 +7,14 @@ export class SubstituteState {
   /**
    * The last pattern searched for in the substitution
    */
-  public searchPattern: Pattern;
+  public searchPattern: Pattern | undefined;
 
   /**
    * The last replacement string in the substitution
    */
   public replaceString: string;
 
-  constructor(searchPattern: Pattern, replaceString: string) {
+  constructor(searchPattern: Pattern | undefined, replaceString: string) {
     this.searchPattern = searchPattern;
     this.replaceString = replaceString;
   }

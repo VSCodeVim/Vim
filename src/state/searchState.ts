@@ -17,9 +17,10 @@ export class SearchState {
   ) {
     this._searchString = searchString;
 
-    const { pattern, offset } = searchStringParser({ direction, ignoreSmartcase }).tryParse(
-      searchString
-    );
+    const result = searchStringParser({ direction, ignoreSmartcase }).parse(searchString);
+    const { pattern, offset } = result.status
+      ? result.value
+      : { pattern: undefined, offset: undefined };
     this.pattern = pattern;
     this.offset = offset;
 
@@ -29,7 +30,7 @@ export class SearchState {
   }
 
   private _searchString: string;
-  public pattern: Pattern;
+  public pattern?: Pattern;
   private offset?: SearchOffset;
 
   public readonly previousMode: Mode;
@@ -40,11 +41,14 @@ export class SearchState {
   }
   public set searchString(str: string) {
     this._searchString = str;
-    const { pattern, offset } = searchStringParser({
-      direction: this.pattern.direction,
+    const result = searchStringParser({
+      direction: this.direction,
       ignoreSmartcase: this.ignoreSmartcase,
-    }).tryParse(str);
-    if (pattern.patternString !== this.pattern.patternString) {
+    }).parse(str);
+    const { pattern, offset } = result.status
+      ? result.value
+      : { pattern: undefined, offset: undefined };
+    if (pattern?.patternString !== this.pattern?.patternString) {
       this.pattern = pattern;
       this.matchRanges.clear();
     }
@@ -52,7 +56,8 @@ export class SearchState {
   }
 
   public get direction(): SearchDirection {
-    return this.pattern.direction;
+    // TODO: Defaulting to forward is wrong - I think storing the direction in the pattern is a mistake
+    return this.pattern?.direction ?? SearchDirection.Forward;
   }
 
   /**
@@ -72,7 +77,7 @@ export class SearchState {
   private readonly ignoreSmartcase: boolean;
 
   private recalculateSearchRanges(editor: TextEditor): Range[] {
-    if (this.searchString === '') {
+    if (this.searchString === '' || this.pattern === undefined) {
       return [];
     }
 
@@ -129,7 +134,7 @@ export class SearchState {
       return undefined;
     }
 
-    const effectiveDirection = (direction * this.pattern.direction) as SearchDirection;
+    const effectiveDirection = (direction * this.direction) as SearchDirection;
 
     if (effectiveDirection === SearchDirection.Forward) {
       for (const [index, range] of matchRanges.entries()) {

@@ -215,7 +215,7 @@ export class SubstituteCommand extends ExCommand {
     return !this.arguments.flags.confirmEach;
   }
 
-  private getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
+  private getRegex(args: ISubstituteCommandArguments, vimState: VimState): RegExp | undefined {
     let jsRegexFlags = '';
     if (configuration.gdefault || configuration.substituteGlobalFlag) {
       // the gdefault flag is on, then /g if on by default and /g negates that
@@ -238,7 +238,7 @@ export class SubstituteCommand extends ExCommand {
       // i.e. :s
       const prevSubstituteState = globalState.substituteState;
       if (
-        prevSubstituteState === undefined ||
+        prevSubstituteState?.searchPattern === undefined ||
         prevSubstituteState.searchPattern.patternString === ''
       ) {
         throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
@@ -266,7 +266,7 @@ export class SubstituteCommand extends ExCommand {
         vimState.currentMode
       );
     }
-    return new RegExp(args.pattern.regex.source, jsRegexFlags);
+    return args.pattern ? new RegExp(args.pattern.regex.source, jsRegexFlags) : undefined;
   }
 
   /**
@@ -396,6 +396,10 @@ export class SubstituteCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     const regex = this.getRegex(this.arguments, vimState);
+    if (regex === undefined) {
+      return;
+    }
+
     const selection = vimState.editor.selection;
     const line = selection.start.isBefore(selection.end)
       ? selection.start.line
@@ -418,6 +422,10 @@ export class SubstituteCommand extends ExCommand {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
     const regex = this.getRegex(this.arguments, vimState);
+    if (regex === undefined) {
+      return;
+    }
+
     let lines = 0;
     let substitutions = 0;
     for (

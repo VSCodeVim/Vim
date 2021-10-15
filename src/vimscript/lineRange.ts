@@ -206,20 +206,22 @@ export class Address {
           if (!globalState.substituteState) {
             throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
           }
-          const searchState = new SearchState(
-            SearchDirection.Forward,
-            vimState.cursorStopPosition,
-            globalState.substituteState.searchPattern.patternString,
-            {},
-            vimState.currentMode
-          );
-          const match = searchState.getNextSearchMatchPosition(
+          const searchState = globalState.substituteState.searchPattern
+            ? new SearchState(
+                SearchDirection.Forward,
+                vimState.cursorStopPosition,
+                globalState.substituteState.searchPattern.patternString,
+                {},
+                vimState.currentMode
+              )
+            : undefined;
+          const match = searchState?.getNextSearchMatchPosition(
             vimState.editor,
             vimState.cursorStopPosition
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString);
+            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState?.searchString);
           }
           return match.pos.line;
         default:
