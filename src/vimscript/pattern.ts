@@ -56,6 +56,7 @@ export class Pattern {
   public allMatches(document: TextDocument, fromPosition: Position): Range[] {
     const haystack = document.getText();
     const startOffset = document.offsetAt(fromPosition);
+    this.regex.lastIndex = startOffset;
 
     const matchRanges = {
       beforeWrapping: [] as Range[],
