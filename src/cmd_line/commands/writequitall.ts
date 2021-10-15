@@ -1,5 +1,7 @@
+import { Parser, seq, whitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { bangParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 import * as wall from '../commands/wall';
 import * as quit from './quit';
 
@@ -8,17 +10,17 @@ import * as quit from './quit';
 // http://vimdoc.sourceforge.net/htmldoc/editing.html#:wqall
 //
 export interface IWriteQuitAllCommandArguments {
-  // arguments
-  // [++opt]
-  opt?: string;
-  optValue?: string;
-  // wqa! [++opt]
-  bang?: boolean;
+  bang: boolean;
+  fileOpt: FileOpt;
 }
 
 export class WriteQuitAllCommand extends ExCommand {
-  private readonly arguments: IWriteQuitAllCommandArguments;
+  public static readonly argParser: Parser<WriteQuitAllCommand> = seq(
+    bangParser,
+    whitespace.then(fileOptParser).fallback([])
+  ).map(([bang, fileOpt]) => new WriteQuitAllCommand({ bang, fileOpt }));
 
+  private readonly arguments: IWriteQuitAllCommandArguments;
   constructor(args: IWriteQuitAllCommandArguments) {
     super();
     this.arguments = args;
@@ -26,17 +28,15 @@ export class WriteQuitAllCommand extends ExCommand {
 
   // Writing command. Taken as a basis from the "write.ts" file.
   async execute(vimState: VimState): Promise<void> {
-    const writeArgs: wall.IWallCommandArguments = {
-      bang: this.arguments.bang,
-    };
-
     const quitArgs: quit.IQuitCommandArguments = {
       // wq! fails when no file name is provided
       bang: false,
     };
 
-    const wallCmd = new wall.WallCommand(writeArgs);
+    const wallCmd = new wall.WallCommand(this.arguments.bang);
     await wallCmd.execute(vimState);
+
+    // TODO: fileOpt is not used
 
     quitArgs.quitAll = true;
     const quitCmd = new quit.QuitCommand(quitArgs);
