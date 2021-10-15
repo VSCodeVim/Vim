@@ -324,8 +324,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // start visual mode?
       if (
         selection.anchor.line === selection.active.line &&
-        selection.anchor.character >= newPosition.getLineEnd().character - 1 &&
-        selection.active.character >= newPosition.getLineEnd().character - 1
+        selection.anchor.character >= newPosition.getLineEnd().character &&
+        selection.active.character >= newPosition.getLineEnd().character
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
@@ -492,10 +492,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
         throw e;
       } else if (e instanceof Error) {
-        e.message = `Failed to handle key=${key}. ${e.message}`;
+        e.message = `Failed to handle key \`${key}\`: ${e.message}`;
         throw e;
       } else {
-        throw new Error(`Failed to handle key=${key} due to an unknown error.`);
+        throw new Error(`Failed to handle key \`${key}\` due to an unknown error.`);
       }
     }
 

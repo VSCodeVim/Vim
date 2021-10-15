@@ -56,11 +56,11 @@
 
 | 状态               | 命令           | 描述                                                                      |
 | ------------------ | -------------- | ------------------------------------------------------------------------- |
-| :white_check_mark: | :1234: h       | 左移 (同功能: CTRL-H, BS, or Left key)                                    |
-| :white_check_mark: | :1234: l       | 右移 (同功能: Space or Right key)                                         |
-| :white_check_mark: | 0              | 移动到当前行的第一个字符处 (同功能: Home key)                             |
+| :white_check_mark: | :1234: h       | 左移 (或者: CTRL-H, BS, 或左方向键)                                       |
+| :white_check_mark: | :1234: l       | 右移 (或者: 空格键或右方向键)                                             |
+| :white_check_mark: | 0              | 移动到当前行的第一个字符处 (或者: Home 键)                                |
 | :white_check_mark: | ^              | 移动到当前行的第一个非空字符处                                            |
-| :white_check_mark: | :1234: \$      | 移动到当前行的最后一个字符处 (N-1 lines lower) (同功能: End key)          |
+| :white_check_mark: | :1234: \$      | 移动到当前行的最后一个字符处 (N-1 lines lower) (或者: End 键)             |
 | :white_check_mark: | g0             | 移动到屏幕上显示行的第一个字符处(当有多行被折叠时，行为与 '0' 不同)       |
 | :white_check_mark: | g^             | 移动到屏幕上显示行的第一个非空白字符处(当有多行被折叠时，行为与 '^' 不同) |
 | :white_check_mark: | :1234: g\$     | 移动到屏幕上显示行的最后一个字符处(当有多行被折叠时，行为与 '\$' 不同)    |
@@ -77,10 +77,10 @@
 
 | 状态               | 命令      | 描述                                                         |
 | ------------------ | --------- | ------------------------------------------------------------ |
-| :white_check_mark: | :1234: k  | 上移 (同功能: CTRL-P and Up)                                 |
-| :white_check_mark: | :1234: j  | 下移 (同功能: CTRL-J, CTRL-N, NL, and Down)                  |
+| :white_check_mark: | :1234: k  | 上移 (或者: CTRL-P and Up)                                   |
+| :white_check_mark: | :1234: j  | 下移 (或者: CTRL-J, CTRL-N, NL, and Down)                    |
 | :white_check_mark: | :1234: -  | 上移，光标将位于第一个非空白字符上                           |
-| :white_check_mark: | :1234: +  | 下移，光标将位于第一个非空白字符上 (同功能: CTRL-M and CR)   |
+| :white_check_mark: | :1234: +  | 下移，光标将位于第一个非空白字符上 (或者: CTRL-M and CR)     |
 | :white_check_mark: | :1234: \_ | 下移 N-1 行，光标将位于第一个非空白字符上                    |
 | :white_check_mark: | :1234: G  | 移动到第 N 行，光标将位于第一个非空白字符上(默认: 最后一行)  |
 | :white_check_mark: | :1234: gg | 移动到第 N 行，光标将位于第一个非空白字符上(默认: 第一行)    |
@@ -148,8 +148,10 @@
 | :white_check_mark: | `{0-9}              | 跳转到 Vim 上次退出时的位置                            |
 | :white_check_mark: | ``                  | 跳转到 Vim 最后一次跳转之前的位置                      |
 | :arrow_down:       | `"                  | 跳转到当前文件中最后一次编辑的位置                     |
-| :arrow_down:       | `[                  | 跳转到上一次操作或输入文本的开始位置                   |
-| :arrow_down:       | `]                  | 跳转到上一次操作或输入文本的结束位置                   |
+| :white_check_mark: | `[                  | 跳转到上一次操作或输入文本的开始位置                   |
+| :white_check_mark: | '[                  | 跳转到上一次操作或输入文本的开始位置                   |
+| :white_check_mark: | `]                  | 跳转到上一次操作或输入文本的结束位置                   |
+| :white_check_mark: | ']                  | 跳转到上一次操作或输入文本的结束位置                   |
 | :arrow_down:       | `<                  | 跳转到(上一个)可视区开始                               |
 | :arrow_down:       | `>                  | 跳转到(上一个)可视区末尾                               |
 | :white_check_mark: | `.                  | 跳转到此文件的最后一次修改处                           |
@@ -358,13 +360,11 @@
 | :white_check_mark: | {visual}~               | 在可视模式下:切换选中内容的大小写状态               |
 | :white_check_mark: | {visual}u               | 在可视模式下:将选中的内容切换为小写                 |
 | :white_check_mark: | {visual}U               | 在可视模式下:将选中的内容切换为大写                 |
-| :white_check_mark: | {visual}gu              | 在可视模式下:将选中的内容切换为小写                 |
-| :white_check_mark: | {visual}gU              | 在可视模式下:将选中的内容切换为大写                 |
 | :white_check_mark: | g~{motion}              | 切换移动命令{motion}经过文本的大小写状态            |
 | :white_check_mark: | gu{motion}              | 将移动命令{motion}经过的文本切换为小写              |
 | :white_check_mark: | gU{motion}              | 将移动命令{motion}经过的文本切换为大写              |
-| :arrow_down:       | {visual}g?              | 将高亮文本执行 rot13 编码                           |
-| :arrow_down:       | g?{motion}              | 将移动命令{motion}经过的文本执行 rot13 编码         |
+| :white_check_mark: | {visual}g?              | 将高亮文本执行 rot13 编码                           |
+| :white_check_mark: | g?{motion}              | 将移动命令{motion}经过的文本执行 rot13 编码         |
 | :white_check_mark: | :1234: CTRL-A           | 将光标处或之后的数字增加 N                          |
 | :white_check_mark: | :1234: CTRL-X           | 将光标处或之后的数字减去 N                          |
 | :white_check_mark: | :1234: <{motion}        | 将移动命令{motion}经过的行向左缩进                  |
@@ -394,15 +394,13 @@
 
 ## 可视模式
 
-| 状态               | 命令   | 描述                                    |
-| ------------------ | ------ | --------------------------------------- |
-| :white_check_mark: | v      | 从当前字符开始进入可视模式              |
-| :white_check_mark: | V      | 从当前行开始进入可视模式                |
-| :white_check_mark: | o      | 高亮文本开始与当前光标位置间切换        |
-| :white_check_mark: | gv     | 重新打开前一次的高亮区域                |
-| :white_check_mark: | v      | 从当前字符开始进入可视模式;退出高亮模式 |
-| :white_check_mark: | V      | 从当前行开始进入可视模式;退出高亮模式   |
-| :white_check_mark: | CTRL-V | 高亮块级区域或退出高亮模式              |
+| 状态               | 命令   | 描述                               |
+| ------------------ | ------ | ---------------------------------- |
+| :white_check_mark: | v      | 从当前位置开始高亮字符或者停止高亮 |
+| :white_check_mark: | V      | 从当前行开始高亮或者停止高亮       |
+| :white_check_mark: | CTRL-V | 高亮块级区域或退出高亮模式         |
+| :white_check_mark: | o      | 高亮文本开始与当前光标位置间切换   |
+| :white_check_mark: | gv     | 重新打开前一次的高亮区域           |
 
 ## 文本对象 (仅在可视模式下有效)
 
@@ -537,7 +535,7 @@
 | :white_check_mark:        | :new              | 水平方向上创建一个新的窗口,同时开始编辑一个空文件 |                                                                          |
 | :white_check_mark: :star: | :vne[w]           | 垂直方向上创建一个新的窗口,同时开始编辑一个空文件 |                                                                          |
 
-## Tabs
+## 标签页
 
 | 状态                      | 命令                                 | 描述                                                      | 备注                                               |
 | ------------------------- | ------------------------------------ | --------------------------------------------------------- | -------------------------------------------------- |
@@ -579,7 +577,7 @@
 | :white_check_mark: | zO                       | 递归打开当前光标下所有的折叠内容                                                |
 | :white_check_mark: | zc                       | 在光标下关闭一个折叠.当给出计数时，关闭多个折叠                                 |
 | :white_check_mark: | zC                       | 递归关闭当前光标下所有的折叠内容                                                |
-| :arrow_down:       | za                       | 处于关闭的折叠块时,打开折叠块.反之,关闭折叠块                                   |
+| :white_check_mark: | za                       | 处于关闭的折叠块时,打开折叠块.反之,关闭折叠块                                   |
 | :arrow_down:       | zA                       | 处于关闭的折叠块时,递归的打开折叠块.反之,递归的关闭折叠块                       |
 | :arrow_down:       | zv                       | 查看光标所在行：打开刚好足够的折叠，使光标所在行不折叠                          |
 | :arrow_down:       | zx                       | 更新折叠：撤消手动打开和关闭折叠：重新应用'foldlevel'，然后执行“zv”：查看光标行 |

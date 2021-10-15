@@ -8,7 +8,7 @@ import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { Tab, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
@@ -35,6 +35,7 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
+import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -1381,10 +1382,13 @@ class CommandOpenFile extends BaseCommand {
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
-      const lineNumber = parseInt(fileInfo[2], 10);
+      const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
-        name: filePath,
-        lineNumber,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: filePath,
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
@@ -1777,6 +1781,58 @@ class EvenPaneWidths extends BaseCommand {
 }
 
 @RegisterAction
+class IncreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '<'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class IncreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '+'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '-'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
 class CommandTabNext extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 't'], ['<C-pagedown>']];
@@ -1787,12 +1843,13 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       new TabCommand({
-        tab: Tab.Absolute,
+        type: TabCommandType.Absolute,
         count: vimState.recordedState.count - 1,
       }).execute(vimState);
     } else {
       new TabCommand({
-        tab: Tab.Next,
+        type: TabCommandType.Next,
+        bang: false,
         count: 1,
       }).execute(vimState);
     }
@@ -1807,7 +1864,8 @@ class CommandTabPrevious extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     new TabCommand({
-      tab: Tab.Previous,
+      type: TabCommandType.Previous,
+      bang: false,
       count: 1,
     }).execute(vimState);
   }
@@ -3057,7 +3115,7 @@ class WriteQuit extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await new WriteQuitCommand({}).execute(vimState);
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
   }
 }
 
@@ -3086,10 +3144,18 @@ class ActionGoToAlternateFile extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const altFile = await Register.get('#');
-    if (altFile === undefined || altFile.text === '') {
+    if (altFile?.text instanceof RecordedState) {
+      throw new Error(`# register unexpectedly contained a RecordedState`);
+    } else if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {
-      const files = await vscode.workspace.findFiles(altFile.text as string);
+      let files: vscode.Uri[];
+      if (await doesFileExist(vscode.Uri.file(altFile.text))) {
+        files = [vscode.Uri.file(altFile.text)];
+      } else {
+        files = await vscode.workspace.findFiles(altFile.text);
+      }
+
       // TODO: if the path matches a file from multiple workspace roots, we may not choose the right one
       if (files.length > 0) {
         const document = await vscode.workspace.openTextDocument(files[0]);

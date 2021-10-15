@@ -38,6 +38,7 @@ export class Pattern {
   public readonly ignorecase: boolean | undefined;
 
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   public nextMatch(document: TextDocument, fromPosition: Position): Range | undefined {
     const haystack = document.getText();
@@ -56,6 +57,7 @@ export class Pattern {
   public allMatches(document: TextDocument, fromPosition: Position): Range[] {
     const haystack = document.getText();
     const startOffset = document.offsetAt(fromPosition);
+    this.regex.lastIndex = startOffset;
 
     const matchRanges = {
       beforeWrapping: [] as Range[],
@@ -102,6 +104,16 @@ export class Pattern {
     return matchRanges.afterWrapping.concat(matchRanges.beforeWrapping);
   }
 
+  private static compileRegex(regexString: string, ignoreCase?: boolean): RegExp {
+    const flags = ignoreCase ?? configuration.ignorecase ? 'gim' : 'gm';
+    try {
+      return new RegExp(regexString, flags);
+    } catch (err) {
+      // Couldn't compile the regexp, try again with special characters escaped
+      return new RegExp(regexString.replace(Pattern.SPECIAL_CHARS_REGEX, '\\$&'), flags);
+    }
+  }
+
   public static fromLiteralString(
     input: string,
     direction: SearchDirection,
@@ -109,17 +121,9 @@ export class Pattern {
   ): Pattern {
     const patternString = input.replace(escapeRegExp(input), '\\$&');
     if (wordBoundaries) {
-      return new Pattern(
-        `\\<${patternString}\\>`,
-        direction,
-        new RegExp(`\b${patternString}\b`, configuration.ignorecase ? 'gim' : 'gm')
-      );
+      return new Pattern(`\\<${patternString}\\>`, direction, Pattern.compileRegex(patternString));
     } else {
-      return new Pattern(
-        patternString,
-        direction,
-        new RegExp(patternString, configuration.ignorecase ? 'gim' : 'gm')
-      );
+      return new Pattern(patternString, direction, Pattern.compileRegex(patternString));
     }
   }
 
@@ -176,13 +180,15 @@ export class Pattern {
         };
       })
       .map(({ patternString, caseOverride }) => {
-        const flags = Pattern.getIgnoreCase(patternString, {
+        const ignoreCase = Pattern.getIgnoreCase(patternString, {
           caseOverride,
           ignoreSmartcase: args.ignoreSmartcase ?? false,
-        })
-          ? 'gim'
-          : 'gm';
-        return new Pattern(patternString, args.direction, RegExp(patternString, flags));
+        });
+        return new Pattern(
+          patternString,
+          args.direction,
+          Pattern.compileRegex(patternString, ignoreCase)
+        );
       });
   }
 
