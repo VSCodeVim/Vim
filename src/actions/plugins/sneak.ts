@@ -392,10 +392,14 @@ class SneakMarkInputJump extends BaseCommand {
     if (!newPosition) {
       // We only get to this operation if we are in label mode, so previous mode cannot be undefined.
       const modeHandler = await getAndUpdateModeHandler();
-      // We execute the key if no mark belongs to it.
-      if (modeHandler) {
-        modeHandler.handleKeyEvent(this.keysPressed[0]);
-      }
+
+      // We execute the key if no mark belongs to it as if it was just a regular action.
+
+      // WARNING: For some reasons the first key using handleMultipleKeyEvent is
+      // ignored so we need to send it a random key first before sending the real one
+      // pressed by the user. Escape was chosen here but it probably could be anything.
+      // If sneak actions randomly stop working look here first.
+      modeHandler?.handleMultipleKeyEvents(['<Esc>', this.keysPressed[0]]);
       return;
     }
 

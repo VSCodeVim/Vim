@@ -5,6 +5,7 @@ import { Position } from 'vscode';
 import { MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MarkerGenerator } from './easymotion/markerGenerator';
 import { SneakAction } from './sneak';
+import { minPosition, maxPosition } from '../../util/util';
 
 export class SneakHighlighter {
   public isHighlightingOn: boolean = false;
@@ -104,17 +105,22 @@ export class SneakHighlighter {
       editor.setDecorations(this.style, rangesToHighlight);
     }
 
-    if (this.fadeoutStyle && rangesToHighlight.length > 0) {
-      const fadeoutRangeEndIndex = configuration.sneakLabelMode
-        ? this.markers.size - 1
-        : rangesToHighlight.length - 1;
-      // we fade out the text up to the last match + 2 lines (only for aesthetic purposes)
-      const matchesRange = new vscode.Range(
-        editor.visibleRanges[0].end,
-        rangesToHighlight[fadeoutRangeEndIndex].end.translate(2, Number.MAX_SAFE_INTEGER)
+    // Fadeout the background if applicable
+    if (this.fadeoutStyle) {
+      const visibleStart: Position = editor.visibleRanges[0].start;
+      const visibleEnd: Position = editor.visibleRanges[0].end;
+      const numLinesVisible = visibleEnd.subtract(visibleStart).line;
+
+      // Fade out the visible portion of the editor and add more lines at the
+      // top and the bottom to make sure that when the cursor jumps to the first match
+      // every line is properly dimmed.
+      const startFadeoutPos = maxPosition(new Position(0, 0), visibleStart.getUp(numLinesVisible));
+      const endFadeoutPos = minPosition(
+        new Position(editor.document.lineCount, 0),
+        visibleEnd.getDown(numLinesVisible)
       );
-      const ranges = [...editor.visibleRanges, matchesRange];
-      editor.setDecorations(this.fadeoutStyle, ranges);
+
+      editor.setDecorations(this.fadeoutStyle, [new vscode.Range(startFadeoutPos, endFadeoutPos)]);
     }
   }
 
