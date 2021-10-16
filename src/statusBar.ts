@@ -192,6 +192,8 @@ export function statusBarText(vimState: VimState) {
       return '-- SURROUND INPUT --';
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
+    case Mode.SneakLabelInputMode:
+      return '-- SNEAK LABEL INPUT --';
     case Mode.SearchInProgressMode:
       if (globalState.searchState === undefined) {
         const logger = Logger.get('StatusBar');
