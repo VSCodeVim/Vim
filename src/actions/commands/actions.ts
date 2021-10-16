@@ -2956,7 +2956,7 @@ class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
 }
 
 @RegisterAction
-class CommandUnicodeName extends BaseCommand {
+export class CommandUnicodeName extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'a'];
   override runsOnceForEveryCursor() {

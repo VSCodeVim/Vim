@@ -292,7 +292,7 @@ export class LineRange {
     return new LineRange(start);
   });
 
-  public resolve(vimState: VimState): { start: number; end: number } | undefined {
+  public resolve(vimState: VimState): { start: number; end: number } {
     // TODO: *,4 is not a valid range
     const end = this.end ?? this.start;
 
@@ -329,7 +329,7 @@ export class LineRange {
   }
 
   public resolveToRange(vimState: VimState): Range {
-    const { start, end } = this.resolve(vimState)!;
+    const { start, end } = this.resolve(vimState);
     return new Range(new Position(start, 0), new Position(end, 0).getLineEnd());
   }
 

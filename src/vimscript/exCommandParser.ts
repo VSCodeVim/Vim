@@ -1,4 +1,5 @@
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
@@ -14,6 +15,7 @@ import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
 import { NohlCommand } from '../cmd_line/commands/nohl';
 import { OnlyCommand } from '../cmd_line/commands/only';
+import { PrintCommand } from '../cmd_line/commands/print';
 import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
@@ -24,6 +26,7 @@ import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
 import { SubstituteCommand } from '../cmd_line/commands/substitute';
 import { TabCommand } from '../cmd_line/commands/tab';
+import { TerminalCommand } from '../cmd_line/commands/terminal';
 import { UndoCommand } from '../cmd_line/commands/undo';
 import { VsCodeCommand } from '../cmd_line/commands/vscode';
 import { WallCommand } from '../cmd_line/commands/wall';
@@ -50,11 +53,12 @@ type ArgParser = Parser<ExCommand>;
 export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | undefined]> = [
   [['', ''], succeed(new GotoLineCommand())],
   [['!', ''], BangCommand.argParser],
-  [['#', ''], undefined],
+  [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
+  // TODO: Ignore #! (shebang)
   [['&', ''], undefined],
   [['*', ''], undefined],
   [['<', ''], undefined],
-  [['=', ''], undefined],
+  [['=', ''], PrintCommand.argParser({ printNumbers: true, printText: false })],
   [['>', ''], undefined],
   [['@', ''], undefined],
   [['@@', ''], undefined],
@@ -74,7 +78,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['argg', 'lobal'], undefined],
   [['argl', 'ocal'], undefined],
   [['argu', 'ment'], undefined],
-  [['as', 'cii'], undefined],
+  [['as', 'cii'], succeed(new AsciiCommand())],
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
@@ -267,7 +271,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['keepa', 'lt'], undefined],
   [['keepj', 'umps'], undefined],
   [['keepp', 'atterns'], undefined],
-  [['l', 'ist'], undefined],
+  [['l', 'ist'], PrintCommand.argParser({ printNumbers: false, printText: true })],
   [['lN', 'ext'], undefined],
   [['lNf', 'ile'], undefined],
   [['la', 'st'], undefined],
@@ -359,7 +363,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['noreme', 'nu'], undefined],
   [['norm', 'al'], undefined],
   [['nos', 'wapfile'], undefined],
-  [['nu', 'mber'], undefined],
+  [['nu', 'mber'], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['nun', 'map'], undefined],
   [['nunme', 'nu'], undefined],
   [['ol', 'dfiles'], undefined],
@@ -373,7 +377,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ou', 'nmap'], undefined],
   [['ounme', 'nu'], undefined],
   [['ow', 'nsyntax'], undefined],
-  [['p', 'rint'], undefined],
+  [['p', 'rint'], PrintCommand.argParser({ printNumbers: false, printText: true })],
   [['pa', 'ckadd'], undefined],
   [['packl', 'oadall'], undefined],
   [['pc', 'lose'], undefined],
@@ -522,7 +526,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['tags', ''], undefined],
   [['tc', 'd'], undefined],
   [['tch', 'dir'], undefined],
-  [['te', 'rminal'], undefined],
+  [['te', 'rminal'], TerminalCommand.argParser],
   [['tf', 'irst'], undefined],
   [['th', 'row'], undefined],
   [['tj', 'ump'], undefined],

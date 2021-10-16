@@ -68,7 +68,7 @@ export class YankCommand extends ExCommand {
      * Ex. if two lines are VisualLine highlighted, :<,>y3 will :y3
      * from the end of the selected lines.
      */
-    const { start, end } = range.resolve(vimState)!;
+    const { start, end } = range.resolve(vimState);
     if (this.arguments.count) {
       vimState.cursorStartPosition = new Position(end, 0);
       await this.execute(vimState);
