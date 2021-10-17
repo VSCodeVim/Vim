@@ -57,7 +57,7 @@ export class PutExCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    const { end } = range.resolve(vimState)!;
+    const { end } = range.resolve(vimState);
     await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }
 }

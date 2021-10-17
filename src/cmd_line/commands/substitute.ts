@@ -412,7 +412,7 @@ export class SubstituteCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    let { start, end } = range.resolve(vimState)!;
+    let { start, end } = range.resolve(vimState);
 
     if (this.arguments.count && this.arguments.count >= 0) {
       start = end;

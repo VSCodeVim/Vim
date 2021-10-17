@@ -219,6 +219,10 @@ suite('Ex command parsing', () => {
     exParseTest(':marks 0 1', new MarksCommand(['0', '1']));
   });
 
+  suite(':p[rint]', () => {
+    // TODO
+  });
+
   suite(':pu[t]', () => {
     exParseTest(':put', new PutExCommand({ bang: false, register: undefined }));
     exParseTest(':put!', new PutExCommand({ bang: true, register: undefined }));

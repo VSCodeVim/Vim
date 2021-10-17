@@ -2956,7 +2956,7 @@ class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
 }
 
 @RegisterAction
-class CommandUnicodeName extends BaseCommand {
+export class CommandUnicodeName extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'a'];
   override runsOnceForEveryCursor() {
@@ -3162,5 +3162,19 @@ class ActionGoToAlternateFile extends BaseCommand {
         await vscode.window.showTextDocument(document);
       }
     }
+  }
+}
+
+@RegisterAction
+class ShowFileOutline extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['g', 'O'];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('outline.focus');
   }
 }
