@@ -8,7 +8,7 @@ import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { Tab, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
@@ -20,14 +20,12 @@ import {
   visualBlockGetBottomRightPosition,
 } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
-import { SearchDirection } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
-import { Jump } from '../../jumps/jump';
-import { StatusBar, statusBarCommandText } from '../../statusBar';
+import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
@@ -36,6 +34,8 @@ import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
+import { SearchDirection } from '../../vimscript/pattern';
+import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -87,7 +87,6 @@ export class DocumentContentChangeAction extends BaseCommand {
         const linesAffected = change.range.end.line - change.range.start.line + 1;
         const resultLines = change.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesAffected,
           Math.max(0, originalLeftBoundary.line + resultLines - linesAffected)
         );
         continue;
@@ -170,6 +169,7 @@ export class DocumentContentChangeAction extends BaseCommand {
         };
       } else {
         // TODO: Do any of the cases falling into this `else` matter?
+        // TODO: YES - make an insertion and then autocomplete to something totally different (replace subsumes insert)
         return undefined;
       }
     }
@@ -233,6 +233,7 @@ export class CommandNumber extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
   override isCompleteAction = false;
+  override isNumber = true;
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -316,10 +317,10 @@ class CommandRecordMacro extends BaseCommand {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
     vimState.macro = new RecordedState();
+    vimState.macro.registerKey = registerKey;
     vimState.macro.registerName = register;
 
-    if (!/^[A-Z]+$/.test(registerKey) || !Register.has(register)) {
-      // If register name is upper case, it means we are appending commands to existing register instead of overriding.
+    if (!Register.isValidUppercaseRegister(registerKey) || !Register.has(register)) {
       // TODO: this seems suspect - why are we not putting `vimState.macro` in the register? Why are we setting `registerName`?
       const newRegister = new RecordedState();
       newRegister.registerName = register;
@@ -340,7 +341,11 @@ export class CommandQuitRecordMacro extends BaseCommand {
 
     const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
-      existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
+      if (Register.isValidUppercaseRegister(macro.registerKey)) {
+        existingMacro.actionsRun = existingMacro.actionsRun.concat(macro.actionsRun);
+      } else {
+        existingMacro.actionsRun = macro.actionsRun;
+      }
     }
 
     vimState.macro = undefined;
@@ -422,9 +427,7 @@ class CommandEsc extends BaseCommand {
     return false;
   }
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (vimState.currentMode === Mode.Normal) {
@@ -462,10 +465,14 @@ abstract class CommandEditorScroll extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const timesToRepeat = vimState.recordedState.count || 1;
-    const visibleRange = vimState.editor.visibleRanges[0];
     const scrolloff = configuration
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
+
+    const visibleRange = vimState.editor.visibleRanges[0];
+    if (visibleRange === undefined) {
+      return;
+    }
 
     const linesAboveCursor =
       visibleRange.end.line - vimState.cursorStopPosition.line - timesToRepeat;
@@ -497,9 +504,7 @@ abstract class CommandEditorScroll extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends CommandEditorScroll {
   keys = ['<C-e>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'down';
   by: EditorScrollByUnit = 'line';
 }
@@ -507,9 +512,7 @@ class CommandCtrlE extends CommandEditorScroll {
 @RegisterAction
 class CommandCtrlY extends CommandEditorScroll {
   keys = ['<C-y>'];
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
   to: EditorScrollDirection = 'up';
   by: EditorScrollByUnit = 'line';
 }
@@ -526,14 +529,17 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   /**
    * @returns the number of lines this command should move the cursor
    */
-  protected abstract getNumLines(vimState: VimState): number;
+  protected abstract getNumLines(visibleRanges: vscode.Range[]): number;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const { visibleRanges } = vimState.editor;
+    if (visibleRanges.length === 0) {
+      return;
+    }
     const smoothScrolling = configuration
       .getConfiguration('editor')
       .get<boolean>('smoothScrolling', false);
-    const moveLines = (vimState.actionCount || 1) * this.getNumLines(vimState);
+    const moveLines = (vimState.actionCount || 1) * this.getNumLines(visibleRanges);
 
     let scrollLines = moveLines;
     if (this.to === 'down') {
@@ -579,9 +585,8 @@ class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-b>'];
   to: EditorScrollDirection = 'up';
 
-  protected getNumLines(vimState: VimState) {
-    const visible = vimState.editor.visibleRanges[0];
-    return visible.end.line - visible.start.line;
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return visibleRanges[0].end.line - visibleRanges[0].start.line;
   }
 }
 
@@ -590,9 +595,8 @@ class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
   keys = ['<C-f>'];
   to: EditorScrollDirection = 'down';
 
-  protected getNumLines(vimState: VimState) {
-    const visible = vimState.editor.visibleRanges[0];
-    return visible.end.line - visible.start.line;
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return visibleRanges[0].end.line - visibleRanges[0].start.line;
   }
 }
 
@@ -601,8 +605,8 @@ class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
 
-  protected getNumLines(vimState: VimState) {
-    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return configuration.getScrollLines(visibleRanges);
   }
 }
 
@@ -611,8 +615,8 @@ class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
 
-  protected getNumLines(vimState: VimState) {
-    return configuration.getScrollLines(vimState.editor.visibleRanges);
+  protected getNumLines(visibleRanges: vscode.Range[]) {
+    return configuration.getScrollLines(visibleRanges);
   }
 }
 
@@ -934,9 +938,7 @@ class CommandCenterScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'z'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -987,9 +989,7 @@ class CommandTopScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 't'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1045,9 +1045,7 @@ class CommandBottomScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['z', 'b'];
 
-  override preservesDesiredColumn() {
-    return true;
-  }
+  override preservesDesiredColumn = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1145,8 +1143,6 @@ export class CommandUndo extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  // to prevent undo for accidental key chords like: cu, du...
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStep();
@@ -1156,8 +1152,6 @@ export class CommandUndo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1168,7 +1162,6 @@ class CommandUndoOnLine extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  override mustBeFirstKey = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
@@ -1176,8 +1169,6 @@ class CommandUndoOnLine extends BaseCommand {
     if (newPosition !== undefined) {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1197,8 +1188,6 @@ class CommandRedo extends BaseCommand {
     } else {
       vimState.cursors = [new Cursor(newPosition, newPosition)];
     }
-
-    vimState.alteredHistory = true;
   }
 }
 
@@ -1393,10 +1382,13 @@ class CommandOpenFile extends BaseCommand {
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
-      const lineNumber = parseInt(fileInfo[2], 10);
+      const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
-        name: filePath,
-        lineNumber,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: filePath,
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
@@ -1465,57 +1457,6 @@ class CommandGoForwardInChangelist extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoStartPrevOperatedText extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [
-    ['`', '['],
-    ["'", '['],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeStartPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
-class CommandGoEndPrevOperatedText extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = [
-    ['`', ']'],
-    ["'", ']'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
-class CommandGoLastChange extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = [
-    ['`', '.'],
-    ["'", '.'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastPos = vimState.historyTracker.getLastHistoryStartPosition();
-    if (lastPos !== undefined) {
-      vimState.cursorStopPosition = lastPos;
-    }
-  }
-}
-
-@RegisterAction
 export class CommandInsertAtLastChange extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'i'];
@@ -1543,7 +1484,6 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
 @RegisterAction
 export class CommandInsertAtLineBegin extends BaseCommand {
   modes = [Mode.Normal];
-  override mustBeFirstKey = true;
   keys = ['g', 'I'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -1675,43 +1615,6 @@ class CommandNavigateForward extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await globalState.jumpTracker.jumpForward(position, vimState);
-  }
-}
-
-@RegisterAction
-class CommandNavigateLast extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = ['`', '`'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await globalState.jumpTracker.jumpBack(position, vimState);
-  }
-}
-
-@RegisterAction
-class CommandNavigateLastBOL extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = ["'", "'"];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
-  override isJump = true;
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lastJump = globalState.jumpTracker.end;
-    if (lastJump == null) {
-      // This command goes to the last jump, and there is no previous jump, so there's nothing to do.
-      return;
-    }
-    const jump = new Jump({
-      document: vimState.document,
-      position: lastJump.position.getLineBegin(),
-    });
-    globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
-    vimState.cursorStopPosition = jump.position;
   }
 }
 
@@ -1878,6 +1781,58 @@ class EvenPaneWidths extends BaseCommand {
 }
 
 @RegisterAction
+class IncreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneWidth extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '<'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewWidth',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class IncreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '+'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.increaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class DecreasePaneHeight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = ['<C-w>', '-'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.decreaseViewHeight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
 class CommandTabNext extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 't'], ['<C-pagedown>']];
@@ -1888,12 +1843,13 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       new TabCommand({
-        tab: Tab.Absolute,
+        type: TabCommandType.Absolute,
         count: vimState.recordedState.count - 1,
       }).execute(vimState);
     } else {
       new TabCommand({
-        tab: Tab.Next,
+        type: TabCommandType.Next,
+        bang: false,
         count: 1,
       }).execute(vimState);
     }
@@ -1908,7 +1864,8 @@ class CommandTabPrevious extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     new TabCommand({
-      tab: Tab.Previous,
+      type: TabCommandType.Previous,
+      bang: false,
       count: 1,
     }).execute(vimState);
   }
@@ -2474,16 +2431,19 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { line, start } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        if (line === '' && start.character !== 0) {
+          continue;
+        }
+        cursors.push(new Cursor(start, start));
+      }
+    }
+    vimState.cursors = cursors;
+
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { line, start } of TextEditor.iterateLinesInBlock(vimState)) {
-      if (line === '' && start.character !== 0) {
-        continue;
-      }
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
@@ -2496,21 +2456,21 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    for (const { start, end } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new vscode.Range(start, end),
-        manuallySetCursorPositions: true,
-      });
+    const cursors: Cursor[] = [];
+    for (const cursor of vimState.cursors) {
+      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new vscode.Range(start, end),
+          manuallySetCursorPositions: true,
+        });
+        cursors.push(new Cursor(start, start));
+      }
     }
+    vimState.cursors = cursors;
 
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
-
-    for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
-      vimState.cursors.push(new Cursor(start, start));
-    }
-    vimState.cursors = vimState.cursors.slice(1);
   }
 }
 
@@ -2718,7 +2678,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
     await new operator.ChangeOperator(this.multicursorIndex).run(
       vimState,
       start.getLineBegin(),
-      end.getLineEndIncludingEOL()
+      end.getLineEnd().getLeftIfEOL()
     );
   }
 }
@@ -2768,7 +2728,6 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
-  override mustBeFirstKey = true;
   override canBeRepeatedWithDot = true;
 
   private toggleCase(text: string): string {
@@ -3156,7 +3115,7 @@ class WriteQuit extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await new WriteQuitCommand({}).execute(vimState);
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
   }
 }
 
@@ -3185,10 +3144,18 @@ class ActionGoToAlternateFile extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const altFile = await Register.get('#');
-    if (altFile === undefined || altFile.text === '') {
+    if (altFile?.text instanceof RecordedState) {
+      throw new Error(`# register unexpectedly contained a RecordedState`);
+    } else if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {
-      const files = await vscode.workspace.findFiles(altFile.text as string);
+      let files: vscode.Uri[];
+      if (await doesFileExist(vscode.Uri.file(altFile.text))) {
+        files = [vscode.Uri.file(altFile.text)];
+      } else {
+        files = await vscode.workspace.findFiles(altFile.text);
+      }
+
       // TODO: if the path matches a file from multiple workspace roots, we may not choose the right one
       if (files.length > 0) {
         const document = await vscode.workspace.openTextDocument(files[0]);

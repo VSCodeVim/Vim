@@ -114,6 +114,16 @@ export async function chmodAsync(path: string, mode: string | number) {
   return promisify(fs.chmod)(path, mode);
 }
 
+export async function getMode(path: string): Promise<number> {
+  const pathMode = await fs.promises
+    .stat(path)
+    .then((stat) => stat.mode)
+    .catch((e) => {
+      throw e;
+    });
+  return pathMode;
+}
+
 export function unlinkSync(path: string) {
   fs.unlinkSync(path);
 }

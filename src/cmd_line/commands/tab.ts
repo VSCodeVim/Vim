@@ -1,10 +1,18 @@
+import { alt, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import {
+  bangParser,
+  FileCmd,
+  fileCmdParser,
+  FileOpt,
+  fileOptParser,
+  numberParser,
+} from '../../vimscript/parserUtils';
 
-import * as node from '../node';
-
-export enum Tab {
+export enum TabCommandType {
   Next,
   Previous,
   First,
@@ -16,20 +24,103 @@ export enum Tab {
   Move,
 }
 
-export interface ITabCommandArguments extends node.ICommandArgs {
-  tab: Tab;
-  count?: number;
-  direction?: 'left' | 'right';
-  file?: string;
-}
+// TODO: many of these arguments aren't used
+export type ITabCommandArguments =
+  | {
+      type: TabCommandType.Absolute;
+      count: number;
+    }
+  | {
+      type: TabCommandType.First | TabCommandType.Last;
+      cmd?: FileCmd;
+    }
+  | {
+      type: TabCommandType.Next | TabCommandType.Previous;
+      bang: boolean;
+      cmd?: FileCmd;
+      count?: number;
+    }
+  | {
+      type: TabCommandType.Close | TabCommandType.Only;
+      bang: boolean;
+      count?: number;
+    }
+  | {
+      type: TabCommandType.New;
+      opt: FileOpt;
+      cmd?: FileCmd;
+      file?: string;
+    }
+  | {
+      type: TabCommandType.Move;
+      direction?: 'left' | 'right';
+      count?: number;
+    };
 
 //
-//  Implements tab
+//  Implements most buffer and tab ex commands
 //  http://vimdoc.sourceforge.net/htmldoc/tabpage.html
 //
-export class TabCommand extends node.CommandBase {
-  public readonly arguments: ITabCommandArguments;
+export class TabCommand extends ExCommand {
+  // TODO: `count` is parsed as a number, which is incomplete
+  public static readonly argParsers = {
+    bfirst: whitespace
+      .then(fileCmdParser)
+      .fallback(undefined)
+      .map((cmd) => {
+        return new TabCommand({ type: TabCommandType.First, cmd });
+      }),
+    blast: whitespace
+      .then(fileCmdParser)
+      .fallback(undefined)
+      .map((cmd) => {
+        return new TabCommand({ type: TabCommandType.Last, cmd });
+      }),
+    bnext: seq(
+      bangParser,
+      whitespace.then(fileCmdParser).fallback(undefined),
+      whitespace.then(numberParser)
+    ).map(([bang, cmd, count]) => {
+      return new TabCommand({ type: TabCommandType.Next, bang, cmd, count });
+    }),
+    bprev: seq(
+      bangParser,
+      whitespace.then(fileCmdParser).fallback(undefined),
+      whitespace.then(numberParser)
+    ).map(([bang, cmd, count]) => {
+      return new TabCommand({ type: TabCommandType.Previous, bang, cmd, count });
+    }),
+    tabclose: seq(bangParser, whitespace.then(numberParser)).map(([bang, count]) => {
+      return new TabCommand({ type: TabCommandType.Close, bang, count });
+    }),
+    tabonly: seq(bangParser, whitespace.then(numberParser)).map(([bang, count]) => {
+      return new TabCommand({ type: TabCommandType.Only, bang, count });
+    }),
+    tabnew: seq(
+      whitespace.then(fileOptParser).fallback([]),
+      whitespace.then(fileCmdParser).fallback(undefined),
+      regexp(/\S+/).fallback(undefined)
+    ).map(([opt, cmd, file]) => {
+      return new TabCommand({
+        type: TabCommandType.New,
+        opt,
+        cmd,
+        file,
+      });
+    }),
+    tabmove: optWhitespace
+      .then(
+        seq(
+          alt<'right' | 'left'>(string('+').result('right'), string('-').result('left')).fallback(
+            undefined
+          ),
+          numberParser.fallback(undefined)
+        )
+      )
+      .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
+  };
 
+  public readonly arguments: ITabCommandArguments;
   constructor(args: ITabCommandArguments) {
     super();
     this.arguments = args;
@@ -42,8 +133,8 @@ export class TabCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    switch (this.arguments.tab) {
-      case Tab.Absolute:
+    switch (this.arguments.type) {
+      case TabCommandType.Absolute:
         if (this.arguments.count !== undefined && this.arguments.count >= 0) {
           await vscode.commands.executeCommand(
             'workbench.action.openEditorAtIndex',
@@ -51,7 +142,7 @@ export class TabCommand extends node.CommandBase {
           );
         }
         break;
-      case Tab.Next:
+      case TabCommandType.Next:
         if (this.arguments.count !== undefined && this.arguments.count <= 0) {
           break;
         }
@@ -61,7 +152,7 @@ export class TabCommand extends node.CommandBase {
           'workbench.action.nextEditorInGroup'
         );
         break;
-      case Tab.Previous:
+      case TabCommandType.Previous:
         if (this.arguments.count !== undefined && this.arguments.count <= 0) {
           break;
         }
@@ -71,13 +162,13 @@ export class TabCommand extends node.CommandBase {
           'workbench.action.previousEditorInGroup'
         );
         break;
-      case Tab.First:
+      case TabCommandType.First:
         await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
         break;
-      case Tab.Last:
+      case TabCommandType.Last:
         await vscode.commands.executeCommand('workbench.action.lastEditorInGroup');
         break;
-      case Tab.New: {
+      case TabCommandType.New: {
         const hasFile = !(this.arguments.file === undefined || this.arguments.file === '');
         if (hasFile) {
           const isAbsolute = path.isAbsolute(this.arguments.file!);
@@ -104,7 +195,7 @@ export class TabCommand extends node.CommandBase {
         }
         break;
       }
-      case Tab.Close:
+      case TabCommandType.Close:
         // Navigate the correct position
         if (this.arguments.count === undefined) {
           await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -118,14 +209,14 @@ export class TabCommand extends node.CommandBase {
 
         // TODO: Close Page {count}. Page count is one-based.
         break;
-      case Tab.Only:
+      case TabCommandType.Only:
         await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
         break;
-      case Tab.Move: {
+      case TabCommandType.Move: {
         const { count, direction } = this.arguments;
         let args;
         if (direction !== undefined) {
-          args = { to: direction, by: 'tab', value: count };
+          args = { to: direction, by: 'tab', value: count ?? 1 };
         } else if (count === 0) {
           args = { to: 'first' };
         } else if (count === undefined) {

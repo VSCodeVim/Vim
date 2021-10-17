@@ -199,13 +199,13 @@ suite('register', () => {
     );
 
     await modeHandler.handleKeyEvent('*');
-    assert.strictEqual((await Register.get('/'))?.text, '\\bWake\\b');
+    assert.strictEqual((await Register.get('/'))?.text, '\\<Wake\\>');
 
     await modeHandler.handleMultipleKeyEvents(['g', '*']);
     assert.strictEqual((await Register.get('/'))?.text, 'Wake');
 
     await modeHandler.handleKeyEvent('#');
-    assert.strictEqual((await Register.get('/'))?.text, '\\bWake\\b');
+    assert.strictEqual((await Register.get('/'))?.text, '\\<Wake\\>');
 
     await modeHandler.handleMultipleKeyEvents(['g', '#']);
     assert.strictEqual((await Register.get('/'))?.text, 'Wake');

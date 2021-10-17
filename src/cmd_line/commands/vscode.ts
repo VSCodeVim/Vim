@@ -2,22 +2,18 @@ import { ErrorCode, VimError } from '../../error';
 import { StatusBar } from '../../statusBar';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
-import { CommandBase } from '../node';
-import { Scanner } from '../scanner';
+import { ExCommand } from '../../vimscript/exCommand';
+import { all, Parser, whitespace } from 'parsimmon';
 
-export class VsCodeCommand extends CommandBase {
-  public override readonly acceptsRange = false;
+export class VsCodeCommand extends ExCommand {
+  public static readonly argParser: Parser<VsCodeCommand> = whitespace
+    .then(all)
+    .map((command) => new VsCodeCommand(command));
 
   private command?: string;
   private constructor(command?: string) {
     super();
     this.command = command;
-  }
-
-  public static parse(args: string): VsCodeCommand {
-    const scanner = new Scanner(args);
-    scanner.skipWhiteSpace();
-    return new VsCodeCommand(scanner.isAtEof ? undefined : scanner.nextWord());
   }
 
   async execute(vimState: VimState): Promise<void> {

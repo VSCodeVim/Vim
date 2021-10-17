@@ -25,7 +25,6 @@ const REGISTER_FORMAT_VERSION = '1.0';
  * yy).
  */
 export enum RegisterMode {
-  AscertainFromCurrentMode,
   CharacterWise,
   LineWise,
   BlockWise,
@@ -115,7 +114,7 @@ export class Register {
     return /^[a-z]$/.test(register);
   }
 
-  private static isValidUppercaseRegister(register: string): boolean {
+  public static isValidUppercaseRegister(register: string): boolean {
     return /^[A-Z]$/.test(register);
   }
 
@@ -134,7 +133,7 @@ export class Register {
     }
 
     Register.registers.get(register)![multicursorIndex] = {
-      registerMode: vimState.effectiveRegisterMode,
+      registerMode: vimState.currentRegisterMode,
       text: content,
     };
 
@@ -166,13 +165,13 @@ export class Register {
     const oldContent = contentByCursor[multicursorIndex];
     if (oldContent === undefined) {
       contentByCursor[multicursorIndex] = {
-        registerMode: vimState.effectiveRegisterMode,
+        registerMode: vimState.currentRegisterMode,
         text: content,
       };
     } else {
       // Line-wise trumps other RegisterModes
       const registerMode =
-        vimState.effectiveRegisterMode === RegisterMode.LineWise
+        vimState.currentRegisterMode === RegisterMode.LineWise
           ? RegisterMode.LineWise
           : oldContent.registerMode;
       let newText: RegisterContent;
@@ -253,7 +252,7 @@ export class Register {
         Register.registers.set('0', [
           {
             text: content,
-            registerMode: vimState.effectiveRegisterMode,
+            registerMode: vimState.currentRegisterMode,
           },
         ]);
       }
@@ -287,7 +286,7 @@ export class Register {
         Register.registers.set('1', [
           {
             text: content,
-            registerMode: vimState.effectiveRegisterMode,
+            registerMode: vimState.currentRegisterMode,
           },
         ]);
       }

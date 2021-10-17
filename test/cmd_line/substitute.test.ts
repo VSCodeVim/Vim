@@ -9,8 +9,9 @@ function sub(
   args?: { lineRange?: string; flags?: string; count?: number }
 ): string {
   const lineRange = args?.lineRange ?? '';
-  const flags = args ? `/${args.flags}` : '';
-  const count = args ? ` ${args.count}` : '';
+  const flags = args?.flags !== undefined ? `/${args.flags}` : '';
+  const count = args?.count !== undefined ? ` ${args.count}` : '';
+  console.log(`:${lineRange}s/${pattern}/${replace}${flags}${count}\n`);
   return `:${lineRange}s/${pattern}/${replace}${flags}${count}\n`;
 }
 

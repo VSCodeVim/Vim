@@ -31,8 +31,8 @@ suite('bang (!) cmd_line', () => {
 
     test('! with line range', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!echo hello world\n'.split(''));
-      assertEqualLines(['hello world']);
+      await modeHandler.handleMultipleKeyEvents(':2,3!echo hello world\n'.split(''));
+      assertEqualLines(['123', 'hello world']);
     });
   });
 
@@ -78,9 +78,9 @@ suite('bang (!) cmd_line', () => {
     });
 
     test(':{range}!{cmd} should pass in line range as stdin', async () => {
-      await modeHandler.handleMultipleKeyEvents(['i', '3\n2\n1', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!sort -n\n'.split(''));
-      assertEqualLines(['1', '2', '3']);
+      await modeHandler.handleMultipleKeyEvents(['i', '4\n3\n2\n1', '<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(':2,4!sort -n\n'.split(''));
+      assertEqualLines(['4', '1', '2', '3']);
     });
 
     test('! with commands expecting stdin do not block when no stdin is supplied', async () => {

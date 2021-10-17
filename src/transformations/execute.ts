@@ -10,7 +10,6 @@ import {
   overlappingTransformations,
 } from './transformations';
 import { commandLine } from '../cmd_line/commandLine';
-import { PairMatcher } from '../common/matching/matcher';
 import { PositionDiff } from '../common/motion/position';
 import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
@@ -77,11 +76,11 @@ export async function executeTransformations(
         break;
     }
 
-    if (command.cursorIndex === undefined) {
-      throw new Error('No cursor index - this should never ever happen!');
-    }
-
     if (command.diff) {
+      if (command.cursorIndex === undefined) {
+        throw new Error('No cursor index - this should never ever happen!');
+      }
+
       if (!accumulatedPositionDifferences[command.cursorIndex]) {
         accumulatedPositionDifferences[command.cursorIndex] = [];
       }

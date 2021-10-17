@@ -2,16 +2,39 @@ import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { Register, RegisterMode } from '../../register/register';
-import * as node from '../node';
 import { Position } from 'vscode';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
+import { Parser, alt, seq, any, whitespace, succeed, optWhitespace } from 'parsimmon';
+import { numberParser } from '../../vimscript/parserUtils';
 
-export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
+export interface IDeleteRangeCommandArguments {
   register?: string;
+  count?: number;
 }
 
-export class DeleteRangeCommand extends node.CommandBase {
-  private readonly arguments: IDeleteRangeCommandArguments;
+export class DeleteRangeCommand extends ExCommand {
+  // TODO: this is copy-pasted from `:y[ank]`
+  public static readonly argParser: Parser<DeleteRangeCommand> = optWhitespace.then(
+    alt(
+      numberParser.map((count) => {
+        return { register: undefined, count };
+      }),
+      seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
+        ([register, count]) => {
+          return { register, count };
+        }
+      )
+    ).map(
+      ({ register, count }) =>
+        new DeleteRangeCommand({
+          register,
+          count,
+        })
+    )
+  );
 
+  private readonly arguments: IDeleteRangeCommandArguments;
   constructor(args: IDeleteRangeCommandArguments) {
     super();
     this.arguments = args;
@@ -57,12 +80,26 @@ export class DeleteRangeCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursorStopPosition.line;
-    this.deleteRange(line, line, vimState);
+    const linesToRemove = this.arguments.count ?? 1;
+    // :d[elete][cnt] removes [cnt] lines
+    const startLine = vimState.cursorStartPosition.line;
+    const endLine = startLine + (linesToRemove - 1);
+    this.deleteRange(startLine, endLine, vimState);
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [start, end] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    /**
+     * If a [cnt] and [range] is specified (e.g. :.+2d3), :delete [cnt] is called from
+     * the end of the [range].
+     * Ex. if two lines are VisualLine highlighted, :<,>d3 will :d3
+     * from the end of the selected lines.
+     */
+    const { start, end } = range.resolve(vimState)!;
+    if (this.arguments.count) {
+      vimState.cursorStartPosition = new Position(end, 0);
+      await this.execute(vimState);
+      return;
+    }
     this.deleteRange(start, end, vimState);
   }
 }

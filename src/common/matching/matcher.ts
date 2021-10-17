@@ -1,5 +1,12 @@
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
+import { configuration } from '../../configuration/configuration';
+
+export type Pairing = {
+  match: string;
+  isNextMatchForward: boolean;
+  directionless?: boolean;
+};
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -7,22 +14,18 @@ import { Position } from 'vscode';
  */
 export class PairMatcher {
   static pairings: {
-    [key: string]: {
-      match: string;
-      isNextMatchForward: boolean;
-      directionless?: boolean;
-      matchesWithPercentageMotion?: boolean;
-    };
+    [key: string]: Pairing;
   } = {
-    '(': { match: ')', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    '{': { match: '}', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    '[': { match: ']', isNextMatchForward: true, matchesWithPercentageMotion: true },
-    ')': { match: '(', isNextMatchForward: false, matchesWithPercentageMotion: true },
-    '}': { match: '{', isNextMatchForward: false, matchesWithPercentageMotion: true },
-    ']': { match: '[', isNextMatchForward: false, matchesWithPercentageMotion: true },
+    '(': { match: ')', isNextMatchForward: true },
+    '{': { match: '}', isNextMatchForward: true },
+    '[': { match: ']', isNextMatchForward: true },
+    ')': { match: '(', isNextMatchForward: false },
+    '}': { match: '{', isNextMatchForward: false },
+    ']': { match: '[', isNextMatchForward: false },
 
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
+    // matchesWithPercentageMotion can be overwritten with configuration.matchpairs
     '<': { match: '>', isNextMatchForward: true },
     '>': { match: '<', isNextMatchForward: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
@@ -110,6 +113,26 @@ export class PairMatcher {
     } else {
       return lineNumber >= 0;
     }
+  }
+
+  static getPercentPairing(char: string): Pairing | undefined {
+    for (const pairing of configuration.matchpairs.split(',')) {
+      const components = pairing.split(':');
+      if (components.length === 2) {
+        if (components[0] === char) {
+          return {
+            match: components[1],
+            isNextMatchForward: true,
+          };
+        } else if (components[1] === char) {
+          return {
+            match: components[0],
+            isNextMatchForward: false,
+          };
+        }
+      }
+    }
+    return undefined;
   }
 
   static nextPairedChar(

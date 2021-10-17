@@ -1,29 +1,28 @@
+import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
-
-export interface ICloseCommandArguments extends node.ICommandArgs {
-  bang?: boolean;
-  range?: node.LineRange;
-  quitAll?: boolean;
-}
+import { ExCommand } from '../../vimscript/exCommand';
+import { bangParser } from '../../vimscript/parserUtils';
 
 //
 //  Implements :close
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
-export class CloseCommand extends node.CommandBase {
-  public readonly arguments: ICloseCommandArguments;
+export class CloseCommand extends ExCommand {
+  public static readonly argParser: Parser<CloseCommand> = bangParser.map(
+    (bang) => new CloseCommand(bang)
+  );
 
-  constructor(args: ICloseCommandArguments) {
+  public readonly bang: boolean;
+  constructor(bang: boolean) {
     super();
-    this.arguments = args;
+    this.bang = bang;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (vimState.document.isDirty && !this.arguments.bang) {
+    if (vimState.document.isDirty && !this.bang) {
       throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
     }
 

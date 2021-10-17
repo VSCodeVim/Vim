@@ -102,7 +102,7 @@ export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
-  editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
+  document?: vscode.TextDocument; // only required when using global marks (isUppercaseMark is true)
 }
 
 /**
@@ -523,7 +523,7 @@ export class HistoryTracker {
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.editor === vscode.window.activeTextEditor
+      (mark) => mark.document === vscode.window.activeTextEditor?.document
     );
     return [...this.getLocalMarks(), ...globalMarks];
   }
@@ -543,7 +543,7 @@ export class HistoryTracker {
       position,
       name: markName,
       isUppercaseMark,
-      editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
+      document: isUppercaseMark ? vscode.window.activeTextEditor?.document : undefined,
     };
     this.putMarkInList(newMark);
   }
@@ -564,9 +564,38 @@ export class HistoryTracker {
   /**
    * Retrieves a mark from either the global or local array depending on mark.isUppercaseMark.
    */
-  public getMark(markName: string): IMark | undefined {
-    const marks = this.getMarkList(markName.toUpperCase() === markName);
-    return marks.find((mark) => mark.name === markName);
+  public getMark(name: string): IMark | undefined {
+    // First, handle "special" marks
+    let position: Position | undefined;
+    if (name === '<') {
+      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
+      position = linewise
+        ? this.vimState.lastVisualSelection?.start.with({ character: 0 })
+        : this.vimState.lastVisualSelection?.start;
+    } else if (name === '>') {
+      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
+      position = linewise
+        ? this.vimState.lastVisualSelection?.end.getLineEnd()
+        : this.vimState.lastVisualSelection?.end.getLeft();
+    } else if (name === '[') {
+      position = this.getLastChangeStartPosition();
+    } else if (name === ']') {
+      position = this.getLastChangeEndPosition();
+    } else if (name === '.') {
+      position = this.getLastHistoryStartPosition();
+    } else if (name === "'" || name === '`') {
+      position = globalState.jumpTracker.end?.position;
+    }
+    if (position) {
+      return {
+        name,
+        position,
+        isUppercaseMark: false,
+      };
+    }
+
+    const marks = this.getMarkList(name.toUpperCase() === name);
+    return marks.find((mark) => mark.name === name);
   }
 
   /**
@@ -733,6 +762,8 @@ export class HistoryTracker {
       await change.undo(this.vimState.editor);
     }
 
+    this.ignoreChange();
+
     // TODO: if there are more/fewer lines after undoing the change, it should say so
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
@@ -758,6 +789,8 @@ export class HistoryTracker {
     for (const change of step.changes) {
       await change.do(this.vimState.editor);
     }
+
+    this.ignoreChange();
 
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
@@ -847,6 +880,8 @@ export class HistoryTracker {
       this.finishCurrentStep();
     }
 
+    this.ignoreChange();
+
     /*
      * Unlike the goBackHistoryStep() function, this function does not trust the
      * HistoryStep.cursorStart property. This can lead to invalid cursor position errors.
@@ -881,7 +916,7 @@ export class HistoryTracker {
     return this.undoStack.getCurrentHistoryStep()?.cursorStart;
   }
 
-  public getLastChangeStartPosition(): Position | undefined {
+  private getLastChangeStartPosition(): Position | undefined {
     const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
     if (currentHistoryStep === undefined) {
       return undefined;

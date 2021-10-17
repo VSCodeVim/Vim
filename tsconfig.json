@@ -11,12 +11,14 @@
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
       "platform/*": ["src/platform/node/*"]
     },
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }
