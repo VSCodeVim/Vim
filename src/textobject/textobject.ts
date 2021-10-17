@@ -18,7 +18,7 @@ import {
 import { ChangeOperator } from '../actions/operator';
 import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { Position, SymbolKind, TextDocument } from 'vscode';
+import { DocumentSymbol, Position, SymbolKind, TextDocument } from 'vscode';
 import { WordType } from './word';
 import { AstSymbols } from './astSymbols';
 
@@ -986,7 +986,8 @@ abstract class SelectASymbol extends TextObject {
     let start: Position = vimState.cursorStartPosition;
     let stop: Position = vimState.cursorStopPosition;
 
-    const symbols = await TextEditor.getSymbols(vimState.document);
+    const symbols = await vimState.requestDocumentSymbols();
+
     const currentNode = AstSymbols.searchSymbolFromPosition(symbols, vimState.cursorStartPosition);
 
     const classSymbol = AstSymbols.searchParentFiltered(currentNode, this.whitelist);
@@ -1016,12 +1017,17 @@ abstract class SelectASymbol extends TextObject {
 
 @RegisterAction
 export class SelectAFunctionSymbol extends SelectASymbol {
-  keys = ['a', 'F'];
-  whitelist = new Set([SymbolKind.Function, SymbolKind.Method, SymbolKind.Constructor]);
+  override keys = ['a', 'F'];
+  override whitelist = new Set([SymbolKind.Function, SymbolKind.Method, SymbolKind.Constructor]);
 }
 
 @RegisterAction
 export class SelectAClassSymbol extends SelectASymbol {
-  keys = ['a', 'c'];
-  whitelist = new Set([SymbolKind.Class, SymbolKind.Struct, SymbolKind.Enum, SymbolKind.Interface]);
+  override keys = ['a', 'c'];
+  override whitelist = new Set([
+    SymbolKind.Class,
+    SymbolKind.Struct,
+    SymbolKind.Enum,
+    SymbolKind.Interface,
+  ]);
 }
