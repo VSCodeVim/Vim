@@ -3164,3 +3164,17 @@ class ActionGoToAlternateFile extends BaseCommand {
     }
   }
 }
+
+@RegisterAction
+class ShowFileOutline extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['g', 'O'];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('outline.focus');
+  }
+}
