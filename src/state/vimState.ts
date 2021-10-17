@@ -312,7 +312,7 @@ export class VimState implements vscode.Disposable {
    * symbols are probably outdated and the lsp should provide a new up to date version of
    * the symbols.
    */
-  private _documentSymbols: { version: number; symbols: vscode.DocumentSymbol[] };
+  private _documentSymbols: { version: number | null; symbols: vscode.DocumentSymbol[] };
 
   public async requestDocumentSymbols(): Promise<vscode.DocumentSymbol[]> {
     const version = this.editor.document.version;
@@ -335,7 +335,7 @@ export class VimState implements vscode.Disposable {
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
-    this._documentSymbols = { version: this.editor.document.version, symbols: [] };
+    this._documentSymbols = { version: null, symbols: [] };
   }
 
   async load() {
