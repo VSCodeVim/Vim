@@ -662,5 +662,12 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
           `${lineRange?.toString() ?? ''}${whitespace}${args}`
         );
       }
-      return { lineRange, command: parseArgs.tryParse(args) };
+      const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
+      if (result.status === false || result.value[1]) {
+        // TODO: All possible parsing errors are lumped into "trailing characters", which is wrong
+        // TODO: Implement `:help :bar`
+        // TODO: Implement `:help :comment`
+        throw VimError.fromCode(ErrorCode.TrailingCharacters);
+      }
+      return { lineRange, command: result.value[0] };
     });
