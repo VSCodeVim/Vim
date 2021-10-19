@@ -12,7 +12,7 @@ import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
 import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
-import { LeftCommand } from '../cmd_line/commands/left';
+import { LeftCommand, RightCommand } from '../cmd_line/commands/leftRight';
 import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
 import { NohlCommand } from '../cmd_line/commands/nohl';
 import { OnlyCommand } from '../cmd_line/commands/only';
@@ -431,7 +431,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ret', 'ab'], undefined],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
-  [['ri', 'ght'], undefined],
+  [['ri', 'ght'], RightCommand.argParser],
   [['rightb', 'elow'], undefined],
   [['rsh', 'ada'], undefined],
   [['ru', 'ntime'], undefined],

@@ -8,7 +8,7 @@ import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
-import { LeftCommand } from '../../src/cmd_line/commands/left';
+import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRight';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
@@ -267,6 +267,12 @@ suite('Ex command parsing', () => {
     exParseTest(':reg', new RegisterCommand([]));
     exParseTest(':reg b1"2a', new RegisterCommand(['b', '1', '"', '2', 'a']));
     exParseTest(':reg b 1 " 2 a', new RegisterCommand(['b', '1', '"', '2', 'a']));
+  });
+
+  suite(':ri[ght]', () => {
+    exParseTest(':right', new RightCommand({ width: 80 })); // Defaults to 'textwidth'
+    exParseTest(':right40', new RightCommand({ width: 40 }));
+    exParseTest(':right 20', new RightCommand({ width: 20 }));
   });
 
   suite(':se[t]', () => {
