@@ -1,6 +1,14 @@
 # Change Log
 
-## [v1.21.9](https://github.com/vscodevim/vim/tree/v1.21.9) (2021-10-13)
+## [v1.21.10](https://github.com/vscodevim/vim/tree/v1.21.10) (2021-10-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.9...v1.21.10)
+
+**Fixed Bugs:**
+
+- `:tabo\[nly\]` and `:tabc\[lose\]` throw `E488` in version 1.21.9 [\#7171](https://github.com/VSCodeVim/Vim/issues/7171)
+
+## [v1.21.9](https://github.com/vscodevim/vim/tree/v1.21.9) (2021-10-18)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.8...v1.21.9)
 
