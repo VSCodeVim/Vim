@@ -289,9 +289,6 @@ export class TextEditor {
     );
 
     if (symbols === undefined) {
-      // Not quite sure how errors are handled yet.
-      // Should I define my own error in error.ts and if so, is there a logic to
-      // the error numbers???
       throw error.VimError.fromCode(error.ErrorCode.SymbolProviderNotFound);
     }
 

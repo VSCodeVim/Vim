@@ -314,6 +314,12 @@ export class VimState implements vscode.Disposable {
    */
   private _documentSymbols: { version: number | null; symbols: vscode.DocumentSymbol[] };
 
+  /**
+   * This function returns the latest DocumentSymbols parsed by the LSP. We cache the result
+   * until the next document change.
+   *
+   * @returns symbols, the DocumentSymbols parsed by the LSP
+   */
   public async requestDocumentSymbols(): Promise<vscode.DocumentSymbol[]> {
     const version = this.editor.document.version;
 
