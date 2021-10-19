@@ -11,7 +11,6 @@ function sub(
   const lineRange = args?.lineRange ?? '';
   const flags = args?.flags !== undefined ? `/${args.flags}` : '';
   const count = args?.count !== undefined ? ` ${args.count}` : '';
-  console.log(`:${lineRange}s/${pattern}/${replace}${flags}${count}\n`);
   return `:${lineRange}s/${pattern}/${replace}${flags}${count}\n`;
 }
 
