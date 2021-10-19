@@ -78,27 +78,31 @@ export class TabCommand extends ExCommand {
       }),
     bnext: seq(
       bangParser,
-      whitespace.then(fileCmdParser).fallback(undefined),
-      whitespace.then(numberParser)
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(numberParser).fallback(undefined)
     ).map(([bang, cmd, count]) => {
       return new TabCommand({ type: TabCommandType.Next, bang, cmd, count });
     }),
     bprev: seq(
       bangParser,
-      whitespace.then(fileCmdParser).fallback(undefined),
-      whitespace.then(numberParser)
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(numberParser).fallback(undefined)
     ).map(([bang, cmd, count]) => {
       return new TabCommand({ type: TabCommandType.Previous, bang, cmd, count });
     }),
-    tabclose: seq(bangParser, whitespace.then(numberParser)).map(([bang, count]) => {
-      return new TabCommand({ type: TabCommandType.Close, bang, count });
-    }),
-    tabonly: seq(bangParser, whitespace.then(numberParser)).map(([bang, count]) => {
-      return new TabCommand({ type: TabCommandType.Only, bang, count });
-    }),
+    tabclose: seq(bangParser, optWhitespace.then(numberParser).fallback(undefined)).map(
+      ([bang, count]) => {
+        return new TabCommand({ type: TabCommandType.Close, bang, count });
+      }
+    ),
+    tabonly: seq(bangParser, optWhitespace.then(numberParser).fallback(undefined)).map(
+      ([bang, count]) => {
+        return new TabCommand({ type: TabCommandType.Only, bang, count });
+      }
+    ),
     tabnew: seq(
-      whitespace.then(fileOptParser).fallback([]),
-      whitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
       regexp(/\S+/).fallback(undefined)
     ).map(([opt, cmd, file]) => {
       return new TabCommand({

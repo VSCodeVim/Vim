@@ -73,7 +73,50 @@ suite('Ex command parsing', () => {
   });
 
   suite(':bn[ext]', () => {
-    // TODO
+    exParseTest(
+      ':bn',
+      new TabCommand({ type: TabCommandType.Next, bang: false, cmd: undefined, count: undefined })
+    );
+    exParseTest(
+      ':bn!',
+      new TabCommand({ type: TabCommandType.Next, bang: true, cmd: undefined, count: undefined })
+    );
+    exParseTest(
+      ':bn 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+        cmd: undefined,
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn! 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: true,
+        cmd: undefined,
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn +20 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+        cmd: { type: 'line_number', line: 20 },
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn! +20 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: true,
+        cmd: { type: 'line_number', line: 20 },
+        count: 5,
+      })
+    );
   });
 
   suite(':clo[se]', () => {
@@ -437,6 +480,21 @@ suite('Ex command parsing', () => {
     exParseFails(':tabm x');
     exParseFails(':tabm 1x');
     exParseFails(':tabm x1');
+  });
+
+  suite(':tabo[nly]', () => {
+    exParseTest(
+      ':tabonly',
+      new TabCommand({ type: TabCommandType.Only, bang: false, count: undefined })
+    );
+    exParseTest(
+      ':tabonly!',
+      new TabCommand({ type: TabCommandType.Only, bang: true, count: undefined })
+    );
+    exParseTest(':tabonly5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
+    exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+    exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
+    exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
   });
 
   suite(':y[ank]', () => {
