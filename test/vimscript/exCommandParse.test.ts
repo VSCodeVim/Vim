@@ -8,7 +8,7 @@ import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
-import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRight';
+import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
