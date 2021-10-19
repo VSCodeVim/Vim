@@ -8,6 +8,7 @@ import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
+import { LeftCommand } from '../../src/cmd_line/commands/left';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
@@ -207,6 +208,12 @@ suite('Ex command parsing', () => {
     exParseTest(':his all', new HistoryCommand({ type: HistoryCommandType.All }));
 
     // TODO parse indices
+  });
+
+  suite(':le[ft]', () => {
+    exParseTest(':left', new LeftCommand({ indent: 0 }));
+    exParseTest(':left4', new LeftCommand({ indent: 4 }));
+    exParseTest(':left 8', new LeftCommand({ indent: 8 }));
   });
 
   suite(':let', () => {
