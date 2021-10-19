@@ -1,6 +1,6 @@
 # Change Log
 
-## [v1.21.10](https://github.com/vscodevim/vim/tree/v1.21.10) (2021-10-14)
+## [v1.21.10](https://github.com/vscodevim/vim/tree/v1.21.10) (2021-10-19)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.9...v1.21.10)
 
