@@ -186,7 +186,7 @@ export async function executeTransformations(
         if (searchState) {
           globalState.searchState = searchState;
           const nextMatch = searchState.getNextSearchMatchPosition(
-            vimState.editor,
+            vimState,
             vimState.cursorStartPosition,
             transformation.direction
           );
@@ -200,11 +200,7 @@ export async function executeTransformations(
 
           vimState.cursorStopPosition = nextMatch.pos;
           modeHandler.updateView();
-          reportSearch(
-            nextMatch.index,
-            searchState.getMatchRanges(vimState.editor).length,
-            vimState
-          );
+          reportSearch(nextMatch.index, searchState.getMatchRanges(vimState).length, vimState);
         }
         break;
 

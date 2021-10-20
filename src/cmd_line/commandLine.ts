@@ -407,7 +407,7 @@ export class SearchCommandLine extends CommandLine {
     SearchCommandLine.addSearchStateToHistory(this.searchState);
     globalState.hl = true;
 
-    if (this.searchState.getMatchRanges(vimState.editor).length === 0) {
+    if (this.searchState.getMatchRanges(vimState).length === 0) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, this.text));
       return;
     }
@@ -417,7 +417,7 @@ export class SearchCommandLine extends CommandLine {
     let nextMatch: { pos: Position; index: number } | undefined;
     for (let i = 0; i < count; i++) {
       // Move cursor to next match
-      nextMatch = this.searchState.getNextSearchMatchPosition(vimState.editor, searchPos);
+      nextMatch = this.searchState.getNextSearchMatchPosition(vimState, searchPos);
       if (nextMatch === undefined) {
         break;
       }
@@ -438,11 +438,7 @@ export class SearchCommandLine extends CommandLine {
 
     vimState.cursorStopPosition = nextMatch.pos;
 
-    reportSearch(
-      nextMatch.index,
-      this.searchState.getMatchRanges(vimState.editor).length,
-      vimState
-    );
+    reportSearch(nextMatch.index, this.searchState.getMatchRanges(vimState).length, vimState);
   }
 
   public async escape(vimState: VimState): Promise<void> {

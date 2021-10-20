@@ -1132,7 +1132,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public updateSearchHighlights(showHighlights: boolean) {
     let searchRanges: vscode.Range[] = [];
     if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor) ?? [];
+      searchRanges = globalState.searchState?.getMatchRanges(this.vimState) ?? [];
     }
     this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
   }
@@ -1339,7 +1339,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         configuration.incsearch
       ) {
         const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-          this.vimState.editor,
+          this.vimState,
           this.vimState.cursorStopPosition
         );
 

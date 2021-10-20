@@ -116,7 +116,7 @@ async function createSearchStateAndMoveToMatch(args: {
   globalState.hl = true;
 
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-    vimState.editor,
+    vimState,
     args.searchStartCursorPosition
   );
   if (nextMatch) {
@@ -124,7 +124,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
     reportSearch(
       nextMatch.index,
-      globalState.searchState.getMatchRanges(vimState.editor).length,
+      globalState.searchState.getMatchRanges(vimState).length,
       vimState
     );
   } else {
@@ -293,7 +293,7 @@ abstract class SearchObject extends TextObject {
     // At first, try to search for current word, and stop searching if matched.
     // Try to search for the next word if not matched or
     // if the cursor is at the end of a match string in visual-mode.
-    result = newSearchState.findContainingMatchRange(vimState.editor, vimState.cursorStopPosition);
+    result = newSearchState.findContainingMatchRange(vimState, vimState.cursorStopPosition);
     if (
       result &&
       vimState.currentMode === Mode.Visual &&
@@ -304,13 +304,13 @@ abstract class SearchObject extends TextObject {
 
     if (result === undefined) {
       // Try to search for the next word
-      result = newSearchState.getNextSearchMatchRange(vimState.editor, vimState.cursorStopPosition);
+      result = newSearchState.getNextSearchMatchRange(vimState, vimState.cursorStopPosition);
       if (result === undefined) {
         return failedMovement(vimState);
       }
     }
 
-    reportSearch(result.index, searchState.getMatchRanges(vimState.editor).length, vimState);
+    reportSearch(result.index, searchState.getMatchRanges(vimState).length, vimState);
 
     let [start, stop] = [
       vimState.currentMode === Mode.Normal ? result.range.start : vimState.cursorStopPosition,

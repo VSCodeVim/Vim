@@ -16,7 +16,7 @@ import { ReadCommand } from '../../src/cmd_line/commands/read';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
 import { SetOptionsCommand } from '../../src/cmd_line/commands/setoptions';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
-import { SubstituteCommand } from '../../src/cmd_line/commands/substitute';
+import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
@@ -382,7 +382,7 @@ suite('Ex command parsing', () => {
       ':s/a/b/g',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
       })
@@ -391,7 +391,7 @@ suite('Ex command parsing', () => {
       ':s/a/b/g 3',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
       })
@@ -401,7 +401,7 @@ suite('Ex command parsing', () => {
       ':s#a#b#g',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
       })
@@ -411,7 +411,7 @@ suite('Ex command parsing', () => {
       ':s/\\/\\/a/b',
       new SubstituteCommand({
         pattern: pattern.tryParse('\\/\\/a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
       })
@@ -421,7 +421,7 @@ suite('Ex command parsing', () => {
       ':s/\\ba/b',
       new SubstituteCommand({
         pattern: pattern.tryParse('\\ba'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
       })
@@ -431,7 +431,7 @@ suite('Ex command parsing', () => {
       ':s/a/\\b',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: '\b',
+        replace: new ReplaceString([{ type: 'string', value: '\b' }]),
         flags: {},
         count: undefined,
       })

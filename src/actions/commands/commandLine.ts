@@ -362,10 +362,7 @@ class CommandCtrlLInSearchMode extends CommandLineAction {
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
     const searchState = commandLine.getSearchState()!;
 
-    const nextMatch = searchState.getNextSearchMatchRange(
-      vimState.editor,
-      vimState.cursorStopPosition
-    );
+    const nextMatch = searchState.getNextSearchMatchRange(vimState, vimState.cursorStopPosition);
     if (nextMatch) {
       const line = vimState.document.lineAt(nextMatch.range.end).text;
       if (nextMatch.range.end.character < line.length) {

@@ -1,7 +1,8 @@
-import { Position, Range, TextEditor } from 'vscode';
+import { Position, Range } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
 import { Pattern, SearchDirection, SearchOffset, searchStringParser } from '../vimscript/pattern';
+import { VimState } from './vimState';
 
 /**
  * State involved with beginning a search (/).
@@ -61,8 +62,8 @@ export class SearchState {
    *
    * This might not be 100% complete - @see Pattern::MAX_SEARCH_RANGES
    */
-  public getMatchRanges(editor: TextEditor): Range[] {
-    return this.recalculateSearchRanges(editor);
+  public getMatchRanges(vimState: VimState): Range[] {
+    return this.recalculateSearchRanges(vimState);
   }
   private matchRanges: Map<string, { version: number; ranges: Range[] }> = new Map();
 
@@ -72,12 +73,12 @@ export class SearchState {
    */
   private readonly ignoreSmartcase: boolean;
 
-  private recalculateSearchRanges(editor: TextEditor): Range[] {
+  private recalculateSearchRanges(vimState: VimState): Range[] {
     if (this.searchString === '' || this.pattern === undefined) {
       return [];
     }
 
-    const document = editor.document;
+    const document = vimState.document;
 
     const cached = this.matchRanges.get(document.fileName);
     if (cached?.version === document.version) {
@@ -85,7 +86,9 @@ export class SearchState {
     }
 
     // TODO: It's weird to use the active selection for this...
-    const matchRanges = this.pattern.allMatches(editor.document, editor.selection.active);
+    const matchRanges = this.pattern
+      .allMatches(vimState, { fromPosition: vimState.editor.selection.active })
+      .map((match) => match.range);
 
     this.matchRanges.set(document.fileName, {
       version: document.version,
@@ -99,11 +102,11 @@ export class SearchState {
    * @returns The start of the next match range, after applying the search offset
    */
   public getNextSearchMatchPosition(
-    editor: TextEditor,
+    vimState: VimState,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { pos: Position; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
+    const nextMatch = this.getNextSearchMatchRange(vimState, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -120,11 +123,11 @@ export class SearchState {
    * NOTE: This method does not take the search offset into account
    */
   public getNextSearchMatchRange(
-    editor: TextEditor,
+    vimState: VimState,
     fromPosition: Position,
     direction = SearchDirection.Forward
   ): { range: Range; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;
@@ -178,10 +181,10 @@ export class SearchState {
    * @returns the match range which contains the given Position, or undefined if none exists
    */
   public findContainingMatchRange(
-    editor: TextEditor,
+    vimState: VimState,
     pos: Position
   ): { range: Range; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;
