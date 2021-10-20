@@ -321,7 +321,7 @@ export class LineRange {
       };
     } else {
       return {
-        start: this.start.resolve(vimState, 'left'),
+        start: left,
         end: end.resolve(vimState, 'right'),
       };
     }
