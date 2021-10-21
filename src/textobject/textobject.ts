@@ -995,9 +995,9 @@ abstract class SelectASymbol extends TextObject {
 
     const currentNode = AstSymbols.searchSymbolFromPosition(symbols, vimState.cursorStartPosition);
 
-    const classSymbol = AstSymbols.searchParentFiltered(currentNode, this.whitelist);
+    const classSymbol = currentNode.searchUpward(this.whitelist);
 
-    if (!classSymbol.symbol) {
+    if (!classSymbol || !classSymbol.symbol) {
       return failedMovement(vimState);
     }
 

@@ -25,6 +25,41 @@ export class SymbolNode {
     this.symbol = symbol;
     this.parent = parent;
   }
+
+  /**
+   * Returns a list containing all the ancestors of a symbol. We go from left (child) to
+   * right (ancestor) in the list where index 0 is the child symbol and last index is the
+   * root symbol. This is the opposite of VSCode's breadcrumbs that go from
+   * ancestor (left) to children (right).
+   */
+  public listNodeAndAncestors(): SymbolNode[] {
+    let currNode: SymbolNode | undefined = this;
+    const listAncestry: SymbolNode[] = [];
+    while (currNode !== undefined) {
+      listAncestry.push(currNode);
+      currNode = currNode.parent;
+    }
+    return listAncestry;
+  }
+
+  /** Searches the current symbol and then its ancestors to find the first symbol
+   * whose SymbolKind is in the whitelist (for example a function symbol or a
+   * class symbol depending * on the whitelist). The starting node is included
+   * here.
+   *
+   * @param whitelist, a set of SymbolKind containing the type of symbol to search
+   *
+   * @returns the first ancestor that has the right SymbolKind
+   */
+  public searchUpward(whitelist: Set<vscode.SymbolKind>): SymbolNode | null {
+    const listAncestors = this.listNodeAndAncestors();
+    for (const ancestor of listAncestors) {
+      if (ancestor.symbol !== undefined && whitelist.has(ancestor.symbol.kind)) {
+        return ancestor;
+      }
+    }
+    return null;
+  }
 }
 
 /**
@@ -56,45 +91,6 @@ export class AstSymbols {
     }
 
     return searchResult;
-  }
-
-  /**
-   * Searches the symbol ancestry to find the first symbol whose SymbolKind is
-   * in the whitelist (for example a function symbol or a class symbol depending
-   * on the whitelist). The starting node is included here.
-   *
-   * @param startNode, the symbolNode to start the search from
-   * @param whitelist, a set of SymbolKind containing the type of symbol to search
-   *
-   * @returns the first ancestor that has the right SymbolKind
-   */
-  public static searchParentFiltered(
-    startNode: SymbolNode,
-    whitelist: Set<vscode.SymbolKind>
-  ): SymbolNode {
-    const listAncestors = AstSymbols.listSymbolAncestry(startNode);
-    for (const ancestor of listAncestors) {
-      if (ancestor.symbol !== undefined && whitelist.has(ancestor.symbol.kind)) {
-        return ancestor;
-      }
-    }
-    return new SymbolNode([], [], undefined, undefined);
-  }
-
-  /**
-   * Returns a list containing all the ancestors of a symbol. We go from left (child) to
-   * right (ancestor) in the list where index 0 is the child symbol and last index is the
-   * root symbol. This is the opposite of VSCode's breadcrumbs that go from
-   * ancestor (left) to children (right).
-   */
-  public static listSymbolAncestry(startNode: SymbolNode): SymbolNode[] {
-    let currNode: SymbolNode | undefined = startNode;
-    const listAncestry: SymbolNode[] = [];
-    while (currNode !== undefined) {
-      listAncestry.push(currNode);
-      currNode = currNode.parent;
-    }
-    return listAncestry;
   }
 
   /**
