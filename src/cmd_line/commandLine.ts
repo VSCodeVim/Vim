@@ -22,13 +22,15 @@ import { RegisterCommand } from './commands/register';
 
 export abstract class CommandLine {
   public cursorIndex: number;
-  public historyIndex: number;
+  public historyIndex: number | undefined;
   public previousMode: Mode;
+  private savedText: string;
 
-  constructor(cursorIndex: number, previousMode: Mode) {
-    this.cursorIndex = cursorIndex;
+  constructor(text: string, previousMode: Mode) {
+    this.cursorIndex = text.length;
     this.historyIndex = this.getHistory().get().length;
     this.previousMode = previousMode;
+    this.savedText = text;
   }
 
   /**
@@ -67,41 +69,37 @@ export abstract class CommandLine {
   public abstract ctrlF(vimState: VimState): Promise<void>;
 
   public async historyBack(): Promise<void> {
-    const historyEntries = this.getHistory().get();
-
-    this.historyIndex -= 1;
-
-    // Clamp the history index to stay within bounds of command history length
-    this.historyIndex = Math.max(this.historyIndex, 0);
-
-    if (historyEntries[this.historyIndex] !== undefined) {
-      this.text = historyEntries[this.historyIndex];
-      this.cursorIndex = this.text.length;
-    }
-  }
-
-  public async historyForward(): Promise<void> {
-    const historyEntries = this.getHistory().get();
-
-    this.historyIndex += 1;
-
-    // If past the first history item, allow user to enter their own new command string (not using history)
-    if (this.historyIndex > historyEntries.length - 1) {
-      if (this.previousMode === Mode.Normal) {
-        this.text = '';
-      } else {
-        this.text = "'<,'>";
-      }
-
-      this.historyIndex = historyEntries.length;
-      this.cursorIndex = this.text.length;
+    if (this.historyIndex === 0) {
       return;
     }
 
-    if (historyEntries[this.historyIndex] !== undefined) {
-      this.text = historyEntries[this.historyIndex];
-      this.cursorIndex = this.text.length;
+    const historyEntries = this.getHistory().get();
+    if (this.historyIndex === undefined) {
+      this.historyIndex = historyEntries.length - 1;
+      this.savedText = this.text;
+    } else if (this.historyIndex > 0) {
+      this.historyIndex--;
     }
+
+    this.text = historyEntries[this.historyIndex];
+    this.cursorIndex = this.text.length;
+  }
+
+  public async historyForward(): Promise<void> {
+    if (this.historyIndex === undefined) {
+      return;
+    }
+
+    const historyEntries = this.getHistory().get();
+    if (this.historyIndex === historyEntries.length - 1) {
+      this.historyIndex = undefined;
+      this.text = this.savedText;
+    } else {
+      this.historyIndex++;
+      this.text = historyEntries[this.historyIndex];
+    }
+
+    this.cursorIndex = this.text.length;
   }
 
   /**
@@ -206,7 +204,7 @@ export class ExCommandLine extends CommandLine {
   private static readonly logger = Logger.get('CommandLine');
 
   constructor(commandText: string, previousMode: Mode) {
-    super(commandText.length, previousMode);
+    super(commandText, previousMode);
     this.commandText = commandText;
     this.text = commandText;
     this.previousMode = previousMode;
@@ -364,7 +362,7 @@ export class SearchCommandLine extends CommandLine {
   private searchState: SearchState;
 
   constructor(vimState: VimState, searchString: string, direction: SearchDirection) {
-    super(searchString.length, vimState.currentMode);
+    super(searchString, vimState.currentMode);
     this.searchState = new SearchState(direction, vimState.cursorStopPosition, searchString);
   }
 
