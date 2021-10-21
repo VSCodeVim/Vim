@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { join } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
 import * as error from '../../src/error';
@@ -20,7 +20,7 @@ suite('Buffer delete', () => {
 
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
-      await commandLine.Run(cmd, modeHandler.vimState);
+      await new ExCommandLine(cmd, modeHandler.vimState.currentMode).run(modeHandler.vimState);
       await t.WaitForEditorsToClose();
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
@@ -30,7 +30,7 @@ suite('Buffer delete', () => {
   test('bd does not delete buffer when there are unsaved changes', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
     try {
-      await commandLine.Run('bd', modeHandler.vimState);
+      await new ExCommandLine('bd', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     } catch (e) {
       assert.strictEqual(e, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
     }
@@ -39,7 +39,7 @@ suite('Buffer delete', () => {
   test('bd! deletes the current buffer regardless of unsaved changes', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
-    await commandLine.Run('bd!', modeHandler.vimState);
+    await new ExCommandLine('bd!', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     await t.WaitForEditorsToClose();
 
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
@@ -58,7 +58,7 @@ suite('Buffer delete', () => {
         });
       }
 
-      await commandLine.Run('bd 2', modeHandler.vimState);
+      await new ExCommandLine('bd 2', modeHandler.vimState.currentMode).run(modeHandler.vimState);
       await vscode.commands.executeCommand('workbench.action.openEditorAtIndex2');
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 2);

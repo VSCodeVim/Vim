@@ -14,6 +14,7 @@ import { ReplaceState } from './../state/replaceState';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
+import { CommandLine } from '../cmd_line/commandLine';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -293,8 +294,7 @@ export class VimState implements vscode.Disposable {
   }
   private _currentRegisterMode: RegisterMode | undefined;
 
-  public currentCommandlineText = '';
-  public statusBarCursorCharacterPos = 0;
+  public commandLine: CommandLine | undefined;
 
   public recordedState = new RecordedState();
 

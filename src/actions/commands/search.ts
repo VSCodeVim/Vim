@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { escapeRegExp } from 'lodash';
 import {} from 'vscode';
 import { Position, Range, Selection } from 'vscode';
+import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
@@ -106,11 +107,10 @@ async function createSearchStateAndMoveToMatch(args: {
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { ignoreSmartcase: true },
-    vimState.currentMode
+    { ignoreSmartcase: true }
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
-  globalState.addSearchStateToHistory(globalState.searchState);
+  SearchCommandLine.addSearchStateToHistory(globalState.searchState);
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   globalState.hl = true;
@@ -237,17 +237,12 @@ class CommandSearchForwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    globalState.searchState = new SearchState(
-      SearchDirection.Forward,
-      vimState.cursorStopPosition,
-      '',
-      {},
-      vimState.currentMode
-    );
+    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
     // Reset search history index
-    globalState.searchStateIndex = globalState.searchStatePrevious.length;
+    globalState.searchState = vimState.commandLine.getSearchState();
+    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 
@@ -262,17 +257,12 @@ class CommandSearchBackwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    globalState.searchState = new SearchState(
-      SearchDirection.Backward,
-      vimState.cursorStopPosition,
-      '',
-      {},
-      vimState.currentMode
-    );
+    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
     // Reset search history index
-    globalState.searchStateIndex = globalState.searchStatePrevious.length;
+    globalState.searchState = vimState.commandLine.getSearchState();
+    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 
@@ -290,8 +280,7 @@ abstract class SearchObject extends TextObject {
       this.direction,
       vimState.cursorStopPosition,
       searchState.searchString,
-      {},
-      vimState.currentMode
+      {}
     );
 
     let result:

@@ -2,7 +2,6 @@ import { Position, Range, TextEditor } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
 import { Pattern, SearchDirection, SearchOffset, searchStringParser } from '../vimscript/pattern';
-import { Mode } from './../mode/mode';
 
 /**
  * State involved with beginning a search (/).
@@ -12,8 +11,7 @@ export class SearchState {
     direction: SearchDirection,
     startPosition: Position,
     searchString = '',
-    { ignoreSmartcase = false } = {},
-    currentMode: Mode
+    { ignoreSmartcase = false } = {}
   ) {
     this._searchString = searchString;
 
@@ -26,14 +24,12 @@ export class SearchState {
 
     this.cursorStartPosition = startPosition;
     this.ignoreSmartcase = ignoreSmartcase;
-    this.previousMode = currentMode;
   }
 
   private _searchString: string;
   public pattern?: Pattern;
   private offset?: SearchOffset;
 
-  public readonly previousMode: Mode;
   public readonly cursorStartPosition: Position;
 
   public get searchString(): string {

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { cleanUpWorkspace, setupWorkspace, WaitForEditorsToClose } from './../testUtils';
 
@@ -18,7 +18,7 @@ suite('Vertical split', () => {
 
   for (const cmd of ['vs', 'vsp', 'vsplit', 'vnew', 'vne']) {
     test(`:${cmd} creates a second split`, async () => {
-      await commandLine.Run(cmd, modeHandler.vimState);
+      await new ExCommandLine(cmd, modeHandler.vimState.currentMode).run(modeHandler.vimState);
       await WaitForEditorsToClose(2);
 
       assert.strictEqual(

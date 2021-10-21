@@ -9,7 +9,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
-import { commandLine } from './../cmd_line/commandLine';
+import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
@@ -232,12 +232,13 @@ class FilterOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     [start, end] = sorted(start, end);
 
+    let commandLineText: string;
     if (vimState.currentMode === Mode.Normal && start.line === end.line) {
-      vimState.currentCommandlineText = '.!';
+      commandLineText = '.!';
     } else if (vimState.currentMode === Mode.Normal && start.line !== end.line) {
-      vimState.currentCommandlineText = `.,.+${end.line - start.line}!`;
+      commandLineText = `.,.+${end.line - start.line}!`;
     } else {
-      vimState.currentCommandlineText = "'<,'>!";
+      commandLineText = "'<,'>!";
     }
 
     vimState.cursorStartPosition = start;
@@ -247,14 +248,8 @@ class FilterOperator extends BaseOperator {
       vimState.cursors = vimState.cursorsInitialState;
     }
 
-    // Initialize the cursor position
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    // Store the current mode for use in retaining selection
-    commandLine.previousMode = vimState.currentMode;
-    // Change to the new mode
+    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
-    // Reset history navigation index
-    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
   }
 }
 

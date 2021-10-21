@@ -262,8 +262,7 @@ export class SubstituteCommand extends ExCommand {
         SearchDirection.Forward,
         vimState.cursorStopPosition,
         args.pattern?.patternString,
-        {},
-        vimState.currentMode
+        {}
       );
     }
     return args.pattern ? new RegExp(args.pattern.regex.source, jsRegexFlags) : undefined;

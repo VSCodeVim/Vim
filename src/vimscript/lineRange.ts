@@ -211,8 +211,7 @@ export class Address {
                 SearchDirection.Forward,
                 vimState.cursorStopPosition,
                 globalState.substituteState.searchPattern.patternString,
-                {},
-                vimState.currentMode
+                {}
               )
             : undefined;
           const match = searchState?.getNextSearchMatchPosition(

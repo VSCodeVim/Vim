@@ -30,3 +30,9 @@ export function scrollView(vimState: VimState, offset: number) {
     });
   }
 }
+
+export function assertDefined<X>(x: X | undefined, err: string): asserts x {
+  if (x === undefined) {
+    throw new Error(err);
+  }
+}

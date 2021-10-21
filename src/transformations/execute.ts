@@ -9,7 +9,7 @@ import {
   areAllSameTransformation,
   overlappingTransformations,
 } from './transformations';
-import { commandLine } from '../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { PositionDiff } from '../common/motion/position';
 import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
@@ -168,15 +168,21 @@ export async function executeTransformations(
         break;
 
       case 'showCommandHistory':
-        const cmd = await commandLine.showHistory(vimState.currentCommandlineText);
+        const cmd = await vscode.window.showQuickPick(
+          ExCommandLine.history.get().slice().reverse(),
+          {
+            placeHolder: 'Vim command history',
+            ignoreFocusOut: false,
+          }
+        );
         if (cmd && cmd.length !== 0) {
-          await commandLine.Run(cmd, vimState);
+          await new ExCommandLine(cmd, vimState.currentMode).run(vimState);
           modeHandler.updateView();
         }
         break;
 
       case 'showSearchHistory':
-        const searchState = await globalState.showSearchHistory();
+        const searchState = await SearchCommandLine.showSearchHistory();
         if (searchState) {
           globalState.searchState = searchState;
           const nextMatch = searchState.getNextSearchMatchPosition(
@@ -216,7 +222,7 @@ export async function executeTransformations(
 
         vimState.recordedState = new RecordedState();
         if (transformation.register === ':') {
-          await commandLine.Run(recordedMacro.commandString, vimState);
+          await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
         } else if (transformation.replay === 'contentChange') {
           await modeHandler.runMacro(recordedMacro);
         } else {

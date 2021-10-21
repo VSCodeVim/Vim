@@ -23,7 +23,7 @@ import { Register, RegisterMode } from './../../register/register';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
-import { commandLine } from './../../cmd_line/commandLine';
+import { ExCommandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
@@ -751,27 +751,19 @@ class CommandShowCommandLine extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    let commandLineText: string;
     if (vimState.currentMode === Mode.Normal) {
       if (vimState.recordedState.count) {
-        vimState.currentCommandlineText = `.,.+${vimState.recordedState.count - 1}`;
+        commandLineText = `.,.+${vimState.recordedState.count - 1}`;
       } else {
-        vimState.currentCommandlineText = '';
+        commandLineText = '';
       }
     } else {
-      vimState.currentCommandlineText = "'<,'>";
+      commandLineText = "'<,'>";
     }
 
-    // Initialize the cursor position
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-
-    // Store the current mode for use in retaining selection
-    commandLine.previousMode = vimState.currentMode;
-
-    // Change to the new mode
+    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
-
-    // Reset history navigation index
-    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
   }
 }
 
@@ -789,11 +781,6 @@ export class CommandShowCommandHistory extends BaseCommand {
       type: 'showCommandHistory',
     });
 
-    if (vimState.currentMode === Mode.Normal) {
-      vimState.currentCommandlineText = '';
-    } else {
-      vimState.currentCommandlineText = "'<,'>";
-    }
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -858,7 +845,7 @@ class CommandRepeatSubstitution extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
     // necessary to make this work with and without neovim integration
-    await commandLine.Run('s', vimState);
+    await new ExCommandLine('s', vimState.currentMode).run(vimState);
   }
 }
 
