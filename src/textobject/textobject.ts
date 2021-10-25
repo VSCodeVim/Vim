@@ -20,7 +20,7 @@ import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { DocumentSymbol, Position, SymbolKind, TextDocument } from 'vscode';
 import { WordType } from './word';
-import { AstHelper } from '../ast/AstHelper';
+import { AstHelper } from '../ast/astHelper';
 
 export abstract class TextObject extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];

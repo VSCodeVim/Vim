@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { SearchedSymbols } from './SearchedSymbols';
-import * as SymbolSearch from './SymbolSearchResult';
+import { SearchedSymbols } from './searchedSymbols';
+import * as SymbolSearch from './symbolSearchResult';
 
 /**
  * Collection of helper functions around Abstract Syntax Tree (AST) symbols

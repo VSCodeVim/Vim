@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SymbolSearchResult, SymbolFound } from './SymbolSearchResult';
+import { SymbolSearchResult, SymbolFound } from './symbolSearchResult';
 
 /**
  * This is a class that contains the symbols that were searched and the
