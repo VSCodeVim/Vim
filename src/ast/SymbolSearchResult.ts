@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
 /**
- * Useful when searching a list of symbols with a certain position. It helps keeping track of
- * the found symbol and its index in the list.
+ * Useful when searching a list of symbols with a certain position. It helps
+ * keeping track of the found symbol and its index in the list.
  */
 export abstract class SymbolSearchResult {
   /**
@@ -41,8 +41,9 @@ export class PositionBetweenSymbols extends SymbolSearchResult {
 
 export class SymbolFound extends SymbolSearchResult {
   /**
-   *  Keeping track of the index where the symbol was found could be useful in the future
-   *  when searching the next symbols after the current one for example.
+   * Keeping track of the index where the symbol was found could be useful in
+   * the future when searching the next symbols after the current one for
+   * example.
    */
   constructor(index: number, symbol: vscode.DocumentSymbol) {
     super();

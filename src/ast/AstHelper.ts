@@ -3,7 +3,8 @@ import { SearchedSymbols } from './SearchedSymbols';
 import * as SymbolSearch from './SymbolSearchResult';
 
 /**
- * Collection of helper functions around Abstract Syntax Tree (AST) symbols navigation.
+ * Collection of helper functions around Abstract Syntax Tree (AST) symbols
+ * navigation.
  */
 export class AstHelper {
   public static searchSymbolContainingPos(
