@@ -20,7 +20,7 @@ import { configuration } from '../configuration/configuration';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { DocumentSymbol, Position, SymbolKind, TextDocument } from 'vscode';
 import { WordType } from './word';
-import { AstSymbols } from './astSymbols';
+import { AstHelper } from '../ast/AstHelper';
 
 export abstract class TextObject extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
@@ -993,24 +993,27 @@ abstract class SelectASymbol extends TextObject {
 
     const symbols = await vimState.requestDocumentSymbols();
 
-    const currentNode = AstSymbols.searchSymbolFromPosition(symbols, vimState.cursorStartPosition);
+    const symbolsSearched = AstHelper.searchSymbolContainingPos(
+      symbols,
+      vimState.cursorStartPosition
+    );
 
-    const classSymbol = currentNode.searchUpward(this.whitelist);
+    const whitelistedSymbol = symbolsSearched.searchUpward(this.whitelist);
 
-    if (!classSymbol || !classSymbol.symbol) {
+    if (!whitelistedSymbol || !whitelistedSymbol.searchResult.symbol) {
       return failedMovement(vimState);
     }
 
     // We are looking forward
     if (start.isBeforeOrEqual(stop)) {
-      start = classSymbol.symbol.range.start;
-      stop = classSymbol.symbol.range.end;
+      start = whitelistedSymbol.searchResult.symbol.range.start;
+      stop = whitelistedSymbol.searchResult.symbol.range.end;
     }
 
     // We are looking backwards so we revert start and end
     else {
-      start = classSymbol.symbol.range.end;
-      stop = classSymbol.symbol.range.start;
+      start = whitelistedSymbol.searchResult.symbol.range.end;
+      stop = whitelistedSymbol.searchResult.symbol.range.start;
     }
 
     return {
