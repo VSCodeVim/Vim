@@ -10,6 +10,7 @@ import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
+import { EchoCommand } from '../cmd_line/commands/echo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
 import { HistoryCommand } from '../cmd_line/commands/history';
@@ -45,6 +46,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
+import { LetCommand } from '../cmd_line/commands/let';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -203,11 +205,11 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['dsp', 'lit'], undefined],
   [['e', 'dit'], FileCommand.argParsers.edit],
   [['ea', 'rlier'], undefined],
-  [['ec', 'ho'], undefined],
-  [['echoe', 'rr'], undefined],
+  [['ec', 'ho'], EchoCommand.argParser({ sep: ' ', error: false })],
+  [['echoe', 'rr'], EchoCommand.argParser({ sep: ' ', error: true })],
   [['echoh', 'l'], undefined],
   [['echom', 'sg'], undefined],
-  [['echon', ''], undefined],
+  [['echon', ''], EchoCommand.argParser({ sep: '', error: false })],
   [['el', 'se'], undefined],
   [['elsei', 'f'], undefined],
   [['em', 'enu'], undefined],
@@ -298,7 +300,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ld', 'o'], undefined],
   [['le', 'ft'], LeftCommand.argParser],
   [['lefta', 'bove'], undefined],
-  [['let', ''], undefined],
+  [['let', ''], LetCommand.argParser],
   [['lex', 'pr'], undefined],
   [['lf', 'ile'], undefined],
   [['lfd', 'o'], undefined],

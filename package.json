@@ -1223,5 +1223,11 @@
     "webpack-cli": "5.0.1",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"
+  },
+  "__metadata": {
+    "id": "d96e79c6-8b25-4be3-8545-0e0ecefcae03",
+    "publisherDisplayName": "vscodevim",
+    "publisherId": "5d63889b-1b67-4b1f-8350-4f1dce041a26",
+    "isPreReleaseVersion": false
   }
 }

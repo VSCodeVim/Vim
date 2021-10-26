@@ -9,6 +9,7 @@ import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
+import { LetCommand } from '../../src/cmd_line/commands/let';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
@@ -23,6 +24,7 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
+import { int, str, variable } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -293,6 +295,29 @@ suite('Ex command parsing', () => {
   });
 
   suite(':let', () => {
+    exParseTest(':let', new LetCommand({ operation: 'print', variables: [] }));
+    exParseTest(
+      ':let foo bar',
+      new LetCommand({ operation: 'print', variables: [variable('foo'), variable('bar')] })
+    );
+
+    exParseTest(
+      ':let foo = 5',
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5) })
+    );
+    exParseTest(
+      ':let foo += 5',
+      new LetCommand({ operation: '+=', variable: variable('foo'), expression: int(5) })
+    );
+    exParseTest(
+      ':let foo -= 5',
+      new LetCommand({ operation: '-=', variable: variable('foo'), expression: int(5) })
+    );
+    exParseTest(
+      ":let foo .= 'bar'",
+      new LetCommand({ operation: '.=', variable: variable('foo'), expression: str('bar') })
+    );
+
     // TODO
   });
 
