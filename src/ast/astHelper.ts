@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SearchedSymbols } from './searchedSymbols';
+import { SymbolSearchNode } from './symbolSearchNode';
 import * as SymbolSearch from './symbolSearchResult';
 
 /**
@@ -7,26 +7,39 @@ import * as SymbolSearch from './symbolSearchResult';
  * navigation.
  */
 export class AstHelper {
+  /**
+   * Searches a list of symbols and their descendants to find the deepest symbol
+   * containing a position. The search might not necessarily find a symbol
+   * so a SymbolSearchNode instance is returned to better locate the position
+   * in the AST.
+   */
   public static searchSymbolContainingPos(
     symbols: vscode.DocumentSymbol[],
-    cursorPos: vscode.Position
-  ): SearchedSymbols {
+    pos: vscode.Position
+  ): SymbolSearchNode {
     if (symbols === []) {
-      return new SearchedSymbols(symbols, new SymbolSearch.SymbolNotFound());
+      return new SymbolSearchNode(symbols, new SymbolSearch.SymbolNotFound());
     }
 
-    let searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, cursorPos);
-    let searchedSymbol = new SearchedSymbols(symbols, searchResult);
+    let searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
+    let searchedSymbol = new SymbolSearchNode(symbols, searchResult);
 
-    while (searchResult instanceof SymbolSearch.SymbolFound && searchResult.symbol) {
+    while (
+      searchResult instanceof SymbolSearch.SymbolFound &&
+      searchResult.symbol &&
+      searchResult.symbol.children.length > 0
+    ) {
       symbols = searchResult.symbol.children;
-      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, cursorPos);
-      searchedSymbol = new SearchedSymbols(symbols, searchResult, searchedSymbol);
+      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
+      searchedSymbol = new SymbolSearchNode(symbols, searchResult, searchedSymbol);
     }
 
     return searchedSymbol;
   }
 
+  /**
+   * Finds a position's location in a list of symbols.
+   */
   public static binarySearchSymbolsFromPosition(
     symbols: vscode.DocumentSymbol[],
     position: vscode.Position
@@ -49,14 +62,18 @@ export class AstHelper {
 
       // We searched every symbol and could not find it
       else if (middle === start && middle === end) {
-        if (middle === 0) {
-          return new SymbolSearch.BeforeFirst();
-        } else if (middle === symbols.length - 1) {
-          return new SymbolSearch.AfterLast();
-        } else if (position.isBefore(midRange.start)) {
-          return new SymbolSearch.PositionBetweenSymbols(middle - 1, middle);
-        } else {
-          return new SymbolSearch.PositionBetweenSymbols(middle, middle + 1);
+        if (position.isBefore(midRange.start)) {
+          if (middle === 0) {
+            return new SymbolSearch.BeforeFirst();
+          } else {
+            return new SymbolSearch.PositionBetweenSymbols(middle - 1, middle);
+          }
+        } else if (position.isAfter(midRange.end)) {
+          if (middle === symbols.length - 1) {
+            return new SymbolSearch.AfterLast();
+          } else {
+            return new SymbolSearch.PositionBetweenSymbols(middle, middle + 1);
+          }
         }
       }
       // Keep searching before

@@ -11,8 +11,8 @@ export abstract class SymbolSearchResult {
   symbol?: vscode.DocumentSymbol;
 
   /**
-   * The index of the symbol if found or the index of the first symbol if the search
-   * is in between 2 symbols.
+   * The index of the symbol if found or the index of the first symbol if the
+   * search is in between 2 symbols.
    */
   index1?: number;
 
@@ -23,7 +23,7 @@ export abstract class SymbolSearchResult {
 }
 
 /**
- * If we are not sure where to search exactly.
+ * Should rarely happen when we are not sure where to search exactly
  */
 export class SymbolNotFound extends SymbolSearchResult {}
 
