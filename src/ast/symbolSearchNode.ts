@@ -11,18 +11,18 @@ import { SymbolSearchResult, SymbolFound } from './symbolSearchResult';
  * traverse the AST if not starting from the root or if the cursor is in
  * between 2 symbols.
  *
- * Also by using keeping of a symbol's parents it becomes much easier to get
+ * Also by keeping track of a symbol's parents it becomes much easier to get
  * the ancestry of a symbol.
  */
-export class SearchedSymbols {
+export class SymbolSearchNode {
   symbols: vscode.DocumentSymbol[];
   searchResult: SymbolSearchResult;
-  parent?: SearchedSymbols;
+  parent?: SymbolSearchNode;
 
   constructor(
     symbols: vscode.DocumentSymbol[],
     searchResult: SymbolSearchResult,
-    parent?: SearchedSymbols
+    parent?: SymbolSearchNode
   ) {
     this.symbols = symbols;
     this.searchResult = searchResult;
@@ -35,9 +35,9 @@ export class SearchedSymbols {
    * and last index is the root symbol. This is the opposite of VSCode's
    * breadcrumbs that go from ancestor (left) to children (right).
    */
-  public listCurrentAndAncestors(): SearchedSymbols[] {
-    let current: SearchedSymbols | undefined = this;
-    const listAncestry: SearchedSymbols[] = [];
+  public listCurrentAndAncestors(): SymbolSearchNode[] {
+    let current: SymbolSearchNode | undefined = this;
+    const listAncestry: SymbolSearchNode[] = [];
 
     while (current !== undefined) {
       listAncestry.push(current);
@@ -53,11 +53,11 @@ export class SearchedSymbols {
    * class symbol depending on the whitelist). The starting node is included
    * here.
    *
-   * @param whitelist, a set of SymbolKind containing the type of symbol to search
+   * @param whitelist, a Set of SymbolKind containing the type of symbol to search
    *
-   * @returns the first ancestor that has the right SymbolKind
+   * @returns the first ancestor that has the right SymbolKind or null
    */
-  public searchUpward(whitelist: Set<vscode.SymbolKind>): SearchedSymbols | null {
+  public searchUpward(whitelist: Set<vscode.SymbolKind>): SymbolSearchNode | null {
     const listAncestors = this.listCurrentAndAncestors();
     for (const ancestor of listAncestors) {
       if (
