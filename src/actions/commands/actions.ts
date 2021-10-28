@@ -8,7 +8,7 @@ import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { Tab, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
@@ -23,7 +23,7 @@ import { Register, RegisterMode } from './../../register/register';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
-import { commandLine } from './../../cmd_line/commandLine';
+import { ExCommandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { StatusBar } from '../../statusBar';
 import { reportFileInfo } from '../../util/statusBarTextUtils';
@@ -35,6 +35,7 @@ import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
+import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -750,27 +751,19 @@ class CommandShowCommandLine extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    let commandLineText: string;
     if (vimState.currentMode === Mode.Normal) {
       if (vimState.recordedState.count) {
-        vimState.currentCommandlineText = `.,.+${vimState.recordedState.count - 1}`;
+        commandLineText = `.,.+${vimState.recordedState.count - 1}`;
       } else {
-        vimState.currentCommandlineText = '';
+        commandLineText = '';
       }
     } else {
-      vimState.currentCommandlineText = "'<,'>";
+      commandLineText = "'<,'>";
     }
 
-    // Initialize the cursor position
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-
-    // Store the current mode for use in retaining selection
-    commandLine.previousMode = vimState.currentMode;
-
-    // Change to the new mode
+    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
-
-    // Reset history navigation index
-    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
   }
 }
 
@@ -788,11 +781,6 @@ export class CommandShowCommandHistory extends BaseCommand {
       type: 'showCommandHistory',
     });
 
-    if (vimState.currentMode === Mode.Normal) {
-      vimState.currentCommandlineText = '';
-    } else {
-      vimState.currentCommandlineText = "'<,'>";
-    }
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -857,7 +845,7 @@ class CommandRepeatSubstitution extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
     // necessary to make this work with and without neovim integration
-    await commandLine.Run('s', vimState);
+    await new ExCommandLine('s', vimState.currentMode).run(vimState);
   }
 }
 
@@ -1381,10 +1369,13 @@ class CommandOpenFile extends BaseCommand {
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
-      const lineNumber = parseInt(fileInfo[2], 10);
+      const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
-        name: filePath,
-        lineNumber,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: filePath,
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
@@ -1839,12 +1830,13 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       new TabCommand({
-        tab: Tab.Absolute,
+        type: TabCommandType.Absolute,
         count: vimState.recordedState.count - 1,
       }).execute(vimState);
     } else {
       new TabCommand({
-        tab: Tab.Next,
+        type: TabCommandType.Next,
+        bang: false,
         count: 1,
       }).execute(vimState);
     }
@@ -1859,7 +1851,8 @@ class CommandTabPrevious extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     new TabCommand({
-      tab: Tab.Previous,
+      type: TabCommandType.Previous,
+      bang: false,
       count: 1,
     }).execute(vimState);
   }
@@ -2950,7 +2943,7 @@ class DecrementNumberStaircaseAction extends IncrementDecrementNumberAction {
 }
 
 @RegisterAction
-class CommandUnicodeName extends BaseCommand {
+export class CommandUnicodeName extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'a'];
   override runsOnceForEveryCursor() {
@@ -3109,7 +3102,7 @@ class WriteQuit extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await new WriteQuitCommand({}).execute(vimState);
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
   }
 }
 
@@ -3138,15 +3131,37 @@ class ActionGoToAlternateFile extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const altFile = await Register.get('#');
-    if (altFile === undefined || altFile.text === '') {
+    if (altFile?.text instanceof RecordedState) {
+      throw new Error(`# register unexpectedly contained a RecordedState`);
+    } else if (altFile === undefined || altFile.text === '') {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
     } else {
-      const files = await vscode.workspace.findFiles(altFile.text as string);
+      let files: vscode.Uri[];
+      if (await doesFileExist(vscode.Uri.file(altFile.text))) {
+        files = [vscode.Uri.file(altFile.text)];
+      } else {
+        files = await vscode.workspace.findFiles(altFile.text);
+      }
+
       // TODO: if the path matches a file from multiple workspace roots, we may not choose the right one
       if (files.length > 0) {
         const document = await vscode.workspace.openTextDocument(files[0]);
         await vscode.window.showTextDocument(document);
       }
     }
+  }
+}
+
+@RegisterAction
+class ShowFileOutline extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['g', 'O'];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('outline.focus');
   }
 }

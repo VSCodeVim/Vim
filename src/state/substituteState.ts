@@ -1,3 +1,4 @@
+import { ReplaceString } from '../cmd_line/commands/substitute';
 import { Pattern } from '../vimscript/pattern';
 
 /**
@@ -7,14 +8,14 @@ export class SubstituteState {
   /**
    * The last pattern searched for in the substitution
    */
-  public searchPattern: Pattern;
+  public searchPattern: Pattern | undefined;
 
   /**
    * The last replacement string in the substitution
    */
-  public replaceString: string;
+  public replaceString: ReplaceString;
 
-  constructor(searchPattern: Pattern, replaceString: string) {
+  constructor(searchPattern: Pattern | undefined, replaceString: ReplaceString) {
     this.searchPattern = searchPattern;
     this.replaceString = replaceString;
   }

@@ -3,7 +3,7 @@ import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
 import { Mode } from '../mode/mode';
-import { commandLine } from '../cmd_line/commandLine';
+import { ExCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
@@ -503,10 +503,7 @@ export class Remapper implements IRemapper {
 
           if (commandString.slice(0, 1) === ':') {
             // Check if this is a vim command by looking for :
-            await commandLine.Run(
-              commandString.slice(1, commandString.length),
-              modeHandler.vimState
-            );
+            await new ExCommandLine(commandString, vimState.currentMode).run(modeHandler.vimState);
             await modeHandler.updateView();
           } else if (commandArgs) {
             await vscode.commands.executeCommand(commandString, commandArgs);

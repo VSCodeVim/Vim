@@ -8,9 +8,11 @@ import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
+import { any, optWhitespace, Parser, seq } from 'parsimmon';
+import { bangParser } from '../../vimscript/parserUtils';
 
 export interface IPutCommandArguments {
-  bang?: boolean;
+  bang: boolean;
   register?: string;
 }
 
@@ -20,6 +22,11 @@ export interface IPutCommandArguments {
 //
 
 export class PutExCommand extends ExCommand {
+  public static readonly argParser: Parser<PutExCommand> = seq(
+    bangParser,
+    optWhitespace.then(any).fallback(undefined)
+  ).map(([bang, register]) => new PutExCommand({ bang, register }));
+
   public readonly arguments: IPutCommandArguments;
 
   constructor(args: IPutCommandArguments) {
@@ -50,7 +57,7 @@ export class PutExCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    const { end } = range.resolve(vimState)!;
+    const { end } = range.resolve(vimState);
     await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }
 }

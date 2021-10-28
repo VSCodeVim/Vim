@@ -1,5 +1,5 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
@@ -16,7 +16,7 @@ suite('Undo command', () => {
   test('undoes last action after insert mode', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', '<Esc>']);
     await modeHandler.handleMultipleKeyEvents(['i', 'b', '<Esc>']);
-    await commandLine.Run('undo', modeHandler.vimState);
+    await new ExCommandLine('undo', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     assertEqualLines(['a']);
   });
 });

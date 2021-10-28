@@ -3,11 +3,13 @@ import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { all, alt, optWhitespace, Parser, regexp, seq, string, whitespace } from 'parsimmon';
 
-export interface IReadCommandArguments {
-  file?: string;
-  cmd?: string;
-}
+export type IReadCommandArguments =
+  | {
+      opt: FileOpt;
+    } & ({ cmd: string } | { file: string } | {});
 
 //
 //  Implements :read and :read!
@@ -15,8 +17,25 @@ export interface IReadCommandArguments {
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
 export class ReadCommand extends ExCommand {
-  private readonly arguments: IReadCommandArguments;
+  public static readonly argParser: Parser<ReadCommand> = seq(
+    whitespace.then(fileOptParser).fallback([]),
+    optWhitespace
+      .then(
+        alt<{ cmd: string } | { file: string }>(
+          string('!')
+            .then(all)
+            .map((cmd) => {
+              return { cmd };
+            }),
+          regexp(/\S+/).map((file) => {
+            return { file };
+          })
+        )
+      )
+      .fallback(undefined)
+  ).map(([opt, other]) => new ReadCommand({ opt, ...other }));
 
+  private readonly arguments: IReadCommandArguments;
   constructor(args: IReadCommandArguments) {
     super();
     this.arguments = args;
@@ -34,44 +53,26 @@ export class ReadCommand extends ExCommand {
   }
 
   async getTextToInsert(): Promise<string> {
-    if (this.arguments.file && this.arguments.file.length > 0) {
-      return this.getTextToInsertFromFile();
-    } else if (this.arguments.cmd && this.arguments.cmd.length > 0) {
-      return this.getTextToInsertFromCmd();
+    if ('file' in this.arguments && this.arguments.file.length > 0) {
+      return readFileAsync(this.arguments.file, 'utf8');
+    } else if ('cmd' in this.arguments && this.arguments.cmd.length > 0) {
+      if (SUPPORT_READ_COMMAND) {
+        const cmd = this.arguments.cmd;
+        return new Promise<string>(async (resolve, reject) => {
+          const { exec } = await import('child_process');
+          exec(cmd, (err, stdout, stderr) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(stdout);
+            }
+          });
+        });
+      } else {
+        return '';
+      }
     } else {
       throw Error('Invalid arguments');
-    }
-  }
-
-  async getTextToInsertFromFile(): Promise<string> {
-    // TODO: Read encoding from ++opt argument.
-    try {
-      const data = await readFileAsync(this.arguments.file as string, 'utf8');
-      return data;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async getTextToInsertFromCmd(): Promise<string> {
-    if (SUPPORT_READ_COMMAND) {
-      return new Promise<string>((resolve, reject) => {
-        try {
-          import('child_process').then((cp) => {
-            return cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(stdout);
-              }
-            });
-          });
-        } catch (e) {
-          reject(e);
-        }
-      });
-    } else {
-      return '';
     }
   }
 }

@@ -116,6 +116,9 @@ const nodelessConfig = {
     new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,
     }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser', // util requires this internally
+    }),
     new ForkTsCheckerWebpackPlugin(),
   ],
 };

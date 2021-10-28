@@ -1,32 +1,21 @@
+import { all, optWhitespace, Parser } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { ErrorCode, VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
-import { LineRange } from '../../vimscript/lineRange';
-import { Scanner } from '../scanner';
+import { Address, LineRange } from '../../vimscript/lineRange';
 
 export class CopyCommand extends ExCommand {
-  public static parseArgs(args: string): CopyCommand {
-    if (args.trim() === '') {
-      return new CopyCommand();
-    }
+  public static readonly argParser: Parser<CopyCommand> = optWhitespace
+    .then(Address.parser.fallback(undefined))
+    .map((address) => new CopyCommand(address));
 
-    const scanner = new Scanner(args);
-    // TODO: dest should be parsed as a range (and all the special stuff that goes along with that, i.e. % or 'a)
-    const dest = parseInt(scanner.nextWord(), 10);
-    if (isNaN(dest) || !scanner.isAtEof) {
-      throw VimError.fromCode(ErrorCode.TrailingCharacters);
-    }
-
-    return new CopyCommand(dest);
-  }
-
-  private dest?: number;
-  private constructor(dest?: number) {
+  private address?: Address;
+  constructor(address?: Address) {
     super();
-    this.dest = dest;
+    this.address = address;
   }
 
   public override neovimCapable(): boolean {
@@ -34,7 +23,8 @@ export class CopyCommand extends ExCommand {
   }
 
   private copyLines(vimState: VimState, sourceStart: number, sourceEnd: number) {
-    if (this.dest === undefined || this.dest < 0 || this.dest > vimState.document.lineCount) {
+    const dest = this.address?.resolve(vimState, 'left', false);
+    if (dest === undefined || dest < -1 || dest > vimState.document.lineCount) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidAddress));
       return;
     }
@@ -49,17 +39,17 @@ export class CopyCommand extends ExCommand {
 
     let text: string;
     let position: Position;
-    if (this.dest === 0) {
+    if (dest === -1) {
       text = copiedText + '\n';
       position = new Position(0, 0);
     } else {
       text = '\n' + copiedText;
-      position = new Position(this.dest - 1, 0).getLineEnd();
+      position = new Position(dest, 0).getLineEnd();
     }
 
     const lines = copiedText.split('\n');
     const cursorPosition = new Position(
-      this.dest - 1 + lines.length,
+      Math.max(dest + lines.length, 0),
       lines[lines.length - 1].match(/\S/)?.index ?? 0
     );
 
@@ -77,7 +67,7 @@ export class CopyCommand extends ExCommand {
   }
 
   public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    const { start, end } = range.resolve(vimState)!;
+    const { start, end } = range.resolve(vimState);
     this.copyLines(vimState, start, end);
   }
 }
