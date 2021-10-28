@@ -142,9 +142,9 @@ const setOperationParser: Parser<SetOperation> = whitespace
   )
   .fallback({ type: 'show_or_set', option: undefined });
 
-export class SetOptionsCommand extends ExCommand {
-  public static readonly argParser: Parser<SetOptionsCommand> = setOperationParser.map(
-    (operation) => new SetOptionsCommand(operation)
+export class SetCommand extends ExCommand {
+  public static readonly argParser: Parser<SetCommand> = setOperationParser.map(
+    (operation) => new SetCommand(operation)
   );
 
   private readonly operation: SetOperation;

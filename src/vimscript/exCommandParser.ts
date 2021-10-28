@@ -4,7 +4,7 @@ import { BangCommand } from '../cmd_line/commands/bang';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
-import { DeleteRangeCommand } from '../cmd_line/commands/deleteRange';
+import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
@@ -21,7 +21,7 @@ import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
 import { RegisterCommand } from '../cmd_line/commands/register';
-import { SetOptionsCommand } from '../cmd_line/commands/setoptions';
+import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
 import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
@@ -174,7 +174,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cuna', 'bbrev'], undefined],
   [['cunme', 'nu'], undefined],
   [['cw', 'indow'], undefined],
-  [['d', 'elete'], DeleteRangeCommand.argParser],
+  [['d', 'elete'], DeleteCommand.argParser],
   [['deb', 'ug'], undefined],
   [['debugg', 'reedy'], undefined],
   [['delc', 'ommand'], undefined],
@@ -457,7 +457,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['scr', 'iptnames'], undefined],
   [['scripte', 'ncoding'], undefined],
   [['scs', 'cope'], undefined],
-  [['se', 't'], SetOptionsCommand.argParser],
+  [['se', 't'], SetCommand.argParser],
   [['setf', 'iletype'], undefined],
   [['setg', 'lobal'], undefined],
   [['setl', 'ocal'], undefined],
