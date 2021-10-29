@@ -632,7 +632,7 @@ function nameParser(
   name: [string, string],
   argParser: ArgParser | undefined
 ): Parser<Parser<ExCommand>> {
-  argParser ??= succeed(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
+  argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
   const fullName = name[0] + name[1];
   const p = nameAbbrevParser(name[0], name[1]).result(argParser);
