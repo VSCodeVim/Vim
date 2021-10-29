@@ -174,7 +174,9 @@ const substituteFlagsParser: Parser<SubstituteFlags> = seq(
   return flags;
 });
 
-const countParser: Parser<number | undefined> = optWhitespace.then(numberParser).fallback(undefined);
+const countParser: Parser<number | undefined> = optWhitespace
+  .then(numberParser)
+  .fallback(undefined);
 
 /**
  * vim has a distinctly different state for previous search and for previous substitute.  However, in SOME
