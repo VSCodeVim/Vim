@@ -381,6 +381,24 @@ suite('Ex command parsing', () => {
         count: 3,
       })
     );
+    exParseTest(
+      ':s/a/b/g3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: { replaceAll: true },
+        count: 3,
+      })
+    );
+    exParseTest(
+      ':s/a/b/3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: {},
+        count: 3,
+      })
+    );
     // Can use weird delimiter
     exParseTest(
       ':s#a#b#g',
