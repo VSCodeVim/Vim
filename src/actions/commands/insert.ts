@@ -201,23 +201,6 @@ class DecreaseIndent extends BaseCommand {
   }
 }
 
-// Upon thinking about it some more, I'm not really sure how to fix this
-// elegantly. Tab is just used for so many things in the VSCode editor, and all
-// of them happen to be overloaded. Sometimes tab does a tab, sometimes it does
-// an emmet completion, sometimes a snippet completion, etc.
-// @RegisterAction
-// export class CommandInsertTabInInsertMode extends BaseCommand {
-//   modes = [ModeName.Insert];
-//   keys = ["<tab>"];
-//   runsOnceForEveryCursor() { return false; }
-
-//   public async exec(position: Position, vimState: VimState): Promise<void> {
-//     vimState.recordedState.transformer.addTransformation({
-//       type: "tab"
-//     });
-//   }
-// }
-
 @RegisterAction
 export class CommandBackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
