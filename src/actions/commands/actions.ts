@@ -36,6 +36,7 @@ import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
 import { doesFileExist } from 'platform/fs';
+import { exCommandParser } from '../../vimscript/exCommandParser';
 
 /**
  * A very special snowflake.
@@ -845,7 +846,7 @@ class CommandRepeatSubstitution extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
     // necessary to make this work with and without neovim integration
-    await new ExCommandLine('s', vimState.currentMode).run(vimState);
+    await exCommandParser.tryParse('s').command.execute(vimState);
   }
 }
 
