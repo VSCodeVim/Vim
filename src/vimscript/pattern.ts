@@ -1,6 +1,6 @@
 import { escapeRegExp } from 'lodash';
 import { alt, any, lazy, noneOf, oneOf, Parser, seq, string } from 'parsimmon';
-import { Position, Range, TextDocument } from 'vscode';
+import { Position, Range, Selection, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
 import { LineRange } from './lineRange';
@@ -40,6 +40,7 @@ export class Pattern {
   public readonly direction: SearchDirection;
   public readonly regex: RegExp;
   public readonly ignorecase: boolean | undefined;
+  public readonly inselection: boolean | undefined;
 
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
@@ -83,8 +84,16 @@ export class Pattern {
       fromPosition = args.fromPosition;
     }
 
-    const haystack = vimState.document.getText();
-    const startOffset = vimState.document.offsetAt(fromPosition);
+    const visualSearch = this.inselection && vimState.lastVisualSelection;
+    const haystack = vimState.document.getText(
+      visualSearch
+        ? new Selection(vimState.lastVisualSelection!.start, vimState.lastVisualSelection!.end)
+        : undefined
+    );
+    const searchOffset = visualSearch
+      ? vimState.document.offsetAt(vimState.lastVisualSelection!.start)
+      : 0;
+    const startOffset = vimState.document.offsetAt(fromPosition) - searchOffset;
     this.regex.lastIndex = startOffset;
 
     const matchRanges = {
@@ -102,8 +111,8 @@ export class Pattern {
         }
 
         const matchRange = new Range(
-          vimState.document.positionAt(match.index),
-          vimState.document.positionAt(match.index + match[0].length)
+          vimState.document.positionAt(searchOffset + match.index),
+          vimState.document.positionAt(searchOffset + match.index + match[0].length)
         );
         if (
           lineRange &&
@@ -176,6 +185,7 @@ export class Pattern {
       : '?';
     // TODO: Some escaped characters need special treatment
     return alt(
+      string('\\%V').map((_) => ({ inselection: true })),
       string('\\')
         .then(any.fallback(undefined))
         .map((escaped) => {
@@ -200,12 +210,15 @@ export class Pattern {
       .map((atoms) => {
         let patternString = '';
         let caseOverride: boolean | undefined;
+        let inselection: boolean | undefined;
         for (const atom of atoms) {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
             if (atom.ignorecase) {
               caseOverride = true;
+            } else if (atom.inselection) {
+              inselection = atom.inselection;
             } else if (caseOverride === undefined) {
               caseOverride = false;
             }
@@ -214,9 +227,10 @@ export class Pattern {
         return {
           patternString,
           caseOverride,
+          inselection,
         };
       })
-      .map(({ patternString, caseOverride }) => {
+      .map(({ patternString, caseOverride, inselection }) => {
         const ignoreCase = Pattern.getIgnoreCase(patternString, {
           caseOverride,
           ignoreSmartcase: args.ignoreSmartcase ?? false,
@@ -224,7 +238,8 @@ export class Pattern {
         return new Pattern(
           patternString,
           args.direction,
-          Pattern.compileRegex(patternString, ignoreCase)
+          Pattern.compileRegex(patternString, ignoreCase),
+          inselection
         );
       });
   }
@@ -241,11 +256,17 @@ export class Pattern {
     return configuration.ignorecase;
   }
 
-  private constructor(patternString: string, direction: SearchDirection, regex: RegExp) {
+  private constructor(
+    patternString: string,
+    direction: SearchDirection,
+    regex: RegExp,
+    inselection?: boolean
+  ) {
     this.patternString = patternString;
     this.direction = direction;
     // TODO: Recalculate ignorecase if relevant config changes?
     this.regex = regex;
+    this.inselection = inselection;
   }
 }
 
