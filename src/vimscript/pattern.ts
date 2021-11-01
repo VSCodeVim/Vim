@@ -87,7 +87,7 @@ export class Pattern {
     let haystack: string;
     let searchOffset: number;
     if (this.inSelection && vimState.lastVisualSelection) {
-      // TODO: This is not exactly how Vim implements in-selection search (\V%), see :help \%V for more info.
+      // TODO: This is not exactly how Vim implements in-selection search (\%V), see :help \%V for more info.
       haystack = vimState.document.getText(
         new Range(vimState.lastVisualSelection.start, vimState.lastVisualSelection.end)
       );
