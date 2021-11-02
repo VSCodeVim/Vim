@@ -125,6 +125,7 @@ export class Pattern {
           vimState.document.positionAt(searchOffset + match.index + match[0].length)
         );
         if (
+          !this.inSelection &&
           lineRange &&
           (matchRange.start.line < lineRange.start || matchRange.end.line > lineRange.end)
         ) {
