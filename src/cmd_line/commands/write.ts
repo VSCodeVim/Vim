@@ -5,24 +5,37 @@ import { Logger } from '../../util/logger';
 import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { LineRange } from '../../vimscript/lineRange';
+import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
+import { bangParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
-export interface IWriteCommandArguments {
-  opt?: string;
-  optValue?: string;
-  bang?: boolean;
-  range?: LineRange;
-  file?: string;
-  append?: boolean;
-  cmd?: string;
-  bgWrite?: boolean;
-}
+export type IWriteCommandArguments =
+  | {
+      bang: boolean;
+      opt: FileOpt;
+      bgWrite: boolean;
+    } & ({ cmd: string } | { file: string } | {});
 
 //
 //  Implements :write
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:write
 //
 export class WriteCommand extends ExCommand {
+  public static readonly argParser: Parser<WriteCommand> = seq(
+    bangParser.skip(optWhitespace),
+    fileOptParser.skip(optWhitespace),
+    alt<{ cmd: string } | { file: string }>(
+      string('!')
+        .then(all)
+        .map((cmd) => {
+          return { cmd };
+        }),
+      regexp(/\S+/).map((file) => {
+        return { file };
+      })
+      // TODO: Support `:help :w_a` ('>>')
+    ).fallback({})
+  ).map(([bang, opt, other]) => new WriteCommand({ bang, opt, bgWrite: true, ...other }));
+
   public readonly arguments: IWriteCommandArguments;
   private readonly logger = Logger.get('Write');
 
@@ -32,21 +45,9 @@ export class WriteCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.arguments.opt) {
-      this.logger.warn('not implemented');
-      return;
-    } else if (this.arguments.file) {
-      this.logger.warn('not implemented');
-      return;
-    } else if (this.arguments.append) {
-      this.logger.warn('not implemented');
-      return;
-    } else if (this.arguments.cmd) {
-      this.logger.warn('not implemented');
-      return;
-    }
+    // TODO: Use arguments: opt, file, cmd
 
-    // defer saving the file to vscode if file is new (to present file explorer) or if file is a remote file
+    // If the file isn't on disk because it's brand new or on a remote file system, let VS Code handle it
     if (vimState.document.isUntitled || vimState.document.uri.scheme !== 'file') {
       await this.background(vscode.commands.executeCommand('workbench.action.files.save'));
       return;
@@ -54,7 +55,7 @@ export class WriteCommand extends ExCommand {
 
     try {
       await fs.accessAsync(vimState.document.fileName, fs.constants.W_OK);
-      return this.save(vimState);
+      await this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
         try {
@@ -76,24 +77,23 @@ export class WriteCommand extends ExCommand {
 
   private async save(vimState: VimState): Promise<void> {
     await this.background(
-      vimState.document.save().then(
-        () => {
-          const text =
-            '"' +
-            path.basename(vimState.document.fileName) +
-            '" ' +
-            vimState.document.lineCount +
-            'L ' +
-            vimState.document.getText().length +
-            'C written';
-          StatusBar.setText(vimState, text);
-        },
-        (e) => StatusBar.setText(vimState, e)
-      )
+      vimState.document.save().then((success) => {
+        if (success) {
+          StatusBar.setText(
+            vimState,
+            `"${path.basename(vimState.document.fileName)}" ${vimState.document.lineCount}L ${
+              vimState.document.getText().length
+            }C written`
+          );
+        } else {
+          this.logger.warn(':w failed');
+          // TODO: What's the right thing to do here?
+        }
+      })
     );
   }
 
-  private async background(fn: Thenable<void>): Promise<void> {
+  private async background<T>(fn: Thenable<T>): Promise<void> {
     if (!this.arguments.bgWrite) {
       await fn;
     }

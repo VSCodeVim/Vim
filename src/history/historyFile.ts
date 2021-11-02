@@ -4,6 +4,7 @@ import { configuration } from '../configuration/configuration';
 import { Globals } from '../globals';
 import { HistoryBase } from 'platform/history';
 
+// TODO(jfields): What's going on here? Just combine HistoryFile and HistoryBase...
 export class HistoryFile {
   private readonly logger = Logger.get('HistoryFile');
   private base: HistoryBase;

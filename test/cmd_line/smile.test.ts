@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import {
   assertEqualLines,
@@ -23,7 +23,7 @@ suite('Smile command', () => {
   teardown(cleanUpWorkspace);
 
   test(':smile creates new tab', async () => {
-    await commandLine.Run('smile', modeHandler.vimState);
+    await new ExCommandLine('smile', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     await waitForTabChange();
 
     assert.strictEqual(
@@ -34,7 +34,7 @@ suite('Smile command', () => {
   });
 
   test(':smile editor contains smile text', async () => {
-    await commandLine.Run('smile', modeHandler.vimState);
+    await new ExCommandLine('smile', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     await waitForTabChange();
     const textArray = SmileCommand.smileText.split('\n');
 

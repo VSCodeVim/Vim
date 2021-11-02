@@ -5,9 +5,12 @@ import { VimState } from '../../state/vimState';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
 import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
+import { any, Parser, seq, whitespace } from 'parsimmon';
+import { bangParser, numberParser } from '../../vimscript/parserUtils';
 
 export interface IDigraphsCommandArguments {
-  arg?: string;
+  bang: boolean;
+  newDigraphs: Array<[string, string, number]>;
 }
 
 interface DigraphQuickPickItem extends vscode.QuickPickItem {
@@ -15,8 +18,12 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 }
 
 export class DigraphsCommand extends ExCommand {
-  private readonly arguments: IDigraphsCommandArguments;
+  public static readonly argParser: Parser<DigraphsCommand> = seq(
+    bangParser,
+    whitespace.then(seq(any, any, whitespace.then(numberParser))).many()
+  ).map(([bang, newDigraphs]) => new DigraphsCommand({ bang, newDigraphs }));
 
+  private readonly arguments: IDigraphsCommandArguments;
   constructor(args: IDigraphsCommandArguments) {
     super();
     this.arguments = args;
@@ -37,9 +44,8 @@ export class DigraphsCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.arguments.arg !== undefined && this.arguments.arg.length > 2) {
-      // TODO: Register digraphs in args in state
-    }
+    // TODO: use arguments
+
     const digraphKeyAndContent = this.makeQuickPicks(configuration.digraphs).concat(
       this.makeQuickPicks(DefaultDigraphs)
     );

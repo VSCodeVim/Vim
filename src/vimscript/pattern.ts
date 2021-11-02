@@ -2,6 +2,8 @@ import { escapeRegExp } from 'lodash';
 import { alt, any, lazy, noneOf, oneOf, Parser, seq, string } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
+import { VimState } from '../state/vimState';
+import { LineRange } from './lineRange';
 import { numberParser } from './parserUtils';
 
 export function searchStringParser(args: {
@@ -24,6 +26,8 @@ export enum SearchDirection {
   Backward = -1,
 }
 
+export type PatternMatch = { range: Range; groups: string[] };
+
 /**
  * See `:help pattern`
  *
@@ -38,6 +42,7 @@ export class Pattern {
   public readonly ignorecase: boolean | undefined;
 
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   public nextMatch(document: TextDocument, fromPosition: Position): Range | undefined {
     const haystack = document.getText();
@@ -53,13 +58,38 @@ export class Pattern {
    *
    * This might not be 100% complete - @see Pattern::MAX_SEARCH_RANGES
    */
-  public allMatches(document: TextDocument, fromPosition: Position): Range[] {
-    const haystack = document.getText();
-    const startOffset = document.offsetAt(fromPosition);
+  public allMatches(
+    vimState: VimState,
+    args:
+      | {
+          fromPosition: Position;
+        }
+      | {
+          lineRange: LineRange;
+        }
+  ): PatternMatch[] {
+    let fromPosition: Position;
+    let lineRange:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+    if ('lineRange' in args) {
+      // TODO: We should be able to get away with only getting part of the document text in this case
+      lineRange = args.lineRange.resolve(vimState);
+      fromPosition = new Position(lineRange.start, 0);
+    } else {
+      fromPosition = args.fromPosition;
+    }
+
+    const haystack = vimState.document.getText();
+    const startOffset = vimState.document.offsetAt(fromPosition);
+    this.regex.lastIndex = startOffset;
 
     const matchRanges = {
-      beforeWrapping: [] as Range[],
-      afterWrapping: [] as Range[],
+      beforeWrapping: [] as PatternMatch[],
+      afterWrapping: [] as PatternMatch[],
     };
     let wrappedOver = false;
     while (true) {
@@ -72,11 +102,20 @@ export class Pattern {
         }
 
         const matchRange = new Range(
-          document.positionAt(match.index),
-          document.positionAt(match.index + match[0].length)
+          vimState.document.positionAt(match.index),
+          vimState.document.positionAt(match.index + match[0].length)
         );
+        if (
+          lineRange &&
+          (matchRange.start.line < lineRange.start || matchRange.end.line > lineRange.end)
+        ) {
+          break;
+        }
 
-        (wrappedOver ? matchRanges.afterWrapping : matchRanges.beforeWrapping).push(matchRange);
+        (wrappedOver ? matchRanges.afterWrapping : matchRanges.beforeWrapping).push({
+          range: matchRange,
+          groups: match,
+        });
 
         if (
           matchRanges.beforeWrapping.length + matchRanges.afterWrapping.length >=
@@ -102,6 +141,16 @@ export class Pattern {
     return matchRanges.afterWrapping.concat(matchRanges.beforeWrapping);
   }
 
+  private static compileRegex(regexString: string, ignoreCase?: boolean): RegExp {
+    const flags = ignoreCase ?? configuration.ignorecase ? 'gim' : 'gm';
+    try {
+      return new RegExp(regexString, flags);
+    } catch (err) {
+      // Couldn't compile the regexp, try again with special characters escaped
+      return new RegExp(regexString.replace(Pattern.SPECIAL_CHARS_REGEX, '\\$&'), flags);
+    }
+  }
+
   public static fromLiteralString(
     input: string,
     direction: SearchDirection,
@@ -109,17 +158,9 @@ export class Pattern {
   ): Pattern {
     const patternString = input.replace(escapeRegExp(input), '\\$&');
     if (wordBoundaries) {
-      return new Pattern(
-        `\\<${patternString}\\>`,
-        direction,
-        new RegExp(`\b${patternString}\b`, configuration.ignorecase ? 'gim' : 'gm')
-      );
+      return new Pattern(`\\<${patternString}\\>`, direction, Pattern.compileRegex(patternString));
     } else {
-      return new Pattern(
-        patternString,
-        direction,
-        new RegExp(patternString, configuration.ignorecase ? 'gim' : 'gm')
-      );
+      return new Pattern(patternString, direction, Pattern.compileRegex(patternString));
     }
   }
 
@@ -176,13 +217,15 @@ export class Pattern {
         };
       })
       .map(({ patternString, caseOverride }) => {
-        const flags = Pattern.getIgnoreCase(patternString, {
+        const ignoreCase = Pattern.getIgnoreCase(patternString, {
           caseOverride,
           ignoreSmartcase: args.ignoreSmartcase ?? false,
-        })
-          ? 'gim'
-          : 'gm';
-        return new Pattern(patternString, args.direction, RegExp(patternString, flags));
+        });
+        return new Pattern(
+          patternString,
+          args.direction,
+          Pattern.compileRegex(patternString, ignoreCase)
+        );
       });
   }
 

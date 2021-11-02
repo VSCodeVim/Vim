@@ -5,16 +5,37 @@ import { Register, RegisterMode } from '../../register/register';
 import { Position } from 'vscode';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
+import { Parser, alt, seq, any, whitespace, optWhitespace } from 'parsimmon';
+import { numberParser } from '../../vimscript/parserUtils';
 
-export interface IDeleteRangeCommandArguments {
-  linesToRemove?: number;
+export interface IDeleteCommandArguments {
   register?: string;
+  count?: number;
 }
 
-export class DeleteRangeCommand extends ExCommand {
-  private readonly arguments: IDeleteRangeCommandArguments;
+export class DeleteCommand extends ExCommand {
+  // TODO: this is copy-pasted from `:y[ank]`
+  public static readonly argParser: Parser<DeleteCommand> = optWhitespace.then(
+    alt(
+      numberParser.map((count) => {
+        return { register: undefined, count };
+      }),
+      seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
+        ([register, count]) => {
+          return { register, count };
+        }
+      )
+    ).map(
+      ({ register, count }) =>
+        new DeleteCommand({
+          register,
+          count,
+        })
+    )
+  );
 
-  constructor(args: IDeleteRangeCommandArguments) {
+  private readonly arguments: IDeleteCommandArguments;
+  constructor(args: IDeleteCommandArguments) {
     super();
     this.arguments = args;
   }
@@ -59,7 +80,7 @@ export class DeleteRangeCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const linesToRemove = this.arguments.linesToRemove ?? 1;
+    const linesToRemove = this.arguments.count ?? 1;
     // :d[elete][cnt] removes [cnt] lines
     const startLine = vimState.cursorStartPosition.line;
     const endLine = startLine + (linesToRemove - 1);
@@ -73,8 +94,8 @@ export class DeleteRangeCommand extends ExCommand {
      * Ex. if two lines are VisualLine highlighted, :<,>d3 will :d3
      * from the end of the selected lines.
      */
-    const { start, end } = range.resolve(vimState)!;
-    if (this.arguments.linesToRemove) {
+    const { start, end } = range.resolve(vimState);
+    if (this.arguments.count) {
       vimState.cursorStartPosition = new Position(end, 0);
       await this.execute(vimState);
       return;

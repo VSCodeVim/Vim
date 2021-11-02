@@ -1,43 +1,48 @@
-import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
+import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+import { AsciiCommand } from '../cmd_line/commands/ascii';
+import { BangCommand } from '../cmd_line/commands/bang';
+import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
+import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
+import { DeleteCommand } from '../cmd_line/commands/delete';
+import { DigraphsCommand } from '../cmd_line/commands/digraph';
+import { FileCommand } from '../cmd_line/commands/file';
+import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
+import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
+import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
+import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
 import { NohlCommand } from '../cmd_line/commands/nohl';
 import { OnlyCommand } from '../cmd_line/commands/only';
+import { PrintCommand } from '../cmd_line/commands/print';
+import { PutExCommand } from '../cmd_line/commands/put';
+import { QuitCommand } from '../cmd_line/commands/quit';
+import { ReadCommand } from '../cmd_line/commands/read';
+import { RegisterCommand } from '../cmd_line/commands/register';
+import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
 import { SmileCommand } from '../cmd_line/commands/smile';
+import { SortCommand } from '../cmd_line/commands/sort';
+import { SubstituteCommand } from '../cmd_line/commands/substitute';
+import { TabCommand } from '../cmd_line/commands/tab';
+import { TerminalCommand } from '../cmd_line/commands/terminal';
 import { UndoCommand } from '../cmd_line/commands/undo';
 import { VsCodeCommand } from '../cmd_line/commands/vscode';
+import { WallCommand } from '../cmd_line/commands/wall';
+import { WriteCommand } from '../cmd_line/commands/write';
+import { WriteQuitCommand } from '../cmd_line/commands/writequit';
+import { WriteQuitAllCommand } from '../cmd_line/commands/writequitall';
 import { YankCommand } from '../cmd_line/commands/yank';
-import { parseBangCommand } from '../cmd_line/subparsers/bang';
-import { parseBufferDeleteCommandArgs } from '../cmd_line/subparsers/bufferDelete';
-import { parseCloseCommandArgs } from '../cmd_line/subparsers/close';
-import { parseDeleteRangeLinesCommandArgs } from '../cmd_line/subparsers/deleteRange';
-import { parseDigraphCommandArgs } from '../cmd_line/subparsers/digraph';
-import * as fileCmd from '../cmd_line/subparsers/file';
-import { parseFileInfoCommandArgs } from '../cmd_line/subparsers/fileInfo';
-import { parseHistoryCommandArgs } from '../cmd_line/subparsers/history';
-import { parseMarksCommandArgs, parseMarksRemoveCommandArgs } from '../cmd_line/subparsers/marks';
-import { parsePutExCommandArgs } from '../cmd_line/subparsers/put';
-import { parseQuitAllCommandArgs, parseQuitCommandArgs } from '../cmd_line/subparsers/quit';
-import { parseReadCommandArgs } from '../cmd_line/subparsers/read';
-import { parseRegisterCommandArgs } from '../cmd_line/subparsers/register';
-import { parseOptionsCommandArgs } from '../cmd_line/subparsers/setoptions';
-import { parseSortCommandArgs } from '../cmd_line/subparsers/sort';
-import { substituteCommandArgs } from '../cmd_line/subparsers/substitute';
-import * as tabCmd from '../cmd_line/subparsers/tab';
-import { parseWallCommandArgs } from '../cmd_line/subparsers/wall';
-import { parseWriteCommandArgs } from '../cmd_line/subparsers/write';
-import { parseWriteQuitCommandArgs } from '../cmd_line/subparsers/writequit';
-import { parseWriteQuitAllCommandArgs } from '../cmd_line/subparsers/writequitall';
 import { ErrorCode, VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
+import { nameAbbrevParser } from './parserUtils';
 
-type ArgParser = (args: string) => ExCommand;
+type ArgParser = Parser<ExCommand>;
 
 /**
  * A list of all builtin ex commands and their argument parsers
@@ -47,13 +52,14 @@ type ArgParser = (args: string) => ExCommand;
  * This list comes directly from nvim's `:help index` (except a few additions, which are commented)
  */
 export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | undefined]> = [
-  [['', ''], () => new GotoLineCommand()],
-  [['!', ''], parseBangCommand],
-  [['#', ''], undefined],
+  [['', ''], succeed(new GotoLineCommand())],
+  [['!', ''], BangCommand.argParser],
+  [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
+  // TODO: Ignore #! (shebang)
   [['&', ''], undefined],
   [['*', ''], undefined],
   [['<', ''], undefined],
-  [['=', ''], undefined],
+  [['=', ''], PrintCommand.argParser({ printNumbers: true, printText: false })],
   [['>', ''], undefined],
   [['@', ''], undefined],
   [['@@', ''], undefined],
@@ -73,24 +79,24 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['argg', 'lobal'], undefined],
   [['argl', 'ocal'], undefined],
   [['argu', 'ment'], undefined],
-  [['as', 'cii'], undefined],
+  [['as', 'cii'], succeed(new AsciiCommand())],
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
   [['b', 'uffer'], undefined],
-  [['bN', 'ext'], tabCmd.parseTabPCommandArgs],
+  [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],
   [['balt', ''], undefined],
-  [['bd', 'elete'], parseBufferDeleteCommandArgs],
+  [['bd', 'elete'], BufferDeleteCommand.argParser],
   [['be', 'have'], undefined],
   [['bel', 'owright'], undefined],
   [['bf', 'irst'], undefined],
   [['bl', 'ast'], undefined],
   [['bm', 'odified'], undefined],
-  [['bn', 'ext'], tabCmd.parseTabNCommandArgs],
+  [['bn', 'ext'], TabCommand.argParsers.bnext],
   [['bo', 'tright'], undefined],
-  [['bp', 'revious'], tabCmd.parseTabPCommandArgs],
+  [['bp', 'revious'], TabCommand.argParsers.bprev],
   [['br', 'ewind'], undefined],
   [['brea', 'k'], undefined],
   [['breaka', 'dd'], undefined],
@@ -121,7 +127,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ccl', 'ose'], undefined],
   [['cd', ''], undefined],
   [['cdo', ''], undefined],
-  [['ce', 'nter'], undefined],
+  [['ce', 'nter'], CenterCommand.argParser],
   [['cex', 'pr'], undefined],
   [['cf', 'ile'], undefined],
   [['cfd', 'o'], undefined],
@@ -137,8 +143,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['chi', 'story'], undefined],
   [['cl', 'ist'], undefined],
   [['cla', 'st'], undefined],
-  [['cle', 'arjumps'], () => new ClearJumpsCommand()],
-  [['clo', 'se'], parseCloseCommandArgs],
+  [['cle', 'arjumps'], succeed(new ClearJumpsCommand())],
+  [['clo', 'se'], CloseCommand.argParser],
   [['cm', 'ap'], undefined],
   [['cmapc', 'lear'], undefined],
   [['cme', 'nu'], undefined],
@@ -148,7 +154,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cno', 'remap'], undefined],
   [['cnorea', 'bbrev'], undefined],
   [['cnoreme', 'nu'], undefined],
-  [['co', 'py'], CopyCommand.parseArgs],
+  [['co', 'py'], CopyCommand.argParser],
   [['col', 'der'], undefined],
   [['colo', 'rscheme'], undefined],
   [['com', 'mand'], undefined],
@@ -168,13 +174,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cuna', 'bbrev'], undefined],
   [['cunme', 'nu'], undefined],
   [['cw', 'indow'], undefined],
-  [['d', 'elete'], parseDeleteRangeLinesCommandArgs],
+  [['d', 'elete'], DeleteCommand.argParser],
   [['deb', 'ug'], undefined],
   [['debugg', 'reedy'], undefined],
   [['delc', 'ommand'], undefined],
   [['delf', 'unction'], undefined],
-  [['delm', 'arks'], parseMarksRemoveCommandArgs],
-  [['di', 'splay'], parseRegisterCommandArgs],
+  [['delm', 'arks'], DeleteMarksCommand.argParser],
+  [['di', 'splay'], RegisterCommand.argParser],
   [['dif', 'fupdate'], undefined],
   [['diffg', 'et'], undefined],
   [['diffo', 'ff'], undefined],
@@ -182,7 +188,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['diffpu', 't'], undefined],
   [['diffs', 'plit'], undefined],
   [['diffthis', ''], undefined],
-  [['dig', 'raphs'], parseDigraphCommandArgs],
+  [['dig', 'raphs'], DigraphsCommand.argParser],
   [['dj', 'ump'], undefined],
   [['dl', ''], undefined],
   [['dli', 'st'], undefined],
@@ -191,7 +197,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['dr', 'op'], undefined],
   [['ds', 'earch'], undefined],
   [['dsp', 'lit'], undefined],
-  [['e', 'dit'], fileCmd.parseEditFileCommandArgs],
+  [['e', 'dit'], FileCommand.argParsers.edit],
   [['ea', 'rlier'], undefined],
   [['ec', 'ho'], undefined],
   [['echoe', 'rr'], undefined],
@@ -206,13 +212,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['endfo', 'r'], undefined],
   [['endt', 'ry'], undefined],
   [['endw', 'hile'], undefined],
-  [['ene', 'w'], fileCmd.parseEditNewFileCommandArgs],
+  [['ene', 'w'], FileCommand.argParsers.enew],
   [['ev', 'al'], undefined],
-  [['ex', ''], undefined],
+  [['ex', ''], FileCommand.argParsers.edit],
   [['exe', 'cute'], undefined],
-  [['exi', 't'], undefined],
+  [['exi', 't'], WriteQuitCommand.argParser],
   [['exu', 'sage'], undefined],
-  [['f', 'ile'], parseFileInfoCommandArgs],
+  [['f', 'ile'], FileInfoCommand.argParser],
   [['files', ''], undefined],
   [['filet', 'ype'], undefined],
   [['filt', 'er'], undefined],
@@ -228,7 +234,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], undefined],
-  [['go', 'to'], GotoCommand.parseArgs],
+  [['go', 'to'], GotoCommand.argParser],
   [['gr', 'ep'], undefined],
   [['grepa', 'dd'], undefined],
   [['gu', 'i'], undefined],
@@ -240,7 +246,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['helpt', 'ags'], undefined],
   [['hi', 'ghlight'], undefined],
   [['hid', 'e'], undefined],
-  [['his', 'tory'], parseHistoryCommandArgs],
+  [['his', 'tory'], HistoryCommand.argParser],
   [['i', 'nsert'], undefined],
   [['ia', 'bbrev'], undefined],
   [['iabc', 'lear'], undefined],
@@ -260,13 +266,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['iuna', 'bbrev'], undefined],
   [['iunme', 'nu'], undefined],
   [['j', 'oin'], undefined],
-  [['ju', 'mps'], () => new JumpsCommand()],
+  [['ju', 'mps'], succeed(new JumpsCommand())],
   [['k', ''], undefined],
   [['kee', 'pmarks'], undefined],
   [['keepa', 'lt'], undefined],
   [['keepj', 'umps'], undefined],
   [['keepp', 'atterns'], undefined],
-  [['l', 'ist'], undefined],
+  [['l', 'ist'], PrintCommand.argParser({ printNumbers: false, printText: true })],
   [['lN', 'ext'], undefined],
   [['lNf', 'ile'], undefined],
   [['la', 'st'], undefined],
@@ -286,7 +292,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lcl', 'ose'], undefined],
   [['lcs', 'cope'], undefined],
   [['ld', 'o'], undefined],
-  [['le', 'ft'], undefined],
+  [['le', 'ft'], LeftCommand.argParser],
   [['lefta', 'bove'], undefined],
   [['let', ''], undefined],
   [['lex', 'pr'], undefined],
@@ -333,7 +339,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
   [['mapc', 'lear'], undefined],
-  [['marks', ''], parseMarksCommandArgs],
+  [['marks', ''], MarksCommand.argParser],
   [['mat', 'ch'], undefined],
   [['me', 'nu'], undefined],
   [['menut', 'ranslate'], undefined],
@@ -345,7 +351,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['mkvie', 'w'], undefined],
   [['mod', 'e'], undefined],
   [['n', 'ext'], undefined],
-  [['new', ''], fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs],
+  [['new', ''], FileCommand.argParsers.new],
   [['nm', 'ap'], undefined],
   [['nmapc', 'lear'], undefined],
   [['nme', 'nu'], undefined],
@@ -353,26 +359,26 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['nnoreme', 'nu'], undefined],
   [['no', 'remap'], undefined],
   [['noa', 'utocmd'], undefined],
-  [['noh', 'lsearch'], () => new NohlCommand()],
+  [['noh', 'lsearch'], succeed(new NohlCommand())],
   [['norea', 'bbrev'], undefined],
   [['noreme', 'nu'], undefined],
   [['norm', 'al'], undefined],
   [['nos', 'wapfile'], undefined],
-  [['nu', 'mber'], undefined],
+  [['nu', 'mber'], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['nun', 'map'], undefined],
   [['nunme', 'nu'], undefined],
   [['ol', 'dfiles'], undefined],
   [['om', 'ap'], undefined],
   [['omapc', 'lear'], undefined],
   [['ome', 'nu'], undefined],
-  [['on', 'ly'], () => new OnlyCommand()],
+  [['on', 'ly'], succeed(new OnlyCommand())],
   [['ono', 'remap'], undefined],
   [['onoreme', 'nu'], undefined],
   [['opt', 'ions'], undefined],
   [['ou', 'nmap'], undefined],
   [['ounme', 'nu'], undefined],
   [['ow', 'nsyntax'], undefined],
-  [['p', 'rint'], undefined],
+  [['p', 'rint'], PrintCommand.argParser({ printNumbers: false, printText: true })],
   [['pa', 'ckadd'], undefined],
   [['packl', 'oadall'], undefined],
   [['pc', 'lose'], undefined],
@@ -397,7 +403,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ptp', 'revious'], undefined],
   [['ptr', 'ewind'], undefined],
   [['pts', 'elect'], undefined],
-  [['pu', 't'], parsePutExCommandArgs],
+  [['pu', 't'], PutExCommand.argParser],
   [['pw', 'd'], undefined],
   [['py', 'thon'], undefined],
   [['py3', ''], undefined],
@@ -410,22 +416,22 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['pyx', ''], undefined],
   [['pyxd', 'o'], undefined],
   [['pyxf', 'ile'], undefined],
-  [['q', 'uit'], parseQuitCommandArgs],
-  [['qa', 'll'], parseQuitAllCommandArgs],
-  [['quita', 'll'], parseQuitAllCommandArgs],
-  [['r', 'ead'], parseReadCommandArgs],
+  [['q', 'uit'], QuitCommand.argParser(false)],
+  [['qa', 'll'], QuitCommand.argParser(true)],
+  [['quita', 'll'], QuitCommand.argParser(true)],
+  [['r', 'ead'], ReadCommand.argParser],
   [['rec', 'over'], undefined],
   [['red', 'o'], undefined],
   [['redi', 'r'], undefined],
   [['redr', 'aw'], undefined],
   [['redraws', 'tatus'], undefined],
   [['redrawt', 'abline'], undefined],
-  [['reg', 'isters'], parseRegisterCommandArgs],
+  [['reg', 'isters'], RegisterCommand.argParser],
   [['res', 'ize'], undefined],
   [['ret', 'ab'], undefined],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
-  [['ri', 'ght'], undefined],
+  [['ri', 'ght'], RightCommand.argParser],
   [['rightb', 'elow'], undefined],
   [['rsh', 'ada'], undefined],
   [['ru', 'ntime'], undefined],
@@ -433,7 +439,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['rubyd', 'o'], undefined],
   [['rubyf', 'ile'], undefined],
   [['rund', 'o'], undefined],
-  [['s', 'ubstitute'], (args: string) => substituteCommandArgs.tryParse(args)],
+  [['s', 'ubstitute'], SubstituteCommand.argParser],
   [['sN', 'ext'], undefined],
   [['sa', 'rgument'], undefined],
   [['sal', 'l'], undefined],
@@ -451,13 +457,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['scr', 'iptnames'], undefined],
   [['scripte', 'ncoding'], undefined],
   [['scs', 'cope'], undefined],
-  [['se', 't'], parseOptionsCommandArgs],
+  [['se', 't'], SetCommand.argParser],
   [['setf', 'iletype'], undefined],
   [['setg', 'lobal'], undefined],
   [['setl', 'ocal'], undefined],
   [['sf', 'ind'], undefined],
   [['sfir', 'st'], undefined],
-  [['sh', 'ell'], () => new ShCommand()], // Taken from Vim; not in nvim
+  [['sh', 'ell'], succeed(new ShCommand())], // Taken from Vim; not in nvim
   [['sig', 'n'], undefined],
   [['sil', 'ent'], undefined],
   [['sl', 'eep'], undefined],
@@ -466,14 +472,14 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['smap', ''], undefined],
   [['smapc', 'lear'], undefined],
   [['sme', 'nu'], undefined],
-  [['smile', ''], () => new SmileCommand()], // Taken from Vim; not in nvim
+  [['smile', ''], succeed(new SmileCommand())], // Taken from Vim; not in nvim
   [['sn', 'ext'], undefined],
   [['sno', 'magic'], undefined],
   [['snor', 'emap'], undefined],
   [['snoreme', 'nu'], undefined],
   [['so', 'urce'], undefined],
-  [['sor', 't'], parseSortCommandArgs],
-  [['sp', 'lit'], fileCmd.parseEditFileInNewHorizontalWindowCommandArgs],
+  [['sor', 't'], SortCommand.argParser],
+  [['sp', 'lit'], FileCommand.argParsers.split],
   [['spe', 'llgood'], undefined],
   [['spelld', 'ump'], undefined],
   [['spelli', 'nfo'], undefined],
@@ -500,28 +506,28 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['sy', 'ntax'], undefined],
   [['sync', 'bind'], undefined],
   [['synti', 'me'], undefined],
-  [['t', ''], CopyCommand.parseArgs],
+  [['t', ''], CopyCommand.argParser],
   [['tN', 'ext'], undefined],
   [['ta', 'g'], undefined],
   [['tab', ''], undefined],
-  [['tabN', 'ext'], tabCmd.parseTabPCommandArgs],
-  [['tabc', 'lose'], tabCmd.parseTabCloseCommandArgs],
+  [['tabN', 'ext'], TabCommand.argParsers.bprev],
+  [['tabc', 'lose'], TabCommand.argParsers.tabclose],
   [['tabdo', ''], undefined],
-  [['tabe', 'dit'], tabCmd.parseTabNewCommandArgs],
+  [['tabe', 'dit'], TabCommand.argParsers.tabnew],
   [['tabf', 'ind'], undefined],
-  [['tabfir', 'st'], tabCmd.parseTabFirstCommandArgs],
-  [['tabl', 'ast'], tabCmd.parseTabLastCommandArgs],
-  [['tabm', 'ove'], tabCmd.parseTabMovementCommandArgs],
-  [['tabn', 'ext'], tabCmd.parseTabNCommandArgs],
-  [['tabnew', ''], tabCmd.parseTabNewCommandArgs],
-  [['tabo', 'nly'], tabCmd.parseTabOnlyCommandArgs],
-  [['tabp', 'revious'], tabCmd.parseTabPCommandArgs],
+  [['tabfir', 'st'], TabCommand.argParsers.bfirst],
+  [['tabl', 'ast'], TabCommand.argParsers.blast],
+  [['tabm', 'ove'], TabCommand.argParsers.tabmove],
+  [['tabn', 'ext'], TabCommand.argParsers.bnext],
+  [['tabnew', ''], TabCommand.argParsers.tabnew],
+  [['tabo', 'nly'], TabCommand.argParsers.tabonly],
+  [['tabp', 'revious'], TabCommand.argParsers.bprev],
   [['tabr', 'ewind'], undefined],
   [['tabs', ''], undefined],
   [['tags', ''], undefined],
   [['tc', 'd'], undefined],
   [['tch', 'dir'], undefined],
-  [['te', 'rminal'], undefined],
+  [['te', 'rminal'], TerminalCommand.argParser],
   [['tf', 'irst'], undefined],
   [['th', 'row'], undefined],
   [['tj', 'ump'], undefined],
@@ -538,7 +544,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ts', 'elect'], undefined],
   [['tu', 'nmenu'], undefined],
   [['tunma', 'p'], undefined],
-  [['u', 'ndo'], () => new UndoCommand()],
+  [['u', 'ndo'], UndoCommand.argParser],
   [['una', 'bbreviate'], undefined],
   [['undoj', 'oin'], undefined],
   [['undol', 'ist'], undefined],
@@ -548,7 +554,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['unm', 'ap'], undefined],
   [['unme', 'nu'], undefined],
   [['uns', 'ilent'], undefined],
-  [['up', 'date'], undefined],
+  [['up', 'date'], WriteCommand.argParser],
   [['v', 'global'], undefined],
   [['ve', 'rsion'], undefined],
   [['verb', 'ose'], undefined],
@@ -562,15 +568,15 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['vmapc', 'lear'], undefined],
   [['vme', 'nu'], undefined],
   [['vn', 'oremap'], undefined],
-  [['vne', 'w'], fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs],
+  [['vne', 'w'], FileCommand.argParsers.vnew],
   [['vnoreme', 'nu'], undefined],
-  [['vs', 'plit'], fileCmd.parseEditFileInNewVerticalWindowCommandArgs],
-  [['vsc', 'ode'], VsCodeCommand.parseArgs], // Special: run VS Code command
+  [['vs', 'plit'], FileCommand.argParsers.vsplit],
+  [['vsc', 'ode'], VsCodeCommand.argParser], // Special: run VS Code command
   [['vu', 'nmap'], undefined],
   [['vunme', 'nu'], undefined],
-  [['w', 'rite'], parseWriteCommandArgs],
+  [['w', 'rite'], WriteCommand.argParser],
   [['wN', 'ext'], undefined],
-  [['wa', 'll'], parseWallCommandArgs],
+  [['wa', 'll'], WallCommand.argParser],
   [['wh', 'ile'], undefined],
   [['wi', 'nsize'], undefined],
   [['winc', 'md'], undefined],
@@ -578,12 +584,12 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['winp', 'os'], undefined],
   [['wn', 'ext'], undefined],
   [['wp', 'revious'], undefined],
-  [['wq', ''], parseWriteQuitCommandArgs],
-  [['wqa', 'll'], parseWriteQuitAllCommandArgs],
+  [['wq', ''], WriteQuitCommand.argParser],
+  [['wqa', 'll'], WriteQuitAllCommand.argParser],
   [['wsh', 'ada'], undefined],
   [['wu', 'ndo'], undefined],
-  [['x', 'it'], parseWriteQuitCommandArgs],
-  [['xa', 'll'], parseWriteQuitAllCommandArgs],
+  [['x', 'it'], WriteQuitCommand.argParser],
+  [['xa', 'll'], WriteQuitAllCommand.argParser],
   [['xm', 'ap'], undefined],
   [['xmapc', 'lear'], undefined],
   [['xme', 'nu'], undefined],
@@ -591,28 +597,10 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['xnoreme', 'nu'], undefined],
   [['xu', 'nmap'], undefined],
   [['xunme', 'nu'], undefined],
-  [['y', 'ank'], YankCommand.parseArgs],
+  [['y', 'ank'], YankCommand.argParser],
   [['z', ''], undefined],
   [['~', ''], undefined],
 ];
-
-function nameParser(
-  name: [string, string],
-  argParser: ArgParser | undefined
-): Parser<(args: string) => ExCommand> {
-  argParser ??= () => new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]);
-
-  const fullName = name[0] + name[1];
-  const possibleNames = [...Array(name[1].length + 1).keys()]
-    .reverse()
-    .map((idx) => name[0] + name[1].substring(0, idx));
-  const p = alt(...possibleNames.map(string)).result(argParser);
-  return fullName === '' || /[a-z]$/i.test(fullName) ? p.notFollowedBy(regexp(/[a-z]/i)) : p;
-}
-
-export const commandNameParser: Parser<((args: string) => ExCommand) | undefined> = alt(
-  ...[...builtinExCommands].reverse().map(([name, argParser]) => nameParser(name, argParser))
-);
 
 class UnimplementedCommand extends ExCommand {
   name: string;
@@ -640,6 +628,23 @@ class UnimplementedCommand extends ExCommand {
   }
 }
 
+function nameParser(
+  name: [string, string],
+  argParser: ArgParser | undefined
+): Parser<Parser<ExCommand>> {
+  argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
+
+  const fullName = name[0] + name[1];
+  const p = nameAbbrevParser(name[0], name[1]).result(argParser);
+  return fullName === '' || /[a-z]$/i.test(fullName) ? p.notFollowedBy(regexp(/[a-z]/i)) : p;
+}
+
+export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
+  ...[...builtinExCommands]
+    .reverse()
+    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace)))
+);
+
 export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
   optWhitespace
     .then(string(':').skip(optWhitespace).many())
@@ -658,5 +663,12 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
           `${lineRange?.toString() ?? ''}${whitespace}${args}`
         );
       }
-      return { lineRange, command: parseArgs(args) };
+      const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
+      if (result.status === false || result.value[1]) {
+        // TODO: All possible parsing errors are lumped into "trailing characters", which is wrong
+        // TODO: Implement `:help :bar`
+        // TODO: Implement `:help :comment`
+        throw VimError.fromCode(ErrorCode.TrailingCharacters);
+      }
+      return { lineRange, command: result.value[0] };
     });

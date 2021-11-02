@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { commandLine } from '../cmd_line/commandLine';
+import { ExCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -324,8 +324,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // start visual mode?
       if (
         selection.anchor.line === selection.active.line &&
-        selection.anchor.character >= newPosition.getLineEnd().character - 1 &&
-        selection.active.character >= newPosition.getLineEnd().character - 1
+        selection.anchor.character >= newPosition.getLineEnd().character &&
+        selection.active.character >= newPosition.getLineEnd().character
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
@@ -492,10 +492,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
         throw e;
       } else if (e instanceof Error) {
-        e.message = `Failed to handle key=${key}. ${e.message}`;
+        e.message = `Failed to handle key \`${key}\`: ${e.message}`;
         throw e;
       } else {
-        throw new Error(`Failed to handle key=${key} due to an unknown error.`);
+        throw new Error(`Failed to handle key \`${key}\` due to an unknown error.`);
       }
     }
 
@@ -1132,7 +1132,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public updateSearchHighlights(showHighlights: boolean) {
     let searchRanges: vscode.Range[] = [];
     if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState.editor) ?? [];
+      searchRanges = globalState.searchState?.getMatchRanges(this.vimState) ?? [];
     }
     this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
   }
@@ -1147,9 +1147,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
       if (this.vimState.currentMode === Mode.SearchInProgressMode) {
-        selectionMode = globalState.searchState?.previousMode ?? Mode.Normal;
+        // TODO: Alleviate need for this type assertion
+        selectionMode = this.vimState.commandLine!.previousMode;
       } else if (this.vimState.currentMode === Mode.CommandlineInProgress) {
-        selectionMode = commandLine.previousMode;
+        // TODO: Alleviate need for this type assertion
+        selectionMode = this.vimState.commandLine!.previousMode;
       } else if (this.vimState.currentMode === Mode.SurroundInputMode) {
         selectionMode = this.vimState.surround!.previousMode;
       }
@@ -1337,7 +1339,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         configuration.incsearch
       ) {
         const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-          this.vimState.editor,
+          this.vimState,
           this.vimState.cursorStopPosition
         );
 

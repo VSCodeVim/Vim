@@ -1,5 +1,40 @@
 # Change Log
 
+## [v1.21.10](https://github.com/vscodevim/vim/tree/v1.21.10) (2021-10-19)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.9...v1.21.10)
+
+**Fixed Bugs:**
+
+- `:tabo\[nly\]` and `:tabc\[lose\]` throw `E488` in version 1.21.9 [\#7171](https://github.com/VSCodeVim/Vim/issues/7171)
+
+## [v1.21.9](https://github.com/vscodevim/vim/tree/v1.21.9) (2021-10-18)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.8...v1.21.9)
+
+**Fixed Bugs:**
+
+- /pattern/s/.../.../ doesn't work [\#7151](https://github.com/VSCodeVim/Vim/issues/7151)
+- 1.21.8 does not work in web worker anymore [\#7150](https://github.com/VSCodeVim/Vim/issues/7150)
+- `\*` throws an error when `wordSeparators` doesn't have `/` [\#7135](https://github.com/VSCodeVim/Vim/issues/7135)
+- `iskeyword` doesn't work for multiple languages [\#7123](https://github.com/VSCodeVim/Vim/issues/7123)
+- Ex "copy" command with `.`, `-`, or `+` \(current, previous, or next line\) at end of command stopped working [\#7058](https://github.com/VSCodeVim/Vim/issues/7058)
+- \<C-^\> does not work if \# register contains an absolute path [\#6679](https://github.com/VSCodeVim/Vim/issues/6679)
+- Running :w! on a read-only file results in messed up permissions. [\#6553](https://github.com/VSCodeVim/Vim/issues/6553)
+
+**Closed issues:**
+
+- README.md missing installation item: linux setup [\#7080](https://github.com/VSCodeVim/Vim/issues/7080)
+
+**Merged pull requests:**
+
+- Load process polyfill automatically, required by util [\#7156](https://github.com/VSCodeVim/Vim/pull/7156) ([jeanp413](https://github.com/jeanp413))
+- Add pane resize keybindings [\#7138](https://github.com/VSCodeVim/Vim/pull/7138) ([tagniam](https://github.com/tagniam))
+- Update ROADMAP.ZH.md [\#7137](https://github.com/VSCodeVim/Vim/pull/7137) ([hellorayza](https://github.com/hellorayza))
+- iskeyword is evaluated when a command is called \(\#7123\) [\#7126](https://github.com/VSCodeVim/Vim/pull/7126) ([shinichy](https://github.com/shinichy))
+- Fix bang command with ranges [\#7122](https://github.com/VSCodeVim/Vim/pull/7122) ([tagniam](https://github.com/tagniam))
+- \#6553: capture file mode and restore it after force write [\#7092](https://github.com/VSCodeVim/Vim/pull/7092) ([joecrop](https://github.com/joecrop))
+
 ## [v1.21.8](https://github.com/vscodevim/vim/tree/v1.21.8) (2021-09-29)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.7...v1.21.8)
@@ -72,14 +107,11 @@
 **Closed issues:**
 
 - s [\#6959](https://github.com/VSCodeVim/Vim/issues/6959)
-- Status bar shows -- NORMAL -- but no commands working [\#6929](https://github.com/VSCodeVim/Vim/issues/6929)
 - Make "gd" Open definition to the side in Search Editor [\#6921](https://github.com/VSCodeVim/Vim/issues/6921)
-- Simple copy-paste key bindings don't work in --INSERT-- mode [\#6914](https://github.com/VSCodeVim/Vim/issues/6914)
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///home/fabrice/CRIStAL/Speed/examples/train_example.py". [\#6868](https://github.com/VSCodeVim/Vim/issues/6868)
 - Failed to handle key=2. Cannot read property 'length' of undefined [\#6861](https://github.com/VSCodeVim/Vim/issues/6861)
 - Failed to handle key=.. Overlapping ranges are not allowed! [\#6840](https://github.com/VSCodeVim/Vim/issues/6840)
 - Lack of documentation for arguments text object [\#6764](https://github.com/VSCodeVim/Vim/issues/6764)
-- c or d followed by number not working on Linux [\#6422](https://github.com/VSCodeVim/Vim/issues/6422)
 
 **Merged pull requests:**
 
@@ -161,8 +193,6 @@
 
 - Implement :vsc to run VSCode commands [\#6694](https://github.com/VSCodeVim/Vim/pull/6694) ([meluskyc](https://github.com/meluskyc))
 - Surround Rewrite [\#6452](https://github.com/VSCodeVim/Vim/pull/6452) ([sql-koala](https://github.com/sql-koala))
-- Bugfix substitute with backslash\(fixes \#2710\) [\#6409](https://github.com/VSCodeVim/Vim/pull/6409) ([sekai013](https://github.com/sekai013))
-- Add Python specific motions \(fixes \#6213\) [\#6393](https://github.com/VSCodeVim/Vim/pull/6393) ([abid-mujtaba](https://github.com/abid-mujtaba))
 
 ## [v1.20.3](https://github.com/vscodevim/vim/tree/v1.20.3) (2021-05-18)
 
@@ -214,29 +244,12 @@
 
 - The fomula of `{count} %` [\#6490](https://github.com/VSCodeVim/Vim/issues/6490)
 - `gu` and `gU` do not respect line-wise motions [\#6467](https://github.com/VSCodeVim/Vim/issues/6467)
-- `\[num\] gP` doesn't put the register content `\[num\]` times. [\#6444](https://github.com/VSCodeVim/Vim/issues/6444)
-- When specifying the register to be used, it should also put the content to `""` register. [\#6441](https://github.com/VSCodeVim/Vim/issues/6441)
-- `d \_` should delete entire line. [\#6435](https://github.com/VSCodeVim/Vim/issues/6435)
-- `o \<C-U\>` should delete the `\n` inserted by `o` [\#6429](https://github.com/VSCodeVim/Vim/issues/6429)
-- `{num} \[p` should put the text in register `{num}` times. [\#6416](https://github.com/VSCodeVim/Vim/issues/6416)
-- `\<C-V\>` and `\>` doesn't work. [\#6414](https://github.com/VSCodeVim/Vim/issues/6414)
-- `\<C-V\> \]\[` should go to next section [\#6411](https://github.com/VSCodeVim/Vim/issues/6411)
-- Visual multiple lines `X` has different behavior when the cursor at the begin of the select and the end of the select. [\#6408](https://github.com/VSCodeVim/Vim/issues/6408)
-- Failed to handle key=U. Cannot read property 'start' of undefined [\#6377](https://github.com/VSCodeVim/Vim/issues/6377)
-- `\<BS\>` in replace mode should go over EOL [\#6371](https://github.com/VSCodeVim/Vim/issues/6371)
-- \[count\]R inserts text when it should overwrite it [\#6370](https://github.com/VSCodeVim/Vim/issues/6370)
-- Replace mode does not properly restore characters after backspacing before where it started [\#6369](https://github.com/VSCodeVim/Vim/issues/6369)
 
 **Closed issues:**
 
 - Failed to handle key=s. TextEditor\(vs.editor.ICodeEditor:1,$model5\) has been disposed [\#6477](https://github.com/VSCodeVim/Vim/issues/6477)
 - Failed to handle key=w. TextEditor\(vs.editor.ICodeEditor:1,$model13\) has been disposed [\#6472](https://github.com/VSCodeVim/Vim/issues/6472)
 - Failed to handle key=p. TextEditor\(vs.editor.ICodeEditor:1,$model1\) has been disposed [\#6468](https://github.com/VSCodeVim/Vim/issues/6468)
-
-**Merged pull requests:**
-
-- Substitute, use transformations [\#6402](https://github.com/VSCodeVim/Vim/pull/6402) ([sql-koala](https://github.com/sql-koala))
-- Feature/vimrc source support [\#6394](https://github.com/VSCodeVim/Vim/pull/6394) ([Demiguise](https://github.com/Demiguise))
 
 ## [v1.19.3](https://github.com/vscodevim/vim/tree/v1.19.3) (2021-03-29)
 
