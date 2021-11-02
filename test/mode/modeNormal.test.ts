@@ -2294,6 +2294,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/ with \\%V will search in last selection',
+    start: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+    keysPressed: 'vjj<Esc>gg/\\%Vasdf\n',
+    end: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/ with \\%V will search in last selection, starting from the cursor postion',
+    start: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
+    keysPressed: 'vjjj<Esc>kk/\\%Vasdf\nn',
+    end: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
+  });
+
+  newTest({
     title: '/ matches ^ per line',
     start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
     keysPressed: '/^asdf\n',
