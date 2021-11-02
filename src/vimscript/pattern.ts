@@ -86,18 +86,24 @@ export class Pattern {
 
     let haystack: string;
     let searchOffset: number;
+    let startOffset: number;
     if (this.inSelection && vimState.lastVisualSelection) {
       // TODO: This is not exactly how Vim implements in-selection search (\%V), see :help \%V for more info.
-      haystack = vimState.document.getText(
-        new Range(vimState.lastVisualSelection.start, vimState.lastVisualSelection.end)
+      const searchRange = new Range(
+        vimState.lastVisualSelection.start,
+        vimState.lastVisualSelection.end
       );
+      haystack = vimState.document.getText(searchRange);
       searchOffset = vimState.document.offsetAt(vimState.lastVisualSelection.start);
+      startOffset = searchRange.contains(fromPosition)
+        ? vimState.document.offsetAt(fromPosition) - searchOffset
+        : 0;
     } else {
       haystack = vimState.document.getText();
       searchOffset = 0;
+      startOffset = vimState.document.offsetAt(fromPosition) - searchOffset;
     }
 
-    const startOffset = vimState.document.offsetAt(fromPosition) - searchOffset;
     this.regex.lastIndex = startOffset;
 
     const matchRanges = {
