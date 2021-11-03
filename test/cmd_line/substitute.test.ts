@@ -235,6 +235,13 @@ suite('Basic substitute', () => {
     end: ['dbd', '|dbd', 'abc'],
   });
 
+  newTest({
+    title: 'Substitute in last visual selection with \\%V',
+    start: ['aba', '|aba', 'abc', ''],
+    keysPressed: 'vjj<Esc>' + sub('\\%Va', 'd', { flags: 'g' }),
+    end: ['aba', 'dbd', '|dbc', ''],
+  });
+
   suite('Effects of gdefault=true', () => {
     setup(async () => {
       Globals.mockConfiguration.gdefault = true;

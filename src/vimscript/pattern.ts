@@ -40,6 +40,7 @@ export class Pattern {
   public readonly direction: SearchDirection;
   public readonly regex: RegExp;
   public readonly ignorecase: boolean | undefined;
+  public readonly inSelection: boolean;
 
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
@@ -83,8 +84,26 @@ export class Pattern {
       fromPosition = args.fromPosition;
     }
 
-    const haystack = vimState.document.getText();
-    const startOffset = vimState.document.offsetAt(fromPosition);
+    let haystack: string;
+    let searchOffset: number;
+    let startOffset: number;
+    if (this.inSelection && vimState.lastVisualSelection) {
+      // TODO: This is not exactly how Vim implements in-selection search (\%V), see :help \%V for more info.
+      const searchRange = new Range(
+        vimState.lastVisualSelection.start,
+        vimState.lastVisualSelection.end
+      );
+      haystack = vimState.document.getText(searchRange);
+      searchOffset = vimState.document.offsetAt(vimState.lastVisualSelection.start);
+      startOffset = searchRange.contains(fromPosition)
+        ? vimState.document.offsetAt(fromPosition) - searchOffset
+        : 0;
+    } else {
+      haystack = vimState.document.getText();
+      searchOffset = 0;
+      startOffset = vimState.document.offsetAt(fromPosition) - searchOffset;
+    }
+
     this.regex.lastIndex = startOffset;
 
     const matchRanges = {
@@ -102,10 +121,11 @@ export class Pattern {
         }
 
         const matchRange = new Range(
-          vimState.document.positionAt(match.index),
-          vimState.document.positionAt(match.index + match[0].length)
+          vimState.document.positionAt(searchOffset + match.index),
+          vimState.document.positionAt(searchOffset + match.index + match[0].length)
         );
         if (
+          !this.inSelection &&
           lineRange &&
           (matchRange.start.line < lineRange.start || matchRange.end.line > lineRange.end)
         ) {
@@ -176,6 +196,7 @@ export class Pattern {
       : '?';
     // TODO: Some escaped characters need special treatment
     return alt(
+      string('\\%V').map((_) => ({ inSelection: true })),
       string('\\')
         .then(any.fallback(undefined))
         .map((escaped) => {
@@ -200,12 +221,15 @@ export class Pattern {
       .map((atoms) => {
         let patternString = '';
         let caseOverride: boolean | undefined;
+        let inSelection: boolean | undefined;
         for (const atom of atoms) {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
             if (atom.ignorecase) {
               caseOverride = true;
+            } else if (atom.inSelection) {
+              inSelection = atom.inSelection;
             } else if (caseOverride === undefined) {
               caseOverride = false;
             }
@@ -214,9 +238,10 @@ export class Pattern {
         return {
           patternString,
           caseOverride,
+          inSelection,
         };
       })
-      .map(({ patternString, caseOverride }) => {
+      .map(({ patternString, caseOverride, inSelection }) => {
         const ignoreCase = Pattern.getIgnoreCase(patternString, {
           caseOverride,
           ignoreSmartcase: args.ignoreSmartcase ?? false,
@@ -224,7 +249,8 @@ export class Pattern {
         return new Pattern(
           patternString,
           args.direction,
-          Pattern.compileRegex(patternString, ignoreCase)
+          Pattern.compileRegex(patternString, ignoreCase),
+          inSelection
         );
       });
   }
@@ -241,11 +267,17 @@ export class Pattern {
     return configuration.ignorecase;
   }
 
-  private constructor(patternString: string, direction: SearchDirection, regex: RegExp) {
+  private constructor(
+    patternString: string,
+    direction: SearchDirection,
+    regex: RegExp,
+    inSelection: boolean = false
+  ) {
     this.patternString = patternString;
     this.direction = direction;
     // TODO: Recalculate ignorecase if relevant config changes?
     this.regex = regex;
+    this.inSelection = inSelection;
   }
 }
 
