@@ -256,6 +256,12 @@ export interface IConfiguration {
   searchHighlightTextColor: string;
 
   /**
+   * Color of current match
+   */
+  searchMatchColor: string;
+  searchMatchTextColor: string;
+
+  /**
    * Yank highlight settings.
    */
   highlightedyank: IHighlightedYankConfiguration;

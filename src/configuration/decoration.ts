@@ -4,6 +4,7 @@ import { IConfiguration } from './iconfiguration';
 class DecorationImpl {
   private _default!: vscode.TextEditorDecorationType;
   private _searchHighlight!: vscode.TextEditorDecorationType;
+  private _searchMatch!: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
   private _easyMotionDimIncSearch!: vscode.TextEditorDecorationType;
   private _insertModeVirtualCharacter!: vscode.TextEditorDecorationType;
@@ -50,6 +51,17 @@ class DecorationImpl {
 
   public get searchHighlight() {
     return this._searchHighlight;
+  }
+
+  public set searchMatch(value: vscode.TextEditorDecorationType) {
+    if (this._searchMatch) {
+      this._searchMatch.dispose();
+    }
+    this._searchMatch = value;
+  }
+
+  public get searchMatch() {
+    return this._searchMatch;
   }
 
   public get easyMotionIncSearch() {
@@ -149,6 +161,16 @@ class DecorationImpl {
     this.searchHighlight = vscode.window.createTextEditorDecorationType({
       backgroundColor: searchHighlightColor,
       color: configuration.searchHighlightTextColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+    });
+
+    const searchMatchColor = configuration.searchMatchColor
+      ? configuration.searchMatchColor
+      : new vscode.ThemeColor('editor.findMatchBackground');
+
+    this.searchMatch = vscode.window.createTextEditorDecorationType({
+      backgroundColor: searchMatchColor,
+      color: configuration.searchMatchTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 

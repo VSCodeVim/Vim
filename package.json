@@ -504,6 +504,14 @@
           "type": "string",
           "description": "Color of the search highlight text."
         },
+        "vim.searchMatchColor": {
+          "type": "string",
+          "description": "Color of the current match."
+        },
+        "vim.searchMatchTextColor": {
+          "type": "string",
+          "description": "Color of the current match text."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
