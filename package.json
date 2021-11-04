@@ -406,7 +406,7 @@
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'CommandlineInProgress' && !inDebugRepl || editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
