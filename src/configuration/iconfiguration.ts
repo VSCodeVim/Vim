@@ -258,8 +258,8 @@ export interface IConfiguration {
   /**
    * Color of current match
    */
-  searchMatchColor: string;
-  searchMatchTextColor: string;
+  searchMatchBackgroundColor: string;
+  searchMatchForegroundColor: string;
 
   /**
    * Yank highlight settings.

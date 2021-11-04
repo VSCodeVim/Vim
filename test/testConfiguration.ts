@@ -75,8 +75,8 @@ export class Configuration implements IConfiguration {
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';
-  searchMatchColor = 'rgba(255, 150, 150, 0.3)';
-  searchMatchTextColor = '';
+  searchMatchBackgroundColor = 'rgba(255, 150, 150, 0.3)';
+  searchMatchForegroundColor = '';
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
