@@ -870,7 +870,7 @@ abstract class CommandFold extends BaseCommand {
         ? { levels: timesToRepeat, direction: this.direction }
         : undefined;
     await vscode.commands.executeCommand(this.commandName, args);
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1527,7 +1527,7 @@ export class CommandInsertNewLineAbove extends BaseCommand {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     for (let i = 0; i < count; i++) {
       const newPos = new Position(
         vimState.cursors[0].start.line + i,
@@ -1555,7 +1555,7 @@ export class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.cursorStartPosition.line - i,
@@ -2997,7 +2997,7 @@ export class ActionOverrideCmdD extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -3039,7 +3039,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     });
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3057,7 +3057,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3075,7 +3075,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
