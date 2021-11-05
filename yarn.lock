@@ -5579,10 +5579,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.1.0.tgz#b288139d74c0f76f5e06f6714e35e31e23a603ed"
-  integrity sha512-+yxJv129+22TjFwPJGQheS9CT3z/LWry/cPiHMwxpaQujmyk3GyPXJhAmb5zskT0lX1XT0WZd3Gc+oEcBfLlNw==
+vsce@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.2.0.tgz#8e78b005d27909d2f903744d374a750ce7bf4aa3"
+  integrity sha512-Ww4P5MibbMorrRU5Dugd/IhGpq8inCtgxrFko7Yo8tIPlEq9LrjVD9/P7+s6gKMnlpGpvfC6xmR51cPb4Uf+nQ==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
@@ -5666,10 +5666,10 @@ webpack-stream@7.0.0:
     through "^2.3.8"
     vinyl "^2.2.1"
 
-webpack@5.61.0:
-  version "5.61.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.61.0.tgz#fa827f0ee9bdfd141dd73c3e891e955ebd52fe7f"
-  integrity sha512-fPdTuaYZ/GMGFm4WrPi2KRCqS1vDp773kj9S0iI5Uc//5cszsFEDgHNaX4Rj1vobUiU1dFIV3mA9k1eHeluFpw==
+webpack@5.62.0:
+  version "5.62.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.62.0.tgz#662c6a0e809cdf5a7725a475d0a3d44156916301"
+  integrity sha512-4SyIaLQxm0JjUrQQ4UTHUU19rgl6hzidd8tYOBB3y78DKLBAVI777SYnl3f8e1XkHLYuILcyC7oUVs4mUZYKRg==
   dependencies:
     "@types/eslint-scope" "^3.7.0"
     "@types/estree" "^0.0.50"
