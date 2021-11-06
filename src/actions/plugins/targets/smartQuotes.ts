@@ -101,3 +101,55 @@ export class MoveInsideLastBacktick extends SmartQuotes {
   override readonly which = 'last';
   override includeQuotes = false;
 }
+
+@RegisterAction
+export class MoveAroundQuote extends SmartQuotes {
+  keys = ['a', 'q'];
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = true;
+}
+
+@RegisterAction
+export class MoveInsideQuote extends SmartQuotes {
+  keys = ['i', 'q'];
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = false;
+}
+
+@RegisterAction
+export class MoveAroundNextQuote extends SmartQuotes {
+  keys = ['a', 'n', 'q'];
+  override readonly which = 'next';
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = true;
+}
+
+@RegisterAction
+export class MoveInsideNextQuote extends SmartQuotes {
+  keys = ['i', 'n', 'q'];
+  override readonly which = 'next';
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = false;
+}
+
+@RegisterAction
+export class MoveAroundLastQuote extends SmartQuotes {
+  keys = ['a', 'l', 'q'];
+  override readonly which = 'last';
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = true;
+}
+
+@RegisterAction
+export class MoveInsideLastQuote extends SmartQuotes {
+  keys = ['i', 'l', 'q'];
+  override readonly which = 'last';
+  override readonly anyQuote = true;
+  readonly charToMatch = '"'; // it is not in use, because anyQuote is true.
+  override includeQuotes = false;
+}

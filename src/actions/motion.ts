@@ -1966,6 +1966,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
 // TODO: Shouldn't this be a TextObject? A clearer delineation between motions and objects should be made.
 export abstract class MoveQuoteMatch extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  protected readonly anyQuote: boolean = false;
   protected abstract readonly charToMatch: '"' | "'" | '`';
   protected includeQuotes = false;
   override isJump = true;
@@ -2000,7 +2001,10 @@ export abstract class MoveQuoteMatch extends BaseMovement {
     }
 
     if (useSmartQuotes()) {
-      const quoteMatcher = new SmartQuoteMatcher(this.charToMatch, vimState.document);
+      const quoteMatcher = new SmartQuoteMatcher(
+        this.anyQuote ? 'any' : this.charToMatch,
+        vimState.document
+      );
       const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
 
       if (res === undefined) {

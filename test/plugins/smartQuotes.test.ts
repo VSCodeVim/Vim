@@ -37,6 +37,24 @@ suite('smartQuotes plugin', () => {
       keysPressed: 'di`',
       end: ['aaa "bbb" c `|` '],
     });
+    newTest({
+      title: 'any-quote - 1',
+      start: ['|  \'aaa\' "bbb" c `d` '],
+      keysPressed: 'diq',
+      end: ['  \'|\' "bbb" c `d` '],
+    });
+    newTest({
+      title: 'any-quote - 2',
+      start: ['  \'aaa\'| "bbb" c `d` '],
+      keysPressed: 'diq',
+      end: ['  \'aaa\' "|" c `d` '],
+    });
+    newTest({
+      title: 'any-quote - 3',
+      start: ['  \'aaa\' "bbb" |c `d` '],
+      keysPressed: 'diq',
+      end: ['  \'aaa\' "bbb" c `|` '],
+    });
     // test basic usage
     newTest({
       title: 'no quotes at all',

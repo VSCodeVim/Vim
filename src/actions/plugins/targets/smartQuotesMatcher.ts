@@ -2,7 +2,7 @@ import { Position } from 'vscode';
 import { TextDocument } from 'vscode';
 import { configuration } from '../../../configuration/configuration';
 
-type Quote = '"' | "'" | '`';
+export type Quote = '"' | "'" | '`' | 'any';
 enum QuoteMatch {
   Opening,
   Closing,
@@ -163,7 +163,11 @@ export class SmartQuoteMatcher {
         i += 1;
         continue;
       }
-      if (text[i] === this.quote) {
+
+      if (
+        (this.quote === 'any' && (text[i] === '"' || text[i] === "'" || text[i] === '`')) ||
+        text[i] === this.quote
+      ) {
         quoteMap[i] = openingQuote ? QuoteMatch.Opening : QuoteMatch.Closing;
         openingQuote = !openingQuote;
       }
@@ -304,9 +308,17 @@ export class SmartQuoteMatcher {
     for (let line = position.line; line < this.document.lineCount; line++) {
       position = this.document.validatePosition(position.with({ line }));
       const text = this.document.lineAt(position).text;
-      const index = text.indexOf(this.quote, position.character);
-      if (index >= 0) {
-        return position.with({ character: index });
+      if (this.quote === 'any') {
+        for (let i = position.character; i < text.length; i++) {
+          if (text[i] === '"' || text[i] === "'" || text[i] === '`') {
+            return position.with({ character: i });
+          }
+        }
+      } else {
+        const index = text.indexOf(this.quote, position.character);
+        if (index >= 0) {
+          return position.with({ character: index });
+        }
       }
       position = position.with({ character: 0 }); // set at line begin for next iteration
     }
@@ -316,9 +328,17 @@ export class SmartQuoteMatcher {
     for (let line = position.line; line >= 0; line--) {
       position = this.document.validatePosition(position.with({ line }));
       const text = this.document.lineAt(position).text;
-      const index = text.lastIndexOf(this.quote, position.character);
-      if (index >= 0) {
-        return position.with({ character: index });
+      if (this.quote === 'any') {
+        for (let i = position.character; i >= 0; i--) {
+          if (text[i] === '"' || text[i] === "'" || text[i] === '`') {
+            return position.with({ character: i });
+          }
+        }
+      } else {
+        const index = text.lastIndexOf(this.quote, position.character);
+        if (index >= 0) {
+          return position.with({ character: index });
+        }
       }
       position = position.with({ character: +Infinity }); // set at line end for next iteration
     }
