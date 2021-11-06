@@ -2,7 +2,7 @@ import { Position } from 'vscode';
 import { TextDocument } from 'vscode';
 import { configuration } from '../../../configuration/configuration';
 
-export type Quote = '"' | "'" | '`' | 'any';
+type Quote = '"' | "'" | '`';
 enum QuoteMatch {
   Opening,
   Closing,
@@ -147,9 +147,9 @@ export class SmartQuoteMatcher {
   static readonly escapeChar = '\\';
 
   private document: TextDocument;
-  private quote: Quote;
+  private quote: Quote | 'any';
 
-  constructor(quote: Quote, document: TextDocument) {
+  constructor(quote: Quote | 'any', document: TextDocument) {
     this.quote = quote;
     this.document = document;
   }
