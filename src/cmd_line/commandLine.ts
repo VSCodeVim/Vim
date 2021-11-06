@@ -8,7 +8,7 @@ import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
 import { exCommandParser } from '../vimscript/exCommandParser';
-import { SearchState } from '../state/searchState';
+import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
 import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
 import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
@@ -360,6 +360,17 @@ export class SearchCommandLine extends CommandLine {
   }
 
   private searchState: SearchState;
+  /**
+   * Internal representation of the current match, i.e. the match to which the cursor moves when the search is executed.
+   *
+   * No positions are stored; instead, we keep track of an offset which, alnog with the cursor position
+   * and count, determines the index of the current match among all matches in the document.
+   *
+   * Specifically, the current match is the (currentMatchOffset * count)th next match from the cursor position.
+   *
+   * Initialized to 1, can be changed by commands, resets to 1 when the search string is empty.
+   */
+  private currentMatchOffset: number = 1;
 
   constructor(vimState: VimState, searchString: string, direction: SearchDirection) {
     super(searchString, vimState.currentMode);
@@ -379,6 +390,9 @@ export class SearchCommandLine extends CommandLine {
   }
   public set text(text: string) {
     this.searchState.searchString = text;
+    if (text === '') {
+      this.currentMatchOffset = 1;
+    }
   }
 
   public getSearchState(): SearchState {
@@ -387,6 +401,39 @@ export class SearchCommandLine extends CommandLine {
 
   public getHistory(): HistoryFile {
     return SearchCommandLine.history;
+  }
+
+  /**
+   * @returns the offset n such that the current match is the nth next from the starting position.
+   */
+  private getCurrentMatchRelativeOffset(vimState: VimState): number {
+    return this.currentMatchOffset * (vimState.recordedState.count || 1);
+  }
+
+  /**
+   * @returns The start of the current match range (after applying the search offset) and its rank in the document's matches
+   */
+  public getCurrentMatchPosition(vimState: VimState): IndexedPosition | undefined {
+    return this.searchState.getNextSearchMatchPosition(
+      vimState,
+      vimState.cursorStopPosition,
+      SearchDirection.Forward,
+      this.getCurrentMatchRelativeOffset(vimState)
+    );
+  }
+
+  /**
+   * @returns The current match range and its rank in the document's matches
+   *
+   * NOTE: This method does not take the search offset into account
+   */
+  public getCurrentMatchRange(vimState: VimState): IndexedRange | undefined {
+    return this.searchState.getNextSearchMatchRange(
+      vimState,
+      vimState.cursorStopPosition,
+      SearchDirection.Forward,
+      this.getCurrentMatchRelativeOffset(vimState)
+    );
   }
 
   public async run(vimState: VimState): Promise<void> {
@@ -412,18 +459,9 @@ export class SearchCommandLine extends CommandLine {
       return;
     }
 
-    const count = vimState.recordedState.count || 1;
-    let searchPos = vimState.cursorStopPosition;
-    let nextMatch: { pos: Position; index: number } | undefined;
-    for (let i = 0; i < count; i++) {
-      // Move cursor to next match
-      nextMatch = this.searchState.getNextSearchMatchPosition(vimState, searchPos);
-      if (nextMatch === undefined) {
-        break;
-      }
-      searchPos = nextMatch.pos;
-    }
-    if (nextMatch === undefined) {
+    const currentMatch = this.getCurrentMatchPosition(vimState);
+
+    if (currentMatch === undefined) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(
@@ -436,9 +474,9 @@ export class SearchCommandLine extends CommandLine {
       return;
     }
 
-    vimState.cursorStopPosition = nextMatch.pos;
+    vimState.cursorStopPosition = currentMatch.pos;
 
-    reportSearch(nextMatch.index, this.searchState.getMatchRanges(vimState).length, vimState);
+    reportSearch(currentMatch.index, this.searchState.getMatchRanges(vimState).length, vimState);
   }
 
   public async escape(vimState: VimState): Promise<void> {
@@ -467,5 +505,20 @@ export class SearchCommandLine extends CommandLine {
       vimState.cursorStopPosition,
       vimState
     );
+  }
+
+  /**
+   * Called when <C-g> or <C-t> is pressed during SearchInProgress mode
+   */
+  public async advanceCurrentMatch(vimState: VimState, direction: SearchDirection): Promise<void> {
+    // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
+    // To compensate, multiply the desired direction by the searchState's direction, so that
+    // effectiveDirection == direction * (searchState.direction)^2 == direction.
+    const originalOffset = this.currentMatchOffset;
+    this.currentMatchOffset += this.searchState.direction * direction;
+    if (!configuration.wrapscan && !this.getCurrentMatchRange(vimState)) {
+      // With wrapscan off, prevent advancing past last reachable match
+      this.currentMatchOffset = originalOffset;
+    }
   }
 }

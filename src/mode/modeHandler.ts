@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { ExCommandLine } from '../cmd_line/commandLine';
+import { SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -1137,13 +1137,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       searchRanges = searchState.getMatchRanges(this.vimState) ?? [];
       if (
         this.vimState.currentMode === Mode.SearchInProgressMode &&
+        this.vimState.commandLine instanceof SearchCommandLine &&
         searchRanges.length &&
         configuration.incsearch
       ) {
-        const match = searchState.getNextSearchMatchRange(
-          this.vimState,
-          searchState.cursorStartPosition
-        );
+        const match = this.vimState.commandLine.getCurrentMatchRange(this.vimState);
         if (match) {
           searchRanges = [
             ...searchRanges.slice(0, match.index),
@@ -1355,19 +1353,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (
         this.vimState.currentMode === Mode.SearchInProgressMode &&
-        globalState.searchState &&
+        this.vimState.commandLine instanceof SearchCommandLine &&
         configuration.incsearch
       ) {
-        const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-          this.vimState,
-          this.vimState.cursorStopPosition
-        );
+        const currentMatch = this.vimState.commandLine.getCurrentMatchRange(this.vimState);
 
-        if (nextMatch) {
-          this.vimState.editor.revealRange(
-            new vscode.Range(nextMatch.pos, nextMatch.pos),
-            revealType
-          );
+        if (currentMatch) {
+          this.vimState.editor.revealRange(currentMatch.range, revealType);
         } else if (this.vimState.firstVisibleLineBeforeSearch !== undefined) {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -

@@ -4,6 +4,23 @@ import { configuration } from '../configuration/configuration';
 import { Pattern, SearchDirection, SearchOffset, searchStringParser } from '../vimscript/pattern';
 import { VimState } from './vimState';
 
+export type IndexedRange = {
+  range: Range;
+  index: number;
+};
+
+export type IndexedPosition = {
+  pos: Position;
+  index: number;
+};
+
+/**
+ * @returns the least residue of n mod m in the range [0, m) if m > 0, or (m, 0] if m < 0
+ */
+function mod(n: number, m: number): number {
+  return (m + (n % m)) % m;
+}
+
 /**
  * State involved with beginning a search (/).
  */
@@ -100,13 +117,16 @@ export class SearchState {
 
   /**
    * @returns The start of the next match range, after applying the search offset
+   *
+   * @see getNextSearchMatchRange for parameters
    */
   public getNextSearchMatchPosition(
     vimState: VimState,
     startPosition: Position,
-    direction = SearchDirection.Forward
-  ): { pos: Position; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(vimState, startPosition, direction);
+    direction = SearchDirection.Forward,
+    n = 1
+  ): IndexedPosition | undefined {
+    const nextMatch = this.getNextSearchMatchRange(vimState, startPosition, direction, n);
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -116,17 +136,23 @@ export class SearchState {
   }
 
   /**
-   * @returns The next match range from the given position and its rank in the document's matches
+   * @returns The nth next match range from the given position and its rank in the document's matches, or undefined if none exists
    *
    * @param direction If `SearchDirection.Backward`, this will search in the opposite of the pattern's direction
+   *
+   * @param n which match to return, relative to the given position
+   *          1 (default) corresponds to the next match,
+   *          2 corresponds to the match after next,
+   *          0 corresponds to the match before next, etc.
    *
    * NOTE: This method does not take the search offset into account
    */
   public getNextSearchMatchRange(
     vimState: VimState,
     fromPosition: Position,
-    direction = SearchDirection.Forward
-  ): { range: Range; index: number } | undefined {
+    direction = SearchDirection.Forward,
+    n = 1
+  ): IndexedRange | undefined {
     const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
@@ -134,56 +160,54 @@ export class SearchState {
     }
 
     const effectiveDirection = (direction * this.direction) as SearchDirection;
+    let index: number | undefined;
 
     if (effectiveDirection === SearchDirection.Forward) {
-      for (const [index, range] of matchRanges.entries()) {
-        if (range.start.isAfter(fromPosition)) {
-          return {
-            range,
-            index,
-          };
+      for (let i = 0; i < matchRanges.length; i++) {
+        if (matchRanges[i].start.isAfter(fromPosition)) {
+          index = i;
+          break;
         }
-      }
-      // We've hit the bottom of the file. Wrap around if configured to do so, or return undefined.
-      if (configuration.wrapscan) {
-        const range = matchRanges[0];
-        return {
-          range,
-          index: 0,
-        };
-      } else {
-        return undefined;
       }
     } else {
-      for (const [index, range] of matchRanges.slice(0).reverse().entries()) {
-        if (range.end.isBeforeOrEqual(fromPosition)) {
-          return {
-            range,
-            index: matchRanges.length - index - 1,
-          };
+      for (let i = matchRanges.length - 1; i >= 0; i--) {
+        if (matchRanges[i].start.isBefore(fromPosition)) {
+          index = i;
+          break;
         }
       }
+    }
 
-      // We've hit the top of the file. Wrap around if configured to do so, or return undefined.
+    if (index === undefined) {
+      // We've hit the top/bottom of the file. Wrap around if configured to do so, or return undefined.
       if (configuration.wrapscan) {
-        const range = matchRanges[matchRanges.length - 1];
-        return {
-          range,
-          index: matchRanges.length - 1,
-        };
+        index = effectiveDirection === SearchDirection.Forward ? 0 : matchRanges.length - 1;
       } else {
         return undefined;
       }
+    }
+
+    // index of the first match now stored in variable index. To get index of
+    // the nth match, offset this by n - 1 in the appropriate direction
+    index += effectiveDirection * (n - 1);
+
+    if (0 <= index && index < matchRanges.length) {
+      return { index, range: matchRanges[index] };
+    }
+
+    // We've hit the top/bottom of the file. Wrap around (possibly many times) if configured to do so, or return undefined
+    if (configuration.wrapscan) {
+      index = mod(index, matchRanges.length);
+      return { index, range: matchRanges[index] };
+    } else {
+      return undefined;
     }
   }
 
   /**
    * @returns the match range which contains the given Position, or undefined if none exists
    */
-  public findContainingMatchRange(
-    vimState: VimState,
-    pos: Position
-  ): { range: Range; index: number } | undefined {
+  public findContainingMatchRange(vimState: VimState, pos: Position): IndexedRange | undefined {
     const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
