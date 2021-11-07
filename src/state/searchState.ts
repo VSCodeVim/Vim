@@ -124,9 +124,14 @@ export class SearchState {
     vimState: VimState,
     startPosition: Position,
     direction = SearchDirection.Forward,
-    n = 1
+    relativeIndex = 0
   ): IndexedPosition | undefined {
-    const nextMatch = this.getNextSearchMatchRange(vimState, startPosition, direction, n);
+    const nextMatch = this.getNextSearchMatchRange(
+      vimState,
+      startPosition,
+      direction,
+      relativeIndex
+    );
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -136,14 +141,13 @@ export class SearchState {
   }
 
   /**
-   * @returns The nth next match range from the given position and its rank in the document's matches, or undefined if none exists
+   * @returns The next match range from the given position and its rank in the document's matches, or undefined if none exists.
+   * An optional index can be proveded to target other matches relative to the next.
    *
    * @param direction If `SearchDirection.Backward`, this will search in the opposite of the pattern's direction
    *
-   * @param n which match to return, relative to the given position
-   *          1 (default) corresponds to the next match,
-   *          2 corresponds to the match after next,
-   *          0 corresponds to the match before next, etc.
+   * @param relativeIndex Which match to return, relative to the next match. 0 (default) corresponds to the next match,
+   * 1 corresponds to the match after next (in the given direction), -1 corresponds to the match before next, etc.
    *
    * NOTE: This method does not take the search offset into account
    */
@@ -151,7 +155,7 @@ export class SearchState {
     vimState: VimState,
     fromPosition: Position,
     direction = SearchDirection.Forward,
-    n = 1
+    relativeIndex = 0
   ): IndexedRange | undefined {
     const matchRanges = this.recalculateSearchRanges(vimState);
 
@@ -187,9 +191,9 @@ export class SearchState {
       }
     }
 
-    // index of the first match now stored in variable index. To get index of
-    // the nth match, offset this by n - 1 in the appropriate direction
-    index += effectiveDirection * (n - 1);
+    // index of the first match now stored in variable index.
+    // Offsetting it by relativeIndex in the appropriate direction gets the index of the desired match.
+    index += effectiveDirection * relativeIndex;
 
     if (0 <= index && index < matchRanges.length) {
       return { index, range: matchRanges[index] };

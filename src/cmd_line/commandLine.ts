@@ -359,18 +359,15 @@ export class SearchCommandLine extends CommandLine {
     }
   }
 
-  private searchState: SearchState;
   /**
-   * Internal representation of the current match, i.e. the match to which the cursor moves when the search is executed.
+   * Keeps the state of the current match, i.e. the match to which the cursor moves when the search is executed.
+   * Incremented / decremented by \<C-g> or \<C-t> in SearchInProgress mode.
+   * Resets to 0 if the search string becomes empty.
    *
-   * No positions are stored; instead, we keep track of an offset which, alnog with the cursor position
-   * and count, determines the index of the current match among all matches in the document.
-   *
-   * Specifically, the current match is the (currentMatchOffset * count)th next match from the cursor position.
-   *
-   * Initialized to 1, can be changed by commands, resets to 1 when the search string is empty.
+   * @see {@link getCurrentMatchRelativeIndex}
    */
-  private currentMatchOffset: number = 1;
+  private currentMatchDisplacement: number = 0;
+  private searchState: SearchState;
 
   constructor(vimState: VimState, searchString: string, direction: SearchDirection) {
     super(searchString, vimState.currentMode);
@@ -391,7 +388,7 @@ export class SearchCommandLine extends CommandLine {
   public set text(text: string) {
     this.searchState.searchString = text;
     if (text === '') {
-      this.currentMatchOffset = 1;
+      this.currentMatchDisplacement = 0;
     }
   }
 
@@ -404,10 +401,11 @@ export class SearchCommandLine extends CommandLine {
   }
 
   /**
-   * @returns the offset n such that the current match is the nth next from the starting position.
+   * @returns the index of the current match, relative to the next match.
    */
-  private getCurrentMatchRelativeOffset(vimState: VimState): number {
-    return this.currentMatchOffset * (vimState.recordedState.count || 1);
+  private getCurrentMatchRelativeIndex(vimState: VimState): number {
+    const count = vimState.recordedState.count || 1;
+    return count - 1 + this.currentMatchDisplacement * count;
   }
 
   /**
@@ -418,7 +416,7 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeOffset(vimState)
+      this.getCurrentMatchRelativeIndex(vimState)
     );
   }
 
@@ -432,7 +430,7 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeOffset(vimState)
+      this.getCurrentMatchRelativeIndex(vimState)
     );
   }
 
@@ -514,11 +512,11 @@ export class SearchCommandLine extends CommandLine {
     // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
     // To compensate, multiply the desired direction by the searchState's direction, so that
     // effectiveDirection == direction * (searchState.direction)^2 == direction.
-    const originalOffset = this.currentMatchOffset;
-    this.currentMatchOffset += this.searchState.direction * direction;
+    const originalOffset = this.currentMatchDisplacement;
+    this.currentMatchDisplacement += this.searchState.direction * direction;
     if (!configuration.wrapscan && !this.getCurrentMatchRange(vimState)) {
       // With wrapscan off, prevent advancing past last reachable match
-      this.currentMatchOffset = originalOffset;
+      this.currentMatchDisplacement = originalOffset;
     }
   }
 }
