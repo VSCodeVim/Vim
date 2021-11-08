@@ -729,12 +729,12 @@
         },
         "vim.targets.smartQuotes.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable smart quotes movements",
+          "markdownDescription": "Enable the smart quotes movements from [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects).",
           "default": true
         },
         "vim.targets.smartQuotes.breakThroughLines": {
           "type": "boolean",
-          "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion.",
+          "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion, see [targets.vim#next-and-last-quote](https://github.com/wellle/targets.vim#next-and-last-quote).",
           "default": true
         },
         "vim.targets.smartQuotes.aIncludesSurroundingSpaces": {
