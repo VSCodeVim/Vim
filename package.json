@@ -497,32 +497,20 @@
           "default": "\\"
         },
         "vim.searchHighlightColor": {
-          "type": [
-            "string",
-            "undefined"
-          ],
-          "description": "Background color of the other search matches. The color must not be opaque so as not to hide underlying decorations. Uses `editor.findMatchHighlightColor` from current theme if undefined."
+          "type": "string",
+          "markdownDescription": "Background color of the other search matches. The color must not be opaque so as not to hide underlying decorations. Uses `#editor.findMatchHighlightColor#` from current theme if undefined."
         },
         "vim.searchHighlightTextColor": {
-          "type": [
-            "string",
-            "undefined"
-          ],
-          "description": "Foreground color of the other search matches."
+          "type": "string",
+          "markdownDescription": "Foreground color of the other search matches."
         },
         "vim.searchMatchBackgroundColor": {
-          "type": [
-            "string",
-            "undefined"
-          ],
-          "description": "Background color of the current match. Uses `editor.findMatchColor` from current theme if undefined."
+          "type": "string",
+          "markdownDescription": "Background color of the current match. Uses `#editor.findMatchColor#` from current theme if undefined."
         },
         "vim.searchMatchForegroundColor": {
-          "type": [
-            "string",
-            "undefined"
-          ],
-          "description": "Foreground color of the current match."
+          "type": "string",
+          "markdownDescription": "Foreground color of the current match."
         },
         "vim.highlightedyank.enable": {
           "type": "boolean",
@@ -676,12 +664,12 @@
         "vim.easymotionIncSearchForegroundColor": {
           "type": "string",
           "default": "#7fbf00",
-          "description": "Set a custom color for the easymotion search n-character (default `<leader><leader>/`)."
+          "markdownDescription": "Set a custom color for the easymotion search n-character (default `<leader><leader>/`)."
         },
         "vim.easymotionDimColor": {
           "type": "string",
           "default": "#777777",
-          "description": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
+          "markdownDescription": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
         },
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
