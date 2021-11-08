@@ -1100,6 +1100,11 @@
           "type": "boolean",
           "description": "Show the currently set mark(s) in the gutter.",
           "default": false
+        },
+        "vim.shell": {
+          "type": "string",
+          "description": "Path to the shell to use for `!` and `:!` commands.",
+          "default": ""
         }
       }
     },

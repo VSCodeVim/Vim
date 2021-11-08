@@ -1,3 +1,5 @@
+import { Configuration } from '../../test/testConfiguration';
+import { newTest } from '../../test/testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -98,6 +100,46 @@ suite('bang (!) cmd_line', () => {
     test('piping commands works', async () => {
       await modeHandler.handleMultipleKeyEvents(':.!printf "c\\nb\\na" | sort\n'.split(''));
       assertEqualLines(['a', 'b', 'c']);
+    });
+  });
+});
+
+suite('custom bang shell', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
+  suite('sh', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.shell = '/bin/sh';
+      await setupWorkspace(configuration);
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: '! supports /bin/sh',
+      start: ['|'],
+      keysPressed: '<Esc>:.!echo $0\n',
+      end: ['|/bin/sh'],
+    });
+  });
+
+  suite('bash', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.shell = '/bin/bash';
+      await setupWorkspace(configuration);
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: '! supports /bin/bash',
+      start: ['|'],
+      keysPressed: '<Esc>:.!echo $0\n',
+      end: ['|/bin/bash'],
     });
   });
 });
