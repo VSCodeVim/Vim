@@ -330,20 +330,5 @@ export async function executeTransformations(
     vimState.cursorStartPosition = vimState.cursorStartPosition.add(vimState.document, diff);
   }
 
-  /**
-   * This is a bit of a hack because Visual Block Mode isn't fully on board with
-   * the new text transformation style yet.
-   *
-   * (TODO)
-   */
-  if (firstTransformation.type === 'deleteRange') {
-    if (firstTransformation.collapseRange) {
-      vimState.cursorStopPosition = new Position(
-        vimState.cursorStopPosition.line,
-        vimState.cursorStartPosition.character
-      );
-    }
-  }
-
   vimState.recordedState.transformer = new Transformer();
 }
