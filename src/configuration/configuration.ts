@@ -307,8 +307,8 @@ class Configuration implements IConfiguration {
   searchHighlightColor = '';
   searchHighlightTextColor = '';
 
-  searchMatchBackgroundColor = '';
-  searchMatchForegroundColor = '';
+  searchMatchColor = '';
+  searchMatchTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,

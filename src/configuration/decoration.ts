@@ -164,13 +164,13 @@ class DecorationImpl {
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
-    const searchMatchBackgroundColor = configuration.searchMatchBackgroundColor
-      ? configuration.searchMatchBackgroundColor
+    const searchMatchBackgroundColor = configuration.searchMatchColor
+      ? configuration.searchMatchColor
       : new vscode.ThemeColor('editor.findMatchBackground');
 
     this.searchMatch = vscode.window.createTextEditorDecorationType({
       backgroundColor: searchMatchBackgroundColor,
-      color: configuration.searchMatchForegroundColor,
+      color: configuration.searchMatchTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
     });
 
