@@ -504,11 +504,11 @@
           "type": "string",
           "markdownDescription": "Foreground color of the other search matches."
         },
-        "vim.searchMatchBackgroundColor": {
+        "vim.searchMatchColor": {
           "type": "string",
           "markdownDescription": "Background color of the current match. Uses `#editor.findMatchColor#` from current theme if undefined."
         },
-        "vim.searchMatchForegroundColor": {
+        "vim.searchMatchTextColor": {
           "type": "string",
           "markdownDescription": "Foreground color of the current match."
         },
