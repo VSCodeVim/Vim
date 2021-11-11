@@ -2474,11 +2474,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteRange',
-          range: new vscode.Range(start, start.getLineEnd()),
-          collapseRange: true,
-        });
+        vimState.recordedState.transformer.delete(new vscode.Range(start, start.getLineEnd()));
         cursors.push(new Cursor(end, end));
       }
     }
