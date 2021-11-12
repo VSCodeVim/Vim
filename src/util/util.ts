@@ -7,9 +7,11 @@ import { VimState } from '../state/vimState';
  * command, and would encounter race conditions because the cursor positions
  * wouldn't yet be updated. So we waited for a selection change event, but
  * this doesn't seem to be necessary any more.
+ *
+ * @deprecated Calls to this should probably be replaced with calls to `ModeHandler::syncCursors()` or something...
  */
-export function getCursorsAfterSync(): Cursor[] {
-  return vscode.window.activeTextEditor!.selections.map((x) => Cursor.FromVSCodeSelection(x));
+export function getCursorsAfterSync(editor: vscode.TextEditor): Cursor[] {
+  return editor.selections.map((x) => Cursor.FromVSCodeSelection(x));
 }
 
 export function clamp(num: number, min: number, max: number) {
@@ -37,4 +39,10 @@ export function maxPosition(pos1: vscode.Position, pos2: vscode.Position): vscod
 
 export function minPosition(pos1: vscode.Position, pos2: vscode.Position): vscode.Position {
   return pos1.isBeforeOrEqual(pos2) ? pos1 : pos2;
+}
+
+export function assertDefined<X>(x: X | undefined, err: string): asserts x {
+  if (x === undefined) {
+    throw new Error(err);
+  }
 }

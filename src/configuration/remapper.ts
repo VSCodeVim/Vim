@@ -3,11 +3,11 @@ import { IKeyRemapping } from './iconfiguration';
 import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
 import { Mode } from '../mode/mode';
-import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
 import { SpecialKeys } from '../util/specialKeys';
+import { exCommandParser } from '../vimscript/exCommandParser';
 
 interface IRemapper {
   /**
@@ -503,10 +503,17 @@ export class Remapper implements IRemapper {
 
           if (commandString.slice(0, 1) === ':') {
             // Check if this is a vim command by looking for :
-            await commandLine.Run(
-              commandString.slice(1, commandString.length),
-              modeHandler.vimState
-            );
+            // TODO: Parse once & cache?
+            const result = exCommandParser.parse(commandString);
+            if (result.status) {
+              if (result.value.lineRange) {
+                await result.value.command.executeWithRange(vimState, result.value.lineRange);
+              } else {
+                await result.value.command.execute(vimState);
+              }
+            } else {
+              throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
+            }
             await modeHandler.updateView();
           } else if (commandArgs) {
             await vscode.commands.executeCommand(commandString, commandArgs);

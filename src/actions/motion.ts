@@ -494,7 +494,7 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.getMatchRanges(vimState.editor).length === 0) {
+    if (searchState.getMatchRanges(vimState).length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -509,8 +509,8 @@ class CommandNextSearchMatch extends BaseMovement {
     const positionIsEOL = position.getRight().isEqual(position.getLineEnd());
     const nextMatch =
       positionIsEOL && searchForward
-        ? searchState.getNextSearchMatchPosition(vimState.editor, position.getRight())
-        : searchState.getNextSearchMatchPosition(vimState.editor, position);
+        ? searchState.getNextSearchMatchPosition(vimState, position.getRight())
+        : searchState.getNextSearchMatchPosition(vimState, position);
 
     if (!nextMatch) {
       StatusBar.displayError(
@@ -525,7 +525,7 @@ class CommandNextSearchMatch extends BaseMovement {
       return failedMovement(vimState);
     }
 
-    reportSearch(nextMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
+    reportSearch(nextMatch.index, searchState.getMatchRanges(vimState).length, vimState);
 
     return nextMatch.pos;
   }
@@ -549,7 +549,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     globalState.hl = true;
 
-    if (searchState.getMatchRanges(vimState.editor).length === 0) {
+    if (searchState.getMatchRanges(vimState).length === 0) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
@@ -564,15 +564,11 @@ class CommandPreviousSearchMatch extends BaseMovement {
     const prevMatch =
       positionIsEOL && !searchForward
         ? searchState.getNextSearchMatchPosition(
-            vimState.editor,
+            vimState,
             position.getRight(),
             SearchDirection.Backward
           )
-        : searchState.getNextSearchMatchPosition(
-            vimState.editor,
-            position,
-            SearchDirection.Backward
-          );
+        : searchState.getNextSearchMatchPosition(vimState, position, SearchDirection.Backward);
 
     if (!prevMatch) {
       StatusBar.displayError(
@@ -587,7 +583,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return failedMovement(vimState);
     }
 
-    reportSearch(prevMatch.index, searchState.getMatchRanges(vimState.editor).length, vimState);
+    reportSearch(prevMatch.index, searchState.getMatchRanges(vimState).length, vimState);
 
     return prevMatch.pos;
   }

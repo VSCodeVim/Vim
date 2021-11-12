@@ -67,7 +67,7 @@ export class CopyCommand extends ExCommand {
   }
 
   public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    const { start, end } = range.resolve(vimState)!;
+    const { start, end } = range.resolve(vimState);
     this.copyLines(vimState, start, end);
   }
 }

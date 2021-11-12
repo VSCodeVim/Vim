@@ -49,7 +49,7 @@ export type FileCmd =
     };
 export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
   .then(
-    alt(
+    alt<FileCmd>(
       // Exact line number
       numberParser.map((line) => ({ type: 'line_number', line })),
       // TODO: Next match of pattern
@@ -60,6 +60,5 @@ export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
       succeed({ type: 'last_line' })
     )
   )
-  .result(undefined)
   .fallback(undefined)
   .desc('[+cmd]');
