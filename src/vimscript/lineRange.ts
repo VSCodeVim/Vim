@@ -173,7 +173,7 @@ export class Address {
             throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
           }
           const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-            vimState.editor,
+            vimState,
             vimState.cursorStopPosition,
             SearchDirection.Forward
           );
@@ -190,7 +190,7 @@ export class Address {
             throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
           }
           const prevMatch = globalState.searchState.getNextSearchMatchPosition(
-            vimState.editor,
+            vimState,
             vimState.cursorStopPosition,
             SearchDirection.Backward
           );
@@ -211,12 +211,11 @@ export class Address {
                 SearchDirection.Forward,
                 vimState.cursorStopPosition,
                 globalState.substituteState.searchPattern.patternString,
-                {},
-                vimState.currentMode
+                {}
               )
             : undefined;
           const match = searchState?.getNextSearchMatchPosition(
-            vimState.editor,
+            vimState,
             vimState.cursorStopPosition
           );
           if (match === undefined) {
@@ -322,7 +321,7 @@ export class LineRange {
       };
     } else {
       return {
-        start: this.start.resolve(vimState, 'left'),
+        start: left,
         end: end.resolve(vimState, 'right'),
       };
     }

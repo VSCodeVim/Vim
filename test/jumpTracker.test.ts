@@ -424,8 +424,8 @@ suite('Record and navigate jumps', () => {
       newJumpTest({
         start: ['|a1', 'a2', 'a3'],
         keysPressed: ':%s/a/b\n',
-        end: ['|b1', 'b2', 'b3'],
-        jumps: ['b2', 'b3'],
+        end: ['b1', 'b2', '|b3'],
+        jumps: ['b3'],
       });
     });
 

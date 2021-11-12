@@ -5,17 +5,17 @@ import { Register, RegisterMode } from '../../register/register';
 import { Position } from 'vscode';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { Parser, alt, seq, any, whitespace, succeed, optWhitespace } from 'parsimmon';
+import { Parser, alt, seq, any, whitespace, optWhitespace } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 
-export interface IDeleteRangeCommandArguments {
+export interface IDeleteCommandArguments {
   register?: string;
   count?: number;
 }
 
-export class DeleteRangeCommand extends ExCommand {
+export class DeleteCommand extends ExCommand {
   // TODO: this is copy-pasted from `:y[ank]`
-  public static readonly argParser: Parser<DeleteRangeCommand> = optWhitespace.then(
+  public static readonly argParser: Parser<DeleteCommand> = optWhitespace.then(
     alt(
       numberParser.map((count) => {
         return { register: undefined, count };
@@ -27,15 +27,15 @@ export class DeleteRangeCommand extends ExCommand {
       )
     ).map(
       ({ register, count }) =>
-        new DeleteRangeCommand({
+        new DeleteCommand({
           register,
           count,
         })
     )
   );
 
-  private readonly arguments: IDeleteRangeCommandArguments;
-  constructor(args: IDeleteRangeCommandArguments) {
+  private readonly arguments: IDeleteCommandArguments;
+  constructor(args: IDeleteCommandArguments) {
     super();
     this.arguments = args;
   }

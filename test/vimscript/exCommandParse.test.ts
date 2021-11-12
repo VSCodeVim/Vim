@@ -2,20 +2,21 @@ import assert = require('assert');
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
-import { DeleteRangeCommand } from '../../src/cmd_line/commands/deleteRange';
+import { DeleteCommand } from '../../src/cmd_line/commands/delete';
 import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
 import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
+import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
-import { SetOptionsCommand } from '../../src/cmd_line/commands/setoptions';
+import { SetCommand } from '../../src/cmd_line/commands/set';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
-import { SubstituteCommand } from '../../src/cmd_line/commands/substitute';
+import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
@@ -72,7 +73,50 @@ suite('Ex command parsing', () => {
   });
 
   suite(':bn[ext]', () => {
-    // TODO
+    exParseTest(
+      ':bn',
+      new TabCommand({ type: TabCommandType.Next, bang: false, cmd: undefined, count: undefined })
+    );
+    exParseTest(
+      ':bn!',
+      new TabCommand({ type: TabCommandType.Next, bang: true, cmd: undefined, count: undefined })
+    );
+    exParseTest(
+      ':bn 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+        cmd: undefined,
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn! 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: true,
+        cmd: undefined,
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn +20 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+        cmd: { type: 'line_number', line: 20 },
+        count: 5,
+      })
+    );
+    exParseTest(
+      ':bn! +20 5',
+      new TabCommand({
+        type: TabCommandType.Next,
+        bang: true,
+        cmd: { type: 'line_number', line: 20 },
+        count: 5,
+      })
+    );
   });
 
   suite(':clo[se]', () => {
@@ -92,10 +136,10 @@ suite('Ex command parsing', () => {
   });
 
   suite(':d[elete]', () => {
-    exParseTest(':d', new DeleteRangeCommand({ register: undefined, count: undefined }));
-    exParseTest(':d a', new DeleteRangeCommand({ register: 'a', count: undefined }));
-    exParseTest(':d 5', new DeleteRangeCommand({ register: undefined, count: 5 }));
-    exParseTest(':d a 5', new DeleteRangeCommand({ register: 'a', count: 5 }));
+    exParseTest(':d', new DeleteCommand({ register: undefined, count: undefined }));
+    exParseTest(':d a', new DeleteCommand({ register: 'a', count: undefined }));
+    exParseTest(':d 5', new DeleteCommand({ register: undefined, count: 5 }));
+    exParseTest(':d a 5', new DeleteCommand({ register: 'a', count: 5 }));
   });
 
   suite(':delm[arks]', () => {
@@ -209,6 +253,12 @@ suite('Ex command parsing', () => {
     // TODO parse indices
   });
 
+  suite(':le[ft]', () => {
+    exParseTest(':left', new LeftCommand({ indent: 0 }));
+    exParseTest(':left4', new LeftCommand({ indent: 4 }));
+    exParseTest(':left 8', new LeftCommand({ indent: 8 }));
+  });
+
   suite(':let', () => {
     // TODO
   });
@@ -262,44 +312,35 @@ suite('Ex command parsing', () => {
     exParseTest(':reg b 1 " 2 a', new RegisterCommand(['b', '1', '"', '2', 'a']));
   });
 
+  suite(':ri[ght]', () => {
+    exParseTest(':right', new RightCommand({ width: 80 })); // Defaults to 'textwidth'
+    exParseTest(':right40', new RightCommand({ width: 40 }));
+    exParseTest(':right 20', new RightCommand({ width: 20 }));
+  });
+
   suite(':se[t]', () => {
-    exParseTest(':set', new SetOptionsCommand({ type: 'show_or_set', option: undefined }));
-    exParseTest(':set all', new SetOptionsCommand({ type: 'show_or_set', option: 'all' }));
-    exParseTest(':set all&', new SetOptionsCommand({ type: 'default', option: 'all', source: '' }));
+    exParseTest(':set', new SetCommand({ type: 'show_or_set', option: undefined }));
+    exParseTest(':set all', new SetCommand({ type: 'show_or_set', option: 'all' }));
+    exParseTest(':set all&', new SetCommand({ type: 'default', option: 'all', source: '' }));
 
     for (const option of ['ws', 'wrapscan']) {
-      exParseTest(`:set ${option}`, new SetOptionsCommand({ type: 'show_or_set', option }));
-      exParseTest(`:set ${option}?`, new SetOptionsCommand({ type: 'show', option }));
-      exParseTest(`:set no${option}`, new SetOptionsCommand({ type: 'unset', option }));
-      exParseTest(`:set inv${option}`, new SetOptionsCommand({ type: 'invert', option }));
-      exParseTest(`:set ${option}!`, new SetOptionsCommand({ type: 'invert', option }));
-      exParseTest(
-        `:set ${option}&`,
-        new SetOptionsCommand({ type: 'default', option, source: '' })
-      );
-      exParseTest(
-        `:set ${option}&vi`,
-        new SetOptionsCommand({ type: 'default', option, source: 'vi' })
-      );
-      exParseTest(
-        `:set ${option}&vim`,
-        new SetOptionsCommand({ type: 'default', option, source: 'vim' })
-      );
+      exParseTest(`:set ${option}`, new SetCommand({ type: 'show_or_set', option }));
+      exParseTest(`:set ${option}?`, new SetCommand({ type: 'show', option }));
+      exParseTest(`:set no${option}`, new SetCommand({ type: 'unset', option }));
+      exParseTest(`:set inv${option}`, new SetCommand({ type: 'invert', option }));
+      exParseTest(`:set ${option}!`, new SetCommand({ type: 'invert', option }));
+      exParseTest(`:set ${option}&`, new SetCommand({ type: 'default', option, source: '' }));
+      exParseTest(`:set ${option}&vi`, new SetCommand({ type: 'default', option, source: 'vi' }));
+      exParseTest(`:set ${option}&vim`, new SetCommand({ type: 'default', option, source: 'vim' }));
       // TODO: :set {option}<
     }
 
     for (const option of ['sw', 'shiftwidth']) {
-      exParseTest(`:set ${option}=4`, new SetOptionsCommand({ type: 'equal', option, value: '4' }));
-      exParseTest(`:set ${option}:4`, new SetOptionsCommand({ type: 'equal', option, value: '4' }));
-      exParseTest(`:set ${option}+=4`, new SetOptionsCommand({ type: 'add', option, value: '4' }));
-      exParseTest(
-        `:set ${option}^=4`,
-        new SetOptionsCommand({ type: 'multiply', option, value: '4' })
-      );
-      exParseTest(
-        `:set ${option}-=4`,
-        new SetOptionsCommand({ type: 'subtract', option, value: '4' })
-      );
+      exParseTest(`:set ${option}=4`, new SetCommand({ type: 'equal', option, value: '4' }));
+      exParseTest(`:set ${option}:4`, new SetCommand({ type: 'equal', option, value: '4' }));
+      exParseTest(`:set ${option}+=4`, new SetCommand({ type: 'add', option, value: '4' }));
+      exParseTest(`:set ${option}^=4`, new SetCommand({ type: 'multiply', option, value: '4' }));
+      exParseTest(`:set ${option}-=4`, new SetCommand({ type: 'subtract', option, value: '4' }));
     }
   });
 
@@ -326,7 +367,7 @@ suite('Ex command parsing', () => {
       ':s/a/b/g',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
       })
@@ -335,8 +376,26 @@ suite('Ex command parsing', () => {
       ':s/a/b/g 3',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
+        count: 3,
+      })
+    );
+    exParseTest(
+      ':s/a/b/g3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: { replaceAll: true },
+        count: 3,
+      })
+    );
+    exParseTest(
+      ':s/a/b/3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: {},
         count: 3,
       })
     );
@@ -345,7 +404,7 @@ suite('Ex command parsing', () => {
       ':s#a#b#g',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
       })
@@ -355,7 +414,7 @@ suite('Ex command parsing', () => {
       ':s/\\/\\/a/b',
       new SubstituteCommand({
         pattern: pattern.tryParse('\\/\\/a'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
       })
@@ -365,7 +424,7 @@ suite('Ex command parsing', () => {
       ':s/\\ba/b',
       new SubstituteCommand({
         pattern: pattern.tryParse('\\ba'),
-        replace: 'b',
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
       })
@@ -375,7 +434,7 @@ suite('Ex command parsing', () => {
       ':s/a/\\b',
       new SubstituteCommand({
         pattern: pattern.tryParse('a'),
-        replace: '\b',
+        replace: new ReplaceString([{ type: 'string', value: '\b' }]),
         flags: {},
         count: undefined,
       })
@@ -424,6 +483,21 @@ suite('Ex command parsing', () => {
     exParseFails(':tabm x');
     exParseFails(':tabm 1x');
     exParseFails(':tabm x1');
+  });
+
+  suite(':tabo[nly]', () => {
+    exParseTest(
+      ':tabonly',
+      new TabCommand({ type: TabCommandType.Only, bang: false, count: undefined })
+    );
+    exParseTest(
+      ':tabonly!',
+      new TabCommand({ type: TabCommandType.Only, bang: true, count: undefined })
+    );
+    exParseTest(':tabonly5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
+    exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+    exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
+    exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
   });
 
   suite(':y[ank]', () => {

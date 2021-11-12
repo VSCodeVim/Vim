@@ -4,13 +4,18 @@ import { ITestObject, testIt } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
 
 function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, number]> }) {
-  test(input.title, async () => {
-    const modeHandler = await testIt(input);
+  suite(input.title, async () => {
     for (const lineRange in input.lineRanges) {
       if (lineRange in input.lineRanges) {
-        assert.deepStrictEqual(LineRange.parser.tryParse(lineRange).resolve(modeHandler.vimState), {
-          start: input.lineRanges[lineRange][0],
-          end: input.lineRanges[lineRange][1],
+        test(lineRange, async () => {
+          const modeHandler = await testIt(input);
+          assert.deepStrictEqual(
+            LineRange.parser.tryParse(lineRange).resolve(modeHandler.vimState),
+            {
+              start: input.lineRanges[lineRange][0],
+              end: input.lineRanges[lineRange][1],
+            }
+          );
         });
       }
     }
@@ -91,6 +96,8 @@ suite('LineRange resolving', () => {
     lineRanges: {
       '2,.': [1, 2],
       '2;.': [1, 1],
+      '.+1,.+2': [3, 4],
+      '.+1;.+2': [3, 5],
     },
   });
 

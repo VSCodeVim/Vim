@@ -18,6 +18,7 @@ export enum ErrorCode {
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
   ErrorWritingToFile = 208,
+  FileNoLongerAvailable = 211,
   RecursiveMapping = 223,
   NoStringUnderCursor = 348,
   NothingInRegister = 353,
@@ -57,6 +58,7 @@ export const ErrorMessage: IErrorMessage = {
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
   208: 'Error writing to file',
+  211: 'File no longer available', // TODO: Should be `File "[file_name]" no longer available`
   223: 'Recursive mapping',
   348: 'No string under cursor',
   353: 'Nothing in register',

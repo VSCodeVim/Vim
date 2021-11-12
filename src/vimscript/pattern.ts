@@ -2,6 +2,8 @@ import { escapeRegExp } from 'lodash';
 import { alt, any, lazy, noneOf, oneOf, Parser, seq, string } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
+import { VimState } from '../state/vimState';
+import { LineRange } from './lineRange';
 import { numberParser } from './parserUtils';
 
 export function searchStringParser(args: {
@@ -24,6 +26,8 @@ export enum SearchDirection {
   Backward = -1,
 }
 
+export type PatternMatch = { range: Range; groups: string[] };
+
 /**
  * See `:help pattern`
  *
@@ -36,6 +40,7 @@ export class Pattern {
   public readonly direction: SearchDirection;
   public readonly regex: RegExp;
   public readonly ignorecase: boolean | undefined;
+  public readonly inSelection: boolean;
 
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
@@ -54,14 +59,56 @@ export class Pattern {
    *
    * This might not be 100% complete - @see Pattern::MAX_SEARCH_RANGES
    */
-  public allMatches(document: TextDocument, fromPosition: Position): Range[] {
-    const haystack = document.getText();
-    const startOffset = document.offsetAt(fromPosition);
+  public allMatches(
+    vimState: VimState,
+    args:
+      | {
+          fromPosition: Position;
+        }
+      | {
+          lineRange: LineRange;
+        }
+  ): PatternMatch[] {
+    let fromPosition: Position;
+    let lineRange:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+    if ('lineRange' in args) {
+      // TODO: We should be able to get away with only getting part of the document text in this case
+      lineRange = args.lineRange.resolve(vimState);
+      fromPosition = new Position(lineRange.start, 0);
+    } else {
+      fromPosition = args.fromPosition;
+    }
+
+    let haystack: string;
+    let searchOffset: number;
+    let startOffset: number;
+    if (this.inSelection && vimState.lastVisualSelection) {
+      // TODO: This is not exactly how Vim implements in-selection search (\%V), see :help \%V for more info.
+      const searchRange = new Range(
+        vimState.lastVisualSelection.start,
+        vimState.lastVisualSelection.end
+      );
+      haystack = vimState.document.getText(searchRange);
+      searchOffset = vimState.document.offsetAt(vimState.lastVisualSelection.start);
+      startOffset = searchRange.contains(fromPosition)
+        ? vimState.document.offsetAt(fromPosition) - searchOffset
+        : 0;
+    } else {
+      haystack = vimState.document.getText();
+      searchOffset = 0;
+      startOffset = vimState.document.offsetAt(fromPosition) - searchOffset;
+    }
+
     this.regex.lastIndex = startOffset;
 
     const matchRanges = {
-      beforeWrapping: [] as Range[],
-      afterWrapping: [] as Range[],
+      beforeWrapping: [] as PatternMatch[],
+      afterWrapping: [] as PatternMatch[],
     };
     let wrappedOver = false;
     while (true) {
@@ -74,11 +121,21 @@ export class Pattern {
         }
 
         const matchRange = new Range(
-          document.positionAt(match.index),
-          document.positionAt(match.index + match[0].length)
+          vimState.document.positionAt(searchOffset + match.index),
+          vimState.document.positionAt(searchOffset + match.index + match[0].length)
         );
+        if (
+          !this.inSelection &&
+          lineRange &&
+          (matchRange.start.line < lineRange.start || matchRange.end.line > lineRange.end)
+        ) {
+          break;
+        }
 
-        (wrappedOver ? matchRanges.afterWrapping : matchRanges.beforeWrapping).push(matchRange);
+        (wrappedOver ? matchRanges.afterWrapping : matchRanges.beforeWrapping).push({
+          range: matchRange,
+          groups: match,
+        });
 
         if (
           matchRanges.beforeWrapping.length + matchRanges.afterWrapping.length >=
@@ -139,6 +196,7 @@ export class Pattern {
       : '?';
     // TODO: Some escaped characters need special treatment
     return alt(
+      string('\\%V').map((_) => ({ inSelection: true })),
       string('\\')
         .then(any.fallback(undefined))
         .map((escaped) => {
@@ -163,12 +221,15 @@ export class Pattern {
       .map((atoms) => {
         let patternString = '';
         let caseOverride: boolean | undefined;
+        let inSelection: boolean | undefined;
         for (const atom of atoms) {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
             if (atom.ignorecase) {
               caseOverride = true;
+            } else if (atom.inSelection) {
+              inSelection = atom.inSelection;
             } else if (caseOverride === undefined) {
               caseOverride = false;
             }
@@ -177,9 +238,10 @@ export class Pattern {
         return {
           patternString,
           caseOverride,
+          inSelection,
         };
       })
-      .map(({ patternString, caseOverride }) => {
+      .map(({ patternString, caseOverride, inSelection }) => {
         const ignoreCase = Pattern.getIgnoreCase(patternString, {
           caseOverride,
           ignoreSmartcase: args.ignoreSmartcase ?? false,
@@ -187,7 +249,8 @@ export class Pattern {
         return new Pattern(
           patternString,
           args.direction,
-          Pattern.compileRegex(patternString, ignoreCase)
+          Pattern.compileRegex(patternString, ignoreCase),
+          inSelection
         );
       });
   }
@@ -204,11 +267,17 @@ export class Pattern {
     return configuration.ignorecase;
   }
 
-  private constructor(patternString: string, direction: SearchDirection, regex: RegExp) {
+  private constructor(
+    patternString: string,
+    direction: SearchDirection,
+    regex: RegExp,
+    inSelection: boolean = false
+  ) {
     this.patternString = patternString;
     this.direction = direction;
     // TODO: Recalculate ignorecase if relevant config changes?
     this.regex = regex;
+    this.inSelection = inSelection;
   }
 }
 
