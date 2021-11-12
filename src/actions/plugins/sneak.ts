@@ -8,6 +8,7 @@ import { SneakHighlighter } from './sneakHighlighting';
 import { IBaseOperator } from 'src/state/recordedState';
 import { Mode } from '../../mode/mode';
 import { getAndUpdateModeHandler } from '../../../extensionBase';
+import { ErrorCode, VimError } from '../../error';
 
 export abstract class SneakAction extends BaseMovement {
   override isJump = true;
@@ -174,6 +175,10 @@ export abstract class SneakAction extends BaseMovement {
 
     if (position.character === -1) {
       return position;
+    }
+
+    if (this.rangesToHighlight.length <= 0) {
+      throw VimError.fromCode(ErrorCode.PatternNotFound);
     }
 
     this.highlighter.isHighlightingOn = true;
