@@ -22,8 +22,8 @@ import { RegisterCommand } from './commands/register';
 
 export abstract class CommandLine {
   public cursorIndex: number;
-  public historyIndex: number | undefined;
   public previousMode: Mode;
+  protected historyIndex: number | undefined;
   private savedText: string;
 
   constructor(text: string, previousMode: Mode) {
@@ -456,7 +456,6 @@ export class SearchCommandLine extends CommandLine {
     }
 
     await vimState.setCurrentMode(this.previousMode);
-    this.cursorIndex = 0;
     if (this.text.length > 0) {
       SearchCommandLine.addSearchStateToHistory(this.searchState);
     }
