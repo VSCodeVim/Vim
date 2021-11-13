@@ -201,38 +201,24 @@ export abstract class SneakAction extends BaseMovement {
     return position;
   }
 
-  protected getNextLineIndex(i: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract getNextLineIndex(i: number): number;
 
-  protected updateFromIndex(matchIndex: number, length: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract updateFromIndex(matchIndex: number, length: number): number;
 
-  protected search(lineText: string, searchString: string, fromIndex: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract search(lineText: string, searchString: string, fromIndex: number): number;
 
-  protected isLineProcessed(fromIndex: number, length: number): boolean {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract isLineProcessed(fromIndex: number, length: number): boolean;
 
-  protected calculateInitialSearchIndex(
+  protected abstract calculateInitialSearchIndex(
     position: Position,
     searchString: string,
     i: number,
     lineText: string
-  ): number {
-    throw new Error('Must be overriden.');
-  }
+  ): number;
 
-  protected getLineConditionStopNumber(lineCount: number): number {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract getLineConditionStopNumber(lineCount: number): number;
 
-  protected setRepeatableMovements(vimState: VimState): VimState {
-    throw new Error('Must be overriden.');
-  }
+  protected abstract setRepeatableMovements(vimState: VimState): VimState;
 }
 
 @RegisterAction
