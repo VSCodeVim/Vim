@@ -293,6 +293,9 @@ export class ExCommandLine extends CommandLine {
 
   public async escape(vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Normal);
+    if (this.text.length > 0) {
+      ExCommandLine.history.add(this.text);
+    }
   }
 
   public async ctrlF(vimState: VimState): Promise<void> {
