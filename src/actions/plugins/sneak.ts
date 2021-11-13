@@ -9,6 +9,9 @@ import { IBaseOperator } from 'src/state/recordedState';
 import { Mode } from '../../mode/mode';
 import { getAndUpdateModeHandler } from '../../../extensionBase';
 import { ErrorCode, VimError } from '../../error';
+import { Match, SearchOptions } from './easymotion/types';
+import { EasyMotion } from './easymotion/easymotion';
+import { SearchUtil } from './easymotion/searchUtil';
 
 export abstract class SneakAction extends BaseMovement {
   override isJump = true;
@@ -28,7 +31,7 @@ export abstract class SneakAction extends BaseMovement {
   private previousCursorStart: Position = new Position(0, 0);
 
   public isHighlightingOn(): boolean {
-    return this.highlighter.isHighlightingOn;
+    return this.highlighter.isHighlightingOn();
   }
 
   public getRangesToHighlight(): vscode.Range[] {
@@ -105,118 +108,58 @@ export abstract class SneakAction extends BaseMovement {
     }
     vimState.sneak = this;
 
-    const editor = vscode.window.activeTextEditor!;
-    const document = editor.document;
-    const lineCount = document.lineCount;
+    const searchOptions: SearchOptions = {
+      min: vimState.cursorStopPosition,
+      max: vimState.editor.visibleRanges[0].end,
+    };
 
     if (this.keysPressed[2] === '\n') {
       // Single key sneak
       this.keysPressed[2] = '';
     }
-
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
-    this.rangesToHighlight = [];
-    let positionFound = false;
-    let linesSearched: number = 0;
+    const matches: Match[] = SearchUtil.searchDocument(
+      vimState.document,
+      vimState.cursorStopPosition,
+      searchString,
+      searchOptions
+    );
 
-    let i = position.line;
-    const conditionStopNumber = this.getLineConditionStopNumber(lineCount);
-
-    while (i !== conditionStopNumber) {
-      linesSearched++;
-      if (
-        configuration.sneakMaxLinesToConsider !== -1 &&
-        linesSearched > configuration.sneakMaxLinesToConsider
-      ) {
-        break;
-      }
-      const lineText = document.lineAt(i).text;
-
-      let fromIndex = this.calculateInitialSearchIndex(position, searchString, i, lineText);
-      let matchIndex = -1;
-
-      const ignorecase =
-        configuration.sneakUseIgnorecaseAndSmartcase &&
-        configuration.ignorecase &&
-        !(configuration.smartcase && /[A-Z]/.test(searchString));
-
-      while (!this.isLineProcessed(fromIndex, lineText.length)) {
-        if (ignorecase) {
-          matchIndex = this.search(
-            lineText.toLocaleLowerCase(),
-            searchString.toLocaleLowerCase(),
-            fromIndex
-          );
-        } else {
-          matchIndex = this.search(lineText, searchString, fromIndex);
-        }
-
-        if (matchIndex >= 0) {
-          if (this.shouldJumpToFirstResult(positionFound)) {
-            // We don't highlight the first option, just jump to it
-            position = new Position(i, matchIndex);
-            positionFound = true;
-          } else {
-            this.rangesToHighlight.push(
-              new vscode.Range(i, matchIndex, i, matchIndex + searchString.length)
-            );
-          }
-        } else {
-          // there are no more matches in this line
-          break;
-        }
-
-        fromIndex = this.updateFromIndex(matchIndex, searchString.length);
-      }
-
-      i = this.getNextLineIndex(i);
-    }
-
-    if (position.character === -1) {
-      return position;
-    }
-
-    if (this.rangesToHighlight.length <= 0) {
+    if (matches.length <= 0) {
       throw VimError.fromCode(ErrorCode.PatternNotFound);
     }
 
-    this.highlighter.isHighlightingOn = true;
-    if (configuration.sneakLabelMode) {
-      this.previousMode = vimState.currentMode;
-      this.previousCursorStart = vimState.cursorStartPosition;
-      await vimState.setCurrentMode(Mode.SneakLabelInputMode);
-
-      if (this.isOperatorMovement()) {
-        this.operator = vimState.recordedState.operator;
-        this.isJump = false;
-        return {
-          start: vimState.cursorStartPosition,
-          stop: vimState.cursorStopPosition,
-          failed: true,
-        };
-      }
+    if (!configuration.sneakLabelMode || matches.length === 1) {
+      return matches[0].position;
     }
 
-    return position;
+    const shouldDisplayLabelAtFirstResult =
+      configuration.sneakLabelMode && this.isOperatorMovement();
+
+    this.rangesToHighlight = matches.map((match) => match.toRange());
+
+    let returnMovement: Position | IMovement;
+
+    if (shouldDisplayLabelAtFirstResult) {
+      returnMovement = {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+        failed: true,
+      };
+    } else {
+      this.rangesToHighlight = this.rangesToHighlight.slice(1);
+      returnMovement = matches[0].position;
+    }
+
+    this.highlighter.setHighlighting(true);
+    this.previousMode = vimState.currentMode;
+    this.previousCursorStart = vimState.cursorStartPosition;
+    await vimState.setCurrentMode(Mode.SneakLabelInputMode);
+    this.updateDecorations(vimState.lastRecognizedAction);
+
+    return returnMovement;
   }
-
-  protected abstract getNextLineIndex(i: number): number;
-
-  protected abstract updateFromIndex(matchIndex: number, length: number): number;
-
-  protected abstract search(lineText: string, searchString: string, fromIndex: number): number;
-
-  protected abstract isLineProcessed(fromIndex: number, length: number): boolean;
-
-  protected abstract calculateInitialSearchIndex(
-    position: Position,
-    searchString: string,
-    i: number,
-    lineText: string
-  ): number;
-
-  protected abstract getLineConditionStopNumber(lineCount: number): number;
 
   protected abstract setRepeatableMovements(vimState: VimState): VimState;
 }
@@ -227,59 +170,11 @@ export class SneakForward extends SneakAction {
     ['s', '<character>', '<character>'],
     ['z', '<character>', '<character>'],
   ];
-  override isJump = true;
-
-  protected override getNextLineIndex(i: number): number {
-    return i + 1;
-  }
-
-  protected override updateFromIndex(matchIndex: number, length: number): number {
-    return matchIndex + length;
-  }
-
-  protected override search(lineText: string, searchString: string, fromIndex: number): number {
-    return lineText.indexOf(searchString, fromIndex);
-  }
-
-  protected override isLineProcessed(fromIndex: number, length: number): boolean {
-    return fromIndex >= length;
-  }
-
-  protected override getLineConditionStopNumber(lineCount: number): number {
-    return lineCount;
-  }
 
   protected override setRepeatableMovements(vimState: VimState): VimState {
     vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
     vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
     return vimState;
-  }
-
-  protected override calculateInitialSearchIndex(
-    position: Position,
-    searchString: string,
-    i: number,
-    lineText: string
-  ): number {
-    let fromIndex = 0;
-    if (i === position.line) {
-      if (
-        lineText[position.character] === searchString[0] &&
-        lineText[position.character + 1] === searchString[1]
-      ) {
-        // this happens when we are standing on exactly the string we search for
-        // as per the official plugin, we do not consider this
-        // also makes the jump work for:
-        // rrrrrr
-        // will jump for searchString rr like: |rrrrrr => rr|rrrr => rrrr|rr
-        fromIndex = position.character + 2;
-      } else {
-        // Start searching after the current character so we don't find the same match twice
-        fromIndex = position.character + 1;
-      }
-    }
-
-    return fromIndex;
   }
 }
 
@@ -290,58 +185,10 @@ export class SneakBackward extends SneakAction {
     ['Z', '<character>', '<character>'],
   ];
 
-  protected override getNextLineIndex(i: number): number {
-    return i - 1;
-  }
-
-  protected override updateFromIndex(matchIndex: number, length: number): number {
-    return matchIndex - length;
-  }
-
-  protected override search(lineText: string, searchString: string, fromIndex: number): number {
-    return lineText.lastIndexOf(searchString, fromIndex);
-  }
-
-  protected override isLineProcessed(fromIndex: number, length: number): boolean {
-    return fromIndex < 0;
-  }
-
-  protected override getLineConditionStopNumber(lineCount: number): number {
-    return -1;
-  }
-
   protected override setRepeatableMovements(vimState: VimState): VimState {
     vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
     vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
     return vimState;
-  }
-
-  protected override calculateInitialSearchIndex(
-    position: Position,
-    searchString: string,
-    i: number,
-    lineText: string
-  ): number {
-    let fromIndex = +Infinity;
-
-    if (i === position.line) {
-      if (
-        lineText[position.character] === searchString[0] &&
-        lineText[position.character + 1] === searchString[1]
-      ) {
-        // this happens when we are standing on exactly the string we search for
-        // as per the official plugin, we do not consider this
-        // also makes the jump work for:
-        // rrrrrr
-        // will jump for searchString rr like: rrrrrr| => rrrr|rr => rr|rrrr
-        fromIndex = position.character - 2;
-      } else {
-        // Start searching after the current character so we don't find the same match twice
-        fromIndex = position.character - 1;
-      }
-    }
-
-    return fromIndex;
   }
 }
 

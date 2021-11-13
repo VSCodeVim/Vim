@@ -8,7 +8,7 @@ import { SneakAction } from './sneak';
 import { minPosition, maxPosition } from '../../util/util';
 
 export class SneakHighlighter {
-  public isHighlightingOn: boolean = false;
+  private highlighting: boolean = false;
 
   private sneak: SneakAction;
 
@@ -20,6 +20,14 @@ export class SneakHighlighter {
 
   constructor(sneak: SneakAction) {
     this.sneak = sneak;
+  }
+
+  public setHighlighting(on: boolean) {
+    this.highlighting = on;
+  }
+
+  public isHighlightingOn() {
+    return this.highlighting;
   }
 
   private getFontColor(): string | vscode.ThemeColor {
@@ -92,7 +100,7 @@ export class SneakHighlighter {
     this.clearDecorations();
 
     if (!this.isSneakTheLastAction(lastRecognizedAction)) {
-      this.isHighlightingOn = false;
+      this.highlighting = false;
       return;
     }
 
