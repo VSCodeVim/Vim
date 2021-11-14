@@ -1130,29 +1130,40 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
-    let searchRanges: vscode.Range[] = [];
-    const matchRanges: vscode.Range[] = [];
-    const searchState = globalState.searchState;
-    if (searchState && showHighlights) {
-      searchRanges = searchState.getMatchRanges(this.vimState) ?? [];
-      if (
+    const searchHighlights: vscode.DecorationOptions[] = [];
+    const searchMatches: vscode.DecorationOptions[] = [];
+    if (showHighlights && globalState.searchState) {
+      const ranges = globalState.searchState.getMatchRanges(this.vimState);
+      const matchIndex =
+        ranges.length &&
+        configuration.incsearch &&
         this.vimState.currentMode === Mode.SearchInProgressMode &&
-        this.vimState.commandLine instanceof SearchCommandLine &&
-        searchRanges.length &&
-        configuration.incsearch
-      ) {
-        const match = this.vimState.commandLine.getCurrentMatchRange(this.vimState);
-        if (match) {
-          searchRanges = [
-            ...searchRanges.slice(0, match.index),
-            ...searchRanges.slice(match.index + 1),
-          ];
-          matchRanges.push(match.range);
+        this.vimState.commandLine instanceof SearchCommandLine
+          ? this.vimState.commandLine.getCurrentMatchRange(this.vimState)?.index
+          : undefined;
+
+      for (let i = 0; i < ranges.length; i++) {
+        const range = ranges[i];
+        if (range.start.isLineEnd() && (range.isEmpty || range.end.isLineBeginning())) {
+          // range is at EOL, possibly containing EOL char(s)
+          (i === matchIndex ? searchMatches : searchHighlights).push({
+            range: range.with(undefined, range.start),
+            renderOptions: {
+              after: {
+                contentText: '$', // single non-whitespace character to trigger :after element (it'll be transparent)
+              },
+            },
+          });
+        } else {
+          (i === matchIndex ? searchMatches : searchHighlights).push(
+            // extend empty ranges right one character
+            { range: range.isEmpty ? range.with(undefined, range.end.translate(0, 1)) : range }
+          );
         }
       }
     }
-    this.vimState.editor.setDecorations(decoration.searchMatch, matchRanges);
-    this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
+    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlights);
+    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatches);
   }
 
   public async updateView(
