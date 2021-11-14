@@ -197,6 +197,8 @@ export class Pattern {
     // TODO: Some escaped characters need special treatment
     return alt(
       string('\\%V').map((_) => ({ inSelection: true })),
+      string('$').map(() => '(?:$(?<!\\r))'), // prevents matching \r\n as two lines
+      string('^').map(() => '(?:^(?<!\\r))'),
       string('\\')
         .then(any.fallback(undefined))
         .map((escaped) => {

@@ -154,14 +154,18 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
-    const searchHighlightColor = configuration.searchHighlightColor
+    const searchHighlightBackgroundColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
       : new vscode.ThemeColor('editor.findMatchHighlightBackground');
 
     this.searchHighlight = vscode.window.createTextEditorDecorationType({
-      backgroundColor: searchHighlightColor,
+      backgroundColor: searchHighlightBackgroundColor,
       color: configuration.searchHighlightTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchHighlightBackgroundColor,
+      },
     });
 
     const searchMatchBackgroundColor = configuration.searchMatchColor
@@ -172,6 +176,10 @@ class DecorationImpl {
       backgroundColor: searchMatchBackgroundColor,
       color: configuration.searchMatchTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchMatchBackgroundColor,
+      },
     });
 
     this.easyMotionIncSearch = vscode.window.createTextEditorDecorationType({
