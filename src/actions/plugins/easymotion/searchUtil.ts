@@ -1,31 +1,37 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../../configuration/configuration';
-import { TextEditor } from './../../../textEditor';
-import { IEasyMotion, EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
-import { Mode } from '../../../mode/mode';
+import { Match, SearchOptions } from './types';
 import { Position } from 'vscode';
 
 export class SearchUtil {
-  /**
-   * TODO: For future motions
-   */
   public static SPECIAL_CHARACTER_REGEX: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
+  /**
+   * Sort matches closest to the position using their index in the list
+   */
   public static sortMatchesRelativeToPos(matches: Match[], position: Position): Match[] {
-    // Sort by the index distance from the cursor index
-    const posIndex = position.character;
+    // Find first match that is right after the cursor
+    let indexFirstMatchAfterPos: number = matches.length;
 
+    for (let i = 0; i < matches.length && indexFirstMatchAfterPos === matches.length; i++) {
+      if (matches[i].position.isAfter(position)) {
+        indexFirstMatchAfterPos = i;
+        break;
+      }
+    }
+
+    // Sort matches with index closest to the position
     matches.sort((a: Match, b: Match): number => {
+      function computeAboluteDiff(matchIndex: number) {
+        const absDiff = Math.abs(indexFirstMatchAfterPos - matchIndex);
+        // Prioritize the matches on the right side of the cursor index
+        // in case of a tie
+        return matchIndex < indexFirstMatchAfterPos ? absDiff - 0.5 : absDiff;
+      }
+
       const absDiffA = computeAboluteDiff(a.index);
       const absDiffB = computeAboluteDiff(b.index);
       return absDiffA - absDiffB;
-
-      function computeAboluteDiff(matchIndex: number) {
-        const absDiff = Math.abs(posIndex - matchIndex);
-        // Prioritize the matches on the right side of the cursor index
-        return matchIndex < posIndex ? absDiff - 0.5 : absDiff;
-      }
     });
 
     return matches;
@@ -44,10 +50,6 @@ export class SearchUtil {
 
     const matches: Match[] = [];
 
-    // Cursor index refers to the index of the marker that is on or to the right of the cursor
-    let cursorIndex = position.character;
-    let prevMatch: Match | undefined;
-
     // Calculate the min/max bounds for the search
     const lineCount = document.lineCount;
     const lineMin = options.min ? Math.max(options.min.line, 0) : 0;
@@ -62,6 +64,7 @@ export class SearchUtil {
           break outer;
         } else {
           const pos = new Position(lineIdx, result.index);
+          pos.subtract(position);
 
           // Check if match is within bounds
           if (
@@ -73,34 +76,17 @@ export class SearchUtil {
             result = regex.exec(line);
           } else {
             // Update cursor index to the marker on the right side of the cursor
-            if (!prevMatch || prevMatch.position.isBefore(position)) {
-              cursorIndex = matches.length;
-            }
             // Matches on the cursor position should be ignored
             if (pos.isEqual(position)) {
               result = regex.exec(line);
             } else {
-              prevMatch = new Match(pos, result[0], matches.length);
-              matches.push(prevMatch);
+              matches.push(new Match(pos, result[0], matches.length));
               result = regex.exec(line);
             }
           }
         }
       }
     }
-
-    // Sort by the index distance from the cursor index
-    matches.sort((a: Match, b: Match): number => {
-      const absDiffA = computeAboluteDiff(a.index);
-      const absDiffB = computeAboluteDiff(b.index);
-      return absDiffA - absDiffB;
-
-      function computeAboluteDiff(matchIndex: number) {
-        const absDiff = Math.abs(cursorIndex - matchIndex);
-        // Prioritize the matches on the right side of the cursor index
-        return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
-      }
-    });
 
     return matches;
   }
