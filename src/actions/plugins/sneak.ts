@@ -12,6 +12,7 @@ import { ErrorCode, VimError } from '../../error';
 import { Match, SearchOptions } from './easymotion/types';
 import { EasyMotion } from './easymotion/easymotion';
 import { SearchUtil } from './easymotion/searchUtil';
+import { maxPosition, minPosition } from 'src/util/util';
 
 export abstract class SneakAction extends BaseMovement {
   override isJump = true;
@@ -29,6 +30,8 @@ export abstract class SneakAction extends BaseMovement {
   private previousMode: Mode | undefined;
 
   private previousCursorStart: Position = new Position(0, 0);
+
+  protected abstract searchForward: boolean;
 
   public isHighlightingOn(): boolean {
     return this.highlighter.isHighlightingOn();
@@ -74,26 +77,74 @@ export abstract class SneakAction extends BaseMovement {
   }
 
   /**
-   * Determines whether we should jump directly to the first result or remain in the current position
-   * and display a label at the first result.
-   */
-  protected shouldJumpToFirstResult(positionFound: boolean): boolean {
-    // we should display a mark and not jump to the first result in the event of
-    // 1. label mode is enabled
-    // AND
-    // 2. it's a motion for an operator, not just a jump (the z/Z motion)
-    const shouldDisplayLabelAtFirstResult =
-      configuration.sneakLabelMode && this.isOperatorMovement();
-
-    return !positionFound && !shouldDisplayLabelAtFirstResult;
-  }
-
-  /**
    * Whether the current call to sneak is just a jump or an operator movement.
    */
   protected isOperatorMovement(): boolean {
     return this.keysPressed[0] === this.keys[1][0];
   }
+
+  protected getSearchOptions(
+    minBackwardPos: Position,
+    maxForwardPos: Position,
+    cursorPos: Position
+  ): SearchOptions {
+    let searchOptions: SearchOptions;
+
+    if (this.searchForward) {
+      searchOptions = {
+        min: cursorPos.translate(0, 1),
+        max: maxForwardPos,
+      };
+    } else {
+      searchOptions = {
+        min: minBackwardPos,
+        max: cursorPos.translate(0, -1),
+      };
+    }
+    return searchOptions;
+  }
+
+  protected searchVisibleRange(vimState: VimState, searchString: string): Match[] {
+    const searchOptions: SearchOptions = this.getSearchOptions(
+      vimState.editor.visibleRanges[0].start,
+      vimState.editor.visibleRanges[0].end,
+      vimState.cursorStopPosition
+    );
+
+    const matches = SearchUtil.searchDocument(
+      vimState.document,
+      vimState.cursorStopPosition,
+      searchString,
+      searchOptions
+    );
+
+    if (this.searchForward) {
+      return matches;
+    } else {
+      return matches.reverse();
+    }
+  }
+
+  // protected searchWholeDocumennt(
+  //   vimState: VimState,
+  //   searchString: string,
+  //   maxLinesToConsider: number
+  // ): Match[] {
+  //   const searchOptions: SearchOptions = this.getSearchOptions(
+  //     new Position(vimState.cursorStopPosition.line - maxLinesToConsider, 0),
+  //     new Position(vimState.cursorStopPosition.line + maxLinesToConsider, 0),
+  //     vimState.cursorStopPosition
+  //   );
+
+  //   const matches = SearchUtil.searchDocument(
+  //     vimState.document,
+  //     vimState.cursorStopPosition,
+  //     searchString,
+  //     searchOptions
+  //   );
+
+  //   return SearchUtil.sortMatchesRelativeToPos(matches, vimState.cursorStopPosition);
+  // }
 
   public override async execAction(
     position: Position,
@@ -108,29 +159,20 @@ export abstract class SneakAction extends BaseMovement {
     }
     vimState.sneak = this;
 
-    const searchOptions: SearchOptions = {
-      min: vimState.cursorStopPosition,
-      max: vimState.editor.visibleRanges[0].end,
-    };
-
     if (this.keysPressed[2] === '\n') {
       // Single key sneak
       this.keysPressed[2] = '';
     }
+
     const searchString = this.keysPressed[1] + this.keysPressed[2];
 
-    const matches: Match[] = SearchUtil.searchDocument(
-      vimState.document,
-      vimState.cursorStopPosition,
-      searchString,
-      searchOptions
-    );
+    const matches = this.searchVisibleRange(vimState, searchString);
 
     if (matches.length <= 0) {
       throw VimError.fromCode(ErrorCode.PatternNotFound);
     }
 
-    if (!configuration.sneakLabelMode || matches.length === 1) {
+    if (matches.length === 1) {
       return matches[0].position;
     }
 
@@ -161,7 +203,17 @@ export abstract class SneakAction extends BaseMovement {
     return returnMovement;
   }
 
-  protected abstract setRepeatableMovements(vimState: VimState): VimState;
+  private setRepeatableMovements(vimState: VimState): VimState {
+    if (this.searchForward) {
+      vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
+    } else {
+      vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
+    }
+
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -171,11 +223,7 @@ export class SneakForward extends SneakAction {
     ['z', '<character>', '<character>'],
   ];
 
-  protected override setRepeatableMovements(vimState: VimState): VimState {
-    vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
-    return vimState;
-  }
+  override searchForward = true;
 }
 
 @RegisterAction
@@ -185,11 +233,7 @@ export class SneakBackward extends SneakAction {
     ['Z', '<character>', '<character>'],
   ];
 
-  protected override setRepeatableMovements(vimState: VimState): VimState {
-    vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
-    return vimState;
-  }
+  override searchForward = false;
 }
 
 /**
@@ -247,7 +291,6 @@ class SneakMarkInputJump extends BaseCommand {
       const resultPosition = newPosition.getLeftThroughLineBreaks();
       return operator.run(vimState, position, resultPosition);
     } else {
-      // this.isJump = true;
       // if it wasn't an operator movement, we just jump to it
       vimState.cursorStopPosition = newPosition;
       return;
