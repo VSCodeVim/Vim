@@ -92,13 +92,13 @@ export abstract class SneakAction extends BaseMovement {
 
     if (this.searchForward) {
       searchOptions = {
-        min: cursorPos.translate(0, 1),
+        min: cursorPos,
         max: maxForwardPos,
       };
     } else {
       searchOptions = {
         min: minBackwardPos,
-        max: cursorPos.translate(0, -1),
+        max: cursorPos,
       };
     }
     return searchOptions;
@@ -125,30 +125,17 @@ export abstract class SneakAction extends BaseMovement {
     }
   }
 
-  // protected searchWholeDocumennt(
-  //   vimState: VimState,
-  //   searchString: string,
-  //   maxLinesToConsider: number
-  // ): Match[] {
-  //   const searchOptions: SearchOptions = this.getSearchOptions(
-  //     new Position(vimState.cursorStopPosition.line - maxLinesToConsider, 0),
-  //     new Position(vimState.cursorStopPosition.line + maxLinesToConsider, 0),
-  //     vimState.cursorStopPosition
-  //   );
-
-  //   const matches = SearchUtil.searchDocument(
-  //     vimState.document,
-  //     vimState.cursorStopPosition,
-  //     searchString,
-  //     searchOptions
-  //   );
-
-  //   return SearchUtil.sortMatchesRelativeToPos(matches, vimState.cursorStopPosition);
-  // }
-
   public override async execAction(
     position: Position,
     vimState: VimState
+  ): Promise<Position | IMovement> {
+    return this.execActionWithCount(position, vimState, 1);
+  }
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
   ): Promise<Position | IMovement> {
     if (!this.isRepeat) {
       vimState = this.setRepeatableMovements(vimState);
@@ -176,31 +163,51 @@ export abstract class SneakAction extends BaseMovement {
       return matches[0].position;
     }
 
+    if (count > 1) {
+      if (matches[count - 1]) {
+        return matches[count - 1].position;
+      } else {
+        throw VimError.fromCode(ErrorCode.PatternNotFound);
+      }
+    }
+
     const shouldDisplayLabelAtFirstResult =
       configuration.sneakLabelMode && this.isOperatorMovement();
 
     this.rangesToHighlight = matches.map((match) => match.toRange());
 
-    let returnMovement: Position | IMovement;
+    let newMovement: Position | IMovement;
 
     if (shouldDisplayLabelAtFirstResult) {
-      returnMovement = {
+      // We do not move cursor yet
+      newMovement = {
         start: vimState.cursorStartPosition,
         stop: vimState.cursorStopPosition,
         failed: true,
       };
     } else {
       this.rangesToHighlight = this.rangesToHighlight.slice(1);
-      returnMovement = matches[0].position;
+      newMovement = matches[0].position;
     }
 
     this.highlighter.setHighlighting(true);
-    this.previousMode = vimState.currentMode;
-    this.previousCursorStart = vimState.cursorStartPosition;
-    await vimState.setCurrentMode(Mode.SneakLabelInputMode);
-    this.updateDecorations(vimState.lastRecognizedAction);
+    if (configuration.sneakLabelMode) {
+      this.previousMode = vimState.currentMode;
+      this.previousCursorStart = vimState.cursorStartPosition;
+      await vimState.setCurrentMode(Mode.SneakLabelInputMode);
 
-    return returnMovement;
+      if (this.isOperatorMovement()) {
+        this.operator = vimState.recordedState.operator;
+        this.isJump = false;
+        newMovement = {
+          start: vimState.cursorStartPosition,
+          stop: vimState.cursorStopPosition,
+          failed: true,
+        };
+      }
+    }
+
+    return newMovement;
   }
 
   private setRepeatableMovements(vimState: VimState): VimState {
@@ -247,16 +254,14 @@ class SneakMarkInputJump extends BaseCommand {
   keys = ['<character>'];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // We are sure we only get to SneakInputMode only if the commented out preconditions are met
-    // so we don't have to test them.
     const preConditions =
-      // configuration.sneak &&
-      // configuration.sneakLabelMode &&
-      super.couldActionApply(vimState, keysPressed);
-    // vimState.sneak &&
-    // vimState.sneak.isHighlightingOn();
+      configuration.sneak &&
+      configuration.sneakLabelMode &&
+      super.couldActionApply(vimState, keysPressed) &&
+      vimState.sneak &&
+      vimState.sneak.isHighlightingOn();
 
-    return preConditions;
+    return preConditions ?? false;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -279,8 +284,8 @@ class SneakMarkInputJump extends BaseCommand {
 
       // WARNING: For some reasons the first key using handleMultipleKeyEvent is
       // ignored so we need to send it a random key first before sending the real one
-      // pressed by the user. Escape was chosen here but it probably could be anything.
-      // If sneak actions randomly stop working look here first.
+      // pressed by the user. Escape was chosen here because it might prevent some bug
+      // by escaping the current mode and return to normal mode.
       modeHandler?.handleMultipleKeyEvents(['<Esc>', this.keysPressed[0]]);
       return;
     }

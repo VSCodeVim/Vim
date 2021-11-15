@@ -165,6 +165,8 @@ export class SneakHighlighter {
   }
 
   private generateMarkers(): void {
+    this.markers = new Map();
+
     const markerGenerator = new MarkerGenerator(
       this.sneak.getRangesToHighlight().length,
       configuration.sneakLabelTargets
