@@ -175,11 +175,7 @@ export class SneakHighlighter {
     let index: number = 0;
 
     for (const range of this.sneak.getRangesToHighlight()) {
-      const marker = markerGenerator.generateMarker(
-        index,
-        new Position(range.start.line, range.start.character),
-        false
-      );
+      const marker = markerGenerator.generateMarker(index, range.start, false);
 
       if (marker) {
         this.markers.set(marker.name, new vscode.Range(range.start, range.start));
@@ -197,6 +193,6 @@ export class SneakHighlighter {
       return undefined;
     }
 
-    return new Position(markerRange.start.line, markerRange.start.character);
+    return markerRange.start;
   }
 }

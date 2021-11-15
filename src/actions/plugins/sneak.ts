@@ -149,8 +149,8 @@ export abstract class SneakAction extends BaseMovement {
       );
     } else {
       searchOptions = this.createSearchOptions(
-        new Position(vimState.cursorStopPosition.line - maxLinesToConsider, 0),
-        new Position(vimState.cursorStopPosition.line + maxLinesToConsider, 0),
+        vimState.cursorStopPosition.getUp(maxLinesToConsider),
+        vimState.cursorStopPosition.getDown(maxLinesToConsider),
         vimState.cursorStopPosition,
         vimState.document.lineCount
       );
