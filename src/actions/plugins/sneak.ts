@@ -10,9 +10,8 @@ import { Mode } from '../../mode/mode';
 import { getAndUpdateModeHandler } from '../../../extensionBase';
 import { ErrorCode, VimError } from '../../error';
 import { Match, SearchOptions } from './easymotion/types';
-import { EasyMotion } from './easymotion/easymotion';
 import { SearchUtil } from './easymotion/searchUtil';
-import { maxPosition, minPosition } from 'src/util/util';
+import { maxPosition, minPosition } from '../../util/util';
 
 export abstract class SneakAction extends BaseMovement {
   override isJump = true;
@@ -83,12 +82,15 @@ export abstract class SneakAction extends BaseMovement {
     return this.keysPressed[0] === this.keys[1][0];
   }
 
-  protected getSearchOptions(
+  protected createSearchOptions(
     minBackwardPos: Position,
     maxForwardPos: Position,
-    cursorPos: Position
+    cursorPos: Position,
+    documentLineCount: number
   ): SearchOptions {
     let searchOptions: SearchOptions;
+    minBackwardPos = maxPosition(minBackwardPos, new Position(0, 0));
+    maxForwardPos = minPosition(maxForwardPos, new Position(documentLineCount, 0));
 
     if (this.searchForward) {
       searchOptions = {
@@ -104,11 +106,24 @@ export abstract class SneakAction extends BaseMovement {
     return searchOptions;
   }
 
+  /**
+   * Puts the closest matches to the cursor first in the list
+   * depending on if we are looking forward or backward.
+   */
+  public reorderMatches(matches: Match[]) {
+    if (this.searchForward) {
+      return matches;
+    } else {
+      return matches.reverse();
+    }
+  }
+
   protected searchVisibleRange(vimState: VimState, searchString: string): Match[] {
-    const searchOptions: SearchOptions = this.getSearchOptions(
+    const searchOptions: SearchOptions = this.createSearchOptions(
       vimState.editor.visibleRanges[0].start,
       vimState.editor.visibleRanges[0].end,
-      vimState.cursorStopPosition
+      vimState.cursorStopPosition,
+      vimState.document.lineCount
     );
 
     const matches = SearchUtil.searchDocument(
@@ -118,11 +133,37 @@ export abstract class SneakAction extends BaseMovement {
       searchOptions
     );
 
-    if (this.searchForward) {
-      return matches;
+    return this.reorderMatches(matches);
+  }
+
+  protected searchWholeDocumennt(vimState: VimState, searchString: string): Match[] {
+    const maxLinesToConsider = configuration.sneakMaxLinesToConsider;
+    let searchOptions;
+
+    if (maxLinesToConsider < 0) {
+      searchOptions = this.createSearchOptions(
+        new Position(0, 0),
+        new Position(vimState.document.lineCount, 0),
+        vimState.cursorStopPosition,
+        vimState.document.lineCount
+      );
     } else {
-      return matches.reverse();
+      searchOptions = this.createSearchOptions(
+        new Position(vimState.cursorStopPosition.line - maxLinesToConsider, 0),
+        new Position(vimState.cursorStopPosition.line + maxLinesToConsider, 0),
+        vimState.cursorStopPosition,
+        vimState.document.lineCount
+      );
     }
+
+    const matches = SearchUtil.searchDocument(
+      vimState.document,
+      vimState.cursorStopPosition,
+      searchString,
+      searchOptions
+    );
+
+    return this.reorderMatches(matches);
   }
 
   public override async execAction(
@@ -156,7 +197,12 @@ export abstract class SneakAction extends BaseMovement {
     const matches = this.searchVisibleRange(vimState, searchString);
 
     if (matches.length <= 0) {
-      throw VimError.fromCode(ErrorCode.PatternNotFound);
+      const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
+      if (matchesWholeDocument.length <= 0) {
+        throw VimError.fromCode(ErrorCode.PatternNotFound);
+      } else {
+        return matchesWholeDocument[0].position;
+      }
     }
 
     if (matches.length === 1) {
