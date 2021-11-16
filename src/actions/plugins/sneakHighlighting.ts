@@ -6,28 +6,29 @@ import { MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MarkerGenerator } from './easymotion/markerGenerator';
 import { SneakAction } from './sneak';
 import { minPosition, maxPosition } from '../../util/util';
+import { TextEditor } from 'src/textEditor';
 
 export class SneakHighlighter {
-  private highlighting: boolean = false;
+  private highlightingOn: boolean = false;
 
-  private sneak: SneakAction;
+  private editor: vscode.TextEditor;
 
-  private style: vscode.TextEditorDecorationType = this.createHighlightStyle();
+  private markerStyle: vscode.TextEditorDecorationType = this.createMarkerStyle();
 
   private fadeoutStyle: vscode.TextEditorDecorationType | undefined = this.createFadeoutStyle();
 
   private markers: Map<string, vscode.Range> = new Map();
 
-  constructor(sneak: SneakAction) {
-    this.sneak = sneak;
+  constructor(editor: vscode.TextEditor) {
+    this.editor = editor;
   }
 
-  public setHighlighting(on: boolean) {
-    this.highlighting = on;
+  public setHighlightingOn(on: boolean) {
+    this.highlightingOn = on;
   }
 
   public isHighlightingOn() {
-    return this.highlighting;
+    return this.highlightingOn;
   }
 
   private getFontColor(): string | vscode.ThemeColor {
@@ -54,13 +55,13 @@ export class SneakHighlighter {
     }
   }
 
-  public createHighlightStyle(): vscode.TextEditorDecorationType {
-    const styleForRegExp = {
+  public createMarkerStyle(): vscode.TextEditorDecorationType {
+    const styleForMarker = {
       color: this.getFontColor(),
       backgroundColor: this.getBackgroundColor(),
     };
 
-    return vscode.window.createTextEditorDecorationType(styleForRegExp);
+    return vscode.window.createTextEditorDecorationType(styleForMarker);
   }
 
   private createFadeoutStyle(): vscode.TextEditorDecorationType | undefined {
@@ -77,64 +78,63 @@ export class SneakHighlighter {
    * Clear all decorations
    */
   public clearDecorations() {
-    const editor = vscode.window.activeTextEditor!;
-    editor.setDecorations(this.style, []);
+    console.log(`clear `);
+    this.editor.setDecorations(this.markerStyle, []);
 
     if (this.fadeoutStyle) {
-      editor.setDecorations(this.fadeoutStyle, []);
+      this.editor.setDecorations(this.fadeoutStyle, []);
     }
+
+    this.setHighlightingOn(false);
   }
 
-  private isSneakTheLastAction(lastRecognizedAction: BaseAction | undefined): boolean {
-    // we can safely check for MoveRepeat, because the code gets here only in the event when
-    // the highlighting is still on (that's the condition before updateDecorations() is called)
-    // therefore we are sure that if there is a repeat movement, it repeats the Sneak
-    return (
-      lastRecognizedAction instanceof SneakAction ||
-      lastRecognizedAction instanceof MoveRepeat ||
-      lastRecognizedAction instanceof MoveRepeatReversed
-    );
-  }
-
-  public updateDecorations(lastRecognizedAction: BaseAction | undefined) {
+  public drawDecorations(labelModeActivated: boolean) {
     this.clearDecorations();
-
-    if (!this.isSneakTheLastAction(lastRecognizedAction)) {
-      this.highlighting = false;
-      return;
-    }
-
-    const editor = vscode.window.activeTextEditor!;
-    const rangesToHighlight = this.sneak.getRangesToHighlight();
-
-    if (configuration.sneakLabelMode) {
-      this.updateMarkerDecorations(editor);
-    } else {
-      editor.setDecorations(this.style, rangesToHighlight);
-    }
+    this.setHighlightingOn(true);
 
     // Fadeout the background if applicable
     if (this.fadeoutStyle) {
-      const visibleStart: Position = editor.visibleRanges[0].start;
-      const visibleEnd: Position = editor.visibleRanges[0].end;
-      const numLinesVisible = visibleEnd.subtract(visibleStart).line;
+      this.drawFadeoutBackground();
+    }
 
-      // Fade out the visible portion of the editor and add more lines at the
-      // top and the bottom to make sure that when the cursor jumps to the first match
-      // every line is properly dimmed.
-      const startFadeoutPos = maxPosition(new Position(0, 0), visibleStart.getUp(numLinesVisible));
-      const endFadeoutPos = minPosition(
-        new Position(editor.document.lineCount, 0),
-        visibleEnd.getDown(numLinesVisible)
-      );
-
-      editor.setDecorations(this.fadeoutStyle, [new vscode.Range(startFadeoutPos, endFadeoutPos)]);
+    if (labelModeActivated) {
+      this.drawLabelMode();
+    } else {
+      this.drawNonLabelMode();
     }
   }
 
-  private updateMarkerDecorations(editor: vscode.TextEditor) {
-    this.generateMarkers();
+  private drawFadeoutBackground() {
+    if (!this.fadeoutStyle) {
+      return;
+    }
 
+    const visibleStart: Position = this.editor.visibleRanges[0].start;
+    const visibleEnd: Position = this.editor.visibleRanges[0].end;
+    const numLinesVisible = visibleEnd.subtract(visibleStart).line;
+
+    // Fade out the visible portion of the editor and add more lines at the
+    // top and the bottom to make sure that when the cursor jumps to the first match
+    // every line is properly dimmed.
+    const startFadeoutPos = maxPosition(new Position(0, 0), visibleStart.getUp(numLinesVisible));
+    const endFadeoutPos = minPosition(
+      new Position(this.editor.document.lineCount, 0),
+      visibleEnd.getDown(numLinesVisible)
+    );
+
+    this.editor.setDecorations(this.fadeoutStyle, [
+      new vscode.Range(startFadeoutPos, endFadeoutPos),
+    ]);
+  }
+
+  public drawNonLabelMode() {
+    console.log(`nonlaberl `);
+    const rangesToHighlight = [...this.markers.values()];
+    this.editor.setDecorations(this.markerStyle, []);
+    this.editor.setDecorations(this.markerStyle, rangesToHighlight);
+  }
+
+  public drawLabelMode() {
     const markerHighlights: vscode.DecorationOptions[] = [];
 
     for (const [markerString, markerRange] of this.markers) {
@@ -153,7 +153,7 @@ export class SneakHighlighter {
       };
 
       markerHighlights.push({
-        range: markerRange,
+        range: new vscode.Range(markerRange.start, markerRange.start),
         renderOptions: {
           dark: renderOptions,
           light: renderOptions,
@@ -161,29 +161,34 @@ export class SneakHighlighter {
       });
     }
 
-    editor.setDecorations(this.style, markerHighlights);
+    this.editor.setDecorations(this.markerStyle, markerHighlights);
   }
 
-  private generateMarkers(): void {
+  public generateMarkersAndDraw(
+    rangesToHighlight: vscode.Range[],
+    labelModeActivated: boolean
+  ): void {
     this.markers = new Map();
 
     const markerGenerator = new MarkerGenerator(
-      this.sneak.getRangesToHighlight().length,
+      rangesToHighlight.length,
       configuration.sneakLabelTargets
     );
 
     let index: number = 0;
 
-    for (const range of this.sneak.getRangesToHighlight()) {
+    for (const range of rangesToHighlight) {
       const marker = markerGenerator.generateMarker(index, range.start, false);
 
       if (marker) {
-        this.markers.set(marker.name, new vscode.Range(range.start, range.start));
+        this.markers.set(marker.name, new vscode.Range(range.start, range.end));
         index++;
       } else {
         break;
       }
     }
+
+    this.drawDecorations(labelModeActivated);
   }
 
   public getMarkPosition(marker: string): Position | undefined {

@@ -12,6 +12,10 @@ import { ErrorCode, VimError } from '../../error';
 import { Match, SearchOptions } from './easymotion/types';
 import { SearchUtil } from './easymotion/searchUtil';
 import { maxPosition, minPosition } from '../../util/util';
+import { MoveFindBackward, MoveRepeat, MoveRepeatReversed } from '../motion';
+import { MoveFindForward } from '../motion';
+
+export class SneakController {}
 
 export abstract class SneakAction extends BaseMovement {
   override isJump = true;
@@ -22,7 +26,7 @@ export abstract class SneakAction extends BaseMovement {
    */
   protected operator: IBaseOperator | undefined;
 
-  protected highlighter: SneakHighlighter = new SneakHighlighter(this);
+  protected highlighter: SneakHighlighter | undefined;
 
   protected rangesToHighlight: vscode.Range[] = [];
 
@@ -33,7 +37,7 @@ export abstract class SneakAction extends BaseMovement {
   protected abstract searchForward: boolean;
 
   public isHighlightingOn(): boolean {
-    return this.highlighter.isHighlightingOn();
+    return this.highlighter?.isHighlightingOn() ?? false;
   }
 
   public getRangesToHighlight(): vscode.Range[] {
@@ -52,27 +56,34 @@ export abstract class SneakAction extends BaseMovement {
     return this.previousCursorStart;
   }
 
-  public clearDecorations(): void {
-    this.highlighter.clearDecorations();
-  }
-
-  public updateDecorations(lastRecognizedAction: BaseAction | undefined) {
-    this.highlighter.updateDecorations(lastRecognizedAction);
-  }
-
-  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const startingLetter =
-      vimState.recordedState.operator === undefined ? this.keys[0][0] : this.keys[1][0];
-
+  protected isSneakTheLastAction(lastRecognizedAction: BaseAction | undefined): boolean {
     return (
-      configuration.sneak &&
-      super.couldActionApply(vimState, keysPressed) &&
-      keysPressed[0] === startingLetter
+      lastRecognizedAction instanceof SneakAction ||
+      lastRecognizedAction instanceof MoveRepeat ||
+      lastRecognizedAction instanceof MoveRepeatReversed ||
+      (configuration.sneakReplacesF &&
+        (lastRecognizedAction instanceof MoveFindForward ||
+          lastRecognizedAction instanceof MoveFindBackward))
     );
   }
 
+  public clearSneakIfApplicable(vimState: VimState): void {
+    const keepDrawingDecorations =
+      this.highlighter?.isHighlightingOn() &&
+      this.isSneakTheLastAction(vimState.lastRecognizedAction);
+
+    if (!keepDrawingDecorations) {
+      this.clearDecorations();
+      // vimState.sneak = undefined;
+    }
+  }
+
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.sneak && super.couldActionApply(vimState, keysPressed);
+  }
+
   public getMarkPosition(mark: string): Position | undefined {
-    return this.highlighter.getMarkPosition(mark);
+    return this.highlighter?.getMarkPosition(mark);
   }
 
   /**
@@ -110,7 +121,7 @@ export abstract class SneakAction extends BaseMovement {
    * Puts the closest matches to the cursor first in the list
    * depending on if we are looking forward or backward.
    */
-  public reorderMatches(matches: Match[]) {
+  protected reorderMatches(matches: Match[]) {
     if (this.searchForward) {
       return matches;
     } else {
@@ -166,6 +177,10 @@ export abstract class SneakAction extends BaseMovement {
     return this.reorderMatches(matches);
   }
 
+  public clearDecorations() {
+    this.highlighter?.clearDecorations();
+  }
+
   public override async execAction(
     position: Position,
     vimState: VimState
@@ -176,8 +191,19 @@ export abstract class SneakAction extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
+    searchString?: string
   ): Promise<Position | IMovement> {
+    this.highlighter = new SneakHighlighter(vimState.editor);
+
+    if (!searchString) {
+      if (this.keysPressed[2] === '\n') {
+        searchString = this.keysPressed[1];
+      } else {
+        searchString = this.keysPressed[1] + this.keysPressed[2];
+      }
+    }
+
     if (!this.isRepeat) {
       vimState = this.setRepeatableMovements(vimState);
     }
@@ -187,43 +213,37 @@ export abstract class SneakAction extends BaseMovement {
     }
     vimState.sneak = this;
 
-    if (this.keysPressed[2] === '\n') {
-      // Single key sneak
-      this.keysPressed[2] = '';
-    }
-
-    const searchString = this.keysPressed[1] + this.keysPressed[2];
-
     const matches = this.searchVisibleRange(vimState, searchString);
+    this.rangesToHighlight = matches.map((match) => match.toRange());
+
+    let simpleMovement: Position | IMovement | undefined;
 
     if (matches.length <= 0) {
       const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
+
       if (matchesWholeDocument.length <= 0) {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
       } else {
-        return matchesWholeDocument[0].position;
+        simpleMovement = matchesWholeDocument[0].position;
       }
-    }
-
-    if (matches.length === 1) {
-      return matches[0].position;
-    }
-
-    if (count > 1) {
+    } else if (matches.length === 1) {
+      simpleMovement = matches[0].position;
+    } else if (count > 1) {
       if (matches[count - 1]) {
-        return matches[count - 1].position;
+        simpleMovement = matches[count - 1].position;
       } else {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
       }
+    }
+
+    if (simpleMovement) {
+      return simpleMovement;
     }
 
     const shouldDisplayLabelAtFirstResult =
       configuration.sneakLabelMode && this.isOperatorMovement();
 
-    this.rangesToHighlight = matches.map((match) => match.toRange());
-
     let newMovement: Position | IMovement;
-
     if (shouldDisplayLabelAtFirstResult) {
       // We do not move cursor yet
       newMovement = {
@@ -236,7 +256,8 @@ export abstract class SneakAction extends BaseMovement {
       newMovement = matches[0].position;
     }
 
-    this.highlighter.setHighlighting(true);
+    this.highlighter.generateMarkersAndDraw(this.rangesToHighlight, configuration.sneakLabelMode);
+
     if (configuration.sneakLabelMode) {
       this.previousMode = vimState.currentMode;
       this.previousCursorStart = vimState.cursorStartPosition;

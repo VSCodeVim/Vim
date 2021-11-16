@@ -832,7 +832,7 @@ function findHelper(
 }
 
 @RegisterAction
-class MoveFindForward extends BaseMovement {
+export class MoveFindForward extends BaseMovement {
   keys = ['f', '<character>'];
 
   public override async execActionWithCount(
@@ -872,7 +872,7 @@ class MoveFindForward extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFindBackward extends BaseMovement {
+export class MoveFindBackward extends BaseMovement {
   keys = ['F', '<character>'];
 
   public override async execActionWithCount(
