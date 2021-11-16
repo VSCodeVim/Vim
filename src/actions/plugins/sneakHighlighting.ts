@@ -130,7 +130,6 @@ export class SneakHighlighter {
   public drawNonLabelMode() {
     console.log(`nonlaberl `);
     const rangesToHighlight = [...this.markers.values()];
-    this.editor.setDecorations(this.markerStyle, []);
     this.editor.setDecorations(this.markerStyle, rangesToHighlight);
   }
 

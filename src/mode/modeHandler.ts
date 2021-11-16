@@ -1571,9 +1571,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
 
-    if (this.vimState.sneak) {
-      this.vimState.sneak.clearSneakIfApplicable(this.vimState);
-    }
+    this.vimState.sneak.clearSneakIfApplicable(this.vimState);
 
     StatusBar.clear(this.vimState, false);
 

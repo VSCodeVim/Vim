@@ -18,7 +18,7 @@ import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 import { CommandLine } from '../cmd_line/commandLine';
-
+import { Sneak } from '../../src/actions/plugins/sneak';
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
 }
@@ -66,7 +66,7 @@ export class VimState implements vscode.Disposable {
 
   public readonly identity: EditorIdentity;
 
-  public sneak: SneakAction | undefined;
+  public sneak: Sneak;
 
   public editor: vscode.TextEditor;
 
@@ -320,6 +320,7 @@ export class VimState implements vscode.Disposable {
     this.identity = EditorIdentity.fromEditor(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
+    this.sneak = new Sneak(this.editor);
   }
 
   async load() {
