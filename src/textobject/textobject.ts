@@ -993,27 +993,24 @@ abstract class SelectASymbol extends TextObject {
 
     const symbols = await vimState.requestDocumentSymbols();
 
-    const symbolsSearched = AstHelper.searchSymbolContainingPos(
-      symbols,
-      vimState.cursorStartPosition
-    );
+    const searchResult = AstHelper.searchSymbolContainingPos(symbols, vimState.cursorStartPosition);
 
-    const whitelistedSymbol = symbolsSearched.searchUpward(this.whitelist);
+    const whitelistedSymbol = searchResult.searchUpward(this.whitelist);
 
-    if (!whitelistedSymbol || !whitelistedSymbol.searchResult.symbol) {
+    if (!whitelistedSymbol || !whitelistedSymbol.symbol) {
       return failedMovement(vimState);
     }
 
     // We are looking forward
     if (start.isBeforeOrEqual(stop)) {
-      start = whitelistedSymbol.searchResult.symbol.range.start;
-      stop = whitelistedSymbol.searchResult.symbol.range.end;
+      start = whitelistedSymbol.symbol.range.start;
+      stop = whitelistedSymbol.symbol.range.end;
     }
 
     // We are looking backwards so we revert start and end
     else {
-      start = whitelistedSymbol.searchResult.symbol.range.end;
-      stop = whitelistedSymbol.searchResult.symbol.range.start;
+      start = whitelistedSymbol.symbol.range.end;
+      stop = whitelistedSymbol.symbol.range.start;
     }
 
     return {

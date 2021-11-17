@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { SymbolSearchNode } from './symbolSearchNode';
 import * as SymbolSearch from './symbolSearchResult';
 
 /**
@@ -9,36 +8,32 @@ import * as SymbolSearch from './symbolSearchResult';
 export class AstHelper {
   /**
    * Searches a list of symbols and their descendants to find the deepest symbol
-   * containing a position. The search might not necessarily find a symbol
-   * so a SymbolSearchNode instance is returned to better locate the position
-   * in the AST.
+   * containing a position. The search might not necessarily find a symbol so
+   * checking the instanceof the resulting search can help identifying where
+   * exactly the position is in relation to the symbols.
    */
   public static searchSymbolContainingPos(
-    symbols: vscode.DocumentSymbol[],
+    symbolsToSearch: vscode.DocumentSymbol[],
     pos: vscode.Position
-  ): SymbolSearchNode {
-    if (symbols === []) {
-      return new SymbolSearchNode(symbols, new SymbolSearch.SymbolNotFound());
+  ): SymbolSearch.SymbolSearchResult {
+    if (symbolsToSearch === []) {
+      return new SymbolSearch.SymbolNotFound(symbolsToSearch);
     }
 
-    symbols = AstHelper.sortSymbols(symbols);
-
-    let searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
-    let searchedSymbol = new SymbolSearchNode(symbols, searchResult);
+    let searchResult = AstHelper.binarySearchSymbolsFromPosition(symbolsToSearch, pos);
 
     while (
       searchResult instanceof SymbolSearch.SymbolFound &&
       searchResult.symbol &&
       searchResult.symbol.children.length > 0
     ) {
-      symbols = searchResult.symbol.children;
-      symbols = AstHelper.sortSymbols(symbols);
+      symbolsToSearch = searchResult.symbol.children;
+      symbolsToSearch = AstHelper.sortSymbols(symbolsToSearch);
 
-      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
-      searchedSymbol = new SymbolSearchNode(symbols, searchResult, searchedSymbol);
+      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbolsToSearch, pos);
     }
 
-    return searchedSymbol;
+    return searchResult;
   }
 
   public static sortSymbols(symbols: vscode.DocumentSymbol[]) {
@@ -52,10 +47,13 @@ export class AstHelper {
    */
   public static binarySearchSymbolsFromPosition(
     symbols: vscode.DocumentSymbol[],
-    position: vscode.Position
+    position: vscode.Position,
+    parent?: SymbolSearch.SymbolSearchResult
   ): SymbolSearch.SymbolSearchResult {
+    symbols = AstHelper.sortSymbols(symbols);
+
     if (symbols === []) {
-      return new SymbolSearch.SymbolNotFound();
+      return new SymbolSearch.SymbolNotFound(symbols);
     }
 
     let start = 0;
@@ -67,22 +65,22 @@ export class AstHelper {
 
       // We found the right symbol
       if (midRange.contains(position)) {
-        return new SymbolSearch.SymbolFound(middle, symbols[middle]);
+        return new SymbolSearch.SymbolFound(symbols, middle, symbols[middle], parent);
       }
 
       // We searched every symbol and could not find it
       else if (middle === start && middle === end) {
         if (position.isBefore(midRange.start)) {
           if (middle === 0) {
-            return new SymbolSearch.BeforeFirst();
+            return new SymbolSearch.BeforeFirst(symbols, parent);
           } else {
-            return new SymbolSearch.PositionBetweenSymbols(middle - 1, middle);
+            return new SymbolSearch.PositionBetweenSymbols(symbols, middle - 1, middle, parent);
           }
         } else if (position.isAfter(midRange.end)) {
           if (middle === symbols.length - 1) {
-            return new SymbolSearch.AfterLast();
+            return new SymbolSearch.AfterLast(symbols, parent);
           } else {
-            return new SymbolSearch.PositionBetweenSymbols(middle, middle + 1);
+            return new SymbolSearch.PositionBetweenSymbols(symbols, middle, middle + 1, parent);
           }
         }
       }
@@ -96,6 +94,6 @@ export class AstHelper {
       }
     }
 
-    return new SymbolSearch.SymbolNotFound();
+    return new SymbolSearch.SymbolNotFound(symbols, parent);
   }
 }

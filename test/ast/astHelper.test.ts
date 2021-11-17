@@ -42,8 +42,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof PositionBetweenSymbols);
-      assert(searchRes.index1 === 0);
-      assert(searchRes.index2 === 1);
+      assert(searchRes.indicesIfInBetween === [0, 1]);
       assert(searchRes.symbol === undefined);
     });
 
@@ -52,8 +51,8 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof PositionBetweenSymbols);
-      assert(searchRes.index1 === 1);
-      assert(searchRes.index2 === 2);
+      assert(searchRes.indexFound === 1);
+      assert(searchRes.indicesIfInBetween === [1, 2]);
       assert(searchRes.symbol === undefined);
     });
 
@@ -62,7 +61,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof SymbolFound);
-      assert(searchRes.index1 === 0);
+      assert(searchRes.indexFound === 0);
       assert(searchRes.symbol?.name === 'm1');
     });
 
@@ -71,7 +70,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof SymbolFound);
-      assert(searchRes.index1 === 1);
+      assert(searchRes.indexFound === 1);
       assert(searchRes.symbol?.name === 'm2');
     });
 
@@ -80,7 +79,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof SymbolFound);
-      assert(searchRes.index1 === 2);
+      assert(searchRes.indexFound === 2);
       assert(searchRes.symbol?.name === 'm3');
     });
   });
@@ -100,24 +99,24 @@ suite('AST Symbol search', () => {
 
     test('Search position innermost symbol', () => {
       const pos = new Position(50, 0);
-      const symbolNode = AstHelper.searchSymbolContainingPos(symbols, pos);
+      const searchResult = AstHelper.searchSymbolContainingPos(symbols, pos);
 
-      assert(symbolNode.searchResult instanceof SymbolFound);
-      assert(symbolNode.searchResult.symbol?.name === 'f2');
+      assert(searchResult instanceof SymbolFound);
+      assert(searchResult.symbol?.name === 'f2');
     });
 
     test('Search position 2nd innermost symbol', () => {
       const pos = new Position(3, 10);
-      const symbolNode = AstHelper.searchSymbolContainingPos(symbols, pos);
+      const symbolResult = AstHelper.searchSymbolContainingPos(symbols, pos);
 
-      assert(symbolNode.searchResult instanceof BeforeFirst);
+      assert(symbolResult instanceof BeforeFirst);
     });
 
     test('Search position third innermost symbol', () => {
       const pos = new Position(2, 10);
-      const symbolNode = AstHelper.searchSymbolContainingPos(symbols, pos);
+      const symbolResult = AstHelper.searchSymbolContainingPos(symbols, pos);
 
-      assert(symbolNode.searchResult instanceof BeforeFirst);
+      assert(symbolResult instanceof BeforeFirst);
     });
   });
 
@@ -140,85 +139,85 @@ suite('AST Symbol search', () => {
     const whitelistClass = new Set([SymbolKind.Class]);
 
     const posF2 = new Position(50, 0);
-    const symbolNodeF2 = AstHelper.searchSymbolContainingPos(symbols, posF2);
+    const symbolResultF2 = AstHelper.searchSymbolContainingPos(symbols, posF2);
 
     const posM2 = new Position(3, 10);
-    const symbolNodeM2 = AstHelper.searchSymbolContainingPos(symbols, posM2);
+    const symbolResultM2 = AstHelper.searchSymbolContainingPos(symbols, posM2);
 
     const posF1 = new Position(2, 10);
-    const symbolNodef1 = AstHelper.searchSymbolContainingPos(symbols, posF1);
+    const symbolResultf1 = AstHelper.searchSymbolContainingPos(symbols, posF1);
 
     const posM1 = new Position(1, 10);
-    const symbolNodeM1 = AstHelper.searchSymbolContainingPos(symbols, posM1);
+    const symbolResultM1 = AstHelper.searchSymbolContainingPos(symbols, posM1);
 
     test('Search upward from innermost node', () => {
-      const deepestFun = symbolNodeF2.searchUpward(whitelistFun);
-      const deepestMeth = symbolNodeF2.searchUpward(whitelistMeth);
-      const deepestFunAndMeth = symbolNodeF2.searchUpward(whitelistFunAndMeth);
-      const deepestClass = symbolNodeF2.searchUpward(whitelistClass);
+      const deepestFun = symbolResultF2.searchUpward(whitelistFun);
+      const deepestMeth = symbolResultF2.searchUpward(whitelistMeth);
+      const deepestFunAndMeth = symbolResultF2.searchUpward(whitelistFunAndMeth);
+      const deepestClass = symbolResultF2.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.searchResult.symbol?.name === 'f2');
+      assert(deepestFun?.symbol?.name === 'f2');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.searchResult.symbol?.name === 'm2');
+      assert(deepestMeth?.symbol?.name === 'm2');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.searchResult.symbol?.name === 'f2');
+      assert(deepestFunAndMeth?.symbol?.name === 'f2');
 
       assert(deepestClass === null);
     });
 
     test('Search upward 2nd innermost symbol', () => {
-      const deepestFun = symbolNodeM2.searchUpward(whitelistFun);
-      const deepestMeth = symbolNodeM2.searchUpward(whitelistMeth);
-      const deepestFunAndMeth = symbolNodeM2.searchUpward(whitelistFunAndMeth);
-      const deepestClass = symbolNodeM2.searchUpward(whitelistClass);
+      const deepestFun = symbolResultM2.searchUpward(whitelistFun);
+      const deepestMeth = symbolResultM2.searchUpward(whitelistMeth);
+      const deepestFunAndMeth = symbolResultM2.searchUpward(whitelistFunAndMeth);
+      const deepestClass = symbolResultM2.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.searchResult.symbol?.name === 'f1');
+      assert(deepestFun?.symbol?.name === 'f1');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.searchResult.symbol?.name === 'm2');
+      assert(deepestMeth?.symbol?.name === 'm2');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.searchResult.symbol?.name === 'm2');
+      assert(deepestFunAndMeth?.symbol?.name === 'm2');
 
       assert(deepestClass === null);
     });
 
     test('Search upward third innermost symbol', () => {
-      const deepestFun = symbolNodef1.searchUpward(whitelistFun);
-      const deepestMeth = symbolNodef1.searchUpward(whitelistMeth);
-      const deepestFunAndMeth = symbolNodef1.searchUpward(whitelistFunAndMeth);
-      const deepestClass = symbolNodef1.searchUpward(whitelistClass);
+      const deepestFun = symbolResultf1.searchUpward(whitelistFun);
+      const deepestMeth = symbolResultf1.searchUpward(whitelistMeth);
+      const deepestFunAndMeth = symbolResultf1.searchUpward(whitelistFunAndMeth);
+      const deepestClass = symbolResultf1.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.searchResult.symbol?.name === 'f1');
+      assert(deepestFun?.symbol?.name === 'f1');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.searchResult.symbol?.name === 'm1');
+      assert(deepestMeth?.symbol?.name === 'm1');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.searchResult.symbol?.name === 'f1');
+      assert(deepestFunAndMeth?.symbol?.name === 'f1');
 
       assert(deepestClass === null);
     });
 
     test('Search upward outermost symbol', () => {
-      const deepestFun = symbolNodeM1.searchUpward(whitelistFun);
-      const deepestMeth = symbolNodeM1.searchUpward(whitelistMeth);
-      const deepestFunAndMeth = symbolNodeM1.searchUpward(whitelistFunAndMeth);
-      const deepestClass = symbolNodeM1.searchUpward(whitelistClass);
+      const deepestFun = symbolResultM1.searchUpward(whitelistFun);
+      const deepestMeth = symbolResultM1.searchUpward(whitelistMeth);
+      const deepestFunAndMeth = symbolResultM1.searchUpward(whitelistFunAndMeth);
+      const deepestClass = symbolResultM1.searchUpward(whitelistClass);
 
-      assert(!(deepestFun?.searchResult instanceof SymbolFound));
-      assert(deepestFun?.searchResult.symbol === undefined);
+      assert(!(deepestFun instanceof SymbolFound));
+      assert(deepestFun?.symbol === undefined);
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.searchResult.symbol?.name === 'm1');
+      assert(deepestMeth?.symbol?.name === 'm1');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.searchResult.symbol?.name === 'm1');
+      assert(deepestFunAndMeth?.symbol?.name === 'm1');
 
       assert(deepestClass === null);
     });
