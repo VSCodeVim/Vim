@@ -21,6 +21,8 @@ export class AstHelper {
       return new SymbolSearchNode(symbols, new SymbolSearch.SymbolNotFound());
     }
 
+    symbols = AstHelper.sortSymbols(symbols);
+
     let searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
     let searchedSymbol = new SymbolSearchNode(symbols, searchResult);
 
@@ -30,11 +32,19 @@ export class AstHelper {
       searchResult.symbol.children.length > 0
     ) {
       symbols = searchResult.symbol.children;
+      symbols = AstHelper.sortSymbols(symbols);
+
       searchResult = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
       searchedSymbol = new SymbolSearchNode(symbols, searchResult, searchedSymbol);
     }
 
     return searchedSymbol;
+  }
+
+  public static sortSymbols(symbols: vscode.DocumentSymbol[]) {
+    return symbols.sort((symbol1, symbol2) => {
+      return symbol1.range.start.compareTo(symbol2.range.start);
+    });
   }
 
   /**
