@@ -1031,7 +1031,7 @@ export class SelectAFunctionSymbol extends SelectASymbol {
 
 @RegisterAction
 export class SelectAClassSymbol extends SelectASymbol {
-  override keys = ['a', 'c'];
+  override keys = ['a', 'C'];
   override whitelist = new Set([
     SymbolKind.Class,
     SymbolKind.Struct,
