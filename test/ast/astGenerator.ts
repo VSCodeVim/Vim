@@ -27,12 +27,15 @@ export type ListSymbolAbbrev = SymbolAbbrev[];
  *  ['M4', 11, 12, SymbolKind.Interface, []],
  * ];
  */
-export function generateAstRecursive(symbolNodes: ListSymbolAbbrev): DocumentSymbol[] {
+export function generateAstRecursive(
+  symbolNodes: ListSymbolAbbrev,
+  shouldShuffle?: boolean
+): DocumentSymbol[] {
   if (symbolNodes === []) {
     return [];
   }
 
-  const listSymbol = [];
+  let listSymbol = [];
   for (const node of symbolNodes) {
     const [name, lineStart, lineEnd, kind, children] = node;
     const childrenSymbol = generateAstRecursive(children);
@@ -49,5 +52,28 @@ export function generateAstRecursive(symbolNodes: ListSymbolAbbrev): DocumentSym
     listSymbol.push(newSymbol);
   }
 
+  if (shouldShuffle) {
+    listSymbol = pseudoShuffle(listSymbol);
+  }
+
   return listSymbol;
+}
+
+/**
+ * This function shuffles the list deteministically. It
+ * swaps only a few symbols around. It is by no means a
+ * good shuffle function but it does the job for our needs.
+ */
+export function pseudoShuffle<T>(list: T[]): T[] {
+  for (let i = 0; i < Math.floor(list.length / 2); i += 2) {
+    list = swap(list, i, list.length - 1 - i);
+  }
+  return list;
+}
+
+function swap<T>(list: T[], i1: number, i2: number): T[] {
+  const temp = list[i1];
+  list[i1] = list[i2];
+  list[i2] = temp;
+  return list;
 }

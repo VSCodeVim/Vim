@@ -19,7 +19,7 @@ suite('AST Symbol search', () => {
       [ 'm3', 22, 30, SymbolKind.Method, []],
     ];
 
-    const symbols = generateAstRecursive(symbolsAbbrev);
+    const symbols = generateAstRecursive(symbolsAbbrev, true);
 
     test('Binary search position before first symbol', () => {
       const pos = new Position(1, 0);
@@ -96,7 +96,7 @@ suite('AST Symbol search', () => {
       ],
     ];
 
-    const symbols = generateAstRecursive(symbolsAbbrev);
+    const symbols = generateAstRecursive(symbolsAbbrev, true);
 
     test('Search position innermost symbol', () => {
       const pos = new Position(50, 0);
@@ -132,7 +132,7 @@ suite('AST Symbol search', () => {
       ],
     ];
 
-    const symbols = generateAstRecursive(symbolsAbbrev);
+    const symbols = generateAstRecursive(symbolsAbbrev, true);
 
     const whitelistFunAndMeth = new Set([SymbolKind.Function, SymbolKind.Method]);
     const whitelistFun = new Set([SymbolKind.Function]);
