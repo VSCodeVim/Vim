@@ -78,7 +78,6 @@ export class SneakHighlighter {
    * Clear all decorations
    */
   public clearDecorations() {
-    console.log(`clear `);
     this.editor.setDecorations(this.markerStyle, []);
 
     if (this.fadeoutStyle) {
@@ -128,7 +127,6 @@ export class SneakHighlighter {
   }
 
   public drawNonLabelMode() {
-    console.log(`nonlaberl `);
     const rangesToHighlight = [...this.markers.values()];
     this.editor.setDecorations(this.markerStyle, rangesToHighlight);
   }
@@ -165,9 +163,14 @@ export class SneakHighlighter {
 
   public generateMarkersAndDraw(
     rangesToHighlight: vscode.Range[],
-    labelModeActivated: boolean
+    labelModeActivated: boolean,
+    editor: vscode.TextEditor
   ): void {
     this.markers = new Map();
+
+    // We need to update the editor because the same document can change textEditor
+    // on settings reload and it messes with text decorations.
+    this.editor = editor;
 
     const markerGenerator = new MarkerGenerator(
       rangesToHighlight.length,

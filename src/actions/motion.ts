@@ -841,10 +841,11 @@ export class MoveFindForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (configuration.sneakReplacesF) {
+      const searchString = this.keysPressed[1];
       const pos = await new SneakForward(
         this.keysPressed.concat('\n'),
         this.isRepeat
-      ).execActionWithCount(position, vimState, count);
+      ).execActionWithCount(position, vimState, count, searchString);
       if (vimState.recordedState.operator && !isIMovement(pos)) {
         return pos.getRight();
       }

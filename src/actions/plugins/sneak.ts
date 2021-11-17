@@ -1,4 +1,3 @@
-import { configuration } from './../../configuration/configuration';
 import { RegisterAction, BaseAction, BaseCommand } from './../base';
 import { Position } from 'vscode';
 import * as vscode from 'vscode';
@@ -14,6 +13,7 @@ import { maxPosition, minPosition } from '../../util/util';
 import { MoveFindBackward, MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MoveFindForward } from '../motion';
 import { VimState } from '../../state/vimState';
+import { configuration } from 'src/configuration/configuration';
 
 export class Sneak {
   private _sneakHighlighter: SneakHighlighter;
@@ -188,10 +188,6 @@ export abstract class SneakAction extends BaseMovement {
     return this.reorderMatches(matches);
   }
 
-  public clearDecorations() {
-    this.highlighter?.clearDecorations();
-  }
-
   public override async execAction(
     position: Position,
     vimState: VimState
@@ -220,14 +216,14 @@ export abstract class SneakAction extends BaseMovement {
     }
 
     if (vimState.sneak.lastSneakAction) {
-      vimState.sneak.lastSneakAction.clearDecorations();
+      vimState.sneak.sneakHighlighter.clearDecorations();
     }
     vimState.sneak.lastSneakAction = this;
 
     const matches = this.searchVisibleRange(vimState, searchString);
     let rangesToHighlight = matches.map((match) => match.toRange());
 
-    let simpleMovement: Position | IMovement | undefined;
+    let simpleMovementNoHighlight: Position | IMovement | undefined;
 
     if (matches.length <= 0) {
       const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
@@ -235,24 +231,24 @@ export abstract class SneakAction extends BaseMovement {
       if (matchesWholeDocument.length <= 0) {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
       } else {
-        simpleMovement = matchesWholeDocument[0].position;
+        simpleMovementNoHighlight = matchesWholeDocument[0].position;
       }
     }
 
     if (matches.length === 1) {
-      simpleMovement = matches[0].position;
+      simpleMovementNoHighlight = matches[0].position;
     }
 
     if (count > 1) {
       if (matches[count - 1]) {
-        simpleMovement = matches[count - 1].position;
+        simpleMovementNoHighlight = matches[count - 1].position;
       } else {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
       }
     }
 
-    if (simpleMovement) {
-      return simpleMovement;
+    if (simpleMovementNoHighlight) {
+      return simpleMovementNoHighlight;
     }
 
     const shouldDisplayLabelAtFirstResult =
@@ -270,8 +266,9 @@ export abstract class SneakAction extends BaseMovement {
       rangesToHighlight = rangesToHighlight.slice(1);
       newMovement = matches[0].position;
     }
+    const sneakLabelMode = configuration.sneakLabelMode;
 
-    this.highlighter.generateMarkersAndDraw(rangesToHighlight, configuration.sneakLabelMode);
+    this.highlighter.generateMarkersAndDraw(rangesToHighlight, sneakLabelMode, vimState.editor);
 
     if (configuration.sneakLabelMode) {
       this.previousMode = vimState.currentMode;
@@ -350,6 +347,7 @@ class SneakMarkInputJump extends BaseCommand {
     const mark = this.keysPressed[0];
 
     if (!vimState.sneak.lastSneakAction) {
+      await vimState.setCurrentMode(Mode.Normal);
       return;
     }
 
