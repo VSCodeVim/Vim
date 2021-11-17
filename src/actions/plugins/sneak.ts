@@ -17,7 +17,8 @@ import { configuration } from '../../configuration/configuration';
 
 export class Sneak {
   private _sneakHighlighter: SneakHighlighter;
-  private _lastSneakAction?: SneakAction | undefined;
+  public lastSneakAction?: SneakAction | undefined;
+  public lastRecognizedAction: BaseAction | undefined = undefined;
 
   public constructor(editor: vscode.TextEditor) {
     this._sneakHighlighter = new SneakHighlighter(editor);
@@ -25,14 +26,13 @@ export class Sneak {
 
   public clearSneakIfApplicable(vimState: VimState): void {
     const keepDrawingDecorations =
-      // vimState.sneak.sneakHighlighter.isHighlightingOn() &&
       (!configuration.sneakLabelMode &&
-        Sneak.isSneakTheLastAction(vimState.lastRecognizedAction)) ||
+        Sneak.isSneakTheLastAction(vimState.sneak.lastRecognizedAction)) ||
       (configuration.sneakLabelMode && vimState.currentMode === Mode.SneakLabelInputMode);
 
     if (!keepDrawingDecorations) {
       this.sneakHighlighter.clearDecorations();
-      vimState.sneak._lastSneakAction = undefined;
+      vimState.sneak.lastSneakAction = undefined;
     }
   }
 
@@ -49,14 +49,6 @@ export class Sneak {
 
   public get sneakHighlighter(): SneakHighlighter {
     return this._sneakHighlighter;
-  }
-
-  public get lastSneakAction(): SneakAction | undefined {
-    return this._lastSneakAction;
-  }
-
-  public set lastSneakAction(value: SneakAction | undefined) {
-    this._lastSneakAction = value;
   }
 }
 

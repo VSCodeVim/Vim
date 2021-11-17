@@ -608,7 +608,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState.actionsRunPressedKeys.push(...recordedState.actionKeys);
 
     let actionToRecord: BaseAction | undefined = action;
-    this.vimState.lastRecognizedAction = actionToRecord;
+    this.vimState.sneak.lastRecognizedAction = actionToRecord;
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);

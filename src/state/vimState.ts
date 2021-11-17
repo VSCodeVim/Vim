@@ -104,11 +104,6 @@ export class VimState implements vscode.Disposable {
   public isReplayingMacro: boolean = false;
 
   /**
-   * Tracks the last action
-   */
-  public lastRecognizedAction: BaseAction | undefined = undefined;
-
-  /**
    * The last visual selection before running the dot command
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;

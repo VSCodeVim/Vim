@@ -69,10 +69,9 @@ export class SearchUtil {
           // Check if match is within bounds
           if (
             (options.min && pos.isBefore(options.min)) ||
-            (options.max && pos.isAfter(options.max)) ||
-            Math.abs(pos.line - position.line) > 100
+            (options.max && pos.isAfter(options.max))
           ) {
-            // Stop searching after 100 lines in both directions
+            // Stop searching
             result = regex.exec(line);
           } else {
             // Update cursor index to the marker on the right side of the cursor
