@@ -9,6 +9,7 @@ import {
   PositionBetweenSymbols,
   SymbolFound,
 } from '../../src/ast/symbolSearchResult';
+import { assertEqualLines } from 'test/testUtils';
 
 suite('AST Symbol search', () => {
   suite('AST binary search', () => {
@@ -42,7 +43,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof PositionBetweenSymbols);
-      assert(searchRes.indicesIfInBetween === [0, 1]);
+      assert.deepStrictEqual(searchRes.indicesIfInBetween, [0, 1]);
       assert(searchRes.symbol === undefined);
     });
 
@@ -51,8 +52,7 @@ suite('AST Symbol search', () => {
       const searchRes = AstHelper.binarySearchSymbolsFromPosition(symbols, pos);
 
       assert(searchRes instanceof PositionBetweenSymbols);
-      assert(searchRes.indexFound === 1);
-      assert(searchRes.indicesIfInBetween === [1, 2]);
+      assert.deepStrictEqual(searchRes.indicesIfInBetween, [1, 2]);
       assert(searchRes.symbol === undefined);
     });
 
@@ -62,7 +62,7 @@ suite('AST Symbol search', () => {
 
       assert(searchRes instanceof SymbolFound);
       assert(searchRes.indexFound === 0);
-      assert(searchRes.symbol?.name === 'm1');
+      assert.deepStrictEqual(searchRes.symbol?.name, 'm1');
     });
 
     test('Binary search position inside 2nd symbol', () => {
@@ -71,7 +71,7 @@ suite('AST Symbol search', () => {
 
       assert(searchRes instanceof SymbolFound);
       assert(searchRes.indexFound === 1);
-      assert(searchRes.symbol?.name === 'm2');
+      assert.deepStrictEqual(searchRes.symbol?.name, 'm2');
     });
 
     test('Binary search position inside third symbol', () => {
@@ -80,7 +80,7 @@ suite('AST Symbol search', () => {
 
       assert(searchRes instanceof SymbolFound);
       assert(searchRes.indexFound === 2);
-      assert(searchRes.symbol?.name === 'm3');
+      assert.deepStrictEqual(searchRes.symbol?.name, 'm3');
     });
   });
 
@@ -102,7 +102,7 @@ suite('AST Symbol search', () => {
       const searchResult = AstHelper.searchSymbolContainingPos(symbols, pos);
 
       assert(searchResult instanceof SymbolFound);
-      assert(searchResult.symbol?.name === 'f2');
+      assert.deepStrictEqual(searchResult.symbol?.name, 'f2');
     });
 
     test('Search position 2nd innermost symbol', () => {
@@ -157,13 +157,13 @@ suite('AST Symbol search', () => {
       const deepestClass = symbolResultF2.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.symbol?.name === 'f2');
+      assert.deepStrictEqual(deepestFun?.symbol?.name, 'f2');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.symbol?.name === 'm2');
+      assert.deepStrictEqual(deepestMeth?.symbol?.name, 'm2');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.symbol?.name === 'f2');
+      assert.deepStrictEqual(deepestFunAndMeth?.symbol?.name, 'f2');
 
       assert(deepestClass === null);
     });
@@ -175,13 +175,13 @@ suite('AST Symbol search', () => {
       const deepestClass = symbolResultM2.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.symbol?.name === 'f1');
+      assert.deepStrictEqual(deepestFun?.symbol?.name, 'f1');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.symbol?.name === 'm2');
+      assert.deepStrictEqual(deepestMeth?.symbol?.name, 'm2');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.symbol?.name === 'm2');
+      assert.deepStrictEqual(deepestFunAndMeth?.symbol?.name, 'm2');
 
       assert(deepestClass === null);
     });
@@ -193,13 +193,13 @@ suite('AST Symbol search', () => {
       const deepestClass = symbolResultf1.searchUpward(whitelistClass);
 
       assert(deepestFun !== undefined);
-      assert(deepestFun?.symbol?.name === 'f1');
+      assert.deepStrictEqual(deepestFun?.symbol?.name, 'f1');
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.symbol?.name === 'm1');
+      assert.deepStrictEqual(deepestMeth?.symbol?.name, 'm1');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.symbol?.name === 'f1');
+      assert.deepStrictEqual(deepestFunAndMeth?.symbol?.name, 'f1');
 
       assert(deepestClass === null);
     });
@@ -214,10 +214,10 @@ suite('AST Symbol search', () => {
       assert(deepestFun?.symbol === undefined);
 
       assert(deepestMeth !== undefined);
-      assert(deepestMeth?.symbol?.name === 'm1');
+      assert.deepStrictEqual(deepestMeth?.symbol?.name, 'm1');
 
       assert(deepestFunAndMeth !== undefined);
-      assert(deepestFunAndMeth?.symbol?.name === 'm1');
+      assert.deepStrictEqual(deepestFunAndMeth?.symbol?.name, 'm1');
 
       assert(deepestClass === null);
     });

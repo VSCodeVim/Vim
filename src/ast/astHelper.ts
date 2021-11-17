@@ -28,9 +28,8 @@ export class AstHelper {
       searchResult.symbol.children.length > 0
     ) {
       symbolsToSearch = searchResult.symbol.children;
-      symbolsToSearch = AstHelper.sortSymbols(symbolsToSearch);
 
-      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbolsToSearch, pos);
+      searchResult = AstHelper.binarySearchSymbolsFromPosition(symbolsToSearch, pos, searchResult);
     }
 
     return searchResult;
