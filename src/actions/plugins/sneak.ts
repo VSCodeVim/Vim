@@ -13,7 +13,7 @@ import { maxPosition, minPosition } from '../../util/util';
 import { MoveFindBackward, MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MoveFindForward } from '../motion';
 import { VimState } from '../../state/vimState';
-import { configuration } from 'src/configuration/configuration';
+import { configuration } from '../../configuration/configuration';
 
 export class Sneak {
   private _sneakHighlighter: SneakHighlighter;

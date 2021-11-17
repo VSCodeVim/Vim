@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
 import { configuration } from './../../configuration/configuration';
-import { BaseAction } from './../base';
 import { Position } from 'vscode';
-import { MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MarkerGenerator } from './easymotion/markerGenerator';
-import { SneakAction } from './sneak';
 import { minPosition, maxPosition } from '../../util/util';
-import { TextEditor } from 'src/textEditor';
 
 export class SneakHighlighter {
   private highlightingOn: boolean = false;

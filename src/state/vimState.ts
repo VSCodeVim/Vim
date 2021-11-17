@@ -11,7 +11,6 @@ import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
-import { SneakAction } from '../actions/plugins/sneak';
 import { BaseAction } from '../actions/base';
 import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
