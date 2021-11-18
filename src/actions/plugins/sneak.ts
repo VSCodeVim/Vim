@@ -322,7 +322,7 @@ export class SneakBackward extends SneakAction {
 @RegisterAction
 class SneakMarkInputJump extends BaseCommand {
   modes = [Mode.SneakLabelInputMode];
-  keys = ['<character>'];
+  keys = ['<any>'];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const preConditions =
