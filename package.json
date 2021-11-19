@@ -1135,7 +1135,7 @@
     "path-browserify": "1.0.1",
     "process": "0.11.10",
     "queue": "^6.0.2",
-    "source-map-support": "0.5.20",
+    "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.4",
     "winston": "3.3.3",
