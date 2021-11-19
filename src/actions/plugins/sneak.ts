@@ -63,9 +63,11 @@ export abstract class SneakAction extends BaseMovement {
 
   protected highlighter: SneakHighlighter | undefined;
 
-  private previousMode: Mode | undefined;
+  protected previousMode: Mode | undefined;
 
-  private previousCursorStart: Position = new Position(0, 0);
+  protected previousCursorStart: Position = new Position(0, 0);
+
+  protected labelModeEnabled: boolean | undefined;
 
   protected abstract searchForward: boolean;
 
@@ -75,6 +77,10 @@ export abstract class SneakAction extends BaseMovement {
 
   public getPreviousMode(): Mode | undefined {
     return this.previousMode;
+  }
+
+  public isLabelModeEnabled(): boolean {
+    return this.labelModeEnabled ?? false;
   }
 
   public getPreviousCursorStart(): Position {
@@ -93,7 +99,7 @@ export abstract class SneakAction extends BaseMovement {
    * Whether the current call to sneak is just a jump or an operator movement.
    */
   protected isOperatorMovement(): boolean {
-    return this.keysPressed[0] === this.keys[1][0];
+    return this.operator !== undefined;
   }
 
   protected createSearchOptions(
@@ -194,6 +200,10 @@ export abstract class SneakAction extends BaseMovement {
     searchString?: string
   ): Promise<Position | IMovement> {
     this.highlighter = vimState.sneak.sneakHighlighter;
+    this.operator = vimState.recordedState.operator;
+    this.previousMode = vimState.currentMode;
+    this.previousCursorStart = vimState.cursorStartPosition;
+    this.labelModeEnabled = configuration.sneakLabelMode;
 
     if (!searchString) {
       if (this.keysPressed[2] === '\n') {
@@ -243,40 +253,32 @@ export abstract class SneakAction extends BaseMovement {
       return simpleMovementNoHighlight;
     }
 
-    const shouldDisplayLabelAtFirstResult =
-      configuration.sneakLabelMode && this.isOperatorMovement();
-
     let newMovement: Position | IMovement;
-    if (shouldDisplayLabelAtFirstResult) {
-      // We do not move cursor yet
-      newMovement = {
-        start: vimState.cursorStartPosition,
-        stop: vimState.cursorStopPosition,
-        failed: true,
-      };
-    } else {
-      rangesToHighlight = rangesToHighlight.slice(1);
-      newMovement = matches[0].position;
-    }
-    const sneakLabelMode = configuration.sneakLabelMode;
-
-    this.highlighter.generateMarkersAndDraw(rangesToHighlight, sneakLabelMode, vimState.editor);
-
-    if (configuration.sneakLabelMode) {
-      this.previousMode = vimState.currentMode;
-      this.previousCursorStart = vimState.cursorStartPosition;
+    if (this.labelModeEnabled) {
       await vimState.setCurrentMode(Mode.SneakLabelInputMode);
 
       if (this.isOperatorMovement()) {
-        this.operator = vimState.recordedState.operator;
+        // We do not move cursor yet
         this.isJump = false;
         newMovement = {
           start: vimState.cursorStartPosition,
           stop: vimState.cursorStopPosition,
           failed: true,
         };
+      } else {
+        rangesToHighlight = rangesToHighlight.slice(1);
+        newMovement = matches[0].position;
       }
+    } else {
+      rangesToHighlight = rangesToHighlight.slice(1);
+      newMovement = matches[0].position;
     }
+
+    this.highlighter.generateMarkersAndDraw(
+      rangesToHighlight,
+      this.labelModeEnabled,
+      vimState.editor
+    );
 
     return newMovement;
   }
