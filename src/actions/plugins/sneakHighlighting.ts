@@ -189,13 +189,7 @@ export class SneakHighlighter {
     this.drawDecorations(labelModeActivated);
   }
 
-  public getMarkPosition(marker: string): Position | undefined {
-    const markerRange = this.markers.get(marker);
-
-    if (!markerRange) {
-      return undefined;
-    }
-
-    return markerRange.start;
+  public getMarkRange(marker: string): vscode.Range | undefined {
+    return this.markers.get(marker);
   }
 }

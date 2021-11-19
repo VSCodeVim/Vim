@@ -92,7 +92,12 @@ export abstract class SneakAction extends BaseMovement {
   }
 
   public getMarkPosition(mark: string): Position | undefined {
-    return this.highlighter?.getMarkPosition(mark);
+    const markRange = this.highlighter?.getMarkRange(mark);
+    if (markRange) {
+      return this.convertRangeToPosition(markRange);
+    }
+
+    return undefined;
   }
 
   /**
@@ -225,32 +230,10 @@ export abstract class SneakAction extends BaseMovement {
     const matches = this.searchVisibleRange(vimState, searchString);
     let rangesToHighlight = matches.map((match) => match.toRange());
 
-    let simpleMovementNoHighlight: Position | IMovement | undefined;
+    const simpleMatch = this.getMatchNoHighlightNeeded(matches, vimState, searchString, count);
 
-    if (matches.length <= 0) {
-      const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
-
-      if (matchesWholeDocument.length <= 0) {
-        throw VimError.fromCode(ErrorCode.PatternNotFound);
-      } else {
-        simpleMovementNoHighlight = matchesWholeDocument[0].position;
-      }
-    }
-
-    if (matches.length === 1) {
-      simpleMovementNoHighlight = matches[0].position;
-    }
-
-    if (count > 1) {
-      if (matches[count - 1]) {
-        simpleMovementNoHighlight = matches[count - 1].position;
-      } else {
-        throw VimError.fromCode(ErrorCode.PatternNotFound);
-      }
-    }
-
-    if (simpleMovementNoHighlight) {
-      return simpleMovementNoHighlight;
+    if (simpleMatch) {
+      return this.convertMatchToPosition(simpleMatch);
     }
 
     let newMovement: Position | IMovement;
@@ -267,11 +250,11 @@ export abstract class SneakAction extends BaseMovement {
         };
       } else {
         rangesToHighlight = rangesToHighlight.slice(1);
-        newMovement = matches[0].position;
+        newMovement = this.convertMatchToPosition(matches[0]);
       }
     } else {
       rangesToHighlight = rangesToHighlight.slice(1);
-      newMovement = matches[0].position;
+      newMovement = this.convertMatchToPosition(matches[0]);
     }
 
     this.highlighter.generateMarkersAndDraw(
@@ -281,6 +264,52 @@ export abstract class SneakAction extends BaseMovement {
     );
 
     return newMovement;
+  }
+
+  public convertMatchToPosition(match: Match): Position {
+    return this.convertRangeToPosition(match.toRange());
+  }
+
+  public convertRangeToPosition(range: vscode.Range): Position {
+    if (!this.isOperatorMovement()) {
+      return range.start;
+    }
+
+    if (this.searchForward) {
+      return range.end;
+    } else {
+      return range.start;
+    }
+  }
+
+  private getMatchNoHighlightNeeded(
+    matches: Match[],
+    vimState: VimState,
+    searchString: string,
+    count: number
+  ): Match | undefined {
+    if (matches.length <= 0) {
+      const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
+
+      if (matchesWholeDocument.length <= 0) {
+        throw VimError.fromCode(ErrorCode.PatternNotFound);
+      } else {
+        return matchesWholeDocument[0];
+      }
+    }
+
+    if (matches.length === 1) {
+      return matches[0];
+    }
+
+    if (count > 1) {
+      if (matches[count - 1]) {
+        return matches[count - 1];
+      } else {
+        throw VimError.fromCode(ErrorCode.PatternNotFound);
+      }
+    }
+    return undefined;
   }
 
   private setRepeatableMovements(vimState: VimState): VimState {
@@ -347,7 +376,7 @@ class SneakMarkInputJump extends BaseCommand {
 
     const lastSneakAction = vimState.sneak.lastSneakAction;
 
-    const newPosition: Position | undefined = lastSneakAction.getMarkPosition(mark);
+    let newPosition: Position | undefined = lastSneakAction.getMarkPosition(mark);
 
     await vimState.setCurrentMode(lastSneakAction.getPreviousMode()!);
     vimState.cursorStartPosition = lastSneakAction.getPreviousCursorStart();
@@ -368,9 +397,11 @@ class SneakMarkInputJump extends BaseCommand {
 
     const operator = lastSneakAction.getOperator();
     if (operator) {
-      // if it was an operator movement, we execute the operator now that we have the final position
-      const resultPosition = newPosition.getLeftThroughLineBreaks();
-      return operator.run(vimState, position, resultPosition);
+      if (position.isBeforeOrEqual(newPosition)) {
+        // Operator needs a different endPosition when searching forward
+        newPosition = newPosition.getLeftThroughLineBreaks();
+      }
+      return operator.run(vimState, position, newPosition);
     } else {
       // if it wasn't an operator movement, we just jump to it
       vimState.cursorStopPosition = newPosition;
