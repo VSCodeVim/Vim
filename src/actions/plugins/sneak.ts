@@ -397,10 +397,7 @@ class SneakMarkInputJump extends BaseCommand {
 
     const operator = lastSneakAction.getOperator();
     if (operator) {
-      if (position.isBeforeOrEqual(newPosition)) {
-        // Operator needs a different endPosition when searching forward
-        newPosition = newPosition.getLeftThroughLineBreaks();
-      }
+      newPosition = newPosition.getLeftThroughLineBreaks();
       return operator.run(vimState, position, newPosition);
     } else {
       // if it wasn't an operator movement, we just jump to it

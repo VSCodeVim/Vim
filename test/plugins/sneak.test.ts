@@ -29,7 +29,7 @@ suite('sneak plugin', () => {
     title: 'Can handle <operator>z motion',
     start: ['|abc abc'],
     keysPressed: 'dzab',
-    end: ['|abc'],
+    end: ['|c'],
   });
 
   newTest({
@@ -85,7 +85,7 @@ suite('sneak plugin', () => {
     title: 'Can handle single letter <operator>z motion',
     start: ['|abc abc'],
     keysPressed: 'dza\n',
-    end: ['|abc'],
+    end: ['|bc'],
   });
 
   newTest({
@@ -213,7 +213,7 @@ suite('sneakLabelMode', () => {
     title: 'Can handle <operator>z in label mode',
     start: ['|abc', 'abc', 'abc', 'abc'],
     keysPressed: 'dzabs',
-    end: ['|abc', 'abc'],
+    end: ['|c', 'abc'],
   });
 
   newTest({
