@@ -993,7 +993,7 @@ abstract class SelectASymbol extends TextObject {
 
     const symbols = await vimState.requestDocumentSymbols();
 
-    const searchResult = AstHelper.searchSymbolContainingPos(symbols, vimState.cursorStartPosition);
+    const searchResult = AstHelper.searchSymbolContainingPos(symbols, position);
 
     const whitelistedSymbol = searchResult.searchUpward(this.whitelist);
 
