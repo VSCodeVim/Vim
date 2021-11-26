@@ -2,7 +2,7 @@ import assert = require('assert');
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
-import { DeleteRangeCommand } from '../../src/cmd_line/commands/deleteRange';
+import { DeleteCommand } from '../../src/cmd_line/commands/delete';
 import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
 import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
@@ -14,7 +14,7 @@ import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
-import { SetOptionsCommand } from '../../src/cmd_line/commands/setoptions';
+import { SetCommand } from '../../src/cmd_line/commands/set';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
 import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
@@ -136,10 +136,10 @@ suite('Ex command parsing', () => {
   });
 
   suite(':d[elete]', () => {
-    exParseTest(':d', new DeleteRangeCommand({ register: undefined, count: undefined }));
-    exParseTest(':d a', new DeleteRangeCommand({ register: 'a', count: undefined }));
-    exParseTest(':d 5', new DeleteRangeCommand({ register: undefined, count: 5 }));
-    exParseTest(':d a 5', new DeleteRangeCommand({ register: 'a', count: 5 }));
+    exParseTest(':d', new DeleteCommand({ register: undefined, count: undefined }));
+    exParseTest(':d a', new DeleteCommand({ register: 'a', count: undefined }));
+    exParseTest(':d 5', new DeleteCommand({ register: undefined, count: 5 }));
+    exParseTest(':d a 5', new DeleteCommand({ register: 'a', count: 5 }));
   });
 
   suite(':delm[arks]', () => {
@@ -319,43 +319,28 @@ suite('Ex command parsing', () => {
   });
 
   suite(':se[t]', () => {
-    exParseTest(':set', new SetOptionsCommand({ type: 'show_or_set', option: undefined }));
-    exParseTest(':set all', new SetOptionsCommand({ type: 'show_or_set', option: 'all' }));
-    exParseTest(':set all&', new SetOptionsCommand({ type: 'default', option: 'all', source: '' }));
+    exParseTest(':set', new SetCommand({ type: 'show_or_set', option: undefined }));
+    exParseTest(':set all', new SetCommand({ type: 'show_or_set', option: 'all' }));
+    exParseTest(':set all&', new SetCommand({ type: 'default', option: 'all', source: '' }));
 
     for (const option of ['ws', 'wrapscan']) {
-      exParseTest(`:set ${option}`, new SetOptionsCommand({ type: 'show_or_set', option }));
-      exParseTest(`:set ${option}?`, new SetOptionsCommand({ type: 'show', option }));
-      exParseTest(`:set no${option}`, new SetOptionsCommand({ type: 'unset', option }));
-      exParseTest(`:set inv${option}`, new SetOptionsCommand({ type: 'invert', option }));
-      exParseTest(`:set ${option}!`, new SetOptionsCommand({ type: 'invert', option }));
-      exParseTest(
-        `:set ${option}&`,
-        new SetOptionsCommand({ type: 'default', option, source: '' })
-      );
-      exParseTest(
-        `:set ${option}&vi`,
-        new SetOptionsCommand({ type: 'default', option, source: 'vi' })
-      );
-      exParseTest(
-        `:set ${option}&vim`,
-        new SetOptionsCommand({ type: 'default', option, source: 'vim' })
-      );
+      exParseTest(`:set ${option}`, new SetCommand({ type: 'show_or_set', option }));
+      exParseTest(`:set ${option}?`, new SetCommand({ type: 'show', option }));
+      exParseTest(`:set no${option}`, new SetCommand({ type: 'unset', option }));
+      exParseTest(`:set inv${option}`, new SetCommand({ type: 'invert', option }));
+      exParseTest(`:set ${option}!`, new SetCommand({ type: 'invert', option }));
+      exParseTest(`:set ${option}&`, new SetCommand({ type: 'default', option, source: '' }));
+      exParseTest(`:set ${option}&vi`, new SetCommand({ type: 'default', option, source: 'vi' }));
+      exParseTest(`:set ${option}&vim`, new SetCommand({ type: 'default', option, source: 'vim' }));
       // TODO: :set {option}<
     }
 
     for (const option of ['sw', 'shiftwidth']) {
-      exParseTest(`:set ${option}=4`, new SetOptionsCommand({ type: 'equal', option, value: '4' }));
-      exParseTest(`:set ${option}:4`, new SetOptionsCommand({ type: 'equal', option, value: '4' }));
-      exParseTest(`:set ${option}+=4`, new SetOptionsCommand({ type: 'add', option, value: '4' }));
-      exParseTest(
-        `:set ${option}^=4`,
-        new SetOptionsCommand({ type: 'multiply', option, value: '4' })
-      );
-      exParseTest(
-        `:set ${option}-=4`,
-        new SetOptionsCommand({ type: 'subtract', option, value: '4' })
-      );
+      exParseTest(`:set ${option}=4`, new SetCommand({ type: 'equal', option, value: '4' }));
+      exParseTest(`:set ${option}:4`, new SetCommand({ type: 'equal', option, value: '4' }));
+      exParseTest(`:set ${option}+=4`, new SetCommand({ type: 'add', option, value: '4' }));
+      exParseTest(`:set ${option}^=4`, new SetCommand({ type: 'multiply', option, value: '4' }));
+      exParseTest(`:set ${option}-=4`, new SetCommand({ type: 'subtract', option, value: '4' }));
     }
   });
 
@@ -393,6 +378,24 @@ suite('Ex command parsing', () => {
         pattern: pattern.tryParse('a'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
+        count: 3,
+      })
+    );
+    exParseTest(
+      ':s/a/b/g3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: { replaceAll: true },
+        count: 3,
+      })
+    );
+    exParseTest(
+      ':s/a/b/3',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: {},
         count: 3,
       })
     );

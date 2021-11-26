@@ -6,7 +6,7 @@ import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
-import { Mode } from '../../mode/mode';
+import { isVisualMode, Mode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
 import { SearchState } from '../../state/searchState';
@@ -142,14 +142,18 @@ async function createSearchStateAndMoveToMatch(args: {
 
 @RegisterAction
 class CommandSearchCurrentWordExactForward extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['*'];
   override isMotion = true;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    if (isVisualMode(vimState.currentMode) && configuration.visualstar) {
+      await searchCurrentSelection(vimState, SearchDirection.Forward);
+    } else {
+      await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    }
   }
 }
 
@@ -167,32 +171,19 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchVisualForward extends BaseCommand {
-  modes = [Mode.Visual, Mode.VisualLine];
-  keys = ['*'];
-  override isMotion = true;
-  override runsOnceForEachCountPrefix = true;
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (configuration.visualstar) {
-      await searchCurrentSelection(vimState, SearchDirection.Forward);
-    } else {
-      await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
-    }
-  }
-}
-
-@RegisterAction
 class CommandSearchCurrentWordExactBackward extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['#'];
   override isMotion = true;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    if (configuration.visualstar) {
+      await searchCurrentSelection(vimState, SearchDirection.Backward);
+    } else {
+      await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    }
   }
 }
 
@@ -210,23 +201,6 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchVisualBackward extends BaseCommand {
-  modes = [Mode.Visual, Mode.VisualLine];
-  keys = ['#'];
-  override isMotion = true;
-  override runsOnceForEachCountPrefix = true;
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (configuration.visualstar) {
-      await searchCurrentSelection(vimState, SearchDirection.Backward);
-    } else {
-      await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
-    }
-  }
-}
-
-@RegisterAction
 class CommandSearchForwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['/'];
@@ -240,9 +214,7 @@ class CommandSearchForwards extends BaseCommand {
     vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
     globalState.searchState = vimState.commandLine.getSearchState();
-    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 
@@ -260,9 +232,7 @@ class CommandSearchBackwards extends BaseCommand {
     vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
     globalState.searchState = vimState.commandLine.getSearchState();
-    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 

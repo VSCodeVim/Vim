@@ -36,6 +36,7 @@ import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
 import { doesFileExist } from 'platform/fs';
+import { exCommandParser } from '../../vimscript/exCommandParser';
 
 /**
  * A very special snowflake.
@@ -845,7 +846,7 @@ class CommandRepeatSubstitution extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
     // necessary to make this work with and without neovim integration
-    await new ExCommandLine('s', vimState.currentMode).run(vimState);
+    await exCommandParser.tryParse('s').command.execute(vimState);
   }
 }
 
@@ -869,7 +870,7 @@ abstract class CommandFold extends BaseCommand {
         ? { levels: timesToRepeat, direction: this.direction }
         : undefined;
     await vscode.commands.executeCommand(this.commandName, args);
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1526,7 +1527,7 @@ export class CommandInsertNewLineAbove extends BaseCommand {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     for (let i = 0; i < count; i++) {
       const newPos = new Position(
         vimState.cursors[0].start.line + i,
@@ -1554,7 +1555,7 @@ export class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.cursorStartPosition.line - i,
@@ -2473,11 +2474,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteRange',
-          range: new vscode.Range(start, start.getLineEnd()),
-          collapseRange: true,
-        });
+        vimState.recordedState.transformer.delete(new vscode.Range(start, start.getLineEnd()));
         cursors.push(new Cursor(end, end));
       }
     }
@@ -2996,7 +2993,7 @@ export class ActionOverrideCmdD extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -3038,7 +3035,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     });
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3056,7 +3053,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3074,7 +3071,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 

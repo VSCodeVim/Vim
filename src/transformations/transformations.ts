@@ -145,8 +145,6 @@ export interface DeleteTextRangeTransformation {
    */
   diff?: PositionDiff;
 
-  collapseRange?: boolean;
-
   /**
    * The index of the cursor that this transformation applies to.
    */
