@@ -214,9 +214,7 @@ class CommandSearchForwards extends BaseCommand {
     vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
     globalState.searchState = vimState.commandLine.getSearchState();
-    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 
@@ -234,9 +232,7 @@ class CommandSearchBackwards extends BaseCommand {
     vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
     globalState.searchState = vimState.commandLine.getSearchState();
-    vimState.commandLine.historyIndex = SearchCommandLine.previousSearchStates.length;
   }
 }
 
