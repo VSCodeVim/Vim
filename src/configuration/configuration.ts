@@ -239,7 +239,7 @@ class Configuration implements IConfiguration {
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
-  sneakMaxLinesToConsider = -1;
+  sneakMaxLinesToConsider = 0;
   sneakReplacesF = false;
   sneakLabelMode = false;
   sneakLabelTargets = ';sftunq/SFGHLTUNRMQZ?0';

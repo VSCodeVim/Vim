@@ -734,8 +734,9 @@
         },
         "vim.sneakMaxLinesToConsider": {
           "type": "number",
-          "description": "Maximum number of lines to search during Sneak search (useful when one works with large files). -1 means no restriction.",
-          "default": -1
+          "description": "Maximum number of lines to search during Sneak search (useful when one works with large files). 0 means no restriction. 1 would mean to only search the current line",
+          "default": 0,
+          "minimum": 0
         },
         "vim.sneakReplacesF": {
           "type": "boolean",

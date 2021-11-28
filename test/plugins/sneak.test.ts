@@ -159,6 +159,86 @@ suite('sneak plugin', () => {
   });
 });
 
+suite('sneakMaxLinesToConsider', () => {
+  suite('sneakMaxLinesToConsider == 1', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakMaxLinesToConsider = 1;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'sneak forward on the same line',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sle',
+      end: ['app|le', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward on the same line',
+      start: ['apple|', 'banana', 'carrot'],
+      keysPressed: 'Sap',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak forward 1 line down do not move',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sba',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward 1 line up do not move',
+      start: ['apple', 'ban|ana', 'carrot'],
+      keysPressed: 'Sap',
+      end: ['apple', 'ban|ana', 'carrot'],
+    });
+  });
+
+  suite('sneakMaxLinesToConsider == 2', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakMaxLinesToConsider = 2;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'sneak forward one line down',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sba',
+      end: ['apple', '|banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak forward two line down',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sca',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward one line up',
+      start: ['apple', 'banana', 'car|rot'],
+      keysPressed: 'Sba',
+      end: ['apple', '|banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward two line up',
+      start: ['apple', 'banana', 'car|rot'],
+      keysPressed: 'Sap',
+      end: ['apple', 'banana', 'car|rot'],
+    });
+  });
+});
+
 suite('sneakReplacesF', () => {
   setup(async () => {
     await setupWorkspace();

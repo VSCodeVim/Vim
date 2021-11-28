@@ -158,7 +158,7 @@ export interface IConfiguration {
 
   /**
    * The maximum number of lines to search (counted from the cursor position) when using Sneak
-   * (-1 means no restriction).
+   * (0 means no restriction, 1 would mean to only search the current line).
    */
   sneakMaxLinesToConsider: number;
 

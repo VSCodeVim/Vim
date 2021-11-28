@@ -9,7 +9,7 @@ import { getAndUpdateModeHandler } from '../../../extensionBase';
 import { ErrorCode, VimError } from '../../error';
 import { Match, SearchOptions } from './easymotion/types';
 import { SearchUtil } from './easymotion/searchUtil';
-import { maxPosition, minPosition } from '../../util/util';
+import * as util from '../../util/util';
 import { MoveFindBackward, MoveRepeat, MoveRepeatReversed } from '../motion';
 import { MoveFindForward } from '../motion';
 import { VimState } from '../../state/vimState';
@@ -114,20 +114,31 @@ export abstract class SneakAction extends BaseMovement {
     documentLineCount: number
   ): SearchOptions {
     let searchOptions: SearchOptions;
-    minBackwardPos = maxPosition(minBackwardPos, new Position(0, 0));
-    maxForwardPos = minPosition(maxForwardPos, new Position(documentLineCount, 0));
+    const maxLinesToConsider = configuration.sneakMaxLinesToConsider;
+
+    const candidateStopsForward = [maxForwardPos, new Position(documentLineCount, 0).getLineEnd()];
+    const candidateStopsBackward = [minBackwardPos, new Position(0, 0)];
+
+    if (maxLinesToConsider > 0) {
+      candidateStopsForward.push(cursorPos.getDown(maxLinesToConsider - 1).getLineEnd());
+      candidateStopsBackward.push(cursorPos.getUp(maxLinesToConsider - 1).getLineBegin());
+    }
+
+    const closestForwardPos = candidateStopsForward.reduce(util.minPosition);
+    const closestStopBackward = candidateStopsBackward.reduce(util.maxPosition);
 
     if (this.searchForward) {
       searchOptions = {
         min: cursorPos,
-        max: maxForwardPos,
+        max: closestForwardPos,
       };
     } else {
       searchOptions = {
-        min: minBackwardPos,
+        min: closestStopBackward,
         max: cursorPos,
       };
     }
+
     return searchOptions;
   }
 
@@ -145,8 +156,8 @@ export abstract class SneakAction extends BaseMovement {
 
   protected searchVisibleRange(vimState: VimState, searchString: string): Match[] {
     const searchOptions: SearchOptions = this.createSearchOptions(
-      vimState.editor.visibleRanges[0].start,
-      vimState.editor.visibleRanges[0].end,
+      vimState.editor.visibleRanges[0].start.getLineBegin(),
+      vimState.editor.visibleRanges[0].end.getLineEnd(),
       vimState.cursorStopPosition,
       vimState.document.lineCount
     );
@@ -161,25 +172,24 @@ export abstract class SneakAction extends BaseMovement {
     return this.reorderMatches(matches);
   }
 
-  protected searchWholeDocumennt(vimState: VimState, searchString: string): Match[] {
-    const maxLinesToConsider = configuration.sneakMaxLinesToConsider;
+  protected searchWholeDocument(vimState: VimState, searchString: string): Match[] {
     let searchOptions;
 
-    if (maxLinesToConsider < 0) {
-      searchOptions = this.createSearchOptions(
-        new Position(0, 0),
-        new Position(vimState.document.lineCount, 0),
-        vimState.cursorStopPosition,
-        vimState.document.lineCount
-      );
-    } else {
-      searchOptions = this.createSearchOptions(
-        vimState.cursorStopPosition.getUp(maxLinesToConsider),
-        vimState.cursorStopPosition.getDown(maxLinesToConsider),
-        vimState.cursorStopPosition,
-        vimState.document.lineCount
-      );
-    }
+    // if (maxLinesToConsider === 0) {
+    searchOptions = this.createSearchOptions(
+      new Position(0, 0),
+      new Position(vimState.document.lineCount, 0).getLineEnd(),
+      vimState.cursorStopPosition,
+      vimState.document.lineCount
+    );
+    // } else {
+    //   // searchOptions = this.createSearchOptions(
+    //     vimState.cursorStopPosition.getUp(maxLinesToConsider - 1).getLineBegin(),
+    //     vimState.cursorStopPosition.getDown(maxLinesToConsider - 1).getLineEnd(),
+    //     vimState.cursorStopPosition,
+    //     vimState.document.lineCount
+    //   );
+    // }
 
     const matches = SearchUtil.searchDocument(
       vimState.document,
@@ -289,7 +299,7 @@ export abstract class SneakAction extends BaseMovement {
     count: number
   ): Match | undefined {
     if (matches.length <= 0) {
-      const matchesWholeDocument = this.searchWholeDocumennt(vimState, searchString);
+      const matchesWholeDocument = this.searchWholeDocument(vimState, searchString);
 
       if (matchesWholeDocument.length <= 0) {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
