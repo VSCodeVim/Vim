@@ -729,12 +729,12 @@
         },
         "vim.sneakUseIgnorecaseAndSmartcase": {
           "type": "boolean",
-          "markdownDescription": "Case sensitivity is determined by `#vim.ignorecase#` and `#vim.smartcase#`.",
+          "markdownDescription": "Respect `vim.ignorecase` and `vim.smartcase` while sneaking",
           "default": false
         },
         "vim.sneakMaxLinesToConsider": {
           "type": "number",
-          "description": "Maximum number of lines to search during Sneak search (useful when one works with large files). 0 means no restriction. 1 would mean to only search the current line",
+          "markdownDescription": "The maximum number of lines searched (starting from the position of the cursor) while sneaking (useful if one is working with large files). 0 means no restriction. 1 means to only search the current line.",
           "default": 0,
           "minimum": 0
         },
@@ -745,12 +745,12 @@
         },
         "vim.sneakLabelMode": {
           "type": "boolean",
-          "description": "Use Sneak label mode.",
+          "description": "Enable/disable label mode for Sneak. If enabled, Sneak overlays text with labels which can be jumped to by typing the label characters.",
           "default": false
         },
         "vim.sneakLabelTargets": {
           "type": "string",
-          "description": "List of targets used to label target locations.",
+          "description": "List of targets used to label target locations when using Sneak.",
           "default": ";sftunq/SFGHLTUNRMQZ?0"
         },
         "vim.sneakHighlightFontColor": {
@@ -763,11 +763,12 @@
         },
         "vim.sneakHighlightUseFadeout": {
           "type": "boolean",
-          "description": "Fade out the text in the visible area highlighting is active (EasyMotion style)."
+          "description": "Fade out the text in the visible area when Sneak highlighting is active.",
+          "default": false
         },
         "vim.sneakHighlightFadeColor": {
           "type": "string",
-          "description": "Set a custom color for the faded-out text of Sneak highlighting (used only if vim.sneakHighlightUseFadeout is set)."
+          "description": "Set a custom color for the faded-out text of Sneak highlighting (used only if vim.sneakHighlightUseFadeout is enabled)."
         },
         "vim.surround": {
           "type": "boolean",
