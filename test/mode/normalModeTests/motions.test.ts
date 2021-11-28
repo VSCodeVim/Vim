@@ -937,12 +937,12 @@ suite('Motions in Normal Mode', () => {
     });
 
     // TODO: this fails on Windows due to \r\n
-    newTest({
+    newTestSkip({
       title: '`[count]go` goes to offset <count>, newlines disregarded',
       start: ['abc', 'de|f', 'ghi'],
       keysPressed: '10go',
       end: ['abc', 'def', 'g|hi'],
-    });
+    }, process.platform === 'win32');
   });
 
   newTest({
