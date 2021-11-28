@@ -168,14 +168,18 @@ export class SearchState {
 
     if (effectiveDirection === SearchDirection.Forward) {
       for (let i = 0; i < matchRanges.length; i++) {
-        if (matchRanges[i].start.isAfter(fromPosition)) {
+        if (
+          (this.offset?.apply(matchRanges[i]) ?? matchRanges[i].start).compareTo(fromPosition) > 0
+        ) {
           index = i;
           break;
         }
       }
     } else {
       for (let i = matchRanges.length - 1; i >= 0; i--) {
-        if (matchRanges[i].start.isBefore(fromPosition)) {
+        if (
+          (this.offset?.apply(matchRanges[i]) ?? matchRanges[i].start).compareTo(fromPosition) < 0
+        ) {
           index = i;
           break;
         }
