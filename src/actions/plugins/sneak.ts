@@ -175,21 +175,12 @@ export abstract class SneakAction extends BaseMovement {
   protected searchWholeDocument(vimState: VimState, searchString: string): Match[] {
     let searchOptions;
 
-    // if (maxLinesToConsider === 0) {
     searchOptions = this.createSearchOptions(
       new Position(0, 0),
       new Position(vimState.document.lineCount, 0).getLineEnd(),
       vimState.cursorStopPosition,
       vimState.document.lineCount
     );
-    // } else {
-    //   // searchOptions = this.createSearchOptions(
-    //     vimState.cursorStopPosition.getUp(maxLinesToConsider - 1).getLineBegin(),
-    //     vimState.cursorStopPosition.getDown(maxLinesToConsider - 1).getLineEnd(),
-    //     vimState.cursorStopPosition,
-    //     vimState.document.lineCount
-    //   );
-    // }
 
     const matches = SearchUtil.searchDocument(
       vimState.document,
