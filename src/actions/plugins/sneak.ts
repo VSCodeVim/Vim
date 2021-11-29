@@ -219,7 +219,7 @@ export abstract class SneakAction extends BaseMovement {
       }
     }
 
-    let searchRegex: RegExp = new RegExp(searchString);
+    let searchRegex: RegExp = new RegExp(searchString, 'g');
 
     if (configuration.sneakUseIgnorecaseAndSmartcase) {
       searchRegex = SearchUtil.generateRegexFromString(
