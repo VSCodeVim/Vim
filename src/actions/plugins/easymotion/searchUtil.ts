@@ -89,4 +89,14 @@ export class SearchUtil {
 
     return matches;
   }
+
+  public static generateRegexFromString(
+    searchString: string,
+    ignoreCaseEnabled?: boolean,
+    smartCaseEnabled?: boolean
+  ) {
+    const ignorecase = ignoreCaseEnabled && !(smartCaseEnabled && /[A-Z]/.test(searchString));
+    const regexFlags = ignorecase ? 'gi' : 'g';
+    return new RegExp(searchString, regexFlags);
+  }
 }

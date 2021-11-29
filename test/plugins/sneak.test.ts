@@ -239,6 +239,87 @@ suite('sneakMaxLinesToConsider', () => {
   });
 });
 
+suite('sneakUseIgnoreCaseAndSmartcase', () => {
+  suite('sneakUseIgnoreCaseAndSmartcase === false', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = false;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'Skip capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange Apple |apple Apple'],
+    });
+
+    newTest({
+      title: 'jump to first Capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange |Apple apple Apple'],
+    });
+  });
+
+  suite('ignorecase === on, smartcase === off', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = true;
+      Globals.mockConfiguration.ignorecase = true;
+      Globals.mockConfiguration.smartcase = false;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'search lowercase include capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange |Apple apple Apple'],
+    });
+
+    newTest({
+      title: 'search uppercase include lowercase letter',
+      start: ['|orange apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange |apple Apple'],
+    });
+  });
+
+  suite('ignorecase === on, smartcase === on', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = true;
+      Globals.mockConfiguration.ignorecase = true;
+      Globals.mockConfiguration.smartcase = true;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'search lowercase include capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange |Apple apple Apple'],
+    });
+
+    newTest({
+      title: 'search uppercase exclude lowercase letter',
+      start: ['|orange apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange apple |Apple'],
+    });
+  });
+});
+
 suite('sneakReplacesF', () => {
   setup(async () => {
     await setupWorkspace();

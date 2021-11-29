@@ -154,7 +154,7 @@ export abstract class SneakAction extends BaseMovement {
     }
   }
 
-  protected searchVisibleRange(vimState: VimState, searchString: string): Match[] {
+  protected searchVisibleRange(vimState: VimState, searchRegex: RegExp): Match[] {
     const searchOptions: SearchOptions = this.createSearchOptions(
       vimState.editor.visibleRanges[0].start.getLineBegin(),
       vimState.editor.visibleRanges[0].end.getLineEnd(),
@@ -165,14 +165,14 @@ export abstract class SneakAction extends BaseMovement {
     const matches = SearchUtil.searchDocument(
       vimState.document,
       vimState.cursorStopPosition,
-      searchString,
+      searchRegex,
       searchOptions
     );
 
     return this.reorderMatches(matches);
   }
 
-  protected searchWholeDocument(vimState: VimState, searchString: string): Match[] {
+  protected searchWholeDocument(vimState: VimState, searchRegex: RegExp): Match[] {
     let searchOptions;
 
     searchOptions = this.createSearchOptions(
@@ -185,7 +185,7 @@ export abstract class SneakAction extends BaseMovement {
     const matches = SearchUtil.searchDocument(
       vimState.document,
       vimState.cursorStopPosition,
-      searchString,
+      searchRegex,
       searchOptions
     );
 
@@ -219,6 +219,16 @@ export abstract class SneakAction extends BaseMovement {
       }
     }
 
+    let searchRegex: RegExp = new RegExp(searchString);
+
+    if (configuration.sneakUseIgnorecaseAndSmartcase) {
+      searchRegex = SearchUtil.generateRegexFromString(
+        searchString,
+        configuration.ignorecase,
+        configuration.smartcase
+      );
+    }
+
     if (!this.isRepeat) {
       vimState = this.setRepeatableMovements(vimState);
     }
@@ -228,10 +238,10 @@ export abstract class SneakAction extends BaseMovement {
     }
     vimState.sneak.lastSneakAction = this;
 
-    const matches = this.searchVisibleRange(vimState, searchString);
+    const matches = this.searchVisibleRange(vimState, searchRegex);
     let rangesToHighlight = matches.map((match) => match.toRange());
 
-    const simpleMatch = this.getMatchNoHighlightNeeded(matches, vimState, searchString, count);
+    const simpleMatch = this.getMatchNoHighlightNeeded(matches, vimState, searchRegex, count);
 
     if (simpleMatch) {
       return this.convertMatchToPosition(simpleMatch);
@@ -286,11 +296,11 @@ export abstract class SneakAction extends BaseMovement {
   private getMatchNoHighlightNeeded(
     matches: Match[],
     vimState: VimState,
-    searchString: string,
+    searchRegex: RegExp,
     count: number
   ): Match | undefined {
     if (matches.length <= 0) {
-      const matchesWholeDocument = this.searchWholeDocument(vimState, searchString);
+      const matchesWholeDocument = this.searchWholeDocument(vimState, searchRegex);
 
       if (matchesWholeDocument.length <= 0) {
         throw VimError.fromCode(ErrorCode.PatternNotFound);
