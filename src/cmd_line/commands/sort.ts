@@ -1,19 +1,35 @@
+import { oneOf, optWhitespace, Parser, seq } from 'parsimmon';
 import * as vscode from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
+import { bangParser } from '../../vimscript/parserUtils';
 
-export interface ISortCommandArguments extends node.ICommandArgs {
+export interface ISortCommandArguments {
   reverse: boolean;
   ignoreCase: boolean;
   unique: boolean;
+  // TODO: support other flags
+  // TODO(#6676): support pattern
 }
 
-export class SortCommand extends node.CommandBase {
-  private readonly arguments: ISortCommandArguments;
+export class SortCommand extends ExCommand {
+  public static readonly argParser: Parser<SortCommand> = seq(
+    bangParser,
+    optWhitespace.then(oneOf('bfilnorux').many())
+  ).map(
+    ([bang, flags]) =>
+      new SortCommand({
+        reverse: bang,
+        ignoreCase: flags.includes('i'),
+        unique: flags.includes('u'),
+      })
+  );
 
+  private readonly arguments: ISortCommandArguments;
   constructor(args: ISortCommandArguments) {
     super();
     this.arguments = args;
@@ -78,8 +94,8 @@ export class SortCommand extends node.CommandBase {
     });
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [start, end] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const { start, end } = range.resolve(vimState);
 
     await this.sortLines(vimState, start, end);
   }

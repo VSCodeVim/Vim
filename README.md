@@ -19,7 +19,6 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 - [Installation](#-installation)
   - [Mac setup](#mac)
   - [Windows setup](#windows)
-  - [Linux setup](#linux-setup)
 - [Settings](#%EF%B8%8F-settings)
   - [VSCodeVim settings](#vscodevim-settings)
   - [Neovim Integration](#neovim-integration)
@@ -370,6 +369,32 @@ Custom remappings are defined on a per-mode basis.
 
     As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
 
+### Vim modes
+
+Here are all the modes used by VSCodeVim:
+
+| Mode                  |
+| --------------------- |
+| Normal                |
+| Insert                |
+| Visual                |
+| VisualBlock           |
+| VisualLine            |
+| SearchInProgressMode  |
+| CommandlineInProgress |
+| Replace               |
+| EasyMotionMode        |
+| EasyMotionInputMode   |
+| SurroundInputMode     |
+| OperatorPendingMode   |
+| Disabled              |
+
+When rebinding keys in [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings) using ["when clause context"](https://code.visualstudio.com/api/references/when-clause-contexts), it can be useful to know in which mode vim currently is. For example to write a "when clause" that checks if vim is currently in normal mode or visual mode it is possible to write the following:
+
+```json
+"when": "vim.mode == 'Normal' || vim.mode == 'Visual'",
+```
+
 ### Vim settings
 
 Configuration settings that have been copied from vim. Vim settings are loaded in the following sequence:
@@ -379,23 +404,24 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 3.  VS Code settings
 4.  VSCodeVim default values
 
-| Setting          | Description                                                                                                                                                                                                                                                   | Type    | Default Value |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.autoindent   | Copy indent from current line when starting a new line                                                                                                                                                                                                        | Boolean | true          |
-| vim.gdefault     | When on, the `:substitute` flag `g` is default on. This means that all matches in a line are substituted instead of one. When a `g` flag is given to a `:substitute` command, this will toggle the substitution of all or one match.                          | Boolean | false         |
-| vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                   | Boolean | false         |
-| vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                | Boolean | true          |
-| vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                   | Boolean | true          |
-| vim.joinspaces   | Add two spaces after '.', '?', and '!' when joining or reformatting                                                                                                                                                                                           | Boolean | true          |
-| vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                       | String  | `\`           |
-| vim.showcmd      | Show (partial) command in status bar                                                                                                                                                                                                                          | Boolean | true          |
-| vim.showmodename | Show name of current mode in status bar                                                                                                                                                                                                                       | Boolean | true          |
-| vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                             | Boolean | true          |
-| vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                            | Number  | 80            |
-| vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                 | Number  | 1000          |
-| vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done. | Number  | 1000          |
-| vim.whichwrap    | Allow specified keys that move the cursor left/right to move to the previous/next line when the cursor is on the first/last character in the line. See [:help whichwrap](https://vimhelp.org/options.txt.html#%27whichwrap%27).                               | String  | `b,s`         |
-| vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                              | Number  | 2             |
+| Setting          | Description                                                                                                                                                                                                                                                   | Type    | Default Value                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------- |
+| vim.autoindent   | Copy indent from current line when starting a new line                                                                                                                                                                                                        | Boolean | true                                                           |
+| vim.gdefault     | When on, the `:substitute` flag `g` is default on. This means that all matches in a line are substituted instead of one. When a `g` flag is given to a `:substitute` command, this will toggle the substitution of all or one match.                          | Boolean | false                                                          |
+| vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                   | Boolean | false                                                          |
+| vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                | Boolean | true                                                           |
+| vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                   | Boolean | true                                                           |
+| vim.joinspaces   | Add two spaces after '.', '?', and '!' when joining or reformatting                                                                                                                                                                                           | Boolean | true                                                           |
+| vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                       | String  | `\`                                                            |
+| vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done. | Number  | 1000                                                           |
+| vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                              | Number  | 2                                                              |
+| vim.shell        | Path to the shell to use for `!` and `:!` commands.                                                                                                                                                                                                           | String  | `/bin/sh` on Unix, `%COMSPEC%` environment variable on Windows |
+| vim.showcmd      | Show (partial) command in status bar                                                                                                                                                                                                                          | Boolean | true                                                           |
+| vim.showmodename | Show name of current mode in status bar                                                                                                                                                                                                                       | Boolean | true                                                           |
+| vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                             | Boolean | true                                                           |
+| vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                            | Number  | 80                                                             |
+| vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                 | Number  | 1000                                                           |
+| vim.whichwrap    | Allow specified keys that move the cursor left/right to move to the previous/next line when the cursor is on the first/last character in the line. See [:help whichwrap](https://vimhelp.org/options.txt.html#%27whichwrap%27).                               | String  | `b,s`                                                          |
 
 ## .vimrc support
 

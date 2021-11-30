@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 
-import * as node from '../node';
-
-export class OnlyCommand extends node.CommandBase {
+export class OnlyCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     await Promise.allSettled([
       vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups'),

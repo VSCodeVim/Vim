@@ -268,6 +268,12 @@ suite('Record and navigate jumps', () => {
         end: ['start', '|{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['{', '}'],
       });
+      newJumpTest({
+        start: ['one', 'two', 'th|ree', 'four', 'five'],
+        keysPressed: 'gg' + '3gg' + '4gg',
+        end: ['one', 'two', 'three', '|four', 'five'],
+        jumps: ['one', 'three'],
+      });
     });
 
     suite('Can track jumps with back/forward', () => {
@@ -319,28 +325,28 @@ suite('Record and navigate jumps', () => {
         start: ['|start', 'var foo = {"a", "b"}', 'end'],
         keysPressed: 'jf{%r]``r[',
         end: ['start', 'var foo = |["a", "b"]', 'end'],
-        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+        jumps: ['var foo = ["a", "b"]'],
       });
       newJumpTest({
         title: 'Can track one-line double `` jumps',
         start: ['|start', 'var foo = {"a", "b"}', 'end'],
         keysPressed: 'jf{%r]``r[``',
         end: ['start', 'var foo = ["a", "b"|]', 'end'],
-        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+        jumps: ['var foo = ["a", "b"]'],
       });
       newJumpTest({
         title: "Can track one-line '' jumps",
         start: ['|start', 'var foo = {"a", "b"}', 'end'],
         keysPressed: "jf{%r]``r[''",
         end: ['start', '|var foo = ["a", "b"]', 'end'],
-        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+        jumps: ['var foo = ["a", "b"]'],
       });
       newJumpTest({
         title: "Can track one-line double '' jumps",
         start: ['|start', 'var foo = {"a", "b"}', 'end'],
         keysPressed: "jf{%r]``r[''''",
         end: ['start', '|var foo = ["a", "b"]', 'end'],
-        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+        jumps: ['var foo = ["a", "b"]'],
       });
       newJumpTest({
         title: "Can handle '' jumps with no previous jump",
@@ -418,8 +424,8 @@ suite('Record and navigate jumps', () => {
       newJumpTest({
         start: ['|a1', 'a2', 'a3'],
         keysPressed: ':%s/a/b\n',
-        end: ['|b1', 'b2', 'b3'],
-        jumps: ['b2', 'b3'],
+        end: ['b1', 'b2', '|b3'],
+        jumps: ['b3'],
       });
     });
 

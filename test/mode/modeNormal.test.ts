@@ -275,6 +275,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'v$c deletes newline',
+    start: ['one', 't|wo', 'three'],
+    keysPressed: 'v$c',
+    end: ['one', 't|three'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c])' without deleting closing parenthesis",
     start: ['(hello, |world)'],
     keysPressed: 'c])',
@@ -448,6 +456,14 @@ suite('Mode Normal', () => {
     start: ['call|(() => 5)'],
     keysPressed: 'ci(',
     end: ['call(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'ci(' on closing inner parenthesis",
+    start: ['one ((|)) two'],
+    keysPressed: 'ci(',
+    end: ['one ((|)) two'],
     endMode: Mode.Insert,
   });
 
@@ -1560,20 +1576,6 @@ suite('Mode Normal', () => {
     });
   });
 
-  newTest({
-    title: '`. works correctly',
-    start: ['on|e'],
-    keysPressed: 'atwo<Esc>`.',
-    end: ['one|two'],
-  });
-
-  newTest({
-    title: "'. works correctly",
-    start: ['on|e'],
-    keysPressed: "atwo<Esc>'.",
-    end: ['one|two'],
-  });
-
   suite('g;', () => {
     newTest({
       title: 'g; before any changes throws E664',
@@ -2292,6 +2294,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/ with \\%V will search in last selection',
+    start: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+    keysPressed: 'vjj<Esc>gg/\\%Vasdf\n',
+    end: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/ with \\%V will search in last selection, starting from the cursor postion',
+    start: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
+    keysPressed: 'vjjj<Esc>kk/\\%Vasdf\nn',
+    end: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
+  });
+
+  newTest({
     title: '/ matches ^ per line',
     start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
     keysPressed: '/^asdf\n',
@@ -2317,6 +2333,13 @@ suite('Mode Normal', () => {
     start: ['x end', 'x', 'x', '|start'],
     keysPressed: '?x\nnn',
     end: ['|x end', 'x', 'x', 'start'],
+  });
+
+  newTest({
+    title: 'Search for `(`',
+    start: ['|one (two) three'],
+    keysPressed: '/(\n',
+    end: ['one |(two) three'],
   });
 
   /**
@@ -2571,6 +2594,22 @@ suite('Mode Normal', () => {
     start: ['foo', '|fun', 'bar'],
     keysPressed: 'cc<Esc>jp',
     end: ['foo', '', 'bar', '|fun'],
+  });
+
+  newTest({
+    title: 'Vc preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'Vj' + 'c',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: 'cj preserves indentation of first line',
+    start: ['one', '  t|wo', '      three', 'four'],
+    keysPressed: 'cj',
+    end: ['one', '  |', 'four'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2952,34 +2991,6 @@ suite('Mode Normal', () => {
     keysPressed: 'daa',
     end: ['(', '   foo,', '   ba|r', ')'],
     endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: '`] go to the end of the previously operated or put text',
-    start: ['hello|'],
-    keysPressed: 'a world<Esc>`]',
-    end: ['hello worl|d'],
-  });
-
-  newTest({
-    title: "'] go to the end of the previously operated or put text",
-    start: ['hello|'],
-    keysPressed: "a world<Esc>']",
-    end: ['hello worl|d'],
-  });
-
-  newTest({
-    title: '`[ go to the start of the previously operated or put text',
-    start: ['hello|'],
-    keysPressed: 'a world<Esc>`[',
-    end: ['hello| world'],
-  });
-
-  newTest({
-    title: "'[ go to the start of the previously operated or put text",
-    start: ['hello|'],
-    keysPressed: "a world<Esc>'[",
-    end: ['hello| world'],
   });
 
   suite('can handle gn', () => {

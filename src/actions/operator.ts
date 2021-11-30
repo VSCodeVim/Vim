@@ -9,7 +9,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
-import { commandLine } from './../cmd_line/commandLine';
+import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
 
 export abstract class BaseOperator extends BaseAction {
@@ -31,12 +31,6 @@ export abstract class BaseOperator extends BaseAction {
     if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
       return false;
     }
-    if (
-      this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
-    ) {
-      return false;
-    }
     if (this instanceof BaseOperator && vimState.recordedState.operator) {
       return false;
     }
@@ -49,12 +43,6 @@ export abstract class BaseOperator extends BaseAction {
       return false;
     }
     if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
-      return false;
-    }
-    if (
-      this.mustBeFirstKey &&
-      vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
-    ) {
       return false;
     }
     if (this instanceof BaseOperator && vimState.recordedState.operator) {
@@ -114,18 +102,11 @@ export class DeleteOperator extends BaseOperator {
   public keys = ['d'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
-  /**
-   * Deletes from the position of start to 1 past the position of end.
-   */
-  public async delete(
-    start: Position,
-    end: Position,
-    currentMode: Mode,
-    registerMode: RegisterMode,
-    vimState: VimState,
-    yank = true
-  ): Promise<Position> {
-    if (registerMode === RegisterMode.LineWise) {
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    // TODO: this is off by one when character-wise and not including last EOL
+    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
+
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
     }
@@ -143,57 +124,36 @@ export class DeleteOperator extends BaseOperator {
       !isOnLastLine &&
       end.character === vimState.document.lineAt(end).text.length + 1
     ) {
-      end = end.with({ character: 0 }).getDown();
+      end = new Position(end.line + 1, 0);
     }
 
+    // Yank the text
     let text = vimState.document.getText(new vscode.Range(start, end));
-
-    // If we delete linewise to the final line of the document, we expect the line
-    // to be removed. This is actually a special case because the newline
-    // character we've selected to delete is the newline on the end of the document,
-    // but we actually delete the newline on the second to last line.
-
-    // Just writing about this is making me more confused. -_-
-
-    // rebornix: johnfn's description about this corner case is perfectly correct. The only catch is
-    // that we definitely don't want to put the EOL in the register. So here we run the `getText`
-    // expression first and then update the start position.
-
-    // Now rebornix is confused as well.
-    if (isOnLastLine && start.line !== 0 && registerMode === RegisterMode.LineWise) {
-      start = start.getUp().getLineEnd();
-    }
-
-    if (registerMode === RegisterMode.LineWise) {
-      // slice final newline in linewise mode - linewise put will add it back.
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
+      // When deleting linewise, exclude final newline
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
         : text.endsWith('\n')
         ? text.slice(0, -1)
         : text;
     }
+    Register.put(vimState, text, this.multicursorIndex, true);
 
-    if (yank) {
-      Register.put(vimState, text, this.multicursorIndex, true);
+    // When deleting the last line linewise, we need to delete the newline
+    // character BEFORE the range because there isn't one after the range.
+    if (
+      isOnLastLine &&
+      start.line !== 0 &&
+      vimState.currentRegisterMode === RegisterMode.LineWise
+    ) {
+      start = start.getUp().getLineEnd();
     }
 
     let diff: PositionDiff | undefined;
-    let resultingPosition: Position;
-
-    if (currentMode === Mode.Visual) {
-      resultingPosition = earlierOf(start, end);
-    }
-
-    if (start.character > vimState.document.lineAt(start).text.length) {
-      resultingPosition = start.getLeft();
-      diff = PositionDiff.offset({ character: -1 });
-    } else {
-      resultingPosition = start;
-    }
-
-    if (registerMode === RegisterMode.LineWise) {
-      resultingPosition = resultingPosition.obeyStartOfLine(vimState.document);
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       diff = PositionDiff.startOfLine();
+    } else if (start.character > vimState.document.lineAt(start).text.length) {
+      diff = PositionDiff.offset({ character: -1 });
     }
 
     vimState.recordedState.transformer.addTransformation({
@@ -202,25 +162,8 @@ export class DeleteOperator extends BaseOperator {
       diff,
     });
 
-    return resultingPosition;
-  }
-
-  public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<void> {
-    const newPos = await this.delete(
-      start,
-      end,
-      vimState.currentMode,
-      vimState.effectiveRegisterMode,
-      vimState,
-      yank
-    );
-
     await vimState.setCurrentMode(Mode.Normal);
-    if (vimState.currentMode === Mode.Visual) {
-      vimState.desiredColumn = newPos.character;
-    }
 
-    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
     reportLinesChanged(-numLinesDeleted, vimState);
   }
 }
@@ -289,12 +232,13 @@ class FilterOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     [start, end] = sorted(start, end);
 
+    let commandLineText: string;
     if (vimState.currentMode === Mode.Normal && start.line === end.line) {
-      vimState.currentCommandlineText = '.!';
+      commandLineText = '.!';
     } else if (vimState.currentMode === Mode.Normal && start.line !== end.line) {
-      vimState.currentCommandlineText = `.,.+${end.line - start.line}!`;
+      commandLineText = `.,.+${end.line - start.line}!`;
     } else {
-      vimState.currentCommandlineText = "'<,'>!";
+      commandLineText = "'<,'>!";
     }
 
     vimState.cursorStartPosition = start;
@@ -304,14 +248,8 @@ class FilterOperator extends BaseOperator {
       vimState.cursors = vimState.cursorsInitialState;
     }
 
-    // Initialize the cursor position
-    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
-    // Store the current mode for use in retaining selection
-    commandLine.previousMode = vimState.currentMode;
-    // Change to the new mode
+    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
-    // Reset history navigation index
-    commandLine.commandLineHistoryIndex = commandLine.historyEntries.length;
   }
 }
 
@@ -398,7 +336,7 @@ abstract class ChangeCaseOperator extends BaseOperator {
         });
       }
     } else {
-      if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
+      if (vimState.currentRegisterMode === RegisterMode.LineWise) {
         startPos = startPos.getLineBegin();
         endPos = endPos.getLineEnd();
       }
@@ -581,76 +519,48 @@ export class ChangeOperator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const isEndOfLine = end.character === end.getLineEnd().character;
-    const isLineWise = vimState.currentRegisterMode === RegisterMode.LineWise;
-    await new YankOperator(this.multicursorIndex).run(vimState, start, end);
-    // which means the insert cursor would be one to the left of the end of
-    // the line. We do want to run delete if it is a multiline change though ex. c}
-    vimState.currentRegisterMode = RegisterMode.CharacterWise;
-    if (TextEditor.getLineLength(start.line) !== 0 || end.line !== start.line) {
-      if (isLineWise) {
-        await new DeleteOperator(this.multicursorIndex).run(
-          vimState,
-          start.getLineBegin(),
-          end.getLineEnd().getLeftThroughLineBreaks(),
-          false
-        );
-      } else if (isEndOfLine) {
-        await new DeleteOperator(this.multicursorIndex).run(
-          vimState,
-          start,
-          end.getLeftThroughLineBreaks(),
-          false
-        );
-      } else {
-        await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
-      }
+    if (vimState.currentRegisterMode === RegisterMode.LineWise) {
+      start = start.getLineBegin();
+      end = end.getLineEnd();
+    } else if (vimState.currentMode === Mode.Visual && end.isLineEnd()) {
+      end = end.getRightThroughLineBreaks();
+    } else {
+      end = end.getRight();
     }
-    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
-    await vimState.setCurrentMode(Mode.Insert);
+    const deleteRange = new vscode.Range(start, end);
 
-    if (isEndOfLine) {
-      vimState.cursorStopPosition = end.getRight();
-    }
-  }
+    Register.put(vimState, vimState.document.getText(deleteRange), this.multicursorIndex, true);
 
-  public override async runRepeat(
-    vimState: VimState,
-    position: Position,
-    count: number
-  ): Promise<void> {
-    const thisLineIndent = vimState.document.getText(
-      new vscode.Range(
-        position.getLineBegin(),
-        position.getLineBeginRespectingIndent(vimState.document)
-      )
-    );
+    if (vimState.currentRegisterMode === RegisterMode.LineWise && configuration.autoindent) {
+      // Linewise is a bit of a special case - we want to preserve the first line's indentation,
+      // then let the language server adjust that indentation if it can.
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
+      const firstLineIndent = vimState.document.getText(
+        new vscode.Range(
+          deleteRange.start.getLineBegin(),
+          deleteRange.start.getLineBeginRespectingIndent(vimState.document)
+        )
+      );
 
-    await this.run(
-      vimState,
-      position.getLineBegin(),
-      position.getDown(Math.max(0, count - 1)).getLineEnd()
-    );
+      vimState.recordedState.transformer.replace(
+        deleteRange,
+        firstLineIndent,
+        PositionDiff.exactPosition(new Position(deleteRange.start.line, firstLineIndent.length))
+      );
 
-    if (configuration.autoindent) {
-      if (vimState.document.languageId === 'plaintext') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'insertText',
-          text: thisLineIndent,
-          position: position.getLineBegin(),
-          cursorIndex: this.multicursorIndex,
-        });
-      } else {
+      if (vimState.document.languageId !== 'plaintext') {
         vimState.recordedState.transformer.addTransformation({
           type: 'reindent',
           cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.offset({ character: 1 }), // Handle transition from Normal to Insert modes
+          diff: PositionDiff.endOfLine(),
         });
       }
+    } else {
+      vimState.recordedState.transformer.delete(deleteRange);
     }
+
+    vimState.setCurrentMode(Mode.Insert);
   }
 }
 

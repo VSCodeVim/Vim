@@ -1,58 +1,71 @@
-import * as vscode from 'vscode';
-import { Position } from 'vscode';
+import { Position, Range } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { PositionDiff } from './../common/motion/position';
-import { Mode } from './../mode/mode';
-
-export enum SearchDirection {
-  Forward = 1,
-  Backward = -1,
-}
-
-// Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
-let supportsLookbehind = true;
-try {
-  // tslint:disable-next-line
-  new RegExp('(?<=x)');
-} catch {
-  supportsLookbehind = false;
-}
+import { Pattern, SearchDirection, SearchOffset, searchStringParser } from '../vimscript/pattern';
+import { VimState } from './vimState';
 
 /**
  * State involved with beginning a search (/).
  */
 export class SearchState {
-  private static readonly MAX_SEARCH_RANGES = 1000;
+  constructor(
+    direction: SearchDirection,
+    startPosition: Position,
+    searchString = '',
+    { ignoreSmartcase = false } = {}
+  ) {
+    this._searchString = searchString;
 
-  private static readonly specialCharactersRegex = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
-  // c or C with an odd number of preceding \'s triggers "case override"
-  private static readonly caseOverrideRegex = /(?<=(?:^|[^\\])(?:\\\\)*)\\[Cc]/g;
-  private static readonly notEscapedSlashRegex = supportsLookbehind
-    ? new RegExp('(?<=[^\\\\])\\/', 'g')
-    : /\//g;
-  private static readonly notEscapedQuestionMarkRegex = supportsLookbehind
-    ? new RegExp('(?<=[^\\\\])\\?', 'g')
-    : /\?/g;
-  private static readonly searchOffsetBeginRegex = /b(\+-)?[0-9]*/;
-  private static readonly searchOffsetEndRegex = /e(\+-)?[0-9]*/;
+    const result = searchStringParser({ direction, ignoreSmartcase }).parse(searchString);
+    const { pattern, offset } = result.status
+      ? result.value
+      : { pattern: undefined, offset: undefined };
+    this.pattern = pattern;
+    this.offset = offset;
 
-  public readonly previousMode: Mode;
-  public readonly searchDirection: SearchDirection;
+    this.cursorStartPosition = startPosition;
+    this.ignoreSmartcase = ignoreSmartcase;
+  }
+
+  private _searchString: string;
+  public pattern?: Pattern;
+  private offset?: SearchOffset;
+
   public readonly cursorStartPosition: Position;
+
+  public get searchString(): string {
+    return this._searchString;
+  }
+  public set searchString(str: string) {
+    this._searchString = str;
+    const result = searchStringParser({
+      direction: this.direction,
+      ignoreSmartcase: this.ignoreSmartcase,
+    }).parse(str);
+    const { pattern, offset } = result.status
+      ? result.value
+      : { pattern: undefined, offset: undefined };
+    if (pattern?.patternString !== this.pattern?.patternString) {
+      this.pattern = pattern;
+      this.matchRanges.clear();
+    }
+    this.offset = offset;
+  }
+
+  public get direction(): SearchDirection {
+    // TODO: Defaulting to forward is wrong - I think storing the direction in the pattern is a mistake
+    return this.pattern?.direction ?? SearchDirection.Forward;
+  }
 
   /**
    * Every range in the document that matches the search string.
+   *
+   * This might not be 100% complete - @see Pattern::MAX_SEARCH_RANGES
    */
-  public getMatchRanges(editor: vscode.TextEditor): vscode.Range[] {
-    return this.recalculateSearchRanges(editor);
+  public getMatchRanges(vimState: VimState): Range[] {
+    return this.recalculateSearchRanges(vimState);
   }
-  private matchRanges: Map<string, { version: number; ranges: vscode.Range[] }> = new Map();
-
-  /**
-   * Whether the needle should be interpreted as a regular expression
-   */
-  private readonly isRegex: boolean;
+  private matchRanges: Map<string, { version: number; ranges: Range[] }> = new Map();
 
   /**
    * If true, an all-lowercase needle will not be treated as case-insensitive, even if smartcase is enabled.
@@ -60,247 +73,73 @@ export class SearchState {
    */
   private readonly ignoreSmartcase: boolean;
 
-  /**
-   * The string being searched for
-   */
-  private needle = '';
-
-  // How to adjust the cursor's position after going to a match
-  // Some examples:
-  //   /abc/3 will jump to the third character after finding abc
-  //   /abc/b-2 will go 2 characters to the left after finding abc
-  //   /abc/e2 will go 2 characters to the right from the end of abc after finding it
-  // TODO: support the ; offset (see http://vimdoc.sourceforge.net/htmldoc/pattern.html)
-  private offset?: {
-    type: 'line' | 'beginning' | 'end';
-    num: number;
-  };
-
-  /**
-   * The raw string being searched for, including both the needle and search offset
-   */
-  private _searchString = '';
-  public get searchString(): string {
-    return this._searchString;
-  }
-
-  public set searchString(search: string) {
-    if (this._searchString !== search) {
-      this._searchString = search;
-
-      const oldNeedle = this.needle;
-      this.needle = search;
-      this.offset = undefined;
-
-      const needleSegments =
-        this.searchDirection === SearchDirection.Backward
-          ? search.split(SearchState.notEscapedQuestionMarkRegex)
-          : search.split(SearchState.notEscapedSlashRegex);
-      if (needleSegments.length > 1) {
-        this.needle = needleSegments[0];
-        const num = Number(needleSegments[1]);
-        if (isNaN(num)) {
-          if (SearchState.searchOffsetBeginRegex.test(needleSegments[1])) {
-            this.offset = {
-              type: 'beginning',
-              num: Number(needleSegments[1].slice(1)),
-            };
-          } else if (SearchState.searchOffsetEndRegex.test(needleSegments[1])) {
-            this.offset = {
-              type: 'end',
-              num: Number(needleSegments[1].slice(1)),
-            };
-          }
-        } else {
-          this.offset = {
-            type: 'line',
-            num,
-          };
-        }
-      }
-
-      if (this.needle !== oldNeedle) {
-        // Invalidate all cached results
-        this.matchRanges.clear();
-
-        this._needleRegex = undefined;
-      }
-    }
-  }
-
-  private _needleRegex: RegExp | undefined;
-  private get needleRegex(): RegExp {
-    if (this._needleRegex) {
-      return this._needleRegex;
-    }
-
-    /*
-     * Decide whether the search is case sensitive.
-     * If ignorecase is false, the search is case sensitive.
-     * If ignorecase is true, the search should be case insensitive.
-     * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
-     */
-    let ignorecase = configuration.ignorecase;
-    if (
-      ignorecase &&
-      configuration.smartcase &&
-      !this.ignoreSmartcase &&
-      /[A-Z]/.test(this.needle)
-    ) {
-      ignorecase = false;
-    }
-
-    let searchRE = this.needle;
-    const ignorecaseOverride = this.needle.match(SearchState.caseOverrideRegex);
-    if (ignorecaseOverride) {
-      // Vim strips all \c's but uses the behavior of the first one.
-      searchRE = this.needle.replace(SearchState.caseOverrideRegex, '');
-      ignorecase = ignorecaseOverride[0][1] === 'c';
-    }
-
-    if (!this.isRegex) {
-      searchRE = this.needle.replace(SearchState.specialCharactersRegex, '\\$&');
-    }
-
-    const regexFlags = ignorecase ? 'gim' : 'gm';
-
-    try {
-      this._needleRegex = new RegExp(searchRE, regexFlags);
-    } catch (err) {
-      // Couldn't compile the regexp, try again with special characters escaped
-      searchRE = this.needle.replace(SearchState.specialCharactersRegex, '\\$&');
-      this._needleRegex = new RegExp(searchRE, regexFlags);
-    }
-
-    return this._needleRegex;
-  }
-
-  private recalculateSearchRanges(editor: vscode.TextEditor): vscode.Range[] {
-    if (this.needle === '') {
+  private recalculateSearchRanges(vimState: VimState): Range[] {
+    if (this.searchString === '' || this.pattern === undefined) {
       return [];
     }
 
-    const document = editor.document;
+    const document = vimState.document;
 
     const cached = this.matchRanges.get(document.fileName);
     if (cached?.version === document.version) {
       return cached.ranges;
     }
 
-    // We store the entire text file as a string inside text, and run the
-    // regex against it many times to find all of our matches.
-    const text = document.getText();
-    const selection = editor.selection;
-    const startOffset = document.offsetAt(selection.active);
-    const regex = this.needleRegex;
-    regex.lastIndex = startOffset;
+    // TODO: It's weird to use the active selection for this...
+    const matchRanges = this.pattern
+      .allMatches(vimState, { fromPosition: vimState.editor.selection.active })
+      .map((match) => match.range);
 
-    let result: RegExpExecArray | null;
-    let wrappedOver = false;
-    const matchRanges = [] as vscode.Range[];
-    while (true) {
-      result = regex.exec(text);
-
-      if (result) {
-        if (wrappedOver && result.index >= startOffset) {
-          // We've found our first match again
-          break;
-        }
-
-        matchRanges.push(
-          new vscode.Range(
-            document.positionAt(result.index),
-            document.positionAt(result.index + result[0].length)
-          )
-        );
-
-        if (matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
-          break;
-        }
-
-        // This happens when you find a zero-length match
-        if (result.index === regex.lastIndex) {
-          regex.lastIndex++;
-        }
-      } else if (!wrappedOver) {
-        // We need to wrap around to the back if we reach the end.
-        regex.lastIndex = 0;
-        wrappedOver = true;
-      } else {
-        break;
-      }
-    }
-
-    // TODO: we know the order of matches; this sort is lazy and could become a bottleneck if we increase the max # of matches
-    matchRanges.sort((x, y) => (x.start.isBefore(y.start) ? -1 : 1));
     this.matchRanges.set(document.fileName, {
       version: document.version,
       ranges: matchRanges,
     });
+
     return matchRanges;
   }
 
   /**
-   * The position of the next search.
-   * match == false if there is no match.
-   *
-   * Pass in -1 as direction to reverse the direction we search.
+   * @returns The start of the next match range, after applying the search offset
    */
   public getNextSearchMatchPosition(
-    editor: vscode.TextEditor,
+    vimState: VimState,
     startPosition: Position,
     direction = SearchDirection.Forward
   ): { pos: Position; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
+    const nextMatch = this.getNextSearchMatchRange(vimState, startPosition, direction);
     if (nextMatch === undefined) {
       return undefined;
     }
-    const { start, end, index } = nextMatch;
+    const { range, index } = nextMatch;
 
-    let pos = start;
-    if (this.offset) {
-      if (this.offset.type === 'line') {
-        pos = start.add(
-          editor.document,
-          PositionDiff.exactCharacter({ lineOffset: this.offset.num, character: 0 })
-        );
-      } else if (this.offset.type === 'beginning') {
-        pos = start.getOffsetThroughLineBreaks(this.offset.num);
-      } else if (this.offset.type === 'end') {
-        pos = end.getOffsetThroughLineBreaks(this.offset.num - 1);
-      }
-    }
-
-    return { pos, index };
+    return { pos: this.offset ? this.offset.apply(range) : range.start, index };
   }
 
   /**
-   * The position of the next search.
-   * match == false if there is no match.
+   * @returns The next match range from the given position and its rank in the document's matches
    *
-   * Pass in -1 as direction to reverse the direction we search.
+   * @param direction If `SearchDirection.Backward`, this will search in the opposite of the pattern's direction
    *
-   * end is exclusive; which means the index is start + matchedString.length
+   * NOTE: This method does not take the search offset into account
    */
   public getNextSearchMatchRange(
-    editor: vscode.TextEditor,
-    startPosition: Position,
+    vimState: VimState,
+    fromPosition: Position,
     direction = SearchDirection.Forward
-  ): { start: Position; end: Position; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+  ): { range: Range; index: number } | undefined {
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;
     }
 
-    const effectiveDirection = (direction * this.searchDirection) as SearchDirection;
+    const effectiveDirection = (direction * this.direction) as SearchDirection;
 
     if (effectiveDirection === SearchDirection.Forward) {
-      for (const [index, matchRange] of matchRanges.entries()) {
-        if (matchRange.start.isAfter(startPosition)) {
+      for (const [index, range] of matchRanges.entries()) {
+        if (range.start.isAfter(fromPosition)) {
           return {
-            start: matchRange.start,
-            end: matchRange.end,
+            range,
             index,
           };
         }
@@ -309,19 +148,17 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[0];
         return {
-          start: range.start,
-          end: range.end,
+          range,
           index: 0,
         };
       } else {
         return undefined;
       }
     } else {
-      for (const [index, matchRange] of matchRanges.slice(0).reverse().entries()) {
-        if (matchRange.end.isBeforeOrEqual(startPosition)) {
+      for (const [index, range] of matchRanges.slice(0).reverse().entries()) {
+        if (range.end.isBeforeOrEqual(fromPosition)) {
           return {
-            start: matchRange.start,
-            end: matchRange.end,
+            range,
             index: matchRanges.length - index - 1,
           };
         }
@@ -331,8 +168,7 @@ export class SearchState {
       if (configuration.wrapscan) {
         const range = matchRanges[matchRanges.length - 1];
         return {
-          start: range.start,
-          end: range.end,
+          range,
           index: matchRanges.length - 1,
         };
       } else {
@@ -341,41 +177,28 @@ export class SearchState {
     }
   }
 
-  public getSearchMatchRangeOf(
-    editor: vscode.TextEditor,
+  /**
+   * @returns the match range which contains the given Position, or undefined if none exists
+   */
+  public findContainingMatchRange(
+    vimState: VimState,
     pos: Position
-  ): { start: Position; end: Position; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+  ): { range: Range; index: number } | undefined {
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;
     }
 
-    for (const [index, matchRange] of matchRanges.entries()) {
-      if (matchRange.start.isBeforeOrEqual(pos) && matchRange.end.isAfter(pos)) {
+    for (const [index, range] of matchRanges.entries()) {
+      if (range.start.isBeforeOrEqual(pos) && range.end.isAfter(pos)) {
         return {
-          start: matchRange.start,
-          end: matchRange.end,
+          range,
           index,
         };
       }
     }
 
     return undefined;
-  }
-
-  constructor(
-    direction: SearchDirection,
-    startPosition: Position,
-    searchString = '',
-    { isRegex = false, ignoreSmartcase = false } = {},
-    currentMode: Mode
-  ) {
-    this.searchDirection = direction;
-    this.cursorStartPosition = startPosition;
-    this.isRegex = isRegex;
-    this.ignoreSmartcase = ignoreSmartcase;
-    this.searchString = searchString;
-    this.previousMode = currentMode;
   }
 }

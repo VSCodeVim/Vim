@@ -100,10 +100,17 @@ suite('Record and execute a macro', () => {
   });
 
   newTest({
-    title: ': (command) register can be used as a macro',
+    title: ': (command) register can be used as a macro to repeat :s',
     start: ['|old', 'old', 'old'],
     keysPressed: ':s/old/new\nj@:j@@',
     end: ['new', 'new', '|new'],
+  });
+
+  newTest({
+    title: ': (command) register can be used as a macro to repeat :d',
+    start: ['one', 't|wo', 'three', 'four', 'five'],
+    keysPressed: ':d/\n' + '@:' + '@@',
+    end: ['one', '|five'],
   });
 
   newTest({
@@ -119,6 +126,31 @@ suite('Record and execute a macro', () => {
     start: ['|one two three', 'one two three', 'one two three'],
     keysPressed: '/two\n0' + 'qq' + 'nea XXX<Esc>q' + '5@q',
     end: ['one two XXX three', 'one two XXX three', 'one two XX|X three'],
+  });
+
+  newTest({
+    title: 'q[A-Z] (action) Can record and append to a macro',
+    start: ['|'],
+    keysPressed:
+      'qb' +
+      'i' +
+      'one two ' +
+      '<Esc>q' +
+      'o<Esc>@b' +
+      'o<Esc>' +
+      'qB' +
+      'i' +
+      'three four' +
+      '<Esc>q' +
+      'o<Esc>@b',
+    end: ['one two ', 'one two ', 'three four', 'one twothree fou|r '],
+  });
+
+  newTest({
+    title: 'q[A-Z] (action) Creates new register, accessible by [a-z]',
+    start: ['|'],
+    keysPressed: 'qB' + 'i' + 'one two' + '<Esc>q' + 'o<Esc>@b',
+    end: ['one two', 'one tw|o'],
   });
 
   newTest({

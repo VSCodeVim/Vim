@@ -1036,6 +1036,13 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
     });
+
+    newTest({
+      title: 'Preserves desired cursor position when starting, but not completing, operator',
+      start: ['short line', 'very long line of text....|.'],
+      keysPressed: 'k' + 'd<Esc>' + 'j',
+      end: ['short line', 'very long line of text....|.'],
+    });
   });
 
   suite('Special marks', () => {
@@ -1079,6 +1086,48 @@ suite('Motions in Normal Mode', () => {
       start: ['one', 't|wo', 'three', 'four'],
       keysPressed: 'Vj<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'thre|e', 'four'],
+    });
+
+    newTest({
+      title: '`] go to the end of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`]',
+      end: ['hello worl|d'],
+    });
+
+    newTest({
+      title: "'] go to the end of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>']",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`[ go to the start of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`[',
+      end: ['hello| world'],
+    });
+
+    newTest({
+      title: "'[ go to the start of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>'[",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`. works correctly',
+      start: ['on|e'],
+      keysPressed: 'atwo<Esc>`.',
+      end: ['one|two'],
+    });
+
+    newTest({
+      title: "'. works correctly",
+      start: ['on|e'],
+      keysPressed: "atwo<Esc>'.",
+      end: ['|onetwo'],
     });
   });
 });

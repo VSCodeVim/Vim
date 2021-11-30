@@ -3,21 +3,20 @@ import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { Register } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
-import * as node from '../node';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
+import { ExCommand } from '../../vimscript/exCommand';
+import { any, optWhitespace, Parser } from 'parsimmon';
 
-export interface IRegisterCommandArguments extends node.ICommandArgs {
-  registers: string[];
-}
-export class RegisterCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
+export class RegisterCommand extends ExCommand {
+  public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
+    any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers))
+  );
 
-  private readonly arguments: IRegisterCommandArguments;
-
-  constructor(args: IRegisterCommandArguments) {
+  private readonly registers: string[];
+  constructor(registers: string[]) {
     super();
-    this.arguments = args;
+    this.registers = registers;
   }
 
   private async getRegisterDisplayValue(register: string): Promise<string | undefined> {
@@ -57,14 +56,12 @@ export class RegisterCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.arguments.registers.length === 1) {
-      await this.displayRegisterValue(vimState, this.arguments.registers[0]);
+    if (this.registers.length === 1) {
+      await this.displayRegisterValue(vimState, this.registers[0]);
     } else {
       const currentRegisterKeys = Register.getKeys()
         .filter(
-          (reg) =>
-            reg !== '_' &&
-            (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
+          (reg) => reg !== '_' && (this.registers.length === 0 || this.registers.includes(reg))
         )
         .sort((reg1: string, reg2: string) => this.regSortOrder(reg1) - this.regSortOrder(reg2));
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();

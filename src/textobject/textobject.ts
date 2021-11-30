@@ -180,7 +180,12 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
   override modes = [Mode.Visual, Mode.VisualLine];
 
-  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
     const blocks = [
       new MoveAroundDoubleQuotes(),
       new MoveAroundSingleQuotes(),
@@ -199,7 +204,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         vimState.cursorStartPosition.line,
         vimState.cursorStartPosition.character
       );
-      ranges.push(await block.execAction(cursorPos, vimState));
+      ranges.push(await block.execAction(cursorPos, vimState, firstIteration, lastIteration));
       vimState.cursorStartPosition = cursorStartPos;
     }
 

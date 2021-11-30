@@ -12,11 +12,11 @@ import { Notation } from './src/configuration/notation';
 import { Logger } from './src/util/logger';
 import { StatusBar } from './src/statusBar';
 import { VSCodeContext } from './src/util/vscodeContext';
-import { commandLine } from './src/cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
-import { Register, RegisterMode } from './src/register/register';
+import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
 
@@ -60,12 +60,12 @@ export async function getAndUpdateModeHandler(
 
   previousActiveEditorId = activeEditorId;
 
-  if (curHandler.vimState.focusChanged) {
-    curHandler.vimState.focusChanged = false;
+  if (curHandler.focusChanged) {
+    curHandler.focusChanged = false;
 
     if (previousActiveEditorId) {
       const prevHandler = ModeHandlerMap.get(previousActiveEditorId);
-      prevHandler!.vimState.focusChanged = true;
+      prevHandler!.focusChanged = true;
     }
   }
 
@@ -112,7 +112,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   // Load state
   Register.loadFromDisk(handleLocal);
-  await Promise.all([commandLine.load(context), globalState.load(context)]);
+  await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
 
   if (vscode.window.activeTextEditor) {
     const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
@@ -323,8 +323,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (mh.vimState.focusChanged) {
-        mh.vimState.focusChanged = false;
+      if (mh.focusChanged) {
+        mh.focusChanged = false;
         return;
       }
 
@@ -435,7 +435,15 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
     if (mh) {
-      await commandLine.PromptAndRun('', mh.vimState);
+      const cmd = await vscode.window.showInputBox({
+        prompt: 'Vim command line',
+        value: '',
+        ignoreFocusOut: false,
+        valueSelection: [0, 0],
+      });
+      if (cmd) {
+        await new ExCommandLine(cmd, mh.vimState.currentMode).run(mh.vimState);
+      }
       mh.updateView();
     }
   });
@@ -463,7 +471,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.startsWith(':')) {
-            await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
+            await new ExCommandLine(
+              command.command.slice(1, command.command.length),
+              mh.vimState.currentMode
+            ).run(mh.vimState);
             mh.updateView();
           } else {
             vscode.commands.executeCommand(command.command, command.args);

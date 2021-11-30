@@ -366,7 +366,7 @@ moving around:
 | :white_check_mark: | :1234: gq{motion}       | format the lines that are moved over with {motion} to 'textwidth' length                        |
 | :arrow_down:       | :[range]ce[nter][width] | center the lines in [range]                                                                     |
 | :arrow_down:       | :[range]le[ft][indent]  | left-align the lines in [range] (with [indent])                                                 |
-| :arrow_down:       | :[ranee]ri[ght][width]  | right-align the lines in [range]                                                                |
+| :arrow_down:       | :[range]ri[ght][width]  | right-align the lines in [range]                                                                |
 
 ## Complex changes
 

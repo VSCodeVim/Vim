@@ -38,6 +38,14 @@
       "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
       "preLaunchTask": "gulp: prepare-test",
       "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "Run Web Extension",
+      "type": "pwa-extensionHost",
+      "debugWebWorkerHost": true,
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionDevelopmentKind=web"],
+      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"]
     }
   ]
 }

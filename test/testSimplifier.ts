@@ -16,6 +16,7 @@ import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { EditorIdentity } from '../src/editorIdentity';
 import { StatusBar } from '../src/statusBar';
 import { Register } from '../src/register/register';
+import { ModeHandler } from '../src/mode/modeHandler';
 
 function getNiceStack(stack: string | undefined): string {
   return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
@@ -24,7 +25,7 @@ function getNiceStack(stack: string | undefined): string {
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
   testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
-  innerTest: (testObj: T) => Promise<void>
+  innerTest: (testObj: T) => Promise<ModeHandler>
 ): void {
   const stack = getNiceStack(new Error().stack);
 
@@ -326,7 +327,7 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
-async function testIt(testObj: ITestObject): Promise<void> {
+async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
@@ -399,6 +400,7 @@ async function testIt(testObj: ITestObject): Promise<void> {
 
   // jumps: check jumps are correct if given
   if (testObj.jumps !== undefined) {
+    // TODO: Jumps should be specified by Positions, not line contents
     assert.deepStrictEqual(
       jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),
@@ -416,9 +418,11 @@ async function testIt(testObj: ITestObject): Promise<void> {
       'Incorrect jump position found'
     );
   }
+
+  return modeHandler;
 }
 
-async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<void> {
+async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
@@ -637,6 +641,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<void> {
       );
     }
   }
+  return modeHandler;
 }
 
 async function parseVimRCMappings(lines: string[]): Promise<void> {

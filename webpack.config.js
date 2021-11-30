@@ -78,10 +78,13 @@ const nodelessConfig = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     alias: {
-      path: 'path-browserify',
-      os: 'os-browserify',
-      process: 'process/browser',
       platform: path.resolve(__dirname, 'src', 'platform', 'browser'),
+    },
+    fallback: {
+      os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
+      process: require.resolve('process/browser'),
+      util: require.resolve('util'),
     },
   },
   optimization: {
@@ -112,6 +115,9 @@ const nodelessConfig = {
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /child_process$/,
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser', // util requires this internally
     }),
     new ForkTsCheckerWebpackPlugin(),
   ],

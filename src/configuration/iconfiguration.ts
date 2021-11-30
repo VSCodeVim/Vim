@@ -292,6 +292,14 @@ export interface IConfiguration {
   iskeyword: string;
 
   /**
+   * Characters that form pairs. The % command jumps from one to the other.
+   * Only character pairs are allowed that are different, thus you cannot jump between two double quotes.
+   * The characters must be separated by a colon.
+   * The pairs must be separated by a comma.
+   */
+  matchpairs: string;
+
+  /**
    * In visual mode, start a search with * or # using the current selection
    */
   visualstar: boolean;
@@ -410,4 +418,9 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
 }

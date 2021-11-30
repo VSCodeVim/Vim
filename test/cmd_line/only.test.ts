@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
@@ -54,7 +54,7 @@ suite(':only command', () => {
     assert.strictEqual(await isPanelVisible(), true);
 
     // Run 'only' command
-    await commandLine.Run('only', modeHandler.vimState);
+    await new ExCommandLine('only', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
