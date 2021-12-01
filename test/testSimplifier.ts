@@ -61,7 +61,8 @@ export const newTestOnly = (testObj: ITestObject) => {
   return newTestGeneric(testObj, test.only, testIt);
 };
 
-export const newTestSkip = (testObj: ITestObject, skipCondition: boolean = true) => newTestGeneric(testObj, skipCondition ? test.skip : test, testIt);
+export const newTestSkip = (testObj: ITestObject, skipCondition: boolean = true) =>
+  newTestGeneric(testObj, skipCondition ? test.skip : test, testIt);
 
 export const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
   newTestGeneric(testObj, test, testItWithRemaps);
