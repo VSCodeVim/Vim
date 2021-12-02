@@ -317,7 +317,7 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['{', '}'],
       });
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         keysPressed: '/^\nnnn<C-o><C-o><C-o><C-i>gg',
@@ -369,21 +369,21 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Line Mode', () => {
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkdd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a3'],
       });
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkdd',
         end: ['start', 'a1', 'a2', '|a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a4'],
       });
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnnn<C-o><C-o><C-o><C-o>dd',
@@ -399,7 +399,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Mode', () => {
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkklvjjhx',
@@ -409,21 +409,21 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shift jump lines down after inserting a line', () => {
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkoINSERTED<Esc>0',
         end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a3'],
       });
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkoINSERTED<Esc>0',
         end: ['start', 'a1', 'a2', 'a3', '|INSERTED', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a3'],
       });
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkOINSERTED<Esc>0',
@@ -448,7 +448,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can track jumps from macros', () => {
-      // TODO: this fails on Windows
+      // TODO(#4844): this fails on Windows
       newJumpTestSkipOnWindows({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
         keysPressed: 'qq/^\nnq@q@q<C-o><C-o>',

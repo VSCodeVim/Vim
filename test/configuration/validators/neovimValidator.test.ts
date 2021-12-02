@@ -39,7 +39,7 @@ suite('Neovim Validator', () => {
     assert.strictEqual(configuration.enableNeovim, false);
   });
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   test('neovim enabled with nvim in path', async () => {
     if (process.platform === 'win32') {
       return;

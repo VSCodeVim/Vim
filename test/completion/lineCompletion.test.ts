@@ -30,7 +30,7 @@ suite('Provide line completions', () => {
   };
 
   suite('Line Completion Provider unit tests', () => {
-    // TODO: this fails on Windows
+    // TODO(#4844): this fails on Windows
     test('Can complete lines in file, prioritizing above cursor, near cursor', async () => {
       if (process.platform === 'win32') {
         return;
@@ -46,7 +46,7 @@ suite('Provide line completions', () => {
       assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
     });
 
-    // TODO: this fails on Windows
+    // TODO(#4844): this fails on Windows
     test('Can complete lines in file with different indentation', async () => {
       if (process.platform === 'win32') {
         return;

@@ -1674,7 +1674,7 @@ suite('Mode Normal', () => {
     ],
   });
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq work correctly with cursor in the middle of a line',
@@ -1699,7 +1699,7 @@ suite('Mode Normal', () => {
     end: ['|abc', '', '', '', 'def'],
   });
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq handles single-line comments',
@@ -1710,7 +1710,7 @@ suite('Mode Normal', () => {
     process.platform === 'win32'
   );
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq handles multiline comments',
@@ -1721,7 +1721,7 @@ suite('Mode Normal', () => {
     process.platform === 'win32'
   );
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq handles multiline comments with inner and final on same line',
@@ -1732,7 +1732,7 @@ suite('Mode Normal', () => {
     process.platform === 'win32'
   );
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq handles multiline comments with content on start line',
@@ -1757,7 +1757,7 @@ suite('Mode Normal', () => {
     end: ['|/* abc', ' *', ' *', ' * def */'],
   });
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq does not merge adjacent multiline comments',
@@ -1768,7 +1768,7 @@ suite('Mode Normal', () => {
     process.platform === 'win32'
   );
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq does not merge adjacent multiline comments',
@@ -1779,7 +1779,7 @@ suite('Mode Normal', () => {
     process.platform === 'win32'
   );
 
-  // TODO: this fails on Windows
+  // TODO(#4844): this fails on Windows
   newTestSkip(
     {
       title: 'gq leaves alone whitespace within a line',
