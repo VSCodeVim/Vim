@@ -1153,7 +1153,7 @@
     "@types/glob": "7.2.0",
     "@types/lodash": "4.14.177",
     "@types/mocha": "9.0.0",
-    "@types/node": "14.17.34",
+    "@types/node": "14.18.0",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.6",
     "@types/source-map-support": "0.5.4",
