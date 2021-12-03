@@ -45,13 +45,13 @@ jobs:
       - name: Build
         run: gulp webpack
 
-      - name: Test on ubuntu-latest
+      - name: Test on Ubuntu
         if: matrix.os != 'windows-latest'
         run: |
           gulp prepare-test
           xvfb-run -a yarn test
 
-      - name: Test on windows-latest
+      - name: Test on Windows
         if: matrix.os == 'windows-latest'
         run: |
           gulp prepare-test
