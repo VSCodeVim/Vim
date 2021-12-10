@@ -3105,6 +3105,14 @@ suite('Mode Normal', () => {
       end: ['foo', 'hello world', '|', 'hello'],
       endMode: Mode.Normal,
     });
+
+    newTest({
+      title: 'dgn with single-character match',
+      start: ['O|ne Two Three Four Five Six'],
+      keysPressed: '/T\n' + 'e' + 'dgn',
+      end: ['One Two |hree Four Five Six'],
+      endMode: Mode.Normal,
+    });
   });
 
   suite('can handle cgn', () => {
@@ -3145,6 +3153,14 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\necgn',
       end: ['foo', '| world', 'hello', 'hello'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'cgn with single-character match',
+      start: ['O|ne Two Three Four Five Six'],
+      keysPressed: '/T\n' + 'e' + 'cgn',
+      end: ['One Two |hree Four Five Six'],
       endMode: Mode.Insert,
     });
 
