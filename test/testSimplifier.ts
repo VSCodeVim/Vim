@@ -13,7 +13,6 @@ import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemapping
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Position } from 'vscode';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { EditorIdentity } from '../src/editorIdentity';
 import { StatusBar } from '../src/statusBar';
 import { Register } from '../src/register/register';
 import { ModeHandler } from '../src/mode/modeHandler';
@@ -347,7 +346,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(EditorIdentity.fromEditor(editor));
+  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor.document.uri);
 
   let keysPressed = testObj.keysPressed;
   if (process.platform === 'win32') {
@@ -439,7 +438,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(EditorIdentity.fromEditor(editor));
+  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor.document.uri);
 
   // Change remappings
   if (testObj.remaps) {

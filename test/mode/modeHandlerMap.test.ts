@@ -1,13 +1,13 @@
 import * as assert from 'assert';
+import { Uri } from 'vscode';
 
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
-import { EditorIdentity } from '../../src/editorIdentity';
 
-function createRandomEditorIdentity(): EditorIdentity {
-  return new EditorIdentity(Math.random().toString(36).substring(7));
+function createRandomUri(): Uri {
+  return Uri.file(Math.random().toString(36).substring(7));
 }
 
-suite('Mode Handler Map', () => {
+suite.only('Mode Handler Map', () => {
   setup(() => {
     ModeHandlerMap.clear();
   });
@@ -17,7 +17,7 @@ suite('Mode Handler Map', () => {
   });
 
   test('getOrCreate', async () => {
-    const key = createRandomEditorIdentity();
+    const key = createRandomUri();
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, true);
     assert.notStrictEqual(modeHandler, undefined);
@@ -25,14 +25,10 @@ suite('Mode Handler Map', () => {
     [, isNew] = await ModeHandlerMap.getOrCreate(key);
     assert.strictEqual(isNew, false);
 
-    // getKeys
-    const keys = ModeHandlerMap.getKeys();
-    assert.strictEqual(keys.length, 1, 'getKeys().length');
-    assert.strictEqual(keys[0], key, 'key');
+    assert.deepStrictEqual([...ModeHandlerMap.keys()], [key], 'keys');
 
     // getAll
-    const modeHandlerList = ModeHandlerMap.getAll();
-    assert.strictEqual(modeHandlerList.length, 1, 'getAll() should have only returned one');
+    assert.strictEqual(ModeHandlerMap.getAll().length, 1, 'getAll() should have only returned one');
 
     // delete
     ModeHandlerMap.delete(key);
@@ -41,14 +37,14 @@ suite('Mode Handler Map', () => {
 
   test('get', async () => {
     // same file name should return the same modehandler
-    const identity = createRandomEditorIdentity();
+    const identity = createRandomUri();
 
     let [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(identity);
     assert.strictEqual(isNew, true);
     assert.notStrictEqual(modeHandler, undefined);
 
     const prevModeHandler = modeHandler;
-    [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(new EditorIdentity(identity.fileName));
+    [modeHandler, isNew] = await ModeHandlerMap.getOrCreate(identity);
     assert.strictEqual(isNew, false);
     assert.strictEqual(prevModeHandler, modeHandler);
   });
