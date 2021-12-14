@@ -5688,7 +5688,16 @@ winston-transport@4.1.0:
   dependencies:
     triple-beam "^1.2.0"
 
-winston-transport@4.4.0, winston-transport@^4.4.0:
+winston-transport@4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/winston-transport/-/winston-transport-4.4.1.tgz#42a830e07363719c13c12bd2fb87a226f692dc75"
+  integrity sha512-ciZRlU4CSjHqHe8RQG1iPxKMRVwv6ZJ0RC7DxStKWd0KjpAhPDy5gVYSCpIUq+5CUsP+IyNOTZy1X0tO2QZqjg==
+  dependencies:
+    logform "^2.2.0"
+    readable-stream "^3.4.0"
+    triple-beam "^1.2.0"
+
+winston-transport@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/winston-transport/-/winston-transport-4.4.0.tgz#17af518daa690d5b2ecccaa7acf7b20ca7925e59"
   integrity sha512-Lc7/p3GtqtqPBYYtS6KCN3c77/2QCev51DvcJKbkFPQNoj1sinkGwLGFDxkXY9J6p9+EPnYs+D90uwbnaiURTw==
