@@ -1105,6 +1105,11 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.sentenceEndRegex": {
+          "type": "string",
+          "description": "Regular expression to match the end of a sentence.",
+          "default": "[\\.!\\?]{1}([ \\n\\t]+|$)"
         }
       }
     },

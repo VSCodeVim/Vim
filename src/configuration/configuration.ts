@@ -435,6 +435,8 @@ class Configuration implements IConfiguration {
     return;
   }
 
+  sentenceEndRegex = '[\\.!\\?]{1}([ \\n\\t]+|$)';
+
   // remappings
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
