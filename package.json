@@ -1108,6 +1108,11 @@
           "type": "boolean",
           "description": "Show the currently set mark(s) in the gutter.",
           "default": false
+        },
+        "vim.shell": {
+          "type": "string",
+          "description": "Path to the shell to use for `!` and `:!` commands.",
+          "default": ""
         }
       }
     },
@@ -1137,7 +1142,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.21",
-    "neovim": "4.10.0",
+    "neovim": "4.10.1",
     "os-browserify": "0.3.0",
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
@@ -1148,23 +1153,23 @@
     "util": "0.12.4",
     "winston": "3.3.3",
     "winston-console-for-electron": "0.0.6",
-    "winston-transport": "4.4.0"
+    "winston-transport": "4.4.1"
   },
   "devDependencies": {
     "@types/diff": "5.0.1",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.2.0",
-    "@types/lodash": "4.14.177",
+    "@types/lodash": "4.14.178",
     "@types/mocha": "9.0.0",
-    "@types/node": "14.17.34",
+    "@types/node": "14.18.2",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.6",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
-    "@vscode/test-electron": "1.6.2",
+    "@vscode/test-electron": "2.0.0",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "6.4.2",
+    "fork-ts-checker-webpack-plugin": "6.5.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1175,13 +1180,13 @@
     "minimist": "1.2.5",
     "mocha": "9.1.3",
     "plugin-error": "1.0.1",
-    "prettier": "2.5.0",
+    "prettier": "2.5.1",
     "sinon": "12.0.1",
     "ts-loader": "9.2.6",
     "tslint": "6.1.3",
-    "typescript": "4.5.2",
-    "vsce": "2.5.0",
-    "webpack": "5.64.4",
+    "typescript": "4.5.4",
+    "vsce": "2.5.3",
+    "webpack": "5.65.0",
     "webpack-cli": "4.9.1",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"

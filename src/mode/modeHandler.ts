@@ -38,17 +38,16 @@ import { isTextTransformation } from '../transformations/transformations';
 import { executeTransformations, IModeHandler } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
-import { EditorIdentity } from '../editorIdentity';
 import { SpecialKeys } from '../util/specialKeys';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
-import { Position } from 'vscode';
+import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
 
 interface IModeHandlerMap {
-  get(editorId: EditorIdentity): ModeHandler | undefined;
+  get(editorId: Uri): ModeHandler | undefined;
 }
 
 /**
@@ -1556,9 +1555,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this.handlerMap
-        .get(EditorIdentity.fromEditor(editor))
-        ?.updateSearchHighlights(showHighlights);
+      this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
     }
 
     const easyMotionDimRanges =

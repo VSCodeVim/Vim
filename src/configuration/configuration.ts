@@ -211,6 +211,8 @@ class Configuration implements IConfiguration {
 
   useSystemClipboard = false;
 
+  shell = '';
+
   useCtrlKeys = false;
 
   overrideCopy = true;

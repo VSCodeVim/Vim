@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { escapeRegExp } from 'lodash';
-import {} from 'vscode';
-import { Position, Range, Selection } from 'vscode';
+import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
@@ -253,17 +252,10 @@ abstract class SearchObject extends TextObject {
       {}
     );
 
-    let result:
-      | {
-          range: Range;
-          index: number;
-        }
-      | undefined;
-
     // At first, try to search for current word, and stop searching if matched.
     // Try to search for the next word if not matched or
     // if the cursor is at the end of a match string in visual-mode.
-    result = newSearchState.findContainingMatchRange(vimState, vimState.cursorStopPosition);
+    let result = newSearchState.findContainingMatchRange(vimState, vimState.cursorStopPosition);
     if (
       result &&
       vimState.currentMode === Mode.Visual &&
@@ -282,14 +274,10 @@ abstract class SearchObject extends TextObject {
 
     reportSearch(result.index, searchState.getMatchRanges(vimState).length, vimState);
 
-    let [start, stop] = [
+    const [start, stop] = [
       vimState.currentMode === Mode.Normal ? result.range.start : vimState.cursorStopPosition,
       result.range.end.getLeftThroughLineBreaks(),
     ];
-
-    if (vimState.recordedState.operator) {
-      stop = stop.getLeft();
-    }
 
     // Move the cursor, this is a bit hacky...
     vimState.cursorStartPosition = start;
@@ -302,6 +290,13 @@ abstract class SearchObject extends TextObject {
       start,
       stop,
     };
+  }
+
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
+    return this.execAction(position, vimState);
   }
 }
 

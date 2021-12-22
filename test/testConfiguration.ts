@@ -136,4 +136,5 @@ export class Configuration implements IConfiguration {
   scroll = 20;
   startofline = true;
   showMarksInGutter = true;
+  shell = '';
 }

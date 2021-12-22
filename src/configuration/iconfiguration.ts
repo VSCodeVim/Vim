@@ -424,4 +424,9 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
 }
