@@ -1148,7 +1148,7 @@
     "winston-transport": "4.4.1"
   },
   "devDependencies": {
-    "@types/diff": "5.0.1",
+    "@types/diff": "5.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.2.0",
     "@types/lodash": "4.14.178",
