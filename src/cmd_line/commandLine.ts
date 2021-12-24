@@ -514,11 +514,13 @@ export class SearchCommandLine extends CommandLine {
     // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
     // To compensate, multiply the desired direction by the searchState's direction, so that
     // effectiveDirection == direction * (searchState.direction)^2 == direction.
-    const originalOffset = this.currentMatchDisplacement;
     this.currentMatchDisplacement += this.searchState.direction * direction;
+
+    // With nowrapscan, <C-g>/<C-t> shouldn't do anything if it would mean advancing past the last reachable match in the buffer.
+    // We account for this by checking whether getCurrentMatchRange returns undefined once this.currentMatchDisplacement is advanced.
+    // If it does, we undo the change to this.currentMatchDisplacement before exiting, making this command a noop.
     if (!configuration.wrapscan && !this.getCurrentMatchRange(vimState)) {
-      // With wrapscan off, prevent advancing past last reachable match
-      this.currentMatchDisplacement = originalOffset;
+      this.currentMatchDisplacement -= this.searchState.direction * direction;
     }
   }
 }

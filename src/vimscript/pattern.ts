@@ -218,16 +218,15 @@ export class Pattern {
           }
           return '\\' + escaped;
         }),
-      string('[') // special chars interpreted literally inside []
-        .then(
-          alt(
-            string('\\')
-              .then(any.fallback(undefined))
-              .map((escaped) => '\\' + (escaped ?? '\\')),
-            noneOf(']')
-          ).many()
-        )
-        .skip(string(']'))
+      alt(
+        // Allow unescaped delimiter inside [], and don't transform ^ or $
+        string('\\')
+          .then(any.fallback(undefined))
+          .map((escaped) => '\\' + (escaped ?? '\\')),
+        noneOf(']')
+      )
+        .many()
+        .wrap(string('['), string(']'))
         .map((result) => '[' + result.join('') + ']'),
       noneOf(delimiter)
     )

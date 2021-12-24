@@ -142,7 +142,7 @@ export class SearchState {
 
   /**
    * @returns The next match range from the given position and its rank in the document's matches, or undefined if none exists.
-   * An optional index can be proveded to target other matches relative to the next.
+   * An optional index can be provided to target other matches relative to the next.
    *
    * @param direction If `SearchDirection.Backward`, this will search in the opposite of the pattern's direction
    *
