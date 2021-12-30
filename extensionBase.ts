@@ -495,8 +495,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     'vim.editVimrc',
     async () => {
-      const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
-      await vscode.window.showTextDocument(document);
+      if (vimrc.vimrcPath) {
+        const document = await vscode.workspace.openTextDocument(vimrc.vimrcPath);
+        await vscode.window.showTextDocument(document);
+      }
     },
     false
   );
