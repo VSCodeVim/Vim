@@ -233,10 +233,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.2.tgz#2de1ed6670439387da1c9f549a2ade2b0a799256"
   integrity sha512-jiE3QIxJ8JLNcb1Ps6rDbysDhN4xa8DJJvuC9prr6w+1tIh+QAbYyNF3tyiZNLDBIuBCf4KEcV2UvQm/V60xfA==
 
-"@types/node@14.18.2":
-  version "14.18.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.2.tgz#00fe4d1686d5f6cf3a2f2e9a0eef42594d06abfc"
-  integrity sha512-fqtSN5xn/bBzDxMT77C1rJg6CsH/R49E7qsGuvdPJa20HtV5zSTuLJPNfnlyVH3wauKnkHdLggTVkOW/xP9oQg==
+"@types/node@14.18.3":
+  version "14.18.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.3.tgz#b3682cfd9d5542b025df13233d073cb4347f63f3"
+  integrity sha512-GtTH2crF4MtOIrrAa+jgTV9JX/PfoUCYr6MiZw7O/dkZu5b6gm5dc1nAL0jwGo4ortSBBtGyeVaxdC8X6V+pLg==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -272,10 +272,10 @@
   resolved "https://registry.yarnpkg.com/@ungap/promise-all-settled/-/promise-all-settled-1.1.2.tgz#aa58042711d6e3275dd37dc597e5d31e8c290a44"
   integrity sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==
 
-"@vscode/test-electron@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.0.0.tgz#4451eec8bc5b721c88e5bf39f1a43b0eec0fd8c7"
-  integrity sha512-DRHWriyETOA5SO4XktoMFpgsZWlVScSZYMeASYT/kp3vpIq8Yki2yLPNOxdd8qyqDPoF9oHGodQJWBbHnaYkeA==
+"@vscode/test-electron@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.0.1.tgz#b67e628278b24f00370c794466a9625e73daa74e"
+  integrity sha512-4I+vejOy02G1aFDqxi2Bof1ODorWuXtZAHwXzYeHbTi3zEd1DCtdiClvaoD7H2gjLb/yFxyisr1jLN0ae8nnLQ==
   dependencies:
     http-proxy-agent "^4.0.1"
     https-proxy-agent "^5.0.0"
@@ -5503,10 +5503,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.5.3:
-  version "2.5.3"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.5.3.tgz#01863fe56924ad6fd3151d13c1ae3428a9481f6d"
-  integrity sha512-GhxMRiiT6c7ubNDxk3GjLVkgcBq9jUWpdWTzMn5+CGmTjqh9LKW2oCJ4AfMmAWmAUfh1zYmONYkqRkO/O6IH5g==
+vsce@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.6.0.tgz#1a31898173f4b3f6bcae05f26fd022818183ce98"
+  integrity sha512-cF2+RdWq7+VztKWyxtKR74khPKUEqvipBnLu46aJyQmuLAusIzJbQB+Rq5AQx8T8T5dkAELfHh/AyJVxRi5huw==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
