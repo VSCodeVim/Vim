@@ -498,6 +498,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (vimrc.vimrcPath) {
         const document = await vscode.workspace.openTextDocument(vimrc.vimrcPath);
         await vscode.window.showTextDocument(document);
+      } else {
+        await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
       }
     },
     false
