@@ -695,7 +695,7 @@ Similar to the argument text object in [targets.vim](https://github.com/wellle/t
 
 | Motion Command | Description                        |
 | -------------- | ---------------------------------- |
-| `<operator>ia` | The argument exluding separators.  |
+| `<operator>ia` | The argument excluding separators.  |
 | `<operator>aa` | The argument including separators. |
 
 Usage examples:
