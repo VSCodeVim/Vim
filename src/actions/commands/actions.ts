@@ -711,9 +711,9 @@ class CommandOverrideCopy extends BaseCommand {
     }
 
     const editorSelection = vimState.editor.selection;
-    const hasEditorSelection = !editorSelection.active.isEqual(editorSelection.anchor);
+    const hasSelectedText = !editorSelection.active.isEqual(editorSelection.anchor);
 
-    if (hasEditorSelection) {
+    if (hasSelectedText) {
       await Clipboard.Copy(text);
     }
 
