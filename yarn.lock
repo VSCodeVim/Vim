@@ -233,10 +233,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.2.tgz#2de1ed6670439387da1c9f549a2ade2b0a799256"
   integrity sha512-jiE3QIxJ8JLNcb1Ps6rDbysDhN4xa8DJJvuC9prr6w+1tIh+QAbYyNF3tyiZNLDBIuBCf4KEcV2UvQm/V60xfA==
 
-"@types/node@14.18.4":
-  version "14.18.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.4.tgz#b722d6c91f156d9359aeb20f2d7d06337b15c603"
-  integrity sha512-swe3lD4izOJWHuxvsZdDFRq6S9i6koJsXOnQKYekhSO5JTizMVirUFgY/bUsaOJQj8oSD4oxmRYPBM/0b6jpdw==
+"@types/node@14.18.5":
+  version "14.18.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.5.tgz#0dd636fe7b2c6055cbed0d4ca3b7fb540f130a96"
+  integrity sha512-LMy+vDDcQR48EZdEx5wRX1q/sEl6NdGuHXPnfeL8ixkwCOSZ2qnIyIZmcCbdX0MeRqHhAcHmX+haCbrS8Run+A==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -5503,10 +5503,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.6.0.tgz#1a31898173f4b3f6bcae05f26fd022818183ce98"
-  integrity sha512-cF2+RdWq7+VztKWyxtKR74khPKUEqvipBnLu46aJyQmuLAusIzJbQB+Rq5AQx8T8T5dkAELfHh/AyJVxRi5huw==
+vsce@2.6.3:
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.6.3.tgz#5a50ec9894573350b10457064f71d1f2701789cf"
+  integrity sha512-PKfvAtG9rLT1evHiKOJpBHND1hUHOOf4lL7chZFp0KGu+Bpgcx3g3T5eq0d8Hmzd08zd3KJunsaA3iaNSmTU/A==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
