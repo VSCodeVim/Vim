@@ -57,10 +57,10 @@ suite('Mode Insert', () => {
     return assertEqualLines(['text', '']);
   });
 
-  test('<C-c> should not override system-clipboard after exiting insert mode', async () => {
-    const yankTextAtSystemClipboard = ['i', 't', 'e', 'x', 't', '<C-c>', 'v', 'i', 'w', '<copy>'];
+  test('<copy> should not override system-clipboard after exiting insert mode', async () => {
+    const yankTextAtSystemClipboard = ['i', 't', 'e', 'x', 't', '<copy>', 'v', 'i', 'w', '<copy>'];
 
-    const pasteTextAtInsertMode = ['a', '<C-r>', '+', '<C-c>'];
+    const pasteTextAtInsertMode = ['a', '<C-r>', '+', '<copy>'];
 
     await modeHandler.handleMultipleKeyEvents([
       ...yankTextAtSystemClipboard,
