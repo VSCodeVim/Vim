@@ -57,7 +57,7 @@ suite('Mode Insert', () => {
     return assertEqualLines(['text', '']);
   });
 
-  test.only('<copy> should not override system-clipboard after exiting insert mode', async () => {
+  test('<copy> should not override system-clipboard after exiting insert mode', async () => {
     const yankTextAtSystemClipboard = ['i', 't', 'e', 'x', 't', '<Esc>', 'v', 'i', 'w', '<copy>'];
 
     const pasteTextAtInsertMode = ['a', '<C-r>', '+', '<copy>'];
