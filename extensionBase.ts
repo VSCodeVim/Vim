@@ -18,6 +18,7 @@ import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
+import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -216,7 +217,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async (document) => {
     if (
       configuration.vimrc.enable &&
-      path.relative(document.fileName, configuration.vimrc.path) === ''
+      vimrc.vimrcPath &&
+      path.relative(document.fileName, vimrc.vimrcPath) === ''
     ) {
       await configuration.load();
       vscode.window.showInformationMessage('Sourced new .vimrc');
@@ -493,8 +495,12 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     'vim.editVimrc',
     async () => {
-      const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
-      await vscode.window.showTextDocument(document);
+      if (vimrc.vimrcPath) {
+        const document = await vscode.workspace.openTextDocument(vimrc.vimrcPath);
+        await vscode.window.showTextDocument(document);
+      } else {
+        await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
+      }
     },
     false
   );

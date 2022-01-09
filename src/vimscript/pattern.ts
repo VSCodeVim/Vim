@@ -197,11 +197,15 @@ export class Pattern {
     // TODO: Some escaped characters need special treatment
     return alt(
       string('\\%V').map((_) => ({ inSelection: true })),
+      string('$').map(() => '(?:$(?<!\\r))'), // prevents matching \r\n as two lines
+      string('^').map(() => '(?:^(?<!\\r))'), // prevents matching \r\n as two lines
       string('\\')
         .then(any.fallback(undefined))
         .map((escaped) => {
           if (escaped === undefined) {
             return '\\\\';
+          } else if (escaped === delimiter) {
+            return delimiter;
           } else if (escaped === 'c') {
             return { ignorecase: true };
           } else if (escaped === 'C') {
@@ -214,6 +218,16 @@ export class Pattern {
           }
           return '\\' + escaped;
         }),
+      alt(
+        // Allow unescaped delimiter inside [], and don't transform ^ or $
+        string('\\')
+          .then(any.fallback(undefined))
+          .map((escaped) => '\\' + (escaped ?? '\\')),
+        noneOf(']')
+      )
+        .many()
+        .wrap(string('['), string(']'))
+        .map((result) => '[' + result.join('') + ']'),
       noneOf(delimiter)
     )
       .many()
