@@ -16,16 +16,22 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-- [Installation](#-installation)
-  - [Mac setup](#mac)
-  - [Windows setup](#windows)
-- [Settings](#%EF%B8%8F-settings)
+- [💾 Installation](#-installation)
+  - [Mac](#mac)
+  - [Windows](#windows)
+- [⚙️ Settings](#️-settings)
+  - [Quick Example](#quick-example)
   - [VSCodeVim settings](#vscodevim-settings)
   - [Neovim Integration](#neovim-integration)
-  - [Key remapping](#key-remapping)
+  - [Key Remapping](#key-remapping)
+    - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
+    - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
+    - [Debugging Remappings](#debugging-remappings)
+  - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
-- [Multi-Cursor mode](#%EF%B8%8F-multi-cursor-mode)
-- [Emulated plugins](#-emulated-plugins)
+- [.vimrc support](#vimrc-support)
+- [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
+- [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
   - [vim-easymotion](#vim-easymotion)
   - [vim-surround](#vim-surround)
@@ -36,9 +42,11 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [Input Method](#input-method)
   - [ReplaceWithRegister](#replacewithregister)
   - [vim-textobj-entire](#vim-textobj-entire)
-- [VSCodeVim tricks](#-vscodevim-tricks)
-- [F.A.Q / Troubleshooting](#-faq)
-- [Contributing](#️-contributing)
+  - [vim-textobj-arguments](#vim-textobj-arguments)
+- [🎩 VSCodeVim tricks!](#-vscodevim-tricks)
+- [📚 F.A.Q.](#-faq)
+- [❤️ Contributing](#️-contributing)
+  - [Special shoutouts to:](#special-shoutouts-to)
 
 </details>
 
@@ -122,6 +130,8 @@ These settings are specific to VSCodeVim.
 | vim.searchHighlightTextColor     | Foreground color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | None                                      |
 | vim.searchMatchColor             | Background color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | `findMatchBackground` ThemeColor          |
 | vim.searchMatchTextColor         | Foreground color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | None                                      |
+| vim.substitutionColor            | Background color of substituted text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                               | String  | "#50f01080"                               |
+| vim.substitutionTextColor        | Foreground color of substituted text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                               | String  | None                                      |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                           | Boolean | true                                      |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                          | Boolean | false                                     |
@@ -414,6 +424,7 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 | vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                   | Boolean | false                                                          |
 | vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                | Boolean | true                                                           |
 | vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                   | Boolean | true                                                           |
+| vim.inccommand   | Show the results of a `substitute` command while typing.                                                                                                                                                                                                      | String  | `replace`                                                      |
 | vim.joinspaces   | Add two spaces after '.', '?', and '!' when joining or reformatting                                                                                                                                                                                           | Boolean | true                                                           |
 | vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                       | String  | `\`                                                            |
 | vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done. | Number  | 1000                                                           |

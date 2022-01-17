@@ -13,12 +13,14 @@ import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/w
 import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { reportSearch } from '../util/statusBarTextUtils';
-import { Position, ExtensionContext, window } from 'vscode';
+import { Position, ExtensionContext, window, DecorationOptions, Range } from 'vscode';
 import { globalState } from '../state/globalState';
 import { scrollView } from '../util/util';
 import { ExCommand } from '../vimscript/exCommand';
 import { LineRange } from '../vimscript/lineRange';
 import { RegisterCommand } from './commands/register';
+import { SubstituteCommand } from './commands/substitute';
+import { SearchDecorations, ensureVisible } from '../configuration/decoration';
 
 export abstract class CommandLine {
   public cursorIndex: number;
@@ -52,6 +54,8 @@ export abstract class CommandLine {
   public abstract getSearchState(): SearchState | undefined;
 
   public abstract getHistory(): HistoryFile;
+
+  public abstract getDecorations(vimState: VimState): SearchDecorations | undefined;
 
   /**
    * Called when `<Enter>` is pressed
@@ -237,6 +241,14 @@ export class ExCommandLine extends CommandLine {
     return undefined;
   }
 
+  public getDecorations(vimState: VimState): SearchDecorations | undefined {
+    return this.command instanceof SubstituteCommand &&
+      vimState.currentMode === Mode.CommandlineInProgress &&
+      configuration.inccommand
+      ? this.command.getSubstitutionDecorations(vimState, this.lineRange)
+      : undefined;
+  }
+
   public getHistory(): HistoryFile {
     return ExCommandLine.history;
   }
@@ -362,6 +374,24 @@ export class SearchCommandLine extends CommandLine {
     }
   }
 
+  public static getDecorationsForMatchRanges(
+    ranges: Range[] | undefined,
+    currentMatchIndex?: number | undefined
+  ): SearchDecorations {
+    if (ranges === undefined) {
+      return {};
+    }
+
+    const searchHighlight: DecorationOptions[] = [];
+    const searchMatch: DecorationOptions[] = [];
+
+    for (let i = 0; i < ranges.length; i++) {
+      (i === currentMatchIndex ? searchMatch : searchHighlight).push(ensureVisible(ranges[i]));
+    }
+
+    return { searchHighlight, searchMatch };
+  }
+
   /**
    * Keeps the state of the current match, i.e. the match to which the cursor moves when the search is executed.
    * Incremented / decremented by \<C-g> or \<C-t> in SearchInProgress mode.
@@ -434,6 +464,15 @@ export class SearchCommandLine extends CommandLine {
       vimState.cursorStopPosition,
       SearchDirection.Forward,
       this.getCurrentMatchRelativeIndex(vimState)
+    );
+  }
+
+  public getDecorations(vimState: VimState): SearchDecorations | undefined {
+    return SearchCommandLine.getDecorationsForMatchRanges(
+      this.searchState.getMatchRanges(vimState),
+      configuration.incsearch && vimState.currentMode === Mode.SearchInProgressMode
+        ? this.getCurrentMatchRange(vimState)?.index
+        : undefined
     );
   }
 

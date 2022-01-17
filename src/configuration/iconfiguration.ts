@@ -225,6 +225,11 @@ export interface IConfiguration {
   history: number;
 
   /**
+   * Show substitutions while user is typing?
+   */
+  inccommand: '' | 'append' | 'replace';
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch: boolean;
@@ -260,6 +265,12 @@ export interface IConfiguration {
    */
   searchMatchColor: string;
   searchMatchTextColor: string;
+
+  /**
+   * Color of substituted text
+   */
+  substitutionColor: string;
+  substitutionTextColor: string;
 
   /**
    * Yank highlight settings.
