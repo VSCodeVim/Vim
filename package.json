@@ -1166,7 +1166,7 @@
     "@types/sinon": "10.0.8",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
-    "@vscode/test-electron": "2.1.0",
+    "@vscode/test-electron": "2.1.1",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "6.5.0",
