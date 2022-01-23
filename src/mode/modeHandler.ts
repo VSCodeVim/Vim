@@ -26,7 +26,7 @@ import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
 import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
-import { decoration, SearchDecorations } from '../configuration/decoration';
+import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
 import {
   CommandQuitRecordMacro,
@@ -39,6 +39,7 @@ import { executeTransformations, IModeHandler } from '../transformations/execute
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { SpecialKeys } from '../util/specialKeys';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 import { Position, Uri } from 'vscode';
@@ -1138,9 +1139,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }: SearchDecorations = showHighlights
       ? this.vimState.commandLine?.getDecorations(this.vimState) ??
         // if there are no decorations from the command line, get decorations for previous search state
-        SearchCommandLine.getDecorationsForMatchRanges(
-          globalState.searchState?.getMatchRanges(this.vimState)
-        )
+        getDecorationsForSearchMatchRanges(globalState.searchState?.getMatchRanges(this.vimState))
       : {};
 
     this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlight);
@@ -1539,7 +1538,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (configuration.incsearch &&
         (this.currentMode === Mode.SearchInProgressMode ||
           this.currentMode === Mode.CommandlineInProgress)) ||
-      // TODO: (configuration.inccmd && this.currentMode === Mode.CommandlineInProgress)
+      (configuration.inccommand && this.currentMode === Mode.CommandlineInProgress) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
       this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);

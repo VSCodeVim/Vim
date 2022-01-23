@@ -5,7 +5,7 @@ import { SubstituteState } from '../../state/substituteState';
 import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
-import { decoration, SearchDecorations, ensureVisible } from '../../configuration/decoration';
+import { decoration } from '../../configuration/decoration';
 import { globalState } from '../../state/globalState';
 import { StatusBar } from '../../statusBar';
 import { Address, LineRange } from '../../vimscript/lineRange';
@@ -25,6 +25,8 @@ import {
 } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 import { PositionDiff } from '../../common/motion/position';
+import { escapeCSSIcons } from '../../util/statusBarTextUtils';
+import { SearchDecorations, ensureVisible, formatDecorationText } from '../../util/decorationUtils';
 
 type ReplaceStringComponent =
   | { type: 'string'; value: string }
@@ -234,6 +236,8 @@ export class SubstituteCommand extends ExCommand {
 
   public readonly arguments: ISubstituteCommandArguments;
   protected abort: boolean;
+  private cSearchHighlights?: DecorationOptions[];
+  private confirmedSubstitutions?: DecorationOptions[];
   constructor(args: ISubstituteCommandArguments) {
     super();
     this.arguments = args;
@@ -252,20 +256,25 @@ export class SubstituteCommand extends ExCommand {
     const substitutionAppend: DecorationOptions[] = [];
     const substitutionReplace: DecorationOptions[] = [];
     const searchHighlight: DecorationOptions[] = [];
-    const subs: DecorationOptions[] =
+
+    const subsArr: DecorationOptions[] =
       configuration.inccommand === 'replace' ? substitutionReplace : substitutionAppend;
+
     const { pattern, replace } = this.resolveArgumentPatterns(true);
+
     const showReplacements = this.arguments.pattern?.closed && configuration.inccommand;
+
     const matches = pattern?.allMatches(vimState, { lineRange }) ?? [];
+
+    const global =
+      (configuration.gdefault || configuration.substituteGlobalFlag) !==
+      (this.arguments.flags.replaceAll ?? false);
     const lines = new Set<number>();
+
     for (const match of matches) {
       if (this.abort) {
         break;
       }
-      const global =
-        (configuration.gdefault || configuration.substituteGlobalFlag) !==
-        (this.arguments.flags.replaceAll ?? false);
-
       if (!global && lines.has(match.range.start.line)) {
         // If not global, only replace one match per line
         continue;
@@ -273,17 +282,12 @@ export class SubstituteCommand extends ExCommand {
 
       lines.add(match.range.start.line);
       if (showReplacements) {
-        const contentText =
-          replace
-            .resolve(match.groups)
-            // vscode collapses whitespace in decorations; modify text to prevent this.
-            .replace(/ /g, '\u00a0') // " " NO-BREAK SPACE
-            .replace(/\t/g, '\u00a0'.repeat((vimState.editor.options.tabSize as number) || 1))
-            // Decorations can't change the apparent # of lines in the editor, so we must settle for a linearized version of our text
-            .replace(/\r\n|[\r\n]/g, '\u23ce') + // "⏎" RETURN SYMBOL
-          '\u200b'; // append zero-width space to prevent trimming
+        const contentText = formatDecorationText(
+          replace.resolve(match.groups),
+          vimState.editor.options.tabSize as number
+        );
 
-        subs.push({
+        subsArr.push({
           range: match.range,
           renderOptions: {
             [configuration.inccommand === 'append' ? 'after' : 'before']: { contentText },
@@ -333,11 +337,21 @@ export class SubstituteCommand extends ExCommand {
     const cancellationToken = new CancellationTokenSource();
     const validSelections: readonly string[] = ['y', 'n', 'a', 'q', 'l'];
     let selection: string = '';
+    const prompt = escapeCSSIcons(
+      `Replace with ${formatDecorationText(
+        replaceText,
+        vimState.editor.options.tabSize as number,
+        '\\n'
+      )} (${validSelections.join('/')})?`
+    );
+
+    const newConfirmationSearchHighlights =
+      this.cSearchHighlights?.filter((d) => !d.range.isEqual(match.range)) ?? [];
 
     vimState.editor.revealRange(new Range(match.range.start.line, 0, match.range.start.line, 0));
-    vimState.editor.setDecorations(decoration.searchHighlight, [match.range]);
-
-    const prompt = `Replace with ${replaceText} (${validSelections.join('/')})?`;
+    vimState.editor.setDecorations(decoration.searchHighlight, newConfirmationSearchHighlights);
+    vimState.editor.setDecorations(decoration.searchMatch, [ensureVisible(match.range)]);
+    vimState.editor.setDecorations(decoration.confirmedSubstitution, this.confirmedSubstitutions ?? []);
     await window.showInputBox(
       {
         ignoreFocusOut: true,
@@ -360,7 +374,25 @@ export class SubstituteCommand extends ExCommand {
       this.arguments.flags.confirmEach = undefined;
     }
 
-    return selection === 'y' || selection === 'a' || selection === 'l';
+    if (selection === 'y' || selection === 'a' || selection === 'l') {
+      if (this.cSearchHighlights) {
+        this.cSearchHighlights = newConfirmationSearchHighlights;
+      }
+
+      this.confirmedSubstitutions?.push({
+        range: match.range,
+        renderOptions: {
+          before: {
+            contentText: formatDecorationText(
+              replaceText,
+              vimState.editor.options.tabSize as number
+            ),
+          },
+        },
+      });
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -436,7 +468,7 @@ export class SubstituteCommand extends ExCommand {
       (configuration.gdefault || configuration.substituteGlobalFlag) !==
       (this.arguments.flags.replaceAll ?? false);
 
-    const matches =
+    const allMatches =
       this.arguments.pattern?.allMatches(vimState, {
         // TODO: This method should probably take start/end lines as numbers
         lineRange: new LineRange(
@@ -447,22 +479,40 @@ export class SubstituteCommand extends ExCommand {
       }) ?? [];
 
     const lines = new Set<number>();
+
+    const replacableMatches = global
+      ? allMatches
+      : allMatches.filter((match) => {
+          if (lines.has(match.range.start.line)) {
+            return false;
+          }
+          lines.add(match.range.start.line);
+          return true;
+        });
+
+    if (this.arguments.flags.confirmEach) {
+      vimState.editor.setDecorations(decoration.substitutionAppend, []);
+      vimState.editor.setDecorations(decoration.substitutionReplace, []);
+
+      if (configuration.inccommand) {
+        this.confirmedSubstitutions = [];
+      }
+      if (configuration.incsearch) {
+        this.cSearchHighlights = replacableMatches.map((match) => ensureVisible(match.range));
+      }
+    }
+
     let substitutions = 0;
     let netNewLines = 0;
-    for (const match of matches) {
+
+    for (const match of replacableMatches) {
       if (this.abort) {
         break;
-      }
-
-      if (!global && lines.has(match.range.start.line)) {
-        // If not global, only replace one match per line
-        continue;
       }
 
       const newLines = await this.replaceMatchRange(vimState, match);
       if (newLines !== undefined) {
         substitutions++;
-        lines.add(match.range.start.line);
         netNewLines += newLines;
       }
     }
@@ -484,6 +534,10 @@ export class SubstituteCommand extends ExCommand {
         cursorIndex: 0,
       });
     }
+
+    this.confirmedSubstitutions = undefined;
+    this.cSearchHighlights = undefined;
+    vimState.editor.setDecorations(decoration.confirmedSubstitution, []);
 
     this.setStatusBarText(vimState, substitutions, lines.size);
   }
