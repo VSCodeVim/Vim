@@ -260,7 +260,7 @@ export class SubstituteCommand extends ExCommand {
     const subsArr: DecorationOptions[] =
       configuration.inccommand === 'replace' ? substitutionReplace : substitutionAppend;
 
-    const { pattern, replace } = this.resolveArgumentPatterns(true);
+    const { pattern, replace } = this.resolvePatterns(vimState, false);
 
     const showReplacements = this.arguments.pattern?.closed && configuration.inccommand;
 
@@ -272,9 +272,6 @@ export class SubstituteCommand extends ExCommand {
     const lines = new Set<number>();
 
     for (const match of matches) {
-      if (this.abort) {
-        break;
-      }
       if (!global && lines.has(match.range.start.line)) {
         // If not global, only replace one match per line
         continue;
@@ -351,7 +348,10 @@ export class SubstituteCommand extends ExCommand {
     vimState.editor.revealRange(new Range(match.range.start.line, 0, match.range.start.line, 0));
     vimState.editor.setDecorations(decoration.searchHighlight, newConfirmationSearchHighlights);
     vimState.editor.setDecorations(decoration.searchMatch, [ensureVisible(match.range)]);
-    vimState.editor.setDecorations(decoration.confirmedSubstitution, this.confirmedSubstitutions ?? []);
+    vimState.editor.setDecorations(
+      decoration.confirmedSubstitution,
+      this.confirmedSubstitutions ?? []
+    );
     await window.showInputBox(
       {
         ignoreFocusOut: true,
@@ -396,11 +396,13 @@ export class SubstituteCommand extends ExCommand {
   }
 
   /**
-   *
-   * @param suppressErrors if true, no errors are thrown if a previous value doesn't exist
-   * @returns
+   * @returns the concrete Pattern and ReplaceString to be used for this substitution.
+   * If updateGlobalState is true, the global searchState and substituteState will be updated accordingly.
    */
-  private resolveArgumentPatterns(suppressErrors: boolean = false): {
+  private resolvePatterns(
+    vimState: VimState,
+    updateGlobalState: boolean = true
+  ): {
     pattern: Pattern | undefined;
     replace: ReplaceString;
   } {
@@ -413,7 +415,7 @@ export class SubstituteCommand extends ExCommand {
         prevSubstituteState?.searchPattern === undefined ||
         prevSubstituteState.searchPattern.patternString === ''
       ) {
-        if (!suppressErrors) {
+        if (updateGlobalState) {
           throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
         }
       } else {
@@ -426,12 +428,21 @@ export class SubstituteCommand extends ExCommand {
         // e.g :s/ or :s///
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
-          if (!suppressErrors) {
+          if (updateGlobalState) {
             throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
           }
         } else {
           pattern = prevSearchState.pattern;
         }
+      }
+      if (updateGlobalState) {
+        globalState.substituteState = new SubstituteState(pattern, replace);
+        globalState.searchState = new SearchState(
+          SearchDirection.Forward,
+          vimState.cursorStopPosition,
+          pattern?.patternString,
+          {}
+        );
       }
     }
     return { pattern, replace };
@@ -450,18 +461,7 @@ export class SubstituteCommand extends ExCommand {
     }
 
     ({ pattern: this.arguments.pattern, replace: this.arguments.replace } =
-      this.resolveArgumentPatterns());
-
-    globalState.substituteState = new SubstituteState(
-      this.arguments.pattern,
-      this.arguments.replace
-    );
-    globalState.searchState = new SearchState(
-      SearchDirection.Forward,
-      vimState.cursorStopPosition,
-      this.arguments.pattern?.patternString,
-      {}
-    );
+      this.resolvePatterns(vimState));
 
     // `/g` flag inverts the default behavior (from `gdefault`)
     const global =
@@ -478,17 +478,21 @@ export class SubstituteCommand extends ExCommand {
         ),
       }) ?? [];
 
-    const lines = new Set<number>();
-
-    const replacableMatches = global
-      ? allMatches
-      : allMatches.filter((match) => {
-          if (lines.has(match.range.start.line)) {
-            return false;
-          }
-          lines.add(match.range.start.line);
-          return true;
-        });
+    let replacableMatches;
+    if (global) {
+      // every match is replacable
+      replacableMatches = allMatches;
+    } else {
+      // only the first match on a line is replacable
+      const replacableLines = new Set<number>();
+      replacableMatches = allMatches.filter((match) => {
+        if (replacableLines.has(match.range.start.line)) {
+          return false;
+        }
+        replacableLines.add(match.range.start.line);
+        return true;
+      });
+    }
 
     if (this.arguments.flags.confirmEach) {
       vimState.editor.setDecorations(decoration.substitutionAppend, []);
@@ -502,6 +506,7 @@ export class SubstituteCommand extends ExCommand {
       }
     }
 
+    const substitutionLines = new Set<number>();
     let substitutions = 0;
     let netNewLines = 0;
 
@@ -513,13 +518,14 @@ export class SubstituteCommand extends ExCommand {
       const newLines = await this.replaceMatchRange(vimState, match);
       if (newLines !== undefined) {
         substitutions++;
+        substitutionLines.add(match.range.start.line);
         netNewLines += newLines;
       }
     }
 
     if (substitutions > 0) {
       // if any substitutions were made, jump to latest one
-      const lastLine = Math.max(...lines.values()) + netNewLines;
+      const lastLine = Math.max(...substitutionLines.values()) + netNewLines;
       const cursor = new Position(Math.max(0, lastLine), 0);
       globalState.jumpTracker.recordJump(
         new Jump({
@@ -539,7 +545,7 @@ export class SubstituteCommand extends ExCommand {
     this.cSearchHighlights = undefined;
     vimState.editor.setDecorations(decoration.confirmedSubstitution, []);
 
-    this.setStatusBarText(vimState, substitutions, lines.size);
+    this.setStatusBarText(vimState, substitutions, substitutionLines.size);
   }
 
   private setStatusBarText(vimState: VimState, substitutions: number, lines: number) {
