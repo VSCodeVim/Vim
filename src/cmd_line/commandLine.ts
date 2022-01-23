@@ -12,7 +12,8 @@ import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState
 import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
 import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
-import { reportSearch } from '../util/statusBarTextUtils';
+import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
+import { SearchDecorations, ensureVisible } from '../util/decorationUtils';
 import { Position, ExtensionContext, window, DecorationOptions, Range } from 'vscode';
 import { globalState } from '../state/globalState';
 import { scrollView } from '../util/util';
@@ -20,7 +21,6 @@ import { ExCommand } from '../vimscript/exCommand';
 import { LineRange } from '../vimscript/lineRange';
 import { RegisterCommand } from './commands/register';
 import { SubstituteCommand } from './commands/substitute';
-import { SearchDecorations, ensureVisible } from '../configuration/decoration';
 
 export abstract class CommandLine {
   public cursorIndex: number;
@@ -215,9 +215,11 @@ export class ExCommandLine extends CommandLine {
   }
 
   public display(cursorChar: string): string {
-    return `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-      this.cursorIndex
-    )}`;
+    return escapeCSSIcons(
+      `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
+        this.cursorIndex
+      )}`
+    );
   }
 
   public get text(): string {
@@ -243,8 +245,7 @@ export class ExCommandLine extends CommandLine {
 
   public getDecorations(vimState: VimState): SearchDecorations | undefined {
     return this.command instanceof SubstituteCommand &&
-      vimState.currentMode === Mode.CommandlineInProgress &&
-      configuration.inccommand
+      vimState.currentMode === Mode.CommandlineInProgress
       ? this.command.getSubstitutionDecorations(vimState, this.lineRange)
       : undefined;
   }
@@ -408,11 +409,12 @@ export class SearchCommandLine extends CommandLine {
   }
 
   public display(cursorChar: string): string {
-    return `${
-      this.searchState.direction === SearchDirection.Forward ? '/' : '?'
-    }${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-      this.cursorIndex
-    )}`;
+    return escapeCSSIcons(
+      `${this.searchState.direction === SearchDirection.Forward ? '/' : '?'}${this.text.substring(
+        0,
+        this.cursorIndex
+      )}${cursorChar}${this.text.substring(this.cursorIndex)}`
+    );
   }
 
   public get text(): string {
