@@ -21,6 +21,8 @@ export class Configuration implements IConfiguration {
   camelCaseMotion = {
     enable: false,
   };
+  logObject = false;
+  logObjectTemplate = 'console.log("{object}", {object});';
   replaceWithRegister = false;
   smartRelativeLine = false;
   sneak = false;
