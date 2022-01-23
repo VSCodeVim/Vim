@@ -57,6 +57,9 @@ export function formatDecorationText(
     .replace(/\r\n|[\r\n]/g, newlineReplacement as any)}\u200b`;
 }
 
+/**
+ * @returns search decorations for the given ranges, taking into account the current match
+ */
 export function getDecorationsForSearchMatchRanges(
   ranges: Range[] | undefined,
   currentMatchIndex?: number
