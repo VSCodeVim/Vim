@@ -137,6 +137,16 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use LogObject plugin?
+   */
+  logObject: boolean;
+
+  /**
+   * Costmize logObject message template
+   */
+  logObjectTemplate: string;
+
+  /**
    * Use ReplaceWithRegister plugin?
    */
   replaceWithRegister: boolean;

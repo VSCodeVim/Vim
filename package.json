@@ -615,6 +615,16 @@
           "description": "Ignore case in search patterns.",
           "default": true
         },
+        "vim.logObject": {
+          "type": "boolean",
+          "markdownDescription": "Generate console log of targeted text object.",
+          "default": false
+        },
+        "vim.logObjectTemplate": {
+          "type": "string",
+          "markdownDescription": "The template for the console message. {object} will be replaced by the text object in the generated output. Default template is in JavaScript format. Please replace it if using another language.",
+          "default": "console.log(\"{object}\", {object});"
+        },
         "vim.smartcase": {
           "type": "boolean",
           "markdownDescription": "Override the `ignorecase` option if the search pattern contains upper case characters.",

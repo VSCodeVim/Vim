@@ -235,6 +235,9 @@ class Configuration implements IConfiguration {
     enable: true,
   };
 
+  logObject = false;
+  logObjectTemplate = 'console.log("{object}", {object});';
+
   replaceWithRegister = false;
 
   smartRelativeLine = false;
