@@ -1,46 +1,6 @@
 import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
-/**
- * Alias for the types of arrays that can be passed to a TextEditor's setDecorations method
- */
-export type EditorDecorationArray = vscode.Range[] | vscode.DecorationOptions[];
-
-/**
- * Decorations associated with search/substitute operations
- */
-export type SearchDecorations = {
-  searchHighlight?: EditorDecorationArray;
-  searchMatch?: EditorDecorationArray;
-  substitutionAppend?: EditorDecorationArray;
-  substitutionReplace?: EditorDecorationArray;
-};
-
-/**
- * @returns a DecorationOptions object representing the given range. If the
- * given range is empty, the range of the returned object will be extended one
- * character to the right. If the given range cannot be extended right, or
- * represents the end of a line (possibly containing EOL characters), the
- * returned object will specify an after element with the width of a single
- * character.
- */
-export function ensureVisible(range: vscode.Range): vscode.DecorationOptions {
-  return range.start.isLineEnd() && (range.isEmpty || range.end.isLineBeginning())
-    ? {
-        // range is at EOL, possibly containing EOL char(s).
-        range: range.with(undefined, range.start),
-        renderOptions: {
-          after: {
-            color: 'transparent',
-            contentText: '$', // non-whitespace character to set width.
-          },
-        },
-      }
-    : range.isEmpty
-    ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
-    : { range };
-}
-
 class DecorationImpl {
   private _default!: vscode.TextEditorDecorationType;
   private _searchHighlight!: vscode.TextEditorDecorationType;
@@ -72,6 +32,11 @@ class DecorationImpl {
       gutterIconSize: 'cover',
     });
   }
+
+  public readonly confirmedSubstitution = vscode.window.createTextEditorDecorationType({
+    letterSpacing: '-9999999px',
+    opacity: '0',
+  });
 
   public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -262,7 +227,7 @@ class DecorationImpl {
 
     // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
     this.substitutionReplace = vscode.window.createTextEditorDecorationType({
-      letterSpacing: '-999999px',
+      letterSpacing: '-9999999px',
       opacity: '0',
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
       before: {
