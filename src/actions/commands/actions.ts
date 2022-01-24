@@ -1535,13 +1535,19 @@ export class CommandInsertNewLineAbove extends BaseCommand {
 
     vimState.cursors = getCursorsAfterSync(vimState.editor);
 
-    for (let i = 0; i < count; i++) {
+    const firstPos = new Position(vimState.cursors[0].start.line, charPos);
+    vimState.cursors[0] = new Cursor(firstPos, firstPos);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      text: TextEditor.setIndentationLevel('', firstPos.character),
+      position: firstPos,
+      cursorIndex: 0,
+      manuallySetCursorPositions: true,
+    });
+
+    for (let i = 1; i < count; i++) {
       const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
-      if (i === 0) {
-        vimState.cursors[0] = new Cursor(newPos, newPos);
-      } else {
-        vimState.cursors.push(new Cursor(newPos, newPos));
-      }
+      vimState.cursors.push(new Cursor(newPos, newPos));
       vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
         text: TextEditor.setIndentationLevel('', newPos.character),
