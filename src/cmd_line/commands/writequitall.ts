@@ -20,6 +20,8 @@ export class WriteQuitAllCommand extends ExCommand {
     whitespace.then(fileOptParser).fallback([])
   ).map(([bang, fileOpt]) => new WriteQuitAllCommand({ bang, fileOpt }));
 
+  public override isRepeatableWithDot = false;
+
   private readonly arguments: IWriteQuitAllCommandArguments;
   constructor(args: IWriteQuitAllCommandArguments) {
     super();

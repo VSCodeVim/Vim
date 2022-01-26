@@ -84,7 +84,7 @@ class BackspaceInReplaceMode extends BaseCommand {
 class ReplaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<character>'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[0];

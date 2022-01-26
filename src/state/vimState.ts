@@ -95,6 +95,12 @@ export class VimState implements vscode.Disposable {
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
 
+  /**
+   * Keep track of whether the last command that ran is able to be repeated
+   * with the dot command.
+   */
+  public lastCommandDotRepeatable: boolean = true;
+
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
 
