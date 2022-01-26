@@ -10,7 +10,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v2
@@ -27,6 +30,7 @@ jobs:
         run: yarn install
 
       - name: Prettier
+        if: matrix.os != 'windows-latest'
         uses: creyD/prettier_action@v3.3
         with:
           prettier_options: '--write **/*.{ts,js,json,md,yml}'
@@ -41,7 +45,14 @@ jobs:
       - name: Build
         run: gulp webpack
 
-      - name: Test
+      - name: Test on ubuntu-latest
+        if: matrix.os != 'windows-latest'
         run: |
           gulp prepare-test
           xvfb-run -a yarn test
+
+      - name: Test on windows-latest
+        if: matrix.os == 'windows-latest'
+        run: |
+          gulp prepare-test
+          yarn test
