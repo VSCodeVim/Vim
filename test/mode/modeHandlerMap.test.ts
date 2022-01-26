@@ -7,7 +7,7 @@ function createRandomUri(): Uri {
   return Uri.file(Math.random().toString(36).substring(7));
 }
 
-suite.only('Mode Handler Map', () => {
+suite('Mode Handler Map', () => {
   setup(() => {
     ModeHandlerMap.clear();
   });

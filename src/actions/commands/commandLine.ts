@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RegisterAction, BaseCommand } from '../base';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { CommandLine, ExCommandLine } from '../../cmd_line/commandLine';
+import { CommandLine, ExCommandLine, SearchCommandLine } from '../../cmd_line/commandLine';
 import { Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { TextEditor } from '../../textEditor';
@@ -13,6 +13,7 @@ import { Clipboard } from '../../util/clipboard';
 import { VimError, ErrorCode } from '../../error';
 import { assertDefined } from '../../util/util';
 import { builtinExCommands } from '../../vimscript/exCommandParser';
+import { SearchDirection } from '../../vimscript/pattern';
 
 abstract class CommandLineAction extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
@@ -360,15 +361,34 @@ class CommandCtrlLInSearchMode extends CommandLineAction {
   keys = ['<C-l>'];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    const searchState = commandLine.getSearchState()!;
-
-    const nextMatch = searchState.getNextSearchMatchRange(vimState, vimState.cursorStopPosition);
-    if (nextMatch) {
-      const line = vimState.document.lineAt(nextMatch.range.end).text;
-      if (nextMatch.range.end.character < line.length) {
-        searchState.searchString += line[nextMatch.range.end.character];
-        commandLine.cursorIndex++;
+    if (commandLine instanceof SearchCommandLine) {
+      const currentMatch = commandLine.getCurrentMatchRange(vimState);
+      if (currentMatch) {
+        const line = vimState.document.lineAt(currentMatch.range.end).text;
+        if (currentMatch.range.end.character < line.length) {
+          commandLine.getSearchState().searchString += line[currentMatch.range.end.character];
+          commandLine.cursorIndex++;
+        }
       }
+    }
+  }
+}
+
+@RegisterAction
+class CommandAdvanceCurrentMatch extends CommandLineAction {
+  override modes = [Mode.SearchInProgressMode];
+  keys = [['<C-g>'], ['<C-t>']];
+
+  protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
+    const key = this.keysPressed[0];
+    const direction =
+      key === '<C-g>'
+        ? SearchDirection.Forward
+        : key === '<C-t>'
+        ? SearchDirection.Backward
+        : undefined;
+    if (commandLine instanceof SearchCommandLine && direction !== undefined) {
+      commandLine.advanceCurrentMatch(vimState, direction);
     }
   }
 }

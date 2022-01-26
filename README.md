@@ -16,16 +16,22 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-- [Installation](#-installation)
-  - [Mac setup](#mac)
-  - [Windows setup](#windows)
-- [Settings](#%EF%B8%8F-settings)
+- [💾 Installation](#-installation)
+  - [Mac](#mac)
+  - [Windows](#windows)
+- [⚙️ Settings](#️-settings)
+  - [Quick Example](#quick-example)
   - [VSCodeVim settings](#vscodevim-settings)
   - [Neovim Integration](#neovim-integration)
-  - [Key remapping](#key-remapping)
+  - [Key Remapping](#key-remapping)
+    - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
+    - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
+    - [Debugging Remappings](#debugging-remappings)
+  - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
-- [Multi-Cursor mode](#%EF%B8%8F-multi-cursor-mode)
-- [Emulated plugins](#-emulated-plugins)
+- [.vimrc support](#vimrc-support)
+- [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
+- [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
   - [vim-easymotion](#vim-easymotion)
   - [vim-surround](#vim-surround)
@@ -36,9 +42,11 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [Input Method](#input-method)
   - [ReplaceWithRegister](#replacewithregister)
   - [vim-textobj-entire](#vim-textobj-entire)
-- [VSCodeVim tricks](#-vscodevim-tricks)
-- [F.A.Q / Troubleshooting](#-faq)
-- [Contributing](#️-contributing)
+  - [vim-textobj-arguments](#vim-textobj-arguments)
+- [🎩 VSCodeVim tricks!](#-vscodevim-tricks)
+- [📚 F.A.Q.](#-faq)
+- [❤️ Contributing](#️-contributing)
+  - [Special shoutouts to:](#special-shoutouts-to)
 
 </details>
 
@@ -51,10 +59,11 @@ VSCodeVim is automatically enabled following [installation](https://marketplace.
 To enable key-repeating, execute the following in your Terminal, log out and back in, and then restart VS Code:
 
 ```sh
-$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
-$ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
+$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
+$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false         # For VS Codium
+$ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
+$ defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
 We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
@@ -118,7 +127,10 @@ These settings are specific to VSCodeVim.
 | vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`                           |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
 | vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                     | Boolean | false                                     |
-| vim.searchHighlightColor         | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                                  | String  | `findMatchHighlightBackground` ThemeColor |
+| vim.searchHighlightColor         | Background color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | `findMatchHighlightBackground` ThemeColor |
+| vim.searchHighlightTextColor     | Foreground color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | None                                      |
+| vim.searchMatchColor             | Background color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | `findMatchBackground` ThemeColor          |
+| vim.searchMatchTextColor         | Foreground color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | None                                      |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                           | Boolean | true                                      |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                          | Boolean | false                                     |
@@ -692,7 +704,7 @@ Similar to the argument text object in [targets.vim](https://github.com/wellle/t
 
 | Motion Command | Description                        |
 | -------------- | ---------------------------------- |
-| `<operator>ia` | The argument exluding separators.  |
+| `<operator>ia` | The argument excluding separators. |
 | `<operator>aa` | The argument including separators. |
 
 Usage examples:
