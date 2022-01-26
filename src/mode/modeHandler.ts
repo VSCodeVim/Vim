@@ -719,7 +719,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         ranAction = true;
       }
 
-      if (action.actionCreatesUndoPoint) {
+      if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
     } else if (action instanceof BaseOperator) {
@@ -751,7 +751,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = operator.actionCreatesUndoPoint;
+        ranRepeatableAction = operator.createsUndoPoint;
         ranAction = true;
       }
     }

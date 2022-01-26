@@ -26,7 +26,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * If true, the action will create an undo point.
    */
-  public readonly actionCreatesUndoPoint: boolean = false;
+  public readonly createsUndoPoint: boolean = false;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor
