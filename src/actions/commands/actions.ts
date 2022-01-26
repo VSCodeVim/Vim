@@ -710,7 +710,13 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     }
 
-    await Clipboard.Copy(text);
+    const editorSelection = vimState.editor.selection;
+    const hasSelectedText = !editorSelection.active.isEqual(editorSelection.anchor);
+
+    if (hasSelectedText) {
+      await Clipboard.Copy(text);
+    }
+
     // all vim yank operations return to normal mode.
     await vimState.setCurrentMode(Mode.Normal);
   }
