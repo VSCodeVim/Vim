@@ -185,7 +185,7 @@ class CommandSurroundModeStartVisualLine extends SurroundOperator {
 
 abstract class CommandSurround extends BaseCommand {
   modes = [Mode.Normal];
-  override canBeRepeatedWithDot = true;
+  override actionCreatesUndoPoint = true;
   override runsOnceForEveryCursor() {
     return true;
   }
