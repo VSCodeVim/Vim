@@ -16,16 +16,22 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-- [Installation](#-installation)
-  - [Mac setup](#mac)
-  - [Windows setup](#windows)
-- [Settings](#%EF%B8%8F-settings)
+- [💾 Installation](#-installation)
+  - [Mac](#mac)
+  - [Windows](#windows)
+- [⚙️ Settings](#️-settings)
+  - [Quick Example](#quick-example)
   - [VSCodeVim settings](#vscodevim-settings)
   - [Neovim Integration](#neovim-integration)
-  - [Key remapping](#key-remapping)
+  - [Key Remapping](#key-remapping)
+    - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
+    - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
+    - [Debugging Remappings](#debugging-remappings)
+  - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
-- [Multi-Cursor mode](#%EF%B8%8F-multi-cursor-mode)
-- [Emulated plugins](#-emulated-plugins)
+- [.vimrc support](#vimrc-support)
+- [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
+- [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
   - [vim-easymotion](#vim-easymotion)
   - [vim-surround](#vim-surround)
@@ -36,9 +42,11 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [Input Method](#input-method)
   - [ReplaceWithRegister](#replacewithregister)
   - [vim-textobj-entire](#vim-textobj-entire)
-- [VSCodeVim tricks](#-vscodevim-tricks)
-- [F.A.Q / Troubleshooting](#-faq)
-- [Contributing](#️-contributing)
+  - [vim-textobj-arguments](#vim-textobj-arguments)
+- [🎩 VSCodeVim tricks!](#-vscodevim-tricks)
+- [📚 F.A.Q.](#-faq)
+- [❤️ Contributing](#️-contributing)
+  - [Special shoutouts to:](#special-shoutouts-to)
 
 </details>
 
@@ -51,10 +59,11 @@ VSCodeVim is automatically enabled following [installation](https://marketplace.
 To enable key-repeating execute the following in your Terminal and restart VS Code:
 
 ```sh
-$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
-$ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
+$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
+$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false         # For VS Codium
+$ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
+$ defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
 We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
