@@ -48,7 +48,7 @@ VSCodeVim is automatically enabled following [installation](https://marketplace.
 
 ### Mac
 
-To enable key-repeating execute the following in your Terminal, logout user & then start VS Code:
+To enable key-repeating, execute the following in your Terminal, log out and back in, and then restart VS Code:
 
 ```sh
 $ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
