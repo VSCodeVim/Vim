@@ -719,7 +719,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         ranAction = true;
       }
 
-      if (action.canBeRepeatedWithDot) {
+      if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
     } else if (action instanceof BaseOperator) {
@@ -751,7 +751,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = operator.canBeRepeatedWithDot;
+        ranRepeatableAction = operator.createsUndoPoint;
         ranAction = true;
       }
     }
@@ -771,13 +771,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.createUndoPointForBrackets();
 
     // Record down previous action and flush temporary state
-    if (ranRepeatableAction) {
+    if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
       globalState.previousFullAction = this.vimState.recordedState;
 
       if (recordedState.isInsertion) {
         Register.setReadonlyRegister('.', recordedState);
       }
     }
+    this.vimState.lastCommandDotRepeatable = true;
 
     // Update desiredColumn
     const preservesDesiredColumn =
