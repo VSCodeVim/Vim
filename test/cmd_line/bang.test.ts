@@ -4,7 +4,12 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
+// TODO(#4844): this fails on Windows
 suite('bang (!) cmd_line', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
   let modeHandler: ModeHandler;
 
   setup(async () => {
