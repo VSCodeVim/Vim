@@ -1527,14 +1527,10 @@ export class CommandInsertNewLineAbove extends BaseCommand {
 
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
-      const newPos = new Position(
-        vimState.cursorStartPosition.line - i,
-        vimState.cursorStartPosition.character
-      );
     }
 
     vimState.cursors = getCursorsAfterSync(vimState.editor);
-    const indentAmt = charPos - vimState.cursors[0].start.character;
+    const indentAmt = Math.max(charPos - vimState.cursors[0].start.character, 0);
 
     const firstPos = new Position(vimState.cursors[0].start.line, charPos);
     vimState.cursors[0] = new Cursor(firstPos, firstPos);
