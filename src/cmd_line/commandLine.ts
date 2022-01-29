@@ -305,6 +305,9 @@ export class ExCommandLine extends CommandLine {
       }
     }
 
+    // Update state if this command is repeatable via dot command.
+    vimState.lastCommandDotRepeatable = this.command?.isRepeatableWithDot ?? false;
+
     await vimState.setCurrentMode(Mode.Normal);
   }
 

@@ -10,6 +10,8 @@ export abstract class ExCommand {
     return false;
   }
 
+  public readonly isRepeatableWithDot: boolean = true;
+
   abstract execute(vimState: VimState): Promise<void>;
 
   async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
