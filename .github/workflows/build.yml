@@ -31,7 +31,7 @@ jobs:
 
       - name: Prettier
         if: matrix.os != 'windows-latest'
-        uses: creyD/prettier_action@v3.3
+        uses: creyD/prettier_action@v4.2
         with:
           prettier_options: '--write **/*.{ts,js,json,md,yml}'
           same_commit: true
