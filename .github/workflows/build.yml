@@ -18,6 +18,7 @@ jobs:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
           # Get full history; needed for Prettier to amend commit
           fetch-depth: 0
 
