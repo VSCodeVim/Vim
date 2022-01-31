@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v2-beta
@@ -32,9 +30,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         uses: creyD/prettier_action@v3.3
         with:
-          prettier_options: '--write **/*.{ts,js,json,md,yml}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          dry: true
 
       - name: Lint
         run: npx tslint -c tslint.json -p tsconfig.json
