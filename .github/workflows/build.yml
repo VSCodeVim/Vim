@@ -19,8 +19,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
-          # Get full history; needed for Prettier to amend commit
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2-beta
@@ -35,8 +33,6 @@ jobs:
         uses: creyD/prettier_action@v3.3
         with:
           prettier_options: '--write **/*.{ts,js,json,md,yml}'
-          same_commit: true
-          only_changed: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
