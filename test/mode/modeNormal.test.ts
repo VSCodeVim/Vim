@@ -974,6 +974,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daw' on word with numeric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd2aw',
+    end: ['one   two   three', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daw' on end of word",
     start: ['one   two   three   fou|r'],
     keysPressed: 'daw',
@@ -1024,6 +1032,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daw' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'daw',
+    end: ['one   two   three', '| five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daW' on big word with cursor inside spaces",
     start: ['one   two |  three,   four  '],
     keysPressed: 'daW',
@@ -1071,6 +1087,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daW' on word with numeric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd2aW',
+    end: ['one   two   three', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daW' on beginning of word",
     start: ['one |two three'],
     keysPressed: 'daW',
@@ -1083,6 +1107,14 @@ suite('Mode Normal', () => {
     start: ['one |two'],
     keysPressed: 'daW',
     end: ['on|e'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'daW' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'daW',
+    end: ['one   two   three', '| five'],
     endMode: Mode.Normal,
   });
 
@@ -1161,6 +1193,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'diw' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'diw',
+    end: ['one   two   three', '|', 'four five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'diw' on word with numeric prefix and across lines",
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd3iw',
@@ -1174,6 +1214,14 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |.  six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'diw' on word with numric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd3iw',
+    end: ['one   two   three', '|five'],
     endMode: Mode.Normal,
   });
 
@@ -1202,6 +1250,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'diW' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'diW',
+    end: ['one   two   three', '|', 'four five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'diW' on word with numeric prefix",
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iW',
@@ -1214,6 +1270,14 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iW',
     end: ['one   two   three,   |  six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'diW' on word with numric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd3iw',
+    end: ['one   two   three', '|five'],
     endMode: Mode.Normal,
   });
 
