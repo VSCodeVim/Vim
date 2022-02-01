@@ -37,9 +37,9 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G', 'O', 'a']);
-    const text = vscode.window.activeTextEditor?.document.getText().replace('\r', '').split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
-    assert.strictEqual(text[1], text[2]);
+    assert.strictEqual(text[1].replace(/[\n\r]/g, ''), text[2].replace(/[\n\r]/g, ''));
   });
 
   test('no extra whitespace added when insertLineBefore inserts correct amount', async () => {
@@ -54,9 +54,9 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '3', 'G', 'O', 'b']);
-    const text = vscode.window.activeTextEditor?.document.getText().replace('\r', '').split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
-    assert.strictEqual(text[2], text[3]);
+    assert.strictEqual(text[2].replace(/[\n\r]/g, ''), text[3].replace(/[\n\r]/g, ''));
   });
 
   test('works at the top of the document', async () => {
@@ -68,9 +68,9 @@ suite('insertLineBefore', () => {
     // This is the current state of the document
     //    a
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'O', 'a']);
-    const text = vscode.window.activeTextEditor?.document.getText().replace('\r', '').split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
-    assert.strictEqual(text[0], text[1]);
+    assert.strictEqual(text[0].replace(/[\n\r]/g, ''), text[1].replace(/[\n\r]/g, ''));
   });
 
   test('works with multiple cursors', async () => {
@@ -87,9 +87,9 @@ suite('insertLineBefore', () => {
     //    a
     //    a
     //    a
-    const text = vscode.window.activeTextEditor?.document.getText().replace('\r', '').split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
-    assert.strictEqual(text[1], text[2]);
-    assert.strictEqual(text[2], text[3]);
+    assert.strictEqual(text[1].replace(/[\n\r]/g, ''), text[2].replace(/[\n\r]/g, ''));
+    assert.strictEqual(text[2].replace(/[\n\r]/g, ''), text[3].replace(/[\n\r]/g, ''));
   });
 });
