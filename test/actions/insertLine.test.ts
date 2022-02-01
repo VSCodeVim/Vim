@@ -37,7 +37,7 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G', 'O', 'a']);
-    let text = vscode.window.activeTextEditor?.document.getText().split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
     assert.strictEqual(text[1], text[2]);
   });
@@ -54,7 +54,7 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '3', 'G', 'O', 'b']);
-    let text = vscode.window.activeTextEditor?.document.getText().split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
     assert.strictEqual(text[2], text[3]);
   });
@@ -68,7 +68,7 @@ suite('insertLineBefore', () => {
     // This is the current state of the document
     //    a
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'O', 'a']);
-    let text = vscode.window.activeTextEditor?.document.getText().split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
     assert.strictEqual(text[0], text[1]);
   });
@@ -87,7 +87,7 @@ suite('insertLineBefore', () => {
     //    a
     //    a
     //    a
-    let text = vscode.window.activeTextEditor?.document.getText().split('\n');
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     assert.ok(text);
     assert.strictEqual(text[1], text[2]);
     assert.strictEqual(text[2], text[3]);
