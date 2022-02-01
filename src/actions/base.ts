@@ -24,10 +24,9 @@ export abstract class BaseAction implements IBaseAction {
   public readonly isJump: boolean = false;
 
   /**
-   * TODO: This property is a lie - it pertains to whether an action creates an undo point...
-   *       See #5058 and rationalize ASAP.
+   * If true, the action will create an undo point.
    */
-  public readonly canBeRepeatedWithDot: boolean = false;
+  public readonly createsUndoPoint: boolean = false;
 
   /**
    * If this is being run in multi cursor mode, the index of the cursor

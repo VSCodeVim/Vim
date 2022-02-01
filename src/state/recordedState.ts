@@ -282,7 +282,7 @@ export interface IBaseAction {
   readonly isOperator: boolean;
   readonly isCommand: boolean;
   readonly isJump: boolean;
-  readonly canBeRepeatedWithDot: boolean;
+  readonly createsUndoPoint: boolean;
 
   keysPressed: string[];
   multicursorIndex: number | undefined;

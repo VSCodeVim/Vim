@@ -4,6 +4,7 @@ import { IConfiguration } from './iconfiguration';
 class DecorationImpl {
   private _default!: vscode.TextEditorDecorationType;
   private _searchHighlight!: vscode.TextEditorDecorationType;
+  private _searchMatch!: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
   private _easyMotionDimIncSearch!: vscode.TextEditorDecorationType;
   private _insertModeVirtualCharacter!: vscode.TextEditorDecorationType;
@@ -50,6 +51,17 @@ class DecorationImpl {
 
   public get searchHighlight() {
     return this._searchHighlight;
+  }
+
+  public set searchMatch(value: vscode.TextEditorDecorationType) {
+    if (this._searchMatch) {
+      this._searchMatch.dispose();
+    }
+    this._searchMatch = value;
+  }
+
+  public get searchMatch() {
+    return this._searchMatch;
   }
 
   public get easyMotionIncSearch() {
@@ -142,14 +154,32 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
-    const searchHighlightColor = configuration.searchHighlightColor
+    const searchHighlightBackgroundColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
       : new vscode.ThemeColor('editor.findMatchHighlightBackground');
 
     this.searchHighlight = vscode.window.createTextEditorDecorationType({
-      backgroundColor: searchHighlightColor,
+      backgroundColor: searchHighlightBackgroundColor,
       color: configuration.searchHighlightTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchHighlightBackgroundColor,
+      },
+    });
+
+    const searchMatchBackgroundColor = configuration.searchMatchColor
+      ? configuration.searchMatchColor
+      : new vscode.ThemeColor('editor.findMatchBackground');
+
+    this.searchMatch = vscode.window.createTextEditorDecorationType({
+      backgroundColor: searchMatchBackgroundColor,
+      color: configuration.searchMatchTextColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchMatchBackgroundColor,
+      },
     });
 
     this.easyMotionIncSearch = vscode.window.createTextEditorDecorationType({

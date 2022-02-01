@@ -468,10 +468,19 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
-    title: 'Can run a forward search with count exceeding max number of matches',
+    title: 'Can run a forward search with count exceeding max number of matches and wrapscan',
     start: ['|one two two two'],
     keysPressed: '5/tw\n',
     end: ['one two |two two'],
+  });
+
+  newTest({
+    title: 'Can run a forward search with count exceeding max number of matches and nowrapscan',
+    config: { wrapscan: false },
+    start: ['|one two two two'],
+    keysPressed: '5/tw\n',
+    end: ['|one two two two'],
+    statusBar: 'E385: Search hit BOTTOM without match for: tw',
   });
 
   // These "remembering history between editor" tests have started
@@ -936,13 +945,16 @@ suite('Motions in Normal Mode', () => {
       end: ['ab|c', 'def', 'ghi'],
     });
 
-    // TODO: this fails on Windows due to \r\n
-    newTest({
-      title: '`[count]go` goes to offset <count>, newlines disregarded',
-      start: ['abc', 'de|f', 'ghi'],
-      keysPressed: '10go',
-      end: ['abc', 'def', 'g|hi'],
-    });
+    // TODO(#4844): this fails on Windows due to \r\n
+    newTestSkip(
+      {
+        title: '`[count]go` goes to offset <count>, newlines disregarded',
+        start: ['abc', 'de|f', 'ghi'],
+        keysPressed: '10go',
+        end: ['abc', 'def', 'g|hi'],
+      },
+      process.platform === 'win32'
+    );
   });
 
   newTest({
