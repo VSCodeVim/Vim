@@ -10,13 +10,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v2
-        with:
-          # Get full history; needed for Prettier to amend commit
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2-beta
@@ -27,13 +27,10 @@ jobs:
         run: yarn install
 
       - name: Prettier
+        if: matrix.os != 'windows-latest'
         uses: creyD/prettier_action@v3.3
         with:
-          prettier_options: '--write **/*.{ts,js,json,md,yml}'
-          same_commit: true
-          only_changed: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          dry: true
 
       - name: Lint
         run: npx tslint -c tslint.json -p tsconfig.json
@@ -41,7 +38,14 @@ jobs:
       - name: Build
         run: gulp webpack
 
-      - name: Test
+      - name: Test on ubuntu-latest
+        if: matrix.os != 'windows-latest'
         run: |
           gulp prepare-test
           xvfb-run -a yarn test
+
+      - name: Test on windows-latest
+        if: matrix.os == 'windows-latest'
+        run: |
+          gulp prepare-test
+          yarn test
