@@ -157,6 +157,27 @@ suite('sneak plugin', () => {
     keysPressed: 'sab;<C-o>',
     end: ['abc abc |abc'],
   });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc ('],
+    keysPressed: 's(\n',
+    end: ['abc |('],
+  });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc %'],
+    keysPressed: 's%\n',
+    end: ['abc |%'],
+  });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc *'],
+    keysPressed: 's*\n',
+    end: ['abc |*'],
+  });
 });
 
 suite('sneakMaxLinesToConsider', () => {

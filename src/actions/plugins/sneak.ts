@@ -219,7 +219,7 @@ export abstract class SneakAction extends BaseMovement {
       }
     }
 
-    let searchRegex: RegExp = new RegExp(searchString, 'g');
+    let searchRegex: RegExp;
 
     if (configuration.sneakUseIgnorecaseAndSmartcase) {
       searchRegex = SearchUtil.generateRegexFromString(
@@ -227,6 +227,8 @@ export abstract class SneakAction extends BaseMovement {
         configuration.ignorecase,
         configuration.smartcase
       );
+    } else {
+      searchRegex = SearchUtil.generateRegexFromString(searchString, false);
     }
 
     if (!this.isRepeat) {

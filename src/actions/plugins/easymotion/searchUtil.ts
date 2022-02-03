@@ -43,10 +43,7 @@ export class SearchUtil {
     search: string | RegExp = '',
     options: SearchOptions = {}
   ): Match[] {
-    const regex =
-      typeof search === 'string'
-        ? new RegExp(search.replace(SearchUtil.SPECIAL_CHARACTER_REGEX, '\\$&'), 'g')
-        : search;
+    const regex = typeof search === 'string' ? this.generateRegexFromString(search) : search;
 
     const matches: Match[] = [];
 
@@ -97,6 +94,8 @@ export class SearchUtil {
   ) {
     const ignorecase = ignoreCaseEnabled && !(smartCaseEnabled && /[A-Z]/.test(searchString));
     const regexFlags = ignorecase ? 'gi' : 'g';
+    searchString = searchString.replace(SearchUtil.SPECIAL_CHARACTER_REGEX, '\\$&');
+
     return new RegExp(searchString, regexFlags);
   }
 }
