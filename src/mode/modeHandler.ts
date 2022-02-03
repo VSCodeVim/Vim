@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { ExCommandLine } from '../cmd_line/commandLine';
+import { SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -38,17 +38,16 @@ import { isTextTransformation } from '../transformations/transformations';
 import { executeTransformations, IModeHandler } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
-import { EditorIdentity } from '../editorIdentity';
 import { SpecialKeys } from '../util/specialKeys';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
-import { Position } from 'vscode';
+import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
 
 interface IModeHandlerMap {
-  get(editorId: EditorIdentity): ModeHandler | undefined;
+  get(editorId: Uri): ModeHandler | undefined;
 }
 
 /**
@@ -720,7 +719,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         ranAction = true;
       }
 
-      if (action.canBeRepeatedWithDot) {
+      if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
     } else if (action instanceof BaseOperator) {
@@ -752,7 +751,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = operator.canBeRepeatedWithDot;
+        ranRepeatableAction = operator.createsUndoPoint;
         ranAction = true;
       }
     }
@@ -772,13 +771,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.createUndoPointForBrackets();
 
     // Record down previous action and flush temporary state
-    if (ranRepeatableAction) {
+    if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
       globalState.previousFullAction = this.vimState.recordedState;
 
       if (recordedState.isInsertion) {
         Register.setReadonlyRegister('.', recordedState);
       }
     }
+    this.vimState.lastCommandDotRepeatable = true;
 
     // Update desiredColumn
     const preservesDesiredColumn =
@@ -1130,11 +1130,40 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
-    let searchRanges: vscode.Range[] = [];
-    if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState) ?? [];
+    const searchHighlights: vscode.DecorationOptions[] = [];
+    const searchMatches: vscode.DecorationOptions[] = [];
+    if (showHighlights && globalState.searchState) {
+      const ranges = globalState.searchState.getMatchRanges(this.vimState);
+      const matchIndex =
+        ranges.length &&
+        configuration.incsearch &&
+        this.vimState.currentMode === Mode.SearchInProgressMode &&
+        this.vimState.commandLine instanceof SearchCommandLine
+          ? this.vimState.commandLine.getCurrentMatchRange(this.vimState)?.index
+          : undefined;
+
+      for (let i = 0; i < ranges.length; i++) {
+        const range = ranges[i];
+        if (range.start.isLineEnd() && (range.isEmpty || range.end.isLineBeginning())) {
+          // range is at EOL, possibly containing EOL char(s)
+          (i === matchIndex ? searchMatches : searchHighlights).push({
+            range: range.with(undefined, range.start),
+            renderOptions: {
+              after: {
+                contentText: '$', // single non-whitespace character to trigger :after element (it'll be transparent)
+              },
+            },
+          });
+        } else {
+          (i === matchIndex ? searchMatches : searchHighlights).push(
+            // extend empty ranges right one character
+            { range: range.isEmpty ? range.with(undefined, range.end.translate(0, 1)) : range }
+          );
+        }
+      }
     }
-    this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
+    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlights);
+    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatches);
   }
 
   public async updateView(
@@ -1335,19 +1364,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (
         this.vimState.currentMode === Mode.SearchInProgressMode &&
-        globalState.searchState &&
+        this.vimState.commandLine instanceof SearchCommandLine &&
         configuration.incsearch
       ) {
-        const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-          this.vimState,
-          this.vimState.cursorStopPosition
-        );
+        const currentMatch = this.vimState.commandLine.getCurrentMatchRange(this.vimState);
 
-        if (nextMatch) {
-          this.vimState.editor.revealRange(
-            new vscode.Range(nextMatch.pos, nextMatch.pos),
-            revealType
-          );
+        if (currentMatch) {
+          this.vimState.editor.revealRange(currentMatch.range, revealType);
         } else if (this.vimState.firstVisibleLineBeforeSearch !== undefined) {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -
@@ -1533,9 +1556,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this.handlerMap
-        .get(EditorIdentity.fromEditor(editor))
-        ?.updateSearchHighlights(showHighlights);
+      this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
     }
 
     const easyMotionDimRanges =

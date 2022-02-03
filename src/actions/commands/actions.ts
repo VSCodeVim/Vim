@@ -366,7 +366,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['@', '@'];
   override runsOnceForEachCountPrefix = true;
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -389,7 +389,7 @@ class CommandExecuteMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['@', '<character>'];
   override runsOnceForEachCountPrefix = true;
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1].toLocaleLowerCase();
@@ -710,7 +710,13 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     }
 
-    await Clipboard.Copy(text);
+    const editorSelection = vimState.editor.selection;
+    const hasSelectedText = !editorSelection.active.isEqual(editorSelection.anchor);
+
+    if (hasSelectedText) {
+      await Clipboard.Copy(text);
+    }
+
     // all vim yank operations return to normal mode.
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -841,7 +847,7 @@ class CommandDot extends BaseCommand {
 class CommandRepeatSubstitution extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['&'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
@@ -870,7 +876,7 @@ abstract class CommandFold extends BaseCommand {
         ? { levels: timesToRepeat, direction: this.direction }
         : undefined;
     await vscode.commands.executeCommand(this.commandName, args);
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -1183,7 +1189,7 @@ class CommandRedo extends BaseCommand {
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['D'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override runsOnceForEveryCursor() {
     return true;
   }
@@ -1523,17 +1529,35 @@ export class CommandInsertNewLineAbove extends BaseCommand {
     await vimState.setCurrentMode(Mode.Insert);
     const count = vimState.recordedState.count || 1;
 
+    const charPos = position.getLineBeginRespectingIndent(vimState.document).character;
+
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.cursors = getCursorsAfterSync();
-    for (let i = 0; i < count; i++) {
-      const newPos = new Position(
-        vimState.cursors[0].start.line + i,
-        vimState.cursors[0].start.character
-      );
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
+    const indentAmt = Math.max(charPos - vimState.cursors[0].start.character, 0);
+
+    const firstPos = new Position(vimState.cursors[0].start.line, charPos);
+    vimState.cursors[0] = new Cursor(firstPos, firstPos);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertText',
+      text: TextEditor.setIndentationLevel('', indentAmt),
+      position: firstPos,
+      cursorIndex: 0,
+      manuallySetCursorPositions: true,
+    });
+
+    for (let i = 1; i < count; i++) {
+      const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
       vimState.cursors.push(new Cursor(newPos, newPos));
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text: TextEditor.setIndentationLevel('', indentAmt),
+        position: newPos,
+        cursorIndex: i,
+        manuallySetCursorPositions: true,
+      });
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
@@ -1555,7 +1579,7 @@ export class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.cursorStartPosition.line - i,
@@ -1863,7 +1887,7 @@ class CommandTabPrevious extends BaseCommand {
 export class ActionDeleteChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['x'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // If line is empty, do nothing
@@ -1888,7 +1912,7 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['<Del>'];
   override runsOnceForEachCountPrefix = true;
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async execCount(position: Position, vimState: VimState): Promise<void> {
     // If <del> has a count in front of it, then <del> deletes a character
@@ -1911,7 +1935,7 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
 export class ActionDeleteLastChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['X'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (position.character === 0) {
@@ -1932,7 +1956,7 @@ export class ActionDeleteLastChar extends BaseCommand {
 class ActionJoin extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['J'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override runsOnceForEachCountPrefix = false;
 
   private firstNonWhitespaceIndex(str: string): number {
@@ -2117,7 +2141,7 @@ class ActionJoinVisualBlockMode extends BaseCommand {
 class ActionJoinNoWhitespace extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'J'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
@@ -2170,7 +2194,7 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
 class ActionReplaceCharacter extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['r', '<character>'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override runsOnceForEachCountPrefix = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2236,7 +2260,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     let toInsert = this.keysPressed[1];
@@ -2316,7 +2340,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
   override runsOnceForEveryCursor() {
     return false;
   }
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     let toInsert = this.keysPressed[1];
@@ -2351,7 +2375,7 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 class ActionDeleteVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = [['d'], ['x'], ['X']];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -2386,7 +2410,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
 class ActionShiftDVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['D'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -2474,11 +2498,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteRange',
-          range: new vscode.Range(start, start.getLineEnd()),
-          collapseRange: true,
-        });
+        vimState.recordedState.transformer.delete(new vscode.Range(start, start.getLineEnd()));
         cursors.push(new Cursor(end, end));
       }
     }
@@ -2716,7 +2736,7 @@ class ActionChangeChar extends BaseCommand {
 class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['~'];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   private toggleCase(text: string): string {
     let newText = '';
@@ -2750,7 +2770,7 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 
 abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
   abstract offset: number;
   abstract staircase: boolean;
 
@@ -2997,7 +3017,7 @@ export class ActionOverrideCmdD extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -3039,7 +3059,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     });
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3057,7 +3077,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 
@@ -3075,7 +3095,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.cursors = getCursorsAfterSync();
+    vimState.cursors = getCursorsAfterSync(vimState.editor);
   }
 }
 

@@ -212,6 +212,8 @@ class Configuration implements IConfiguration {
 
   useSystemClipboard = false;
 
+  shell = '';
+
   useCtrlKeys = false;
 
   overrideCopy = true;
@@ -317,6 +319,9 @@ class Configuration implements IConfiguration {
 
   searchHighlightColor = '';
   searchHighlightTextColor = '';
+
+  searchMatchColor = '';
+  searchMatchTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,

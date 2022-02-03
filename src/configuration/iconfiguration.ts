@@ -279,6 +279,12 @@ export interface IConfiguration {
   searchHighlightTextColor: string;
 
   /**
+   * Color of current match
+   */
+  searchMatchColor: string;
+  searchMatchTextColor: string;
+
+  /**
    * Yank highlight settings.
    */
   highlightedyank: IHighlightedYankConfiguration;
@@ -441,4 +447,9 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
 }

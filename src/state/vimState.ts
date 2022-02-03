@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
 import { IEasyMotion } from '../actions/plugins/easymotion/types';
-import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
@@ -61,7 +60,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public readonly identity: EditorIdentity;
+  public readonly documentUri: vscode.Uri;
 
   public editor: vscode.TextEditor;
 
@@ -95,6 +94,12 @@ export class VimState implements vscode.Disposable {
 
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
+
+  /**
+   * Keep track of whether the last command that ran is able to be repeated
+   * with the dot command.
+   */
+  public lastCommandDotRepeatable: boolean = true;
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
@@ -307,7 +312,7 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
-    this.identity = EditorIdentity.fromEditor(editor);
+    this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
   }
