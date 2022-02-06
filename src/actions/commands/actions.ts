@@ -1536,28 +1536,32 @@ export class CommandInsertNewLineAbove extends BaseCommand {
     }
 
     vimState.cursors = getCursorsAfterSync(vimState.editor);
-    const indentAmt = Math.max(charPos - vimState.cursors[0].start.character, 0);
+    const endPos = vimState.cursors[0].start.character;
+    const indentAmt = charPos - endPos;
 
-    const firstPos = new Position(vimState.cursors[0].start.line, charPos);
-    vimState.cursors[0] = new Cursor(firstPos, firstPos);
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: TextEditor.setIndentationLevel('', indentAmt),
-      position: firstPos,
-      cursorIndex: 0,
-      manuallySetCursorPositions: true,
-    });
-
-    for (let i = 1; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
-      vimState.cursors.push(new Cursor(newPos, newPos));
-      vimState.recordedState.transformer.addTransformation({
-        type: 'insertText',
-        text: TextEditor.setIndentationLevel('', indentAmt),
-        position: newPos,
-        cursorIndex: i,
-        manuallySetCursorPositions: true,
-      });
+      if (i === 0) {
+        vimState.cursors[0] = new Cursor(newPos, newPos);
+      } else {
+        vimState.cursors.push(new Cursor(newPos, newPos));
+      }
+      if (indentAmt >= 0) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          text: TextEditor.setIndentationLevel('', indentAmt),
+          position: newPos,
+          cursorIndex: i,
+          manuallySetCursorPositions: true,
+        });
+      } else {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          cursorIndex: i,
+          range: new vscode.Range(newPos, new Position(newPos.line, endPos)),
+          manuallySetCursorPositions: true,
+        });
+      }
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;
