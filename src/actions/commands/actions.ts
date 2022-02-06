@@ -1538,8 +1538,6 @@ export class CommandInsertNewLineAbove extends BaseCommand {
     vimState.cursors = getCursorsAfterSync(vimState.editor);
     const endPos = vimState.cursors[0].start.character;
     const indentAmt = charPos - endPos;
-    console.log(charPos);
-    console.log(indentAmt);
 
     for (let i = 0; i < count; i++) {
       const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
