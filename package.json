@@ -512,6 +512,14 @@
           "type": "string",
           "markdownDescription": "Foreground color of the current match."
         },
+        "vim.substitutionColor": {
+          "type": "string",
+          "markdownDescription": "Background color of substituted text when `#editor.inccommand#` is enabled. Uses `#editor.findMatchColor#` from current theme if undefined."
+        },
+        "vim.substitutionTextColor": {
+          "type": "string",
+          "markdownDescription": "Foreground color of substituted text when `#editor.inccommand#` is enabled."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
@@ -786,6 +794,21 @@
           "type": "boolean",
           "description": "Show all matches of the most recent search pattern.",
           "default": false
+        },
+        "vim.inccommand": {
+          "type": "string",
+          "markdownDescription": "Show the effects of the `:substitute` command as you type.",
+          "default": "replace",
+          "enum": [
+            "",
+            "append",
+            "replace"
+          ],
+          "enumDescriptions": [
+            "Don't show substitutions",
+            "Show substitutions after matched text",
+            "Replace matched text with substitutions"
+          ]
         },
         "vim.incsearch": {
           "type": "boolean",
