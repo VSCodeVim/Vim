@@ -387,7 +387,7 @@ You can then add a new entry to the keybindings like so:
     }
     ```
 
-For example, if one wanted to rebind `ctrl+shift+y` to VSCodeVim's `yank line` in normal mode, one could add this to his keybindings.json:
+For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
 
     ```json
     {
