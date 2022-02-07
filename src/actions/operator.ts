@@ -19,7 +19,7 @@ export abstract class BaseOperator extends BaseAction {
     super();
     this.multicursorIndex = multicursorIndex;
   }
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
@@ -186,7 +186,7 @@ class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  override canBeRepeatedWithDot = false;
+  override createsUndoPoint = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     [start, end] = sorted(start, end);
@@ -568,7 +568,7 @@ export class ChangeOperator extends BaseOperator {
 class YankVisualBlockMode extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.VisualBlock];
-  override canBeRepeatedWithDot = false;
+  override createsUndoPoint = false;
   runsOnceForEveryCursor() {
     return false;
   }

@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { ExCommandLine } from '../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -38,17 +38,18 @@ import { isTextTransformation } from '../transformations/transformations';
 import { executeTransformations, IModeHandler } from '../transformations/execute';
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
-import { EditorIdentity } from '../editorIdentity';
 import { SpecialKeys } from '../util/specialKeys';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
-import { Position } from 'vscode';
+import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { SubstituteCommand } from '../cmd_line/commands/substitute';
 
 interface IModeHandlerMap {
-  get(editorId: EditorIdentity): ModeHandler | undefined;
+  get(editorId: Uri): ModeHandler | undefined;
 }
 
 /**
@@ -720,7 +721,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         ranAction = true;
       }
 
-      if (action.canBeRepeatedWithDot) {
+      if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
     } else if (action instanceof BaseOperator) {
@@ -752,7 +753,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (operator) {
         await this.executeOperator();
         this.vimState.recordedState.hasRunOperator = true;
-        ranRepeatableAction = operator.canBeRepeatedWithDot;
+        ranRepeatableAction = operator.createsUndoPoint;
         ranAction = true;
       }
     }
@@ -772,13 +773,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.createUndoPointForBrackets();
 
     // Record down previous action and flush temporary state
-    if (ranRepeatableAction) {
+    if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
       globalState.previousFullAction = this.vimState.recordedState;
 
       if (recordedState.isInsertion) {
         Register.setReadonlyRegister('.', recordedState);
       }
     }
+    this.vimState.lastCommandDotRepeatable = true;
 
     // Update desiredColumn
     const preservesDesiredColumn =
@@ -1130,11 +1132,21 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
-    let searchRanges: vscode.Range[] = [];
-    if (showHighlights) {
-      searchRanges = globalState.searchState?.getMatchRanges(this.vimState) ?? [];
-    }
-    this.vimState.editor.setDecorations(decoration.searchHighlight, searchRanges);
+    const {
+      searchHighlight = [],
+      searchMatch = [],
+      substitutionAppend = [],
+      substitutionReplace = [],
+    }: SearchDecorations = showHighlights
+      ? this.vimState.commandLine?.getDecorations(this.vimState) ??
+        // if there are no decorations from the command line, get decorations for previous search state
+        getDecorationsForSearchMatchRanges(globalState.searchState?.getMatchRanges(this.vimState))
+      : {};
+
+    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlight);
+    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatch);
+    this.vimState.editor.setDecorations(decoration.substitutionAppend, substitutionAppend);
+    this.vimState.editor.setDecorations(decoration.substitutionReplace, substitutionReplace);
   }
 
   public async updateView(
@@ -1335,19 +1347,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (
         this.vimState.currentMode === Mode.SearchInProgressMode &&
-        globalState.searchState &&
+        this.vimState.commandLine instanceof SearchCommandLine &&
         configuration.incsearch
       ) {
-        const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-          this.vimState,
-          this.vimState.cursorStopPosition
-        );
+        const currentMatch = this.vimState.commandLine.getCurrentMatchRange(this.vimState);
 
-        if (nextMatch) {
-          this.vimState.editor.revealRange(
-            new vscode.Range(nextMatch.pos, nextMatch.pos),
-            revealType
-          );
+        if (currentMatch) {
+          this.vimState.editor.revealRange(currentMatch.range, revealType);
         } else if (this.vimState.firstVisibleLineBeforeSearch !== undefined) {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -
@@ -1530,12 +1536,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     const showHighlights =
-      (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
+      (configuration.incsearch &&
+        (this.currentMode === Mode.SearchInProgressMode ||
+          this.currentMode === Mode.CommandlineInProgress)) ||
+      (configuration.inccommand && this.currentMode === Mode.CommandlineInProgress) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this.handlerMap
-        .get(EditorIdentity.fromEditor(editor))
-        ?.updateSearchHighlights(showHighlights);
+      this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
     }
 
     const easyMotionDimRanges =
