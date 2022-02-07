@@ -5,6 +5,8 @@ class DecorationImpl {
   private _default!: vscode.TextEditorDecorationType;
   private _searchHighlight!: vscode.TextEditorDecorationType;
   private _searchMatch!: vscode.TextEditorDecorationType;
+  private _substitutionAppend!: vscode.TextEditorDecorationType;
+  private _substitutionReplace!: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
   private _easyMotionDimIncSearch!: vscode.TextEditorDecorationType;
   private _insertModeVirtualCharacter!: vscode.TextEditorDecorationType;
@@ -30,6 +32,11 @@ class DecorationImpl {
       gutterIconSize: 'cover',
     });
   }
+
+  public readonly confirmedSubstitution = vscode.window.createTextEditorDecorationType({
+    letterSpacing: '-9999999px',
+    opacity: '0',
+  });
 
   public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -62,6 +69,28 @@ class DecorationImpl {
 
   public get searchMatch() {
     return this._searchMatch;
+  }
+
+  public set substitutionAppend(value: vscode.TextEditorDecorationType) {
+    if (this._substitutionAppend) {
+      this._substitutionAppend.dispose();
+    }
+    this._substitutionAppend = value;
+  }
+
+  public get substitutionAppend() {
+    return this._substitutionAppend;
+  }
+
+  public set substitutionReplace(value: vscode.TextEditorDecorationType) {
+    if (this._substitutionReplace) {
+      this._substitutionReplace.dispose();
+    }
+    this._substitutionReplace = value;
+  }
+
+  public get substitutionReplace() {
+    return this._substitutionReplace;
   }
 
   public get easyMotionIncSearch() {
@@ -179,6 +208,31 @@ class DecorationImpl {
       after: {
         color: 'transparent',
         backgroundColor: searchMatchBackgroundColor,
+      },
+    });
+
+    const substitutionBackgroundColor = configuration.substitutionColor
+      ? configuration.substitutionColor
+      : new vscode.ThemeColor('editor.findMatchBackground');
+
+    this.substitutionAppend = vscode.window.createTextEditorDecorationType({
+      backgroundColor: searchHighlightBackgroundColor,
+      color: configuration.searchHighlightTextColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: configuration.substitutionTextColor,
+        backgroundColor: substitutionBackgroundColor,
+      },
+    });
+
+    // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
+    this.substitutionReplace = vscode.window.createTextEditorDecorationType({
+      letterSpacing: '-9999999px',
+      opacity: '0',
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      before: {
+        color: configuration.substitutionTextColor,
+        backgroundColor: substitutionBackgroundColor,
       },
     });
 

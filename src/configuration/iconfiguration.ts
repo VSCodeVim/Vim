@@ -14,6 +14,7 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
+  silent?: boolean;
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
   commands?: Array<{ command: string; args: any[] } | string>;
@@ -248,6 +249,11 @@ export interface IConfiguration {
   history: number;
 
   /**
+   * Show substitutions while user is typing?
+   */
+  inccommand: '' | 'append' | 'replace';
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch: boolean;
@@ -283,6 +289,12 @@ export interface IConfiguration {
    */
   searchMatchColor: string;
   searchMatchTextColor: string;
+
+  /**
+   * Color of substituted text
+   */
+  substitutionColor: string;
+  substitutionTextColor: string;
 
   /**
    * Yank highlight settings.

@@ -101,6 +101,11 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
     {
       "before": ["<C-n>"],
       "commands": [":nohl"]
+    },
+    {
+      "before": ["K"],
+      "commands": ["lineBreakInsert"],
+      "silent": true
     }
   ],
   "vim.leader": "<space>",
@@ -131,6 +136,8 @@ These settings are specific to VSCodeVim.
 | vim.searchHighlightTextColor     | Foreground color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | None                                      |
 | vim.searchMatchColor             | Background color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | `findMatchBackground` ThemeColor          |
 | vim.searchMatchTextColor         | Foreground color of current search match                                                                                                                                                                                                                                                                                                                                                                                            | String  | None                                      |
+| vim.substitutionColor            | Background color of substitution text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                              | String  | "#50f01080"                               |
+| vim.substitutionTextColor        | Foreground color of substitution text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                              | String  | None                                      |
 | vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                           | Boolean | true                                      |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                          | Boolean | false                                     |
@@ -167,6 +174,7 @@ Custom remappings are defined on a per-mode basis.
 #### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`
 
 - Keybinding overrides to use for insert, normal, operatorPending and visual modes.
+- Keybinding overrides can include `"before"`, `"after"`, `"commands"`, and `"silent"`.
 - Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -178,7 +186,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `£` to goto previous whole word under cursor
+- Bind `£` to goto previous whole word under cursor:
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -189,7 +197,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `:` to show the command palette:
+- Bind `:` to show the command palette, and don't show the message on the status bar:
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -197,7 +205,8 @@ Custom remappings are defined on a per-mode basis.
             "before": [":"],
             "commands": [
                 "workbench.action.showCommands",
-            ]
+            ],
+            "silent": true
         }
     ]
 ```
@@ -240,7 +249,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively.
+- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindings": [
@@ -251,7 +260,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `y$` and `d^` respectively.
+- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `y$` and `d^` respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindings": [
@@ -266,7 +275,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
+- Bind `>` and `<` in visual mode to indent/outdent lines (repeatable):
 
 ```json
     "vim.visualModeKeyBindings": [
@@ -289,7 +298,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `<leader>vim` to clone this repository to the selected location.
+- Bind `<leader>vim` to clone this repository to the selected location:
 
 ```json
     "vim.visualModeKeyBindings": [
@@ -310,7 +319,7 @@ Custom remappings are defined on a per-mode basis.
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`
 
 - Non-recursive keybinding overrides to use for insert, normal, and visual modes
-- _Example:_ Exchange the meaning of two keys like `j` to `k` and `k` to `j` to exchange the cursor up and down commands. Notice that if you attempted this binding normally, the `j` would be replaced with `k` and the `k` would be replaced with `j`, on and on forever. When this happens 'maxmapdepth' times (default 1000) the error message 'E223 Recursive Mapping' will be thrown. Stop this recursive expansion using the NonRecursive variation of the keybindings.
+- _Example:_ Exchange the meaning of two keys like `j` to `k` and `k` to `j` to exchange the cursor up and down commands. Notice that if you attempted this binding normally, the `j` would be replaced with `k` and the `k` would be replaced with `j`, on and on forever. When this happens 'maxmapdepth' times (default 1000) the error message 'E223 Recursive Mapping' will be thrown. Stop this recursive expansion using the NonRecursive variation of the keybindings:
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -325,7 +334,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively.
+- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindingsNonRecursive": [
@@ -336,7 +345,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `p` in visual mode to paste without overriding the current register
+- Bind `p` in visual mode to paste without overriding the current register:
 
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
@@ -423,6 +432,7 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 | vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                   | Boolean | false                                                          |
 | vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                | Boolean | true                                                           |
 | vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                   | Boolean | true                                                           |
+| vim.inccommand   | Show the effects of the `:substitute` command while typing                                                                                                                                                                                                    | String  | `replace`                                                      |
 | vim.joinspaces   | Add two spaces after '.', '?', and '!' when joining or reformatting                                                                                                                                                                                           | Boolean | true                                                           |
 | vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                       | String  | `\`                                                            |
 | vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done. | Number  | 1000                                                           |

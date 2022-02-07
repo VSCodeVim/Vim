@@ -63,7 +63,7 @@ type SetOperation =
     };
 
 const optionParser = regexp(/[a-z]+/);
-const valueParser = regexp(/\S+/);
+const valueParser = regexp(/\S*/);
 const setOperationParser: Parser<SetOperation> = whitespace
   .then(
     alt<SetOperation>(

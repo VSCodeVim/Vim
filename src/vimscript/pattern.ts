@@ -1,5 +1,5 @@
 import { escapeRegExp } from 'lodash';
-import { alt, any, lazy, noneOf, oneOf, Parser, seq, string } from 'parsimmon';
+import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
@@ -41,6 +41,7 @@ export class Pattern {
   public readonly regex: RegExp;
   public readonly ignorecase: boolean | undefined;
   public readonly inSelection: boolean;
+  public readonly closed: boolean; // was an ending delimiter present?
 
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
@@ -195,44 +196,44 @@ export class Pattern {
       ? '/'
       : '?';
     // TODO: Some escaped characters need special treatment
-    return alt(
-      string('\\%V').map((_) => ({ inSelection: true })),
-      string('$').map(() => '(?:$(?<!\\r))'), // prevents matching \r\n as two lines
-      string('^').map(() => '(?:^(?<!\\r))'), // prevents matching \r\n as two lines
-      string('\\')
-        .then(any.fallback(undefined))
-        .map((escaped) => {
-          if (escaped === undefined) {
-            return '\\\\';
-          } else if (escaped === delimiter) {
-            return delimiter;
-          } else if (escaped === 'c') {
-            return { ignorecase: true };
-          } else if (escaped === 'C') {
-            return { ignorecase: false };
-          } else if (escaped === '<' || escaped === '>') {
-            // TODO: not QUITE the same
-            return '\\b';
-          } else if (escaped === 'n') {
-            return '\\r?\\n';
-          }
-          return '\\' + escaped;
-        }),
+    return seqMap(
       alt(
-        // Allow unescaped delimiter inside [], and don't transform ^ or $
+        string('\\%V').map((_) => ({ inSelection: true })),
+        string('$').map(() => '(?:$(?<!\\r))'), // prevents matching \r\n as two lines
+        string('^').map(() => '(?:^(?<!\\r))'), // prevents matching \r\n as two lines
         string('\\')
           .then(any.fallback(undefined))
-          .map((escaped) => '\\' + (escaped ?? '\\')),
-        noneOf(']')
-      )
-        .many()
-        .wrap(string('['), string(']'))
-        .map((result) => '[' + result.join('') + ']'),
-      noneOf(delimiter)
-    )
-      .many()
-      .skip(string(delimiter).fallback(undefined))
-      .map((atoms) => {
+          .map((escaped) => {
+            if (escaped === undefined) {
+              return '\\\\';
+            } else if (escaped === delimiter) {
+              return delimiter;
+            } else if (escaped === 'c') {
+              return { ignorecase: true };
+            } else if (escaped === 'C') {
+              return { ignorecase: false };
+            } else if (escaped === '<' || escaped === '>') {
+              // TODO: not QUITE the same
+              return '\\b';
+            } else if (escaped === 'n') {
+              return '\\r?\\n';
+            }
+            return '\\' + escaped;
+          }),
+        alt(
+          // Allow unescaped delimiter inside [], and don't transform ^ or $
+          string('\\')
+            .then(any.fallback(undefined))
+            .map((escaped) => '\\' + (escaped ?? '\\')),
+          noneOf(']')
+        )
+          .many()
+          .wrap(string('['), string(']'))
+          .map((result) => '[' + result.join('') + ']'),
+        noneOf(delimiter)
+      ).many(),
+      string(delimiter).fallback(undefined),
+      (atoms, delim) => {
         let patternString = '';
         let caseOverride: boolean | undefined;
         let inSelection: boolean | undefined;
@@ -253,20 +254,22 @@ export class Pattern {
           patternString,
           caseOverride,
           inSelection,
+          closed: delim !== undefined,
         };
-      })
-      .map(({ patternString, caseOverride, inSelection }) => {
-        const ignoreCase = Pattern.getIgnoreCase(patternString, {
-          caseOverride,
-          ignoreSmartcase: args.ignoreSmartcase ?? false,
-        });
-        return new Pattern(
-          patternString,
-          args.direction,
-          Pattern.compileRegex(patternString, ignoreCase),
-          inSelection
-        );
+      }
+    ).map(({ patternString, caseOverride, inSelection, closed }) => {
+      const ignoreCase = Pattern.getIgnoreCase(patternString, {
+        caseOverride,
+        ignoreSmartcase: args.ignoreSmartcase ?? false,
       });
+      return new Pattern(
+        patternString,
+        args.direction,
+        Pattern.compileRegex(patternString, ignoreCase),
+        inSelection,
+        closed
+      );
+    });
   }
 
   private static getIgnoreCase(
@@ -285,13 +288,15 @@ export class Pattern {
     patternString: string,
     direction: SearchDirection,
     regex: RegExp,
-    inSelection: boolean = false
+    inSelection: boolean = false,
+    closed: boolean = false
   ) {
     this.patternString = patternString;
     this.direction = direction;
     // TODO: Recalculate ignorecase if relevant config changes?
     this.regex = regex;
     this.inSelection = inSelection;
+    this.closed = closed;
   }
 }
 

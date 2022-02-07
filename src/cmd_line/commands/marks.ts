@@ -34,8 +34,8 @@ export class MarksCommand extends ExCommand {
     .many()
     .map((marks) => new MarksCommand(marks));
 
-  private marksFilter?: string[];
-  constructor(marksFilter?: string[]) {
+  private marksFilter: string[];
+  constructor(marksFilter: string[]) {
     super();
     this.marksFilter = marksFilter;
   }
@@ -44,7 +44,7 @@ export class MarksCommand extends ExCommand {
     const quickPickItems: MarkQuickPickItem[] = vimState.historyTracker
       .getMarks()
       .filter((mark) => {
-        return !this.marksFilter || this.marksFilter.includes(mark.name);
+        return this.marksFilter.length === 0 || this.marksFilter.includes(mark.name);
       })
       .map((mark) => new MarkQuickPickItem(vimState, mark));
 
