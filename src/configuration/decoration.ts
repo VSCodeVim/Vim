@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
 class DecorationImpl {
-  private _default!: vscode.TextEditorDecorationType;
+  private _visualModeCursor!: vscode.TextEditorDecorationType;
   private _searchHighlight!: vscode.TextEditorDecorationType;
   private _searchMatch!: vscode.TextEditorDecorationType;
   private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
@@ -31,15 +31,15 @@ class DecorationImpl {
     });
   }
 
-  public set default(value: vscode.TextEditorDecorationType) {
-    if (this._default) {
-      this._default.dispose();
+  public set visualModeCursor(value: vscode.TextEditorDecorationType) {
+    if (this._visualModeCursor) {
+      this._visualModeCursor.dispose();
     }
-    this._default = value;
+    this._visualModeCursor = value;
   }
 
-  public get default() {
-    return this._default;
+  public get visualModeCursor() {
+    return this._visualModeCursor;
   }
 
   public set searchHighlight(value: vscode.TextEditorDecorationType) {
@@ -140,18 +140,14 @@ class DecorationImpl {
   }
 
   public load(configuration: IConfiguration) {
-    this.default = vscode.window.createTextEditorDecorationType({
+    this.visualModeCursor = vscode.window.createTextEditorDecorationType({
       backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
-      borderColor: new vscode.ThemeColor('editorCursor.foreground'),
-      dark: {
-        color: 'rgb(81,80,82)',
-      },
-      light: {
-        // used for light colored themes
-        color: 'rgb(255, 255, 255)',
-      },
-      borderStyle: 'solid',
-      borderWidth: '1px',
+      // We make the color of text 'white' -> rgb(255,255,255), because when using the mix-blend-mode
+      // with 'difference' it subtracts the darker color from the lightest color which means we will
+      // subtract the 'editorCursor.foreground' from 'white' (255,255,255) leaving us with the opposite
+      // color of 'editorCursor.foreground'. This is the same thing that vscode does! So the color
+      // should be very similar to vscode's block cursor.
+      color: 'white; mix-blend-mode: difference;',
     });
 
     const searchHighlightBackgroundColor = configuration.searchHighlightColor

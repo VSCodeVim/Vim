@@ -1414,11 +1414,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
     this.vimState.editor.options.cursorStyle = cursorStyle;
 
-    // cursor block
+    // Visual mode cursor block
     const cursorRange: vscode.Range[] = [];
     if (
       getCursorType(this.vimState, this.currentMode) === VSCodeVimCursorType.TextDecoration &&
-      this.currentMode !== Mode.Insert
+      isVisualMode(this.currentMode)
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
@@ -1437,7 +1437,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    this.vimState.editor.setDecorations(decoration.default, cursorRange);
+    this.vimState.editor.setDecorations(decoration.visualModeCursor, cursorRange);
 
     // Insert Mode virtual characters: used to temporarily show the remapping pressed keys on
     // insert mode, to show the `"` character after pressing `<C-r>`, and to show `?` and the
