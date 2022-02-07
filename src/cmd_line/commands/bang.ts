@@ -1,16 +1,23 @@
-import { Position, Range } from 'vscode';
-import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { PositionDiff } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
+import { LineRange } from '../../vimscript/lineRange';
+import { ExCommand } from '../../vimscript/exCommand';
+import { all, Parser } from 'parsimmon';
 
-export interface IBangCommandArguments extends node.ICommandArgs {
+export interface IBangCommandArguments {
   command: string;
 }
 
-export class BangCommand extends node.CommandBase {
-  protected _arguments: IBangCommandArguments;
+export class BangCommand extends ExCommand {
+  public static readonly argParser: Parser<BangCommand> = all.map(
+    (command) =>
+      new BangCommand({
+        command,
+      })
+  );
 
+  protected _arguments: IBangCommandArguments;
   constructor(args: IBangCommandArguments) {
     super();
     this._arguments = args;
@@ -36,13 +43,11 @@ export class BangCommand extends node.CommandBase {
     await externalCommand.run(this._arguments.command);
   }
 
-  override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [startLine, endLine] = range.resolve(vimState);
-    const start = new Position(startLine, 0);
-    const end = new Position(endLine, 0).getLineEnd();
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const resolvedRange = range.resolveToRange(vimState);
 
     // pipe in stdin from lines in range
-    const input = vimState.document.getText(new Range(start, end));
+    const input = vimState.document.getText(resolvedRange);
     const output = await externalCommand.run(this._arguments.command, input);
 
     // place cursor at the start of the replaced text and first non-whitespace character
@@ -51,7 +56,7 @@ export class BangCommand extends node.CommandBase {
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
       text: output,
-      range: new Range(start, end),
+      range: resolvedRange,
       diff,
     });
   }

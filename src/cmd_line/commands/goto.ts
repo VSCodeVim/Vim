@@ -1,24 +1,16 @@
-import { ErrorCode, VimError } from '../../error';
+import { optWhitespace, Parser } from 'parsimmon';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
-import { Scanner } from '../scanner';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
+import { numberParser } from '../../vimscript/parserUtils';
 
-export class GotoCommand extends node.CommandBase {
-  public static parse(args: string): GotoCommand {
-    if (args.trim() === '') {
-      return new GotoCommand();
-    }
-
-    const scanner = new Scanner(args);
-    const offset = parseInt(scanner.nextWord(), 10);
-    if (isNaN(offset)) {
-      throw VimError.fromCode(ErrorCode.TrailingCharacters);
-    }
-    return new GotoCommand(offset);
-  }
+export class GotoCommand extends ExCommand {
+  public static readonly argParser: Parser<GotoCommand> = optWhitespace
+    .then(numberParser.fallback(undefined))
+    .map((count) => new GotoCommand(count));
 
   private offset?: number;
-  private constructor(offset?: number) {
+  constructor(offset?: number) {
     super();
     this.offset = offset;
   }
@@ -31,10 +23,9 @@ export class GotoCommand extends node.CommandBase {
     this.gotoOffset(vimState, this.offset ?? 0);
   }
 
-  public override async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
+  public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     if (this.offset === undefined) {
-      // TODO: this isn't perfect (% for instance), but does anyone care?
-      this.offset = range.resolve(vimState, false)[1];
+      this.offset = range.resolve(vimState)?.end ?? 0;
     }
     this.gotoOffset(vimState, this.offset);
   }

@@ -10,19 +10,17 @@ export enum WordType {
   FileName,
 }
 
-const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword);
 const nonBigWordCharRegex = makeWordRegex('');
-const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword);
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
 
 function regexForWordType(wordType: WordType): RegExp {
   switch (wordType) {
     case WordType.Normal:
-      return nonWordCharRegex;
+      return makeUnicodeWordRegex(configuration.iskeyword);
     case WordType.Big:
       return nonBigWordCharRegex;
     case WordType.CamelCase:
-      return nonCamelCaseWordCharRegex;
+      return makeCamelCaseWordRegex(configuration.iskeyword);
     case WordType.FileName:
       return nonFileNameRegex;
   }

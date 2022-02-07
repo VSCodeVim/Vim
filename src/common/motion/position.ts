@@ -25,6 +25,8 @@ enum PositionDiffType {
   ExactCharacter,
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   ObeyStartOfLine,
+  /** Brings the Position to the end of the line */
+  EndOfLine,
 }
 
 /**
@@ -58,8 +60,13 @@ export class PositionDiff {
   }
 
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
-  public static startOfLine(lineOffset?: number): PositionDiff {
-    return new PositionDiff(PositionDiffType.ObeyStartOfLine, lineOffset ?? 0, 0);
+  public static startOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.ObeyStartOfLine, 0, 0);
+  }
+
+  /** Brings the Position to the end of the line */
+  public static endOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.EndOfLine, 0, 0);
   }
 
   /** Offsets the Position's line and sets its character exactly */
@@ -83,6 +90,8 @@ export class PositionDiff {
         return `[ Diff: ExactPosition ${this.line} ${this.character} ]`;
       case PositionDiffType.ObeyStartOfLine:
         return `[ Diff: ObeyStartOfLine ${this.line} ]`;
+      case PositionDiffType.EndOfLine:
+        return `[ Diff: EndOfLine ${this.line} ]`;
       default:
         const guard: never = this.type;
         throw new Error(`Unknown PositionDiffType: ${this.type}`);
@@ -269,7 +278,9 @@ Position.prototype.add = function (
   } else if (diff.type === PositionDiffType.ExactCharacter) {
     resultChar = diff.character;
   } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
-    resultChar = this.with({ line: resultLine }).obeyStartOfLine(document).character;
+    resultChar = this.obeyStartOfLine(document).character;
+  } else if (diff.type === PositionDiffType.EndOfLine) {
+    resultChar = this.getLineEnd().character;
   } else {
     throw new Error(`Unknown PositionDiffType: ${diff.type}`);
   }

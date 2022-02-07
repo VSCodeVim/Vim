@@ -1,5 +1,4 @@
-import * as vscode from 'vscode';
-import { IKeyRemapping, IVimrcKeyRemapping } from './iconfiguration';
+import { IVimrcKeyRemapping } from './iconfiguration';
 
 class VimrcKeyRemappingBuilderImpl {
   /**

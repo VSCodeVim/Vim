@@ -49,7 +49,10 @@ export class SelectWord extends TextObject {
     let stop: Position;
     const currentChar = TextEditor.getCharAt(vimState.document, position);
 
-    if (/\s/.test(currentChar)) {
+    if (currentChar === undefined) {
+      start = position;
+      stop = position.nextWordEnd(vimState.document);
+    } else if (/\s/.test(currentChar)) {
       start = position.prevWordEnd(vimState.document).getRight();
       stop = position.nextWordEnd(vimState.document);
     } else {
@@ -111,7 +114,10 @@ export class SelectABigWord extends TextObject {
 
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
-    if (/\s/.test(currentChar)) {
+    if (currentChar === undefined) {
+      start = position;
+      stop = position.nextWordEnd(vimState.document);
+    } else if (/\s/.test(currentChar)) {
       start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
       stop = position.nextWordEnd(vimState.document, { wordType: WordType.Big });
     } else {
@@ -180,7 +186,12 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
   override modes = [Mode.Visual, Mode.VisualLine];
 
-  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
     const blocks = [
       new MoveAroundDoubleQuotes(),
       new MoveAroundSingleQuotes(),
@@ -199,7 +210,7 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         vimState.cursorStartPosition.line,
         vimState.cursorStartPosition.character
       );
-      ranges.push(await block.execAction(cursorPos, vimState));
+      ranges.push(await block.execAction(cursorPos, vimState, firstIteration, lastIteration));
       vimState.cursorStartPosition = cursorStartPos;
     }
 
@@ -280,7 +291,10 @@ export class SelectInnerWord extends TextObject {
     let stop: Position;
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
-    if (/\s/.test(currentChar)) {
+    if (currentChar === undefined) {
+      start = position;
+      stop = position.nextWordStart(vimState.document).getLeftThroughLineBreaks();
+    } else if (/\s/.test(currentChar)) {
       start = position.prevWordEnd(vimState.document).getRight();
       stop = position.nextWordStart(vimState.document).getLeftThroughLineBreaks();
     } else {
@@ -321,7 +335,10 @@ export class SelectInnerBigWord extends TextObject {
     let stop: Position;
     const currentChar = vimState.document.lineAt(position).text[position.character];
 
-    if (/\s/.test(currentChar)) {
+    if (currentChar === undefined) {
+      start = position;
+      stop = position.nextWordStart(vimState.document).getLeftThroughLineBreaks();
+    } else if (/\s/.test(currentChar)) {
       start = position.prevWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
       stop = position.nextWordStart(vimState.document, { wordType: WordType.Big }).getLeft();
     } else {

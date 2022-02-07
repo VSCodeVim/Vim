@@ -1,10 +1,12 @@
-import { CommandBase, ICommandArgs } from '../node';
 import { VimState } from '../../state/vimState';
 import {
   CommandShowSearchHistory,
   CommandShowCommandHistory,
 } from '../../actions/commands/actions';
-import { SearchDirection } from '../../state/searchState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { SearchDirection } from '../../vimscript/pattern';
+import { alt, optWhitespace, Parser, string } from 'parsimmon';
+import { nameAbbrevParser } from '../../vimscript/parserUtils';
 
 export enum HistoryCommandType {
   Cmd,
@@ -15,16 +17,27 @@ export enum HistoryCommandType {
   All,
 }
 
-export interface IHistoryCommandArguments extends ICommandArgs {
+const historyTypeParser: Parser<HistoryCommandType> = alt(
+  alt(nameAbbrevParser('c', 'md'), string(':')).result(HistoryCommandType.Cmd),
+  alt(nameAbbrevParser('s', 'earch'), string('/')).result(HistoryCommandType.Search),
+  alt(nameAbbrevParser('e', 'xpr'), string('=')).result(HistoryCommandType.Expr),
+  alt(nameAbbrevParser('i', 'nput'), string('@')).result(HistoryCommandType.Input),
+  alt(nameAbbrevParser('d', 'ebug'), string('>')).result(HistoryCommandType.Debug),
+  nameAbbrevParser('a', 'll').result(HistoryCommandType.All)
+);
+
+export interface IHistoryCommandArguments {
   type: HistoryCommandType;
-  // TODO: :history can accept multiple types
   // TODO: :history can also accept a range
 }
 
 // http://vimdoc.sourceforge.net/htmldoc/cmdline.html#:history
-export class HistoryCommand extends CommandBase {
-  private readonly arguments: IHistoryCommandArguments;
+export class HistoryCommand extends ExCommand {
+  public static readonly argParser: Parser<HistoryCommand> = optWhitespace
+    .then(historyTypeParser.fallback(HistoryCommandType.Cmd))
+    .map((type) => new HistoryCommand({ type }));
 
+  private readonly arguments: IHistoryCommandArguments;
   constructor(args: IHistoryCommandArguments) {
     super();
     this.arguments = args;

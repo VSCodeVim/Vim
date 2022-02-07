@@ -90,20 +90,20 @@ export async function unlink(path: string): Promise<void> {
   fs.unlinkSync(path);
 }
 
-export async function readFileAsync(path: string, encoding: string): Promise<string> {
+export async function readFileAsync(path: string, encoding: BufferEncoding): Promise<string> {
   return promisify(fs.readFile)(path, encoding);
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
-  return promisify(fs.mkdir)(path, options);
+  await promisify(fs.mkdir)(path, options);
 }
 
 export async function writeFileAsync(
   path: string,
   content: string,
-  encoding: string
+  encoding: BufferEncoding
 ): Promise<void> {
-  return promisify(fs.writeFile)(path, content, encoding);
+  await promisify(fs.writeFile)(path, content, encoding);
 }
 
 export async function accessAsync(path: string, mode: number) {
@@ -112,6 +112,16 @@ export async function accessAsync(path: string, mode: number) {
 
 export async function chmodAsync(path: string, mode: string | number) {
   return promisify(fs.chmod)(path, mode);
+}
+
+export async function getMode(path: string): Promise<number> {
+  const pathMode = await fs.promises
+    .stat(path)
+    .then((stat) => stat.mode)
+    .catch((e) => {
+      throw e;
+    });
+  return pathMode;
 }
 
 export function unlinkSync(path: string) {

@@ -162,11 +162,11 @@ export class NeovimWrapper implements vscode.Disposable {
     // We only copy over " register for now, due to our weird handling of macros.
     const reg = await Register.get('"');
     if (reg) {
-      const vsRegTovimReg = [undefined, 'c', 'l', 'b'];
+      const vsRegTovimReg = ['c', 'l', 'b'];
       await this.nvim.callFunction('setreg', [
         '"',
         reg.text as string,
-        vsRegTovimReg[vimState.effectiveRegisterMode] as string,
+        vsRegTovimReg[vimState.currentRegisterMode],
       ]);
     }
   }

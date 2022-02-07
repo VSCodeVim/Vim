@@ -1,10 +1,10 @@
 import { window, QuickPickItem } from 'vscode';
 
-import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { globalState } from '../../state/globalState';
 import { Jump } from '../../jumps/jump';
 import { Cursor } from '../../common/motion/cursor';
+import { ExCommand } from '../../vimscript/exCommand';
 
 class JumpPickItem implements QuickPickItem {
   jump: Jump;
@@ -27,9 +27,7 @@ class JumpPickItem implements QuickPickItem {
   }
 }
 
-export class JumpsCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
-
+export class JumpsCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     if (jumpTracker.hasJumps) {
@@ -47,9 +45,7 @@ export class JumpsCommand extends node.CommandBase {
   }
 }
 
-export class ClearJumpsCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
-
+export class ClearJumpsCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();

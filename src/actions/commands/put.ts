@@ -20,7 +20,7 @@ function firstNonBlankChar(text: string): number {
 
 abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);

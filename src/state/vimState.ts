@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
 import { IEasyMotion } from '../actions/plugins/easymotion/types';
-import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
@@ -14,6 +13,7 @@ import { ReplaceState } from './../state/replaceState';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
+import { CommandLine } from '../cmd_line/commandLine';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -60,7 +60,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public identity: EditorIdentity;
+  public readonly documentUri: vscode.Uri;
 
   public editor: vscode.TextEditor;
 
@@ -95,7 +95,11 @@ export class VimState implements vscode.Disposable {
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
 
-  public alteredHistory = false;
+  /**
+   * Keep track of whether the last command that ran is able to be repeated
+   * with the dot command.
+   */
+  public lastCommandDotRepeatable: boolean = true;
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
@@ -109,9 +113,6 @@ export class VimState implements vscode.Disposable {
    * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
    */
   public firstVisibleLineBeforeSearch: number | undefined = undefined;
-
-  // TODO: move into ModeHandler
-  public focusChanged = false;
 
   public surround: SurroundState | undefined = undefined;
 
@@ -197,7 +198,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelection:
     | {
-        mode: Mode;
+        mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
         start: Position;
         end: Position;
       }
@@ -244,7 +245,7 @@ export class VimState implements vscode.Disposable {
    * use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.isOperatorPending(this._currentMode)
+    return this.recordedState.getOperatorState(this._currentMode) === 'pending'
       ? Mode.OperatorPendingMode
       : this._currentMode;
   }
@@ -275,11 +276,17 @@ export class VimState implements vscode.Disposable {
     }
   }
 
-  public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
-
-  public get effectiveRegisterMode(): RegisterMode {
-    if (this.currentRegisterMode !== RegisterMode.AscertainFromCurrentMode) {
-      return this.currentRegisterMode;
+  /**
+   * The currently active `RegisterMode`.
+   *
+   * When setting, `undefined` means "default for current `Mode`".
+   */
+  public set currentRegisterMode(registerMode: RegisterMode | undefined) {
+    this._currentRegisterMode = registerMode;
+  }
+  public get currentRegisterMode(): RegisterMode {
+    if (this._currentRegisterMode) {
+      return this._currentRegisterMode;
     }
     switch (this.currentMode) {
       case Mode.VisualLine:
@@ -290,9 +297,9 @@ export class VimState implements vscode.Disposable {
         return RegisterMode.CharacterWise;
     }
   }
+  private _currentRegisterMode: RegisterMode | undefined;
 
-  public currentCommandlineText = '';
-  public statusBarCursorCharacterPos = 0;
+  public commandLine: CommandLine | undefined;
 
   public recordedState = new RecordedState();
 
@@ -305,7 +312,7 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
-    this.identity = EditorIdentity.fromEditor(editor);
+    this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
   }

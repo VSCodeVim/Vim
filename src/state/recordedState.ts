@@ -7,26 +7,17 @@ import type { VimState } from './vimState';
 import { Position } from 'vscode';
 
 /**
- * The RecordedState class holds the current action that the user is
- * doing. Example: Imagine that the user types:
+ * Much of Vim's power comes from the composition of individual actions.
  *
- * 5"qdw
+ * RecordedState holds the state associated with a sequence of actions,
+ * generally beginning and ending in Normal mode.
  *
- * Then the relevant state would be
- *   * count of 5
- *   * copy into q register
- *   * delete operator
- *   * word movement
+ * For example, each of these action sequences would be combined into a single RecordedState:
+ *   - 5"xyw      (yank 5 words into the 'x' register)
+ *   - Axyz<Esc>  (append 'xyz' to end of line)
+ *   - Vjj~       (reverse case of next 3 lines)
  *
- *
- * Or imagine the user types:
- *
- * vw$}}d
- *
- * Then the state would be
- *   * Visual mode action
- *   * (a list of all the motions you ran)
- *   * delete operator
+ * The last action (for dot-repeating), macros, and a few other things are RecordedStates.
  */
 export class RecordedState {
   constructor() {
@@ -151,14 +142,6 @@ export class RecordedState {
    */
   public actionsRunPressedKeys: string[] = [];
 
-  public getLastActionRun(): IBaseAction | undefined {
-    if (this.actionsRun.length === 0) {
-      return;
-    }
-
-    return this.actionsRun[this.actionsRun.length - 1];
-  }
-
   /**
    * Every key that was buffered to wait for a new key or the timeout to finish
    * in order to get another potential remap or to solve an ambiguous remap.
@@ -227,10 +210,6 @@ export class RecordedState {
     return list[0];
   }
 
-  public get hasRunAMovement(): boolean {
-    return this.actionsRun.some((a) => a.isMotion);
-  }
-
   /**
    * The number of times the user wants to repeat this action.
    */
@@ -249,6 +228,13 @@ export class RecordedState {
    */
   public registerName: string;
 
+  /**
+   * The key used to access the register with `registerName`
+   * Example: if 'q5' then key=5 and name=5
+   * Or:      if 'qA' then key=A and name=a
+   */
+  public registerKey: string = '';
+
   public clone(): RecordedState {
     const res = new RecordedState();
 
@@ -261,48 +247,47 @@ export class RecordedState {
     return res;
   }
 
-  public operatorReadyToExecute(mode: Mode): boolean {
-    // Visual modes do not require a motion -- they ARE the motion.
-    return (
-      this.operator !== undefined &&
-      !this.hasRunOperator &&
-      mode !== Mode.SearchInProgressMode &&
-      mode !== Mode.CommandlineInProgress &&
-      (this.hasRunAMovement ||
-        isVisualMode(mode) ||
-        (this.operators.length > 1 &&
-          this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
-    );
-  }
+  public getOperatorState(mode: Mode): 'pending' | 'ready' | undefined {
+    // Do we have an operator that hasn't been run yet?
+    if (
+      this.operator === undefined ||
+      this.hasRunOperator ||
+      // TODO: Is this mode check necessary?
+      mode === Mode.SearchInProgressMode ||
+      mode === Mode.CommandlineInProgress
+    ) {
+      return undefined;
+    }
 
-  public isOperatorPending(mode: Mode): boolean {
-    // Visual modes do not require a motion -- they ARE the motion.
-    return (
-      this.operator !== undefined &&
-      !this.hasRunOperator &&
-      mode !== Mode.SearchInProgressMode &&
-      mode !== Mode.CommandlineInProgress &&
-      !(
-        this.hasRunAMovement ||
-        isVisualMode(mode) ||
-        (this.operators.length > 1 &&
-          this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor)
-      )
-    );
+    // We've got an operator - do we also have a motion or visual selection to operate on?
+    if (this.actionsRun.some((a) => a.isMotion) || isVisualMode(mode)) {
+      return 'ready';
+    }
+
+    // TODO: I don't think reversing is necessary - can't there only ever be two operators?
+    // This case is for a "repeated" operator (such as `dd` or `yy`)
+    if (
+      this.operators.length > 1 &&
+      this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor
+    ) {
+      return 'ready';
+    }
+
+    return 'pending';
   }
 }
 
 export interface IBaseAction {
-  isMotion: boolean;
-  isOperator: boolean;
-  isCommand: boolean;
-  isJump: boolean;
-  canBeRepeatedWithDot: boolean;
+  readonly isMotion: boolean;
+  readonly isOperator: boolean;
+  readonly isCommand: boolean;
+  readonly isJump: boolean;
+  readonly createsUndoPoint: boolean;
 
   keysPressed: string[];
   multicursorIndex: number | undefined;
 
-  preservesDesiredColumn(): boolean;
+  readonly preservesDesiredColumn: boolean;
 }
 
 export interface IBaseCommand extends IBaseAction {

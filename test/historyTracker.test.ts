@@ -79,7 +79,7 @@ suite('historyTracker unit tests', () => {
       if (mark !== undefined) {
         assert.strictEqual(mark.position, position);
         assert.strictEqual(mark.isUppercaseMark, false);
-        assert.strictEqual(mark.editor, undefined);
+        assert.strictEqual(mark.document, undefined);
       }
     });
 
@@ -91,7 +91,7 @@ suite('historyTracker unit tests', () => {
       if (mark !== undefined) {
         assert.strictEqual(mark.position, position);
         assert.strictEqual(mark.isUppercaseMark, true);
-        assert.strictEqual(mark.editor, activeTextEditor);
+        assert.strictEqual(mark.document, activeTextEditor.document);
       }
     });
 

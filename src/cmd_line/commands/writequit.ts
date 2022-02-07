@@ -1,53 +1,42 @@
+import { optWhitespace, Parser, regexp, seq } from 'parsimmon';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
-import * as quit from './quit';
-import * as write from './write';
+import { ExCommand } from '../../vimscript/exCommand';
+import { bangParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { QuitCommand } from './quit';
+import { WriteCommand } from './write';
 
 //
 // Implements :writequit
 // http://vimdoc.sourceforge.net/htmldoc/editing.html#write-quit
 //
-export interface IWriteQuitCommandArguments extends node.ICommandArgs {
-  // arguments
-  // [++opt]
-  opt?: string;
-  optValue?: string;
-  // wq! [++opt]
-  bang?: boolean;
-  // wq [++opt] {file}
+export interface IWriteQuitCommandArguments {
+  bang: boolean;
+  opt: FileOpt;
   file?: string;
-  // wq! [++opt] {file}
-  // [range]wq[!] [++opt] [file]
-  range?: node.LineRange;
 }
 
-export class WriteQuitCommand extends node.CommandBase {
-  private readonly arguments: IWriteQuitCommandArguments;
+export class WriteQuitCommand extends ExCommand {
+  public static readonly argParser: Parser<WriteQuitCommand> = seq(
+    bangParser.skip(optWhitespace),
+    fileOptParser.skip(optWhitespace),
+    regexp(/\S+/).fallback(undefined)
+  ).map(([bang, opt, file]) => new WriteQuitCommand(file ? { bang, opt, file } : { bang, opt }));
 
+  public override isRepeatableWithDot = false;
+
+  private readonly args: IWriteQuitCommandArguments;
   constructor(args: IWriteQuitCommandArguments) {
     super();
-    this.arguments = args;
+    this.args = args;
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
   async execute(vimState: VimState): Promise<void> {
-    const writeArgs: write.IWriteCommandArguments = {
-      opt: this.arguments.opt,
-      optValue: this.arguments.optValue,
-      bang: this.arguments.bang,
-      file: this.arguments.file,
-      range: this.arguments.range,
-    };
+    await new WriteCommand({ bgWrite: false, ...this.args }).execute(vimState);
 
-    const writeCmd = new write.WriteCommand(writeArgs);
-    await writeCmd.execute(vimState);
-    const quitArgs: quit.IQuitCommandArguments = {
+    await new QuitCommand({
       // wq! fails when no file name is provided
       bang: false,
-      range: this.arguments.range,
-    };
-
-    const quitCmd = new quit.QuitCommand(quitArgs);
-    await quitCmd.execute(vimState);
+    }).execute(vimState);
   }
 }

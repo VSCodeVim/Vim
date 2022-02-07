@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 import { Mode } from './mode/mode';
-import { globalState } from './state/globalState';
-import { SearchDirection } from './state/searchState';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { Logger } from './util/logger';
@@ -99,7 +97,11 @@ class StatusBarImpl implements vscode.Disposable {
 
     const text: string[] = [];
 
-    if (configuration.showmodename) {
+    if (
+      configuration.showmodename ||
+      vimState.currentMode === Mode.CommandlineInProgress ||
+      vimState.currentMode === Mode.SearchInProgressMode
+    ) {
       text.push(statusBarText(vimState));
       if (vimState.isMultiCursor) {
         text.push(' MULTI CURSOR ');
@@ -167,6 +169,7 @@ export function statusBarText(vimState: VimState) {
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
+  const logger = Logger.get('StatusBar');
   switch (vimState.currentMode) {
     case Mode.Normal:
       return '-- NORMAL --';
@@ -189,23 +192,17 @@ export function statusBarText(vimState: VimState) {
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
-      if (globalState.searchState === undefined) {
-        const logger = Logger.get('StatusBar');
-        logger.warn(`globalState.searchState is undefined in SearchInProgressMode.`);
+      if (vimState.commandLine === undefined) {
+        logger.warn('vimState.commandLine is undefined in SearchInProgressMode');
         return '';
       }
-      const leadingChar =
-        globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
-
-      const searchWithCursor = globalState.searchState.searchString.split('');
-      searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
-
-      return `${leadingChar}${searchWithCursor.join('')}`;
+      return vimState.commandLine.display(cursorChar);
     case Mode.CommandlineInProgress:
-      const commandWithCursor = vimState.currentCommandlineText.split('');
-      commandWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
-
-      return `:${commandWithCursor.join('')}`;
+      if (vimState.commandLine === undefined) {
+        logger.warn('vimState.commandLine is undefined in CommandLineInProgress mode');
+        return '';
+      }
+      return vimState.commandLine.display(cursorChar);
     default:
       return '';
   }

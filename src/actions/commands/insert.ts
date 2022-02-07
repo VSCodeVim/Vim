@@ -68,34 +68,39 @@ export class CommandEscInsertMode extends BaseCommand {
 
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
-    const typeOfInsert =
-      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
-    const isTypeToRepeatInsert =
-      typeOfInsert instanceof CommandInsertAtCursor ||
-      typeOfInsert instanceof CommandInsertAfterCursor ||
-      typeOfInsert instanceof CommandInsertAtLineBegin ||
-      typeOfInsert instanceof CommandInsertAtLineEnd ||
-      typeOfInsert instanceof CommandInsertAtFirstCharacter ||
-      typeOfInsert instanceof CommandInsertAtLastChange;
+    const shouldRepeatInsert =
+      vimState.recordedState.count > 1 &&
+      vimState.recordedState.actionsRun.find(
+        (a) =>
+          a instanceof CommandInsertAtCursor ||
+          a instanceof CommandInsertAfterCursor ||
+          a instanceof CommandInsertAtLineBegin ||
+          a instanceof CommandInsertAtLineEnd ||
+          a instanceof CommandInsertAtFirstCharacter ||
+          a instanceof CommandInsertAtLastChange
+      ) !== undefined;
 
     // If this is the type to repeat insert, do this now
-    if (vimState.recordedState.count > 1 && isTypeToRepeatInsert) {
-      const changeAction = vimState.recordedState.actionsRun[
-        vimState.recordedState.actionsRun.length - 2
-      ] as DocumentContentChangeAction;
+    if (shouldRepeatInsert) {
+      const changeAction = vimState.recordedState.actionsRun
+        .slice()
+        .reverse()
+        .find((a) => a instanceof DocumentContentChangeAction);
+      if (changeAction instanceof DocumentContentChangeAction) {
+        // Add count amount of inserts in the case of 4i=<esc>
+        // TODO: A few actions such as <C-t> should be repeated, but are not
+        for (let i = 0; i < vimState.recordedState.count - 1; i++) {
+          // If this is the last transform, move cursor back one character
+          const positionDiff =
+            i === vimState.recordedState.count - 2
+              ? PositionDiff.offset({ character: -1 })
+              : PositionDiff.identity();
 
-      // Add count amount of inserts in the case of 4i=<esc>
-      for (let i = 0; i < vimState.recordedState.count - 1; i++) {
-        // If this is the last transform, move cursor back one character
-        const positionDiff =
-          i === vimState.recordedState.count - 2
-            ? PositionDiff.offset({ character: -1 })
-            : PositionDiff.identity();
-
-        // Add a transform containing the change
-        vimState.recordedState.transformer.addTransformation(
-          changeAction.getTransformation(positionDiff)
-        );
+          // Add a transform containing the change
+          vimState.recordedState.transformer.addTransformation(
+            changeAction.getTransformation(positionDiff)
+          );
+        }
       }
     }
 
@@ -195,23 +200,6 @@ class DecreaseIndent extends BaseCommand {
     );
   }
 }
-
-// Upon thinking about it some more, I'm not really sure how to fix this
-// elegantly. Tab is just used for so many things in the VSCode editor, and all
-// of them happen to be overloaded. Sometimes tab does a tab, sometimes it does
-// an emmet completion, sometimes a snippet completion, etc.
-// @RegisterAction
-// export class CommandInsertTabInInsertMode extends BaseCommand {
-//   modes = [ModeName.Insert];
-//   keys = ["<tab>"];
-//   runsOnceForEveryCursor() { return false; }
-
-//   public async exec(position: Position, vimState: VimState): Promise<void> {
-//     vimState.recordedState.transformer.addTransformation({
-//       type: "tab"
-//     });
-//   }
-// }
 
 @RegisterAction
 export class CommandBackspaceInInsertMode extends BaseCommand {

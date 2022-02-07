@@ -30,7 +30,7 @@ export enum VSCodeVimCursorType {
 /**
  * Is the given mode visual, visual line, or visual block?
  */
-export function isVisualMode(mode: Mode) {
+export function isVisualMode(mode: Mode): mode is Mode.Visual | Mode.VisualLine | Mode.VisualBlock {
   return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
 }
 

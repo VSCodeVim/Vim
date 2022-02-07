@@ -80,7 +80,7 @@ export async function unlink(path: string): Promise<void> {
   await vscode.workspace.fs.delete(vscode.Uri.parse(path));
 }
 
-export async function readFileAsync(path: string, encoding: string): Promise<string> {
+export async function readFileAsync(path: string, encoding: BufferEncoding): Promise<string> {
   const ret = await vscode.workspace.fs.readFile(vscode.Uri.parse(path));
   return ret.toString();
 }
@@ -92,7 +92,7 @@ export async function mkdirAsync(path: string, options: any): Promise<void> {
 export async function writeFileAsync(
   path: string,
   content: string,
-  encoding: string
+  encoding: BufferEncoding
 ): Promise<void> {
   return vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
 }

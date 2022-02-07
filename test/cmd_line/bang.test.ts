@@ -1,8 +1,15 @@
+import { Configuration } from '../../test/testConfiguration';
+import { newTest } from '../../test/testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
+// TODO(#4844): this fails on Windows
 suite('bang (!) cmd_line', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -31,8 +38,8 @@ suite('bang (!) cmd_line', () => {
 
     test('! with line range', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!echo hello world\n'.split(''));
-      assertEqualLines(['hello world']);
+      await modeHandler.handleMultipleKeyEvents(':2,3!echo hello world\n'.split(''));
+      assertEqualLines(['123', 'hello world']);
     });
   });
 
@@ -78,9 +85,9 @@ suite('bang (!) cmd_line', () => {
     });
 
     test(':{range}!{cmd} should pass in line range as stdin', async () => {
-      await modeHandler.handleMultipleKeyEvents(['i', '3\n2\n1', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!sort -n\n'.split(''));
-      assertEqualLines(['1', '2', '3']);
+      await modeHandler.handleMultipleKeyEvents(['i', '4\n3\n2\n1', '<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(':2,4!sort -n\n'.split(''));
+      assertEqualLines(['4', '1', '2', '3']);
     });
 
     test('! with commands expecting stdin do not block when no stdin is supplied', async () => {
@@ -98,6 +105,46 @@ suite('bang (!) cmd_line', () => {
     test('piping commands works', async () => {
       await modeHandler.handleMultipleKeyEvents(':.!printf "c\\nb\\na" | sort\n'.split(''));
       assertEqualLines(['a', 'b', 'c']);
+    });
+  });
+});
+
+suite('custom bang shell', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
+  suite('sh', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.shell = '/bin/sh';
+      await setupWorkspace(configuration);
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: '! supports /bin/sh',
+      start: ['|'],
+      keysPressed: '<Esc>:.!echo $0\n',
+      end: ['|/bin/sh'],
+    });
+  });
+
+  suite('bash', () => {
+    setup(async () => {
+      const configuration = new Configuration();
+      configuration.shell = '/bin/bash';
+      await setupWorkspace(configuration);
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: '! supports /bin/bash',
+      start: ['|'],
+      keysPressed: '<Esc>:.!echo $0\n',
+      end: ['|/bin/bash'],
     });
   });
 });

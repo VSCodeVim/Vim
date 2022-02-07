@@ -14,6 +14,7 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
+  silent?: boolean;
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
   commands?: Array<{ command: string; args: any[] } | string>;
@@ -225,6 +226,11 @@ export interface IConfiguration {
   history: number;
 
   /**
+   * Show substitutions while user is typing?
+   */
+  inccommand: '' | 'append' | 'replace';
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch: boolean;
@@ -254,6 +260,18 @@ export interface IConfiguration {
    */
   searchHighlightColor: string;
   searchHighlightTextColor: string;
+
+  /**
+   * Color of current match
+   */
+  searchMatchColor: string;
+  searchMatchTextColor: string;
+
+  /**
+   * Color of substituted text
+   */
+  substitutionColor: string;
+  substitutionTextColor: string;
 
   /**
    * Yank highlight settings.
@@ -290,6 +308,14 @@ export interface IConfiguration {
    * If not configured `editor.wordSeparators` is used
    */
   iskeyword: string;
+
+  /**
+   * Characters that form pairs. The % command jumps from one to the other.
+   * Only character pairs are allowed that are different, thus you cannot jump between two double quotes.
+   * The characters must be separated by a colon.
+   * The pairs must be separated by a comma.
+   */
+  matchpairs: string;
 
   /**
    * In visual mode, start a search with * or # using the current selection
@@ -410,4 +436,9 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
 }

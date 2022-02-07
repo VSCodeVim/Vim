@@ -468,10 +468,19 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
-    title: 'Can run a forward search with count exceeding max number of matches',
+    title: 'Can run a forward search with count exceeding max number of matches and wrapscan',
     start: ['|one two two two'],
     keysPressed: '5/tw\n',
     end: ['one two |two two'],
+  });
+
+  newTest({
+    title: 'Can run a forward search with count exceeding max number of matches and nowrapscan',
+    config: { wrapscan: false },
+    start: ['|one two two two'],
+    keysPressed: '5/tw\n',
+    end: ['|one two two two'],
+    statusBar: 'E385: Search hit BOTTOM without match for: tw',
   });
 
   // These "remembering history between editor" tests have started
@@ -936,13 +945,16 @@ suite('Motions in Normal Mode', () => {
       end: ['ab|c', 'def', 'ghi'],
     });
 
-    // TODO: this fails on Windows due to \r\n
-    newTest({
-      title: '`[count]go` goes to offset <count>, newlines disregarded',
-      start: ['abc', 'de|f', 'ghi'],
-      keysPressed: '10go',
-      end: ['abc', 'def', 'g|hi'],
-    });
+    // TODO(#4844): this fails on Windows due to \r\n
+    newTestSkip(
+      {
+        title: '`[count]go` goes to offset <count>, newlines disregarded',
+        start: ['abc', 'de|f', 'ghi'],
+        keysPressed: '10go',
+        end: ['abc', 'def', 'g|hi'],
+      },
+      process.platform === 'win32'
+    );
   });
 
   newTest({
@@ -1036,6 +1048,13 @@ suite('Motions in Normal Mode', () => {
       keysPressed: 'k<C-y>j',
       end: ['short line', 'very long line of text....|.'],
     });
+
+    newTest({
+      title: 'Preserves desired cursor position when starting, but not completing, operator',
+      start: ['short line', 'very long line of text....|.'],
+      keysPressed: 'k' + 'd<Esc>' + 'j',
+      end: ['short line', 'very long line of text....|.'],
+    });
   });
 
   suite('Special marks', () => {
@@ -1079,6 +1098,48 @@ suite('Motions in Normal Mode', () => {
       start: ['one', 't|wo', 'three', 'four'],
       keysPressed: 'Vj<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'thre|e', 'four'],
+    });
+
+    newTest({
+      title: '`] go to the end of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`]',
+      end: ['hello worl|d'],
+    });
+
+    newTest({
+      title: "'] go to the end of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>']",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`[ go to the start of the previously operated or put text',
+      start: ['hello|'],
+      keysPressed: 'a world<Esc>`[',
+      end: ['hello| world'],
+    });
+
+    newTest({
+      title: "'[ go to the start of the previously operated or put text",
+      start: ['hello|'],
+      keysPressed: "a world<Esc>'[",
+      end: ['|hello world'],
+    });
+
+    newTest({
+      title: '`. works correctly',
+      start: ['on|e'],
+      keysPressed: 'atwo<Esc>`.',
+      end: ['one|two'],
+    });
+
+    newTest({
+      title: "'. works correctly",
+      start: ['on|e'],
+      keysPressed: "atwo<Esc>'.",
+      end: ['|onetwo'],
     });
   });
 });

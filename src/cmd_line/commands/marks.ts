@@ -1,11 +1,11 @@
 import { window, QuickPickItem } from 'vscode';
 
-import * as node from '../node';
 import { VimState } from '../../state/vimState';
 import { IMark } from '../../history/historyTracker';
 import { Cursor } from '../../common/motion/cursor';
-import { StatusBar } from '../../statusBar';
 import { ErrorCode, VimError } from '../../error';
+import { ExCommand } from '../../vimscript/exCommand';
+import { alt, noneOf, optWhitespace, Parser, regexp, seq, string, whitespace } from 'parsimmon';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -19,8 +19,8 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    if (mark.editor && mark.editor !== vimState.editor) {
-      this.description = mark.editor.document.fileName;
+    if (mark.document && mark.document !== vimState.document) {
+      this.description = mark.document.fileName;
     } else {
       this.description = vimState.document.lineAt(mark.position).text.trim();
     }
@@ -28,11 +28,14 @@ class MarkQuickPickItem implements QuickPickItem {
   }
 }
 
-export class MarksCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
-  private marksFilter?: string[];
+export class MarksCommand extends ExCommand {
+  public static readonly argParser: Parser<MarksCommand> = optWhitespace
+    .then(noneOf('|'))
+    .many()
+    .map((marks) => new MarksCommand(marks));
 
-  constructor(marksFilter?: string[]) {
+  private marksFilter: string[];
+  constructor(marksFilter: string[]) {
     super();
     this.marksFilter = marksFilter;
   }
@@ -41,7 +44,7 @@ export class MarksCommand extends node.CommandBase {
     const quickPickItems: MarkQuickPickItem[] = vimState.historyTracker
       .getMarks()
       .filter((mark) => {
-        return !this.marksFilter || this.marksFilter.includes(mark.name);
+        return this.marksFilter.length === 0 || this.marksFilter.includes(mark.name);
       })
       .map((mark) => new MarkQuickPickItem(vimState, mark));
 
@@ -58,89 +61,75 @@ export class MarksCommand extends node.CommandBase {
   }
 }
 
-export class DeleteMarksCommand extends node.CommandBase {
-  public override readonly acceptsRange = false;
-  private numbers = '0123456789';
-  private numberRange = /([0-9])-([0-9])/;
-  private letterRange = /([a-zA-Z])-([a-zA-Z])/;
-  private args?: string;
+type DeleteMarksArgs = Array<{ start: string; end: string } | string> | '!';
 
-  constructor(args?: string) {
+export class DeleteMarksCommand extends ExCommand {
+  public static readonly argParser: Parser<DeleteMarksCommand> = alt<DeleteMarksArgs>(
+    string('!'),
+    whitespace.then(
+      optWhitespace
+        .then(
+          alt<{ start: string; end: string } | string>(
+            seq(regexp(/[a-z]/).skip(string('-')), regexp(/[a-z]/)).map(([start, end]) => {
+              return { start, end };
+            }),
+            seq(regexp(/[A-Z]/).skip(string('-')), regexp(/[A-Z]/)).map(([start, end]) => {
+              return { start, end };
+            }),
+            seq(regexp(/[0-9]/).skip(string('-')), regexp(/[0-9]/)).map(([start, end]) => {
+              return { start, end };
+            }),
+            noneOf('-')
+          )
+        )
+        .many()
+    )
+  ).map((marks) => new DeleteMarksCommand(marks));
+
+  private args: DeleteMarksArgs;
+  constructor(args: DeleteMarksArgs) {
     super();
     this.args = args;
   }
 
-  range(start: number, end: number): number[] {
-    const range: number[] = [];
-    for (let i = start; i <= end; i++) {
-      range.push(i);
+  private static resolveMarkList(vimState: VimState, args: DeleteMarksArgs) {
+    const asciiRange = (start: string, end: string) => {
+      if (start > end) {
+        throw VimError.fromCode(ErrorCode.InvalidArgument);
+      }
+
+      const [asciiStart, asciiEnd] = [start.charCodeAt(0), end.charCodeAt(0)];
+
+      const chars: string[] = [];
+      for (let ascii = asciiStart; ascii <= asciiEnd; ascii++) {
+        chars.push(String.fromCharCode(ascii));
+      }
+      return chars;
+    };
+
+    if (args === '!') {
+      // TODO: clear change list
+      return asciiRange('a', 'z');
     }
-    return range;
+
+    const marks: string[] = [];
+    for (const x of args) {
+      if (typeof x === 'string') {
+        marks.push(x);
+      } else {
+        const range = asciiRange(x.start, x.end);
+        if (range === undefined) {
+          throw VimError.fromCode(ErrorCode.InvalidArgument);
+        } else {
+          marks.concat();
+        }
+      }
+    }
+    return marks;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (!this.args) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.ArgumentRequired));
-      return;
-    }
-
-    if (this.args === '!') {
-      vimState.historyTracker.removeLocalMarks();
-      return;
-    }
-
-    if (!this.args.includes('-')) {
-      vimState.historyTracker.removeMarks(this.args.split(''));
-      return;
-    }
-
-    const numberArgs = this.numberRange.exec(this.args);
-    let letterArgs = this.letterRange.exec(this.args);
-
-    if (!numberArgs && !letterArgs && this.args.includes('-')) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
-      return;
-    }
-
-    if (numberArgs && numberArgs.length > 2) {
-      if (parseInt(numberArgs[1], 10) > parseInt(numberArgs[2], 10)) {
-        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
-        return;
-      }
-
-      const start = this.numbers.indexOf(numberArgs[1]);
-      const end = this.numbers.indexOf(numberArgs[2]);
-      vimState.historyTracker.removeMarks(this.numbers.substring(start, end + 1).split(''));
-    }
-
-    while (letterArgs && letterArgs.length > 2) {
-      if (this.caseMismatch(letterArgs[1], letterArgs[2])) {
-        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
-        return;
-      }
-
-      const lowerCase = letterArgs[1] === letterArgs[1].toLowerCase();
-
-      const letters = lowerCase ? 'abcdefghijklmnopqrstuvwxyz' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const start = letters.indexOf(letterArgs[1]);
-      const end = letters.indexOf(letterArgs[2]);
-
-      if (start > end) {
-        StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidArgument));
-        return;
-      }
-
-      vimState.historyTracker.removeMarks(letters.substring(start, end + 1).split(''));
-
-      this.args = this.args.replace(letterArgs[0], '');
-      letterArgs = this.letterRange.exec(this.args);
-    }
-  }
-
-  caseMismatch(a: string, b: string): boolean {
-    return (
-      (a.toLowerCase() === a && b !== b.toLowerCase()) ||
-      (b.toLowerCase() === b && a !== a.toLowerCase())
-    );
+    const marks = DeleteMarksCommand.resolveMarkList(vimState, this.args);
+    vimState.historyTracker.removeMarks(marks);
   }
 }

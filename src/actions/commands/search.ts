@@ -1,17 +1,22 @@
 import * as _ from 'lodash';
+import { escapeRegExp } from 'lodash';
 import { Position, Selection } from 'vscode';
+import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { VimError, ErrorCode } from '../../error';
-import { Mode } from '../../mode/mode';
+import { isVisualMode, Mode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
-import { SearchDirection, SearchState } from '../../state/searchState';
+import { SearchState } from '../../state/searchState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { TextEditor } from '../../textEditor';
+import { TextObject } from '../../textobject/textobject';
 import { reportSearch } from '../../util/statusBarTextUtils';
+import { SearchDirection } from '../../vimscript/pattern';
 import { RegisterAction, BaseCommand } from '../base';
+import { failedMovement, IMovement } from '../baseMotion';
 
 /**
  * Search for the word under the cursor; used by [g]* and [g]#
@@ -82,7 +87,7 @@ async function searchCurrentSelection(vimState: VimState, direction: SearchDirec
  * Used by [g]* and [g]#
  */
 async function createSearchStateAndMoveToMatch(args: {
-  needle?: string | undefined;
+  needle: string;
   vimState: VimState;
   direction: SearchDirection;
   isExact: boolean;
@@ -90,28 +95,27 @@ async function createSearchStateAndMoveToMatch(args: {
 }): Promise<void> {
   const { needle, vimState, isExact } = args;
 
-  if (needle === undefined || needle.length === 0) {
+  if (needle.length === 0) {
     return;
   }
 
-  const searchString = isExact ? `\\b${needle}\\b` : needle;
+  const searchString = isExact ? `\\<${escapeRegExp(needle)}\\>` : escapeRegExp(needle);
 
   // Start a search for the given term.
   globalState.searchState = new SearchState(
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { isRegex: isExact, ignoreSmartcase: true },
-    vimState.currentMode
+    { ignoreSmartcase: true }
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
-  globalState.addSearchStateToHistory(globalState.searchState);
+  SearchCommandLine.addSearchStateToHistory(globalState.searchState);
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   globalState.hl = true;
 
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
-    vimState.editor,
+    vimState,
     args.searchStartCursorPosition
   );
   if (nextMatch) {
@@ -119,7 +123,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
     reportSearch(
       nextMatch.index,
-      globalState.searchState.getMatchRanges(vimState.editor).length,
+      globalState.searchState.getMatchRanges(vimState).length,
       vimState
     );
   } else {
@@ -137,14 +141,18 @@ async function createSearchStateAndMoveToMatch(args: {
 
 @RegisterAction
 class CommandSearchCurrentWordExactForward extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['*'];
   override isMotion = true;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    if (isVisualMode(vimState.currentMode) && configuration.visualstar) {
+      await searchCurrentSelection(vimState, SearchDirection.Forward);
+    } else {
+      await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    }
   }
 }
 
@@ -162,32 +170,19 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchVisualForward extends BaseCommand {
-  modes = [Mode.Visual, Mode.VisualLine];
-  keys = ['*'];
-  override isMotion = true;
-  override runsOnceForEachCountPrefix = true;
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (configuration.visualstar) {
-      await searchCurrentSelection(vimState, SearchDirection.Forward);
-    } else {
-      await searchCurrentWord(position, vimState, SearchDirection.Forward, true);
-    }
-  }
-}
-
-@RegisterAction
 class CommandSearchCurrentWordExactBackward extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['#'];
   override isMotion = true;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    if (configuration.visualstar) {
+      await searchCurrentSelection(vimState, SearchDirection.Backward);
+    } else {
+      await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    }
   }
 }
 
@@ -205,23 +200,6 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchVisualBackward extends BaseCommand {
-  modes = [Mode.Visual, Mode.VisualLine];
-  keys = ['#'];
-  override isMotion = true;
-  override runsOnceForEachCountPrefix = true;
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (configuration.visualstar) {
-      await searchCurrentSelection(vimState, SearchDirection.Backward);
-    } else {
-      await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
-    }
-  }
-}
-
-@RegisterAction
 class CommandSearchForwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['/'];
@@ -232,17 +210,10 @@ class CommandSearchForwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    globalState.searchState = new SearchState(
-      SearchDirection.Forward,
-      vimState.cursorStopPosition,
-      '',
-      { isRegex: true },
-      vimState.currentMode
-    );
+    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
-    globalState.searchStateIndex = globalState.searchStatePrevious.length;
+    globalState.searchState = vimState.commandLine.getSearchState();
   }
 }
 
@@ -257,95 +228,86 @@ class CommandSearchBackwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    globalState.searchState = new SearchState(
-      SearchDirection.Backward,
-      vimState.cursorStopPosition,
-      '',
-      { isRegex: true },
-      vimState.currentMode
-    );
+    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
 
-    // Reset search history index
-    globalState.searchStateIndex = globalState.searchStatePrevious.length;
+    globalState.searchState = vimState.commandLine.getSearchState();
   }
 }
 
-async function selectLastSearchWord(vimState: VimState, direction: SearchDirection): Promise<void> {
-  const searchState = globalState.searchState;
-  if (!searchState || searchState.searchString === '') {
-    return;
-  }
+abstract class SearchObject extends TextObject {
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  protected abstract readonly direction: SearchDirection;
 
-  const newSearchState = new SearchState(
-    direction,
-    vimState.cursorStopPosition,
-    searchState.searchString,
-    { isRegex: true },
-    vimState.currentMode
-  );
-
-  let result:
-    | {
-        start: Position;
-        end: Position;
-        index: number;
-      }
-    | undefined;
-
-  // At first, try to search for current word, and stop searching if matched.
-  // Try to search for the next word if not matched or
-  // if the cursor is at the end of a match string in visual-mode.
-  result = newSearchState.getSearchMatchRangeOf(vimState.editor, vimState.cursorStopPosition);
-  if (
-    result &&
-    vimState.currentMode === Mode.Visual &&
-    vimState.cursorStopPosition.isEqual(result.end.getLeftThroughLineBreaks())
-  ) {
-    result = undefined;
-  }
-
-  if (result === undefined) {
-    // Try to search for the next word
-    result = newSearchState.getNextSearchMatchRange(vimState.editor, vimState.cursorStopPosition);
-    if (result === undefined) {
-      // TODO: `gn` should just be a TextObject, I think - setting this directly is a bit of a hack
-      vimState.lastMovementFailed = true;
-      return; // no match...
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const searchState = globalState.searchState;
+    if (!searchState || searchState.searchString === '') {
+      return failedMovement(vimState);
     }
+
+    const newSearchState = new SearchState(
+      this.direction,
+      vimState.cursorStopPosition,
+      searchState.searchString,
+      {}
+    );
+
+    // At first, try to search for current word, and stop searching if matched.
+    // Try to search for the next word if not matched or
+    // if the cursor is at the end of a match string in visual-mode.
+    let result = newSearchState.findContainingMatchRange(vimState, vimState.cursorStopPosition);
+    if (
+      result &&
+      vimState.currentMode === Mode.Visual &&
+      vimState.cursorStopPosition.isEqual(result.range.end.getLeftThroughLineBreaks())
+    ) {
+      result = undefined;
+    }
+
+    if (result === undefined) {
+      // Try to search for the next word
+      result = newSearchState.getNextSearchMatchRange(vimState, vimState.cursorStopPosition);
+      if (result === undefined) {
+        return failedMovement(vimState);
+      }
+    }
+
+    reportSearch(result.index, searchState.getMatchRanges(vimState).length, vimState);
+
+    const [start, stop] = [
+      vimState.currentMode === Mode.Normal ? result.range.start : vimState.cursorStopPosition,
+      result.range.end.getLeftThroughLineBreaks(),
+    ];
+
+    // Move the cursor, this is a bit hacky...
+    vimState.cursorStartPosition = start;
+    vimState.cursorStopPosition = stop;
+    vimState.editor.selection = new Selection(start, stop);
+
+    await vimState.setCurrentMode(Mode.Visual);
+
+    return {
+      start,
+      stop,
+    };
   }
 
-  vimState.cursorStartPosition =
-    vimState.currentMode === Mode.Normal ? result.start : vimState.cursorStopPosition;
-  vimState.cursorStopPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
-
-  // Move the cursor, this is a bit hacky...
-  vimState.editor.selection = new Selection(
-    vimState.cursorStartPosition,
-    vimState.cursorStopPosition
-  );
-
-  reportSearch(result.index, searchState.getMatchRanges(vimState.editor).length, vimState);
-
-  await vimState.setCurrentMode(Mode.Visual);
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<IMovement> {
+    return this.execAction(position, vimState);
+  }
 }
 
 @RegisterAction
-class CommandSelectNextLastSearchWord extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+class SearchObjectForward extends SearchObject {
   keys = ['g', 'n'];
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await selectLastSearchWord(vimState, SearchDirection.Forward);
-  }
+  direction = SearchDirection.Forward;
 }
 
 @RegisterAction
-class CommandSelectPreviousLastSearchWord extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+class SearchObjectBackward extends SearchObject {
   keys = ['g', 'N'];
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await selectLastSearchWord(vimState, SearchDirection.Backward);
-  }
+  direction = SearchDirection.Backward;
 }
