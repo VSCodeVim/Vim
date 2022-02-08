@@ -193,7 +193,11 @@ class ListBreakpointsCommand extends ExCommand {
         const id = parseInt(idWithHashtag.replace('#', ''), 10) - 1;
         const breakpoint = breakpoints[id] as AnyBreakpoint;
         if (breakpoint && breakpoint.location !== undefined) {
-          return vscode.window.showTextDocument(breakpoint.location.uri).then();
+          return vscode.window.showTextDocument(breakpoint.location.uri).then(
+            () => {
+              vimState.cursorStartPosition = breakpoint.location.range.start;
+            },
+          );
         } else {
           return;
         }
