@@ -21,6 +21,7 @@ import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
 import { RegisterCommand } from '../cmd_line/commands/register';
+import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
 import { SmileCommand } from '../cmd_line/commands/smile';
@@ -428,7 +429,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['redrawt', 'abline'], undefined],
   [['reg', 'isters'], RegisterCommand.argParser],
   [['res', 'ize'], undefined],
-  [['ret', 'ab'], undefined],
+  [['ret', 'ab'], RetabCommand.argParser],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
   [['ri', 'ght'], RightCommand.argParser],
