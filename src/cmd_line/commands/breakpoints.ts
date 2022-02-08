@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { all, alt, optWhitespace, regexp, seqObj, string, succeed, whitespace } from 'parsimmon';
+import { all, alt, eof, optWhitespace, regexp, seqObj, string, succeed, whitespace } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 
 function isSourceBreakpoint(b: any): b is vscode.SourceBreakpoint {
@@ -151,13 +151,15 @@ class DeleteBreakpointCommand extends ExCommand {
       if (breakpoint) return vscode.debug.removeBreakpoints(breakpoint);
     } else if (isDelBreakpointHere(this.delBreakpoint)) {
       const location = new vscode.Location(vimState.document.uri, vimState.cursorStartPosition);
+      const distFromLocationCharacter = (b: vscode.SourceBreakpoint) => Math.abs(b.location.range.start.character - location.range.start.character);
+
       const breakpoint = vscode.debug.breakpoints
         .filter(isSourceBreakpoint)
-        .find(
+        .filter(
           (b) =>
             b.location.uri.toString() === location.uri.toString() &&
             b.location.range.start.line === location.range.start.line
-        );
+        ).sort((a, b) => distFromLocationCharacter(a) - distFromLocationCharacter(b))[0];
       if (breakpoint) return vscode.debug.removeBreakpoints([breakpoint]);
     }
   }
@@ -214,7 +216,7 @@ export class Breakpoints {
       .then(
         alt(
           // here
-          string('here').then(optWhitespace).result<'here'>('here'),
+          string('here').then(optWhitespace).result<DelBreakpointHere>('here'),
           // file
           seqObj<AddBreakpointFile>(
             string('file'),
@@ -228,8 +230,11 @@ export class Breakpoints {
             ['function', optWhitespace.then(regexp(/\S+/))]
           ),
           // expr
-          seqObj<AddBreakpointExpr>(string('expr'), ['expr', optWhitespace.then(all)])
+          seqObj<AddBreakpointExpr>(string('expr'), ['expr', optWhitespace.then(all)]),
         )
+      ).or(
+        // without arg
+        eof.result<DelBreakpointHere>('here')
       )
       .map((a) => new AddBreakpointCommand(a)),
 
@@ -237,7 +242,7 @@ export class Breakpoints {
       .then(
         alt(
           // here
-          string('here').then(optWhitespace).result<'here'>('here'),
+          string('here').then(optWhitespace).result<DelBreakpointHere>('here'),
           // file
           seqObj<DelBreakpointFile>(
             string('file'),
@@ -251,10 +256,13 @@ export class Breakpoints {
             ['function', optWhitespace.then(regexp(/\S+/))]
           ),
           // all
-          string('*').then(optWhitespace).result<'all'>('all'),
+          string('*').then(optWhitespace).result<DelAllBreakpoints>('all'),
           // by number
-          numberParser.map((n) => ({ id: n }))
+          numberParser.map((n) => ({ id: n })),
         )
+      ).or(
+        // without arg
+        eof.result<DelBreakpointHere>('here')
       )
       .map((a) => new DeleteBreakpointCommand(a)),
 
