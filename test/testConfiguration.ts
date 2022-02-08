@@ -58,6 +58,7 @@ export class Configuration implements IConfiguration {
   leader = '//';
   history = 50;
   incsearch = true;
+  inccommand = '' as const;
   startInInsertMode = false;
   statusBarColorControl = false;
   statusBarColors: IModeSpecificStrings<string | string[]> = {
@@ -75,6 +76,10 @@ export class Configuration implements IConfiguration {
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';
+  searchMatchColor = 'rgba(255, 150, 150, 0.3)';
+  searchMatchTextColor = '';
+  substitutionColor = 'rgba(100, 255, 150, 0.3)';
+  substitutionTextColor = '';
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
@@ -134,4 +139,5 @@ export class Configuration implements IConfiguration {
   scroll = 20;
   startofline = true;
   showMarksInGutter = true;
+  shell = '';
 }
