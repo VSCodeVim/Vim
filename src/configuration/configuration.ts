@@ -38,6 +38,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['hi', 'history'],
   ['hls', 'hlsearch'],
   ['ic', 'ignorecase'],
+  ['icm', 'inccommand'],
   ['is', 'incsearch'],
   ['isk', 'iskeyword'],
   ['js', 'joinspaces'],
@@ -292,6 +293,8 @@ class Configuration implements IConfiguration {
 
   history = 50;
 
+  inccommand: '' | 'append' | 'replace' = '';
+
   incsearch = true;
 
   startInInsertMode = false;
@@ -318,6 +321,9 @@ class Configuration implements IConfiguration {
 
   searchMatchColor = '';
   searchMatchTextColor = '';
+
+  substitutionColor = '#50f01080';
+  substitutionTextColor = '';
 
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,

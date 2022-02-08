@@ -361,12 +361,12 @@ suite('Ex command parsing', () => {
   });
 
   suite(':s[ubstitute]', () => {
-    const pattern = Pattern.parser({ direction: SearchDirection.Forward });
+    const pattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '/' });
 
     exParseTest(
       ':s/a/b/g',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
@@ -375,7 +375,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/g 3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
@@ -384,7 +384,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/g3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
@@ -393,7 +393,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: 3,
@@ -403,7 +403,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s#a#b#g',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
@@ -413,7 +413,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/\\/\\/a/b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('\\/\\/a'),
+        pattern: pattern.tryParse('\\/\\/a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
@@ -423,7 +423,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/\\ba/b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('\\ba'),
+        pattern: pattern.tryParse('\\ba/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
@@ -433,7 +433,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/\\b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: '\b' }]),
         flags: {},
         count: undefined,

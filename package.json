@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.21.10",
+  "version": "1.22.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -512,6 +512,14 @@
           "type": "string",
           "markdownDescription": "Foreground color of the current match."
         },
+        "vim.substitutionColor": {
+          "type": "string",
+          "markdownDescription": "Background color of substituted text when `#editor.inccommand#` is enabled. Uses `#editor.findMatchColor#` from current theme if undefined."
+        },
+        "vim.substitutionTextColor": {
+          "type": "string",
+          "markdownDescription": "Foreground color of substituted text when `#editor.inccommand#` is enabled."
+        },
         "vim.highlightedyank.enable": {
           "type": "boolean",
           "description": "Enable highlighting when yanking.",
@@ -819,6 +827,21 @@
           "type": "boolean",
           "description": "Show all matches of the most recent search pattern.",
           "default": false
+        },
+        "vim.inccommand": {
+          "type": "string",
+          "markdownDescription": "Show the effects of the `:substitute` command as you type.",
+          "default": "replace",
+          "enum": [
+            "",
+            "append",
+            "replace"
+          ],
+          "enumDescriptions": [
+            "Don't show substitutions",
+            "Show substitutions after matched text",
+            "Replace matched text with substitutions"
+          ]
         },
         "vim.incsearch": {
           "type": "boolean",
@@ -1194,7 +1217,7 @@
     "util": "0.12.4",
     "winston": "3.5.1",
     "winston-console-for-electron": "0.0.6",
-    "winston-transport": "4.4.2"
+    "winston-transport": "4.5.0"
   },
   "devDependencies": {
     "@types/diff": "5.0.2",
@@ -1204,13 +1227,13 @@
     "@types/mocha": "9.1.0",
     "@types/node": "14.18.10",
     "@types/parsimmon": "1.10.6",
-    "@types/sinon": "10.0.9",
+    "@types/sinon": "10.0.10",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
-    "@vscode/test-electron": "2.1.1",
+    "@vscode/test-electron": "2.1.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.0.0",
+    "fork-ts-checker-webpack-plugin": "7.1.1",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1226,7 +1249,7 @@
     "ts-loader": "9.2.6",
     "tslint": "6.1.3",
     "typescript": "4.5.5",
-    "vsce": "2.6.6",
+    "vsce": "2.6.7",
     "webpack": "5.68.0",
     "webpack-cli": "4.9.2",
     "webpack-merge": "5.8.0",

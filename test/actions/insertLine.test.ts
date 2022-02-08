@@ -59,6 +59,32 @@ suite('insertLineBefore', () => {
     assert.strictEqual(text[2].replace(/[\n\r]/g, ''), text[3].replace(/[\n\r]/g, ''));
   });
 
+  test('no extra whitespace left when insertLineBefore inserts more than correct amount', async () => {
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', 'G']);
+    await modeHandler.handleMultipleKeyEvents('i\na'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+    await modeHandler.handleMultipleKeyEvents('2G>>ob\nc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+    await modeHandler.handleMultipleKeyEvents('3G>>'.split(''));
+
+    // This is the current state of the document
+    //
+    //    a
+    //        b
+    //    c
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '4', 'G', '2', 'O', 'c']);
+    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
+    //
+    //    a
+    //        b
+    //    c
+    //    c
+    //    c
+    assert.ok(text);
+    assert.strictEqual(text[3].replace(/[\n\r]/g, ''), text[4].replace(/[\n\r]/g, ''));
+    assert.strictEqual(text[4].replace(/[\n\r]/g, ''), text[5].replace(/[\n\r]/g, ''));
+  });
+
   test('works at the top of the document', async () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', 'G']);
     await modeHandler.handleMultipleKeyEvents('ia'.split(''));

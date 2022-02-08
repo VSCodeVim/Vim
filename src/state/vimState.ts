@@ -278,6 +278,10 @@ export class VimState implements vscode.Disposable {
     } else {
       this.firstVisibleLineBeforeSearch = undefined;
     }
+
+    if (mode === Mode.Normal) {
+      this.commandLine = undefined;
+    }
   }
 
   /**

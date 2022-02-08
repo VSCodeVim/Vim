@@ -1,4 +1,5 @@
 import assert = require('assert');
+import { delimiter } from 'path';
 import { Address, LineRange } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
@@ -34,7 +35,10 @@ suite('LineRange parsing', () => {
       new LineRange(
         new Address({
           type: 'pattern_next',
-          pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
+          pattern: Pattern.parser({
+            direction: SearchDirection.Forward,
+            delimiter: '/',
+          }).tryParse('abc/'),
         })
       )
     );
@@ -54,7 +58,10 @@ suite('LineRange parsing', () => {
       new LineRange(
         new Address({
           type: 'pattern_prev',
-          pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
+          pattern: Pattern.parser({
+            direction: SearchDirection.Backward,
+            delimiter: '?',
+          }).tryParse('abc?'),
         })
       )
     );

@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { SearchCommandLine } from '../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -39,12 +39,14 @@ import { executeTransformations, IModeHandler } from '../transformations/execute
 import { globalState } from '../state/globalState';
 import { Notation } from '../configuration/notation';
 import { SpecialKeys } from '../util/specialKeys';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { BaseOperator } from '../actions/operator';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
 import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { SubstituteCommand } from '../cmd_line/commands/substitute';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -1133,40 +1135,21 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
-    const searchHighlights: vscode.DecorationOptions[] = [];
-    const searchMatches: vscode.DecorationOptions[] = [];
-    if (showHighlights && globalState.searchState) {
-      const ranges = globalState.searchState.getMatchRanges(this.vimState);
-      const matchIndex =
-        ranges.length &&
-        configuration.incsearch &&
-        this.vimState.currentMode === Mode.SearchInProgressMode &&
-        this.vimState.commandLine instanceof SearchCommandLine
-          ? this.vimState.commandLine.getCurrentMatchRange(this.vimState)?.index
-          : undefined;
+    const {
+      searchHighlight = [],
+      searchMatch = [],
+      substitutionAppend = [],
+      substitutionReplace = [],
+    }: SearchDecorations = showHighlights
+      ? this.vimState.commandLine?.getDecorations(this.vimState) ??
+        // if there are no decorations from the command line, get decorations for previous search state
+        getDecorationsForSearchMatchRanges(globalState.searchState?.getMatchRanges(this.vimState))
+      : {};
 
-      for (let i = 0; i < ranges.length; i++) {
-        const range = ranges[i];
-        if (range.start.isLineEnd() && (range.isEmpty || range.end.isLineBeginning())) {
-          // range is at EOL, possibly containing EOL char(s)
-          (i === matchIndex ? searchMatches : searchHighlights).push({
-            range: range.with(undefined, range.start),
-            renderOptions: {
-              after: {
-                contentText: '$', // single non-whitespace character to trigger :after element (it'll be transparent)
-              },
-            },
-          });
-        } else {
-          (i === matchIndex ? searchMatches : searchHighlights).push(
-            // extend empty ranges right one character
-            { range: range.isEmpty ? range.with(undefined, range.end.translate(0, 1)) : range }
-          );
-        }
-      }
-    }
-    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlights);
-    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatches);
+    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlight);
+    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatch);
+    this.vimState.editor.setDecorations(decoration.substitutionAppend, substitutionAppend);
+    this.vimState.editor.setDecorations(decoration.substitutionReplace, substitutionReplace);
   }
 
   public async updateView(
@@ -1556,7 +1539,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     const showHighlights =
-      (configuration.incsearch && this.currentMode === Mode.SearchInProgressMode) ||
+      (configuration.incsearch &&
+        (this.currentMode === Mode.SearchInProgressMode ||
+          this.currentMode === Mode.CommandlineInProgress)) ||
+      (configuration.inccommand && this.currentMode === Mode.CommandlineInProgress) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
       this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
