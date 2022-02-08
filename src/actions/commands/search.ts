@@ -178,7 +178,7 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (configuration.visualstar) {
+    if (isVisualMode(vimState.currentMode) && configuration.visualstar) {
       await searchCurrentSelection(vimState, SearchDirection.Backward);
     } else {
       await searchCurrentWord(position, vimState, SearchDirection.Backward, true);
