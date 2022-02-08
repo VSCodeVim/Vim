@@ -1,5 +1,18 @@
 # Change Log
 
+## [v1.22.1](https://github.com/vscodevim/vim/tree/v1.22.1) (2022-02-08)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.22.0...v1.22.1)
+
+**Fixed Bugs:**
+
+- `\#` does not work with `visualstar` enabled [\#7463](https://github.com/VSCodeVim/Vim/issues/7463)
+- `\*` does not reliably update search highlights [\#7462](https://github.com/VSCodeVim/Vim/issues/7462)
+
+**Merged pull requests:**
+
+- Added documentation for complex keyboard shortcuts [\#6944](https://github.com/VSCodeVim/Vim/pull/6944) ([w-cantin](https://github.com/w-cantin))
+
 ## [v1.22.0](https://github.com/vscodevim/vim/tree/v1.22.0) (2022-02-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.10...v1.22.0)
