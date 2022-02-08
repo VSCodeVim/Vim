@@ -181,13 +181,13 @@ class ListBreakpointsCommand extends ExCommand {
         location,
         functionName,
       } = b as AnyBreakpoint;
-      let line = '';
-      line += `#${i + 1}\t`;
-      line += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
-      line += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
-      line += location ? `${path.basename(location.uri.fsPath)}:${location.range.start.line}` : '';
-      line += functionName ? `$(debug-breakpoint-function)${functionName}` : '';
-      return line;
+      let entry = '';
+      entry += `#${i + 1}\t`;
+      entry += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
+      entry += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
+      entry += location ? `${path.basename(location.uri.fsPath)}:${location.range.start.line + 1}` : '';
+      entry += functionName ? `$(debug-breakpoint-function)${functionName}` : '';
+      return entry;
     });
     return vscode.window.showQuickPick(lines).then((selected) => {
       if (selected) {
