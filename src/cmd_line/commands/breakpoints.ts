@@ -145,13 +145,14 @@ class ListBreakpointsCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const breakpoints = vscode.debug.breakpoints;
     type BreakpointQuickPick = {breakpointId: string} & vscode.QuickPickItem;
-    const lines = breakpoints.map((b): BreakpointQuickPick => {
+    const lines = breakpoints.map((b, i): BreakpointQuickPick => {
       const {
         id,
         enabled,
         condition,
       } = b;
       let label = '';
+      label += `#${i + 1}\t`;
       label += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
       label += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
       if (isSourceBreakpoint(b)) label += `${path.basename(b.location.uri.fsPath)}:${b.location.range.start.line + 1}`;
@@ -218,20 +219,20 @@ export class Breakpoints {
           ),
           // file
           seqObj<DelBreakpointFile>(
-            string('file'),
+            ['type', string('file')],
             ['line', optWhitespace.then(numberParser).fallback(1)],
             ['file', optWhitespace.then(regexp(/\S+/)).fallback('')]
           ),
           // func
           seqObj<DelBreakpointFunction>(
-            string('func'),
+            ['type', string('func')],
             optWhitespace.then(numberParser).fallback(1), // we don't support line numbers in function names, but Vim does, so we'll allow it.
             ['function', optWhitespace.then(regexp(/\S+/))]
           ),
           // all
           string('*').then(optWhitespace).result<DelAllBreakpoints>({ type: 'all' }),
           // by number
-          numberParser.map((n) => ({ id: n })),
+          numberParser.map((n) => ({ type: 'byId', id: n })),
         )
       ).or(
         // without arg
