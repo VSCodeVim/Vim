@@ -5,38 +5,25 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { all, alt, eof, optWhitespace, regexp, seqObj, string, succeed, whitespace } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 
-function isSourceBreakpoint(b: any): b is vscode.SourceBreakpoint {
+function isSourceBreakpoint(b: vscode.Breakpoint): b is vscode.SourceBreakpoint {
   return (b as vscode.SourceBreakpoint).location !== undefined;
 }
-function isFunctionBreakpoint(b: any): b is vscode.FunctionBreakpoint {
+function isFunctionBreakpoint(b: vscode.Breakpoint): b is vscode.FunctionBreakpoint {
   return (b as vscode.FunctionBreakpoint).functionName !== undefined;
 }
 
 /**
  * Add Breakpoint Command
  */
-type AddBreakpointExpr = { expr: string };
-type AddBreakpointFunction = { function: string };
-type AddBreakpointFile = { line: number; file: string };
-type AddBreakpointHere = 'here';
+type AddBreakpointHere = { type: "here" };
+type AddBreakpointFile = { type: "file", line: number; file: string };
+type AddBreakpointFunction = { type: "function", function: string };
+type AddBreakpointExpr = { type: "expr", expr: string };
 type AddBreakpoint =
   | AddBreakpointHere
   | AddBreakpointFile
   | AddBreakpointFunction
   | AddBreakpointExpr;
-
-function isAddBreakpointHere(arg: any): arg is AddBreakpointHere {
-  return arg === 'here';
-}
-function isAddBreakpointFile(arg: any): arg is AddBreakpointFile {
-  return arg.file !== undefined && arg.line !== undefined;
-}
-function isAddBreakpointFunction(arg: any): arg is AddBreakpointFunction {
-  return arg.function !== undefined;
-}
-function isExprBreakpoint(arg: any): arg is AddBreakpointExpr {
-  return arg.expr !== undefined;
-}
 
 class AddBreakpointCommand extends ExCommand {
   public override isRepeatableWithDot: boolean = false;
@@ -48,10 +35,10 @@ class AddBreakpointCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (isAddBreakpointHere(this.addBreakpoint)) {
+    if (this.addBreakpoint.type === 'here') {
       const location = new vscode.Location(vimState.document.uri, vimState.cursorStartPosition);
       return vscode.debug.addBreakpoints([new vscode.SourceBreakpoint(location)]);
-    } else if (isAddBreakpointFile(this.addBreakpoint)) {
+    } else if (this.addBreakpoint.type === 'file') {
       let file: vscode.Uri;
       if (this.addBreakpoint.file === '') {
         file = vimState.document.uri;
@@ -65,11 +52,11 @@ class AddBreakpointCommand extends ExCommand {
         new vscode.Position(this.addBreakpoint.line - 1, 0)
       );
       return vscode.debug.addBreakpoints([new vscode.SourceBreakpoint(location)]);
-    } else if (isAddBreakpointFunction(this.addBreakpoint)) {
+    } else if (this.addBreakpoint.type === 'function') {
       return vscode.debug.addBreakpoints([
         new vscode.FunctionBreakpoint(this.addBreakpoint.function),
       ]);
-    } else if (isExprBreakpoint(this.addBreakpoint)) {
+    } else if (this.addBreakpoint.type === 'expr') {
       const location = new vscode.Location(vimState.document.uri, vimState.cursorStartPosition);
       return vscode.debug.addBreakpoints([
         new vscode.SourceBreakpoint(location, undefined, this.addBreakpoint.expr),
@@ -81,33 +68,17 @@ class AddBreakpointCommand extends ExCommand {
 /**
  * Delete Breakpoint Command
  */
-type DelBreakpointById = { id: number };
-type DelAllBreakpoints = 'all';
-type DelBreakpointFunction = { function: string };
-type DelBreakpointFile = { line: number; file: string };
-type DelBreakpointHere = 'here';
+type DelBreakpointById = { type: "byId", id: number };
+type DelAllBreakpoints = { type: "all" };
+type DelBreakpointFunction = { type: "function", function: string };
+type DelBreakpointFile = { type: "file", line: number; file: string };
+type DelBreakpointHere = { type: "here" };
 type DelBreakpoint =
   | DelBreakpointById
   | DelAllBreakpoints
   | DelBreakpointFunction
   | DelBreakpointFile
   | DelBreakpointHere;
-
-function isDelBreakpointById(arg: any): arg is DelBreakpointById {
-  return arg.id !== undefined;
-}
-function isDelAllBreakpoints(arg: any): arg is DelAllBreakpoints {
-  return arg === 'all';
-}
-function isDelBreakpointFunction(arg: any): arg is DelBreakpointFunction {
-  return arg.function !== undefined;
-}
-function isDelBreakpointFile(arg: any): arg is DelBreakpointFile {
-  return arg.file !== undefined && arg.line !== undefined;
-}
-function isDelBreakpointHere(arg: any): arg is DelBreakpointHere {
-  return arg === 'here';
-}
 
 class DeleteBreakpointCommand extends ExCommand {
   public override isRepeatableWithDot: boolean = false;
@@ -119,13 +90,13 @@ class DeleteBreakpointCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (isDelBreakpointById(this.delBreakpoint)) {
+    if (this.delBreakpoint.type === 'byId') {
       return vscode.debug.removeBreakpoints(
         vscode.debug.breakpoints.splice(this.delBreakpoint.id - 1, 1)
       );
-    } else if (isDelAllBreakpoints(this.delBreakpoint)) {
+    } else if (this.delBreakpoint.type === 'all') {
       return vscode.debug.removeBreakpoints(vscode.debug.breakpoints);
-    } else if (isDelBreakpointFile(this.delBreakpoint)) {
+    } else if (this.delBreakpoint.type === 'file') {
       let reqUri: vscode.Uri;
       if (this.delBreakpoint.file === '') {
         reqUri = vimState.document.uri;
@@ -143,13 +114,13 @@ class DeleteBreakpointCommand extends ExCommand {
             b.location.range.start.line === reqLine
         );
       if (breakpoint) return vscode.debug.removeBreakpoints([breakpoint]);
-    } else if (isDelBreakpointFunction(this.delBreakpoint)) {
+    } else if (this.delBreakpoint.type === 'function') {
       const functionName = this.delBreakpoint.function;
       const breakpoint = vscode.debug.breakpoints
         .filter(isFunctionBreakpoint)
         .filter((b) => b.functionName === functionName);
       if (breakpoint) return vscode.debug.removeBreakpoints(breakpoint);
-    } else if (isDelBreakpointHere(this.delBreakpoint)) {
+    } else if (this.delBreakpoint.type === 'here') {
       const location = new vscode.Location(vimState.document.uri, vimState.cursorStartPosition);
       const distFromLocationCharacter = (b: vscode.SourceBreakpoint) => Math.abs(b.location.range.start.character - location.range.start.character);
 
@@ -172,39 +143,32 @@ class ListBreakpointsCommand extends ExCommand {
   public override isRepeatableWithDot: boolean = false;
 
   async execute(vimState: VimState): Promise<void> {
-    type AnyBreakpoint = vscode.Breakpoint & vscode.SourceBreakpoint & vscode.FunctionBreakpoint;
     const breakpoints = vscode.debug.breakpoints;
     const lines = breakpoints.map((b, i) => {
       const {
         enabled,
         condition,
-        location,
-        functionName,
-      } = b as AnyBreakpoint;
+      } = b;
       let entry = '';
       entry += `#${i + 1}\t`;
       entry += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
       entry += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
-      entry += location ? `${path.basename(location.uri.fsPath)}:${location.range.start.line + 1}` : '';
-      entry += functionName ? `$(debug-breakpoint-function)${functionName}` : '';
+      if (isSourceBreakpoint(b)) entry += `${path.basename(b.location.uri.fsPath)}:${b.location.range.start.line + 1}`;
+      if (isFunctionBreakpoint(b)) entry += `$(debug-breakpoint-function)${b.functionName}`;
       return entry;
     });
-    return vscode.window.showQuickPick(lines).then((selected) => {
+    await vscode.window.showQuickPick(lines).then(async (selected) => {
       if (selected) {
         const [idWithHashtag] = selected.split('\t');
         const id = parseInt(idWithHashtag.replace('#', ''), 10) - 1;
-        const breakpoint = breakpoints[id] as AnyBreakpoint;
-        if (breakpoint && breakpoint.location !== undefined) {
-          return vscode.window.showTextDocument(breakpoint.location.uri).then(
+        const breakpoint = breakpoints[id];
+        if (breakpoint && isSourceBreakpoint(breakpoint)) {
+          await vscode.window.showTextDocument(breakpoint.location.uri).then(
             () => {
-              vimState.cursorStartPosition = breakpoint.location.range.start;
+              vimState.cursorStopPosition = breakpoint.location.range.start;
             },
           );
-        } else {
-          return;
         }
-      } else {
-        return;
       }
     });
   }
@@ -216,25 +180,28 @@ export class Breakpoints {
       .then(
         alt(
           // here
-          string('here').then(optWhitespace).result<DelBreakpointHere>('here'),
+          seqObj<AddBreakpointHere>(
+            ['type', string('here')],
+            optWhitespace,
+          ),
           // file
           seqObj<AddBreakpointFile>(
-            string('file'),
+            ['type', string('file')],
             ['line', optWhitespace.then(numberParser).fallback(1)],
             ['file', optWhitespace.then(regexp(/\S+/)).fallback('')]
           ),
           // func
           seqObj<AddBreakpointFunction>(
-            string('func'),
+            ['type', string('func')],
             optWhitespace.then(numberParser).fallback(1), // we don't support line numbers in function names, but Vim does, so we'll allow it.
             ['function', optWhitespace.then(regexp(/\S+/))]
           ),
           // expr
-          seqObj<AddBreakpointExpr>(string('expr'), ['expr', optWhitespace.then(all)]),
+          seqObj<AddBreakpointExpr>(['type', string('expr')], ['expr', optWhitespace.then(all)]),
         )
       ).or(
         // without arg
-        eof.result<DelBreakpointHere>('here')
+        eof.result<DelBreakpointHere>({ type: 'here' })
       )
       .map((a) => new AddBreakpointCommand(a)),
 
@@ -242,7 +209,10 @@ export class Breakpoints {
       .then(
         alt(
           // here
-          string('here').then(optWhitespace).result<DelBreakpointHere>('here'),
+          seqObj<DelBreakpointHere>(
+            ['type', string('here')],
+            optWhitespace,
+          ),
           // file
           seqObj<DelBreakpointFile>(
             string('file'),
@@ -256,13 +226,13 @@ export class Breakpoints {
             ['function', optWhitespace.then(regexp(/\S+/))]
           ),
           // all
-          string('*').then(optWhitespace).result<DelAllBreakpoints>('all'),
+          string('*').then(optWhitespace).result<DelAllBreakpoints>({ type: 'all' }),
           // by number
           numberParser.map((n) => ({ id: n })),
         )
       ).or(
         // without arg
-        eof.result<DelBreakpointHere>('here')
+        eof.result<DelBreakpointHere>({ type: 'here' })
       )
       .map((a) => new DeleteBreakpointCommand(a)),
 
