@@ -144,24 +144,27 @@ class ListBreakpointsCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     const breakpoints = vscode.debug.breakpoints;
-    const lines = breakpoints.map((b, i) => {
+    type BreakpointQuickPick = {breakpointId: string} & vscode.QuickPickItem;
+    const lines = breakpoints.map((b): BreakpointQuickPick => {
       const {
+        id,
         enabled,
         condition,
       } = b;
-      let entry = '';
-      entry += `#${i + 1}\t`;
-      entry += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
-      entry += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
-      if (isSourceBreakpoint(b)) entry += `${path.basename(b.location.uri.fsPath)}:${b.location.range.start.line + 1}`;
-      if (isFunctionBreakpoint(b)) entry += `$(debug-breakpoint-function)${b.functionName}`;
-      return entry;
+      let label = '';
+      label += enabled ? '$(circle-filled)\t' : '$(circle-outline)\t';
+      label += condition ? '$(debug-breakpoint-conditional)\t' : '\t';
+      if (isSourceBreakpoint(b)) label += `${path.basename(b.location.uri.fsPath)}:${b.location.range.start.line + 1}`;
+      if (isFunctionBreakpoint(b)) label += `$(debug-breakpoint-function)${b.functionName}`;
+      return {
+        label,
+        breakpointId: id
+      };
     });
     await vscode.window.showQuickPick(lines).then(async (selected) => {
       if (selected) {
-        const [idWithHashtag] = selected.split('\t');
-        const id = parseInt(idWithHashtag.replace('#', ''), 10) - 1;
-        const breakpoint = breakpoints[id];
+        const id = selected.breakpointId;
+        const breakpoint = breakpoints.find((b) => b.id === id);
         if (breakpoint && isSourceBreakpoint(breakpoint)) {
           await vscode.window.showTextDocument(breakpoint.location.uri).then(
             () => {
