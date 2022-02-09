@@ -17,7 +17,7 @@ function isFunctionBreakpoint(b: vscode.Breakpoint): b is vscode.FunctionBreakpo
  */
 type AddBreakpointHere = { type: "here" };
 type AddBreakpointFile = { type: "file", line: number; file: string };
-type AddBreakpointFunction = { type: "function", function: string };
+type AddBreakpointFunction = { type: "func", function: string };
 type AddBreakpointExpr = { type: "expr", expr: string };
 type AddBreakpoint =
   | AddBreakpointHere
@@ -52,7 +52,7 @@ class AddBreakpointCommand extends ExCommand {
         new vscode.Position(this.addBreakpoint.line - 1, 0)
       );
       return vscode.debug.addBreakpoints([new vscode.SourceBreakpoint(location)]);
-    } else if (this.addBreakpoint.type === 'function') {
+    } else if (this.addBreakpoint.type === 'func') {
       return vscode.debug.addBreakpoints([
         new vscode.FunctionBreakpoint(this.addBreakpoint.function),
       ]);
@@ -70,7 +70,7 @@ class AddBreakpointCommand extends ExCommand {
  */
 type DelBreakpointById = { type: "byId", id: number };
 type DelAllBreakpoints = { type: "all" };
-type DelBreakpointFunction = { type: "function", function: string };
+type DelBreakpointFunction = { type: "func", function: string };
 type DelBreakpointFile = { type: "file", line: number; file: string };
 type DelBreakpointHere = { type: "here" };
 type DelBreakpoint =
@@ -114,7 +114,7 @@ class DeleteBreakpointCommand extends ExCommand {
             b.location.range.start.line === reqLine
         );
       if (breakpoint) return vscode.debug.removeBreakpoints([breakpoint]);
-    } else if (this.delBreakpoint.type === 'function') {
+    } else if (this.delBreakpoint.type === 'func') {
       const functionName = this.delBreakpoint.function;
       const breakpoint = vscode.debug.breakpoints
         .filter(isFunctionBreakpoint)
