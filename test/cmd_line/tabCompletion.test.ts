@@ -279,4 +279,42 @@ suite('cmd_line tabComplete', () => {
       await t.removeFile(spacedFilePath);
     }
   });
+
+  test('command line file tab completion case-sensitivity platform dependent', async () => {
+    const dirPath = (await t.createRandomDir()).toLowerCase();
+
+    // set platform to win32 for the test
+    const platform = process.platform;
+    try {
+      const baseCmd = `:e ${dirPath.toUpperCase().slice(0, -1)}`.split('');
+      // test windows
+      {
+        Object.defineProperty(process, 'platform', { value: 'win32', });
+        await modeHandler.handleMultipleKeyEvents(baseCmd);
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(
+          statusBarAfterTab.toLowerCase(),
+          `:e ${dirPath}${sep}|`.toLowerCase(),
+          'Cannot complete path case-insensitive on windows'
+        );
+      }
+
+      // test linux
+      {
+        Object.defineProperty(process, 'platform', { value: 'linux' });
+        await modeHandler.handleMultipleKeyEvents(baseCmd);
+        const statusBarBeforeTab = StatusBar.getText();
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+      }
+
+    } finally {
+      Object.defineProperty(process, 'platform', { value: platform });
+      await t.removeDir(dirPath);
+    }
+  });
 });
