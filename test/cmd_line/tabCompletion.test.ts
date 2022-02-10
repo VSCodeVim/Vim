@@ -281,39 +281,35 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion case-sensitivity platform dependent', async () => {
-    const dirPath = (await t.createRandomDir()).toLowerCase();
+    const dirPath = await t.createRandomDir();
+    const basename = 'testfile';
+    const filePath = await t.createEmptyFile(join(dirPath, basename));
+    const fileAsTyped = join(dirPath, 'TESTFIL');
+    const cmd = `:e ${fileAsTyped}`.split('');
 
-    // set platform to win32 for the test
-    const platform = process.platform;
     try {
-      const baseCmd = `:e ${dirPath.toUpperCase().slice(0, -1)}`.split('');
-      // test windows
-      {
-        Object.defineProperty(process, 'platform', { value: 'win32', });
-        await modeHandler.handleMultipleKeyEvents(baseCmd);
+      if (process.platform === 'win32') {
+        await modeHandler.handleMultipleKeyEvents(cmd);
         await modeHandler.handleKeyEvent('<tab>');
         const statusBarAfterTab = StatusBar.getText().trim();
         await modeHandler.handleKeyEvent('<Esc>');
         assert.strictEqual(
           statusBarAfterTab.toLowerCase(),
-          `:e ${dirPath}${sep}|`.toLowerCase(),
+          `:e ${filePath}|`.toLowerCase(),
           'Cannot complete path case-insensitive on windows'
         );
       }
-
-      // test linux
-      {
-        Object.defineProperty(process, 'platform', { value: 'linux' });
-        await modeHandler.handleMultipleKeyEvents(baseCmd);
+      else {
+        await modeHandler.handleMultipleKeyEvents(cmd);
         const statusBarBeforeTab = StatusBar.getText();
         await modeHandler.handleKeyEvent('<tab>');
         const statusBarAfterTab = StatusBar.getText().trim();
         await modeHandler.handleKeyEvent('<Esc>');
-        assert.strictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+        assert.strictEqual(statusBarBeforeTab, statusBarAfterTab, 'Is case-insensitive on non-windows');
       }
 
     } finally {
-      Object.defineProperty(process, 'platform', { value: platform });
+      await t.removeFile(filePath);
       await t.removeDir(dirPath);
     }
   });
