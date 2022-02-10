@@ -282,8 +282,7 @@ suite('cmd_line tabComplete', () => {
 
   test('command line file tab completion case-sensitivity platform dependent', async () => {
     const dirPath = await t.createRandomDir();
-    const basename = 'testfile';
-    const filePath = await t.createEmptyFile(join(dirPath, basename));
+    const filePath = await t.createEmptyFile(join(dirPath, 'testfile'));
     const fileAsTyped = join(dirPath, 'TESTFIL');
     const cmd = `:e ${fileAsTyped}`.split('');
 
