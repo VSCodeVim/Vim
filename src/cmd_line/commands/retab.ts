@@ -1,12 +1,12 @@
 import { optWhitespace, Parser, seq } from 'parsimmon';
-import { SetCommand } from './set';
-import * as vscode from 'vscode';
+import { Range } from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
 import { bangParser, numberParser } from '../../vimscript/parserUtils';
+import { SetCommand } from './set';
 
 export interface IRetabCommandArguments {
   replaceSpaces: boolean;
@@ -18,7 +18,7 @@ interface UpdatedLineSegment {
   length: number;
 }
 
-// :ret[ab][!] [new_tabstop]
+// :[range]ret[ab][!] [new_tabstop]
 export class RetabCommand extends ExCommand {
   public static readonly argParser: Parser<RetabCommand> = seq(
     bangParser,
@@ -70,14 +70,14 @@ export class RetabCommand extends ExCommand {
     let expanded = '';
 
     let i = start;
-    for (const c of str) {
-      if (c === '\t') {
-        const spaces = tabstop - i % tabstop || tabstop;
+    for (const char of str) {
+      if (char === '\t') {
+        const spaces = tabstop - (i % tabstop) || tabstop;
 
         expanded += this.concat(spaces, ' ');
         i += spaces;
       } else {
-        expanded += c;
+        expanded += char;
         i++;
       }
     }
@@ -85,14 +85,18 @@ export class RetabCommand extends ExCommand {
     return expanded;
   }
 
-  retabLineSegment(segment: string, start: number, tabstop = configuration.tabstop): UpdatedLineSegment {
+  retabLineSegment(
+    segment: string,
+    start: number,
+    tabstop = configuration.tabstop
+  ): UpdatedLineSegment {
     const retab = this.arguments.replaceSpaces || this.hasTabs(segment);
 
     if (!retab) {
       return {
         value: segment,
         length: segment.length,
-      }
+      };
     }
 
     const retabTabstop = this.arguments.newTabstop || tabstop;
@@ -109,7 +113,7 @@ export class RetabCommand extends ExCommand {
     return {
       value: result,
       length: detabbed.length,
-    }
+    };
   }
 
   retabLine(line: string, tabstop = configuration.tabstop): string {
@@ -125,18 +129,18 @@ export class RetabCommand extends ExCommand {
       if (![' ', '\t'].includes(str[0])) {
         retabbed += str;
         i += str.length;
-        continue;
-      }
+      } else {
+        const result = this.retabLineSegment(str, i, tabstop);
 
-      const result = this.retabLineSegment(str, i, tabstop);
-      retabbed += result.value;
-      i += result.length;
+        retabbed += result.value;
+        i += result.length;
+      }
     }
 
     return retabbed;
   }
 
-  public retab(vimState: VimState, startLine: number, endLine: number, expandtab = configuration.expandtab) {
+  public retab(vimState: VimState, startLine: number, endLine: number) {
     const originalLines: string[] = [];
 
     const lastLine = Math.min(endLine, vimState.document.lineCount - 1);
@@ -145,7 +149,7 @@ export class RetabCommand extends ExCommand {
     }
 
     const replacedLines = originalLines.map((line: string) => {
-      return expandtab ? this.expandtab(line) : this.retabLine(line);
+      return configuration.expandtab ? this.expandtab(line) : this.retabLine(line);
     });
 
     const replacedContent = replacedLines.join('\n');
@@ -153,7 +157,7 @@ export class RetabCommand extends ExCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replaceText',
-      range: new vscode.Range(startLine, 0, endLine, lastLineLength),
+      range: new Range(startLine, 0, endLine, lastLineLength),
       text: replacedContent,
     });
 
@@ -162,9 +166,9 @@ export class RetabCommand extends ExCommand {
         type: 'equal',
         option: 'tabstop',
         value: this.arguments.newTabstop.toString(),
-      })
+      });
 
-      setTabstop.execute(vimState)
+      setTabstop.execute(vimState);
     }
   }
 }
