@@ -1,4 +1,5 @@
 import { optWhitespace, Parser, seq } from 'parsimmon';
+import { SetCommand } from './set';
 import * as vscode from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { isVisualMode } from '../../mode/mode';
@@ -155,5 +156,15 @@ export class RetabCommand extends ExCommand {
       range: new vscode.Range(startLine, 0, endLine, lastLineLength),
       text: replacedContent,
     });
+
+    if (this.arguments.newTabstop) {
+      const setTabstop = new SetCommand({
+        type: 'equal',
+        option: 'tabstop',
+        value: this.arguments.newTabstop.toString(),
+      })
+
+      setTabstop.execute(vimState)
+    }
   }
 }
