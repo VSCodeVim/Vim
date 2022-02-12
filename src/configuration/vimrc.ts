@@ -6,7 +6,6 @@ import * as vscode from 'vscode';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
-import { configuration } from './configuration';
 import { Logger } from '../util/logger';
 
 export class VimrcImpl {
@@ -92,7 +91,13 @@ export class VimrcImpl {
             });
             if (newVimrc) {
               await fs.writeFileAsync(newVimrc.fsPath, '', 'utf-8');
-              configuration.getConfiguration('vim').update('vimrc.path', newVimrc.fsPath, true);
+              const document = vscode.window.activeTextEditor?.document;
+              const resource = document
+                ? { uri: document.uri, languageId: document.languageId }
+                : undefined;
+              vscode.workspace
+                .getConfiguration('vim', resource)
+                .update('vimrc.path', newVimrc.fsPath, true);
               await vscode.workspace.openTextDocument(newVimrc);
               // TODO: add some sample remaps/settings in here?
               await vscode.window.showTextDocument(newVimrc);

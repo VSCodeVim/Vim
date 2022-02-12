@@ -34,7 +34,6 @@ import { shouldWrapKey } from '../wrapping';
 import { ErrorCode, VimError } from '../../error';
 import { SearchDirection } from '../../vimscript/pattern';
 import { doesFileExist } from 'platform/fs';
-import { exCommandParser } from '../../vimscript/exCommandParser';
 
 /**
  * A very special snowflake.
@@ -231,6 +230,7 @@ class EnableExtension extends BaseCommand {
 export class CommandNumber extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
+  override name = 'cmd_num';
   override isCompleteAction = false;
   override actionType = 'number' as const;
   override runsOnceForEveryCursor() {
@@ -289,6 +289,7 @@ export class CommandNumber extends BaseCommand {
 export class CommandRegister extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['"', '<character>'];
+  override name = 'cmd_register';
   override isCompleteAction = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -640,6 +641,10 @@ export class CommandShowCommandHistory extends BaseCommand {
   }
 }
 
+ExCommandLine.onSearch = async (vimState: VimState) => {
+  new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+};
+
 @RegisterAction
 export class CommandShowSearchHistory extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
@@ -690,6 +695,11 @@ export class CommandShowSearchHistory extends BaseCommand {
   }
 }
 
+// Register the command to execute on CtrlF.
+SearchCommandLine.onSearch = async (vimState: VimState, direction: SearchDirection) => {
+  return new CommandShowSearchHistory(direction).exec(vimState.cursorStopPosition, vimState);
+};
+
 @RegisterAction
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
@@ -718,7 +728,7 @@ class CommandRepeatSubstitution extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Parsing the command from a string, while not ideal, is currently
     // necessary to make this work with and without neovim integration
-    await exCommandParser.tryParse('s').command.execute(vimState);
+    await ExCommandLine.parser.tryParse('s').command.execute(vimState);
   }
 }
 
@@ -843,6 +853,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
 export class CommandYankFullLine extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['Y'];
+  override name = 'yank_full_line';
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const linesDown = (vimState.recordedState.count || 1) - 1;
@@ -1334,6 +1345,7 @@ class CommandTabPrevious extends BaseCommand {
 export class ActionDeleteChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['x'];
+  override name = 'delete_char';
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -1358,6 +1370,7 @@ export class ActionDeleteChar extends BaseCommand {
 export class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['<Del>'];
+  override name = 'delete_char_with_del';
   override runsOnceForEachCountPrefix = true;
   override createsUndoPoint = true;
 
@@ -1382,6 +1395,7 @@ export class ActionDeleteCharWithDeleteKey extends BaseCommand {
 export class ActionDeleteLastChar extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['X'];
+  override name = 'delete_last_char';
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2116,6 +2130,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
 export class ActionDeleteCharVisualLineMode extends BaseCommand {
   modes = [Mode.VisualLine];
   keys = ['x'];
+  override name = 'delete_char_visual_line_mode';
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
