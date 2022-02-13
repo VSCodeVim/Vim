@@ -743,6 +743,11 @@
           "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implmeneted yet).",
           "default": false
         },
+        "vim.targets.bracketObjects.enable": {
+          "type": "boolean",
+          "markdownDescription": "Enable last/next movements for bracket objects",
+          "default": true
+        },
         "vim.targets.smartQuotes.enable": {
           "type": "boolean",
           "markdownDescription": "Enable the smart quotes movements from [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects).",

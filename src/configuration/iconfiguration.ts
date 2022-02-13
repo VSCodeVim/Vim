@@ -100,6 +100,7 @@ export interface ITargetsConfiguration {
    * Enable Targets plugin or not
    */
   enable: boolean;
+  bracketObjects: { enable: boolean };
   smartQuotes: ISmartQuotesConfiguration;
 }
 

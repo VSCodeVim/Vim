@@ -271,6 +271,10 @@ class Configuration implements IConfiguration {
   targets: ITargetsConfiguration = {
     enable: false,
 
+    bracketObjects: {
+      enable: true,
+    },
+
     smartQuotes: {
       enable: false,
       breakThroughLines: false,

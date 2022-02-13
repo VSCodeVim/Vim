@@ -7,3 +7,12 @@ export function useSmartQuotes(): boolean {
       configuration.targets.smartQuotes.enable === true)
   );
 }
+
+export function bracketObjectsEnabled(): boolean {
+  return (
+    (configuration.targets.enable === true &&
+      configuration.targets.bracketObjects.enable !== false) ||
+    (configuration.targets.enable === undefined &&
+      configuration.targets.bracketObjects.enable === true)
+  );
+}

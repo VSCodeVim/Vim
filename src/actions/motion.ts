@@ -1884,7 +1884,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
 }
 
 @RegisterAction
-class MoveInsideParentheses extends MoveInsideCharacter {
+export class MoveInsideParentheses extends MoveInsideCharacter {
   keys = [
     ['i', '('],
     ['i', ')'],
@@ -1905,7 +1905,7 @@ export class MoveAroundParentheses extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveInsideCurlyBrace extends MoveInsideCharacter {
+export class MoveInsideCurlyBrace extends MoveInsideCharacter {
   keys = [
     ['i', '{'],
     ['i', '}'],
@@ -1926,7 +1926,7 @@ export class MoveAroundCurlyBrace extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveInsideCaret extends MoveInsideCharacter {
+export class MoveInsideCaret extends MoveInsideCharacter {
   keys = [
     ['i', '<'],
     ['i', '>'],
@@ -1945,7 +1945,7 @@ export class MoveAroundCaret extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveInsideSquareBracket extends MoveInsideCharacter {
+export class MoveInsideSquareBracket extends MoveInsideCharacter {
   keys = [
     ['i', '['],
     ['i', ']'],
