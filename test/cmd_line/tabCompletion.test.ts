@@ -279,4 +279,37 @@ suite('cmd_line tabComplete', () => {
       await t.removeFile(spacedFilePath);
     }
   });
+
+  test('command line file tab completion case-sensitivity platform dependent', async () => {
+    const dirPath = await t.createRandomDir();
+    const filePath = await t.createEmptyFile(join(dirPath, 'testfile'));
+    const fileAsTyped = join(dirPath, 'TESTFIL');
+    const cmd = `:e ${fileAsTyped}`.split('');
+
+    try {
+      if (process.platform === 'win32') {
+        await modeHandler.handleMultipleKeyEvents(cmd);
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(
+          statusBarAfterTab.toLowerCase(),
+          `:e ${filePath}|`.toLowerCase(),
+          'Cannot complete path case-insensitive on windows'
+        );
+      }
+      else {
+        await modeHandler.handleMultipleKeyEvents(cmd);
+        const statusBarBeforeTab = StatusBar.getText();
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(statusBarBeforeTab, statusBarAfterTab, 'Is case-insensitive on non-windows');
+      }
+
+    } finally {
+      await t.removeFile(filePath);
+      await t.removeDir(dirPath);
+    }
+  });
 });

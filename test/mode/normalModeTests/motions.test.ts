@@ -715,136 +715,154 @@ suite('Motions in Normal Mode', () => {
     end: ['blah blah |blah'],
   });
 
-  newTest({
-    title: 'Can handle g*',
-    start: ['|blah duh blahblah duh blah'],
-    keysPressed: 'g*',
-    end: ['blah duh |blahblah duh blah'],
-  });
+  for (const config of [{ visualstar: true }, { visualstar: false }]) {
+    newTest({
+      title: 'Can handle g*',
+      config,
+      start: ['|blah duh blahblah duh blah'],
+      keysPressed: 'g*',
+      end: ['blah duh |blahblah duh blah'],
+    });
 
-  newTest({
-    title: 'Can handle g*n',
-    start: ['|blah duh blahblah duh blah'],
-    keysPressed: 'g*n',
-    end: ['blah duh blah|blah duh blah'],
-  });
+    newTest({
+      title: 'Can handle g*n',
+      config,
+      start: ['|blah duh blahblah duh blah'],
+      keysPressed: 'g*n',
+      end: ['blah duh blah|blah duh blah'],
+    });
 
-  newTest({
-    title: 'Can handle *',
-    start: ['|blah blahblah duh blah blah'],
-    keysPressed: '*',
-    end: ['blah blahblah duh |blah blah'],
-  });
+    newTest({
+      title: 'Can handle *',
+      config,
+      start: ['|blah blahblah duh blah blah'],
+      keysPressed: '*',
+      end: ['blah blahblah duh |blah blah'],
+    });
 
-  newTest({
-    title: 'Can handle **',
-    start: ['|blah duh blah duh blah'],
-    keysPressed: '**',
-    end: ['blah duh blah duh |blah'],
-  });
+    newTest({
+      title: 'Can handle **',
+      config,
+      start: ['|blah duh blah duh blah'],
+      keysPressed: '**',
+      end: ['blah duh blah duh |blah'],
+    });
 
-  newTest({
-    title: '* ignores smartcase (ignorecase=true)',
-    config: { ignorecase: true, smartcase: true },
-    start: ['|test TEST test'],
-    keysPressed: '*',
-    end: ['test |TEST test'],
-  });
+    newTest({
+      title: '* ignores smartcase (ignorecase=true)',
+      config: { ignorecase: true, smartcase: true, ...config },
+      start: ['|test TEST test'],
+      keysPressed: '*',
+      end: ['test |TEST test'],
+    });
 
-  newTest({
-    title: '* ignores smartcase (ignorecase=false)',
-    config: { ignorecase: false, smartcase: true },
-    start: ['|test TEST test'],
-    keysPressed: '*',
-    end: ['test TEST |test'],
-  });
+    newTest({
+      title: '* ignores smartcase (ignorecase=false)',
+      config: { ignorecase: false, smartcase: true, ...config },
+      start: ['|test TEST test'],
+      keysPressed: '*',
+      end: ['test TEST |test'],
+    });
 
-  newTest({
-    title: '* skips over word separators',
-    start: ['const x| = 2 + 2;'],
-    // TODO: this should only require a single *
-    keysPressed: '**',
-    end: ['const x = 2 + |2;'],
-  });
+    newTest({
+      title: '* skips over word separators',
+      config,
+      start: ['const x| = 2 + 2;'],
+      // TODO: this should only require a single *
+      keysPressed: '**',
+      end: ['const x = 2 + |2;'],
+    });
 
-  newTest({
-    title: '* uses word separator if no word characters found before EOL',
-    start: ['if (x === 2)| {', '  if (y === 3) {'],
-    // TODO: this should only require a single *
-    keysPressed: '**',
-    end: ['if (x === 2) {', '  if (y === 3) |{'],
-  });
+    newTest({
+      title: '* uses word separator if no word characters found before EOL',
+      config,
+      start: ['if (x === 2)| {', '  if (y === 3) {'],
+      // TODO: this should only require a single *
+      keysPressed: '**',
+      end: ['if (x === 2) {', '  if (y === 3) |{'],
+    });
 
-  newTest({
-    title: '* does not go over line boundaries',
-    start: ['one  |   ', 'one two one two'],
-    keysPressed: '*',
-    end: ['one  |   ', 'one two one two'],
-    statusBar: 'E348: No string under cursor',
-  });
+    newTest({
+      title: '* does not go over line boundaries',
+      config,
+      start: ['one  |   ', 'one two one two'],
+      keysPressed: '*',
+      end: ['one  |   ', 'one two one two'],
+      statusBar: 'E348: No string under cursor',
+    });
 
-  newTest({
-    title: 'Can handle # on whitespace',
-    start: ['abc abcdef| abc'],
-    keysPressed: '#',
-    end: ['|abc abcdef abc'],
-  });
+    newTest({
+      title: 'Can handle # on whitespace',
+      config,
+      start: ['abc abcdef| abc'],
+      keysPressed: '#',
+      end: ['|abc abcdef abc'],
+    });
 
-  newTest({
-    title: 'Can handle # on EOL',
-    start: ['abc abcdef abc| '],
-    keysPressed: '#',
-    end: ['abc abcdef abc| '],
-  });
+    newTest({
+      title: 'Can handle # on EOL',
+      config,
+      start: ['abc abcdef abc| '],
+      keysPressed: '#',
+      end: ['abc abcdef abc| '],
+    });
 
-  newTest({
-    title: 'Can handle g#',
-    start: ['blah duh blahblah duh |blah'],
-    keysPressed: 'g#',
-    end: ['blah duh blah|blah duh blah'],
-  });
+    newTest({
+      title: 'Can handle g#',
+      config,
+      start: ['blah duh blahblah duh |blah'],
+      keysPressed: 'g#',
+      end: ['blah duh blah|blah duh blah'],
+    });
 
-  newTest({
-    title: 'Can handle g#n',
-    start: ['blah duh blahblah duh |blah'],
-    keysPressed: 'g#n',
-    end: ['blah duh |blahblah duh blah'],
-  });
+    newTest({
+      title: 'Can handle g#n',
+      config,
+      start: ['blah duh blahblah duh |blah'],
+      keysPressed: 'g#n',
+      end: ['blah duh |blahblah duh blah'],
+    });
 
-  newTest({
-    title: 'Can handle #',
-    start: ['blah blah blahblah duh |blah'],
-    keysPressed: '#',
-    end: ['blah |blah blahblah duh blah'],
-  });
+    newTest({
+      title: 'Can handle #',
+      config,
+      start: ['blah blah blahblah duh |blah'],
+      keysPressed: '#',
+      end: ['blah |blah blahblah duh blah'],
+    });
 
-  newTest({
-    title: 'Can handle # already on the word',
-    start: ['one o|ne'],
-    keysPressed: '#',
-    end: ['|one one'],
-  });
+    newTest({
+      title: 'Can handle # already on the word',
+      config,
+      start: ['one o|ne'],
+      keysPressed: '#',
+      end: ['|one one'],
+    });
 
-  newTest({
-    title: 'Can handle ##',
-    start: ['blah duh blah duh |blah'],
-    keysPressed: '##',
-    end: ['|blah duh blah duh blah'],
-  });
+    newTest({
+      title: 'Can handle ##',
+      config,
+      start: ['blah duh blah duh |blah'],
+      keysPressed: '##',
+      end: ['|blah duh blah duh blah'],
+    });
 
-  // These tests take advantage of the fact that an empty search repeats the last search
-  newTest({
-    title: '* adds to search history',
-    start: ['|ONE two three ONE two three four ONE'],
-    keysPressed: '*/\n',
-    end: ['ONE two three ONE two three four |ONE'],
-  });
-  newTest({
-    title: '# adds to search history',
-    start: ['ONE two three ONE two three four |ONE'],
-    keysPressed: '#?\n',
-    end: ['|ONE two three ONE two three four ONE'],
-  });
+    // These tests take advantage of the fact that an empty search repeats the last search
+    newTest({
+      title: '* adds to search history',
+      config,
+      start: ['|ONE two three ONE two three four ONE'],
+      keysPressed: '*/\n',
+      end: ['ONE two three ONE two three four |ONE'],
+    });
+    newTest({
+      title: '# adds to search history',
+      config,
+      start: ['ONE two three ONE two three four |ONE'],
+      keysPressed: '#?\n',
+      end: ['|ONE two three ONE two three four ONE'],
+    });
+  }
 
   newTest({
     title: 'Can handle |',

@@ -388,7 +388,39 @@ Custom remappings are defined on a per-mode basis.
     debug: ModeHandler: handling key=<C-a>.
     ```
 
-    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
+    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events. It is still possible to remap those keys by using VSCode's [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference) (see next section: [Remapping more complex key combinations](#remapping-more-complex-key-combinations)).
+
+#### Remapping more complex key combinations
+
+It is highly recommended to remap keys using vim commands like `"vim.normalModeKeyBindings"` ([see here](#key-remapping)). But sometimes the usual remapping commands are not enough as they do not support every key combinations possible (for example `Alt+key` or `Ctrl+Shift+key`). In this case it is possible to create new keybindings inside [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference). To do so: open up keybindings.json in VSCode using `CTRL+SHIFT+P` and select `Open keyboard shortcuts (JSON)`.
+
+You can then add a new entry to the keybindings like so:
+
+    ```json
+    {
+      "key": "YOUR_KEY_COMBINATION",
+      "command": "vim.remap",
+      "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
+      "args": {
+        "after": ["YOUR_VIM_ACTION"]
+      }
+    }
+    ```
+
+For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
+
+    ```json
+    {
+      "key": "ctrl+shift+y",
+      "command": "vim.remap",
+      "when": "inputFocus && vim.mode == 'Normal'",
+      "args": {
+        "after": ["y", "y"],
+      }
+    },
+    ```
+
+If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
 
 ### Vim modes
 
