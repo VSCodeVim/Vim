@@ -23,6 +23,7 @@ import { Position } from 'vscode';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
+import * as P from 'parsimmon';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -210,23 +211,38 @@ export async function executeTransformations(
 
       case 'macro':
         const recordedMacro = (await Register.get(transformation.register))?.text;
-        if (!(recordedMacro instanceof RecordedState)) {
+        if (typeof recordedMacro === 'string') {
+          vimState.isReplayingMacro = true;
+          // split keys into single character, keep inside angle-brackets as a single character
+          const parser = P.alt(
+            P.regexp(/<(?:Esc|C-\w|A-\w|C-A-\w)>/),
+            P.any,
+          ).many();
+          const x = parser.parse(recordedMacro);
+          const keys = x.status ? x.value : [];
+          vimState.recordedState = new RecordedState();
+          vimState.recordedState.registerName = transformation.register;
+          // the first key here is redundant, but otherwise it won't work. I don't know why yet.
+          await modeHandler.handleMultipleKeyEvents(['<Esc>', ...keys]);
+          vimState.lastInvokedMacro = vimState.recordedState;
+        } else if (!(recordedMacro instanceof RecordedState)) {
           return;
-        }
-
-        vimState.isReplayingMacro = true;
-
-        vimState.recordedState = new RecordedState();
-        if (transformation.register === ':') {
-          await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
-        } else if (transformation.replay === 'contentChange') {
-          await modeHandler.runMacro(recordedMacro);
         } else {
-          let keyStrokes: string[] = [];
-          for (const action of recordedMacro.actionsRun) {
-            keyStrokes = keyStrokes.concat(action.keysPressed);
+          vimState.isReplayingMacro = true;
+
+          vimState.recordedState = new RecordedState();
+          if (transformation.register === ':') {
+            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
+          } else if (transformation.replay === 'contentChange') {
+            await modeHandler.runMacro(recordedMacro);
+          } else {
+            let keyStrokes: string[] = [];
+            for (const action of recordedMacro.actionsRun) {
+              keyStrokes = keyStrokes.concat(action.keysPressed);
+            }
+            await modeHandler.handleMultipleKeyEvents(keyStrokes);
           }
-          await modeHandler.handleMultipleKeyEvents(keyStrokes);
+          vimState.lastInvokedMacro = recordedMacro;
         }
 
         await executeTransformations(
@@ -235,7 +251,6 @@ export async function executeTransformations(
         );
 
         vimState.isReplayingMacro = false;
-        vimState.lastInvokedMacro = recordedMacro;
 
         if (vimState.lastMovementFailed) {
           // movement in last invoked macro failed then we should stop all following repeating macros.
