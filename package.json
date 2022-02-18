@@ -59,6 +59,7 @@
       },
       {
         "command": "vim.editVimrc",
+        "enablement": "!isWeb",
         "title": "Vim: Edit .vimrc"
       }
     ],
