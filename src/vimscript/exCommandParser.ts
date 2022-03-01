@@ -1,6 +1,7 @@
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
+import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
@@ -100,9 +101,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['bp', 'revious'], TabCommand.argParsers.bprev],
   [['br', 'ewind'], undefined],
   [['brea', 'k'], undefined],
-  [['breaka', 'dd'], undefined],
-  [['breakd', 'el'], undefined],
-  [['breakl', 'ist'], undefined],
+  [['breaka', 'dd'], Breakpoints.argParsers.add],
+  [['breakd', 'el'], Breakpoints.argParsers.del],
+  [['breakl', 'ist'], Breakpoints.argParsers.list],
   [['bro', 'wse'], undefined],
   [['bufdo', ''], undefined],
   [['buffers', ''], undefined],
