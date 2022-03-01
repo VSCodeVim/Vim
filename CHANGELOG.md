@@ -1,5 +1,21 @@
 # Change Log
 
+## [v1.22.2](https://github.com/vscodevim/vim/tree/v1.22.2) (2022-02-18)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.22.1...v1.22.2)
+
+**Fixed Bugs:**
+
+- Failed to handle key `j`: Cannot read property 'substring' of undefined [\#7512](https://github.com/VSCodeVim/Vim/issues/7512)
+- 1.22 broken for browser [\#7469](https://github.com/VSCodeVim/Vim/issues/7469)
+- Tab completion of file names should be case insensitive on Windows [\#7160](https://github.com/VSCodeVim/Vim/issues/7160)
+
+**Merged pull requests:**
+
+- Fix extension for web [\#7520](https://github.com/VSCodeVim/Vim/pull/7520) ([jeanp413](https://github.com/jeanp413))
+- fix bugs with: Failed to handle key ... Cannot read property 'substring' of undefined [\#7513](https://github.com/VSCodeVim/Vim/pull/7513) ([elazarcoh](https://github.com/elazarcoh))
+- Tab completion of file names is case insensitive on Windows [\#7471](https://github.com/VSCodeVim/Vim/pull/7471) ([elazarcoh](https://github.com/elazarcoh))
+
 ## [v1.22.1](https://github.com/vscodevim/vim/tree/v1.22.1) (2022-02-08)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.22.0...v1.22.1)
@@ -153,10 +169,6 @@
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.5...v1.21.6)
 
-**Enhancements:**
-
-- Consider to adopt new `createStatusBarItem` API for `id` and `name` properties [\#6741](https://github.com/VSCodeVim/Vim/issues/6741)
-
 **Fixed Bugs:**
 
 - Backslashes must be duplicated in :s substitution [\#6890](https://github.com/VSCodeVim/Vim/issues/6890)
@@ -173,7 +185,6 @@
 - Failed to handle key=\<C-o\>. Could NOT open editor for "file:///home/fabrice/CRIStAL/Speed/examples/train_example.py". [\#6868](https://github.com/VSCodeVim/Vim/issues/6868)
 - Failed to handle key=2. Cannot read property 'length' of undefined [\#6861](https://github.com/VSCodeVim/Vim/issues/6861)
 - Failed to handle key=.. Overlapping ranges are not allowed! [\#6840](https://github.com/VSCodeVim/Vim/issues/6840)
-- Lack of documentation for arguments text object [\#6764](https://github.com/VSCodeVim/Vim/issues/6764)
 
 **Merged pull requests:**
 
@@ -209,13 +220,6 @@
 ## [v1.21.3](https://github.com/vscodevim/vim/tree/v1.21.3) (2021-06-18)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.21.2...v1.21.3)
-
-**Fixed Bugs:**
-
-- `i"`/`a"` should match quotes on line when cursor is on quote [\#6761](https://github.com/VSCodeVim/Vim/issues/6761)
-- `a"` should include the space after the closing quote [\#6747](https://github.com/VSCodeVim/Vim/issues/6747)
-- Incorrect cursor position after `vi"c` when cursor on quote [\#6740](https://github.com/VSCodeVim/Vim/issues/6740)
-- `\<BS\>` deletes too much leading whitespace when using hard tabstops with `expandtab` enabled [\#6735](https://github.com/VSCodeVim/Vim/issues/6735)
 
 ## [v1.21.2](https://github.com/vscodevim/vim/tree/v1.21.2) (2021-06-11)
 
