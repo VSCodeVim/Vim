@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { CompositionState } from './src/state/compositionState';
 import { Globals } from './src/globals';
@@ -18,7 +17,6 @@ import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
-import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -213,17 +211,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     },
     false
   );
-
-  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async (document) => {
-    if (
-      configuration.vimrc.enable &&
-      vimrc.vimrcPath &&
-      path.relative(document.fileName, vimrc.vimrcPath) === ''
-    ) {
-      await configuration.load();
-      vscode.window.showInformationMessage('Sourced new .vimrc');
-    }
-  });
 
   // window events
   registerEventListener(
@@ -491,20 +478,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  registerCommand(
-    context,
-    'vim.editVimrc',
-    async () => {
-      if (vimrc.vimrcPath) {
-        const document = await vscode.workspace.openTextDocument(vimrc.vimrcPath);
-        await vscode.window.showTextDocument(document);
-      } else {
-        await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
-      }
-    },
-    false
-  );
-
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
@@ -604,7 +577,7 @@ function overrideCommand(
   context.subscriptions.push(disposable);
 }
 
-function registerCommand(
+export function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
   callback: (...args: any[]) => any,
@@ -620,7 +593,7 @@ function registerCommand(
   context.subscriptions.push(disposable);
 }
 
-function registerEventListener<T>(
+export function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
   listener: (e: T) => void,
