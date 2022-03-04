@@ -1190,7 +1190,7 @@
     "@types/sinon": "10.0.11",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
-    "@vscode/test-electron": "2.1.2",
+    "@vscode/test-electron": "2.1.3",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "7.2.1",
