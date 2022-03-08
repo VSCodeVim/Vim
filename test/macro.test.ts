@@ -1,3 +1,4 @@
+import { Mode } from '../src/mode/mode';
 import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
@@ -167,5 +168,40 @@ suite('Record and execute a macro', () => {
     keysPressed: '@@',
     end: ['one t|wo three'],
     statusBar: 'E748: No previously used register',
+  });
+
+  suite('Text copied into register can be run as a macro', () => {
+    const start = ['one', 'two', 'three'];
+    const register = 'x';
+    const testCases: Array<[string, string[]]> = [
+      ['', ['|one', 'two', 'three']],
+      ['j', ['one', '|two', 'three']],
+      ['2j', ['one', 'two', '|three']],
+
+      ['A' + ', uno', ['one, un|o', 'two', 'three']],
+
+      ['dd', ['|two', 'three']],
+
+      ['yyp', ['one', '|one', 'two', 'three']],
+
+      ['VGJ', ['one two| three']],
+
+      ['gUU' + 'j.' + 'j.', ['|ONE', 'TWO', 'THREE']],
+
+      [':2d', ['|one', 'three']],
+
+      // TODO: control characters...
+    ];
+    for (const [macro, end] of testCases) {
+      newTest({
+        title: `macro='${macro}'`,
+        start: [`|${macro}`, ...start],
+        keysPressed: `"${register}dd` + `@${register}`,
+        end,
+        endMode: Mode.Normal,
+      });
+    }
+
+    // TODO: test with remaps
   });
 });
