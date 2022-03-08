@@ -102,7 +102,7 @@ export abstract class CommandLine {
     if (this.historyIndex === historyEntries.length - 1) {
       this.historyIndex = undefined;
       this.text = this.savedText;
-    } else {
+    } else if (this.historyIndex < historyEntries.length - 1) {
       this.historyIndex++;
       this.text = historyEntries[this.historyIndex];
     }
