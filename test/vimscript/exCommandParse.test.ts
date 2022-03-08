@@ -13,6 +13,7 @@ import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/ma
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
+import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
 import { SetCommand } from '../../src/cmd_line/commands/set';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
@@ -312,6 +313,15 @@ suite('Ex command parsing', () => {
     exParseTest(':reg b 1 " 2 a', new RegisterCommand(['b', '1', '"', '2', 'a']));
   });
 
+  suite(':ret[ab]', () => {
+    exParseTest(':retab', new RetabCommand({ replaceSpaces: false, newTabstop: undefined }));
+    exParseTest(':retab 8', new RetabCommand({ replaceSpaces: false, newTabstop: 8 }));
+    exParseTest(':ret4', new RetabCommand({ replaceSpaces: false, newTabstop: 4 }));
+    exParseTest(':retab!', new RetabCommand({ replaceSpaces: true, newTabstop: undefined }));
+    exParseTest(':ret! 8', new RetabCommand({ replaceSpaces: true, newTabstop: 8 }));
+    exParseTest(':retab!4', new RetabCommand({ replaceSpaces: true, newTabstop: 4 }));
+  });
+
   suite(':ri[ght]', () => {
     exParseTest(':right', new RightCommand({ width: 80 })); // Defaults to 'textwidth'
     exParseTest(':right40', new RightCommand({ width: 40 }));
@@ -361,12 +371,12 @@ suite('Ex command parsing', () => {
   });
 
   suite(':s[ubstitute]', () => {
-    const pattern = Pattern.parser({ direction: SearchDirection.Forward });
+    const pattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '/' });
 
     exParseTest(
       ':s/a/b/g',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
@@ -375,7 +385,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/g 3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
@@ -384,7 +394,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/g3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
@@ -393,7 +403,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/b/3',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: 3,
@@ -403,7 +413,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s#a#b#g',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
@@ -413,7 +423,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/\\/\\/a/b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('\\/\\/a'),
+        pattern: pattern.tryParse('\\/\\/a/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
@@ -423,7 +433,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/\\ba/b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('\\ba'),
+        pattern: pattern.tryParse('\\ba/'),
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
@@ -433,7 +443,7 @@ suite('Ex command parsing', () => {
     exParseTest(
       ':s/a/\\b',
       new SubstituteCommand({
-        pattern: pattern.tryParse('a'),
+        pattern: pattern.tryParse('a/'),
         replace: new ReplaceString([{ type: 'string', value: '\b' }]),
         flags: {},
         count: undefined,

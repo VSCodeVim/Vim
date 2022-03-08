@@ -1529,17 +1529,39 @@ export class CommandInsertNewLineAbove extends BaseCommand {
     await vimState.setCurrentMode(Mode.Insert);
     const count = vimState.recordedState.count || 1;
 
+    const charPos = position.getLineBeginRespectingIndent(vimState.document).character;
+
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
     vimState.cursors = getCursorsAfterSync(vimState.editor);
+    const endPos = vimState.cursors[0].start.character;
+    const indentAmt = charPos - endPos;
+
     for (let i = 0; i < count; i++) {
-      const newPos = new Position(
-        vimState.cursors[0].start.line + i,
-        vimState.cursors[0].start.character
-      );
-      vimState.cursors.push(new Cursor(newPos, newPos));
+      const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
+      if (i === 0) {
+        vimState.cursors[0] = new Cursor(newPos, newPos);
+      } else {
+        vimState.cursors.push(new Cursor(newPos, newPos));
+      }
+      if (indentAmt >= 0) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          text: TextEditor.setIndentationLevel('', indentAmt),
+          position: newPos,
+          cursorIndex: i,
+          manuallySetCursorPositions: true,
+        });
+      } else {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          cursorIndex: i,
+          range: new vscode.Range(newPos, new Position(newPos.line, endPos)),
+          manuallySetCursorPositions: true,
+        });
+      }
     }
     vimState.cursors = vimState.cursors.reverse();
     vimState.isFakeMultiCursor = true;

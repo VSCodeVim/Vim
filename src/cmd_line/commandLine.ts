@@ -12,13 +12,19 @@ import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState
 import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
 import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
-import { reportSearch } from '../util/statusBarTextUtils';
-import { Position, ExtensionContext, window } from 'vscode';
+import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
+import {
+  SearchDecorations,
+  ensureVisible,
+  getDecorationsForSearchMatchRanges,
+} from '../util/decorationUtils';
+import { Position, ExtensionContext, window, DecorationOptions, Range } from 'vscode';
 import { globalState } from '../state/globalState';
 import { scrollView } from '../util/util';
 import { ExCommand } from '../vimscript/exCommand';
 import { LineRange } from '../vimscript/lineRange';
 import { RegisterCommand } from './commands/register';
+import { SubstituteCommand } from './commands/substitute';
 
 export abstract class CommandLine {
   public cursorIndex: number;
@@ -52,6 +58,8 @@ export abstract class CommandLine {
   public abstract getSearchState(): SearchState | undefined;
 
   public abstract getHistory(): HistoryFile;
+
+  public abstract getDecorations(vimState: VimState): SearchDecorations | undefined;
 
   /**
    * Called when `<Enter>` is pressed
@@ -94,7 +102,7 @@ export abstract class CommandLine {
     if (this.historyIndex === historyEntries.length - 1) {
       this.historyIndex = undefined;
       this.text = this.savedText;
-    } else {
+    } else if (this.historyIndex < historyEntries.length - 1) {
       this.historyIndex++;
       this.text = historyEntries[this.historyIndex];
     }
@@ -211,9 +219,11 @@ export class ExCommandLine extends CommandLine {
   }
 
   public display(cursorChar: string): string {
-    return `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-      this.cursorIndex
-    )}`;
+    return escapeCSSIcons(
+      `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
+        this.cursorIndex
+      )}`
+    );
   }
 
   public get text(): string {
@@ -235,6 +245,13 @@ export class ExCommandLine extends CommandLine {
 
   public getSearchState(): SearchState | undefined {
     return undefined;
+  }
+
+  public getDecorations(vimState: VimState): SearchDecorations | undefined {
+    return this.command instanceof SubstituteCommand &&
+      vimState.currentMode === Mode.CommandlineInProgress
+      ? this.command.getSubstitutionDecorations(vimState, this.lineRange)
+      : undefined;
   }
 
   public getHistory(): HistoryFile {
@@ -381,11 +398,12 @@ export class SearchCommandLine extends CommandLine {
   }
 
   public display(cursorChar: string): string {
-    return `${
-      this.searchState.direction === SearchDirection.Forward ? '/' : '?'
-    }${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-      this.cursorIndex
-    )}`;
+    return escapeCSSIcons(
+      `${this.searchState.direction === SearchDirection.Forward ? '/' : '?'}${this.text.substring(
+        0,
+        this.cursorIndex
+      )}${cursorChar}${this.text.substring(this.cursorIndex)}`
+    );
   }
 
   public get text(): string {
@@ -437,6 +455,15 @@ export class SearchCommandLine extends CommandLine {
       vimState.cursorStopPosition,
       SearchDirection.Forward,
       this.getCurrentMatchRelativeIndex(vimState)
+    );
+  }
+
+  public getDecorations(vimState: VimState): SearchDecorations | undefined {
+    return getDecorationsForSearchMatchRanges(
+      this.searchState.getMatchRanges(vimState),
+      configuration.incsearch && vimState.currentMode === Mode.SearchInProgressMode
+        ? this.getCurrentMatchRange(vimState)?.index
+        : undefined
     );
   }
 

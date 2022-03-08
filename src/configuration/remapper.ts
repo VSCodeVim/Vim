@@ -521,7 +521,10 @@ export class Remapper implements IRemapper {
             await vscode.commands.executeCommand(commandString);
           }
 
-          StatusBar.setText(vimState, `${commandString} ${commandArgs ?? ''}`);
+          // TODO add test cases (silent defined in IKeyRemapping)
+          if (!remapping.silent) {
+            StatusBar.setText(vimState, `${commandString} ${commandArgs ?? ''}`);
+          }
         }
       }
     }

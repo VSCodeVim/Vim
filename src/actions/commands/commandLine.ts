@@ -115,9 +115,14 @@ class CommandLineTab extends CommandLineAction {
         isRemote,
         shouldAddDotItems
       );
+      const startWithBaseNameRegex = new RegExp(
+        `^${baseName}`,
+        process.platform === 'win32' ? 'i' : ''
+      );
       newCompletionItems = dirItems
-        .filter((name) => name.startsWith(baseName))
-        .map((name) => name.slice(name.search(baseName) + baseName.length))
+        .map((name): [RegExpExecArray | null, string] => [startWithBaseNameRegex.exec(name), name])
+        .filter(([isMatch]) => isMatch !== null)
+        .map(([match, name]) => name.slice(match![0].length))
         .sort();
     }
 
