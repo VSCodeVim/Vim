@@ -35,16 +35,18 @@ export async function getAndUpdateModeHandler(
     return undefined;
   }
 
-  const uri = activeTextEditor.document.uri;
-
-  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(uri);
+  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeTextEditor);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
 
   curHandler.vimState.editor = activeTextEditor;
 
-  if (forceSyncAndUpdate || !previousActiveEditorUri || previousActiveEditorUri !== uri) {
+  if (
+    forceSyncAndUpdate ||
+    !previousActiveEditorUri ||
+    previousActiveEditorUri !== activeTextEditor.document.uri
+  ) {
     // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
@@ -52,7 +54,7 @@ export async function getAndUpdateModeHandler(
     await curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
-  previousActiveEditorUri = uri;
+  previousActiveEditorUri = activeTextEditor.document.uri;
 
   if (curHandler.focusChanged) {
     curHandler.focusChanged = false;
@@ -192,7 +194,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const modeHandler = ModeHandlerMap.get(uri);
 
         let shouldDelete = false;
-        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+        if (modeHandler == null) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.document;
