@@ -168,18 +168,6 @@ export interface MoveCursorTransformation {
 }
 
 /**
- * Represents pressing ':'
- */
-export interface ShowCommandHistory {
-  type: 'showCommandHistory';
-}
-
-export interface ShowSearchHistory {
-  type: 'showSearchHistory';
-  direction: number;
-}
-
-/**
  * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
@@ -239,8 +227,6 @@ export type Transformation =
   | DeleteLeft
   | DeleteRight
   | MoveCursorTransformation
-  | ShowCommandHistory
-  | ShowSearchHistory
   | Dot
   | Macro
   | ContentChangeTransformation

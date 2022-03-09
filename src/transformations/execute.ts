@@ -9,17 +9,13 @@ import {
   areAllSameTransformation,
   overlappingTransformations,
 } from './transformations';
-import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
+import { ExCommandLine } from '../cmd_line/commandLine';
 import { PositionDiff } from '../common/motion/position';
-import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
 import { Register } from '../register/register';
-import { globalState } from '../state/globalState';
 import { RecordedState } from '../state/recordedState';
 import { TextEditor } from '../textEditor';
-import { reportSearch } from '../util/statusBarTextUtils';
 import { Cursor } from '../common/motion/cursor';
-import { Position } from 'vscode';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
@@ -165,43 +161,6 @@ export async function executeTransformations(
 
       case 'deleteRight':
         await vscode.commands.executeCommand('deleteRight');
-        break;
-
-      case 'showCommandHistory':
-        const cmd = await vscode.window.showQuickPick(
-          ExCommandLine.history.get().slice().reverse(),
-          {
-            placeHolder: 'Vim command history',
-            ignoreFocusOut: false,
-          }
-        );
-        if (cmd && cmd.length !== 0) {
-          await new ExCommandLine(cmd, vimState.currentMode).run(vimState);
-          modeHandler.updateView();
-        }
-        break;
-
-      case 'showSearchHistory':
-        const searchState = await SearchCommandLine.showSearchHistory();
-        if (searchState) {
-          globalState.searchState = searchState;
-          const nextMatch = searchState.getNextSearchMatchPosition(
-            vimState,
-            vimState.cursorStartPosition,
-            transformation.direction
-          );
-
-          if (!nextMatch) {
-            throw VimError.fromCode(
-              transformation.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop,
-              searchState.searchString
-            );
-          }
-
-          vimState.cursorStopPosition = nextMatch.pos;
-          modeHandler.updateView();
-          reportSearch(nextMatch.index, searchState.getMatchRanges(vimState).length, vimState);
-        }
         break;
 
       case 'replayRecordedState':
