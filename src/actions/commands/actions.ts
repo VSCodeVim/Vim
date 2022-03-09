@@ -397,7 +397,8 @@ class CommandExecuteMacro extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1].toLocaleLowerCase();
 
-    if (!Register.isValidRegister(register)) {
+    const isFilenameRegister = register === '%' || register === '#';
+    if (!Register.isValidRegister(register) || isFilenameRegister) {
       StatusBar.displayError(
         vimState,
         VimError.fromCode(ErrorCode.InvalidRegisterName, `'${register}'`)
