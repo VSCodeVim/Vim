@@ -231,16 +231,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // once a new file is opened.
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
-      if (vscode.window.activeTextEditor === undefined) {
-        Register.setReadonlyRegister('%', '');
-        return;
-      }
-
+      const activeTextEditor = vscode.window.activeTextEditor;
       const oldFileRegister = (await Register.get('%'))?.text;
-      const relativePath = vscode.workspace.asRelativePath(
-        vscode.window.activeTextEditor.document.uri,
-        false
-      );
+      const relativePath = activeTextEditor
+        ? vscode.workspace.asRelativePath(activeTextEditor.document.uri, false)
+        : '';
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
