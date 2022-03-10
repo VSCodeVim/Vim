@@ -551,7 +551,11 @@ export class ChangeOperator extends BaseOperator {
 
       if (vimState.document.languageId !== 'plaintext') {
         vimState.recordedState.transformer.addTransformation({
-          type: 'reindent',
+          type: 'vscodeCommand',
+          command: 'editor.action.reindentselectedlines',
+        });
+        vimState.recordedState.transformer.addTransformation({
+          type: 'moveCursor',
           cursorIndex: this.multicursorIndex,
           diff: PositionDiff.endOfLine(),
         });

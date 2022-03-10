@@ -23,10 +23,10 @@ import { Register, RegisterMode } from './../../register/register';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation, Transformation } from './../../transformations/transformations';
 import { RegisterAction, BaseCommand } from './../base';
-import { ExCommandLine } from './../../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { StatusBar } from '../../statusBar';
-import { reportFileInfo } from '../../util/statusBarTextUtils';
+import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
 import { globalState } from '../../state/globalState';
 import { SpecialKeys } from '../../util/specialKeys';
 import { WordType } from '../../textobject/word';
@@ -338,7 +338,10 @@ export class CommandQuitRecordMacro extends BaseCommand {
   keys = ['q'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const macro = vimState.macro!;
+    const macro = vimState.macro;
+    if (macro === undefined) {
+      return;
+    }
 
     const existingMacro = (await Register.get(macro.registerName))?.text;
     if (existingMacro instanceof RecordedState) {
@@ -785,9 +788,13 @@ export class CommandShowCommandHistory extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'showCommandHistory',
+    const cmd = await vscode.window.showQuickPick(ExCommandLine.history.get().slice().reverse(), {
+      placeHolder: 'Vim command history',
+      ignoreFocusOut: false,
     });
+    if (cmd && cmd.length !== 0) {
+      await new ExCommandLine(cmd, vimState.currentMode).run(vimState);
+    }
 
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -816,10 +823,28 @@ export class CommandShowSearchHistory extends BaseCommand {
     if (this.keysPressed.includes('?')) {
       this.direction = SearchDirection.Backward;
     }
-    vimState.recordedState.transformer.addTransformation({
-      type: 'showSearchHistory',
-      direction: this.direction,
-    });
+
+    const searchState = await SearchCommandLine.showSearchHistory();
+    if (searchState) {
+      globalState.searchState = searchState;
+      globalState.hl = true;
+
+      const nextMatch = searchState.getNextSearchMatchPosition(
+        vimState,
+        vimState.cursorStartPosition,
+        this.direction
+      );
+
+      if (!nextMatch) {
+        throw VimError.fromCode(
+          this.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop,
+          searchState.searchString
+        );
+      }
+
+      vimState.cursorStopPosition = nextMatch.pos;
+      reportSearch(nextMatch.index, searchState.getMatchRanges(vimState).length, vimState);
+    }
 
     await vimState.setCurrentMode(Mode.Normal);
   }
@@ -2234,7 +2259,11 @@ class ActionReplaceCharacter extends BaseCommand {
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new vscode.Range(position, endPos));
       vimState.recordedState.transformer.addTransformation({
-        type: 'tab',
+        type: 'vscodeCommand',
+        command: 'tab',
+      });
+      vimState.recordedState.transformer.addTransformation({
+        type: 'moveCursor',
         cursorIndex: this.multicursorIndex,
         diff: PositionDiff.offset({ character: -1 }),
       });
