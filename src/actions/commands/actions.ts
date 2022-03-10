@@ -2259,7 +2259,11 @@ class ActionReplaceCharacter extends BaseCommand {
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new vscode.Range(position, endPos));
       vimState.recordedState.transformer.addTransformation({
-        type: 'tab',
+        type: 'vscodeCommand',
+        command: 'tab',
+      });
+      vimState.recordedState.transformer.addTransformation({
+        type: 'moveCursor',
         cursorIndex: this.multicursorIndex,
         diff: PositionDiff.offset({ character: -1 }),
       });

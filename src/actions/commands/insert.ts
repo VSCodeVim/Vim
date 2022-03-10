@@ -212,7 +212,8 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.addTransformation({
-      type: 'deleteLeft',
+      type: 'vscodeCommand',
+      command: 'deleteLeft',
     });
   }
 }
@@ -228,7 +229,8 @@ class CommandDeleteInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.addTransformation({
-      type: 'deleteRight',
+      type: 'vscodeCommand',
+      command: 'deleteRight',
     });
   }
 }

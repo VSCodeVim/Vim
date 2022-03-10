@@ -155,14 +155,6 @@ export async function executeTransformations(
         vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
         break;
 
-      case 'deleteLeft':
-        await vscode.commands.executeCommand('deleteLeft');
-        break;
-
-      case 'deleteRight':
-        await vscode.commands.executeCommand('deleteRight');
-        break;
-
       case 'replayRecordedState':
         await modeHandler.rerunRecordedState(transformation.recordedState.clone());
         break;
@@ -213,34 +205,8 @@ export async function executeTransformations(
         vimState.editor.selection = new vscode.Selection(newPos, newPos);
         break;
 
-      case 'tab':
-        await vscode.commands.executeCommand('tab');
-        if (transformation.diff) {
-          if (transformation.cursorIndex === undefined) {
-            throw new Error('No cursor index - this should never ever happen!');
-          }
-
-          if (!accumulatedPositionDifferences[transformation.cursorIndex]) {
-            accumulatedPositionDifferences[transformation.cursorIndex] = [];
-          }
-
-          accumulatedPositionDifferences[transformation.cursorIndex].push(transformation.diff);
-        }
-        break;
-
-      case 'reindent':
-        await vscode.commands.executeCommand('editor.action.reindentselectedlines');
-        if (transformation.diff) {
-          if (transformation.cursorIndex === undefined) {
-            throw new Error('No cursor index - this should never ever happen!');
-          }
-
-          if (!accumulatedPositionDifferences[transformation.cursorIndex]) {
-            accumulatedPositionDifferences[transformation.cursorIndex] = [];
-          }
-
-          accumulatedPositionDifferences[transformation.cursorIndex].push(transformation.diff);
-        }
+      case 'vscodeCommand':
+        await vscode.commands.executeCommand(transformation.command);
         break;
 
       default:
