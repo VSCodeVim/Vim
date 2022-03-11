@@ -2258,15 +2258,11 @@ class ActionReplaceCharacter extends BaseCommand {
 
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new vscode.Range(position, endPos));
-      vimState.recordedState.transformer.addTransformation({
-        type: 'vscodeCommand',
-        command: 'tab',
-      });
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        cursorIndex: this.multicursorIndex,
-        diff: PositionDiff.offset({ character: -1 }),
-      });
+      vimState.recordedState.transformer.vscodeCommand('tab');
+      vimState.recordedState.transformer.moveCursor(
+        PositionDiff.offset({ character: -1 }),
+        this.multicursorIndex
+      );
     } else if (toReplace === '\n') {
       // A newline replacement always inserts exactly one newline (regardless
       // of count prefix) and puts the cursor on the next line.
@@ -2867,10 +2863,9 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
             }
 
             if (vimState.currentMode === Mode.Normal) {
-              vimState.recordedState.transformer.addTransformation({
-                type: 'moveCursor',
-                diff: PositionDiff.exactPosition(pos.getLeft(num.suffix.length)),
-              });
+              vimState.recordedState.transformer.moveCursor(
+                PositionDiff.exactPosition(pos.getLeft(num.suffix.length))
+              );
             }
             break wordLoop;
           } else {
@@ -2883,10 +2878,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
     }
 
     if (isVisualMode(vimState.currentMode)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: PositionDiff.exactPosition(ranges[0].start),
-      });
+      vimState.recordedState.transformer.moveCursor(PositionDiff.exactPosition(ranges[0].start));
     }
 
     vimState.setCurrentMode(Mode.Normal);

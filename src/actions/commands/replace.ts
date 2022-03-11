@@ -100,10 +100,7 @@ class ReplaceInReplaceMode extends BaseCommand {
       });
     } else if (char === '<tab>') {
       vimState.recordedState.transformer.delete(new Range(position, position.getRight()));
-      vimState.recordedState.transformer.addTransformation({
-        type: 'vscodeCommand',
-        command: 'tab',
-      });
+      vimState.recordedState.transformer.vscodeCommand('tab');
     } else {
       vimState.recordedState.transformer.insert(position, char);
     }

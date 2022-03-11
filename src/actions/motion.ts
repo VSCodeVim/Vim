@@ -2206,15 +2206,9 @@ abstract class MoveTagMatch extends ExpandingSelection {
     }
 
     if (position.isAfter(endPosition)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: endPosition.subtract(position),
-      });
+      vimState.recordedState.transformer.moveCursor(endPosition.subtract(position));
     } else if (position.isBefore(startPosition)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: startPosition.subtract(position),
-      });
+      vimState.recordedState.transformer.moveCursor(startPosition.subtract(position));
     }
     // if (start === end) {
     //   if (vimState.recordedState.operator instanceof ChangeOperator) {

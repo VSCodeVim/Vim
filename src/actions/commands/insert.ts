@@ -211,10 +211,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'vscodeCommand',
-      command: 'deleteLeft',
-    });
+    vimState.recordedState.transformer.vscodeCommand('deleteLeft');
   }
 }
 
@@ -228,10 +225,7 @@ class CommandDeleteInInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'vscodeCommand',
-      command: 'deleteRight',
-    });
+    vimState.recordedState.transformer.vscodeCommand('deleteRight');
   }
 }
 
@@ -509,12 +503,11 @@ class NewLineInsertMode extends BaseCommand {
   keys = [['<C-j>'], ['<C-m>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: '\n',
+    vimState.recordedState.transformer.insert(
       position,
-      diff: PositionDiff.offset({ character: -1 }),
-    });
+      '\n',
+      PositionDiff.offset({ character: -1 })
+    );
   }
 }
 
