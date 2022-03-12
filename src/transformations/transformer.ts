@@ -35,7 +35,7 @@ export class Transformer {
     this.addTransformation({ type: 'moveCursor', diff, cursorIndex });
   }
 
-  public vscodeCommand(command: string): void {
-    this.addTransformation({ type: 'vscodeCommand', command });
+  public vscodeCommand(command: string, ...args: any[]): void {
+    this.addTransformation({ type: 'vscodeCommand', command, args });
   }
 }

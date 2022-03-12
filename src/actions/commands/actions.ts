@@ -901,8 +901,7 @@ abstract class CommandFold extends BaseCommand {
       this.direction !== undefined
         ? { levels: timesToRepeat, direction: this.direction }
         : undefined;
-    await vscode.commands.executeCommand(this.commandName, args);
-    vimState.cursors = getCursorsAfterSync(vimState.editor);
+    vimState.recordedState.transformer.vscodeCommand(this.commandName, args);
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -3084,8 +3083,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
         return new vscode.Selection(wordBegin, curPos);
       }
     });
-    await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.cursors = getCursorsAfterSync(vimState.editor);
+    vimState.recordedState.transformer.vscodeCommand('editor.action.addSelectionToNextFindMatch');
   }
 }
 
@@ -3102,8 +3100,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
   override runsOnceForEachCountPrefix = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.cursors = getCursorsAfterSync(vimState.editor);
+    vimState.recordedState.transformer.vscodeCommand('editor.action.insertCursorBelow');
   }
 }
 
@@ -3120,8 +3117,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
   override runsOnceForEachCountPrefix = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.cursors = getCursorsAfterSync(vimState.editor);
+    vimState.recordedState.transformer.vscodeCommand('editor.action.insertCursorAbove');
   }
 }
 

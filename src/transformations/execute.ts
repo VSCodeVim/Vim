@@ -206,7 +206,7 @@ export async function executeTransformations(
         break;
 
       case 'vscodeCommand':
-        await vscode.commands.executeCommand(transformation.command);
+        await vscode.commands.executeCommand(transformation.command, transformation.args);
         break;
 
       default:
