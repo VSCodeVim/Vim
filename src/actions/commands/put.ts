@@ -68,11 +68,10 @@ abstract class BasePutCommand extends BaseCommand {
       text
     );
     for (let i = 0; i < vimState.editor.selections.length; i++) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: PositionDiff.exactPosition(newCursorPosition),
-        cursorIndex: i,
-      });
+      vimState.recordedState.transformer.moveCursor(
+        PositionDiff.exactPosition(newCursorPosition),
+        i
+      );
     }
 
     if (registerMode === RegisterMode.LineWise) {

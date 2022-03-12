@@ -113,20 +113,6 @@ export interface InsertTextVSCodeTransformation {
 }
 
 /**
- * <BS>
- */
-export interface DeleteLeft {
-  type: 'deleteLeft';
-}
-
-/**
- * <Del>
- */
-export interface DeleteRight {
-  type: 'deleteRight';
-}
-
-/**
  * Represents deleting a range of characters.
  */
 export interface DeleteTextRangeTransformation {
@@ -168,18 +154,6 @@ export interface MoveCursorTransformation {
 }
 
 /**
- * Represents pressing ':'
- */
-export interface ShowCommandHistory {
-  type: 'showCommandHistory';
-}
-
-export interface ShowSearchHistory {
-  type: 'showSearchHistory';
-  direction: number;
-}
-
-/**
  * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
@@ -187,30 +161,10 @@ export interface Dot {
   recordedState: RecordedState;
 }
 
-/**
- * Represents Tab
- */
-export interface Tab {
-  type: 'tab';
-  cursorIndex?: number;
-
-  /**
-   * Move the cursor this much.
-   */
-  diff?: PositionDiff;
-}
-
-/**
- * Represents reindenting the selected line
- */
-export interface Reindent {
-  type: 'reindent';
-  cursorIndex?: number;
-
-  /**
-   * Move the cursor this much.
-   */
-  diff?: PositionDiff;
+export interface VSCodeCommandTransformation {
+  type: 'vscodeCommand';
+  command: string;
+  args: any[];
 }
 
 /**
@@ -236,16 +190,11 @@ export type Transformation =
   | InsertTextVSCodeTransformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
-  | DeleteLeft
-  | DeleteRight
   | MoveCursorTransformation
-  | ShowCommandHistory
-  | ShowSearchHistory
   | Dot
   | Macro
   | ContentChangeTransformation
-  | Tab
-  | Reindent;
+  | VSCodeCommandTransformation;
 
 /**
  * Text Transformations
