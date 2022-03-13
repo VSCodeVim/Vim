@@ -7,6 +7,11 @@ import { MoveInsideCharacter } from '../../motion';
 import { searchPosition } from './searchUtils';
 import { bracketObjectsEnabled } from './targetsConfig';
 
+/*
+ * This function creates a last/next movement based on an existing one.
+ * It works by searching for a next/last character, and then applying the given action in its position.
+ * For examples of how to use it, see src/actions/plugins/targets/lastNextObjects.ts.
+ */
 function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which: 'l' | 'n') {
   abstract class NextHandlerClass extends BaseMovement {
     public override readonly keys: readonly string[] | readonly string[][];
