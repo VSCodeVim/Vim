@@ -739,6 +739,26 @@
           "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
           "default": false
         },
+        "vim.targets.enable": {
+          "type": "boolean",
+          "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implmeneted yet).",
+          "default": false
+        },
+        "vim.targets.smartQuotes.enable": {
+          "type": "boolean",
+          "markdownDescription": "Enable the smart quotes movements from [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects).",
+          "default": true
+        },
+        "vim.targets.smartQuotes.breakThroughLines": {
+          "type": "boolean",
+          "markdownDescription": "Whether to break through lines when using [n]ext/[l]ast motion, see [targets.vim#next-and-last-quote](https://github.com/wellle/targets.vim#next-and-last-quote).",
+          "default": true
+        },
+        "vim.targets.smartQuotes.aIncludesSurroundingSpaces": {
+          "type": "boolean",
+          "markdownDescription": "Whether to use default Vim behavior when using `a` (e.g. `da'`) which include surrounding spaces, or not, as for other text objects.",
+          "default": true
+        },
         "vim.sneak": {
           "type": "boolean",
           "markdownDescription": "Enable the [Sneak](https://github.com/justinmk/vim-sneak) plugin for Vim.",
