@@ -1,7 +1,4 @@
-import { assert } from 'console';
-import { toUpper } from 'lodash';
 import { Position } from 'vscode';
-import { configuration } from '../../../configuration/configuration';
 import { isVisualMode } from '../../../mode/mode';
 import { VimState } from '../../../state/vimState';
 import { Logger } from '../../../util/logger';
