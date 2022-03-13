@@ -210,6 +210,7 @@ class DisableExtension extends BaseCommand {
     Mode.Replace,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
+    Mode.SneakLabelInputMode,
     Mode.SurroundInputMode,
   ];
   keys = [SpecialKeys.ExtensionDisable];
@@ -425,6 +426,7 @@ class CommandEsc extends BaseCommand {
     Mode.SurroundInputMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
+    Mode.SneakLabelInputMode,
   ];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 

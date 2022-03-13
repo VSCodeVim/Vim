@@ -834,7 +834,7 @@ function findHelper(
 }
 
 @RegisterAction
-class MoveFindForward extends BaseMovement {
+export class MoveFindForward extends BaseMovement {
   keys = ['f', '<character>'];
 
   public override async execActionWithCount(
@@ -843,10 +843,11 @@ class MoveFindForward extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     if (configuration.sneakReplacesF) {
+      const searchString = this.keysPressed[1];
       const pos = await new SneakForward(
         this.keysPressed.concat('\n'),
         this.isRepeat
-      ).execActionWithCount(position, vimState, count);
+      ).execActionWithCount(position, vimState, count, searchString);
       if (vimState.recordedState.operator && !isIMovement(pos)) {
         return pos.getRight();
       }
@@ -874,7 +875,7 @@ class MoveFindForward extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFindBackward extends BaseMovement {
+export class MoveFindBackward extends BaseMovement {
   keys = ['F', '<character>'];
 
   public override async execActionWithCount(
@@ -979,7 +980,7 @@ class MoveTilBackward extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeat extends BaseMovement {
+export class MoveRepeat extends BaseMovement {
   keys = [';'];
 
   public override async execActionWithCount(
@@ -996,7 +997,7 @@ class MoveRepeat extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeatReversed extends BaseMovement {
+export class MoveRepeatReversed extends BaseMovement {
   keys = [','];
 
   public override async execActionWithCount(

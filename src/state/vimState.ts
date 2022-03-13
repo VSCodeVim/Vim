@@ -10,11 +10,13 @@ import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { BaseAction } from '../actions/base';
+import { IKeyRemapping } from '../configuration/iconfiguration';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 import { CommandLine } from '../cmd_line/commandLine';
-
+import { Sneak } from '../../src/actions/plugins/sneak';
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
 }
@@ -61,6 +63,8 @@ export class VimState implements vscode.Disposable {
   public easyMotion: IEasyMotion;
 
   public readonly documentUri: vscode.Uri;
+
+  public sneak: Sneak;
 
   public editor: vscode.TextEditor;
 
@@ -319,6 +323,7 @@ export class VimState implements vscode.Disposable {
     this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
+    this.sneak = new Sneak(this.editor);
   }
 
   async load() {

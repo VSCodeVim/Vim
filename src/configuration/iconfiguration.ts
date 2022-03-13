@@ -181,9 +181,41 @@ export interface IConfiguration {
   sneakUseIgnorecaseAndSmartcase: boolean;
 
   /**
+   * The maximum number of lines to search (counted from the cursor position) when using Sneak
+   * (0 means no restriction, 1 would mean to only search the current line).
+   */
+  sneakMaxLinesToConsider: number;
+
+  /**
    * Use single-character `sneak` instead of Vim's native `f`"
    */
   sneakReplacesF: boolean;
+
+  /**
+   * Use sneak label mode?
+   */
+  sneakLabelMode: boolean;
+
+  /**
+   * List of targets used to label target locations.
+   */
+  sneakLabelTargets: string;
+
+  /**
+   * Sneak highlighting colors.
+   */
+  sneakHighlightFontColor: string;
+  sneakHighlightBackgroundColor: string;
+
+  /**
+   * Fade out the visible text when highlighting is active.
+   */
+  sneakHighlightUseFadeout: boolean;
+
+  /**
+   * The color of the faded-out text when sneakHighlightUseFadeout is set.
+   */
+  sneakHighlightFadeColor: string;
 
   /**
    * Use surround plugin?

@@ -191,6 +191,8 @@ export function statusBarText(vimState: VimState) {
       return '-- SURROUND INPUT --';
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
+    case Mode.SneakLabelInputMode:
+      return '-- SNEAK LABEL INPUT --';
     case Mode.SearchInProgressMode:
       if (vimState.commandLine === undefined) {
         logger.warn('vimState.commandLine is undefined in SearchInProgressMode');

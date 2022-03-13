@@ -243,7 +243,14 @@ class Configuration implements IConfiguration {
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
+  sneakMaxLinesToConsider = 0;
   sneakReplacesF = false;
+  sneakLabelMode = false;
+  sneakLabelTargets = ';sftunq/SFGHLTUNRMQZ?0';
+  sneakHighlightFontColor = '#282c34';
+  sneakHighlightBackgroundColor = '';
+  sneakHighlightUseFadeout = false;
+  sneakHighlightFadeColor = '#fff5';
 
   surround = true;
 

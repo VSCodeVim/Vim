@@ -606,6 +606,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState.actionsRunPressedKeys.push(...recordedState.actionKeys);
 
     let actionToRecord: BaseAction | undefined = action;
+    this.vimState.sneak.lastRecognizedAction = actionToRecord;
+
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
     } else {
@@ -738,7 +740,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        prevMode !== Mode.SneakLabelInputMode
       ) {
         ranRepeatableAction = true;
       }
@@ -1572,6 +1575,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
+
+    this.vimState.sneak.clearSneakIfApplicable(this.vimState);
 
     StatusBar.clear(this.vimState, false);
 

@@ -29,7 +29,7 @@ suite('sneak plugin', () => {
     title: 'Can handle <operator>z motion',
     start: ['|abc abc'],
     keysPressed: 'dzab',
-    end: ['|abc'],
+    end: ['|c'],
   });
 
   newTest({
@@ -85,7 +85,7 @@ suite('sneak plugin', () => {
     title: 'Can handle single letter <operator>z motion',
     start: ['|abc abc'],
     keysPressed: 'dza\n',
-    end: ['|abc'],
+    end: ['|bc'],
   });
 
   newTest({
@@ -157,6 +157,188 @@ suite('sneak plugin', () => {
     keysPressed: 'sab;<C-o>',
     end: ['abc abc |abc'],
   });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc ('],
+    keysPressed: 's(\n',
+    end: ['abc |('],
+  });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc %'],
+    keysPressed: 's%\n',
+    end: ['abc |%'],
+  });
+
+  newTest({
+    title: 'Can handle special characters in the search',
+    start: ['|abc *'],
+    keysPressed: 's*\n',
+    end: ['abc |*'],
+  });
+});
+
+suite('sneakMaxLinesToConsider', () => {
+  suite('sneakMaxLinesToConsider == 1', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakMaxLinesToConsider = 1;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'sneak forward on the same line',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sle',
+      end: ['app|le', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward on the same line',
+      start: ['apple|', 'banana', 'carrot'],
+      keysPressed: 'Sap',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak forward 1 line down do not move',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sba',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward 1 line up do not move',
+      start: ['apple', 'ban|ana', 'carrot'],
+      keysPressed: 'Sap',
+      end: ['apple', 'ban|ana', 'carrot'],
+    });
+  });
+
+  suite('sneakMaxLinesToConsider == 2', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakMaxLinesToConsider = 2;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'sneak forward one line down',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sba',
+      end: ['apple', '|banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak forward two line down',
+      start: ['|apple', 'banana', 'carrot'],
+      keysPressed: 'sca',
+      end: ['|apple', 'banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward one line up',
+      start: ['apple', 'banana', 'car|rot'],
+      keysPressed: 'Sba',
+      end: ['apple', '|banana', 'carrot'],
+    });
+
+    newTest({
+      title: 'sneak backward two line up',
+      start: ['apple', 'banana', 'car|rot'],
+      keysPressed: 'Sap',
+      end: ['apple', 'banana', 'car|rot'],
+    });
+  });
+});
+
+suite('sneakUseIgnoreCaseAndSmartcase', () => {
+  suite('sneakUseIgnoreCaseAndSmartcase === false', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = false;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'Skip capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange Apple |apple Apple'],
+    });
+
+    newTest({
+      title: 'jump to first Capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange |Apple apple Apple'],
+    });
+  });
+
+  suite('ignorecase === on, smartcase === off', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = true;
+      Globals.mockConfiguration.ignorecase = true;
+      Globals.mockConfiguration.smartcase = false;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'search lowercase include capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange |Apple apple Apple'],
+    });
+
+    newTest({
+      title: 'search uppercase include lowercase letter',
+      start: ['|orange apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange |apple Apple'],
+    });
+  });
+
+  suite('ignorecase === on, smartcase === on', () => {
+    setup(async () => {
+      await setupWorkspace();
+      Globals.mockConfiguration.sneak = true;
+      Globals.mockConfiguration.sneakUseIgnorecaseAndSmartcase = true;
+      Globals.mockConfiguration.ignorecase = true;
+      Globals.mockConfiguration.smartcase = true;
+      await reloadConfiguration();
+    });
+
+    teardown(cleanUpWorkspace);
+
+    newTest({
+      title: 'search lowercase include capital letter',
+      start: ['|orange Apple apple Apple'],
+      keysPressed: 'sap',
+      end: ['orange |Apple apple Apple'],
+    });
+
+    newTest({
+      title: 'search uppercase exclude lowercase letter',
+      start: ['|orange apple Apple'],
+      keysPressed: 'sAp',
+      end: ['orange apple |Apple'],
+    });
+  });
 });
 
 suite('sneakReplacesF', () => {
@@ -181,5 +363,45 @@ suite('sneakReplacesF', () => {
     start: ['apple', 'banana', '|carrot'],
     keysPressed: 'Fa;',
     end: ['apple', 'ban|ana', 'carrot'],
+  });
+});
+
+suite('sneakLabelMode', () => {
+  setup(async () => {
+    await setupWorkspace();
+    Globals.mockConfiguration.sneak = true;
+    Globals.mockConfiguration.sneakLabelMode = true;
+    Globals.mockConfiguration.sneakLabelTargets = ';sftunq/SFGHLTUNRMQZ?0';
+    await reloadConfiguration();
+  });
+
+  teardown(cleanUpWorkspace);
+
+  newTest({
+    title: 'Can handle forward label mode',
+    start: ['|abc', 'abc', 'abc', 'abc'],
+    keysPressed: 'sabs',
+    end: ['abc', 'abc', 'abc', '|abc'],
+  });
+
+  newTest({
+    title: 'Can handle backward label mode',
+    start: ['abc', 'abc', 'abc', '|abc'],
+    keysPressed: 'Sabs',
+    end: ['|abc', 'abc', 'abc', 'abc'],
+  });
+
+  newTest({
+    title: 'Can handle <operator>z in label mode',
+    start: ['|abc', 'abc', 'abc', 'abc'],
+    keysPressed: 'dzabs',
+    end: ['|c', 'abc'],
+  });
+
+  newTest({
+    title: 'Can handle <operator>Z label mode',
+    start: ['abc', 'abc', 'abc', '|abc'],
+    keysPressed: 'dZabs',
+    end: ['abc', '|abc'],
   });
 });

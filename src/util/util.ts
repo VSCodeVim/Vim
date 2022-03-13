@@ -33,6 +33,14 @@ export function scrollView(vimState: VimState, offset: number) {
   }
 }
 
+export function maxPosition(pos1: vscode.Position, pos2: vscode.Position): vscode.Position {
+  return pos1.isAfterOrEqual(pos2) ? pos1 : pos2;
+}
+
+export function minPosition(pos1: vscode.Position, pos2: vscode.Position): vscode.Position {
+  return pos1.isBeforeOrEqual(pos2) ? pos1 : pos2;
+}
+
 export function assertDefined<X>(x: X | undefined, err: string): asserts x {
   if (x === undefined) {
     throw new Error(err);

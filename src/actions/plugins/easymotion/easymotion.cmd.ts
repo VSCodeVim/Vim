@@ -15,6 +15,7 @@ import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
 import { MarkerGenerator } from './markerGenerator';
 import { Position } from 'vscode';
+import { SearchUtil } from './searchUtil';
 
 export interface EasymotionTrigger {
   key: string;
@@ -124,15 +125,13 @@ function getMatchesForString(
         return vimState.easyMotion.sortedSearch(vimState.document, position, searchString, options);
       }
 
-      const ignorecase =
-        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
-      const regexFlags = ignorecase ? 'gi' : 'g';
-      return vimState.easyMotion.sortedSearch(
-        vimState.document,
-        position,
-        new RegExp(searchString, regexFlags),
-        options
+      const searchRegex = SearchUtil.generateRegexFromString(
+        searchString,
+        configuration.ignorecase,
+        configuration.smartcase
       );
+
+      return vimState.easyMotion.sortedSearch(vimState.document, position, searchRegex, options);
   }
 }
 
