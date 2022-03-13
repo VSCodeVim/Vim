@@ -658,10 +658,7 @@ export class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   keys = ['R'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const timesToRepeat = vimState.recordedState.count || 1;
-
     await vimState.setCurrentMode(Mode.Replace);
-    vimState.replaceState = new ReplaceState(vimState, position, timesToRepeat);
   }
 }
 

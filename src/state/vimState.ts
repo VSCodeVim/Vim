@@ -14,6 +14,7 @@ import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
 import { CommandLine } from '../cmd_line/commandLine';
+import { ModeData } from '../mode/modeData';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -191,8 +192,6 @@ export class VimState implements vscode.Disposable {
     this._cursorsInitialState = [...cursors];
   }
 
-  public replaceState: ReplaceState | undefined = undefined;
-
   /**
    * Stores last visual mode as well as what was selected for `gv`
    */
@@ -230,12 +229,12 @@ export class VimState implements vscode.Disposable {
   };
 
   /**
-   * The mode Vim will be in once this action finishes.
+   * The current mode and its associated state.
    */
-  private _currentMode: Mode = Mode.Normal;
+  public modeData: ModeData = { mode: Mode.Normal };
 
   public get currentMode(): Mode {
-    return this._currentMode;
+    return this.modeData.mode;
   }
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
@@ -245,9 +244,9 @@ export class VimState implements vscode.Disposable {
    * use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.getOperatorState(this._currentMode) === 'pending'
+    return this.recordedState.getOperatorState(this.currentMode) === 'pending'
       ? Mode.OperatorPendingMode
-      : this._currentMode;
+      : this.currentMode;
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
@@ -256,11 +255,17 @@ export class VimState implements vscode.Disposable {
       throw new Error('Tried setting currentMode to undefined');
     }
 
-    await this.inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
+    await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, mode);
     if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
       this.returnToInsertAfterCommand = false;
     }
-    this._currentMode = mode;
+    this.modeData =
+      mode === Mode.Replace
+        ? {
+            mode,
+            replaceState: new ReplaceState(this.document, this.cursorStopPosition, this.recordedState.count),
+          }
+        : { mode };
 
     if (configuration.smartRelativeLine) {
       this.editor.options.lineNumbers =

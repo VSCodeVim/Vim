@@ -11,7 +11,10 @@ class ExitReplaceMode extends BaseCommand {
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const replaceState = vimState.replaceState!;
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in ExitReplaceMode`);
+    }
+    const replaceState = vimState.modeData.replaceState;
 
     // `3Rabc` results in 'abc' replacing the next characters 2 more times
     if (replaceState.timesToRepeat > 1) {
@@ -44,13 +47,17 @@ class BackspaceInReplaceMode extends BaseCommand {
   keys = [['<BS>'], ['<S-BS>'], ['<C-BS>'], ['<C-h>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const replaceState = vimState.replaceState!;
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in BackspaceInReplaceMode`);
+    }
+    const replaceState = vimState.modeData.replaceState;
+
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
       const newPosition = position.getLeftThroughLineBreaks();
 
       if (newPosition.line < replaceState.replaceCursorStartPosition.line) {
-        vimState.replaceState = new ReplaceState(vimState, newPosition);
+        vimState.modeData.replaceState = new ReplaceState(vimState.document, newPosition);
       } else {
         replaceState.replaceCursorStartPosition = newPosition;
       }
@@ -87,8 +94,12 @@ class ReplaceInReplaceMode extends BaseCommand {
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in ReplaceInReplaceMode`);
+    }
+    const replaceState = vimState.modeData.replaceState;
+
     const char = this.keysPressed[0];
-    const replaceState = vimState.replaceState!;
     const isNewLineOrTab = char === '\n' || char === '<tab>';
 
     if (!position.isLineEnd() && !isNewLineOrTab) {

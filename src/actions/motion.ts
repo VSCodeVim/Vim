@@ -29,6 +29,7 @@ import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
+import { ModeDataFor } from '../mode/modeData';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -440,8 +441,6 @@ export class ArrowsInInsertMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    // TODO: Is resetting ReplaceState necessary?
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }
 }
@@ -473,7 +472,7 @@ class ArrowsInReplaceMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
+    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState = new ReplaceState(vimState.document, newPosition);
     return newPosition;
   }
 }
