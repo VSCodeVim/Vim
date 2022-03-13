@@ -24,7 +24,7 @@ import { TextEditor } from './../textEditor';
 import { VimError, ForceStopRemappingError } from './../error';
 import { VimState } from './../state/vimState';
 import { VSCodeContext } from '../util/vscodeContext';
-import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
+import { SearchCommandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
 import { scrollView } from '../util/util';
@@ -46,7 +46,6 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
-import { SubstituteCommand } from '../cmd_line/commands/substitute';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -83,7 +82,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public static async create(
     handlerMap: IModeHandlerMap,
-    textEditor = vscode.window.activeTextEditor!
+    textEditor: vscode.TextEditor
   ): Promise<ModeHandler> {
     const modeHandler = new ModeHandler(handlerMap, textEditor);
     await modeHandler.vimState.load();
@@ -107,19 +106,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    */
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
-    if (this.vimState.editor) {
-      const { selections } = this.vimState.editor;
-      if (
-        !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
-        !this.vimState.cursorStopPosition.isEqual(selections[0].active)
-      ) {
-        this.vimState.desiredColumn = selections[0].active.character;
-      }
-
-      this.vimState.cursors = selections.map(({ active, anchor }) =>
-        active.isBefore(anchor) ? new Cursor(anchor.getLeft(), active) : new Cursor(anchor, active)
-      );
+    const { selections } = this.vimState.editor;
+    if (
+      !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
+      !this.vimState.cursorStopPosition.isEqual(selections[0].active)
+    ) {
+      this.vimState.desiredColumn = selections[0].active.character;
     }
+
+    this.vimState.cursors = selections.map(({ active, anchor }) =>
+      active.isBefore(anchor) ? new Cursor(anchor.getLeft(), active) : new Cursor(anchor, active)
+    );
   }
 
   /**

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { CompositionState } from './src/state/compositionState';
 import { Globals } from './src/globals';
@@ -18,7 +17,6 @@ import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
-import { vimrc } from './src/configuration/vimrc';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -37,16 +35,18 @@ export async function getAndUpdateModeHandler(
     return undefined;
   }
 
-  const uri = activeTextEditor.document.uri;
-
-  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(uri);
+  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeTextEditor);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
 
   curHandler.vimState.editor = activeTextEditor;
 
-  if (forceSyncAndUpdate || !previousActiveEditorUri || previousActiveEditorUri !== uri) {
+  if (
+    forceSyncAndUpdate ||
+    !previousActiveEditorUri ||
+    previousActiveEditorUri !== activeTextEditor.document.uri
+  ) {
     // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
@@ -54,7 +54,7 @@ export async function getAndUpdateModeHandler(
     await curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
-  previousActiveEditorUri = uri;
+  previousActiveEditorUri = activeTextEditor.document.uri;
 
   if (curHandler.focusChanged) {
     curHandler.focusChanged = false;
@@ -194,7 +194,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const modeHandler = ModeHandlerMap.get(uri);
 
         let shouldDelete = false;
-        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+        if (modeHandler == null) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.document;
@@ -214,17 +214,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     false
   );
 
-  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async (document) => {
-    if (
-      configuration.vimrc.enable &&
-      vimrc.vimrcPath &&
-      path.relative(document.fileName, vimrc.vimrcPath) === ''
-    ) {
-      await configuration.load();
-      vscode.window.showInformationMessage('Sourced new .vimrc');
-    }
-  });
-
   // window events
   registerEventListener(
     context,
@@ -242,16 +231,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // once a new file is opened.
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
-      if (vscode.window.activeTextEditor === undefined) {
-        Register.setReadonlyRegister('%', '');
-        return;
-      }
-
+      const activeTextEditor = vscode.window.activeTextEditor;
       const oldFileRegister = (await Register.get('%'))?.text;
-      const relativePath = vscode.workspace.asRelativePath(
-        vscode.window.activeTextEditor.document.uri,
-        false
-      );
+      const relativePath = activeTextEditor
+        ? vscode.workspace.asRelativePath(activeTextEditor.document.uri, false)
+        : '';
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
@@ -491,20 +475,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  registerCommand(
-    context,
-    'vim.editVimrc',
-    async () => {
-      if (vimrc.vimrcPath) {
-        const document = await vscode.workspace.openTextDocument(vimrc.vimrcPath);
-        await vscode.window.showTextDocument(document);
-      } else {
-        await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
-      }
-    },
-    false
-  );
-
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
@@ -604,7 +574,7 @@ function overrideCommand(
   context.subscriptions.push(disposable);
 }
 
-function registerCommand(
+export function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
   callback: (...args: any[]) => any,
@@ -620,7 +590,7 @@ function registerCommand(
   context.subscriptions.push(disposable);
 }
 
-function registerEventListener<T>(
+export function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
   listener: (e: T) => void,

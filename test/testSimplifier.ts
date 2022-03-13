@@ -347,7 +347,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor.document.uri);
+  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
 
   let keysPressed = testObj.keysPressed;
   if (process.platform === 'win32') {
@@ -439,7 +439,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor.document.uri);
+  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
 
   // Change remappings
   if (testObj.remaps) {

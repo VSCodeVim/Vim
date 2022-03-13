@@ -329,11 +329,10 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       // HACK: currently must do this nonsense to collapse all cursors into one
       for (let i = 0; i < vimState.editor.selections.length; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'moveCursor',
-          diff: PositionDiff.exactPosition(earlierOf(startPos, endPos)),
-          cursorIndex: i,
-        });
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.exactPosition(earlierOf(startPos, endPos)),
+          i
+        );
       }
     } else {
       if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -550,11 +549,11 @@ export class ChangeOperator extends BaseOperator {
       );
 
       if (vimState.document.languageId !== 'plaintext') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'reindent',
-          cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.endOfLine(),
-        });
+        vimState.recordedState.transformer.vscodeCommand('editor.action.reindentselectedlines');
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.endOfLine(),
+          this.multicursorIndex
+        );
       }
     } else {
       vimState.recordedState.transformer.delete(deleteRange);

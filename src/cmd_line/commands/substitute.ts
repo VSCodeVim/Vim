@@ -534,11 +534,7 @@ export class SubstituteCommand extends ExCommand {
         }),
         Jump.fromStateNow(vimState)
       );
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: PositionDiff.exactPosition(cursor),
-        cursorIndex: 0,
-      });
+      vimState.recordedState.transformer.moveCursor(PositionDiff.exactPosition(cursor), 0);
     }
 
     this.confirmedSubstitutions = undefined;
