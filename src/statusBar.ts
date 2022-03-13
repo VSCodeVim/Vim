@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
-import { Logger } from './util/logger';
 import { VimError } from './error';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -169,8 +168,7 @@ export function statusBarText(vimState: VimState) {
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  const logger = Logger.get('StatusBar');
-  switch (vimState.currentMode) {
+  switch (vimState.modeData.mode) {
     case Mode.Normal:
       return '-- NORMAL --';
     case Mode.Insert:
@@ -192,17 +190,9 @@ export function statusBarText(vimState: VimState) {
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
-      if (vimState.commandLine === undefined) {
-        logger.warn('vimState.commandLine is undefined in SearchInProgressMode');
-        return '';
-      }
-      return vimState.commandLine.display(cursorChar);
+      return vimState.modeData.commandLine.display(cursorChar);
     case Mode.CommandlineInProgress:
-      if (vimState.commandLine === undefined) {
-        logger.warn('vimState.commandLine is undefined in CommandLineInProgress mode');
-        return '';
-      }
-      return vimState.commandLine.display(cursorChar);
+      return vimState.modeData.commandLine.display(cursorChar);
     default:
       return '';
   }

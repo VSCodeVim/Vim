@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
 import { RecordedState } from '../../state/recordedState';
-import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
 import { getCursorsAfterSync, clamp } from '../../util/util';
 import { Clipboard } from '../../util/clipboard';
@@ -770,8 +769,12 @@ class CommandShowCommandLine extends BaseCommand {
       commandLineText = "'<,'>";
     }
 
-    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
+    const previousMode = vimState.currentMode;
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
+    // TODO: Change or supplement `setCurrentMode` API so this isn't necessary
+    if (vimState.modeData.mode === Mode.CommandlineInProgress) {
+      vimState.modeData.commandLine = new ExCommandLine(commandLineText, previousMode);
+    }
   }
 }
 

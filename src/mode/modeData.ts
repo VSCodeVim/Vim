@@ -1,8 +1,12 @@
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ReplaceState } from '../state/replaceState';
 import { Mode } from './mode';
 
 /** Modes which have no extra associated data. */
-export type SimpleMode = Exclude<Mode, Mode.Replace | Mode.SearchInProgressMode>;
+export type SimpleMode = Exclude<
+  Mode,
+  Mode.Replace | Mode.SearchInProgressMode | Mode.CommandlineInProgress
+>;
 
 /** State associated with the current mode. */
 export type ModeData =
@@ -11,7 +15,12 @@ export type ModeData =
       replaceState: ReplaceState;
     }
   | {
+      mode: Mode.CommandlineInProgress;
+      commandLine: ExCommandLine;
+    }
+  | {
       mode: Mode.SearchInProgressMode;
+      commandLine: SearchCommandLine;
       /** The first line number that was visible when SearchInProgressMode began */
       firstVisibleLineBeforeSearch: number;
     }

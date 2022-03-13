@@ -210,10 +210,7 @@ class CommandSearchForwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
-
-    globalState.searchState = vimState.commandLine.getSearchState();
   }
 }
 
@@ -228,10 +225,12 @@ class CommandSearchBackwards extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
-    await vimState.setCurrentMode(Mode.SearchInProgressMode);
-
-    globalState.searchState = vimState.commandLine.getSearchState();
+    // TODO: Better VimState API than this...
+    await vimState.setModeData({
+      mode: Mode.SearchInProgressMode,
+      commandLine: new SearchCommandLine(vimState, '', SearchDirection.Backward),
+      firstVisibleLineBeforeSearch: vimState.editor.visibleRanges[0].start.line,
+    });
   }
 }
 

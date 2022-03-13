@@ -13,8 +13,10 @@ import { ReplaceState } from './../state/replaceState';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
-import { CommandLine } from '../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ModeData } from '../mode/modeData';
+import { SearchDirection } from '../vimscript/pattern';
+import { globalState } from './globalState';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -244,17 +246,38 @@ export class VimState implements vscode.Disposable {
       : this.currentMode;
   }
 
+  public async setModeData(modeData: ModeData): Promise<void> {
+    if (modeData === undefined) {
+      // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
+      throw new Error('Tried setting modeData to undefined');
+    }
+
+    await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
+    if (this.returnToInsertAfterCommand && modeData.mode === Mode.Insert) {
+      this.returnToInsertAfterCommand = false;
+    }
+
+    if (modeData.mode === Mode.SearchInProgressMode) {
+      globalState.searchState = modeData.commandLine.getSearchState();
+    }
+
+    if (configuration.smartRelativeLine) {
+      this.editor.options.lineNumbers =
+        modeData.mode === Mode.Insert
+          ? vscode.TextEditorLineNumbersStyle.On
+          : vscode.TextEditorLineNumbersStyle.Relative;
+    }
+
+    this.modeData = modeData;
+  }
+
   public async setCurrentMode(mode: Mode): Promise<void> {
     if (mode === undefined) {
       // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
       throw new Error('Tried setting currentMode to undefined');
     }
 
-    await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, mode);
-    if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
-      this.returnToInsertAfterCommand = false;
-    }
-    this.modeData =
+    await this.setModeData(
       mode === Mode.Replace
         ? {
             mode,
@@ -264,23 +287,19 @@ export class VimState implements vscode.Disposable {
               this.recordedState.count
             ),
           }
+        : mode === Mode.CommandlineInProgress
+        ? {
+            mode,
+            commandLine: new ExCommandLine('', this.modeData.mode),
+          }
         : mode === Mode.SearchInProgressMode
         ? {
             mode,
+            commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
             firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
           }
-        : { mode };
-
-    if (configuration.smartRelativeLine) {
-      this.editor.options.lineNumbers =
-        mode === Mode.Insert
-          ? vscode.TextEditorLineNumbersStyle.On
-          : vscode.TextEditorLineNumbersStyle.Relative;
-    }
-
-    if (mode === Mode.Normal) {
-      this.commandLine = undefined;
-    }
+        : { mode }
+    );
   }
 
   /**
@@ -305,8 +324,6 @@ export class VimState implements vscode.Disposable {
     }
   }
   private _currentRegisterMode: RegisterMode | undefined;
-
-  public commandLine: CommandLine | undefined;
 
   public recordedState = new RecordedState();
 

@@ -248,8 +248,12 @@ class FilterOperator extends BaseOperator {
       vimState.cursors = vimState.cursorsInitialState;
     }
 
-    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
+    const previousMode = vimState.currentMode;
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
+    // TODO: Change or supplement `setCurrentMode` API so this isn't necessary
+    if (vimState.modeData.mode === Mode.CommandlineInProgress) {
+      vimState.modeData.commandLine = new ExCommandLine(commandLineText, previousMode);
+    }
   }
 }
 
