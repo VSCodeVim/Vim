@@ -1351,10 +1351,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
         if (currentMatch) {
           this.vimState.editor.revealRange(currentMatch.range, revealType);
-        } else if (this.vimState.firstVisibleLineBeforeSearch !== undefined) {
+        } else if (this.vimState.modeData.mode === Mode.SearchInProgressMode) {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -
-            this.vimState.firstVisibleLineBeforeSearch;
+            this.vimState.modeData.firstVisibleLineBeforeSearch;
           scrollView(this.vimState, offset);
         }
       } else if (args.revealRange) {

@@ -518,9 +518,10 @@ export class SearchCommandLine extends CommandLine {
       ? prevSearchList[prevSearchList.length - 1]
       : undefined;
 
-    if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+    if (vimState.modeData.mode === Mode.SearchInProgressMode) {
       const offset =
-        vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+        vimState.editor.visibleRanges[0].start.line -
+        vimState.modeData.firstVisibleLineBeforeSearch;
       scrollView(vimState, offset);
     }
 

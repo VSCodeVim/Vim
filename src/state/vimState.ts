@@ -110,11 +110,6 @@ export class VimState implements vscode.Disposable {
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
-  /**
-   * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
-   */
-  public firstVisibleLineBeforeSearch: number | undefined = undefined;
-
   public surround: SurroundState | undefined = undefined;
 
   /**
@@ -263,7 +258,16 @@ export class VimState implements vscode.Disposable {
       mode === Mode.Replace
         ? {
             mode,
-            replaceState: new ReplaceState(this.document, this.cursorStopPosition, this.recordedState.count),
+            replaceState: new ReplaceState(
+              this.document,
+              this.cursorStopPosition,
+              this.recordedState.count
+            ),
+          }
+        : mode === Mode.SearchInProgressMode
+        ? {
+            mode,
+            firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
           }
         : { mode };
 
@@ -272,12 +276,6 @@ export class VimState implements vscode.Disposable {
         mode === Mode.Insert
           ? vscode.TextEditorLineNumbersStyle.On
           : vscode.TextEditorLineNumbersStyle.Relative;
-    }
-
-    if (mode === Mode.SearchInProgressMode) {
-      this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
-    } else {
-      this.firstVisibleLineBeforeSearch = undefined;
     }
 
     if (mode === Mode.Normal) {
