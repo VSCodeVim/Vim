@@ -67,6 +67,26 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   private readonly remappers: Remappers;
   private static readonly logger = Logger.get('ModeHandler');
 
+  /**
+   * Used internally to ignore selection changes that were performed by us.
+   * 'ignoreIntermediateSelections': set to true when running an action, during this time
+   * all selections change events will be ignored.
+   * 'ourSelections': keeps track of our selections that will trigger a selection change event
+   * so that we can ignore them.
+   */
+  public selectionsChanged = {
+    /**
+     * Set to true when running an action, during this time
+     * all selections change events will be ignored.
+     */
+    ignoreIntermediateSelections: false,
+    /**
+     * keeps track of our selections that will trigger a selection change event
+     * so that we can ignore them.
+     */
+    ourSelections: Array<string>(),
+  };
+
   // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
   private _currentMode!: Mode;
 
@@ -477,7 +497,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
     } catch (e) {
-      this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+      this.selectionsChanged.ignoreIntermediateSelections = false;
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
         this.vimState.recordedState = new RecordedState();
@@ -681,7 +701,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   private async runAction(recordedState: RecordedState, action: IBaseAction): Promise<void> {
-    this.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+    this.selectionsChanged.ignoreIntermediateSelections = true;
 
     // We handle the end of selections different to VSCode. In order for VSCode to select
     // including the last character we will at the end of 'runAction' shift our stop position
@@ -904,7 +924,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       };
     }
 
-    this.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+    this.selectionsChanged.ignoreIntermediateSelections = false;
   }
 
   private async executeMovement(movement: BaseMovement): Promise<RecordedState> {
@@ -1300,7 +1320,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
           ''
         );
-        this.vimState.selectionsChanged.ourSelections.push(selectionsHash);
+        this.selectionsChanged.ourSelections.push(selectionsHash);
         ModeHandler.logger.debug(
           `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );

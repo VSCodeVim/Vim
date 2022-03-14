@@ -206,26 +206,6 @@ export class VimState implements vscode.Disposable {
   public lastClickWasPastEol: boolean = false;
 
   /**
-   * Used internally to ignore selection changes that were performed by us.
-   * 'ignoreIntermediateSelections': set to true when running an action, during this time
-   * all selections change events will be ignored.
-   * 'ourSelections': keeps track of our selections that will trigger a selection change event
-   * so that we can ignore them.
-   */
-  public selectionsChanged = {
-    /**
-     * Set to true when running an action, during this time
-     * all selections change events will be ignored.
-     */
-    ignoreIntermediateSelections: false,
-    /**
-     * keeps track of our selections that will trigger a selection change event
-     * so that we can ignore them.
-     */
-    ourSelections: Array<string>(),
-  };
-
-  /**
    * The current mode and its associated state.
    */
   public modeData: ModeData = { mode: Mode.Normal };
