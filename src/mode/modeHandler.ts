@@ -1155,24 +1155,34 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
-    const modeData = this.vimState.modeData;
-    const {
-      searchHighlight = [],
-      searchMatch = [],
-      substitutionAppend = [],
-      substitutionReplace = [],
-    }: SearchDecorations = (modeData.mode === Mode.CommandlineInProgress ||
-      modeData.mode === Mode.SearchInProgressMode) &&
-    showHighlights
-      ? modeData.commandLine.getDecorations(this.vimState) ??
-        // if there are no decorations from the command line, get decorations for previous search state
-        getDecorationsForSearchMatchRanges(globalState.searchState?.getMatchRanges(this.vimState))
-      : {};
+    let decorations: SearchDecorations | undefined;
+    if (showHighlights) {
+      if (
+        this.vimState.modeData.mode === Mode.CommandlineInProgress ||
+        this.vimState.modeData.mode === Mode.SearchInProgressMode
+      ) {
+        decorations = this.vimState.modeData.commandLine.getDecorations(this.vimState);
+      } else {
+        // If there are no decorations from the command line, get decorations for previous SearchState
+        decorations = getDecorationsForSearchMatchRanges(
+          globalState.searchState?.getMatchRanges(this.vimState)
+        );
+      }
+    }
 
-    this.vimState.editor.setDecorations(decoration.searchHighlight, searchHighlight);
-    this.vimState.editor.setDecorations(decoration.searchMatch, searchMatch);
-    this.vimState.editor.setDecorations(decoration.substitutionAppend, substitutionAppend);
-    this.vimState.editor.setDecorations(decoration.substitutionReplace, substitutionReplace);
+    this.vimState.editor.setDecorations(
+      decoration.searchHighlight,
+      decorations?.searchHighlight ?? []
+    );
+    this.vimState.editor.setDecorations(decoration.searchMatch, decorations?.searchMatch ?? []);
+    this.vimState.editor.setDecorations(
+      decoration.substitutionAppend,
+      decorations?.substitutionAppend ?? []
+    );
+    this.vimState.editor.setDecorations(
+      decoration.substitutionReplace,
+      decorations?.substitutionReplace ?? []
+    );
   }
 
   public async updateView(
