@@ -201,11 +201,6 @@ export class VimState implements vscode.Disposable {
     | undefined = undefined;
 
   /**
-   * Was the previous mouse click past EOL
-   */
-  public lastClickWasPastEol: boolean = false;
-
-  /**
    * The current mode and its associated state.
    */
   public modeData: ModeData = { mode: Mode.Normal };
