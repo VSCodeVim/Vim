@@ -7,7 +7,6 @@ import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
-import { ReplaceState } from './../state/replaceState';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
@@ -472,7 +471,9 @@ class ArrowsInReplaceMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState = new ReplaceState(vimState.document, newPosition);
+    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
+      this.multicursorIndex ?? 0
+    );
     return newPosition;
   }
 }

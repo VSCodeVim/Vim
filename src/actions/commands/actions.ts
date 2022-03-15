@@ -655,6 +655,10 @@ export class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['R'];
 
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Replace);
   }
