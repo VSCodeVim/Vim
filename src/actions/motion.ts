@@ -18,7 +18,7 @@ import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { StatusBar } from '../statusBar';
-import { clamp } from '../util/util';
+import { clamp, isHighSurrogate, isLowSurrogate } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
@@ -716,11 +716,26 @@ class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const getLeftWhile = (p: Position): Position => {
+      const line = vimState.document.lineAt(p.line).text;
+      const newPosition = p.getLeft();
+      if (newPosition.character === 0) {
+        return newPosition;
+      }
+      if (
+        isLowSurrogate(line.charCodeAt(newPosition.character)) &&
+        isHighSurrogate(line.charCodeAt(newPosition.character - 1))
+      ) {
+        return newPosition.getLeft();
+      } else {
+        return newPosition;
+      }
+    };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getLeftThroughLineBreaks(
           [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
         )
-      : position.getLeft();
+      : getLeftWhile(position);
   }
 }
 
@@ -729,11 +744,26 @@ class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const getRightWhile = (p: Position): Position => {
+      const line = vimState.document.lineAt(p.line).text;
+      const newPosition = p.getRight();
+      if (newPosition.character >= vimState.document.lineAt(newPosition.line).text.length) {
+        return newPosition;
+      }
+      if (
+        isLowSurrogate(line.charCodeAt(newPosition.character)) &&
+        isHighSurrogate(line.charCodeAt(p.character))
+      ) {
+        return newPosition.getRight();
+      } else {
+        return newPosition;
+      }
+    };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getRightThroughLineBreaks(
           [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
         )
-      : position.getRight();
+      : getRightWhile(position);
   }
 }
 

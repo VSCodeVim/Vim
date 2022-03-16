@@ -38,3 +38,11 @@ export function assertDefined<X>(x: X | undefined, err: string): asserts x {
     throw new Error(err);
   }
 }
+
+export function isHighSurrogate(charCode: number): boolean {
+  return 0xd800 <= charCode && charCode <= 0xdbff;
+}
+
+export function isLowSurrogate(charCode: number): boolean {
+  return 0xdc00 <= charCode && charCode <= 0xdfff;
+}
