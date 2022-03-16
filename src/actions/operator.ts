@@ -210,7 +210,7 @@ export class YankOperator extends BaseOperator {
     if (
       extendedEnd.character !== 0 &&
       isLowSurrogate(eLine.charCodeAt(extendedEnd.character)) &&
-      isHighSurrogate(sLine.charCodeAt(extendedEnd.character - 1))
+      isHighSurrogate(eLine.charCodeAt(extendedEnd.character - 1))
     ) {
       extendedEnd = extendedEnd.getRight();
     }
