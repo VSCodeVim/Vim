@@ -15,6 +15,7 @@ import {
   IDebugConfiguration,
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
+  ITargetsConfiguration,
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
@@ -266,6 +267,16 @@ class Configuration implements IConfiguration {
   easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
+
+  targets: ITargetsConfiguration = {
+    enable: false,
+
+    smartQuotes: {
+      enable: false,
+      breakThroughLines: false,
+      aIncludesSurroundingSpaces: true,
+    },
+  };
 
   autoSwitchInputMethod: IAutoSwitchInputMethod = {
     enable: false,

@@ -7,7 +7,6 @@ import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
-import { ReplaceState } from './../state/replaceState';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
@@ -27,6 +26,9 @@ import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
 import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
+import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
+import { useSmartQuotes } from './plugins/targets/targetsConfig';
+import { ModeDataFor } from '../mode/modeData';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -438,8 +440,6 @@ export class ArrowsInInsertMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    // TODO: Is resetting ReplaceState necessary?
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }
 }
@@ -471,7 +471,9 @@ class ArrowsInReplaceMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
+    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
+      this.multicursorIndex ?? 0
+    );
     return newPosition;
   }
 }
@@ -1964,9 +1966,11 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
 // TODO: Shouldn't this be a TextObject? A clearer delineation between motions and objects should be made.
 export abstract class MoveQuoteMatch extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  protected readonly anyQuote: boolean = false;
   protected abstract readonly charToMatch: '"' | "'" | '`';
   protected includeQuotes = false;
   override isJump = true;
+  readonly which: WhichQuotes = 'current';
 
   // HACK: surround uses these classes, but does not want trailing whitespace to be included
   private adjustForTrailingWhitespace: boolean = true;
@@ -1996,41 +2000,89 @@ export abstract class MoveQuoteMatch extends BaseMovement {
       this.adjustForTrailingWhitespace = false;
     }
 
-    const text = vimState.document.lineAt(position).text;
-    const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
-    const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
-    if (quoteIndices === undefined) {
-      return failedMovement(vimState);
-    }
+    if (useSmartQuotes()) {
+      const quoteMatcher = new SmartQuoteMatcher(
+        this.anyQuote ? 'any' : this.charToMatch,
+        vimState.document
+      );
+      const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
 
-    let [start, end] = quoteIndices;
-
-    if (!this.includeQuotes) {
-      // Don't include the quotes
-      start++;
-      end--;
-    } else if (this.adjustForTrailingWhitespace) {
-      // Include trailing whitespace if there is any...
-      const trailingWhitespace = text.substring(end + 1).search(/\S|$/);
-      if (trailingWhitespace > 0) {
-        end += trailingWhitespace;
-      } else {
-        // ...otherwise include leading whitespace
-        start = text.substring(0, start).search(/\s*$/);
+      if (res === undefined) {
+        return failedMovement(vimState);
       }
+      let { start, stop, lineText } = res;
+
+      if (!this.includeQuotes) {
+        // Don't include the quotes
+        start = start.translate({ characterDelta: 1 });
+        stop = stop.translate({ characterDelta: -1 });
+      } else if (
+        this.adjustForTrailingWhitespace &&
+        configuration.targets.smartQuotes.aIncludesSurroundingSpaces
+      ) {
+        // Include trailing whitespace if there is any...
+        const trailingWhitespace = lineText.substring(stop.character + 1).search(/\S|$/);
+        if (trailingWhitespace > 0) {
+          stop = stop.translate({ characterDelta: trailingWhitespace });
+        } else {
+          // ...otherwise include leading whitespace
+          start = start.with({ character: lineText.substring(0, start.character).search(/\s*$/) });
+        }
+      }
+
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(start)) {
+        vimState.recordedState.operatorPositionDiff = start.subtract(position);
+      } else if (!isVisualMode(vimState.currentMode) && position.isAfter(stop)) {
+        if (position.line === stop.line) {
+          vimState.recordedState.operatorPositionDiff = stop.getRight().subtract(position);
+        } else {
+          vimState.recordedState.operatorPositionDiff = start.subtract(position);
+        }
+      }
+
+      vimState.cursorStartPosition = start;
+      return {
+        start,
+        stop,
+      };
+    } else {
+      const text = vimState.document.lineAt(position).text;
+      const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
+      const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
+
+      if (quoteIndices === undefined) {
+        return failedMovement(vimState);
+      }
+
+      let [start, end] = quoteIndices;
+
+      if (!this.includeQuotes) {
+        // Don't include the quotes
+        start++;
+        end--;
+      } else if (this.adjustForTrailingWhitespace) {
+        // Include trailing whitespace if there is any...
+        const trailingWhitespace = text.substring(end + 1).search(/\S|$/);
+        if (trailingWhitespace > 0) {
+          end += trailingWhitespace;
+        } else {
+          // ...otherwise include leading whitespace
+          start = text.substring(0, start).search(/\s*$/);
+        }
+      }
+
+      const startPos = new Position(position.line, start);
+      const endPos = new Position(position.line, end);
+
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
+        vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+      }
+
+      return {
+        start: startPos,
+        stop: endPos,
+      };
     }
-
-    const startPos = new Position(position.line, start);
-    const endPos = new Position(position.line, end);
-
-    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
-      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
-    }
-
-    return {
-      start: startPos,
-      stop: endPos,
-    };
   }
 
   public override async execActionForOperator(
@@ -2206,15 +2258,9 @@ abstract class MoveTagMatch extends ExpandingSelection {
     }
 
     if (position.isAfter(endPosition)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: endPosition.subtract(position),
-      });
+      vimState.recordedState.transformer.moveCursor(endPosition.subtract(position));
     } else if (position.isBefore(startPosition)) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: startPosition.subtract(position),
-      });
+      vimState.recordedState.transformer.moveCursor(startPosition.subtract(position));
     }
     // if (start === end) {
     //   if (vimState.recordedState.operator instanceof ChangeOperator) {
