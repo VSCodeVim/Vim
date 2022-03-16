@@ -205,7 +205,6 @@ export class YankOperator extends BaseOperator {
       isLowSurrogate(sLine.charCodeAt(start.character)) &&
       isHighSurrogate(sLine.charCodeAt(start.character - 1))
     ) {
-      console.log('lefted!');
       start = start.getLeft();
     }
     if (
