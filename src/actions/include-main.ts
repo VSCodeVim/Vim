@@ -11,3 +11,6 @@ import './commands/commandLine';
 import './commands/search';
 import './commands/put';
 import './commands/digraphs';
+import './commands/window';
+import './commands/fold';
+import './commands/scroll';
