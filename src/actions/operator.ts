@@ -11,6 +11,7 @@ import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
+import { isHighSurrogate, isLowSurrogate } from '../util/util';
 
 export abstract class BaseOperator extends BaseAction {
   override isOperator = true;
@@ -197,6 +198,22 @@ export class YankOperator extends BaseOperator {
       extendedEnd = extendedEnd.getLineEnd();
     }
 
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(extendedEnd.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      extendedEnd.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(extendedEnd.character)) &&
+      isHighSurrogate(eLine.charCodeAt(extendedEnd.character - 1))
+    ) {
+      extendedEnd = extendedEnd.getRight();
+    }
     const range = new vscode.Range(start, extendedEnd);
     let text = vimState.document.getText(range);
 
