@@ -48,6 +48,9 @@ export class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   targets: ITargetsConfiguration = {
     enable: false,
+    bracketObjects: {
+      enable: true,
+    },
     smartQuotes: {
       enable: false,
       breakThroughLines: true,
