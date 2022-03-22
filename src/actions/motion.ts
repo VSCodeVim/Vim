@@ -7,7 +7,6 @@ import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
-import { ReplaceState } from './../state/replaceState';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
@@ -19,7 +18,7 @@ import { reportSearch } from '../util/statusBarTextUtils';
 import { SneakForward, SneakBackward } from './plugins/sneak';
 import { Notation } from '../configuration/notation';
 import { StatusBar } from '../statusBar';
-import { clamp } from '../util/util';
+import { clamp, isHighSurrogate, isLowSurrogate } from '../util/util';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
@@ -29,6 +28,7 @@ import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
+import { ModeDataFor } from '../mode/modeData';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -440,8 +440,6 @@ export class ArrowsInInsertMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    // TODO: Is resetting ReplaceState necessary?
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
     return newPosition;
   }
 }
@@ -473,7 +471,9 @@ class ArrowsInReplaceMode extends BaseMovement {
       default:
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
-    vimState.replaceState = new ReplaceState(vimState, newPosition);
+    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
+      this.multicursorIndex ?? 0
+    );
     return newPosition;
   }
 }
@@ -716,11 +716,26 @@ class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const getLeftWhile = (p: Position): Position => {
+      const line = vimState.document.lineAt(p.line).text;
+      const newPosition = p.getLeft();
+      if (newPosition.character === 0) {
+        return newPosition;
+      }
+      if (
+        isLowSurrogate(line.charCodeAt(newPosition.character)) &&
+        isHighSurrogate(line.charCodeAt(newPosition.character - 1))
+      ) {
+        return newPosition.getLeft();
+      } else {
+        return newPosition;
+      }
+    };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getLeftThroughLineBreaks(
           [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
         )
-      : position.getLeft();
+      : getLeftWhile(position);
   }
 }
 
@@ -729,11 +744,26 @@ class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const getRightWhile = (p: Position): Position => {
+      const line = vimState.document.lineAt(p.line).text;
+      const newPosition = p.getRight();
+      if (newPosition.character >= vimState.document.lineAt(newPosition.line).text.length) {
+        return newPosition;
+      }
+      if (
+        isLowSurrogate(line.charCodeAt(newPosition.character)) &&
+        isHighSurrogate(line.charCodeAt(p.character))
+      ) {
+        return newPosition.getRight();
+      } else {
+        return newPosition;
+      }
+    };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getRightThroughLineBreaks(
           [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
         )
-      : position.getRight();
+      : getRightWhile(position);
   }
 }
 

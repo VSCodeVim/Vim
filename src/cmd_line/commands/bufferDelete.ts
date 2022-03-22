@@ -1,11 +1,11 @@
-import { alt, optWhitespace, Parser, regexp, seq, whitespace } from 'parsimmon';
+import { alt, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
-import { bangParser, numberParser } from '../../vimscript/parserUtils';
+import { bangParser, fileNameParser, numberParser } from '../../vimscript/parserUtils';
 
 interface IBufferDeleteCommandArguments {
   bang: boolean;
@@ -19,7 +19,7 @@ interface IBufferDeleteCommandArguments {
 export class BufferDeleteCommand extends ExCommand {
   public static readonly argParser: Parser<BufferDeleteCommand> = seq(
     bangParser.skip(optWhitespace),
-    alt(numberParser, regexp(/\S+/)).sepBy(whitespace)
+    alt(numberParser, fileNameParser).sepBy(whitespace)
   ).map(([bang, buffers]) => new BufferDeleteCommand({ bang, buffers }));
 
   public readonly arguments: IBufferDeleteCommandArguments;

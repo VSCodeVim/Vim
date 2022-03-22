@@ -283,17 +283,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
           ''
         );
-        const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
+        const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
-          mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+          mh.selectionsChanged.ourSelections.splice(idx, 1);
           logger.debug(
-            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
+            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.selectionsChanged.ourSelections.length}`
           );
           return;
-        } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
+        } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
           logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
           return;
-        } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
+        } else if (mh.selectionsChanged.ourSelections.length > 0) {
           // Some intermediate selection must have slipped in after setting the
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
@@ -401,14 +401,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.insertedText) {
-          mh.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+          mh.selectionsChanged.ignoreIntermediateSelections = true;
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: '',
             replaceCharCnt: compositionState.composingText.length,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-          mh.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+          mh.selectionsChanged.ignoreIntermediateSelections = false;
         }
         const text = compositionState.composingText;
         await mh.handleMultipleKeyEvents(text.split(''));

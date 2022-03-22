@@ -210,6 +210,15 @@ suite('Ex command parsing', () => {
       new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc.txt' })
     );
 
+    exParseTest(
+      ':edit abc\\ 1.txt',
+      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: 'abc 1.txt' })
+    );
+    exParseTest(
+      ':edit! abc\\ 1.txt',
+      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc 1.txt' })
+    );
+
     // TODO: Test with [++opt]
     // TODO: Test with [+cmd]
     // TODO: Test with #[count]

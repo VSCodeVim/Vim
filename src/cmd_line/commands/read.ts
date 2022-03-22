@@ -3,8 +3,8 @@ import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { FileOpt, fileOptParser } from '../../vimscript/parserUtils';
-import { all, alt, optWhitespace, Parser, regexp, seq, string, whitespace } from 'parsimmon';
+import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 
 export type IReadCommandArguments =
   | {
@@ -27,7 +27,7 @@ export class ReadCommand extends ExCommand {
             .map((cmd) => {
               return { cmd };
             }),
-          regexp(/\S+/).map((file) => {
+          fileNameParser.map((file) => {
             return { file };
           })
         )
