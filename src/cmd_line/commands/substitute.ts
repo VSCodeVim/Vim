@@ -11,18 +11,7 @@ import { StatusBar } from '../../statusBar';
 import { Address, LineRange } from '../../vimscript/lineRange';
 import { ExCommand } from '../../vimscript/exCommand';
 import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
-import {
-  alt,
-  any,
-  noneOf,
-  oneOf,
-  optWhitespace,
-  Parser,
-  regexp,
-  seq,
-  string,
-  whitespace,
-} from 'parsimmon';
+import { alt, any, noneOf, oneOf, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 import { PositionDiff } from '../../common/motion/position';
 import { escapeCSSIcons } from '../../util/statusBarTextUtils';
@@ -118,7 +107,7 @@ const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
         } else if (escaped === 't') {
           return { type: 'string' as const, value: '\t' };
         } else if (escaped === '&') {
-          return { type: 'capture_group' as const, group: 0 };
+          return { type: 'string' as const, value: '&' };
         } else if (/[0-9]/.test(escaped)) {
           return { type: 'capture_group' as const, group: Number.parseInt(escaped, 10) };
         } else {
@@ -126,6 +115,7 @@ const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
         }
       })
     ),
+    string('&').result({ type: 'capture_group' as const, group: 0 }),
     noneOf(delimiter).map((value) => ({ type: 'string', value }))
   )
     .many()
