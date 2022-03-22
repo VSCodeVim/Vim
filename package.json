@@ -876,7 +876,8 @@
           "description": "Delegate certain key combinations back to VSCode to be handled natively.",
           "default": {
             "<C-d>": true,
-            "<C-s>": false
+            "<C-s>": false,
+            "<C-z>": false
           }
         },
         "vim.statusBarColorControl": {
