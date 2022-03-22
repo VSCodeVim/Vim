@@ -270,6 +270,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
       },
       {
+        "key": "ctrl+s",
+        "command": "extension.vim_ctrl+s",
+        "when": "editorTextFocus && vim.active && vim.use<C-s> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
         "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
