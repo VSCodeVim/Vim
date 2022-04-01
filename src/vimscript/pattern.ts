@@ -44,6 +44,7 @@ export class Pattern {
   public readonly closed: boolean; // was an ending delimiter present?
 
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static readonly MAX_SEARCH_TIME = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   public nextMatch(document: TextDocument, fromPosition: Position): Range | undefined {
@@ -115,6 +116,11 @@ export class Pattern {
     while (true) {
       const match = this.regex.exec(haystack);
 
+      let searchTimeout = false;
+      setTimeout(() => {
+        searchTimeout = true;
+      }, Pattern.MAX_SEARCH_TIME);
+
       if (match) {
         if (wrappedOver && match.index >= startOffset) {
           // We've found our first match again
@@ -138,11 +144,7 @@ export class Pattern {
           groups: match,
         });
 
-        if (
-          matchRanges.beforeWrapping.length + matchRanges.afterWrapping.length >=
-          Pattern.MAX_SEARCH_RANGES
-        ) {
-          // TODO: Vim uses a timeout... we probably should too
+        if (searchTimeout) {
           break;
         }
 

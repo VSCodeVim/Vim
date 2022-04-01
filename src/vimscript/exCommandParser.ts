@@ -1,6 +1,7 @@
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
+import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
@@ -21,6 +22,7 @@ import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
 import { RegisterCommand } from '../cmd_line/commands/register';
+import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
 import { SmileCommand } from '../cmd_line/commands/smile';
@@ -99,9 +101,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['bp', 'revious'], TabCommand.argParsers.bprev],
   [['br', 'ewind'], undefined],
   [['brea', 'k'], undefined],
-  [['breaka', 'dd'], undefined],
-  [['breakd', 'el'], undefined],
-  [['breakl', 'ist'], undefined],
+  [['breaka', 'dd'], Breakpoints.argParsers.add],
+  [['breakd', 'el'], Breakpoints.argParsers.del],
+  [['breakl', 'ist'], Breakpoints.argParsers.list],
   [['bro', 'wse'], undefined],
   [['bufdo', ''], undefined],
   [['buffers', ''], undefined],
@@ -428,7 +430,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['redrawt', 'abline'], undefined],
   [['reg', 'isters'], RegisterCommand.argParser],
   [['res', 'ize'], undefined],
-  [['ret', 'ab'], undefined],
+  [['ret', 'ab'], RetabCommand.argParser],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
   [['ri', 'ght'], RightCommand.argParser],

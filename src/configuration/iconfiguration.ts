@@ -80,6 +80,30 @@ export interface ICamelCaseMotionConfiguration {
   enable: boolean;
 }
 
+export interface ISmartQuotesConfiguration {
+  /**
+   * Enable SmartQuotes plugin or not
+   */
+  enable: boolean;
+  /**
+   * Whether to break through lines when using [n]ext/[l]ast motion
+   */
+  breakThroughLines: boolean;
+  /**
+   * Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.
+   */
+  aIncludesSurroundingSpaces: boolean;
+}
+
+export interface ITargetsConfiguration {
+  /**
+   * Enable Targets plugin or not
+   */
+  enable: boolean;
+  bracketObjects: { enable: boolean };
+  smartQuotes: ISmartQuotesConfiguration;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
