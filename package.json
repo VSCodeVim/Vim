@@ -1229,7 +1229,7 @@
     "minimist": "1.2.6",
     "mocha": "9.2.2",
     "plugin-error": "1.0.1",
-    "prettier": "2.6.1",
+    "prettier": "2.6.2",
     "sinon": "13.0.1",
     "ts-loader": "9.2.8",
     "tslint": "6.1.3",
