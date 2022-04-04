@@ -1200,7 +1200,7 @@
     "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.4",
-    "winston": "3.6.0",
+    "winston": "3.7.1",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.5.0"
   },
