@@ -57,7 +57,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['', ''], succeed(new GotoLineCommand())],
   [['!', ''], BangCommand.argParser],
   [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
-  // TODO: Ignore #! (shebang)
+  [['#!', ''], all.map((_) => new NoOpCommand())],
   [['&', ''], undefined],
   [['*', ''], undefined],
   [['<', ''], undefined],
@@ -627,6 +627,12 @@ class UnimplementedCommand extends ExCommand {
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     await this.execute(vimState);
+  }
+}
+
+export class NoOpCommand extends ExCommand {
+  async execute(vimState: VimState): Promise<void> {
+    // nothing
   }
 }
 
