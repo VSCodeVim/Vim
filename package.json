@@ -749,6 +749,11 @@
           "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implmeneted yet).",
           "default": false
         },
+        "vim.targets.bracketObjects.enable": {
+          "type": "boolean",
+          "markdownDescription": "Enable last/next movements for bracket objects",
+          "default": true
+        },
         "vim.targets.smartQuotes.enable": {
           "type": "boolean",
           "markdownDescription": "Enable the smart quotes movements from [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects).",
@@ -1187,7 +1192,8 @@
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
     "test": "node ./out/test/runTest.js",
-    "forceprettier": "gulp forceprettier"
+    "forceprettier": "gulp forceprettier",
+    "watch": "npx webpack -c webpack.dev.js --watch"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1201,7 +1207,7 @@
     "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.4",
-    "winston": "3.6.0",
+    "winston": "3.7.2",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.5.0"
   },
@@ -1209,7 +1215,7 @@
     "@types/diff": "5.0.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "7.2.0",
-    "@types/lodash": "4.14.180",
+    "@types/lodash": "4.14.181",
     "@types/mocha": "9.1.0",
     "@types/node": "14.18.12",
     "@types/parsimmon": "1.10.6",
@@ -1219,7 +1225,7 @@
     "@vscode/test-electron": "2.1.3",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.2.1",
+    "fork-ts-checker-webpack-plugin": "7.2.3",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1227,16 +1233,16 @@
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "minimist": "1.2.5",
+    "minimist": "1.2.6",
     "mocha": "9.2.2",
     "plugin-error": "1.0.1",
-    "prettier": "2.6.0",
+    "prettier": "2.6.2",
     "sinon": "13.0.1",
     "ts-loader": "9.2.8",
     "tslint": "6.1.3",
-    "typescript": "4.6.2",
+    "typescript": "4.6.3",
     "vsce": "2.7.0",
-    "webpack": "5.70.0",
+    "webpack": "5.71.0",
     "webpack-cli": "4.9.2",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"

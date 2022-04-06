@@ -420,9 +420,9 @@ suite('Basic substitute', () => {
 
     suite('Capture groups', () => {
       newTest({
-        title: '\\& capture group',
+        title: '& capture group',
         start: ['|she sells seashells by the seashore'],
-        keysPressed: sub('s\\S*', '(\\&)', { flags: 'g' }),
+        keysPressed: sub('s\\S*', '(&)', { flags: 'g' }),
         end: ['|(she) (sells) (seashells) by the (seashore)'],
       });
 
