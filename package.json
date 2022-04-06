@@ -270,6 +270,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
       },
       {
+        "key": "ctrl+s",
+        "command": "extension.vim_ctrl+s",
+        "when": "editorTextFocus && vim.active && vim.use<C-s> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
         "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
@@ -865,7 +870,8 @@
           "type": "object",
           "description": "Delegate certain key combinations back to VSCode to be handled natively.",
           "default": {
-            "<C-d>": true
+            "<C-d>": true,
+            "<C-s>": false
           }
         },
         "vim.statusBarColorControl": {
