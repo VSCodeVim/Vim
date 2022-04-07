@@ -14,7 +14,7 @@ import { Position } from 'vscode';
 import { isHighSurrogate, isLowSurrogate } from '../util/util';
 
 export abstract class BaseOperator extends BaseAction {
-  override isOperator = true;
+  override actionType = 'operator' as const;
 
   constructor(multicursorIndex?: number) {
     super();

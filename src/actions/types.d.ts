@@ -1,10 +1,10 @@
 import type { Position } from 'vscode';
 import type { VimState } from '../state/vimState';
 
+export type ActionType = 'command' | 'motion' | 'operator' | 'number';
+
 export interface IBaseAction {
-  readonly isMotion: boolean;
-  readonly isOperator: boolean;
-  readonly isCommand: boolean;
+  readonly actionType: ActionType
   readonly isJump: boolean;
   readonly createsUndoPoint: boolean;
 

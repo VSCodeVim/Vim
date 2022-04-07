@@ -232,7 +232,7 @@ export class CommandNumber extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<number>'];
   override isCompleteAction = false;
-  override isNumber = true;
+  override actionType = 'number' as const;
   override runsOnceForEveryCursor() {
     return false;
   }

@@ -195,14 +195,15 @@ export class RecordedState {
   }
 
   public get operators(): IBaseOperator[] {
-    return this.actionsRun.filter((a): a is IBaseOperator => a.isOperator).reverse();
+    return this.actionsRun.filter((a): a is IBaseOperator => a.actionType === 'operator').reverse();
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): IBaseCommand {
-    const list = this.actionsRun.filter((a): a is IBaseCommand => a.isCommand).reverse();
+    // TODO: this is probably wrong
+    const list = this.actionsRun.filter((a): a is IBaseCommand => a.actionType === 'command').reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -259,7 +260,7 @@ export class RecordedState {
     }
 
     // We've got an operator - do we also have a motion or visual selection to operate on?
-    if (this.actionsRun.some((a) => a.isMotion) || isVisualMode(mode)) {
+    if (this.actionsRun.some((a) => a.actionType === 'motion') || isVisualMode(mode)) {
       return 'ready';
     }
 
