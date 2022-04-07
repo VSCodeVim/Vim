@@ -1193,7 +1193,8 @@
     "build": "gulp build",
     "test": "node ./out/test/runTest.js",
     "forceprettier": "gulp forceprettier",
-    "watch": "npx webpack -c webpack.dev.js --watch"
+    "watch": "npx webpack -c webpack.dev.js --watch",
+    "package": "yarn run vsce package --yarn --allow-star-activation"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",

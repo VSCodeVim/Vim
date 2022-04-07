@@ -79,7 +79,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    ```bash
    # Package extension into `vim-<MAJOR>.<MINOR>.<PATCH>.vsix`
    # (This can be opened and inspected like a .zip file)
-   yarn run vsce package --yarn
+   yarn package
 
    # Install packaged extension to your local VS Code installation
    code --install-extension vim-<MAJOR>.<MINOR>.<PATCH>.vsix --force
