@@ -22,7 +22,7 @@ import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
-import { exCommandParser } from '../../src/vimscript/exCommandParser';
+import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
@@ -54,6 +54,11 @@ suite('Ex command parsing', () => {
 
   suite(':!', () => {
     // TODO
+  });
+
+  suite(':#!', () => {
+    exParseTest(':#!', new NoOpCommand());
+    exParseTest(':#!123 abc! | s/one/two', new NoOpCommand());
   });
 
   suite(':bd[elete]', () => {

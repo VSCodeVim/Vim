@@ -270,6 +270,11 @@
         "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
       },
       {
+        "key": "ctrl+s",
+        "command": "extension.vim_ctrl+s",
+        "when": "editorTextFocus && vim.active && vim.use<C-s> && !inDebugRepl"
+      },
+      {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
         "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
@@ -865,7 +870,8 @@
           "type": "object",
           "description": "Delegate certain key combinations back to VSCode to be handled natively.",
           "default": {
-            "<C-d>": true
+            "<C-d>": true,
+            "<C-s>": false
           }
         },
         "vim.statusBarColorControl": {
@@ -1186,7 +1192,8 @@
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
     "test": "node ./out/test/runTest.js",
-    "forceprettier": "gulp forceprettier"
+    "forceprettier": "gulp forceprettier",
+    "watch": "npx webpack -c webpack.dev.js --watch"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1200,7 +1207,7 @@
     "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.4",
-    "winston": "3.6.0",
+    "winston": "3.7.2",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.5.0"
   },
@@ -1218,7 +1225,7 @@
     "@vscode/test-electron": "2.1.3",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.2.1",
+    "fork-ts-checker-webpack-plugin": "7.2.3",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
@@ -1229,7 +1236,7 @@
     "minimist": "1.2.6",
     "mocha": "9.2.2",
     "plugin-error": "1.0.1",
-    "prettier": "2.6.1",
+    "prettier": "2.6.2",
     "sinon": "13.0.1",
     "ts-loader": "9.2.8",
     "tslint": "6.1.3",
