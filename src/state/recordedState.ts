@@ -3,8 +3,7 @@ import { Mode, isVisualMode } from '../mode/mode';
 import { PositionDiff } from './../common/motion/position';
 import { Transformer } from './../transformations/transformer';
 import { SpecialKeys } from '../util/specialKeys';
-import type { VimState } from './vimState';
-import { Position } from 'vscode';
+import { IBaseAction, IBaseOperator, IBaseCommand } from '../actions/types';
 
 /**
  * Much of Vim's power comes from the composition of individual actions.
@@ -275,26 +274,4 @@ export class RecordedState {
 
     return 'pending';
   }
-}
-
-export interface IBaseAction {
-  readonly isMotion: boolean;
-  readonly isOperator: boolean;
-  readonly isCommand: boolean;
-  readonly isJump: boolean;
-  readonly createsUndoPoint: boolean;
-
-  keysPressed: string[];
-  multicursorIndex: number | undefined;
-
-  readonly preservesDesiredColumn: boolean;
-}
-
-export interface IBaseCommand extends IBaseAction {
-  exec(position: Position, vimState: VimState): Promise<void>;
-}
-
-export interface IBaseOperator extends IBaseAction {
-  run(vimState: VimState, start: Position, stop: Position): Promise<void>;
-  runRepeat(vimState: VimState, position: Position, count: number): Promise<void>;
 }

@@ -1,7 +1,7 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
-import { IBaseAction } from '../state/recordedState';
+import { IBaseAction } from "./types";
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';

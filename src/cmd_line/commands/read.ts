@@ -1,4 +1,3 @@
-import { TextEditor } from '../../textEditor';
 import { readFileAsync } from 'platform/fs';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { VimState } from '../../state/vimState';

@@ -16,7 +16,8 @@ import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMod
 import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
-import { IBaseAction, RecordedState } from './../state/recordedState';
+import { RecordedState } from './../state/recordedState';
+import { IBaseAction } from "../actions/types";
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
