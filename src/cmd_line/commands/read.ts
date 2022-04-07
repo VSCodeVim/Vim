@@ -46,33 +46,40 @@ export class ReadCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const textToInsert = await this.getTextToInsert();
+    const textToInsert = await this.getTextToInsert(vimState);
     if (textToInsert) {
-      await TextEditor.insert(vimState.editor, textToInsert);
+      vimState.recordedState.transformer.insert(vimState.cursorStopPosition.getLineEnd(), '\n' + textToInsert);
     }
   }
 
-  async getTextToInsert(): Promise<string> {
-    if ('file' in this.arguments && this.arguments.file.length > 0) {
-      return readFileAsync(this.arguments.file, 'utf8');
-    } else if ('cmd' in this.arguments && this.arguments.cmd.length > 0) {
-      if (SUPPORT_READ_COMMAND) {
-        const cmd = this.arguments.cmd;
-        return new Promise<string>(async (resolve, reject) => {
-          const { exec } = await import('child_process');
-          exec(cmd, (err, stdout, stderr) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(stdout);
-            }
+  // TODO: executeWithRange()
+
+  async getTextToInsert(vimState: VimState): Promise<string> {
+    if ('file' in this.arguments) {
+        return readFileAsync(this.arguments.file, 'utf8');
+    } else if ('cmd' in this.arguments) {
+      if (this.arguments.cmd.length > 0) {
+        if (SUPPORT_READ_COMMAND) {
+          const cmd = this.arguments.cmd;
+          return new Promise<string>(async (resolve, reject) => {
+            const { exec } = await import('child_process');
+            exec(cmd, (err, stdout, stderr) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(stdout);
+              }
+            });
           });
-        });
+        } else {
+          return '';
+        }
       } else {
+        // TODO: error message?
         return '';
       }
     } else {
-      throw Error('Invalid arguments');
+      return vimState.document.getText();
     }
   }
 }
