@@ -209,7 +209,7 @@ class Configuration implements IConfiguration {
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
-  handleKeys: IHandleKeys[] = [];
+  handleKeys: IHandleKeys = {};
 
   useSystemClipboard = false;
 
