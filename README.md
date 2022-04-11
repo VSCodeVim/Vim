@@ -570,6 +570,7 @@ Once easymotion is active, initiate motions using the following commands. After 
 | `<leader><leader><leader> bde`      | End of word                                                                                                    |
 | `<leader><leader><leader> bdjk`     | Start of line                                                                                                  |
 | `<leader><leader><leader> j`        | JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after `_` and after `#` |
+| `<leader><leader><leader> sl <char>`| Search character within line                                                                                   |
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
