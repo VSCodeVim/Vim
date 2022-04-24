@@ -659,12 +659,6 @@
           "default": "#ff0000",
           "description": "Set a custom color for the text on one character long markers."
         },
-        "vim.easymotionMarkerForegroundColorTwoChar": {
-          "type": "string",
-          "description": "Set a custom color for the text on two character long markers.",
-          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead.",
-          "deprecationMessage": "Deprecated: Please don't use this setting, use `#vim.easymotionMarkerForegroundColorTwoCharFirst#` and `#vim.easymotionMarkerForegroundColorTwoCharSecond#` instead."
-        },
         "vim.easymotionMarkerForegroundColorTwoCharFirst": {
           "type": "string",
           "default": "#ffb400",
@@ -685,44 +679,15 @@
           "default": "#777777",
           "markdownDescription": "Set a custom color for the easymotion dimmed characters when `#vim.easymotionDimBackground#` is set to true."
         },
-        "vim.easymotionMarkerWidthPerChar": {
-          "type": "number",
-          "description": "Set the width (in pixels) allocated to each character in the match.",
-          "default": 8,
-          "minimum": 1,
-          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now lets vscode calculate the correct width.",
-          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now lets vscode calculate the correct width."
-        },
         "vim.easymotionDimBackground": {
           "type": "boolean",
           "description": "Whether to dim other text while markers are visible.",
           "default": true
         },
-        "vim.easymotionMarkerFontFamily": {
-          "type": "string",
-          "description": "Set the font family of the marker text.",
-          "default": "",
-          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now uses `#editor.fontFamily#` instead.",
-          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now uses editor.fontFamily instead."
-        },
-        "vim.easymotionMarkerFontSize": {
-          "type": "string",
-          "description": "Set the font size of the marker text.",
-          "default": "",
-          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting; the extension now uses `#editor.fontSize#` instead.",
-          "deprecationMessage": "Deprecated: Please don't use this setting; the extension now uses editor.fontSize instead."
-        },
         "vim.easymotionMarkerFontWeight": {
           "type": "string",
           "description": "Set the font weight of the marker text.",
           "default": "bold"
-        },
-        "vim.easymotionMarkerMargin": {
-          "type": "number",
-          "description": "Set the margin around each marker, in pixels.",
-          "default": 0,
-          "markdownDeprecationMessage": "**Deprecated**: Please don't use this setting, it is no longer required.",
-          "deprecationMessage": "Deprecated: Please don't use this setting, it is no longer required."
         },
         "vim.easymotionKeys": {
           "type": "string",
