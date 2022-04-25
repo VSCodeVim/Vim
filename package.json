@@ -1098,6 +1098,11 @@
           "description": "The shell command to get current input method.",
           "default": "/path/to/im-select"
         },
+        "vim.imTurnOffConversionMode.enable": {
+          "type": "boolean",
+          "description": "Turn off converson mode on IME when leaving INSERT-like mode.",
+          "default": false
+        },
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
@@ -1152,6 +1157,9 @@
         "path": "./syntaxes/vimrc.tmLanguage.json"
       }
     ]
+  },
+  "bin": {
+    "imTurnOffCM.ps1": "./bin/imTurnOffCM.ps1"
   },
   "scripts": {
     "vscode:prepublish": "gulp build",

@@ -33,6 +33,10 @@ export interface IAutoSwitchInputMethod {
   obtainIMCmd: string;
 }
 
+export interface IImTurnOffConversionMode {
+  enable: boolean;
+}
+
 export interface IDebugConfiguration {
   /**
    * Boolean indicating whether all logs should be suppressed
@@ -393,6 +397,10 @@ export interface IConfiguration {
    */
   autoSwitchInputMethod: IAutoSwitchInputMethod;
 
+  /**
+   * InputMethodTurnOffConversionMode
+   */
+  imTurnOffConversionMode: IImTurnOffConversionMode;
   /**
    * Keybindings
    */

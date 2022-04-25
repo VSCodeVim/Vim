@@ -129,7 +129,7 @@ These settings are specific to VSCodeVim.
 | vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                               | String  | error                                     |
 | vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                 | String  | error                                     |
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                      | Boolean | false                                     |
-| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`                           |
+| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`    |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
 | vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                     | Boolean | false                                     |
 | vim.searchHighlightColor         | Background color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | `findMatchHighlightBackground` ThemeColor |
@@ -651,7 +651,9 @@ By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete th
 
 ### Input Method
 
-Disable input method when exiting Insert Mode.
+#### Input Method Switcher
+
+Change Input Method to the default specified by vim.autoSwitchInputMethod.defaultIM when exiting Insert Mode.
 
 | Setting                                 | Description                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -708,6 +710,18 @@ Any third-party program can be used to switch input methods. The following will 
       ```
 
 The `{im}` argument above is a command-line option that will be passed to `im-select` denoting the input method to switch to. If using an alternative program to switch input methods, you should add a similar option to the configuration. For example, if the program's usage is `my-program -s imKey` to switch input method, the `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
+
+#### Turn off Conversion Mode
+
+Turn off Conversion Mode on Intput Method when exiting Insert Mode.
+At present, this feature supports win32 only, and it requires PowerShell which version should be greater than or equal to 7.2 and **ExecutionPolicy** should be set as **Unristriced**(Sorry for inconvinient).
+This feature is usefull if you have only one Input Method, and the Input Method has Converson Mode such Japanese IM.
+
+![TurnOff](./images/readme/imTurnOffCM/turnOff.png) ![TurnOn](./images/readme/imTurnOffCM/turnOn.png)
+
+| Setting                              | Description                                         |
+| ------------------------------------ | --------------------------------------------------- |
+| `vim.imTurnOffConversionMode.enable` | Boolean denoting whether Conversion Mode is on/off. |
 
 ### ReplaceWithRegister
 

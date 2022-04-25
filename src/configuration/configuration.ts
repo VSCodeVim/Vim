@@ -12,6 +12,7 @@ import {
   IKeyRemapping,
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
+  IImTurnOffConversionMode,
   IDebugConfiguration,
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
@@ -282,6 +283,10 @@ class Configuration implements IConfiguration {
     defaultIM: '',
     obtainIMCmd: '',
     switchIMCmd: '',
+  };
+
+  imTurnOffConversionMode: IImTurnOffConversionMode = {
+    enable: false,
   };
 
   timeout = 1000;
