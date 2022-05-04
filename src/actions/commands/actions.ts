@@ -1307,7 +1307,7 @@ class CommandTabPrevious extends BaseCommand {
 
 @RegisterAction
 export class ActionDeleteChar extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['x'];
   override createsUndoPoint = true;
 
