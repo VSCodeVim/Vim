@@ -1307,7 +1307,7 @@ class CommandTabPrevious extends BaseCommand {
 
 @RegisterAction
 export class ActionDeleteChar extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  modes = [Mode.Normal];
   keys = ['x'];
   override createsUndoPoint = true;
 
@@ -2066,6 +2066,21 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
     vimState.cursors = newCursors;
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
+  }
+}
+
+@RegisterAction
+export class ActionDeleteCharVisualLineMode extends BaseCommand {
+  modes = [Mode.VisualLine];
+  keys = ['x'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    await new operator.DeleteOperator(this.multicursorIndex).run(
+      vimState,
+      start.getLineBegin(),
+      end.getLineEnd()
+    );
   }
 }
 
