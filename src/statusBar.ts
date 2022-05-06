@@ -181,6 +181,8 @@ export function statusBarText(vimState: VimState) {
       return '-- VISUAL LINE --';
     case Mode.Replace:
       return '-- REPLACE --';
+    case Mode.CleverFMode:
+      return '-- CleverF --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:

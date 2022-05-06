@@ -17,7 +17,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './../state/recordedState';
-import { IBaseAction } from "../actions/types";
+import { IBaseAction } from '../actions/types';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
@@ -765,7 +765,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        prevMode !== Mode.CleverFMode
       ) {
         ranRepeatableAction = true;
       }
@@ -1685,6 +1686,8 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
+    case Mode.CleverFMode:
+      return VSCodeVimCursorType.Block;
     case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;
     case Mode.EasyMotionInputMode:

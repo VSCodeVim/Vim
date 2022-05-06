@@ -277,6 +277,8 @@ class Configuration implements IConfiguration {
     },
   };
 
+  cleverF = false;
+
   autoSwitchInputMethod: IAutoSwitchInputMethod = {
     enable: false,
     defaultIM: '',

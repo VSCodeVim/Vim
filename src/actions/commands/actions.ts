@@ -206,6 +206,7 @@ class DisableExtension extends BaseCommand {
     Mode.SearchInProgressMode,
     Mode.CommandlineInProgress,
     Mode.Replace,
+    Mode.CleverFMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
     Mode.SurroundInputMode,
@@ -421,6 +422,7 @@ class CommandEsc extends BaseCommand {
     Mode.VisualBlock,
     Mode.Normal,
     Mode.SurroundInputMode,
+    Mode.CleverFMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
   ];

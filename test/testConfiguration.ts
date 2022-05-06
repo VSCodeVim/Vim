@@ -31,6 +31,7 @@ export class Configuration implements IConfiguration {
   argumentObjectSeparators = [','];
   argumentObjectOpeningDelimiters = ['(', '['];
   argumentObjectClosingDelimiters = [')', ']'];
+  cleverF = false;
   easymotion = false;
   easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';

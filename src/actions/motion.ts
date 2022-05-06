@@ -903,6 +903,66 @@ class MoveFindForward extends BaseMovement {
   }
 }
 
+let posF = [-1, -1];
+@RegisterAction
+class ActionCleverFSearchCommand extends BaseMovement {
+  override modes = [Mode.Normal];
+  keys = ['f'];
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    count ||= 1;
+    try {
+      if (arrayEqual(posF, [position.line, position.character])) {
+        const action = new MoveRepeat([';'], true);
+        return action.execActionWithCount(position, vimState, count);
+      } else {
+        await vimState.setCurrentMode(Mode.CleverFMode);
+        return position;
+      }
+    } finally {
+      console.log('test');
+    }
+  }
+}
+const arrayEqual = (a: number[], b: number[]): boolean => {
+  if (!Array.isArray(a)) return false;
+  if (!Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0, n = a.length; i < n; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
+@RegisterAction
+class MoveCleverFFindForward extends BaseMovement {
+  override modes = [Mode.CleverFMode];
+  keys = ['<character>'];
+  public override async execActionWithCount(
+    position: vscode.Position,
+    vimState: VimState,
+    count: number
+  ): Promise<vscode.Position | IMovement> {
+    await vimState.setCurrentMode(Mode.Normal);
+    posF = [position.line, position.character];
+    count ||= 1;
+    const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
+    let result = findHelper(vimState, position, toFind, count, 'forward');
+    vimState.lastSemicolonRepeatableMovement = new MoveCleverFFindForward(this.keysPressed, true);
+    if (!result) {
+      return failedMovement(vimState);
+    }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
+    posF = [result.line, result.character];
+    return result;
+  }
+}
+
 @RegisterAction
 class MoveFindBackward extends BaseMovement {
   keys = ['F', '<character>'];
