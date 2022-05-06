@@ -865,7 +865,7 @@ function findHelper(
 
 @RegisterAction
 class MoveFindForward extends BaseMovement {
-  keys = ['f', '<character>'];
+  keys = ['t', '<character>'];
 
   public override async execActionWithCount(
     position: Position,
@@ -904,8 +904,9 @@ class MoveFindForward extends BaseMovement {
 }
 
 let posF = [-1, -1];
+let beforeCleverFAction = '';
 @RegisterAction
-class ActionCleverFSearchCommand extends BaseMovement {
+class ActionCleverForwardCommand extends BaseMovement {
   override modes = [Mode.Normal];
   keys = ['f'];
   public override async execActionWithCount(
@@ -915,11 +916,50 @@ class ActionCleverFSearchCommand extends BaseMovement {
   ): Promise<Position | IMovement> {
     count ||= 1;
     try {
-      if (arrayEqual(posF, [position.line, position.character])) {
+      if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'f') {
         const action = new MoveRepeat([';'], true);
         return action.execActionWithCount(position, vimState, count);
+      } else if (
+        arrayEqual(posF, [position.line, position.character]) &&
+        beforeCleverFAction === 'F'
+      ) {
+        const action = new MoveRepeatReversed([','], true);
+        beforeCleverFAction = 'f';
+        return action.execActionWithCount(position, vimState, count);
       } else {
-        await vimState.setCurrentMode(Mode.CleverFMode);
+        await vimState.setCurrentMode(Mode.CleverFForwardMode);
+        beforeCleverFAction = 'f';
+        return position;
+      }
+    } finally {
+      console.log('test');
+    }
+  }
+}
+@RegisterAction
+class ActionCleverFBackwardCommand extends BaseMovement {
+  override modes = [Mode.Normal];
+  keys = ['F'];
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    count ||= 1;
+    try {
+      if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'F') {
+        const action = new MoveRepeat([';'], true);
+        return action.execActionWithCount(position, vimState, count);
+      } else if (
+        arrayEqual(posF, [position.line, position.character]) &&
+        beforeCleverFAction === 'f'
+      ) {
+        const action = new MoveRepeatReversed([','], true);
+        beforeCleverFAction = 'F';
+        return action.execActionWithCount(position, vimState, count);
+      } else {
+        await vimState.setCurrentMode(Mode.CleverFBackwardMode);
+        beforeCleverFAction = 'F';
         return position;
       }
     } finally {
@@ -939,7 +979,7 @@ const arrayEqual = (a: number[], b: number[]): boolean => {
 
 @RegisterAction
 class MoveCleverFFindForward extends BaseMovement {
-  override modes = [Mode.CleverFMode];
+  override modes = [Mode.CleverFForwardMode];
   keys = ['<character>'];
   public override async execActionWithCount(
     position: vscode.Position,
@@ -952,6 +992,34 @@ class MoveCleverFFindForward extends BaseMovement {
     const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
     let result = findHelper(vimState, position, toFind, count, 'forward');
     vimState.lastSemicolonRepeatableMovement = new MoveCleverFFindForward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveCleverFFindBackward(this.keysPressed, true);
+    if (!result) {
+      return failedMovement(vimState);
+    }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
+    posF = [result.line, result.character];
+    return result;
+  }
+}
+
+@RegisterAction
+class MoveCleverFFindBackward extends BaseMovement {
+  override modes = [Mode.CleverFBackwardMode];
+  keys = ['<character>'];
+  public override async execActionWithCount(
+    position: vscode.Position,
+    vimState: VimState,
+    count: number
+  ): Promise<vscode.Position | IMovement> {
+    await vimState.setCurrentMode(Mode.Normal);
+    posF = [position.line, position.character];
+    count ||= 1;
+    const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
+    let result = findHelper(vimState, position, toFind, count, 'backward');
+    vimState.lastSemicolonRepeatableMovement = new MoveCleverFFindBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveCleverFFindForward(this.keysPressed, true);
     if (!result) {
       return failedMovement(vimState);
     }
@@ -965,7 +1033,7 @@ class MoveCleverFFindForward extends BaseMovement {
 
 @RegisterAction
 class MoveFindBackward extends BaseMovement {
-  keys = ['F', '<character>'];
+  keys = ['t', '<character>'];
 
   public override async execActionWithCount(
     position: Position,

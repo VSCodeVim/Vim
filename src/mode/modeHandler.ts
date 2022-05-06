@@ -766,7 +766,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
         prevMode !== Mode.EasyMotionMode &&
-        prevMode !== Mode.CleverFMode
+        prevMode !== Mode.CleverFForwardMode &&
+        prevMode !== Mode.CleverFBackwardMode
       ) {
         ranRepeatableAction = true;
       }
@@ -1686,7 +1687,9 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case Mode.CleverFMode:
+    case Mode.CleverFForwardMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.CleverFBackwardMode:
       return VSCodeVimCursorType.Block;
     case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;

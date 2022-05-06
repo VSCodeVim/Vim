@@ -318,10 +318,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (mh.currentMode === Mode.CleverFMode) {
-        return;
-      }
-
       taskQueue.enqueueTask(() => mh.handleSelectionChange(e));
     },
     true,
