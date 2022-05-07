@@ -29,6 +29,8 @@ import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
 import { ModeDataFor } from '../mode/modeData';
+import { config } from 'process';
+import { CountQueuingStrategy } from 'stream/web';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -863,9 +865,11 @@ function findHelper(
   return undefined;
 }
 
+let posF = [-1, -1];
+let beforeCleverFAction = '';
 @RegisterAction
 class MoveFindForward extends BaseMovement {
-  keys = ['t', '<character>'];
+  keys = ['f', '<character>'];
 
   public override async execActionWithCount(
     position: Position,
@@ -903,43 +907,80 @@ class MoveFindForward extends BaseMovement {
   }
 }
 
-let posF = [-1, -1];
-let beforeCleverFAction = '';
 @RegisterAction
 class ActionCleverForwardCommand extends BaseMovement {
   override modes = [Mode.Normal];
   keys = ['f'];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.cleverF && super.doesActionApply(vimState, keysPressed);
+  }
+
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
     count ||= 1;
-    try {
-      if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'f') {
-        const action = new MoveRepeat([';'], true);
-        return action.execActionWithCount(position, vimState, count);
-      } else if (
-        arrayEqual(posF, [position.line, position.character]) &&
-        beforeCleverFAction === 'F'
-      ) {
-        const action = new MoveRepeatReversed([','], true);
-        beforeCleverFAction = 'f';
-        return action.execActionWithCount(position, vimState, count);
-      } else {
-        await vimState.setCurrentMode(Mode.CleverFForwardMode);
-        beforeCleverFAction = 'f';
-        return position;
-      }
-    } finally {
-      console.log('test');
+    if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'f') {
+      const action = new MoveRepeat([';'], true);
+      return action.execActionWithCount(position, vimState, count);
+    } else if (
+      arrayEqual(posF, [position.line, position.character]) &&
+      beforeCleverFAction === 'F'
+    ) {
+      const action = new MoveRepeatReversed([','], true);
+      beforeCleverFAction = 'f';
+      return action.execActionWithCount(position, vimState, count);
+    } else {
+      await vimState.setCurrentMode(Mode.CleverFForwardMode);
+      beforeCleverFAction = 'f';
+      return position;
     }
   }
 }
+
+@RegisterAction
+class MoveFindBackward extends BaseMovement {
+  keys = ['F', '<character>'];
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    if (configuration.sneakReplacesF) {
+      return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
+        position,
+        vimState,
+        count
+      );
+    }
+
+    count ||= 1;
+    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
+    const result = findHelper(vimState, position, toFind, count, 'backward');
+
+    vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+    vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+
+    if (!result) {
+      return failedMovement(vimState);
+    }
+
+    return result;
+  }
+}
+
 @RegisterAction
 class ActionCleverFBackwardCommand extends BaseMovement {
   override modes = [Mode.Normal];
   keys = ['F'];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return configuration.cleverF && super.doesActionApply(vimState, keysPressed);
+  }
+
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
@@ -967,6 +1008,7 @@ class ActionCleverFBackwardCommand extends BaseMovement {
     }
   }
 }
+
 const arrayEqual = (a: number[], b: number[]): boolean => {
   if (!Array.isArray(a)) return false;
   if (!Array.isArray(b)) return false;
@@ -1027,38 +1069,6 @@ class MoveCleverFFindBackward extends BaseMovement {
       result = result.getRight();
     }
     posF = [result.line, result.character];
-    return result;
-  }
-}
-
-@RegisterAction
-class MoveFindBackward extends BaseMovement {
-  keys = ['t', '<character>'];
-
-  public override async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    if (configuration.sneakReplacesF) {
-      return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
-        position,
-        vimState,
-        count
-      );
-    }
-
-    count ||= 1;
-    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    const result = findHelper(vimState, position, toFind, count, 'backward');
-
-    vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
-
-    if (!result) {
-      return failedMovement(vimState);
-    }
-
     return result;
   }
 }

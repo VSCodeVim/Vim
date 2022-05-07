@@ -644,6 +644,11 @@
           "markdownDescription": "Enable the [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion) plugin for Vim.",
           "default": false
         },
+        "vim.cleverF": {
+          "type": "boolean",
+          "markdownDescription": "Enable the [CleverF]() plugin for Vim.",
+          "default": false
+        },
         "vim.easymotion": {
           "type": "boolean",
           "markdownDescription": "Enable the [EasyMotion](https://github.com/easymotion/vim-easymotion) plugin for Vim.",
