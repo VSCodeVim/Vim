@@ -5,6 +5,7 @@ import { Position } from 'vscode';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { CleverF } from '../../src/actions/plugins/cleverF';
 
 suite('VimState', () => {
   setup(async () => {
@@ -15,7 +16,7 @@ suite('VimState', () => {
 
   test('de-dupes cursors', async () => {
     // setup
-    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion(), new CleverF());
     await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
@@ -33,7 +34,7 @@ suite('VimState', () => {
 
   test('cursorStart/cursorStop should be first cursor in cursors', async () => {
     // setup
-    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion(), new CleverF());
     await vimState.load();
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);

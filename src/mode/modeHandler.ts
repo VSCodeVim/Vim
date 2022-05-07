@@ -46,6 +46,8 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { CleverF } from '../../src/actions/plugins/cleverF';
+import { config } from 'process';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -122,7 +124,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.handlerMap = handlerMap;
     this.remappers = new Remappers();
 
-    this.vimState = new VimState(textEditor, new EasyMotion());
+    this.vimState = new VimState(textEditor, new EasyMotion(), new CleverF());
     this.remapState = new RemapState();
     this.disposables.push(this.vimState);
   }
@@ -582,6 +584,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
         // cursor decorations, if in the future we split up the updateView function there should
         // be no need to call all of it.
+        if (configuration.cleverF) {
+          this.vimState.cleverF.clearDecorations(this.vimState.editor);
+        }
         await this.updateView({ drawSelection: false, revealRange: false });
       }
     }

@@ -8,6 +8,8 @@ import { Position } from 'vscode';
 import { RegisterAction } from '../base';
 import { BaseMovement, IMovement, failedMovement } from '../baseMotion';
 import { findHelper, MoveRepeat, MoveRepeatReversed } from '../motion';
+import { TextEditor } from 'src/textEditor';
+import { ICleverF } from './easymotion/types';
 
 /**
  * State of Clever-f
@@ -125,6 +127,8 @@ class MoveCleverFFindForward extends BaseMovement {
   ): Promise<vscode.Position | IMovement> {
     // Reset Mode
     await vimState.setCurrentMode(previousMode);
+    const cleverF = new CleverF();
+    cleverF.updateDecorations(position, vimState.editor, this.keysPressed[0]);
 
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
@@ -161,6 +165,8 @@ class MoveCleverFFindBackward extends BaseMovement {
   ): Promise<vscode.Position | IMovement> {
     // Reset Mode
     await vimState.setCurrentMode(previousMode);
+    const cleverF = new CleverF();
+    cleverF.updateDecorations(position, vimState.editor, this.keysPressed[0]);
 
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
@@ -179,5 +185,42 @@ class MoveCleverFFindBackward extends BaseMovement {
     // Mark a position to repeat this command
     posF = [result.line, result.character];
     return result;
+  }
+}
+
+export class CleverF implements ICleverF {
+  private decorations: vscode.DecorationOptions[] = [];
+  private static readonly decorationType = vscode.window.createTextEditorDecorationType({
+    color: 'red',
+  });
+
+  constructor() {
+    this.decorations = [];
+  }
+  public updateDecorations(position: Position, editor: vscode.TextEditor, character: string) {
+    this.decorations = [];
+    const sourceCode = editor.document.getText();
+    if (character === '') {
+      return;
+    }
+    const regex = '(' + character + ')';
+    const sourceCodeArr = sourceCode.split('\n');
+    const strArr = sourceCodeArr[position.line].split('');
+    for (let chr = 0; chr < strArr.length; chr++) {
+      const match = strArr[chr].match(regex);
+      if (match !== null && match.index !== undefined) {
+        const range = new vscode.Range(
+          new vscode.Position(position.line, chr),
+          new vscode.Position(position.line, chr + 1)
+        );
+        const decoration = { range };
+        this.decorations.push(decoration);
+      }
+    }
+    editor.setDecorations(CleverF.decorationType, this.decorations);
+  }
+
+  public clearDecorations(editor: vscode.TextEditor) {
+    editor.setDecorations(CleverF.decorationType, []);
   }
 }

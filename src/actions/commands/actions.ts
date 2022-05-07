@@ -439,6 +439,7 @@ class CommandEsc extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (vimState.currentMode === Mode.Normal) {
       vimState.surround = undefined;
+      vimState.cleverF.clearDecorations(vimState.editor);
 
       if (vimState.isMultiCursor) {
         vimState.cursors = [vimState.cursors[0]];

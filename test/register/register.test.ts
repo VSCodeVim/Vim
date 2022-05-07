@@ -10,6 +10,7 @@ import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils
 import { RecordedState } from '../../src/state/recordedState';
 import { newTest } from '../testSimplifier';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
+import { CleverF } from '../../src/actions/plugins/cleverF';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -123,7 +124,7 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
+    const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion(), new CleverF());
     await vimState.load();
     vimState.recordedState.registerName = '0';
 
