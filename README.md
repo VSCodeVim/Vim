@@ -27,6 +27,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
     - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
     - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
     - [Debugging Remappings](#debugging-remappings)
+    - [Remapping more complex key combinations](#remapping-more-complex-key-combinations)
   - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
 - [.vimrc support](#vimrc-support)
@@ -396,7 +397,7 @@ It is highly recommended to remap keys using vim commands like `"vim.normalModeK
 
 You can then add a new entry to the keybindings like so:
 
-    ```json
+  ```json
     {
       "key": "YOUR_KEY_COMBINATION",
       "command": "vim.remap",
@@ -405,11 +406,11 @@ You can then add a new entry to the keybindings like so:
         "after": ["YOUR_VIM_ACTION"]
       }
     }
-    ```
+  ```
 
 For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
 
-    ```json
+  ```json
     {
       "key": "ctrl+shift+y",
       "command": "vim.remap",
@@ -418,7 +419,7 @@ For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal 
         "after": ["y", "y"],
       }
     },
-    ```
+  ```
 
 If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
 
