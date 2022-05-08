@@ -1213,6 +1213,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       let selections = [] as vscode.Selection[];
+      if (this.vimState.cleverF.isStartVisual && configuration.cleverF) {
+        this.vimState.cursorStartPosition = new Position(
+          this.vimState.cleverF.startVisualPosition[0],
+          this.vimState.cleverF.startVisualPosition[1]
+        );
+        this.vimState.cleverF.isStartVisual = false;
+      }
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {

@@ -8,7 +8,6 @@ import { Position } from 'vscode';
 import { RegisterAction } from '../base';
 import { BaseMovement, IMovement, failedMovement } from '../baseMotion';
 import { findHelper, MoveRepeat, MoveRepeatReversed } from '../motion';
-import { TextEditor } from 'src/textEditor';
 import { ICleverF } from './easymotion/types';
 
 /**
@@ -23,7 +22,7 @@ let previousMode: Mode;
  */
 @RegisterAction
 class ActionCleverForwardCommand extends BaseMovement {
-  override modes = [Mode.Normal];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['f'];
 
   // This command is Not Enabled when vim.clever-F is false.
@@ -64,7 +63,7 @@ class ActionCleverForwardCommand extends BaseMovement {
  */
 @RegisterAction
 class ActionCleverFBackwardCommand extends BaseMovement {
-  override modes = [Mode.Normal];
+  override modes = [Mode.Normal, Mode.Visual];
   keys = ['F'];
 
   // This command is Not Enabled when vim.clever-F is false.
@@ -127,6 +126,18 @@ class MoveCleverFFindForward extends BaseMovement {
   ): Promise<vscode.Position | IMovement> {
     // Reset Mode
     await vimState.setCurrentMode(previousMode);
+    if (previousMode === Mode.Visual && !arrayEqual(posF, [position.line, position.character])) {
+      if (vimState.lastVisualSelection) {
+        vimState.cleverF.startVisualPosition = [
+          vimState.lastVisualSelection?.start?.line,
+          vimState.lastVisualSelection?.start?.character,
+        ];
+      } else {
+        vimState.cleverF.startVisualPosition = [position.line, position.character];
+      }
+      vimState.cleverF.isStartVisual = true;
+    }
+
     const cleverF = new CleverF();
     cleverF.updateDecorations(position, vimState.editor, this.keysPressed[0]);
 
@@ -165,6 +176,18 @@ class MoveCleverFFindBackward extends BaseMovement {
   ): Promise<vscode.Position | IMovement> {
     // Reset Mode
     await vimState.setCurrentMode(previousMode);
+    if (previousMode === Mode.Visual && !arrayEqual(posF, [position.line, position.character])) {
+      if (vimState.lastVisualSelection) {
+        vimState.cleverF.startVisualPosition = [
+          vimState.lastVisualSelection?.start?.line,
+          vimState.lastVisualSelection?.start?.character,
+        ];
+      } else {
+        vimState.cleverF.startVisualPosition = [position.line, position.character];
+      }
+      vimState.cleverF.isStartVisual = true;
+    }
+
     const cleverF = new CleverF();
     cleverF.updateDecorations(position, vimState.editor, this.keysPressed[0]);
 
@@ -190,6 +213,8 @@ class MoveCleverFFindBackward extends BaseMovement {
 
 export class CleverF implements ICleverF {
   private decorations: vscode.DecorationOptions[] = [];
+  public startVisualPosition: number[] = [-1, -1];
+  public isStartVisual: boolean = false;
   private static readonly decorationType = vscode.window.createTextEditorDecorationType({
     color: 'red',
   });
