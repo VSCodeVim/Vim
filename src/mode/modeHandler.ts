@@ -440,6 +440,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           key = '<copy>';
         }
       }
+
+      // clear cleverF decorations
+      if (configuration.cleverF) {
+        this.vimState.cleverF.clearDecorations(this.vimState.editor);
+      }
     }
 
     // <C-d> triggers "add selection to next find match" by default,
@@ -584,9 +589,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
         // cursor decorations, if in the future we split up the updateView function there should
         // be no need to call all of it.
-        if (configuration.cleverF) {
-          this.vimState.cleverF.clearDecorations(this.vimState.editor);
-        }
         await this.updateView({ drawSelection: false, revealRange: false });
       }
     }
