@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
-import { ICleverF, IEasyMotion } from '../actions/plugins/easymotion/types';
+import { IEasyMotion } from '../actions/plugins/easymotion/types';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
@@ -17,6 +17,7 @@ import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ModeData } from '../mode/modeData';
 import { SearchDirection } from '../vimscript/pattern';
 import { globalState } from './globalState';
+import { ICleverF } from '../actions/plugins/cleverF';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;

@@ -129,7 +129,7 @@ These settings are specific to VSCodeVim.
 | vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                               | String  | error                                     |
 | vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                 | String  | error                                     |
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                      | Boolean | false                                     |
-| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`                           |
+| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`    |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
 | vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                     | Boolean | false                                     |
 | vim.searchHighlightColor         | Background color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | `findMatchHighlightBackground` ThemeColor |
@@ -648,6 +648,43 @@ Once CamelCaseMotion is enabled, the following motions are available:
 | `<operator>i<leader>w` | Select/change/delete/etc. the current camelCase or snake_case word segment |
 
 By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete the current and next camelCase word segment.
+
+### clever-F
+
+Based on [clever-F](https://github.com/rhysd/clever-f.vim), instead of `;`, `f` is available
+to repeat after you type `f{char}` or `F{char}`. `F` after `f{char}` and `F{char}` is also available
+to undo a jump.
+
+| Setting     | Description             | Type    | Default Value |
+| ----------- | ----------------------- | ------- | ------------- |
+| vim.cleverF | Enable/disable clever-F | Boolean | false         |
+
+Once clever-F is active, "f" command and "F" command become more convenience.
+
+#### **`f`**
+
+```
+input:       fh         f         f      e         fo         f
+move :  _---------->_------>_---------->_->_---------------->_->_
+input:                            F                            F
+move :                        _<-----------------------------_<-_
+text :  hoge        huga    hoo         hugu                ponyo
+```
+
+#### **`F`**
+
+```
+input:        f        Fh       b     f                         Fo
+move :  _<----------_<------_<-_<-----------------------------_<-_
+input:        F        F          F
+move :  _---------->_------>_----------->_
+text :  hoge        huga    huyo         hugu                ponyo
+```
+
+| Motion Command | Description                                     |
+| -------------- | ----------------------------------------------- |
+| `f<char>`      | Move forward to the first position of `<char>`  |
+| `F<char>`      | Move backward to the first position of `<char>` |
 
 ### Input Method
 

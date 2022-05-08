@@ -87,10 +87,3 @@ export interface IEasyMotion {
   clearMarkers(): void;
   clearDecorations(editor: vscode.TextEditor): void;
 }
-
-export interface ICleverF {
-  updateDecorations(position: Position, editor: vscode.TextEditor, character: string): void;
-  clearDecorations(editor: vscode.TextEditor): void;
-  startVisualPosition: number[];
-  isStartVisual: boolean;
-}

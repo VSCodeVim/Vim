@@ -8,7 +8,6 @@ import { Position } from 'vscode';
 import { RegisterAction } from '../base';
 import { BaseMovement, IMovement, failedMovement } from '../baseMotion';
 import { findHelper, MoveRepeat, MoveRepeatReversed } from '../motion';
-import { ICleverF } from './easymotion/types';
 
 /**
  * State of Clever-f
@@ -209,6 +208,13 @@ class MoveCleverFFindBackward extends BaseMovement {
     posF = [result.line, result.character];
     return result;
   }
+}
+
+export interface ICleverF {
+  updateDecorations(position: Position, editor: vscode.TextEditor, character: string): void;
+  clearDecorations(editor: vscode.TextEditor): void;
+  startVisualPosition: number[];
+  isStartVisual: boolean;
 }
 
 export class CleverF implements ICleverF {
