@@ -398,27 +398,27 @@ It is highly recommended to remap keys using vim commands like `"vim.normalModeK
 You can then add a new entry to the keybindings like so:
 
   ```json
-    {
-      "key": "YOUR_KEY_COMBINATION",
-      "command": "vim.remap",
-      "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
-      "args": {
-        "after": ["YOUR_VIM_ACTION"]
-      }
+  {
+    "key": "YOUR_KEY_COMBINATION",
+    "command": "vim.remap",
+    "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
+    "args": {
+      "after": ["YOUR_VIM_ACTION"]
     }
+  }
   ```
 
 For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
 
   ```json
-    {
-      "key": "ctrl+shift+y",
-      "command": "vim.remap",
-      "when": "inputFocus && vim.mode == 'Normal'",
-      "args": {
-        "after": ["y", "y"],
-      }
+  {
+    "key": "ctrl+shift+y",
+    "command": "vim.remap",
+    "when": "inputFocus && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "y"],
     }
+  }
   ```
 
 If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
