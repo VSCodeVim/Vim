@@ -418,7 +418,7 @@ For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal 
       "args": {
         "after": ["y", "y"],
       }
-    },
+    }
   ```
 
 If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
