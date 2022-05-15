@@ -25,6 +25,7 @@ import { RegisterCommand } from '../cmd_line/commands/register';
 import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
+import { ShiftCommand } from '../cmd_line/commands/shift';
 import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
 import { SubstituteCommand } from '../cmd_line/commands/substitute';
@@ -60,9 +61,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['#!', ''], all.map((_) => new NoOpCommand())],
   [['&', ''], undefined],
   [['*', ''], undefined],
-  [['<', ''], undefined],
+  [['<', ''], ShiftCommand.argParser('<')],
   [['=', ''], PrintCommand.argParser({ printNumbers: true, printText: false })],
-  [['>', ''], undefined],
+  [['>', ''], ShiftCommand.argParser('>')],
   [['@', ''], undefined],
   [['@@', ''], undefined],
   [['N', 'ext'], undefined],
