@@ -2072,6 +2072,21 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
 }
 
 @RegisterAction
+export class ActionDeleteCharVisualLineMode extends BaseCommand {
+  modes = [Mode.VisualLine];
+  keys = ['x'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    await new operator.DeleteOperator(this.multicursorIndex).run(
+      vimState,
+      start.getLineBegin(),
+      end.getLineEnd()
+    );
+  }
+}
+
+@RegisterAction
 class ActionDeleteLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['X'];
