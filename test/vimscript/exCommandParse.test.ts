@@ -25,6 +25,7 @@ import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
+import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -59,6 +60,21 @@ suite('Ex command parsing', () => {
   suite(':#!', () => {
     exParseTest(':#!', new NoOpCommand());
     exParseTest(':#!123 abc! | s/one/two', new NoOpCommand());
+  });
+
+  suite(':>', () => {
+    exParseTest(':>', new ShiftCommand({ dir: '>', depth: 1, numLines: undefined }));
+    exParseTest(':>>', new ShiftCommand({ dir: '>', depth: 2, numLines: undefined }));
+    exParseTest(':>  >', new ShiftCommand({ dir: '>', depth: 2, numLines: undefined }));
+    exParseTest(':>>5', new ShiftCommand({ dir: '>', depth: 2, numLines: 5 }));
+    exParseTest(':> >   5', new ShiftCommand({ dir: '>', depth: 2, numLines: 5 }));
+  });
+  suite(':<', () => {
+    exParseTest(':<', new ShiftCommand({ dir: '<', depth: 1, numLines: undefined }));
+    exParseTest(':<<', new ShiftCommand({ dir: '<', depth: 2, numLines: undefined }));
+    exParseTest(':<  <', new ShiftCommand({ dir: '<', depth: 2, numLines: undefined }));
+    exParseTest(':<<5', new ShiftCommand({ dir: '<', depth: 2, numLines: 5 }));
+    exParseTest(':< <   5', new ShiftCommand({ dir: '<', depth: 2, numLines: 5 }));
   });
 
   suite(':bd[elete]', () => {

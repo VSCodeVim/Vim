@@ -141,12 +141,12 @@ export class TextEditor {
   /**
    * @returns the number of visible columns that the given line begins with
    */
-  static getIndentationLevel(line: string): number {
+  static getIndentationLevel(line: string, tabSize: number): number {
     let visibleColumn = 0;
     for (const char of line) {
       switch (char) {
         case '\t':
-          visibleColumn += configuration.tabstop;
+          visibleColumn += tabSize;
           break;
         case ' ':
           visibleColumn += 1;
@@ -162,14 +162,14 @@ export class TextEditor {
   /**
    * @returns `line` with its indentation replaced with `screenCharacters` visible columns of whitespace
    */
-  static setIndentationLevel(line: string, screenCharacters: number): string {
+  static setIndentationLevel(line: string, screenCharacters: number, expandtab: boolean): string {
     const tabSize = configuration.tabstop;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;
     }
 
-    const indentString = configuration.expandtab
+    const indentString = expandtab
       ? ' '.repeat(screenCharacters)
       : '\t'.repeat(screenCharacters / tabSize) + ' '.repeat(screenCharacters % tabSize);
 
