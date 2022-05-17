@@ -25,6 +25,7 @@ import { RegisterCommand } from '../cmd_line/commands/register';
 import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
+import { ShiftCommand } from '../cmd_line/commands/shift';
 import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
 import { SubstituteCommand } from '../cmd_line/commands/substitute';
@@ -60,9 +61,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['#!', ''], all.map((_) => new NoOpCommand())],
   [['&', ''], undefined],
   [['*', ''], undefined],
-  [['<', ''], undefined],
+  [['<', ''], ShiftCommand.argParser('<')],
   [['=', ''], PrintCommand.argParser({ printNumbers: true, printText: false })],
-  [['>', ''], undefined],
+  [['>', ''], ShiftCommand.argParser('>')],
   [['@', ''], undefined],
   [['@@', ''], undefined],
   [['N', 'ext'], undefined],
@@ -93,13 +94,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['bd', 'elete'], BufferDeleteCommand.argParser],
   [['be', 'have'], undefined],
   [['bel', 'owright'], undefined],
-  [['bf', 'irst'], undefined],
-  [['bl', 'ast'], undefined],
+  [['bf', 'irst'], TabCommand.argParsers.bfirst],
+  [['bl', 'ast'], TabCommand.argParsers.blast],
   [['bm', 'odified'], undefined],
   [['bn', 'ext'], TabCommand.argParsers.bnext],
   [['bo', 'tright'], undefined],
   [['bp', 'revious'], TabCommand.argParsers.bprev],
-  [['br', 'ewind'], undefined],
+  [['br', 'ewind'], TabCommand.argParsers.bfirst],
   [['brea', 'k'], undefined],
   [['breaka', 'dd'], Breakpoints.argParsers.add],
   [['breakd', 'el'], Breakpoints.argParsers.del],
@@ -524,7 +525,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['tabnew', ''], TabCommand.argParsers.tabnew],
   [['tabo', 'nly'], TabCommand.argParsers.tabonly],
   [['tabp', 'revious'], TabCommand.argParsers.bprev],
-  [['tabr', 'ewind'], undefined],
+  [['tabr', 'ewind'], TabCommand.argParsers.bfirst],
   [['tabs', ''], undefined],
   [['tags', ''], undefined],
   [['tc', 'd'], undefined],
