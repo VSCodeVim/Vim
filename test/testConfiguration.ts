@@ -34,17 +34,12 @@ export class Configuration implements IConfiguration {
   easymotion = false;
   easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
   easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
   easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
   easymotionIncSearchForegroundColor = '#7fbf00';
   easymotionDimColor = '#777777';
-  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
-  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
   easymotionMarkerFontWeight = 'bold';
-  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   targets: ITargetsConfiguration = {
     enable: false,

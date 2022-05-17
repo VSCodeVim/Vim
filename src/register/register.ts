@@ -1,6 +1,7 @@
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
+  ActionDeleteCharVisualLineMode,
   ActionDeleteCharWithDeleteKey,
   ActionDeleteLastChar,
   CommandRegister,
@@ -234,6 +235,7 @@ export class Register {
       (baseOperator instanceof DeleteOperator ||
         baseOperator instanceof ActionDeleteChar ||
         baseOperator instanceof ActionDeleteLastChar ||
+        baseOperator instanceof ActionDeleteCharVisualLineMode ||
         baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
       !(vimState.macro !== undefined || vimState.isReplayingMacro)
     ) {

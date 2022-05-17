@@ -120,9 +120,8 @@ export class DeleteMarksCommand extends ExCommand {
         const range = asciiRange(x.start, x.end);
         if (range === undefined) {
           throw VimError.fromCode(ErrorCode.InvalidArgument);
-        } else {
-          marks.concat();
         }
+        marks.push(...range.concat());
       }
     }
     return marks;

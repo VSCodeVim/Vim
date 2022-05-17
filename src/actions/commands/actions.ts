@@ -1181,7 +1181,8 @@ export class CommandInsertNewLineAbove extends BaseCommand {
       if (indentAmt >= 0) {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
-          text: TextEditor.setIndentationLevel('', indentAmt),
+          // TODO: Use `editor.options.insertSpaces`, I think
+          text: TextEditor.setIndentationLevel('', indentAmt, configuration.expandtab),
           position: newPos,
           cursorIndex: i,
           manuallySetCursorPositions: true,
@@ -1227,7 +1228,8 @@ export class CommandInsertNewLineBefore extends BaseCommand {
       // transformations AND to set multiple cursors.
       vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
-        text: TextEditor.setIndentationLevel('', newPos.character),
+        // TODO: Use `editor.options.insertSpaces`, I think
+        text: TextEditor.setIndentationLevel('', newPos.character, configuration.expandtab),
         position: newPos,
         cursorIndex: i,
         manuallySetCursorPositions: true,
@@ -2066,6 +2068,21 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
     vimState.cursors = newCursors;
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;
+  }
+}
+
+@RegisterAction
+export class ActionDeleteCharVisualLineMode extends BaseCommand {
+  modes = [Mode.VisualLine];
+  keys = ['x'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
+    await new operator.DeleteOperator(this.multicursorIndex).run(
+      vimState,
+      start.getLineBegin(),
+      end.getLineEnd()
+    );
   }
 }
 
