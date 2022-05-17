@@ -1181,7 +1181,8 @@ export class CommandInsertNewLineAbove extends BaseCommand {
       if (indentAmt >= 0) {
         vimState.recordedState.transformer.addTransformation({
           type: 'insertText',
-          text: TextEditor.setIndentationLevel('', indentAmt),
+          // TODO: Use `editor.options.insertSpaces`, I think
+          text: TextEditor.setIndentationLevel('', indentAmt, configuration.expandtab),
           position: newPos,
           cursorIndex: i,
           manuallySetCursorPositions: true,
@@ -1227,7 +1228,8 @@ export class CommandInsertNewLineBefore extends BaseCommand {
       // transformations AND to set multiple cursors.
       vimState.recordedState.transformer.addTransformation({
         type: 'insertText',
-        text: TextEditor.setIndentationLevel('', newPos.character),
+        // TODO: Use `editor.options.insertSpaces`, I think
+        text: TextEditor.setIndentationLevel('', newPos.character, configuration.expandtab),
         position: newPos,
         cursorIndex: i,
         manuallySetCursorPositions: true,
