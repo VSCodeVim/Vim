@@ -53,7 +53,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 ## 💾 Installation
 
-VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
+VSCodeVim is automatically enabled after [installing](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) it.
 
 ### Mac
 
