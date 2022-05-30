@@ -5513,10 +5513,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.8.0.tgz#3d40d369d8d774fa221318a2a39ed1d6b353c3d7"
-  integrity sha512-p6BTbUVp33Ed0OWRRhRQT55yrmgLEca2fTmqxZJW44T1eP4yVWEsdaNIDsjFIeuCrjG/CYvwi1QLG4ql0s7bDA==
+vsce@2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.9.0.tgz#ba387f849d750af13c78c7a020557588a12746f8"
+  integrity sha512-RjDyPfzRKD70N+hXklKqLJGZPmUMAPdhNEtmXR4QQY+RZQrIxaQDdI+DkSDMW9NbwL724elSVjgIxPkI+tYa/w==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
