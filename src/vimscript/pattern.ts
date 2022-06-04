@@ -1,8 +1,8 @@
-import { escapeRegExp } from 'lodash';
-import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap } from 'parsimmon';
+import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap, eof } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
 import { LineRange } from './lineRange';
 import { numberParser } from './parserUtils';
 
@@ -43,11 +43,17 @@ export class Pattern {
   public readonly inSelection: boolean;
   public readonly closed: boolean; // was an ending delimiter present?
 
-  private static readonly MAX_SEARCH_RANGES = 1000;
+  /** `true` if this pattern has an empty branch (/foo|/, for instance) */
+  private readonly emptyBranch: boolean;
+
   private static readonly MAX_SEARCH_TIME = 1000;
   private static readonly SPECIAL_CHARS_REGEX = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   public nextMatch(document: TextDocument, fromPosition: Position): Range | undefined {
+    if (this.emptyBranch) {
+      const pos = fromPosition.getRightThroughLineBreaks();
+      return new Range(pos, pos);
+    }
     const haystack = document.getText();
     this.regex.lastIndex = document.offsetAt(fromPosition) + 1;
     const match = this.regex.exec(haystack);
@@ -71,6 +77,16 @@ export class Pattern {
           lineRange: LineRange;
         }
   ): PatternMatch[] {
+    if (this.emptyBranch) {
+      // HACK: This pattern matches each character, but for purposes of perf when highlighting, merge them.
+      return [
+        {
+          range: new Range(new Position(0, 0), TextEditor.getDocumentEnd(vimState.document)),
+          groups: [],
+        },
+      ];
+    }
+
     let fromPosition: Position;
     let lineRange:
       | {
@@ -174,19 +190,6 @@ export class Pattern {
     }
   }
 
-  public static fromLiteralString(
-    input: string,
-    direction: SearchDirection,
-    wordBoundaries: boolean
-  ): Pattern {
-    const patternString = input.replace(escapeRegExp(input), '\\$&');
-    if (wordBoundaries) {
-      return new Pattern(`\\<${patternString}\\>`, direction, Pattern.compileRegex(patternString));
-    } else {
-      return new Pattern(patternString, direction, Pattern.compileRegex(patternString));
-    }
-  }
-
   public static parser(args: {
     direction: SearchDirection;
     ignoreSmartcase?: boolean;
@@ -199,10 +202,14 @@ export class Pattern {
       : '?';
     // TODO: Some escaped characters need special treatment
     return seqMap(
+      string('|').result(true).fallback(false), // Leading | matches everything
       alt(
         string('\\%V').map((_) => ({ inSelection: true })),
         string('$').map(() => '(?:$(?<!\\r))'), // prevents matching \r\n as two lines
         string('^').map(() => '(?:^(?<!\\r))'), // prevents matching \r\n as two lines
+        string('|')
+          .then(eof)
+          .map(() => ({ emptyBranch: true })), // Trailing | matches everything
         string('\\')
           .then(any.fallback(undefined))
           .map((escaped) => {
@@ -235,15 +242,19 @@ export class Pattern {
         noneOf(delimiter)
       ).many(),
       string(delimiter).fallback(undefined),
-      (atoms, delim) => {
-        let patternString = '';
+      (leadingBar, atoms, delim) => {
+        let patternString = leadingBar ? '|' : '';
         let caseOverride: boolean | undefined;
         let inSelection: boolean | undefined;
+        let emptyBranch: boolean = leadingBar;
         for (const atom of atoms) {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
-            if (atom.ignorecase) {
+            if (atom.emptyBranch) {
+              emptyBranch = true;
+              patternString += '|';
+            } else if (atom.ignorecase) {
               caseOverride = true;
             } else if (atom.inSelection) {
               inSelection = atom.inSelection;
@@ -257,9 +268,10 @@ export class Pattern {
           caseOverride,
           inSelection,
           closed: delim !== undefined,
+          emptyBranch,
         };
       }
-    ).map(({ patternString, caseOverride, inSelection, closed }) => {
+    ).map(({ patternString, caseOverride, inSelection, closed, emptyBranch }) => {
       const ignoreCase = Pattern.getIgnoreCase(patternString, {
         caseOverride,
         ignoreSmartcase: args.ignoreSmartcase ?? false,
@@ -268,8 +280,9 @@ export class Pattern {
         patternString,
         args.direction,
         Pattern.compileRegex(patternString, ignoreCase),
-        inSelection,
-        closed
+        inSelection ?? false,
+        closed,
+        emptyBranch
       );
     });
   }
@@ -290,8 +303,9 @@ export class Pattern {
     patternString: string,
     direction: SearchDirection,
     regex: RegExp,
-    inSelection: boolean = false,
-    closed: boolean = false
+    inSelection: boolean,
+    closed: boolean,
+    emptyBranch: boolean
   ) {
     this.patternString = patternString;
     this.direction = direction;
@@ -299,6 +313,7 @@ export class Pattern {
     this.regex = regex;
     this.inSelection = inSelection;
     this.closed = closed;
+    this.emptyBranch = emptyBranch;
   }
 }
 
