@@ -416,7 +416,7 @@ For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal 
     "command": "vim.remap",
     "when": "inputFocus && vim.mode == 'Normal'",
     "args": {
-      "after": ["y", "y"]
+      "after": ["y", "y"],
     }
   }
   ```
