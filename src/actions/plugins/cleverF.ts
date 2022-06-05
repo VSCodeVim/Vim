@@ -134,7 +134,7 @@ class MoveCleverFFindForward extends BaseMovement {
       } else {
         vimState.cleverF.startVisualPosition = [position.line, position.character];
       }
-      vimState.cleverF.isStartVisual = true;
+      vimState.cleverF.isStartVisualForward = true;
     }
 
     const cleverF = new CleverF();
@@ -142,7 +142,7 @@ class MoveCleverFFindForward extends BaseMovement {
 
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
-    let result = findHelper(vimState, position, toFind, count, 'forward');
+    const result = findHelper(vimState, position, toFind, count, 'forward');
 
     // To repeat this command
     vimState.lastSemicolonRepeatableMovement = new MoveCleverFFindForward(this.keysPressed, true);
@@ -151,12 +151,8 @@ class MoveCleverFFindForward extends BaseMovement {
     if (!result) {
       return failedMovement(vimState);
     }
-    if (vimState.recordedState.operator) {
-      result = result.getRight();
-    }
     // Mark a position to repeat this command
     posF = [result.line, result.character];
-
     return result;
   }
 }
@@ -184,7 +180,7 @@ class MoveCleverFFindBackward extends BaseMovement {
       } else {
         vimState.cleverF.startVisualPosition = [position.line, position.character];
       }
-      vimState.cleverF.isStartVisual = true;
+      vimState.cleverF.isStartVisualBackward = true;
     }
 
     const cleverF = new CleverF();
@@ -192,7 +188,7 @@ class MoveCleverFFindBackward extends BaseMovement {
 
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[0]);
-    let result = findHelper(vimState, position, toFind, count, 'backward');
+    const result = findHelper(vimState, position, toFind, count, 'backward');
 
     // To repeat this command
     vimState.lastSemicolonRepeatableMovement = new MoveCleverFFindBackward(this.keysPressed, true);
@@ -201,11 +197,9 @@ class MoveCleverFFindBackward extends BaseMovement {
     if (!result) {
       return failedMovement(vimState);
     }
-    if (vimState.recordedState.operator) {
-      result = result.getRight();
-    }
     // Mark a position to repeat this command
     posF = [result.line, result.character];
+
     return result;
   }
 }
@@ -214,13 +208,15 @@ export interface ICleverF {
   updateDecorations(position: Position, editor: vscode.TextEditor, character: string): void;
   clearDecorations(editor: vscode.TextEditor): void;
   startVisualPosition: number[];
-  isStartVisual: boolean;
+  isStartVisualForward: boolean;
+  isStartVisualBackward: boolean;
 }
 
 export class CleverF implements ICleverF {
   private decorations: vscode.DecorationOptions[] = [];
   public startVisualPosition: number[] = [-1, -1];
-  public isStartVisual: boolean = false;
+  public isStartVisualForward: boolean = false;
+  public isStartVisualBackward: boolean = false;
   private static readonly decorationType = vscode.window.createTextEditorDecorationType({
     color: 'red',
   });

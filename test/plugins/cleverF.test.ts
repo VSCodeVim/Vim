@@ -55,15 +55,15 @@ suite('cleverF plugin', () => {
 
   newTest({
     title: 'Can handle F after f motion',
-    start: ['|abc abc'],
+    start: ['ab|c abc'],
     keysPressed: 'fbF',
     end: ['a|bc abc'],
   });
 
   newTest({
     title: 'Can handle F in Visual Mode',
-    start: ['ab'],
-    keysPressed: 'vFaFcx',
-    end: ['ab|'],
+    start: ['abc abc ab|c'],
+    keysPressed: 'vFbFFx',
+    end: ['|a'],
   });
 });

@@ -836,7 +836,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // for VSCode to select including the last character we shift our stop position to the
     // right now that all steps that need that position have already run. On the next action
     // we will shift it back again on the start of 'runAction'.
-    if (this.vimState.currentMode === Mode.Visual) {
+    if (this.vimState.currentMode === Mode.Visual && !this.vimState.cleverF.isStartVisualBackward) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
@@ -1213,12 +1213,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       let selections = [] as vscode.Selection[];
-      if (this.vimState.cleverF.isStartVisual && configuration.cleverF) {
+      if (
+        (this.vimState.cleverF.isStartVisualForward ||
+          this.vimState.cleverF.isStartVisualBackward) &&
+        configuration.cleverF
+      ) {
         this.vimState.cursorStartPosition = new Position(
           this.vimState.cleverF.startVisualPosition[0],
           this.vimState.cleverF.startVisualPosition[1]
         );
-        this.vimState.cleverF.isStartVisual = false;
+        this.vimState.cleverF.isStartVisualForward = false;
+        this.vimState.cleverF.isStartVisualBackward = false;
       }
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
