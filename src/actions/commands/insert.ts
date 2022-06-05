@@ -530,3 +530,29 @@ class CreateUndoPoint extends BaseCommand {
     vimState.historyTracker.finishCurrentStep();
   }
 }
+
+@RegisterAction
+export class CommandMoveCursorOneLineDownInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [
+    ['<C-g>', 'j'],
+    ['<C-g>', '<down>'],
+  ];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.cursorStopPosition = position.getDown(1);
+  }
+}
+
+@RegisterAction
+export class CommandMoveCursorOneLineUpInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [
+    ['<C-g>', 'k'],
+    ['<C-g>', '<up>'],
+  ];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.cursorStopPosition = position.getUp(1);
+  }
+}

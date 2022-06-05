@@ -625,4 +625,38 @@ suite('Mode Insert', () => {
       endMode: Mode.Insert,
     });
   });
+
+  suite('<C-g>', () => {
+    newTest({
+      title: '<C-g> + j move cursor to line below',
+      start: ['xy|z', 'jkl'],
+      keysPressed: 'i' + '<C-g>' + 'j',
+      end: ['xyz', 'jk|l'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-g> + <down> move cursor to line below',
+      start: ['xy|z', 'jkl'],
+      keysPressed: 'i' + '<C-g>' + '<down>',
+      end: ['xyz', 'jk|l'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-g> + k move cursor to line up',
+      start: ['xyz', 'jk|l'],
+      keysPressed: 'i' + '<C-g>' + 'k',
+      end: ['xy|z', 'jkl'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-g> + <up> move cursor to line up',
+      start: ['xyz', 'jk|l'],
+      keysPressed: 'i' + '<C-g>' + '<up>',
+      end: ['xy|z', 'jkl'],
+      endMode: Mode.Insert,
+    });
+  });
 });
