@@ -3,7 +3,7 @@
 
 
 "@babel/code-frame@^7.0.0":
-  version "7.11.2"
+  version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
   integrity sha512-vG6SvB6oYEhvgisZNFRmRCUkLz11c7rp+tbNTynGqc6mS1d5ATd/sGyV6W0KZZnXRKMTzZDRgQT3Ou9jhpAfUg==
   dependencies:
@@ -4091,6 +4091,11 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
+
+pinyinlib@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/pinyinlib/-/pinyinlib-0.0.2.tgz#9a4692cc58c3ef1fd781de52b4bafa2ed5983ef4"
+  integrity sha512-9stTckfUEk5LKxZAEqJLToqMIuZ5/WaVLqRvb2mxKjv+k/UyvqEtusEIpBRylcVSTfWrOIXcFC5lo5ESGdcq3A==
 
 pkg-dir@^4.2.0:
   version "4.2.0"

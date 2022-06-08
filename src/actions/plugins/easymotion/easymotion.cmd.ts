@@ -15,6 +15,7 @@ import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
 import { MarkerGenerator } from './markerGenerator';
 import { Position } from 'vscode';
+import { buildRegexpString } from 'pinyinlib';
 
 export interface EasymotionTrigger {
   key: string;
@@ -120,17 +121,32 @@ function getMatchesForString(
       // Search all occurences of the character pressed
 
       // If the input is not a letter, treating it as regex can cause issues
-      if (!/[a-zA-Z]/.test(searchString)) {
+      const letterRegex =
+        configuration.easymotionChinesePhonetic &&
+        !configuration.easymotionChinesePhonetic?.noPunctuation
+          ? /[a-zA-Z\.,?:!;\\()<>~'"*$]/
+          : /[a-zA-Z]/;
+      if (!letterRegex.test(searchString)) {
         return vimState.easyMotion.sortedSearch(vimState.document, position, searchString, options);
       }
 
       const ignorecase =
         configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
+      const searchRegex = configuration.easymotionChinesePhonetic
+        ? buildRegexpString(
+            searchString,
+            configuration.easymotionChinesePhonetic?.noPunctuation,
+            configuration.easymotionChinesePhonetic?.traditional,
+            configuration.easymotionChinesePhonetic?.onlyChinese,
+            configuration.easymotionChinesePhonetic?.mixed
+          )
+        : searchString;
+
       return vimState.easyMotion.sortedSearch(
         vimState.document,
         position,
-        new RegExp(searchString, regexFlags),
+        new RegExp(searchRegex, regexFlags),
         options
       );
   }

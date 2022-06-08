@@ -78,6 +78,13 @@ interface IKeyBinding {
   command: string;
 }
 
+type ChinesePhoneticConfig = {
+  noPunctuation?: boolean;
+  onlyChinese?: boolean;
+  traditional?: boolean;
+  mixed?: boolean;
+};
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -260,6 +267,7 @@ class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'bold';
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
+  easymotionChinesePhonetic?: ChinesePhoneticConfig = undefined;
 
   targets: ITargetsConfiguration = {
     enable: false,

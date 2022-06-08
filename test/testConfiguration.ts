@@ -41,6 +41,13 @@ export class Configuration implements IConfiguration {
   easymotionDimBackground = true;
   easymotionMarkerFontWeight = 'bold';
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
+  easymotionChinesePhonetic?: {
+    noPunctuation?: boolean;
+    onlyChinese?: boolean;
+    traditional?: boolean;
+    mixed?: boolean;
+  };
+
   targets: ITargetsConfiguration = {
     enable: false,
     bracketObjects: {
