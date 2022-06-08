@@ -1,9 +1,11 @@
 import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import * as vscode from 'vscode';
+import { cleanUpWorkspace, setupWorkspace, createRandomFile } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
+import { utils } from 'mocha';
 
 suite('Configuration', () => {
   const configuration = new testConfiguration.Configuration();
@@ -35,6 +37,27 @@ suite('Configuration', () => {
     assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepStrictEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
+  });
+
+  test.only('textwidth is configurable per-language', async () => {
+    const globalVimConfig = vscode.workspace.getConfiguration('vim');
+    const jsVimConfig = vscode.workspace.getConfiguration('vim', { languageId: 'javascript' });
+
+    try {
+      assert.equal(jsVimConfig.get('textwidth'), 80);
+      await jsVimConfig.update('textwidth', 120, vscode.ConfigurationTarget.Global);
+
+      const updatedGlobalVimConfig = vscode.workspace.getConfiguration('vim');
+      assert.equal(globalVimConfig.get('textwidth'), 80);
+
+      const updatedJsVimConfig = vscode.workspace.getConfiguration('vim', {
+        languageId: 'javascript',
+      });
+      assert.equal(updatedJsVimConfig.get('textwidth'), 120);
+    } finally {
+      await globalVimConfig.update('textwidth', undefined, vscode.ConfigurationTarget.Global);
+      await jsVimConfig.update('textwidth', undefined, vscode.ConfigurationTarget.Global);
+    }
   });
 
   newTest({
