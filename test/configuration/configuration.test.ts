@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import { cleanUpWorkspace, setupWorkspace, createRandomFile } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
-import { utils } from 'mocha';
 
 suite('Configuration', () => {
   const configuration = new testConfiguration.Configuration();
