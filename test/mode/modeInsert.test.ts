@@ -568,19 +568,61 @@ suite('Mode Insert', () => {
     endMode: Mode.Insert,
   });
 
-  newTest({
-    title: '<C-t> increases indent',
-    start: ['    x|yz'],
-    keysPressed: 'i' + '<C-t>',
-    end: ['      x|yz'],
-    endMode: Mode.Insert,
+  suite('<C-t>', () => {
+    newTest({
+      title: '<C-t> increases indent (2 spaces)',
+      editorOptions: { insertSpaces: true, tabSize: 2 },
+      start: ['    x|yz'],
+      keysPressed: 'i' + '<C-t>',
+      end: ['      x|yz'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-t> increases indent (4 spaces)',
+      editorOptions: { insertSpaces: true, tabSize: 4 },
+      start: ['    x|yz'],
+      keysPressed: 'i' + '<C-t>',
+      end: ['        x|yz'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-t> increases indent (tab)',
+      editorOptions: { insertSpaces: false },
+      start: ['\tx|yz'],
+      keysPressed: 'i' + '<C-t>',
+      end: ['\t\tx|yz'],
+      endMode: Mode.Insert,
+    });
   });
 
-  newTest({
-    title: '<C-d> decreases indent',
-    start: ['    x|yz'],
-    keysPressed: 'i' + '<C-d>',
-    end: ['  x|yz'],
-    endMode: Mode.Insert,
+  suite('<C-d>', () => {
+    newTest({
+      title: '<C-d> decreases indent (2 spaces)',
+      editorOptions: { insertSpaces: true, tabSize: 2 },
+      start: ['        x|yz'],
+      keysPressed: 'i' + '<C-d>',
+      end: ['      x|yz'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-d> decreases indent (4 spaces)',
+      editorOptions: { insertSpaces: true, tabSize: 4 },
+      start: ['        x|yz'],
+      keysPressed: 'i' + '<C-d>',
+      end: ['    x|yz'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-d> decreases indent (tab)',
+      editorOptions: { insertSpaces: false },
+      start: ['\t\tx|yz'],
+      keysPressed: 'i' + '<C-d>',
+      end: ['\tx|yz'],
+      endMode: Mode.Insert,
+    });
   });
 });

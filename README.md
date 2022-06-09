@@ -27,6 +27,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
     - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
     - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
     - [Debugging Remappings](#debugging-remappings)
+    - [Remapping more complex key combinations](#remapping-more-complex-key-combinations)
   - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
 - [.vimrc support](#vimrc-support)
@@ -52,7 +53,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 ## 💾 Installation
 
-VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
+VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim).
 
 ### Mac
 
@@ -129,7 +130,7 @@ These settings are specific to VSCodeVim.
 | vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                               | String  | error                                     |
 | vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                 | String  | error                                     |
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                      | Boolean | false                                     |
-| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`                           |
+| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`<br /> `"<C-z>": false`                            |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
 | vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                     | Boolean | false                                     |
 | vim.searchHighlightColor         | Background color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                      | String  | `findMatchHighlightBackground` ThemeColor |
@@ -396,29 +397,29 @@ It is highly recommended to remap keys using vim commands like `"vim.normalModeK
 
 You can then add a new entry to the keybindings like so:
 
-    ```json
-    {
-      "key": "YOUR_KEY_COMBINATION",
-      "command": "vim.remap",
-      "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
-      "args": {
-        "after": ["YOUR_VIM_ACTION"]
-      }
+  ```json
+  {
+    "key": "YOUR_KEY_COMBINATION",
+    "command": "vim.remap",
+    "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
+    "args": {
+      "after": ["YOUR_VIM_ACTION"]
     }
-    ```
+  }
+  ```
 
 For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
 
-    ```json
-    {
-      "key": "ctrl+shift+y",
-      "command": "vim.remap",
-      "when": "inputFocus && vim.mode == 'Normal'",
-      "args": {
-        "after": ["y", "y"],
-      }
-    },
-    ```
+  ```json
+  {
+    "key": "ctrl+shift+y",
+    "command": "vim.remap",
+    "when": "inputFocus && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "y"],
+    }
+  }
+  ```
 
 If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
 

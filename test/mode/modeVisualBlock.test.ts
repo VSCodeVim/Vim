@@ -95,19 +95,30 @@ suite('VisualBlock mode', () => {
     });
   });
 
-  newTest({
-    title: '`c` with forward selection',
-    start: ['t|est', 'test'],
-    keysPressed: '<C-v>' + 'lj' + 'c123',
-    end: ['t123|t', 't123t'],
-  });
+  for (const key of ['c', 's']) {
+    suite(`Change ('${key}')`, () => {
+      newTest({
+        title: 'With forward selection',
+        start: ['t|est', 'test'],
+        keysPressed: '<C-v>' + 'lj' + 'c123',
+        end: ['t123|t', 't123t'],
+      });
 
-  newTest({
-    title: 'Can handle `c` backwards select',
-    start: ['te|st', 'test'],
-    keysPressed: '<C-v>' + 'hj' + 'c123',
-    end: ['t123|t', 't123t'],
-  });
+      newTest({
+        title: 'With backward selection',
+        start: ['te|st', 'test'],
+        keysPressed: '<C-v>' + 'hj' + 'c123',
+        end: ['t123|t', 't123t'],
+      });
+
+      newTest({
+        title: 'Skips short lines',
+        start: ['te|st', '', 'x', 'test'],
+        keysPressed: '<C-v>' + 'h3j' + 'c123',
+        end: ['t123|t', '', 'x', 't123t'],
+      });
+    });
+  }
 
   newTest({
     title: '`rX` replaces all characters in block with X',

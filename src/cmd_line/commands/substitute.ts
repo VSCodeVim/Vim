@@ -458,6 +458,7 @@ export class SubstituteCommand extends ExCommand {
       (configuration.gdefault || configuration.substituteGlobalFlag) !==
       (this.arguments.flags.replaceAll ?? false);
 
+    // TODO: `allMatches` lies for patterns with empty branches, which makes this wrong (not that anyone cares)
     const allMatches =
       this.arguments.pattern?.allMatches(vimState, {
         // TODO: This method should probably take start/end lines as numbers

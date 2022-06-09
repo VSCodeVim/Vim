@@ -138,16 +138,18 @@ abstract class BasePutCommand extends BaseCommand {
     const lines = text.split('\n');
 
     // Adjust indent to current line
-    const indentationWidth = TextEditor.getIndentationLevel(lineToMatch);
-    const firstLineIdentationWidth = TextEditor.getIndentationLevel(lines[0]);
+    const tabSize = configuration.tabstop; // TODO: Use `editor.options.tabSize`, I think
+    const indentationWidth = TextEditor.getIndentationLevel(lineToMatch, tabSize);
+    const firstLineIdentationWidth = TextEditor.getIndentationLevel(lines[0], tabSize);
 
     return lines
       .map((line) => {
-        const currentIdentationWidth = TextEditor.getIndentationLevel(line);
+        const currentIdentationWidth = TextEditor.getIndentationLevel(line, tabSize);
         const newIndentationWidth =
           currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
 
-        return TextEditor.setIndentationLevel(line, newIndentationWidth);
+        // TODO: Use `editor.options.insertSpaces`, I think
+        return TextEditor.setIndentationLevel(line, newIndentationWidth, configuration.expandtab);
       })
       .join('\n');
   }
