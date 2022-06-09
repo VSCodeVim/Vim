@@ -44,7 +44,7 @@ suite('Configuration', () => {
 
     try {
       assert.strictEqual(jsVimConfig.get('textwidth'), 80);
-      await jsVimConfig.update('textwidth', 120, vscode.ConfigurationTarget.Global);
+      await jsVimConfig.update('textwidth', 120, vscode.ConfigurationTarget.Global, true);
 
       const updatedGlobalVimConfig = vscode.workspace.getConfiguration('vim');
       assert.strictEqual(updatedGlobalVimConfig.get('textwidth'), 80);
