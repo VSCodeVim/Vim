@@ -1894,13 +1894,15 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const cursors: Cursor[] = [];
     for (const cursor of vimState.cursors) {
-      for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteRange',
-          range: new vscode.Range(start, end),
-          manuallySetCursorPositions: true,
-        });
-        cursors.push(new Cursor(start, start));
+      for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        if (line.length > start.character) {
+          vimState.recordedState.transformer.addTransformation({
+            type: 'deleteRange',
+            range: new vscode.Range(start, end),
+            manuallySetCursorPositions: true,
+          });
+          cursors.push(new Cursor(start, start));
+        }
       }
     }
     vimState.cursors = cursors;
