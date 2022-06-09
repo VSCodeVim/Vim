@@ -219,8 +219,6 @@ class Configuration implements IConfiguration {
 
   overrideCopy = true;
 
-  textwidth = 80;
-
   hlsearch = false;
 
   ignorecase = true;
@@ -471,6 +469,16 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+
+  get textwidth(): number {
+    const textwidth = this.getConfiguration('vim').get('textwidth', 80);
+
+    if (typeof textwidth !== 'number') {
+      return 80;
+    }
+
+    return textwidth;
+  }
 
   private static unproxify(obj: object): object {
     const result = {};

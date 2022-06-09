@@ -595,6 +595,7 @@
           "type": "number",
           "markdownDescription": "Width to word-wrap to when using `gq`.",
           "default": 80,
+          "scope": "language-overridable",
           "minimum": 1
         },
         "vim.timeout": {
