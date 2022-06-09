@@ -1840,10 +1840,13 @@ class ActionShiftDVisualBlock extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const lines: string[] = [];
     for (const { start } of TextEditor.iterateLinesInBlock(vimState)) {
+      const range = new vscode.Range(start, start.getLineEnd());
+      lines.push(vimState.editor.document.getText(range));
       vimState.recordedState.transformer.addTransformation({
         type: 'deleteRange',
-        range: new vscode.Range(start, start.getLineEnd()),
+        range,
         manuallySetCursorPositions: true,
       });
     }
@@ -1852,6 +1855,9 @@ class ActionShiftDVisualBlock extends BaseCommand {
       vimState.cursorStopPosition,
       vimState.cursorStartPosition
     );
+
+    const text = lines.length === 1 ? lines[0] : lines.join('\n');
+    Register.put(vimState, text, this.multicursorIndex, true);
 
     vimState.cursors = [new Cursor(topLeft, topLeft)];
     await vimState.setCurrentMode(Mode.Normal);
@@ -1893,8 +1899,10 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const cursors: Cursor[] = [];
+    const lines: string[] = [];
     for (const cursor of vimState.cursors) {
       for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
+        lines.push(line);
         if (line.length > start.character) {
           vimState.recordedState.transformer.addTransformation({
             type: 'deleteRange',
@@ -1906,6 +1914,9 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
       }
     }
     vimState.cursors = cursors;
+
+    const text = lines.length === 1 ? lines[0] : lines.join('\n');
+    Register.put(vimState, text, this.multicursorIndex, true);
 
     await vimState.setCurrentMode(Mode.Insert);
     vimState.isFakeMultiCursor = true;

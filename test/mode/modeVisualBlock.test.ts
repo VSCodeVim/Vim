@@ -217,6 +217,27 @@ suite('VisualBlock mode', () => {
     end: ['abcde', '01234', 'abcde', '01234', '123', 'bc|d'],
   });
 
+  newTest({
+    title: 'Copy to register using `c` works in Visual Block mode',
+    start: ['1|111', '2222', ''],
+    keysPressed: '<C-v>' + 'lj' + 'c<Esc>' + 'jjp',
+    end: ['11', '22', '|11', '22'],
+  });
+
+  newTest({
+    title: 'Copy to register using `s` works in Visual Block mode',
+    start: ['11|11', '2222', ''],
+    keysPressed: '<C-v>' + 'hj' + 's<Esc>' + 'jjp',
+    end: ['11', '22', '|11', '22'],
+  });
+
+  newTest({
+    title: 'Copy to register using `D` works in Visual Block mode',
+    start: ['1|111', '22222', ''],
+    keysPressed: '<C-v>' + 'lj' + 'D<Esc>' + 'jjp',
+    end: ['1', '2', '|111', '2222'],
+  });
+
   suite('`J`', () => {
     newTest({
       title: "Can handle 'J' when the entire visual block is on the same line",
