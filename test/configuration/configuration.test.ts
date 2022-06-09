@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
 import * as vscode from 'vscode';
-import { cleanUpWorkspace, setupWorkspace, createRandomFile } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 
