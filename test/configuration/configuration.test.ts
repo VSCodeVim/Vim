@@ -39,7 +39,7 @@ suite('Configuration', () => {
     assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
-  test.only('textwidth is configurable per-language', async () => {
+  test('textwidth is configurable per-language', async () => {
     const globalVimConfig = vscode.workspace.getConfiguration('vim');
     const jsVimConfig = vscode.workspace.getConfiguration('vim', { languageId: 'javascript' });
 
