@@ -1209,7 +1209,7 @@
     "minimist": "1.2.6",
     "mocha": "10.0.0",
     "plugin-error": "1.0.1",
-    "prettier": "2.6.2",
+    "prettier": "2.7.0",
     "sinon": "14.0.0",
     "ts-loader": "9.3.0",
     "tslint": "6.1.3",
