@@ -47,7 +47,7 @@ export const ErrorMessage: IErrorMessage = {
   33: 'No previous substitute regular expression',
   34: 'No previous command',
   35: 'No previous regular expression',
-  37: 'No write since last change (add ! to override)',
+  37: 'No write since last change (type :wq to override)',
   208: 'Error writing to file',
   211: 'File no longer available', // TODO: Should be `File "[file_name]" no longer available`
   223: 'Recursive mapping',
