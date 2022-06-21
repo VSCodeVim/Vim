@@ -16,6 +16,7 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
   ITargetsConfiguration,
+  IModeSpecificStringsExtended,
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
@@ -309,6 +310,19 @@ class Configuration implements IConfiguration {
     visualline: '#005f87',
     visualblock: '#86592d',
     replace: '#000000',
+  };
+
+  statusBarStrings: IModeSpecificStringsExtended<string> = {
+    normal: '-- NORMAL --',
+    insert: '-- INSERT --',
+    visual: '-- VISUAL --',
+    visualblock: '-- VISUAL BLOCK --',
+    visualline: '-- VISUAL LINE --',
+    replace: '-- REPLACE --',
+    easymotion: '-- EASYMOTION --',
+    easymotioninput: '-- EASYMOTION INPUT --',
+    surroundinput: '-- SURROUND INPUT --',
+    disabled: '-- VIM: DISABLED --',
   };
 
   debug: IDebugConfiguration = {
