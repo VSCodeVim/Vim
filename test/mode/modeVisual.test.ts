@@ -864,12 +864,30 @@ suite('Mode Visual', () => {
     endMode: Mode.Normal,
   });
 
-  newTest({
-    title: 'Can do gv to reselect previous selection',
-    start: ['tes|ttest'],
-    keysPressed: 'vl<Esc>llgvd',
-    end: ['tes|est'],
-    endMode: Mode.Normal,
+  suite('`gv` restores previous visual selection', () => {
+    newTest({
+      title: 'Single char',
+      start: ['one t|wo three'],
+      keysPressed: 'v' + '<Esc>' + '0' + 'gv' + 'd',
+      end: ['one t|o three'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Forward selection, within line',
+      start: ['one |two three'],
+      keysPressed: 've' + '<Esc>' + '0' + 'gv' + 'd',
+      end: ['one | three'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Backward selection, within line',
+      start: ['one tw|o three'],
+      keysPressed: 'vb' + '<Esc>' + '0' + 'gv' + 'd',
+      end: ['one | three'],
+      endMode: Mode.Normal,
+    });
   });
 
   suite('D command will remove all selected lines', () => {
