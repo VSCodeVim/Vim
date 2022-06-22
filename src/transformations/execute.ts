@@ -9,17 +9,13 @@ import {
   areAllSameTransformation,
   overlappingTransformations,
 } from './transformations';
-import { commandLine } from '../cmd_line/commandLine';
+import { ExCommandLine } from '../cmd_line/commandLine';
 import { PositionDiff } from '../common/motion/position';
-import { VimError, ErrorCode } from '../error';
 import { Mode } from '../mode/mode';
 import { Register } from '../register/register';
-import { globalState } from '../state/globalState';
 import { RecordedState } from '../state/recordedState';
 import { TextEditor } from '../textEditor';
-import { reportSearch } from '../util/statusBarTextUtils';
 import { Cursor } from '../common/motion/cursor';
-import { Position } from 'vscode';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
@@ -159,49 +155,6 @@ export async function executeTransformations(
         vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
         break;
 
-      case 'deleteLeft':
-        await vscode.commands.executeCommand('deleteLeft');
-        break;
-
-      case 'deleteRight':
-        await vscode.commands.executeCommand('deleteRight');
-        break;
-
-      case 'showCommandHistory':
-        const cmd = await commandLine.showHistory(vimState.currentCommandlineText);
-        if (cmd && cmd.length !== 0) {
-          await commandLine.Run(cmd, vimState);
-          modeHandler.updateView();
-        }
-        break;
-
-      case 'showSearchHistory':
-        const searchState = await globalState.showSearchHistory();
-        if (searchState) {
-          globalState.searchState = searchState;
-          const nextMatch = searchState.getNextSearchMatchPosition(
-            vimState.editor,
-            vimState.cursorStartPosition,
-            transformation.direction
-          );
-
-          if (!nextMatch) {
-            throw VimError.fromCode(
-              transformation.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop,
-              searchState.searchString
-            );
-          }
-
-          vimState.cursorStopPosition = nextMatch.pos;
-          modeHandler.updateView();
-          reportSearch(
-            nextMatch.index,
-            searchState.getMatchRanges(vimState.editor).length,
-            vimState
-          );
-        }
-        break;
-
       case 'replayRecordedState':
         await modeHandler.rerunRecordedState(transformation.recordedState.clone());
         break;
@@ -216,7 +169,7 @@ export async function executeTransformations(
 
         vimState.recordedState = new RecordedState();
         if (transformation.register === ':') {
-          await commandLine.Run(recordedMacro.commandString, vimState);
+          await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
         } else if (transformation.replay === 'contentChange') {
           await modeHandler.runMacro(recordedMacro);
         } else {
@@ -252,34 +205,8 @@ export async function executeTransformations(
         vimState.editor.selection = new vscode.Selection(newPos, newPos);
         break;
 
-      case 'tab':
-        await vscode.commands.executeCommand('tab');
-        if (transformation.diff) {
-          if (transformation.cursorIndex === undefined) {
-            throw new Error('No cursor index - this should never ever happen!');
-          }
-
-          if (!accumulatedPositionDifferences[transformation.cursorIndex]) {
-            accumulatedPositionDifferences[transformation.cursorIndex] = [];
-          }
-
-          accumulatedPositionDifferences[transformation.cursorIndex].push(transformation.diff);
-        }
-        break;
-
-      case 'reindent':
-        await vscode.commands.executeCommand('editor.action.reindentselectedlines');
-        if (transformation.diff) {
-          if (transformation.cursorIndex === undefined) {
-            throw new Error('No cursor index - this should never ever happen!');
-          }
-
-          if (!accumulatedPositionDifferences[transformation.cursorIndex]) {
-            accumulatedPositionDifferences[transformation.cursorIndex] = [];
-          }
-
-          accumulatedPositionDifferences[transformation.cursorIndex].push(transformation.diff);
-        }
+      case 'vscodeCommand':
+        await vscode.commands.executeCommand(transformation.command, transformation.args);
         break;
 
       default:
@@ -326,21 +253,6 @@ export async function executeTransformations(
     const diff = accumulatedPositionDifferences[0][0];
     vimState.cursorStopPosition = vimState.cursorStopPosition.add(vimState.document, diff);
     vimState.cursorStartPosition = vimState.cursorStartPosition.add(vimState.document, diff);
-  }
-
-  /**
-   * This is a bit of a hack because Visual Block Mode isn't fully on board with
-   * the new text transformation style yet.
-   *
-   * (TODO)
-   */
-  if (firstTransformation.type === 'deleteRange') {
-    if (firstTransformation.collapseRange) {
-      vimState.cursorStopPosition = new Position(
-        vimState.cursorStopPosition.line,
-        vimState.cursorStartPosition.character
-      );
-    }
   }
 
   vimState.recordedState.transformer = new Transformer();

@@ -11,7 +11,6 @@ function sub(
   const lineRange = args?.lineRange ?? '';
   const flags = args?.flags !== undefined ? `/${args.flags}` : '';
   const count = args?.count !== undefined ? ` ${args.count}` : '';
-  console.log(`:${lineRange}s/${pattern}/${replace}${flags}${count}\n`);
   return `:${lineRange}s/${pattern}/${replace}${flags}${count}\n`;
 }
 
@@ -41,7 +40,7 @@ suite('Basic substitute', () => {
     title: 'Replace with flags AND count',
     start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.', flags: 'g', count: 2 }),
-    end: ['|yay yay', 'yay', 'blah blah', 'blah blah'],
+    end: ['yay yay', '|yay', 'blah blah', 'blah blah'],
   });
 
   /*
@@ -74,7 +73,7 @@ suite('Basic substitute', () => {
     title: 'Replace across all lines',
     start: ['|aba', 'ab'],
     keysPressed: sub('a', 'd', { lineRange: '%', flags: 'g' }),
-    end: ['|dbd', 'db'],
+    end: ['dbd', '|db'],
     statusBar: '3 substitutions on 2 lines',
   });
 
@@ -82,7 +81,7 @@ suite('Basic substitute', () => {
     title: 'Replace on specific single line',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '3' }),
-    end: ['blah blah', '|blah', 'yay blah', 'blah blah'],
+    end: ['blah blah', 'blah', '|yay blah', 'blah blah'],
   });
 
   newTest({
@@ -96,21 +95,21 @@ suite('Basic substitute', () => {
     title: 'Replace single relative line using dot and plus',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.+2' }),
-    end: ['blah blah', '|blah', 'blah blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'blah blah', '|yay blah'],
   });
 
   newTest({
     title: 'Replace across specific line range',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '3,4' }),
-    end: ['blah blah', '|blah', 'yay blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'yay blah', '|yay blah'],
   });
 
   newTest({
     title: 'Replace across relative line range using dot, plus, and minus',
     start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.-1,.+1' }),
-    end: ['yay blah', '|yay', 'yay blah', 'blah blah'],
+    end: ['yay blah', 'yay', '|yay blah', 'blah blah'],
     statusBar: '3 substitutions on 3 lines',
   });
 
@@ -118,7 +117,7 @@ suite('Basic substitute', () => {
     title: 'Replace across relative line range using numLines+colon shorthand',
     start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
     keysPressed: '3' + sub('blah', 'yay'),
-    end: ['blah blah', '|yay', 'yay blah', 'yay blah'],
+    end: ['blah blah', 'yay', 'yay blah', '|yay blah'],
     statusBar: '3 substitutions on 3 lines',
   });
 
@@ -126,7 +125,7 @@ suite('Basic substitute', () => {
     title: 'Repeat replacement across relative line range',
     start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay') + 'j' + '3:s\n',
-    end: ['yay blah', '|yay', 'yay blah', 'yay blah'],
+    end: ['yay blah', 'yay', 'yay blah', '|yay blah'],
     statusBar: '3 substitutions on 3 lines',
   });
 
@@ -134,28 +133,28 @@ suite('Basic substitute', () => {
     title: 'Replace with range AND count but no flags',
     start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
     keysPressed: '3' + sub('blah', 'yay', { flags: '', count: 2 }),
-    end: ['|blah blah', 'blah', 'yay blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'yay blah', '|yay blah'],
   });
 
   newTest({
     title: 'Undocumented: operator without LHS assumes dot as LHS',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '+2' }),
-    end: ['blah blah', '|blah', 'blah blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'blah blah', '|yay blah'],
   });
 
   newTest({
     title: 'Undocumented: multiple consecutive operators use 1 as RHS',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.++1' }),
-    end: ['blah blah', '|blah', 'blah blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'blah blah', '|yay blah'],
   });
 
   newTest({
     title: 'Undocumented: trailing operators use 1 as RHS',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: sub('blah', 'yay', { lineRange: '.+1+' }),
-    end: ['blah blah', '|blah', 'blah blah', 'yay blah'],
+    end: ['blah blah', 'blah', 'blah blah', '|yay blah'],
   });
 
   newTest({
@@ -177,7 +176,7 @@ suite('Basic substitute', () => {
     title: 'Replace with \\n',
     start: ['one |two three'],
     keysPressed: sub('t', '\\n', { flags: 'g' }),
-    end: ['|one ', 'wo ', 'hree'],
+    end: ['one ', 'wo ', '|hree'],
   });
 
   newTest({
@@ -236,6 +235,13 @@ suite('Basic substitute', () => {
     end: ['dbd', '|dbd', 'abc'],
   });
 
+  newTest({
+    title: 'Substitute in last visual selection with \\%V',
+    start: ['aba', '|aba', 'abc', ''],
+    keysPressed: 'vjj<Esc>' + sub('\\%Va', 'd', { flags: 'g' }),
+    end: ['aba', 'dbd', '|dbc', ''],
+  });
+
   suite('Effects of gdefault=true', () => {
     setup(async () => {
       Globals.mockConfiguration.gdefault = true;
@@ -272,7 +278,7 @@ suite('Basic substitute', () => {
       title: 'Replace multiple lines',
       start: ['|aba', 'ab'],
       keysPressed: sub('a', 'd', { lineRange: '%' }),
-      end: ['|dbd', 'db'],
+      end: ['dbd', '|db'],
     });
 
     newTest({
@@ -321,9 +327,9 @@ suite('Basic substitute', () => {
 
     newTest({
       title: 'Substitute with previous search using #',
-      start: ['foo', 'bar', 'foo', '|bar'],
+      start: ['foo', 'bar', 'f|oo', 'bar'],
       keysPressed: '#' + sub('', 'fighters', { lineRange: '%' }),
-      end: ['foo', '|fighters', 'foo', 'fighters'],
+      end: ['fighters', 'bar', '|fighters', 'bar'],
     });
 
     newTest({
@@ -331,6 +337,13 @@ suite('Basic substitute', () => {
       start: ['foo|', 'bar', 'foo', 'bar'],
       keysPressed: '/foo\n' + sub('', 'fighters', { lineRange: '%' }),
       end: ['fighters', 'bar', '|fighters', 'bar'],
+    });
+
+    newTest({
+      title: '`~` in replace string uses previous replace string',
+      start: ['|one two three', 'two three four'],
+      keysPressed: sub('two', 'xyz') + 'j' + sub('three', '~ ~'),
+      end: ['one xyz three', '|two xyz xyz four'],
     });
 
     newTest({
@@ -410,6 +423,37 @@ suite('Basic substitute', () => {
       start: ['|foo bar baz'],
       keysPressed: sub('ba', 't') + '&',
       end: ['|foo tr tz'],
+    });
+
+    suite('Capture groups', () => {
+      newTest({
+        title: '& capture group',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s\\S*', '(&)', { flags: 'g' }),
+        end: ['|(she) (sells) (seashells) by the (seashore)'],
+      });
+
+      newTest({
+        title: '\\0 capture group',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s\\S*', '(\\0)', { flags: 'g' }),
+        end: ['|(she) (sells) (seashells) by the (seashore)'],
+      });
+
+      newTest({
+        title: '\\1 capture group',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s(\\S*)', '(\\1)', { flags: 'g' }),
+        end: ['|(he) (ells) (eashells) by the (eashore)'],
+      });
+    });
+
+    newTest({
+      title: 'Replace new line',
+      start: ['|one two', 'three', 'one two', 'four', 'one two', 'three'],
+      keysPressed: sub('(two)\\n(three)', '\\1 \\2', { lineRange: '%' }),
+      // TODO: Cursor position is wrong
+      end: ['one two three', 'one two', '|four', 'one two three'],
     });
   });
 });

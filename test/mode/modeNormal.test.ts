@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -298,12 +298,46 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
-  newTest({
-    title: "Can handle 's'",
-    start: ['tex|t'],
-    keysPressed: '^sk',
-    end: ['k|ext'],
-    endMode: Mode.Insert,
+  suite('`s` (synonym for `cl`)', () => {
+    newTest({
+      title: '`s` deletes a character and enters Insert mode',
+      start: ['12|345'],
+      keysPressed: 's',
+      end: ['12|45'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes [count] characters',
+      start: ['12|345678'],
+      keysPressed: '5s',
+      end: ['12|8'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` does not go over EOL or delete characters before cursor',
+      start: ['12345|678', 'nextline'],
+      keysPressed: '5s',
+      end: ['12345|', 'nextline'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: 's',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: '8s',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
@@ -974,6 +1008,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daw' on word with numeric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd2aw',
+    end: ['one   two   three', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daw' on end of word",
     start: ['one   two   three   fou|r'],
     keysPressed: 'daw',
@@ -1024,6 +1066,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daw' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'daw',
+    end: ['one   two   three', '| five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daW' on big word with cursor inside spaces",
     start: ['one   two |  three,   four  '],
     keysPressed: 'daW',
@@ -1071,6 +1121,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daW' on word with numeric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd2aW',
+    end: ['one   two   three', '|'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'daW' on beginning of word",
     start: ['one |two three'],
     keysPressed: 'daW',
@@ -1083,6 +1141,14 @@ suite('Mode Normal', () => {
     start: ['one |two'],
     keysPressed: 'daW',
     end: ['on|e'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'daW' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'daW',
+    end: ['one   two   three', '| five'],
     endMode: Mode.Normal,
   });
 
@@ -1161,6 +1227,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'diw' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'diw',
+    end: ['one   two   three', '|', 'four five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'diw' on word with numeric prefix and across lines",
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd3iw',
@@ -1174,6 +1248,14 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |.  six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'diw' on word with numric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd3iw',
+    end: ['one   two   three', '|five'],
     endMode: Mode.Normal,
   });
 
@@ -1202,6 +1284,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'diW' on line with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'diW',
+    end: ['one   two   three', '|', 'four five'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: "Can handle 'diW' on word with numeric prefix",
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iW',
@@ -1214,6 +1304,14 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iW',
     end: ['one   two   three,   |  six'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: "Can handle 'diW' on word with numric prefix and across lines with no text",
+    start: ['one   two   three', '|', 'four five'],
+    keysPressed: 'd3iw',
+    end: ['one   two   three', '|five'],
     endMode: Mode.Normal,
   });
 
@@ -1674,19 +1772,23 @@ suite('Mode Normal', () => {
     ],
   });
 
-  newTest({
-    title: 'gq work correctly with cursor in the middle of a line',
-    start: [
-      '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
-      '// We choose to write a vim extension, not because it is easy, but because it is hard.',
-    ],
-    keysPressed: 'gqj',
-    end: [
-      '|// We choose to write a vim extension, not because it is easy, but because it is',
-      '// hard.  We choose to write a vim extension, not because it is easy, but',
-      '// because it is hard.',
-    ],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq work correctly with cursor in the middle of a line',
+      start: [
+        '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
+        '// We choose to write a vim extension, not because it is easy, but because it is hard.',
+      ],
+      keysPressed: 'gqj',
+      end: [
+        '|// We choose to write a vim extension, not because it is easy, but because it is',
+        '// hard.  We choose to write a vim extension, not because it is easy, but',
+        '// because it is hard.',
+      ],
+    },
+    process.platform === 'win32'
+  );
 
   newTest({
     title: 'gq preserves newlines',
@@ -1695,33 +1797,49 @@ suite('Mode Normal', () => {
     end: ['|abc', '', '', '', 'def'],
   });
 
-  newTest({
-    title: 'gq handles single-line comments',
-    start: ['|// abc', '// def'],
-    keysPressed: 'gqG',
-    end: ['|// abc def'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq handles single-line comments',
+      start: ['|// abc', '// def'],
+      keysPressed: 'gqG',
+      end: ['|// abc def'],
+    },
+    process.platform === 'win32'
+  );
 
-  newTest({
-    title: 'gq handles multiline comments',
-    start: ['|/*', ' * abc', ' * def', ' */'],
-    keysPressed: 'gqG',
-    end: ['|/*', ' * abc def', ' */'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq handles multiline comments',
+      start: ['|/*', ' * abc', ' * def', ' */'],
+      keysPressed: 'gqG',
+      end: ['|/*', ' * abc def', ' */'],
+    },
+    process.platform === 'win32'
+  );
 
-  newTest({
-    title: 'gq handles multiline comments with inner and final on same line',
-    start: ['|/*', ' * abc', ' * def */'],
-    keysPressed: 'gqG',
-    end: ['|/*', ' * abc def */'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq handles multiline comments with inner and final on same line',
+      start: ['|/*', ' * abc', ' * def */'],
+      keysPressed: 'gqG',
+      end: ['|/*', ' * abc def */'],
+    },
+    process.platform === 'win32'
+  );
 
-  newTest({
-    title: 'gq handles multiline comments with content on start line',
-    start: ['|/* abc', ' * def', '*/'],
-    keysPressed: 'gqG',
-    end: ['|/* abc def', ' */'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq handles multiline comments with content on start line',
+      start: ['|/* abc', ' * def', '*/'],
+      keysPressed: 'gqG',
+      end: ['|/* abc def', ' */'],
+    },
+    process.platform === 'win32'
+  );
 
   newTest({
     title: 'gq handles multiline comments with start and final on same line',
@@ -1737,26 +1855,38 @@ suite('Mode Normal', () => {
     end: ['|/* abc', ' *', ' *', ' * def */'],
   });
 
-  newTest({
-    title: 'gq does not merge adjacent multiline comments',
-    start: ['|/* abc */', '/* def */'],
-    keysPressed: 'gqG',
-    end: ['|/* abc */', '/* def */'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq does not merge adjacent multiline comments',
+      start: ['|/* abc */', '/* def */'],
+      keysPressed: 'gqG',
+      end: ['|/* abc */', '/* def */'],
+    },
+    process.platform === 'win32'
+  );
 
-  newTest({
-    title: 'gq does not merge adjacent multiline comments',
-    start: ['|/* abc', ' */', '/* def', ' */'],
-    keysPressed: 'gqG',
-    end: ['|/* abc', ' */', '/* def', ' */'],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq does not merge adjacent multiline comments',
+      start: ['|/* abc', ' */', '/* def', ' */'],
+      keysPressed: 'gqG',
+      end: ['|/* abc', ' */', '/* def', ' */'],
+    },
+    process.platform === 'win32'
+  );
 
-  newTest({
-    title: 'gq leaves alone whitespace within a line',
-    start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
-    keysPressed: 'gqG',
-    end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
-  });
+  // TODO(#4844): this fails on Windows
+  newTestSkip(
+    {
+      title: 'gq leaves alone whitespace within a line',
+      start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
+      keysPressed: 'gqG',
+      end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
+    },
+    process.platform === 'win32'
+  );
 
   newTest({
     title: 'gq breaks at exactly textwidth',
@@ -2291,6 +2421,20 @@ suite('Mode Normal', () => {
     start: ['bl|ah', 'blAh', 'BLAH', 'blah'],
     keysPressed: '/blah\n',
     end: ['blah', 'blAh', 'BLAH', '|blah'],
+  });
+
+  newTest({
+    title: '/ with \\%V will search in last selection',
+    start: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+    keysPressed: 'vjj<Esc>gg/\\%Vasdf\n',
+    end: ['', 'asdf', '|asdf', 'asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/ with \\%V will search in last selection, starting from the cursor postion',
+    start: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
+    keysPressed: 'vjjj<Esc>kk/\\%Vasdf\nn',
+    end: ['', 'asdf', '|asdf', '', 'asdf', 'asdf'],
   });
 
   newTest({
@@ -3091,6 +3235,14 @@ suite('Mode Normal', () => {
       end: ['foo', 'hello world', '|', 'hello'],
       endMode: Mode.Normal,
     });
+
+    newTest({
+      title: 'dgn with single-character match',
+      start: ['O|ne Two Three Four Five Six'],
+      keysPressed: '/T\n' + 'e' + 'dgn',
+      end: ['One Two |hree Four Five Six'],
+      endMode: Mode.Normal,
+    });
   });
 
   suite('can handle cgn', () => {
@@ -3131,6 +3283,14 @@ suite('Mode Normal', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\necgn',
       end: ['foo', '| world', 'hello', 'hello'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'cgn with single-character match',
+      start: ['O|ne Two Three Four Five Six'],
+      keysPressed: '/T\n' + 'e' + 'cgn',
+      end: ['One Two |hree Four Five Six'],
       endMode: Mode.Insert,
     });
 

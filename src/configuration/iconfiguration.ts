@@ -14,6 +14,7 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
+  silent?: boolean;
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
   commands?: Array<{ command: string; args: any[] } | string>;
@@ -77,6 +78,30 @@ export interface ICamelCaseMotionConfiguration {
    * Enable CamelCaseMotion plugin or not
    */
   enable: boolean;
+}
+
+export interface ISmartQuotesConfiguration {
+  /**
+   * Enable SmartQuotes plugin or not
+   */
+  enable: boolean;
+  /**
+   * Whether to break through lines when using [n]ext/[l]ast motion
+   */
+  breakThroughLines: boolean;
+  /**
+   * Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.
+   */
+  aIncludesSurroundingSpaces: boolean;
+}
+
+export interface ITargetsConfiguration {
+  /**
+   * Enable Targets plugin or not
+   */
+  enable: boolean;
+  bracketObjects: { enable: boolean };
+  smartQuotes: ISmartQuotesConfiguration;
 }
 
 export interface IConfiguration {
@@ -178,17 +203,12 @@ export interface IConfiguration {
    */
   easymotionMarkerBackgroundColor: string;
   easymotionMarkerForegroundColorOneChar: string;
-  easymotionMarkerForegroundColorTwoChar: string; // Deprecated! Use the ones bellow
   easymotionMarkerForegroundColorTwoCharFirst: string;
   easymotionMarkerForegroundColorTwoCharSecond: string;
   easymotionIncSearchForegroundColor: string;
   easymotionDimColor: string;
-  easymotionMarkerWidthPerChar: number; // Deprecated! No longer needed!
   easymotionDimBackground: boolean;
-  easymotionMarkerFontFamily: string; // Deprecated! No longer needed!
-  easymotionMarkerFontSize: string; // Deprecated! No longer needed!
   easymotionMarkerFontWeight: string;
-  easymotionMarkerMargin: number; // Deprecated! No longer needed!
   easymotionKeys: string;
 
   /**
@@ -225,6 +245,11 @@ export interface IConfiguration {
   history: number;
 
   /**
+   * Show substitutions while user is typing?
+   */
+  inccommand: '' | 'append' | 'replace';
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch: boolean;
@@ -254,6 +279,18 @@ export interface IConfiguration {
    */
   searchHighlightColor: string;
   searchHighlightTextColor: string;
+
+  /**
+   * Color of current match
+   */
+  searchMatchColor: string;
+  searchMatchTextColor: string;
+
+  /**
+   * Color of substituted text
+   */
+  substitutionColor: string;
+  substitutionTextColor: string;
 
   /**
    * Yank highlight settings.
@@ -418,4 +455,9 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
 }

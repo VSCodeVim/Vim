@@ -1,11 +1,8 @@
 import * as vscode from 'vscode';
 import { Mode } from './mode/mode';
-import { globalState } from './state/globalState';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
-import { Logger } from './util/logger';
 import { VimError } from './error';
-import { SearchDirection } from './vimscript/pattern';
 
 class StatusBarImpl implements vscode.Disposable {
   // Displays the current state (mode, recording macro, etc.) and messages to the user
@@ -171,7 +168,7 @@ export function statusBarText(vimState: VimState) {
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  switch (vimState.currentMode) {
+  switch (vimState.modeData.mode) {
     case Mode.Normal:
       return '-- NORMAL --';
     case Mode.Insert:
@@ -193,22 +190,9 @@ export function statusBarText(vimState: VimState) {
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
-      if (globalState.searchState === undefined) {
-        const logger = Logger.get('StatusBar');
-        logger.warn(`globalState.searchState is undefined in SearchInProgressMode.`);
-        return '';
-      }
-      const leadingChar = globalState.searchState.direction === SearchDirection.Forward ? '/' : '?';
-
-      const searchWithCursor = globalState.searchState.searchString.split('');
-      searchWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
-
-      return `${leadingChar}${searchWithCursor.join('')}`;
+      return vimState.modeData.commandLine.display(cursorChar);
     case Mode.CommandlineInProgress:
-      const commandWithCursor = vimState.currentCommandlineText.split('');
-      commandWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, cursorChar);
-
-      return `:${commandWithCursor.join('')}`;
+      return vimState.modeData.commandLine.display(cursorChar);
     default:
       return '';
   }

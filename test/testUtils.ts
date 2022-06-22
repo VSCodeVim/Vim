@@ -11,7 +11,7 @@ import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { getAndUpdateModeHandler } from '../extension';
-import { commandLine } from '../src/cmd_line/commandLine';
+import { ExCommandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
 import { SpecialKeys } from '../src/util/specialKeys';
 
@@ -138,7 +138,7 @@ export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
 ): Promise<void> {
-  await commandLine.load(new TestExtensionContext());
+  await ExCommandLine.loadHistory(new TestExtensionContext());
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 

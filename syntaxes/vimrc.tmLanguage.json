@@ -50,7 +50,7 @@
     },
     {
       "name": "string.unquoted",
-      "match": "(?i)[a-z]+(\\.[a-z]+)+"
+      "match": "(?i)[\\w-]+(\\.[\\w-]+)+"
     }
   ]
 }

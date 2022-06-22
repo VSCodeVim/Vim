@@ -95,7 +95,7 @@ export class SortCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    const { start, end } = range.resolve(vimState)!;
+    const { start, end } = range.resolve(vimState);
 
     await this.sortLines(vimState, start, end);
   }

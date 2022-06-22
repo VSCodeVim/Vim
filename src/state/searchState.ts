@@ -1,8 +1,25 @@
-import { Position, Range, TextEditor } from 'vscode';
+import { Position, Range } from 'vscode';
 
 import { configuration } from '../configuration/configuration';
 import { Pattern, SearchDirection, SearchOffset, searchStringParser } from '../vimscript/pattern';
-import { Mode } from './../mode/mode';
+import { VimState } from './vimState';
+
+export type IndexedRange = {
+  range: Range;
+  index: number;
+};
+
+export type IndexedPosition = {
+  pos: Position;
+  index: number;
+};
+
+/**
+ * @returns the least residue of n mod m in the range [0, m) if m > 0, or (m, 0] if m < 0
+ */
+function mod(n: number, m: number): number {
+  return (m + (n % m)) % m;
+}
 
 /**
  * State involved with beginning a search (/).
@@ -12,12 +29,11 @@ export class SearchState {
     direction: SearchDirection,
     startPosition: Position,
     searchString = '',
-    { ignoreSmartcase = false } = {},
-    currentMode: Mode
+    { ignoreSmartcase = false } = {}
   ) {
     this._searchString = searchString;
 
-    const result = searchStringParser({ direction, ignoreSmartcase }).parse(searchString);
+    const result = searchStringParser({ direction, ignoreSmartcase }).parse(this._searchString);
     const { pattern, offset } = result.status
       ? result.value
       : { pattern: undefined, offset: undefined };
@@ -26,14 +42,12 @@ export class SearchState {
 
     this.cursorStartPosition = startPosition;
     this.ignoreSmartcase = ignoreSmartcase;
-    this.previousMode = currentMode;
   }
 
   private _searchString: string;
   public pattern?: Pattern;
   private offset?: SearchOffset;
 
-  public readonly previousMode: Mode;
   public readonly cursorStartPosition: Position;
 
   public get searchString(): string {
@@ -65,8 +79,8 @@ export class SearchState {
    *
    * This might not be 100% complete - @see Pattern::MAX_SEARCH_RANGES
    */
-  public getMatchRanges(editor: TextEditor): Range[] {
-    return this.recalculateSearchRanges(editor);
+  public getMatchRanges(vimState: VimState): Range[] {
+    return this.recalculateSearchRanges(vimState);
   }
   private matchRanges: Map<string, { version: number; ranges: Range[] }> = new Map();
 
@@ -76,12 +90,12 @@ export class SearchState {
    */
   private readonly ignoreSmartcase: boolean;
 
-  private recalculateSearchRanges(editor: TextEditor): Range[] {
+  private recalculateSearchRanges(vimState: VimState): Range[] {
     if (this.searchString === '' || this.pattern === undefined) {
       return [];
     }
 
-    const document = editor.document;
+    const document = vimState.document;
 
     const cached = this.matchRanges.get(document.fileName);
     if (cached?.version === document.version) {
@@ -89,7 +103,9 @@ export class SearchState {
     }
 
     // TODO: It's weird to use the active selection for this...
-    const matchRanges = this.pattern.allMatches(editor.document, editor.selection.active);
+    const matchRanges = this.pattern
+      .allMatches(vimState, { fromPosition: vimState.editor.selection.active })
+      .map((match) => match.range);
 
     this.matchRanges.set(document.fileName, {
       version: document.version,
@@ -101,13 +117,21 @@ export class SearchState {
 
   /**
    * @returns The start of the next match range, after applying the search offset
+   *
+   * @see getNextSearchMatchRange for parameters
    */
   public getNextSearchMatchPosition(
-    editor: TextEditor,
+    vimState: VimState,
     startPosition: Position,
-    direction = SearchDirection.Forward
-  ): { pos: Position; index: number } | undefined {
-    const nextMatch = this.getNextSearchMatchRange(editor, startPosition, direction);
+    direction = SearchDirection.Forward,
+    relativeIndex = 0
+  ): IndexedPosition | undefined {
+    const nextMatch = this.getNextSearchMatchRange(
+      vimState,
+      startPosition,
+      direction,
+      relativeIndex
+    );
     if (nextMatch === undefined) {
       return undefined;
     }
@@ -117,75 +141,82 @@ export class SearchState {
   }
 
   /**
-   * @returns The next match range from the given position and its rank in the document's matches
+   * @returns The next match range from the given position and its rank in the document's matches, or undefined if none exists.
+   * An optional index can be provided to target other matches relative to the next.
    *
    * @param direction If `SearchDirection.Backward`, this will search in the opposite of the pattern's direction
+   *
+   * @param relativeIndex Which match to return, relative to the next match. 0 (default) corresponds to the next match,
+   * 1 corresponds to the match after next (in the given direction), -1 corresponds to the match before next, etc.
    *
    * NOTE: This method does not take the search offset into account
    */
   public getNextSearchMatchRange(
-    editor: TextEditor,
+    vimState: VimState,
     fromPosition: Position,
-    direction = SearchDirection.Forward
-  ): { range: Range; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+    direction = SearchDirection.Forward,
+    relativeIndex = 0
+  ): IndexedRange | undefined {
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;
     }
 
     const effectiveDirection = (direction * this.direction) as SearchDirection;
+    let index: number | undefined;
 
     if (effectiveDirection === SearchDirection.Forward) {
-      for (const [index, range] of matchRanges.entries()) {
-        if (range.start.isAfter(fromPosition)) {
-          return {
-            range,
-            index,
-          };
+      for (let i = 0; i < matchRanges.length; i++) {
+        if (
+          (this.offset?.apply(matchRanges[i]) ?? matchRanges[i].start).compareTo(fromPosition) > 0
+        ) {
+          index = i;
+          break;
         }
-      }
-      // We've hit the bottom of the file. Wrap around if configured to do so, or return undefined.
-      if (configuration.wrapscan) {
-        const range = matchRanges[0];
-        return {
-          range,
-          index: 0,
-        };
-      } else {
-        return undefined;
       }
     } else {
-      for (const [index, range] of matchRanges.slice(0).reverse().entries()) {
-        if (range.end.isBeforeOrEqual(fromPosition)) {
-          return {
-            range,
-            index: matchRanges.length - index - 1,
-          };
+      for (let i = matchRanges.length - 1; i >= 0; i--) {
+        if (
+          (this.offset?.apply(matchRanges[i]) ?? matchRanges[i].start).compareTo(fromPosition) < 0
+        ) {
+          index = i;
+          break;
         }
       }
+    }
 
-      // We've hit the top of the file. Wrap around if configured to do so, or return undefined.
+    if (index === undefined) {
+      // We've hit the top/bottom of the file. Wrap around if configured to do so, or return undefined.
       if (configuration.wrapscan) {
-        const range = matchRanges[matchRanges.length - 1];
-        return {
-          range,
-          index: matchRanges.length - 1,
-        };
+        index = effectiveDirection === SearchDirection.Forward ? 0 : matchRanges.length - 1;
       } else {
         return undefined;
       }
+    }
+
+    // index of the first match now stored in variable index.
+    // Offsetting it by relativeIndex in the appropriate direction gets the index of the desired match.
+    index += effectiveDirection * relativeIndex;
+
+    if (0 <= index && index < matchRanges.length) {
+      return { index, range: matchRanges[index] };
+    }
+
+    // We've hit the top/bottom of the file. Wrap around (possibly many times) if configured to do so, or return undefined
+    if (configuration.wrapscan) {
+      index = mod(index, matchRanges.length);
+      return { index, range: matchRanges[index] };
+    } else {
+      return undefined;
     }
   }
 
   /**
    * @returns the match range which contains the given Position, or undefined if none exists
    */
-  public findContainingMatchRange(
-    editor: TextEditor,
-    pos: Position
-  ): { range: Range; index: number } | undefined {
-    const matchRanges = this.recalculateSearchRanges(editor);
+  public findContainingMatchRange(vimState: VimState, pos: Position): IndexedRange | undefined {
+    const matchRanges = this.recalculateSearchRanges(vimState);
 
     if (matchRanges.length === 0) {
       return undefined;

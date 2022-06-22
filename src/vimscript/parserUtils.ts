@@ -1,4 +1,4 @@
-import { alt, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
+import { alt, any, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
 
 export const numberParser: Parser<number> = regexp(/\d+/).map((num) => Number.parseInt(num, 10));
 
@@ -12,6 +12,26 @@ export function nameAbbrevParser(abbrev: string, rest: string): Parser<string> {
     .map((idx) => abbrev + rest.substring(0, idx));
   return alt(...possibleNames.map(string));
 }
+
+// TODO: `:help cmdline-special`
+// TODO: `:help filename-modifiers`
+export const fileNameParser: Parser<string> = alt<string>(
+  string('\\').then(
+    any.fallback(undefined).map((escaped) => {
+      if (escaped === undefined || escaped === '\\') {
+        return '\\';
+      } else if (escaped === ' ') {
+        return ' ';
+      } else {
+        // TODO: anything else that needs escaping?
+        return `\\${escaped}`;
+      }
+    })
+  ),
+  regexp(/\S/)
+)
+  .atLeast(1)
+  .map((chars) => chars.join(''));
 
 /**
  * Options for how a file should be encoded
@@ -49,7 +69,7 @@ export type FileCmd =
     };
 export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
   .then(
-    alt(
+    alt<FileCmd>(
       // Exact line number
       numberParser.map((line) => ({ type: 'line_number', line })),
       // TODO: Next match of pattern
@@ -60,6 +80,5 @@ export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
       succeed({ type: 'last_line' })
     )
   )
-  .result(undefined)
   .fallback(undefined)
   .desc('[+cmd]');
