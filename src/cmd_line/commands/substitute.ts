@@ -278,7 +278,10 @@ export class SubstituteCommand extends ExCommand {
 
     const showReplacements = this.arguments.pattern?.closed && configuration.inccommand;
 
-    const matches = pattern?.allMatches(vimState, { lineRange }) ?? [];
+    let matches: PatternMatch[] = [];
+    if (pattern?.patternString) {
+      matches = pattern.allMatches(vimState, { lineRange });
+    }
 
     const global =
       (configuration.gdefault || configuration.substituteGlobalFlag) !==
