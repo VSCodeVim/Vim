@@ -35,16 +35,18 @@ export async function getAndUpdateModeHandler(
     return undefined;
   }
 
-  const uri = activeTextEditor.document.uri;
-
-  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(uri);
+  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeTextEditor);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
 
   curHandler.vimState.editor = activeTextEditor;
 
-  if (forceSyncAndUpdate || !previousActiveEditorUri || previousActiveEditorUri !== uri) {
+  if (
+    forceSyncAndUpdate ||
+    !previousActiveEditorUri ||
+    previousActiveEditorUri !== activeTextEditor.document.uri
+  ) {
     // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
@@ -52,7 +54,7 @@ export async function getAndUpdateModeHandler(
     await curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
-  previousActiveEditorUri = uri;
+  previousActiveEditorUri = activeTextEditor.document.uri;
 
   if (curHandler.focusChanged) {
     curHandler.focusChanged = false;
@@ -192,7 +194,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const modeHandler = ModeHandlerMap.get(uri);
 
         let shouldDelete = false;
-        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+        if (modeHandler == null) {
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.document;
@@ -229,16 +231,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // once a new file is opened.
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
-      if (vscode.window.activeTextEditor === undefined) {
-        Register.setReadonlyRegister('%', '');
-        return;
-      }
-
+      const activeTextEditor = vscode.window.activeTextEditor;
       const oldFileRegister = (await Register.get('%'))?.text;
-      const relativePath = vscode.workspace.asRelativePath(
-        vscode.window.activeTextEditor.document.uri,
-        false
-      );
+      const relativePath = activeTextEditor
+        ? vscode.workspace.asRelativePath(activeTextEditor.document.uri, false)
+        : '';
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
@@ -286,17 +283,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
           ''
         );
-        const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
+        const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
-          mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
+          mh.selectionsChanged.ourSelections.splice(idx, 1);
           logger.debug(
-            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
+            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.selectionsChanged.ourSelections.length}`
           );
           return;
-        } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
+        } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
           logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
           return;
-        } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
+        } else if (mh.selectionsChanged.ourSelections.length > 0) {
           // Some intermediate selection must have slipped in after setting the
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
@@ -404,14 +401,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.insertedText) {
-          mh.vimState.selectionsChanged.ignoreIntermediateSelections = true;
+          mh.selectionsChanged.ignoreIntermediateSelections = true;
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: '',
             replaceCharCnt: compositionState.composingText.length,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-          mh.vimState.selectionsChanged.ignoreIntermediateSelections = false;
+          mh.selectionsChanged.ignoreIntermediateSelections = false;
         }
         const text = compositionState.composingText;
         await mh.handleMultipleKeyEvents(text.split(''));

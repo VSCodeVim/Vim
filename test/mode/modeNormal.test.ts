@@ -298,12 +298,46 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
-  newTest({
-    title: "Can handle 's'",
-    start: ['tex|t'],
-    keysPressed: '^sk',
-    end: ['k|ext'],
-    endMode: Mode.Insert,
+  suite('`s` (synonym for `cl`)', () => {
+    newTest({
+      title: '`s` deletes a character and enters Insert mode',
+      start: ['12|345'],
+      keysPressed: 's',
+      end: ['12|45'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes [count] characters',
+      start: ['12|345678'],
+      keysPressed: '5s',
+      end: ['12|8'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` does not go over EOL or delete characters before cursor',
+      start: ['12345|678', 'nextline'],
+      keysPressed: '5s',
+      end: ['12345|', 'nextline'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: 's',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: '8s',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({

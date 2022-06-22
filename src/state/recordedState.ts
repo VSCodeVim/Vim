@@ -3,8 +3,7 @@ import { Mode, isVisualMode } from '../mode/mode';
 import { PositionDiff } from './../common/motion/position';
 import { Transformer } from './../transformations/transformer';
 import { SpecialKeys } from '../util/specialKeys';
-import type { VimState } from './vimState';
-import { Position } from 'vscode';
+import { IBaseAction, IBaseOperator, IBaseCommand } from '../actions/types';
 
 /**
  * Much of Vim's power comes from the composition of individual actions.
@@ -196,14 +195,15 @@ export class RecordedState {
   }
 
   public get operators(): IBaseOperator[] {
-    return this.actionsRun.filter((a): a is IBaseOperator => a.isOperator).reverse();
+    return this.actionsRun.filter((a): a is IBaseOperator => a.actionType === 'operator').reverse();
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): IBaseCommand {
-    const list = this.actionsRun.filter((a): a is IBaseCommand => a.isCommand).reverse();
+    // TODO: this is probably wrong
+    const list = this.actionsRun.filter((a): a is IBaseCommand => a.actionType === 'command').reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
@@ -260,7 +260,7 @@ export class RecordedState {
     }
 
     // We've got an operator - do we also have a motion or visual selection to operate on?
-    if (this.actionsRun.some((a) => a.isMotion) || isVisualMode(mode)) {
+    if (this.actionsRun.some((a) => a.actionType === 'motion') || isVisualMode(mode)) {
       return 'ready';
     }
 
@@ -275,26 +275,4 @@ export class RecordedState {
 
     return 'pending';
   }
-}
-
-export interface IBaseAction {
-  readonly isMotion: boolean;
-  readonly isOperator: boolean;
-  readonly isCommand: boolean;
-  readonly isJump: boolean;
-  readonly createsUndoPoint: boolean;
-
-  keysPressed: string[];
-  multicursorIndex: number | undefined;
-
-  readonly preservesDesiredColumn: boolean;
-}
-
-export interface IBaseCommand extends IBaseAction {
-  exec(position: Position, vimState: VimState): Promise<void>;
-}
-
-export interface IBaseOperator extends IBaseAction {
-  run(vimState: VimState, start: Position, stop: Position): Promise<void>;
-  runRepeat(vimState: VimState, position: Position, count: number): Promise<void>;
 }

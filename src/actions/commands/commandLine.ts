@@ -11,7 +11,6 @@ import { StatusBar } from '../../statusBar';
 import { getPathDetails, readDirectory } from '../../util/path';
 import { Clipboard } from '../../util/clipboard';
 import { VimError, ErrorCode } from '../../error';
-import { assertDefined } from '../../util/util';
 import { builtinExCommands } from '../../vimscript/exCommandParser';
 import { SearchDirection } from '../../vimscript/pattern';
 
@@ -25,9 +24,16 @@ abstract class CommandLineAction extends BaseCommand {
   protected abstract run(vimState: VimState, commandLine: CommandLine): Promise<void>;
 
   public override async exec(position: vscode.Position, vimState: VimState): Promise<void> {
-    assertDefined<CommandLine>(vimState.commandLine, 'vimState.commandLine unexpectedly undefined');
+    if (
+      !(
+        vimState.modeData.mode === Mode.CommandlineInProgress ||
+        vimState.modeData.mode === Mode.SearchInProgressMode
+      )
+    ) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in CommandLineAction`);
+    }
 
-    await this.run(vimState, vimState.commandLine);
+    await this.run(vimState, vimState.modeData.commandLine);
   }
 }
 
@@ -146,6 +152,7 @@ class ExCommandLineEnter extends CommandLineAction {
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
     await commandLine.run(vimState);
+    await vimState.setCurrentMode(Mode.Normal);
   }
 }
 
@@ -161,6 +168,10 @@ class SearchCommandLineEnter extends CommandLineAction {
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
     await commandLine.run(vimState);
+    if (this.multicursorIndex === vimState.cursors.length - 1) {
+      // TODO: gah, this is stupid
+      await vimState.setCurrentMode(commandLine.previousMode);
+    }
   }
 }
 

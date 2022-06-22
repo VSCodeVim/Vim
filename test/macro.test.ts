@@ -161,6 +161,16 @@ suite('Record and execute a macro', () => {
     statusBar: "E354: Invalid register name: '~'",
   });
 
+  for (const register of ['%', '#']) {
+    newTest({
+      title: `Filename register '${register}' throw E354`,
+      start: ['one t|wo three'],
+      keysPressed: `@${register}`,
+      end: ['one t|wo three'],
+      statusBar: `E354: Invalid register name: '${register}'`,
+    });
+  }
+
   newTest({
     title: '`@@` before a macro has been run throws E748',
     start: ['one t|wo three'],

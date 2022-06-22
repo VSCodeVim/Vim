@@ -340,6 +340,13 @@ suite('Basic substitute', () => {
     });
 
     newTest({
+      title: '`~` in replace string uses previous replace string',
+      start: ['|one two three', 'two three four'],
+      keysPressed: sub('two', 'xyz') + 'j' + sub('three', '~ ~'),
+      end: ['one xyz three', '|two xyz xyz four'],
+    });
+
+    newTest({
       title: 'Substitute with parameters should update search state',
       start: ['foo', 'bar', 'foo', 'bar|'],
       keysPressed:
@@ -420,9 +427,9 @@ suite('Basic substitute', () => {
 
     suite('Capture groups', () => {
       newTest({
-        title: '\\& capture group',
+        title: '& capture group',
         start: ['|she sells seashells by the seashore'],
-        keysPressed: sub('s\\S*', '(\\&)', { flags: 'g' }),
+        keysPressed: sub('s\\S*', '(&)', { flags: 'g' }),
         end: ['|(she) (sells) (seashells) by the (seashore)'],
       });
 

@@ -143,7 +143,7 @@ async function createSearchStateAndMoveToMatch(args: {
 class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['*'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
@@ -160,7 +160,7 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
 class CommandSearchCurrentWordForward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '*'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
@@ -173,7 +173,7 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 class CommandSearchCurrentWordExactBackward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['#'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
@@ -190,7 +190,7 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
 class CommandSearchCurrentWordBackward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '#'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override runsOnceForEachCountPrefix = true;
   override isJump = true;
 
@@ -203,17 +203,14 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 class CommandSearchForwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['/'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override isJump = true;
   override runsOnceForEveryCursor() {
     return false;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Forward);
     await vimState.setCurrentMode(Mode.SearchInProgressMode);
-
-    globalState.searchState = vimState.commandLine.getSearchState();
   }
 }
 
@@ -221,17 +218,19 @@ class CommandSearchForwards extends BaseCommand {
 class CommandSearchBackwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['?'];
-  override isMotion = true;
+  override actionType = 'motion' as const;
   override isJump = true;
   override runsOnceForEveryCursor() {
     return false;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.commandLine = new SearchCommandLine(vimState, '', SearchDirection.Backward);
-    await vimState.setCurrentMode(Mode.SearchInProgressMode);
-
-    globalState.searchState = vimState.commandLine.getSearchState();
+    // TODO: Better VimState API than this...
+    await vimState.setModeData({
+      mode: Mode.SearchInProgressMode,
+      commandLine: new SearchCommandLine(vimState, '', SearchDirection.Backward),
+      firstVisibleLineBeforeSearch: vimState.editor.visibleRanges[0].start.line,
+    });
   }
 }
 

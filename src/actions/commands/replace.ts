@@ -1,7 +1,6 @@
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { Mode } from '../../mode/mode';
-import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
 import { RegisterAction, BaseCommand } from '../base';
 
@@ -11,11 +10,21 @@ class ExitReplaceMode extends BaseCommand {
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const replaceState = vimState.replaceState!;
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in ExitReplaceMode`);
+    }
+
+    const timesToRepeat = vimState.modeData.replaceState.timesToRepeat;
+
+    const cursorIdx = this.multicursorIndex ?? 0;
+    const changes = vimState.modeData.replaceState.getChanges(cursorIdx);
 
     // `3Rabc` results in 'abc' replacing the next characters 2 more times
-    if (replaceState.timesToRepeat > 1) {
-      const newText = replaceState.newChars.join('').repeat(replaceState.timesToRepeat - 1);
+    if (changes && timesToRepeat > 1) {
+      const newText = changes
+        .map((change) => change.after)
+        .join('')
+        .repeat(timesToRepeat - 1);
       vimState.recordedState.transformer.replace(
         new Range(position, position.getRight(newText.length)),
         newText
@@ -24,7 +33,9 @@ class ExitReplaceMode extends BaseCommand {
       vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
     }
 
-    await vimState.setCurrentMode(Mode.Normal);
+    if (this.multicursorIndex === vimState.cursors.length - 1) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 }
 
@@ -44,38 +55,38 @@ class BackspaceInReplaceMode extends BaseCommand {
   keys = [['<BS>'], ['<S-BS>'], ['<C-BS>'], ['<C-h>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const replaceState = vimState.replaceState!;
-    if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in BackspaceInReplaceMode`);
+    }
+
+    const cursorIdx = this.multicursorIndex ?? 0;
+    const changes = vimState.modeData.replaceState.getChanges(cursorIdx);
+
+    if (changes.length === 0) {
       // If you backspace before the beginning of where you started to replace, just move the cursor back.
       const newPosition = position.getLeftThroughLineBreaks();
 
-      if (newPosition.line < replaceState.replaceCursorStartPosition.line) {
-        vimState.replaceState = new ReplaceState(vimState, newPosition);
-      } else {
-        replaceState.replaceCursorStartPosition = newPosition;
-      }
+      vimState.modeData.replaceState.resetChanges(cursorIdx);
 
       vimState.cursorStopPosition = newPosition;
       vimState.cursorStartPosition = newPosition;
-    } else if (
-      position.line > replaceState.replaceCursorStartPosition.line ||
-      position.character > replaceState.originalChars.length
-    ) {
-      // We've gone beyond the originally existing text; just backspace.
-      // TODO: should this use a 'deleteLeft' transformation?
-      vimState.recordedState.transformer.addTransformation({
-        type: 'deleteRange',
-        range: new Range(position.getLeftThroughLineBreaks(), position),
-      });
-      replaceState.newChars.pop();
     } else {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
-        text: replaceState.originalChars[position.character - 1],
-        range: new Range(position.getLeft(), position),
-        diff: PositionDiff.offset({ character: -1 }),
-      });
-      replaceState.newChars.pop();
+      const { before } = changes.pop()!;
+      if (before === '') {
+        // We've gone beyond the originally existing text; just backspace.
+        // TODO: should this use a 'deleteLeft' transformation?
+        vimState.recordedState.transformer.addTransformation({
+          type: 'deleteRange',
+          range: new Range(position.getLeftThroughLineBreaks(), position),
+        });
+      } else {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'replaceText',
+          text: before,
+          range: new Range(position.getLeft(), position),
+          diff: PositionDiff.offset({ character: -1 }),
+        });
+      }
     }
   }
 }
@@ -87,28 +98,35 @@ class ReplaceInReplaceMode extends BaseCommand {
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    if (vimState.modeData.mode !== Mode.Replace) {
+      throw new Error(`Unexpected mode ${vimState.modeData.mode} in ReplaceInReplaceMode`);
+    }
+
     const char = this.keysPressed[0];
-    const replaceState = vimState.replaceState!;
     const isNewLineOrTab = char === '\n' || char === '<tab>';
 
+    const replaceRange = new Range(position, position.getRight());
+
+    let before = vimState.document.getText(replaceRange);
     if (!position.isLineEnd() && !isNewLineOrTab) {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: char,
-        range: new Range(position, position.getRight()),
+        range: replaceRange,
         diff: PositionDiff.offset({ character: 1 }),
       });
     } else if (char === '<tab>') {
-      vimState.recordedState.transformer.delete(new Range(position, position.getRight()));
-      vimState.recordedState.transformer.addTransformation({
-        type: 'tab',
-        cursorIndex: this.multicursorIndex,
-      });
+      vimState.recordedState.transformer.delete(replaceRange);
+      vimState.recordedState.transformer.vscodeCommand('tab');
     } else {
       vimState.recordedState.transformer.insert(position, char);
+      before = '';
     }
 
-    replaceState.newChars.push(char);
+    vimState.modeData.replaceState.getChanges(this.multicursorIndex ?? 0).push({
+      before,
+      after: char,
+    });
   }
 }
 
