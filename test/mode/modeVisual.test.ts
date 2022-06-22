@@ -888,6 +888,14 @@ suite('Mode Visual', () => {
       end: ['one | three'],
       endMode: Mode.Normal,
     });
+
+    newTest({
+      title: 'Forward selection, on EOL',
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'v$' + '<Esc>' + 'gg' + 'gv' + 'd',
+      end: ['one', 't|three'],
+      endMode: Mode.Normal,
+    });
   });
 
   suite('D command will remove all selected lines', () => {

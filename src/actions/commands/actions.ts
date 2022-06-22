@@ -935,7 +935,7 @@ class CommandReselectVisual extends BaseCommand {
 
       if (end.line <= vimState.document.lineCount - 1) {
         if (start.isBeforeOrEqual(end)) {
-          end = end.getLeft();
+          end = end.getLeftThroughLineBreaks(true);
         }
 
         await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
