@@ -485,18 +485,18 @@ export class SubstituteCommand extends ExCommand {
         ),
       }) ?? [];
 
-    let replacableMatches;
+    let replaceableMatches;
     if (global) {
-      // every match is replacable
-      replacableMatches = allMatches;
+      // every match is replaceable
+      replaceableMatches = allMatches;
     } else {
-      // only the first match on a line is replacable
-      const replacableLines = new Set<number>();
-      replacableMatches = allMatches.filter((match) => {
-        if (replacableLines.has(match.range.start.line)) {
+      // only the first match on a line is replaceable
+      const replaceableLines = new Set<number>();
+      replaceableMatches = allMatches.filter((match) => {
+        if (replaceableLines.has(match.range.start.line)) {
           return false;
         }
-        replacableLines.add(match.range.start.line);
+        replaceableLines.add(match.range.start.line);
         return true;
       });
     }
@@ -509,7 +509,7 @@ export class SubstituteCommand extends ExCommand {
         this.confirmedSubstitutions = [];
       }
       if (configuration.incsearch) {
-        this.cSearchHighlights = replacableMatches.map((match) => ensureVisible(match.range));
+        this.cSearchHighlights = replaceableMatches.map((match) => ensureVisible(match.range));
       }
     }
 
@@ -517,7 +517,7 @@ export class SubstituteCommand extends ExCommand {
     let substitutions = 0;
     let netNewLines = 0;
 
-    for (const match of replacableMatches) {
+    for (const match of replaceableMatches) {
       if (this.abort) {
         break;
       }
