@@ -67,12 +67,11 @@ abstract class BasePutCommand extends BaseCommand {
       count,
       text
     );
-    for (let i = 0; i < vimState.editor.selections.length; i++) {
-      vimState.recordedState.transformer.moveCursor(
-        PositionDiff.exactPosition(newCursorPosition),
-        i
-      );
-    }
+
+    vimState.recordedState.transformer.moveCursor(
+      PositionDiff.exactPosition(newCursorPosition),
+      this.multicursorIndex ?? 0
+    );
 
     if (registerMode === RegisterMode.LineWise) {
       text = this.adjustLinewiseRegisterText(mode, text);
@@ -88,7 +87,8 @@ abstract class BasePutCommand extends BaseCommand {
       vimState.recordedState.transformer.addTransformation(transformation);
     }
 
-    if (isVisualMode(mode)) {
+    // We do not run this in multi-cursor mode as it will overwrite the register for upcoming put iterations
+    if (isVisualMode(mode) && !vimState.isMultiCursor) {
       // After using "p" or "P" in Visual mode the text that was put will be selected (from Vim's ":help gv").
       vimState.lastVisualSelection = {
         mode,
@@ -107,7 +107,12 @@ abstract class BasePutCommand extends BaseCommand {
     }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
-    await vimState.setCurrentMode(Mode.Normal);
+    const isLastCursor =
+      !vimState.isMultiCursor || vimState.cursors.length - 1 === this.multicursorIndex;
+    // Place the cursor back into normal mode after all puts are completed
+    if (isLastCursor) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 
   private getRegisterText(mode: Mode, register: IRegisterContent, count: number): string {
