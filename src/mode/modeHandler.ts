@@ -17,7 +17,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './../state/recordedState';
-import { IBaseAction } from "../actions/types";
+import { IBaseAction } from '../actions/types';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
@@ -46,6 +46,7 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { SearchState } from '../state/searchState';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -62,6 +63,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly remapState: RemapState;
 
   public focusChanged = false;
+
+  private searchDecorationCacheKey:
+    | { searchState: SearchState; documentVersion: number }
+    | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -1156,6 +1161,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
+    const cacheKey = this.searchDecorationCacheKey;
+    this.searchDecorationCacheKey = undefined;
+
     let decorations: SearchDecorations | undefined;
     if (showHighlights) {
       if (
@@ -1163,11 +1171,24 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.modeData.mode === Mode.SearchInProgressMode
       ) {
         decorations = this.vimState.modeData.commandLine.getDecorations(this.vimState);
-      } else {
+      } else if (globalState.searchState) {
+        if (
+          cacheKey &&
+          cacheKey.searchState === globalState.searchState &&
+          cacheKey.documentVersion === this.vimState.document.version
+        ) {
+          // The decorations are fine as-is, don't waste time re-calculating
+          this.searchDecorationCacheKey = cacheKey;
+          return;
+        }
         // If there are no decorations from the command line, get decorations for previous SearchState
         decorations = getDecorationsForSearchMatchRanges(
-          globalState.searchState?.getMatchRanges(this.vimState)
+          globalState.searchState.getMatchRanges(this.vimState)
         );
+        this.searchDecorationCacheKey = {
+          searchState: globalState.searchState,
+          documentVersion: this.vimState.document.version,
+        };
       }
     }
 
