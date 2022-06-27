@@ -1250,7 +1250,7 @@
     "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.4",
-    "winston": "3.7.2",
+    "winston": "3.8.0",
     "winston-console-for-electron": "0.0.6",
     "winston-transport": "4.5.0"
   },
@@ -1281,7 +1281,7 @@
     "plugin-error": "1.0.1",
     "prettier": "2.7.1",
     "sinon": "14.0.0",
-    "ts-loader": "9.3.0",
+    "ts-loader": "9.3.1",
     "tslint": "6.1.3",
     "typescript": "4.7.4",
     "vsce": "2.9.2",
