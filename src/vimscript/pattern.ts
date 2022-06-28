@@ -1,4 +1,5 @@
 import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap, eof } from 'parsimmon';
+import { performance } from 'perf_hooks';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
@@ -124,6 +125,8 @@ export class Pattern {
 
     this.regex.lastIndex = startOffset;
 
+    const start = performance.now();
+
     const matchRanges = {
       beforeWrapping: [] as PatternMatch[],
       afterWrapping: [] as PatternMatch[],
@@ -131,11 +134,6 @@ export class Pattern {
     let wrappedOver = false;
     while (true) {
       const match = this.regex.exec(haystack);
-
-      let searchTimeout = false;
-      setTimeout(() => {
-        searchTimeout = true;
-      }, Pattern.MAX_SEARCH_TIME);
 
       if (match) {
         if (wrappedOver && match.index >= startOffset) {
@@ -160,7 +158,7 @@ export class Pattern {
           groups: match,
         });
 
-        if (searchTimeout) {
+        if (performance.now() - start > Pattern.MAX_SEARCH_TIME) {
           break;
         }
 
