@@ -333,7 +333,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const mh = await getAndUpdateModeHandler();
         if (mh && StatusBar.lastMessageTime) {
           // TODO: Using the time elapsed works most of the time, but is a bit of a hack
-          const timeElapsed = Number(new Date()) - Number(StatusBar.lastMessageTime);
+          const timeElapsed = Date.now() - Number(StatusBar.lastMessageTime);
           if (timeElapsed > 100) {
             StatusBar.clear(mh.vimState, true);
           }

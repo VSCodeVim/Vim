@@ -403,7 +403,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(key: string): Promise<void> {
-    const now = Number(new Date());
+    const now = Date.now();
     const printableKey = Notation.printableKey(key, configuration.leader);
 
     // Check forceStopRemapping
@@ -552,9 +552,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    ModeHandler.logger.debug(
-      `handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`
-    );
+    ModeHandler.logger.debug(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
