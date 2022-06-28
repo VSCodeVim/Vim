@@ -70,49 +70,7 @@ function validateArgs(done) {
     );
   }
 
-  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
-  if (!gitHubToken) {
-    return done(
-      new PluginError('createChangelog', {
-        message:
-          'Missing GitHub API Token. Supply token using `--gitHubToken` option or `CHANGELOG_GITHUB_TOKEN` environment variable.',
-      })
-    );
-  }
-
   done();
-}
-
-function createChangelog(done) {
-  const imageName = 'jpoon/github-changelog-generator';
-  const version = require('./package.json').version;
-
-  const options = minimist(process.argv.slice(2), releaseOptions);
-  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
-
-  var dockerRunCmd = spawn(
-    'docker',
-    [
-      'run',
-      '-it',
-      '--rm',
-      '-v',
-      process.cwd() + ':/usr/local/src/your-app',
-      imageName,
-      '--token',
-      gitHubToken,
-      '--future-release',
-      'v' + version,
-    ],
-    {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    }
-  );
-
-  dockerRunCmd.on('exit', function (exitCode) {
-    done(exitCode);
-  });
 }
 
 function createGitTag() {
@@ -120,9 +78,7 @@ function createGitTag() {
 }
 
 function createGitCommit() {
-  return gulp
-    .src(['./package.json', './yarn.lock', 'CHANGELOG.md'])
-    .pipe(git.commit('bump version'));
+  return gulp.src(['./package.json', './yarn.lock']).pipe(git.commit('bump version'));
 }
 
 function updateVersion(done) {
@@ -297,16 +253,8 @@ gulp.task(
 );
 gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
 gulp.task('test', gulp.series('prepare-test', 'run-test'));
-gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',
-  gulp.series(
-    validateArgs,
-    updateVersion,
-    createChangelog,
-    'prettier',
-    createGitCommit,
-    createGitTag
-  )
+  gulp.series(validateArgs, updateVersion, 'prettier', createGitCommit, createGitTag)
 );
 gulp.task('default', gulp.series('build', 'test'));
