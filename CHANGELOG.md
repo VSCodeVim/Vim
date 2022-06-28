@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Fold commands such as `zo` and `zc` no longer throw error ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.23.0](https://github.com/vscodevim/vim/tree/v1.23.0) (2022-06-27)
 
 ### Added
