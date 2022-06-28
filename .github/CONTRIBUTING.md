@@ -127,7 +127,7 @@ Before you push a release, be sure to make sure the changelog is updated!
 To push a release:
 
 ```bash
-npx gulp release --semver [SEMVER] --gitHubToken [TOKEN]
+npx gulp release --semver [SEMVER]
 git push --follow-tags
 ```
 

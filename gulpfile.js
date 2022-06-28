@@ -15,11 +15,10 @@ const es = require('event-stream');
 const webpack_config = require('./webpack.config.js');
 const webpack_dev_config = require('./webpack.dev.js');
 
-const { exec, spawn } = require('child_process');
+const { exec } = require('child_process');
 
 const releaseOptions = {
   semver: '',
-  gitHubToken: '',
 };
 
 // prettier
