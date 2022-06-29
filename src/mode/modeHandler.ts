@@ -46,7 +46,6 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
-import { SearchState } from '../state/searchState';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -65,7 +64,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public focusChanged = false;
 
   private searchDecorationCacheKey:
-    | { searchState: SearchState; documentVersion: number }
+    | { searchString: string; documentVersion: number }
     | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
@@ -1172,7 +1171,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       } else if (globalState.searchState) {
         if (
           cacheKey &&
-          cacheKey.searchState === globalState.searchState &&
+          cacheKey.searchString === globalState.searchState.searchString &&
           cacheKey.documentVersion === this.vimState.document.version
         ) {
           // The decorations are fine as-is, don't waste time re-calculating
@@ -1184,7 +1183,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           globalState.searchState.getMatchRanges(this.vimState)
         );
         this.searchDecorationCacheKey = {
-          searchState: globalState.searchState,
+          searchString: globalState.searchState.searchString,
           documentVersion: this.vimState.document.version,
         };
       }
@@ -1592,7 +1591,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (configuration.inccommand && this.currentMode === Mode.CommandlineInProgress) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
+      const mh = this.handlerMap.get(editor.document.uri);
+      if (mh) {
+        mh.updateSearchHighlights(showHighlights);
+      }
     }
 
     const easyMotionDimRanges =

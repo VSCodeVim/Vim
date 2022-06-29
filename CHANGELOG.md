@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.23.1](https://github.com/vscodevim/vim/tree/v1.23.1) (2022-06-28)
 
 ### Fixed
