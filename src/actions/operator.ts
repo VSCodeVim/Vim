@@ -547,6 +547,23 @@ export class ChangeOperator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    const hasNoTargetAtDocBegin =
+      vimState.desiredColumn === 0 && start.isAtDocumentBegin() && end.isAtDocumentBegin();
+
+    if (hasNoTargetAtDocBegin && vimState.currentMode === Mode.Normal) {
+      const pressedActionKey = vimState.recordedState.actionKeys[0];
+      const moveBeginningWordKeys = ['b', 'B', '<C-left>'];
+      if (moveBeginningWordKeys.includes(pressedActionKey)) {
+        return;
+      }
+
+      const moveLeftKeys = ['h', '<left>'];
+      if (moveLeftKeys.includes(pressedActionKey)) {
+        vimState.setCurrentMode(Mode.Insert);
+        return;
+      }
+    }
+
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();

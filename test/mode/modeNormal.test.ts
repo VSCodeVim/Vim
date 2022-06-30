@@ -305,6 +305,13 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
+  newTest({
+    title: "Cannot handle 'cb' at beginning of file",
+    start: ['|hello'],
+    keysPressed: 'cb',
+    end: ['|hello'],
+  });
+
   suite('`s` (synonym for `cl`)', () => {
     newTest({
       title: '`s` deletes a character and enters Insert mode',
