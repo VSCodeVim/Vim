@@ -158,6 +158,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Cannot handle 'db' at beginning of file",
+    start: ['|hello'],
+    keysPressed: 'db',
+    end: ['|hello'],
+  });
+
+  newTest({
     title: "Can handle 'dl' at end of line",
     start: ['bla|h'],
     keysPressed: '$dldldl',

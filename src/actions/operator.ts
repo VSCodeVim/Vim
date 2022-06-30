@@ -104,6 +104,14 @@ export class DeleteOperator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    const hasNoTargetAtDocBegin =
+      vimState.desiredColumn === 0 && start.isAtDocumentBegin() && end.isAtDocumentBegin();
+    const dPressed = vimState.recordedState.actionsRunPressedKeys[0] === 'd';
+
+    if (hasNoTargetAtDocBegin && dPressed && vimState.currentMode === Mode.Normal) {
+      return;
+    }
+
     // TODO: this is off by one when character-wise and not including last EOL
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;
 
