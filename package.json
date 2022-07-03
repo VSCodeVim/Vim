@@ -1208,7 +1208,7 @@
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.6",
     "mocha": "10.0.0",
-    "plugin-error": "1.0.1",
+    "plugin-error": "2.0.0",
     "prettier": "2.7.1",
     "sinon": "14.0.0",
     "ts-loader": "9.3.1",
