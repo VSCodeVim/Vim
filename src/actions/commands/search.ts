@@ -99,7 +99,8 @@ async function createSearchStateAndMoveToMatch(args: {
     return;
   }
 
-  const searchString = isExact ? `\\<${escapeRegExp(needle)}\\>` : escapeRegExp(needle);
+  const escapedNeedle = escapeRegExp(needle).replace('/', '\\/');
+  const searchString = isExact ? `\\<${escapedNeedle}\\>` : escapedNeedle;
 
   // Start a search for the given term.
   globalState.searchState = new SearchState(

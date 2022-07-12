@@ -3,7 +3,7 @@
 
 
 "@babel/code-frame@^7.0.0":
-  version "7.10.4"
+  version "7.12.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
   integrity sha512-vG6SvB6oYEhvgisZNFRmRCUkLz11c7rp+tbNTynGqc6mS1d5ATd/sGyV6W0KZZnXRKMTzZDRgQT3Ou9jhpAfUg==
   dependencies:
@@ -231,10 +231,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.2.tgz#2de1ed6670439387da1c9f549a2ade2b0a799256"
   integrity sha512-jiE3QIxJ8JLNcb1Ps6rDbysDhN4xa8DJJvuC9prr6w+1tIh+QAbYyNF3tyiZNLDBIuBCf4KEcV2UvQm/V60xfA==
 
-"@types/node@16.11.39":
-  version "16.11.39"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.39.tgz#07223cd2bc332ad9d92135e3a522eebdee3b060e"
-  integrity sha512-K0MsdV42vPwm9L6UwhIxMAOmcvH/1OoVkZyCgEtVu4Wx7sElGloy/W7kMBNe/oJ7V/jW9BVt1F6RahH6e7tPXw==
+"@types/node@16.11.43":
+  version "16.11.43"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.43.tgz#555e5a743f76b6b897d47f945305b618525ddbe6"
+  integrity sha512-GqWykok+3uocgfAJM8imbozrqLnPyTrpFlrryURQlw1EesPUCx5XxTiucWDSFF9/NUEXDuD4bnvHm8xfVGWTpQ==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -246,10 +246,10 @@
   resolved "https://registry.yarnpkg.com/@types/parsimmon/-/parsimmon-1.10.6.tgz#8fcf95990514d2a7624aa5f630c13bf2427f9cdd"
   integrity sha512-FwAQwMRbkhx0J6YELkwIpciVzCcgEqXEbIrIn3a2P5d3kGEHQ3wVhlN3YdVepYP+bZzCYO6OjmD4o9TGOZ40rA==
 
-"@types/sinon@10.0.11":
-  version "10.0.11"
-  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.11.tgz#8245827b05d3fc57a6601bd35aee1f7ad330fc42"
-  integrity sha512-dmZsHlBsKUtBpHriNjlK0ndlvEh8dcb9uV9Afsbt89QIyydpC7NcR+nWlAhASfy3GHnxTl4FX/aKE7XZUt/B4g==
+"@types/sinon@10.0.12":
+  version "10.0.12"
+  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.12.tgz#fb7009ea71f313a9da4644ba73b94e44d6b84f7f"
+  integrity sha512-uWf4QJ4oky/GckJ1MYQxU52cgVDcXwBhDkpvLbi4EKoLPqLE4MOH6T/ttM33l3hi0oZ882G6oIzWv/oupRYSxQ==
   dependencies:
     "@types/sinonjs__fake-timers" "*"
 
@@ -275,10 +275,10 @@
   resolved "https://registry.yarnpkg.com/@ungap/promise-all-settled/-/promise-all-settled-1.1.2.tgz#aa58042711d6e3275dd37dc597e5d31e8c290a44"
   integrity sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==
 
-"@vscode/test-electron@2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.1.4.tgz#fa1b8915246d0102e81d4fd664bb6c337ca7092f"
-  integrity sha512-tHHAWNVwl8C7nyezHAHdNPWkksdXWvmae6bt4k1tJ9hvMm6QIIk95Mkutl82XHcD60mdP46EHDGU+xFsAvygOQ==
+"@vscode/test-electron@2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.1.5.tgz#ac98f8f445ea4590753f5fa0c7f6e4298f08c3b7"
+  integrity sha512-O/ioqFpV+RvKbRykX2ItYPnbcZ4Hk5V0rY4uhQjQTLhGL9WZUvS7exzuYQCCI+ilSqJpctvxq2llTfGXf9UnnA==
   dependencies:
     http-proxy-agent "^4.0.1"
     https-proxy-agent "^5.0.0"
@@ -2088,10 +2088,10 @@ foreach@^2.0.5:
   resolved "https://registry.yarnpkg.com/foreach/-/foreach-2.0.5.tgz#0bee005018aeb260d0a3af3ae658dd0136ec1b99"
   integrity sha1-C+4AUBiusmDQo6865ljdATbsG5k=
 
-fork-ts-checker-webpack-plugin@7.2.11:
-  version "7.2.11"
-  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-7.2.11.tgz#aff3febbc11544ba3ad0ae4d5aa4055bd15cd26d"
-  integrity sha512-2e5+NyTUTE1Xq4fWo7KFEQblCaIvvINQwUX3jRmEGlgCTc1Ecqw/975EfQrQ0GEraxJTnp8KB9d/c8hlCHUMJA==
+fork-ts-checker-webpack-plugin@7.2.12:
+  version "7.2.12"
+  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-7.2.12.tgz#d15c48745f9092574b41138934aa3de504a39ba1"
+  integrity sha512-SCjmmjPXPgp5XRQ49hXd2Eqth8rz4+ggtOHygTzyaOn32oIIOd8Kw+xKcgXNkFGlZy5l03bHRYTkbQs+TWhaNA==
   dependencies:
     "@babel/code-frame" "^7.16.7"
     chalk "^4.1.2"
@@ -4114,6 +4114,13 @@ plugin-error@1.0.1, plugin-error@^1.0.1:
     arr-union "^3.1.0"
     extend-shallow "^3.0.2"
 
+plugin-error@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/plugin-error/-/plugin-error-2.0.0.tgz#d05da1ab0737220ae06ea04e1683d177b55f5ca4"
+  integrity sha512-o4bwIOmuFwUg2MU6xt7plGEQY3YyENx6kvwaFZBrUpamA91FdS9w3U+pU0y4OuDoBQe+jf3RLGSfQebSRBEVsQ==
+  dependencies:
+    ansi-colors "^1.0.1"
+
 plugin-log@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/plugin-log/-/plugin-log-0.1.0.tgz#86049cf6ab10833398a931f3689cbaee7b5e1333"
@@ -4155,10 +4162,10 @@ prebuild-install@^6.0.0:
     tar-fs "^2.0.0"
     tunnel-agent "^0.6.0"
 
-prettier@2.7.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.0.tgz#a4fdae07e5596c51c9857ea676cd41a0163879d6"
-  integrity sha512-nwoX4GMFgxoPC6diHvSwmK/4yU8FFH3V8XWtLQrbj4IBsK2pkYhG4kf/ljF/haaZ/aii+wNJqISrCDPgxGWDVQ==
+prettier@2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
+  integrity sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==
 
 pretty-hrtime@^1.0.0:
   version "1.0.3"
@@ -5167,10 +5174,10 @@ triple-beam@^1.2.0, triple-beam@^1.3.0:
   resolved "https://registry.yarnpkg.com/triple-beam/-/triple-beam-1.3.0.tgz#a595214c7298db8339eeeee083e4d10bd8cb8dd9"
   integrity sha512-XrHUvV5HpdLmIj4uVMxHggLbFSZYIn7HEWsqePZcI50pco+MPqJ50wMGY794X7AOOhxOBAjbkqfAbEe/QMp2Lw==
 
-ts-loader@9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/ts-loader/-/ts-loader-9.3.0.tgz#980f4dbfb60e517179e15e10ed98e454b132159f"
-  integrity sha512-2kLLAdAD+FCKijvGKi9sS0OzoqxLCF3CxHpok7rVgCZ5UldRzH0TkbwG9XECKjBzHsAewntC5oDaI/FwKzEUog==
+ts-loader@9.3.1:
+  version "9.3.1"
+  resolved "https://registry.yarnpkg.com/ts-loader/-/ts-loader-9.3.1.tgz#fe25cca56e3e71c1087fe48dc67f4df8c59b22d4"
+  integrity sha512-OkyShkcZTsTwyS3Kt7a4rsT/t2qvEVQuKCTg4LJmpj9fhFR7ukGdZwV6Qq3tRUkqcXtfGpPR7+hFKHCG/0d3Lw==
   dependencies:
     chalk "^4.1.0"
     enhanced-resolve "^5.0.0"
@@ -5254,10 +5261,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@4.7.3:
-  version "4.7.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.3.tgz#8364b502d5257b540f9de4c40be84c98e23a129d"
-  integrity sha512-WOkT3XYvrpXx4vMMqlD+8R8R37fZkjyLGlxavMc4iB8lrl8L0DeTcHbYgw/v0N/z9wAFsgBhcsF0ruoySS22mA==
+typescript@4.7.4:
+  version "4.7.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
+  integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
@@ -5469,10 +5476,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.9.1:
-  version "2.9.1"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.9.1.tgz#227a456e857175a6293b6e3e66289c6648b94f9d"
-  integrity sha512-l/X4hkoYgOoZhRYQpJXqexBJU2z4mzNywx+artzWnOV3v45YMM6IoDDtIcB9SWluobem476KmMPLkCdAdnvoOg==
+vsce@2.9.2:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.9.2.tgz#be5d2ca5899f31ba84225d6b19ea1376589df897"
+  integrity sha512-xyLqL4U82BilUX1t6Ym2opQEa2tLGWYjbgB7+ETeNVXlIJz5sWBJjQJSYJVFOKJSpiOtQclolu88cj7oY6vvPQ==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
@@ -5686,10 +5693,10 @@ winston@3.3.3:
     triple-beam "^1.3.0"
     winston-transport "^4.4.0"
 
-winston@3.7.2:
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/winston/-/winston-3.7.2.tgz#95b4eeddbec902b3db1424932ac634f887c400b1"
-  integrity sha512-QziIqtojHBoyzUOdQvQiar1DH0Xp9nF1A1y7NVy2DGEsz82SBDtOalS0ulTRGVT14xPX3WRWkCsdcJKqNflKng==
+winston@3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-3.8.1.tgz#76f15b3478cde170b780234e0c4cf805c5a7fb57"
+  integrity sha512-r+6YAiCR4uI3N8eQNOg8k3P3PqwAm20cLKlzVD9E66Ch39+LZC+VH1UKf9JemQj2B3QoUHfKD7Poewn0Pr3Y1w==
   dependencies:
     "@dabh/diagnostics" "^2.0.2"
     async "^3.2.3"

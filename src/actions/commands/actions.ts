@@ -931,10 +931,16 @@ class CommandReselectVisual extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Try to restore selection only if valid
     if (vimState.lastVisualSelection !== undefined) {
-      if (vimState.lastVisualSelection.end.line <= vimState.document.lineCount - 1) {
-        await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
-        vimState.cursorStartPosition = vimState.lastVisualSelection.start;
-        vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
+      let { start, end, mode } = vimState.lastVisualSelection;
+
+      if (end.line <= vimState.document.lineCount - 1) {
+        if (mode === Mode.Visual && start.isBeforeOrEqual(end)) {
+          end = end.getLeftThroughLineBreaks(true);
+        }
+
+        await vimState.setCurrentMode(mode);
+        vimState.cursorStartPosition = start;
+        vimState.cursorStopPosition = end;
       }
     }
   }
@@ -1901,9 +1907,14 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     const lines: string[] = [];
     for (const cursor of vimState.cursors) {
+      const width =
+        1 +
+        visualBlockGetBottomRightPosition(cursor.start, cursor.stop).character -
+        visualBlockGetTopLeftPosition(cursor.start, cursor.stop).character;
       for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        lines.push(line);
-        if (line.length > start.character) {
+        // TODO: is this behavior consistent with similar actions like VisualBlock `d`?
+        lines.push(line.padEnd(width, ' '));
+        if (line) {
           vimState.recordedState.transformer.addTransformation({
             type: 'deleteRange',
             range: new vscode.Range(start, end),

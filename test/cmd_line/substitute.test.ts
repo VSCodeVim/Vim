@@ -340,6 +340,13 @@ suite('Basic substitute', () => {
     });
 
     newTest({
+      title: '`~` in replace string uses previous replace string',
+      start: ['|one two three', 'two three four'],
+      keysPressed: sub('two', 'xyz') + 'j' + sub('three', '~ ~'),
+      end: ['one xyz three', '|two xyz xyz four'],
+    });
+
+    newTest({
       title: 'Substitute with parameters should update search state',
       start: ['foo', 'bar', 'foo', 'bar|'],
       keysPressed:

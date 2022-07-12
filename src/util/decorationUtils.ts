@@ -24,7 +24,7 @@ export type SearchDecorations = {
  * character.
  */
 export function ensureVisible(range: Range): DecorationOptions {
-  return range.start.isLineEnd() && (range.isEmpty || range.end.isLineBeginning())
+  return (range.isEmpty || range.end.isLineBeginning()) && range.start.isLineEnd()
     ? {
         // range is at EOL, possibly containing EOL char(s).
         range: range.with(undefined, range.start),
@@ -61,13 +61,9 @@ export function formatDecorationText(
  * @returns search decorations for the given ranges, taking into account the current match
  */
 export function getDecorationsForSearchMatchRanges(
-  ranges: Range[] | undefined,
+  ranges: Range[],
   currentMatchIndex?: number
 ): SearchDecorations {
-  if (ranges === undefined) {
-    return {};
-  }
-
   const searchHighlight: DecorationOptions[] = [];
   const searchMatch: DecorationOptions[] = [];
 
