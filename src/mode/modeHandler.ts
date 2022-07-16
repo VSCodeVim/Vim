@@ -17,7 +17,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './../state/recordedState';
-import { IBaseAction } from "../actions/types";
+import { IBaseAction } from '../actions/types';
 import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
@@ -62,6 +62,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public readonly remapState: RemapState;
 
   public focusChanged = false;
+
+  private searchDecorationCacheKey:
+    | { searchString: string; documentVersion: number }
+    | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -398,7 +402,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(key: string): Promise<void> {
-    const now = Number(new Date());
+    const now = Date.now();
     const printableKey = Notation.printableKey(key, configuration.leader);
 
     // Check forceStopRemapping
@@ -547,9 +551,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    ModeHandler.logger.debug(
-      `handleKeyEvent('${printableKey}') took ${Number(new Date()) - now}ms`
-    );
+    ModeHandler.logger.debug(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
@@ -1156,6 +1158,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public updateSearchHighlights(showHighlights: boolean) {
+    const cacheKey = this.searchDecorationCacheKey;
+    this.searchDecorationCacheKey = undefined;
+
     let decorations: SearchDecorations | undefined;
     if (showHighlights) {
       if (
@@ -1163,11 +1168,24 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.modeData.mode === Mode.SearchInProgressMode
       ) {
         decorations = this.vimState.modeData.commandLine.getDecorations(this.vimState);
-      } else {
+      } else if (globalState.searchState) {
+        if (
+          cacheKey &&
+          cacheKey.searchString === globalState.searchState.searchString &&
+          cacheKey.documentVersion === this.vimState.document.version
+        ) {
+          // The decorations are fine as-is, don't waste time re-calculating
+          this.searchDecorationCacheKey = cacheKey;
+          return;
+        }
         // If there are no decorations from the command line, get decorations for previous SearchState
         decorations = getDecorationsForSearchMatchRanges(
-          globalState.searchState?.getMatchRanges(this.vimState)
+          globalState.searchState.getMatchRanges(this.vimState)
         );
+        this.searchDecorationCacheKey = {
+          searchString: globalState.searchState.searchString,
+          documentVersion: this.vimState.document.version,
+        };
       }
     }
 
@@ -1573,7 +1591,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (configuration.inccommand && this.currentMode === Mode.CommandlineInProgress) ||
       (configuration.hlsearch && globalState.hl);
     for (const editor of vscode.window.visibleTextEditors) {
-      this.handlerMap.get(editor.document.uri)?.updateSearchHighlights(showHighlights);
+      const mh = this.handlerMap.get(editor.document.uri);
+      if (mh) {
+        mh.updateSearchHighlights(showHighlights);
+      }
     }
 
     const easyMotionDimRanges =

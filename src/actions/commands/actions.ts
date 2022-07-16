@@ -1907,9 +1907,14 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     const lines: string[] = [];
     for (const cursor of vimState.cursors) {
+      const width =
+        1 +
+        visualBlockGetBottomRightPosition(cursor.start, cursor.stop).character -
+        visualBlockGetTopLeftPosition(cursor.start, cursor.stop).character;
       for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        lines.push(line);
-        if (line.length > start.character) {
+        // TODO: is this behavior consistent with similar actions like VisualBlock `d`?
+        lines.push(line.padEnd(width, ' '));
+        if (line) {
           vimState.recordedState.transformer.addTransformation({
             type: 'deleteRange',
             range: new vscode.Range(start, end),

@@ -124,6 +124,8 @@ export class Pattern {
 
     this.regex.lastIndex = startOffset;
 
+    const start = Date.now();
+
     const matchRanges = {
       beforeWrapping: [] as PatternMatch[],
       afterWrapping: [] as PatternMatch[],
@@ -131,11 +133,6 @@ export class Pattern {
     let wrappedOver = false;
     while (true) {
       const match = this.regex.exec(haystack);
-
-      let searchTimeout = false;
-      setTimeout(() => {
-        searchTimeout = true;
-      }, Pattern.MAX_SEARCH_TIME);
 
       if (match) {
         if (wrappedOver && match.index >= startOffset) {
@@ -160,7 +157,7 @@ export class Pattern {
           groups: match,
         });
 
-        if (searchTimeout) {
+        if (Date.now() - start > Pattern.MAX_SEARCH_TIME) {
           break;
         }
 
