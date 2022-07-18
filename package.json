@@ -1198,7 +1198,7 @@
     "@vscode/test-electron": "2.1.5",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.2.12",
+    "fork-ts-checker-webpack-plugin": "7.2.13",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
