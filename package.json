@@ -1192,7 +1192,7 @@
     "@types/mocha": "9.1.1",
     "@types/node": "16.11.44",
     "@types/parsimmon": "1.10.6",
-    "@types/sinon": "10.0.12",
+    "@types/sinon": "10.0.13",
     "@types/source-map-support": "0.5.4",
     "@types/vscode": "1.57.0",
     "@vscode/test-electron": "2.1.5",
