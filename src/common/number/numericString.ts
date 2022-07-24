@@ -27,8 +27,14 @@
  *          of the number. This is achieved by using `negative` boolean value
  *          in `NumericString`.
  */
+export enum NumericStringRadix {
+  Oct = 8,
+  Dec = 10,
+  Hex = 16,
+}
+
 export class NumericString {
-  radix: number;
+  radix: NumericStringRadix;
   value: number;
   numLength: number;
   prefix: string;
@@ -38,29 +44,37 @@ export class NumericString {
 
   // Map radix to number prefix
   private static numPrefix = {
-    8: '0',
-    10: '',
-    16: '0x',
+    [NumericStringRadix.Oct]: '0',
+    [NumericStringRadix.Dec]: '',
+    [NumericStringRadix.Hex]: '0x',
   };
 
   // Keep octal at the top of decimal to avoid regarding 0000007 as decimal.
   // '000009' matches decimal.
   // '000007' matches octal.
   // '-0xf' matches hex rather than decimal '-0'
-  private static matchings: Array<{ regex: RegExp; radix: number }> = [
-    { regex: /(-)?0[0-7]+/, radix: 8 },
-    { regex: /(-)?\d+/, radix: 10 },
-    { regex: /(-)?0x[\da-fA-F]+/, radix: 16 },
+  private static matchings: Array<{ regex: RegExp; radix: NumericStringRadix }> = [
+    { regex: /(-)?0[0-7]+/, radix: NumericStringRadix.Oct },
+    { regex: /(-)?\d+/, radix: NumericStringRadix.Dec },
+    { regex: /(-)?0x[\da-fA-F]+/, radix: NumericStringRadix.Hex },
   ];
 
   // Return parse result and offset of suffix
-  public static parse(input: string): { num: NumericString; suffixOffset: number } | undefined {
+  public static parse(
+    input: string,
+    targetRadix?: NumericStringRadix
+  ): { num: NumericString; suffixOffset: number } | undefined {
+    const filteredMatchings =
+      targetRadix !== undefined
+        ? NumericString.matchings.filter(matching => matching.radix === targetRadix)
+        : NumericString.matchings;
+
     // Find core numeric part of input
     let coreBegin = -1;
     let coreLength = -1;
     let coreRadix = -1;
     let coreSign = false;
-    for (const { regex, radix } of NumericString.matchings) {
+    for (const { regex, radix } of filteredMatchings) {
       const match = regex.exec(input);
       if (match != null) {
         // Get the leftmost and largest match
@@ -116,7 +130,7 @@ export class NumericString {
 
   private constructor(
     value: number,
-    radix: number,
+    radix: NumericStringRadix,
     numLength: number,
     prefix: string,
     suffix: string,

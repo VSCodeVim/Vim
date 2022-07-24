@@ -85,4 +85,32 @@ suite(':sort', () => {
     keysPressed: ':sort iu\n',
     end: ['|Apple', 'banana', 'cabbage', 'dragonfruit', 'Eggplant'],
   });
+
+  newTest({
+    title: 'Sort whole file, numeric',
+    start: ['2', '|10', '1', '2'],
+    keysPressed: ':sort n\n',
+    end: ['|1', '2', '2', '10'],
+  });
+
+  newTest({
+    title: 'Sort range, numeric',
+    start: ['2', '|10', '1', '2', '-1', '5'],
+    keysPressed: ':2,4sort n\n',
+    end: ['2', '|-1', '1', '2', '10', '5'],
+  });
+
+  newTest({
+    title: 'Sort whole file, numeric mixed with ascii',
+    start: ['banana2', 'apple|10', 'cabbage1', 'App2le'],
+    keysPressed: ':sort n\n',
+    end: ['|cabbage1', 'App2le', 'banana2', 'apple10'],
+  });
+
+  newTest({
+    title: 'Sort whole file, numeric mixed with ascii',
+    start: ['banana2', 'apple|10', 'cabbage1', 'App2le'],
+    keysPressed: ':sort! n\n',
+    end: ['|apple10', 'banana2', 'App2le', 'cabbage1'],
+  });
 });
