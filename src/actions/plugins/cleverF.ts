@@ -35,9 +35,9 @@ class ActionCleverForwardCommand extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count ||= 1;
-    // First if is repeat "f" movement. Ex) "f","a","f" called
-    // Second else if is repeat "F" movement.Ex) "F","a","f" called
-    // Third else is first "f" command. Ex) "f","a" called
+    // The first if-clause states that the current operator is f and also the last operator is f.
+    // Next else-if-clause states that the current operator is f-command and the last operator is F.
+    // The final else-clause states that the current operator is the initial f.
     if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'f') {
       const action = new MoveRepeat([';'], true);
       return action.execActionWithCount(position, vimState, count);
@@ -76,9 +76,9 @@ class ActionCleverFBackwardCommand extends BaseMovement {
     count: number
   ): Promise<Position | IMovement> {
     count ||= 1;
-    // First if is repeat "F" movement. Ex) "F","a","F" called
-    // Second else if is repeat "f" movement.Ex) "f","a","F" called
-    // Third else is first "F" command. Ex) "F","a" called
+    // The first if-clause states that the current operator is F and also the last operator is F.
+    // Next else-if-clause states that the current operator is f-command and the last operator is F.
+    // The final else-clause states that the current operator is the initial F.
     if (arrayEqual(posF, [position.line, position.character]) && beforeCleverFAction === 'F') {
       const action = new MoveRepeat([';'], true);
       return action.execActionWithCount(position, vimState, count);
