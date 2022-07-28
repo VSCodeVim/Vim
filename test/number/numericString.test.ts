@@ -14,6 +14,11 @@ suite('numeric string', () => {
     assert.strictEqual(input, NumericString.parse(input)?.num.toString());
   });
 
+  test('handles hex with capitals round trip', () => {
+    const input = '0xAb1';
+    assert.strictEqual('0xab1', NumericString.parse(input)?.num.toString());
+  });
+
   test('handles decimal round trip', () => {
     const input = '9';
     assert.strictEqual(input, NumericString.parse(input)?.num.toString());

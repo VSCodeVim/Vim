@@ -41,6 +41,7 @@ export class NumericString {
   suffix: string;
   // If a negative sign should be manually added when converting to string.
   negative: boolean;
+  isCapital: boolean;
 
   // Map radix to number prefix
   private static numPrefix = {
@@ -122,8 +123,21 @@ export class NumericString {
       negative = true;
     }
 
+    let isCapital = false;
+    if (coreRadix === 16) {
+      for (const c of Array.from(input).reverse()) {
+        if ('A' <= c && c <= 'F') {
+          isCapital = true;
+          break;
+        } else if ('a' <= c && c <= 'f') {
+          isCapital = false;
+          break;
+        }
+      }
+    }
+
     return {
-      num: new NumericString(value, coreRadix, numLength, prefix, suffix, negative),
+      num: new NumericString(value, coreRadix, numLength, prefix, suffix, negative, isCapital),
       suffixOffset: coreEnd,
     };
   }
@@ -134,7 +148,8 @@ export class NumericString {
     numLength: number,
     prefix: string,
     suffix: string,
-    negative: boolean
+    negative: boolean,
+    isCapital: boolean
   ) {
     this.value = value;
     this.radix = radix;
@@ -142,6 +157,7 @@ export class NumericString {
     this.prefix = prefix;
     this.suffix = suffix;
     this.negative = negative;
+    this.isCapital = isCapital;
   }
 
   public toString(): string {
@@ -156,6 +172,9 @@ export class NumericString {
     // Gen num part
     const absValue = Math.abs(this.value);
     let num = absValue.toString(this.radix);
+    if (this.isCapital) {
+      num = num.toUpperCase();
+    }
     // numLength of decimal *should not* be preserved.
     if (this.radix !== 10) {
       const diff = this.numLength - num.length;
