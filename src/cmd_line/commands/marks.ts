@@ -1,4 +1,4 @@
-import { commands, window, QuickPickItem } from 'vscode';
+import { window, QuickPickItem } from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { IMark } from '../../history/historyTracker';
@@ -53,9 +53,6 @@ export class MarksCommand extends ExCommand {
         canPickMany: false,
       });
       if (item) {
-        if (item.mark.isUppercaseMark) {
-          commands.executeCommand('vscode.open', item.mark.document?.uri);
-        }
         vimState.cursors = [new Cursor(item.mark.position, item.mark.position)];
       }
     } else {
