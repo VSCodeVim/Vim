@@ -222,7 +222,7 @@ export class FileCommand extends ExCommand {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    vscode.window.showTextDocument(doc);
+    vscode.commands.executeCommand('vscode.open', fileUri);
 
     const lineNumber =
       args.cmd?.type === 'line_number'
