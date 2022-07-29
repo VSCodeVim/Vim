@@ -68,17 +68,9 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
       createFileIfNotExists: true,
     };
   } else if (args.name === 'split') {
-    return {
-      file: args.file,
-      position: FilePosition.NewWindowHorizontalSplit,
-      createFileIfNotExists: true,
-    };
+    return { file: args.file, position: FilePosition.NewWindowHorizontalSplit };
   } else if (args.name === 'vsplit') {
-    return {
-      file: args.file,
-      position: FilePosition.NewWindowVerticalSplit,
-      createFileIfNotExists: true,
-    };
+    return { file: args.file, position: FilePosition.NewWindowVerticalSplit };
   } else {
     throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);
   }
