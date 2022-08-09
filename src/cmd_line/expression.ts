@@ -6,8 +6,13 @@ interface Expression {
   parser: Parser<string>;
 }
 
+
+function range(start: number, stop: number, step: number): number[] {
+  return Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + (i * step));
+}
+
 const RangeExpression: Expression = {
-  parser: seqObj<{ start: number, end: number }>(
+  parser: seqObj<{ start: number, end: number, step: number }>(
     string('range'),
     string('('),
     optWhitespace,
@@ -17,13 +22,16 @@ const RangeExpression: Expression = {
     optWhitespace,
     ['end', integerParser],
     optWhitespace,
+    ['step', string(",").then(optWhitespace).then(integerParser).fallback(1)],
+    optWhitespace,
     string(')')
   ).map(
-    ({ start, end }): string => {
-      if (start > end) {
+    ({ start, end, step }): string => {
+      const numbers = range(start, end, step);
+      if (numbers.length === 0) {
         throw VimError.fromCode(ErrorCode.StartPastEnd);
       } else {
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i).join('\n')
+        return numbers.join('\n');
       }
     }
   )
