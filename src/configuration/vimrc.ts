@@ -69,7 +69,7 @@ export class VimrcImpl {
           VimrcImpl.clearRemapsFromConfig(config, clearRemap);
           continue;
         }
-        const setOptionAction = await vimrcSetOptionBuilder.buildSetAction(line);
+        const setOptionAction = vimrcSetOptionBuilder.buildSetAction(line);
         if (setOptionAction) {
           setOptionAction();
           continue;
