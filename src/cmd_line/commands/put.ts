@@ -28,7 +28,7 @@ export class PutExCommand extends ExCommand {
     bangParser,
     alt(
       expressionParser,
-      optWhitespace.then(any).map(x => ({ register: x })).fallback(undefined)
+      optWhitespace.then(any).map(x => ({ register: x })).fallback({register: undefined})
     )
   ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
 
