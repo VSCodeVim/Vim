@@ -198,7 +198,7 @@ suite('Record and execute a macro', () => {
 
       ['gUU' + 'j.' + 'j.', ['|ONE', 'TWO', 'THREE']],
 
-      [':2d', ['|one', 'three']],
+      [':2d\\n', ['one', '|three']],
 
       // TODO: control characters...
     ];
