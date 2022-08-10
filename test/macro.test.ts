@@ -188,7 +188,7 @@ suite('Record and execute a macro', () => {
       ['j', ['one', '|two', 'three']],
       ['2j', ['one', 'two', '|three']],
 
-      ['A' + ', uno', ['one, un|o', 'two', 'three']],
+      ['A' + ', uno<Esc>', ['one, un|o', 'two', 'three']],
 
       ['dd', ['|two', 'three']],
 
@@ -196,7 +196,7 @@ suite('Record and execute a macro', () => {
 
       ['VGJ', ['one two| three']],
 
-      ['gUU' + 'j.' + 'j.', ['|ONE', 'TWO', 'THREE']],
+      ['gUU' + 'j.' + 'j.', ['ONE', 'TWO', '|THREE']],
 
       [':2d\\n', ['one', '|three']],
 
