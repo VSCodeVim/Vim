@@ -11,9 +11,10 @@ import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
+import { isHighSurrogate, isLowSurrogate } from '../util/util';
 
 export abstract class BaseOperator extends BaseAction {
-  override isOperator = true;
+  override actionType = 'operator' as const;
 
   constructor(multicursorIndex?: number) {
     super();
@@ -197,6 +198,22 @@ export class YankOperator extends BaseOperator {
       extendedEnd = extendedEnd.getLineEnd();
     }
 
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(extendedEnd.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      extendedEnd.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(extendedEnd.character)) &&
+      isHighSurrogate(eLine.charCodeAt(extendedEnd.character - 1))
+    ) {
+      extendedEnd = extendedEnd.getRight();
+    }
     const range = new vscode.Range(start, extendedEnd);
     let text = vimState.document.getText(range);
 
@@ -248,8 +265,12 @@ class FilterOperator extends BaseOperator {
       vimState.cursors = vimState.cursorsInitialState;
     }
 
-    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
+    const previousMode = vimState.currentMode;
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
+    // TODO: Change or supplement `setCurrentMode` API so this isn't necessary
+    if (vimState.modeData.mode === Mode.CommandlineInProgress) {
+      vimState.modeData.commandLine = new ExCommandLine(commandLineText, previousMode);
+    }
   }
 }
 
@@ -329,11 +350,10 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       // HACK: currently must do this nonsense to collapse all cursors into one
       for (let i = 0; i < vimState.editor.selections.length; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'moveCursor',
-          diff: PositionDiff.exactPosition(earlierOf(startPos, endPos)),
-          cursorIndex: i,
-        });
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.exactPosition(earlierOf(startPos, endPos)),
+          i
+        );
       }
     } else {
       if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -550,15 +570,11 @@ export class ChangeOperator extends BaseOperator {
       );
 
       if (vimState.document.languageId !== 'plaintext') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'vscodeCommand',
-          command: 'editor.action.reindentselectedlines',
-        });
-        vimState.recordedState.transformer.addTransformation({
-          type: 'moveCursor',
-          cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.endOfLine(),
-        });
+        vimState.recordedState.transformer.vscodeCommand('editor.action.reindentselectedlines');
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.endOfLine(),
+          this.multicursorIndex
+        );
       }
     } else {
       vimState.recordedState.transformer.delete(deleteRange);

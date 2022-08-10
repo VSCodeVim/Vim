@@ -6,7 +6,7 @@ import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
-import { bangParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
 export type IWriteCommandArguments =
   | {
@@ -29,7 +29,7 @@ export class WriteCommand extends ExCommand {
         .map((cmd) => {
           return { cmd };
         }),
-      regexp(/\S+/).map((file) => {
+      fileNameParser.map((file) => {
         return { file };
       })
       // TODO: Support `:help :w_a` ('>>')

@@ -165,40 +165,39 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
   }
 }
 
-@RegisterAction
-class IncreaseIndent extends BaseCommand {
+abstract class IndentCommand extends BaseCommand {
   modes = [Mode.Insert];
-  keys = ['<C-t>'];
+  abstract readonly delta: number;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalText = vimState.document.lineAt(position).text;
-    const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) + 1) * tabSize;
+    const line = vimState.document.lineAt(position);
+    const tabSize = Number(vimState.editor.options.tabSize);
+    const indentationWidth = TextEditor.getIndentationLevel(line.text, tabSize);
+    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) + this.delta) * tabSize;
 
     vimState.recordedState.transformer.replace(
-      new vscode.Range(position.getLineBegin(), position.with({ character: indentationWidth })),
-      TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1]
+      new vscode.Range(
+        position.getLineBegin(),
+        position.with({ character: line.firstNonWhitespaceCharacterIndex })
+      ),
+      TextEditor.setIndentationLevel(
+        line.text,
+        newIndentationWidth,
+        vimState.editor.options.insertSpaces as boolean
+      ).match(/^(\s*)/)![1]
     );
   }
 }
 
 @RegisterAction
-class DecreaseIndent extends BaseCommand {
-  modes = [Mode.Insert];
+class IncreaseIndent extends IndentCommand {
+  keys = ['<C-t>'];
+  override readonly delta = 1;
+}
+@RegisterAction
+class DecreaseIndent extends IndentCommand {
   keys = ['<C-d>'];
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const originalText = vimState.document.lineAt(position).text;
-    const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (Math.floor(indentationWidth / tabSize) - 1) * tabSize;
-
-    vimState.recordedState.transformer.replace(
-      new vscode.Range(position.getLineBegin(), position.with({ character: indentationWidth })),
-      TextEditor.setIndentationLevel(originalText, newIndentationWidth).match(/^(\s*)/)![1]
-    );
-  }
+  override readonly delta = -1;
 }
 
 @RegisterAction
@@ -211,10 +210,7 @@ export class CommandBackspaceInInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'vscodeCommand',
-      command: 'deleteLeft',
-    });
+    vimState.recordedState.transformer.vscodeCommand('deleteLeft');
   }
 }
 
@@ -228,10 +224,7 @@ class CommandDeleteInInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'vscodeCommand',
-      command: 'deleteRight',
-    });
+    vimState.recordedState.transformer.vscodeCommand('deleteRight');
   }
 }
 
@@ -509,12 +502,11 @@ class NewLineInsertMode extends BaseCommand {
   keys = [['<C-j>'], ['<C-m>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertText',
-      text: '\n',
+    vimState.recordedState.transformer.insert(
       position,
-      diff: PositionDiff.offset({ character: -1 }),
-    });
+      '\n',
+      PositionDiff.offset({ character: -1 })
+    );
   }
 }
 

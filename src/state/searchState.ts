@@ -33,7 +33,7 @@ export class SearchState {
   ) {
     this._searchString = searchString;
 
-    const result = searchStringParser({ direction, ignoreSmartcase }).parse(searchString);
+    const result = searchStringParser({ direction, ignoreSmartcase }).parse(this._searchString);
     const { pattern, offset } = result.status
       ? result.value
       : { pattern: undefined, offset: undefined };

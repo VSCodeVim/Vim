@@ -9,6 +9,7 @@ import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
+  actionType = 'command' as const;
   modes = [Mode.Normal];
 }
 
@@ -17,6 +18,7 @@ class TestAction2D extends BaseAction {
     ['a', 'b'],
     ['c', 'd'],
   ];
+  actionType = 'command' as const;
   modes = [Mode.Normal];
 }
 

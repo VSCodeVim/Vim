@@ -1,6 +1,7 @@
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
+  ActionDeleteCharVisualLineMode,
   ActionDeleteCharWithDeleteKey,
   ActionDeleteLastChar,
   CommandRegister,
@@ -194,32 +195,6 @@ export class Register {
     }
   }
 
-  /** @deprecated Currently used only by tests */
-  public static putByKey(
-    register: string,
-    content: RegisterContent,
-    registerMode = RegisterMode.CharacterWise
-  ): void {
-    if (!Register.isValidRegister(register)) {
-      throw new Error(`Invalid register ${register}`);
-    }
-
-    if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
-    }
-
-    if (Register.isBlackHoleRegister(register) || Register.isReadOnlyRegister(register)) {
-      return;
-    }
-
-    Register.registers.set(register, [
-      {
-        text: content,
-        registerMode,
-      },
-    ]);
-  }
-
   /**
    * Updates a readonly register's content. This is the only way to do so.
    */
@@ -260,6 +235,7 @@ export class Register {
       (baseOperator instanceof DeleteOperator ||
         baseOperator instanceof ActionDeleteChar ||
         baseOperator instanceof ActionDeleteLastChar ||
+        baseOperator instanceof ActionDeleteCharVisualLineMode ||
         baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
       !(vimState.macro !== undefined || vimState.isReplayingMacro)
     ) {

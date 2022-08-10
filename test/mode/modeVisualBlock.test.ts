@@ -95,19 +95,30 @@ suite('VisualBlock mode', () => {
     });
   });
 
-  newTest({
-    title: '`c` with forward selection',
-    start: ['t|est', 'test'],
-    keysPressed: '<C-v>' + 'lj' + 'c123',
-    end: ['t123|t', 't123t'],
-  });
+  for (const key of ['c', 's']) {
+    suite(`Change ('${key}')`, () => {
+      newTest({
+        title: 'With forward selection',
+        start: ['t|est', 'test'],
+        keysPressed: '<C-v>' + 'lj' + 'c123',
+        end: ['t123|t', 't123t'],
+      });
 
-  newTest({
-    title: 'Can handle `c` backwards select',
-    start: ['te|st', 'test'],
-    keysPressed: '<C-v>' + 'hj' + 'c123',
-    end: ['t123|t', 't123t'],
-  });
+      newTest({
+        title: 'With backward selection',
+        start: ['te|st', 'test'],
+        keysPressed: '<C-v>' + 'hj' + 'c123',
+        end: ['t123|t', 't123t'],
+      });
+
+      newTest({
+        title: 'Skips short lines',
+        start: ['te|st', '', 'x', 'test'],
+        keysPressed: '<C-v>' + 'h3j' + 'c123',
+        end: ['t123|t', '', 'x', 't123t'],
+      });
+    });
+  }
 
   newTest({
     title: '`rX` replaces all characters in block with X',
@@ -204,6 +215,27 @@ suite('VisualBlock mode', () => {
     start: ['abcde', '0|1234', 'abcde', '01234'],
     keysPressed: '<C-v>' + 'llj' + '"ay' + 'Go' + '<C-r>a<Esc>',
     end: ['abcde', '01234', 'abcde', '01234', '123', 'bc|d'],
+  });
+
+  newTest({
+    title: 'Copy to register using `c` works in Visual Block mode',
+    start: ['1|111', '2222', ''],
+    keysPressed: '<C-v>' + 'lj' + 'c<Esc>' + 'jjp',
+    end: ['11', '22', '|11', '22'],
+  });
+
+  newTest({
+    title: 'Copy to register using `s` works in Visual Block mode',
+    start: ['11|11', '2222', ''],
+    keysPressed: '<C-v>' + 'hj' + 's<Esc>' + 'jjp',
+    end: ['11', '22', '|11', '22'],
+  });
+
+  newTest({
+    title: 'Copy to register using `D` works in Visual Block mode',
+    start: ['1|111', '22222', ''],
+    keysPressed: '<C-v>' + 'lj' + 'D<Esc>' + 'jjp',
+    end: ['1', '2', '|111', '2222'],
   });
 
   suite('`J`', () => {

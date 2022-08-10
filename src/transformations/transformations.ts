@@ -164,6 +164,7 @@ export interface Dot {
 export interface VSCodeCommandTransformation {
   type: 'vscodeCommand';
   command: string;
+  args: any[];
 }
 
 /**
