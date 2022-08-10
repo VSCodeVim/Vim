@@ -19,7 +19,7 @@ import { Cursor } from '../common/motion/cursor';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
-import * as P from 'parsimmon';
+import { keystrokesExpressionParser } from '../vimscript/expression';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -162,22 +162,32 @@ export async function executeTransformations(
 
       case 'macro':
         const recordedMacro = (await Register.get(transformation.register))?.text;
-        if (typeof recordedMacro === 'string') {
+        if (!recordedMacro) {
+          return;
+
+        } else if (typeof recordedMacro === 'string') {
+          // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
+          const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
+          if (!keystrokes.status) {
+            return;
+          }
+
           vimState.isReplayingMacro = true;
-          // split keys into single character, keep inside angle-brackets as a single character
-          const parser = P.alt(
-            P.regexp(/<(?:Esc|C-\w|A-\w|C-A-\w)>/),
-            P.any,
-          ).many();
-          const x = parser.parse(recordedMacro);
-          const keys = x.status ? x.value : [];
+
           vimState.recordedState = new RecordedState();
           vimState.recordedState.registerName = transformation.register;
-          // the first key here is redundant, but otherwise it won't work. I don't know why yet.
-          await modeHandler.handleMultipleKeyEvents(['<Esc>', ...keys]);
+          await modeHandler.handleMultipleKeyEvents(keystrokes.value);
+
           vimState.lastInvokedMacro = vimState.recordedState;
-        } else if (!(recordedMacro instanceof RecordedState)) {
-          return;
+          vimState.isReplayingMacro = false;
+
+          if (vimState.lastMovementFailed) {
+            // movement in last invoked macro failed then we should stop all following repeating macros.
+            // Besides, we should reset `lastMovementFailed`.
+            vimState.lastMovementFailed = false;
+            return;
+          }
+
         } else {
           vimState.isReplayingMacro = true;
 
@@ -193,21 +203,21 @@ export async function executeTransformations(
             }
             await modeHandler.handleMultipleKeyEvents(keyStrokes);
           }
+
+          await executeTransformations(
+            modeHandler,
+            vimState.recordedState.transformer.transformations
+          );
+
+          vimState.isReplayingMacro = false;
           vimState.lastInvokedMacro = recordedMacro;
-        }
 
-        await executeTransformations(
-          modeHandler,
-          vimState.recordedState.transformer.transformations
-        );
-
-        vimState.isReplayingMacro = false;
-
-        if (vimState.lastMovementFailed) {
-          // movement in last invoked macro failed then we should stop all following repeating macros.
-          // Besides, we should reset `lastMovementFailed`.
-          vimState.lastMovementFailed = false;
-          return;
+          if (vimState.lastMovementFailed) {
+            // movement in last invoked macro failed then we should stop all following repeating macros.
+            // Besides, we should reset `lastMovementFailed`.
+            vimState.lastMovementFailed = false;
+            return;
+          }
         }
         break;
 
