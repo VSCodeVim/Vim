@@ -212,6 +212,20 @@ suite('Record and execute a macro', () => {
       });
     }
 
-    // TODO: test with remaps
+    newTestWithRemaps({
+      title: 'test with remaps',
+      start: [`|J`, ...start],
+      remaps: ['nmap J jj'],
+      steps: [
+        {
+          // Step 0:
+          keysPressed: `"${register}dd` + `@${register}`,
+          stepResult: {
+            end: ['one', 'two', '|three'],
+            endAfterTimeout: ['one', 'two', '|three'],
+          },
+        },
+      ],
+    });
   });
 });

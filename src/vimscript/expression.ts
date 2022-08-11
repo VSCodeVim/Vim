@@ -1,6 +1,6 @@
 import { alt, any, Parser, regexp, string, seq, noneOf } from "parsimmon";
 
-const specialCharacters = regexp(/<(?:Esc|C-\w|A-\w|C-A-\w)>/)
+const specialCharacters = regexp(/<(?:Esc|leader|C-\w|A-\w|C-A-\w)>/)
 
 // TODO: Move to a more general location
 // TODO: Add more special characters
