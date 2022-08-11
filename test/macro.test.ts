@@ -1,5 +1,5 @@
 import { Mode } from '../src/mode/mode';
-import { newTest } from './testSimplifier';
+import { newTest, newTestWithRemaps } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
