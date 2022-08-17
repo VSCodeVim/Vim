@@ -230,7 +230,7 @@ export class CleverF implements ICleverF {
     if (character === '') {
       return;
     }
-    const regex = '(' + character + ')';
+    const regex = '(' + character.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')';
     const sourceCodeArr = sourceCode.split('\n');
     const strArr = sourceCodeArr[position.line].split('');
     for (let chr = 0; chr < strArr.length; chr++) {
