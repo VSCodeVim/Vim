@@ -63,9 +63,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public focusChanged = false;
 
-  private searchDecorationCacheKey:
-    | { searchString: string; documentVersion: number }
-    | undefined;
+  private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -1254,7 +1252,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
           case Mode.VisualBlock:
             for (const line of TextEditor.iterateLinesInBlock(this.vimState, cursor)) {
-              selections.push(new vscode.Selection(line.start, line.end));
+              selections.push(
+                new vscode.Selection(
+                  this.vimState.document.validatePosition(line.start),
+                  this.vimState.document.validatePosition(line.end)
+                )
+              );
             }
             break;
 
@@ -1356,7 +1359,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         );
         this.selectionsChanged.ourSelections.push(selectionsHash);
         ModeHandler.logger.debug(
-          `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
+          `Selections: Adding Selection Change to be Ignored! (total: ${
+            this.selectionsChanged.ourSelections.length
+          }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );
       }
 
