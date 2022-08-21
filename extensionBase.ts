@@ -244,6 +244,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         Register.setReadonlyRegister('%', relativePath);
       }
 
+      if (activeTextEditor === undefined) {
+        return;
+      }
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler(true);
         if (mh) {
