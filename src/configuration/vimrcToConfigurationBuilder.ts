@@ -11,7 +11,7 @@ class VimrcSetOptionBuilder {
     const result = SetCommand.argParser.parse(line.replace(/set?/, ""));
     if (result.status) {
       const action = result.value;
-      return () => action.execute(null);
+      return () => action.execute(undefined);
     } else {
       return undefined;
     }
