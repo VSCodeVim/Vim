@@ -7,60 +7,60 @@ import { ExCommand } from '../../vimscript/exCommand';
 
 type SetOperation =
   | {
-      // :se[t]
-      // :se[t] {option}
-      type: 'show_or_set';
-      option: string | undefined;
-    }
+    // :se[t]
+    // :se[t] {option}
+    type: 'show_or_set';
+    option: string | undefined;
+  }
   | {
-     // :se[t] {option}?
-      type: 'show';
-      option: string;
-    }
+    // :se[t] {option}?
+    type: 'show';
+    option: string;
+  }
   | {
-      // :se[t] no{option}
-      type: 'unset';
-      option: string;
-    }
+    // :se[t] no{option}
+    type: 'unset';
+    option: string;
+  }
   | {
-      // :se[t] {option}!
-      // :se[t] inv{option}
-      type: 'invert';
-      option: string;
-    }
+    // :se[t] {option}!
+    // :se[t] inv{option}
+    type: 'invert';
+    option: string;
+  }
   | {
-      // :se[t] {option}&
-      // :se[t] {option}&vi
-      // :se[t] {option}&vim
-      type: 'default';
-      option: string;
-      source: 'vi' | 'vim' | '';
-    }
+    // :se[t] {option}&
+    // :se[t] {option}&vi
+    // :se[t] {option}&vim
+    type: 'default';
+    option: string;
+    source: 'vi' | 'vim' | '';
+  }
   | {
-      // :se[t] {option}={value}
-      // :se[t] {option}:{value}
-      type: 'equal';
-      option: string;
-      value: string;
-    }
+    // :se[t] {option}={value}
+    // :se[t] {option}:{value}
+    type: 'equal';
+    option: string;
+    value: string;
+  }
   | {
-      // :se[t] {option}+={value}
-      type: 'add';
-      option: string;
-      value: string;
-    }
+    // :se[t] {option}+={value}
+    type: 'add';
+    option: string;
+    value: string;
+  }
   | {
-      // :se[t] {option}^={value}
-      type: 'multiply';
-      option: string;
-      value: string;
-    }
+    // :se[t] {option}^={value}
+    type: 'multiply';
+    option: string;
+    value: string;
+  }
   | {
-      // :se[t] {option}-={value}
-      type: 'subtract';
-      option: string;
-      value: string;
-    };
+    // :se[t] {option}-={value}
+    type: 'subtract';
+    option: string;
+    value: string;
+  };
 
 const optionParser = regexp(/[a-z]+/);
 const valueParser = regexp(/\S*/);
@@ -169,8 +169,8 @@ export class SetCommand extends ExCommand {
       typeof currentValue === 'boolean'
         ? 'boolean'
         : typeof currentValue === 'string'
-        ? 'string'
-        : 'number';
+          ? 'string'
+          : 'number';
 
     switch (this.operation.type) {
       case 'show_or_set': {
@@ -187,7 +187,7 @@ export class SetCommand extends ExCommand {
         break;
       }
       case 'show': {
-        if(vimState)
+        if (vimState)
           this.showOption(vimState, option, currentValue);
         break;
       }
