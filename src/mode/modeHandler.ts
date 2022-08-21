@@ -313,6 +313,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         );
         this.vimState.cursorStopPosition = selection.active;
         this.vimState.cursorStartPosition = selection.anchor;
+        this.vimState.desiredColumn = selection.active.character;
         await this.updateView({ drawSelection: false, revealRange: false });
       }
       return;
