@@ -60,6 +60,19 @@ suite('put operator', () => {
         end: ['ABCD', 'ab|[1][1]cd', 'wx[2][2]yz', 'WXYZ'],
       });
 
+      // TODO: write ragged blockwise tests for other modes & put variants
+      newTest({
+        title: 'Yank block-wise (ragged), <count>p',
+        start: ['|longlonglong', 'shortshort', 'verylongverylong', 'veryshort'],
+        keysPressed: '<C-v>G$' + 'd' + '2p',
+        end: [
+          '|longlonglong    longlonglong    ',
+          'shortshort      shortshort      ',
+          'verylongverylongverylongverylong',
+          'veryshort       veryshort       ',
+        ],
+      });
+
       newTest({
         title: 'Yank block-wise, <count>p past last line',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
