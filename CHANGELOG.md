@@ -8,6 +8,10 @@
 - Yanking block-wise now pads shorter lines with spaces ([@J-Fields](https://github.com/J-Fields)).
 - `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
 
+### Added
+
+- Support for `zf` and `zd` commands, for folding and unfolding custom code blocks ([@elazarcoh](https://github.com/elazarcoh)).
+
 ## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
 
 ### Fixed
