@@ -87,9 +87,9 @@ class AddFold extends BaseOperator {
     const previousSelections = vimState.lastVisualSelection;  // keep in case of Normal mode
     vimState.editor.selection = new vscode.Selection(start, end);
     await vscode.commands.executeCommand(this.commandName);
-    await new CommandCloseFold().exec(start, vimState);
     vimState.lastVisualSelection = previousSelections;
     vimState.cursors = [new Cursor(start, start)];
+    await vimState.setCurrentMode(Mode.Normal);  // Vim behavior
   }
 }
 
