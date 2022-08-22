@@ -1,7 +1,10 @@
-import { Position } from "vscode";
-import { Mode } from "../../mode/mode";
-import { VimState } from "../../state/vimState";
-import { BaseCommand, RegisterAction } from "../base";
+import * as vscode from 'vscode';
+import { Position } from 'vscode';
+import { Cursor } from '../../common/motion/cursor';
+import { Mode } from '../../mode/mode';
+import { VimState } from '../../state/vimState';
+import { BaseCommand, RegisterAction } from '../base';
+import { BaseOperator } from '../operator';
 
 type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
@@ -71,4 +74,32 @@ class CommandOpenAllFoldsRecursively extends CommandFold {
   override modes = [Mode.Normal];
   keys = ['z', 'O'];
   commandName = 'editor.unfoldRecursively';
+}
+
+abstract class FoldOperator extends BaseOperator {
+  public modes = [Mode.Normal];
+  abstract commandName: string;
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    const previousSelections = vimState.editor.selections;
+    vimState.editor.selection = new vscode.Selection(start, end);
+    await vscode.commands.executeCommand(this.commandName);
+    await new CommandCloseFold().exec(start, vimState);
+    vimState.editor.selections = previousSelections;
+    vimState.cursors = [new Cursor(start, start)];
+  }
+}
+
+@RegisterAction
+class AddFold extends FoldOperator {
+  override modes = [Mode.Normal, Mode.Visual];
+  keys = ['z', 'f'];
+  commandName = 'editor.createFoldingRangeFromSelection';
+}
+
+@RegisterAction
+class RemoveFold extends FoldOperator {
+  override modes = [Mode.Normal, Mode.Visual];
+  keys = ['z', 'd'];
+  commandName = 'editor.removeManualFoldingRanges';
 }
