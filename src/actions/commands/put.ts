@@ -22,6 +22,8 @@ abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override createsUndoPoint = true;
 
+  protected overwritesRegisterWithSelection = true;
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
@@ -67,12 +69,11 @@ abstract class BasePutCommand extends BaseCommand {
       count,
       text
     );
-    for (let i = 0; i < vimState.editor.selections.length; i++) {
-      vimState.recordedState.transformer.moveCursor(
-        PositionDiff.exactPosition(newCursorPosition),
-        i
-      );
-    }
+
+    vimState.recordedState.transformer.moveCursor(
+      PositionDiff.exactPosition(newCursorPosition),
+      this.multicursorIndex ?? 0
+    );
 
     if (registerMode === RegisterMode.LineWise) {
       text = this.adjustLinewiseRegisterText(mode, text);
@@ -88,7 +89,8 @@ abstract class BasePutCommand extends BaseCommand {
       vimState.recordedState.transformer.addTransformation(transformation);
     }
 
-    if (isVisualMode(mode)) {
+    // We do not run this in multi-cursor mode as it will overwrite the register for upcoming put iterations
+    if (isVisualMode(mode) && !vimState.isMultiCursor) {
       // After using "p" or "P" in Visual mode the text that was put will be selected (from Vim's ":help gv").
       vimState.lastVisualSelection = {
         mode,
@@ -96,8 +98,15 @@ abstract class BasePutCommand extends BaseCommand {
         end: replaceRange.start.advancePositionByText(text),
       };
 
-      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      Register.put(vimState, vimState.document.getText(replaceRange), this.multicursorIndex, true);
+      if (this.overwritesRegisterWithSelection) {
+        vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+        Register.put(
+          vimState,
+          vimState.document.getText(replaceRange),
+          this.multicursorIndex,
+          true
+        );
+      }
     }
 
     // Report lines changed
@@ -107,7 +116,12 @@ abstract class BasePutCommand extends BaseCommand {
     }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
-    await vimState.setCurrentMode(Mode.Normal);
+    const isLastCursor =
+      !vimState.isMultiCursor || vimState.cursors.length - 1 === this.multicursorIndex;
+    // Place the cursor back into normal mode after all puts are completed
+    if (isLastCursor) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 
   private getRegisterText(mode: Mode, register: IRegisterContent, count: number): string {
@@ -386,6 +400,9 @@ class PutCommand extends BasePutCommand {
 class PutBeforeCommand extends PutCommand {
   override keys: string[] | string[][] = ['P'];
 
+  // Since Vim 9.0, Visual `P` does not overwrite the unnamed register with selection's contents
+  override overwritesRegisterWithSelection = false;
+
   protected override putBefore(): boolean {
     return true;
   }
@@ -507,6 +524,7 @@ class GPutCommand extends PutCommand {
 @PlaceCursorAfterText
 class GPutBeforeCommand extends PutBeforeCommand {
   override keys = ['g', 'P'];
+  override overwritesRegisterWithSelection = true;
 }
 
 function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {

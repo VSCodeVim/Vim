@@ -931,10 +931,16 @@ class CommandReselectVisual extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // Try to restore selection only if valid
     if (vimState.lastVisualSelection !== undefined) {
-      if (vimState.lastVisualSelection.end.line <= vimState.document.lineCount - 1) {
-        await vimState.setCurrentMode(vimState.lastVisualSelection.mode);
-        vimState.cursorStartPosition = vimState.lastVisualSelection.start;
-        vimState.cursorStopPosition = vimState.lastVisualSelection.end.getLeft();
+      let { start, end, mode } = vimState.lastVisualSelection;
+
+      if (end.line <= vimState.document.lineCount - 1) {
+        if (mode === Mode.Visual && start.isBeforeOrEqual(end)) {
+          end = end.getLeftThroughLineBreaks(true);
+        }
+
+        await vimState.setCurrentMode(mode);
+        vimState.cursorStartPosition = start;
+        vimState.cursorStopPosition = end;
       }
     }
   }
@@ -1023,13 +1029,32 @@ class CommandOpenFile extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoToDefinition extends BaseCommand {
+class GoToDeclaration extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['g', 'd'], ['<C-]>']];
+  keys = [
+    ['g', 'd'],
+    ['g', 'D'],
+  ];
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
+      // We didn't switch to a different editor
+      vimState.cursorStopPosition = vimState.editor.selection.start;
+    }
+  }
+}
+
+@RegisterAction
+class GoToDefinition extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['<C-]>'];
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('editor.action.revealDefinition');
 
     if (vimState.editor === vscode.window.activeTextEditor) {
       // We didn't switch to a different editor
@@ -1805,8 +1830,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lines: string[] = [];
-
+    let lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       lines.push(line);
       vimState.recordedState.transformer.addTransformation({
@@ -1815,6 +1839,9 @@ class ActionDeleteVisualBlock extends BaseCommand {
         manuallySetCursorPositions: true,
       });
     }
+
+    const maxLineLength = Math.max(...lines.map((line) => line.length));
+    lines = lines.map((line) => line.padEnd(maxLineLength, ' '));
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
@@ -1901,9 +1928,14 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
     const cursors: Cursor[] = [];
     const lines: string[] = [];
     for (const cursor of vimState.cursors) {
+      const width =
+        1 +
+        visualBlockGetBottomRightPosition(cursor.start, cursor.stop).character -
+        visualBlockGetTopLeftPosition(cursor.start, cursor.stop).character;
       for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
-        lines.push(line);
-        if (line.length > start.character) {
+        // TODO: is this behavior consistent with similar actions like VisualBlock `d`?
+        lines.push(line.padEnd(width, ' '));
+        if (line) {
           vimState.recordedState.transformer.addTransformation({
             type: 'deleteRange',
             range: new vscode.Range(start, end),

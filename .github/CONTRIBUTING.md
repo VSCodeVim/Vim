@@ -122,19 +122,20 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 ## Release
 
+Before you push a release, be sure to make sure the changelog is updated!
+
 To push a release:
 
 ```bash
-npx gulp release --semver [SEMVER] --gitHubToken [TOKEN]
+npx gulp release --semver [SEMVER]
 git push --follow-tags
 ```
 
 The above Gulp command will:
 
 1. Bump the package version based off the semver supplied. Supported values: patch, minor, major.
-2. Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
-3. Create a Git commit with the above changes.
-4. Create a Git tag using the new package version.
+2. Create a Git commit with the above changes.
+3. Create a Git tag using the new package version.
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
 
