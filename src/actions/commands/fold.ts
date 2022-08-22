@@ -76,30 +76,41 @@ class CommandOpenAllFoldsRecursively extends CommandFold {
   commandName = 'editor.unfoldRecursively';
 }
 
-abstract class FoldOperator extends BaseOperator {
-  public modes = [Mode.Normal];
-  abstract commandName: string;
+@RegisterAction
+class AddFold extends BaseOperator {
+  override modes = [Mode.Normal, Mode.Visual];
+  keys = ['z', 'f'];
+
+  readonly commandName = 'editor.createFoldingRangeFromSelection';
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const previousSelections = vimState.editor.selections;
+    const previousSelections = vimState.lastVisualSelection;  // keep in case of Normal mode
     vimState.editor.selection = new vscode.Selection(start, end);
     await vscode.commands.executeCommand(this.commandName);
     await new CommandCloseFold().exec(start, vimState);
-    vimState.editor.selections = previousSelections;
+    vimState.lastVisualSelection = previousSelections;
     vimState.cursors = [new Cursor(start, start)];
   }
 }
 
 @RegisterAction
-class AddFold extends FoldOperator {
-  override modes = [Mode.Normal, Mode.Visual];
-  keys = ['z', 'f'];
-  commandName = 'editor.createFoldingRangeFromSelection';
-}
-
-@RegisterAction
-class RemoveFold extends FoldOperator {
+class RemoveFold extends BaseCommand {
   override modes = [Mode.Normal, Mode.Visual];
   keys = ['z', 'd'];
-  commandName = 'editor.removeManualFoldingRanges';
+  readonly commandName = 'editor.removeManualFoldingRanges';
+
+  override async exec(position: Position, vimState: VimState): Promise<void> {
+
+    const selectionForFold = vimState.currentMode === Mode.Visual
+      ? vimState.editor.selection
+      : new vscode.Selection(position, position);
+
+    const previousSelections = vimState.lastVisualSelection;  // keep in case of Normal mode
+    vimState.editor.selection = selectionForFold;
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.lastVisualSelection = previousSelections;
+    const start = selectionForFold.start;
+    vimState.cursors = [new Cursor(start, start)];
+    await vimState.setCurrentMode(Mode.Normal);  // Vim behavior
+  }
 }
