@@ -4,6 +4,7 @@
 
 ### Changed
 
+- `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
 - Yanking block-wise now pads shorter lines with spaces ([@J-Fields](https://github.com/J-Fields)).
 - `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
 
