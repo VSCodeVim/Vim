@@ -101,16 +101,12 @@ class RemoveFold extends BaseCommand {
 
   override async exec(position: Position, vimState: VimState): Promise<void> {
 
-    const selectionForFold = vimState.currentMode === Mode.Visual
-      ? vimState.editor.selection
-      : new vscode.Selection(position, position);
-
-    const previousSelections = vimState.lastVisualSelection;  // keep in case of Normal mode
-    vimState.editor.selection = selectionForFold;
     await vscode.commands.executeCommand(this.commandName);
-    vimState.lastVisualSelection = previousSelections;
-    const start = selectionForFold.start;
-    vimState.cursors = [new Cursor(start, start)];
+
+    const newCursorPosition = vimState.currentMode === Mode.Visual
+      ? vimState.editor.selection.start
+      : position;
+    vimState.cursors = [new Cursor(newCursorPosition, newCursorPosition)];
     await vimState.setCurrentMode(Mode.Normal);  // Vim behavior
   }
 }
