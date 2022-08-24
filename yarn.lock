@@ -298,10 +298,10 @@
   resolved "https://registry.yarnpkg.com/@types/sinonjs__fake-timers/-/sinonjs__fake-timers-8.1.1.tgz#b49c2c70150141a15e0fa7e79cf1f92a72934ce3"
   integrity sha512-0kSuKjAS0TrGLJ0M/+8MaFkGsQhZpB6pxOmvS3K8FYI72K//YmdfoW9X2qPsAKh1mkwxGD5zib9s1FIFed6E8g==
 
-"@types/source-map-support@0.5.5":
-  version "0.5.5"
-  resolved "https://registry.yarnpkg.com/@types/source-map-support/-/source-map-support-0.5.5.tgz#fb6960fa0de57b454566934db56e09be85a9960c"
-  integrity sha512-hWh+4iO9P3ZsE1+/SkusVhxR7xBKLa8346yMjiqYfAVYTEacGNd8t59MzIXmHpV11z/LZYdImb5x5Cy2fmOz+A==
+"@types/source-map-support@0.5.6":
+  version "0.5.6"
+  resolved "https://registry.yarnpkg.com/@types/source-map-support/-/source-map-support-0.5.6.tgz#aa4a8c98ec73a1f1f30a813573a9b2154a6eb39a"
+  integrity sha512-b2nJ9YyXmkhGaa2b8VLM0kJ04xxwNyijcq12/kDoomCt43qbHBeK2SLNJ9iJmETaAj+bKUT05PQUu3Q66GvLhQ==
   dependencies:
     source-map "^0.6.0"
 
