@@ -227,5 +227,28 @@ suite('Record and execute a macro', () => {
         },
       ],
     });
+    newTestWithRemaps({
+      title: 'test with remaps',
+      start: [`|Pm`, ...start],
+      remaps: ['nmap Pm Cabc<Esc>'],
+      steps: [
+        {
+          // Step 0:
+          keysPressed: `"${register}dd` + `@${register}`,
+          stepResult: {
+            end: ['ab|c', 'two', 'three'],
+            endAfterTimeout: ['ab|c', 'two', 'three'],
+          },
+        },
+        {
+          // Step 1:
+          keysPressed: 'j0' + `@${register}`,
+          stepResult: {
+            end: ['abc', 'ab|c', 'three'],
+            endAfterTimeout: ['abc', 'ab|c', 'three'],
+          },
+        }
+      ],
+    });
   });
 });
