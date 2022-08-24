@@ -80,6 +80,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  registers?: { [name: string]: string | undefined };
   statusBar?: string;
   jumps?: string[];
   stub?: {
@@ -383,11 +384,20 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     'Cursor position is wrong.'
   );
 
-  // endMode: check end mode is correct if given
   if (testObj.endMode !== undefined) {
     const actualMode = Mode[modeHandler.currentMode].toUpperCase();
     const expectedMode = Mode[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
+  }
+
+  if (testObj.registers !== undefined) {
+    for (const reg in testObj.registers) {
+      if (testObj.registers[reg] !== undefined) {
+        assert.strictEqual((await Register.get(reg))?.text, testObj.registers[reg]);
+      } else {
+        assert.strictEqual(await Register.get(reg), undefined);
+      }
+    }
   }
 
   if (testObj.statusBar !== undefined) {

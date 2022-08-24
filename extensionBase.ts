@@ -301,7 +301,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
           // wanted this one to be ignored as well.
-          logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+          logger.warn(`Selections: Ignoring slipped selection: ${selectionsHash}`);
           return;
         }
       }
