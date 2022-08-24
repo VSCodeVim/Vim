@@ -1193,7 +1193,7 @@
     "@types/node": "16.11.56",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
-    "@types/source-map-support": "0.5.4",
+    "@types/source-map-support": "0.5.5",
     "@types/vscode": "1.57.0",
     "@vscode/test-electron": "2.1.5",
     "clean-webpack-plugin": "4.0.0",
