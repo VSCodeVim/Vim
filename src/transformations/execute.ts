@@ -175,7 +175,6 @@ export async function executeTransformations(
           vimState.isReplayingMacro = true;
 
           vimState.recordedState = new RecordedState();
-          vimState.recordedState.registerName = transformation.register;
           await modeHandler.handleMultipleKeyEvents(keystrokes.value);
 
           vimState.lastInvokedMacro = vimState.recordedState;
