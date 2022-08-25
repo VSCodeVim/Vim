@@ -237,7 +237,7 @@ suite('Record and execute a macro', () => {
     });
 
     newTestWithRemaps({
-      title: 'test with remaps',
+      title: 'test with remaps: simple',
       start: [`|J`, ...start],
       remaps: ['nmap J jj'],
       steps: [
@@ -250,8 +250,9 @@ suite('Record and execute a macro', () => {
         },
       ],
     });
+
     newTestWithRemaps({
-      title: 'test with remaps',
+      title: 'test with remaps: repeat',
       start: [`|Pm`, ...start],
       remaps: ['nmap Pm Cabc<Esc>'],
       steps: [
@@ -264,7 +265,7 @@ suite('Record and execute a macro', () => {
         },
         {
           // Step 1:
-          keysPressed: 'j0' + `@${register}`,
+          keysPressed: 'j0' + `@@`,
           stepResult: {
             end: ['abc', 'ab|c', 'three'],
           },
