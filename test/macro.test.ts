@@ -238,7 +238,6 @@ suite('Record and execute a macro', () => {
           keysPressed: `"${register}dd` + `@${register}`,
           stepResult: {
             end: ['one', 'two', '|three'],
-            endAfterTimeout: ['one', 'two', '|three'],
           },
         },
       ],
@@ -253,7 +252,6 @@ suite('Record and execute a macro', () => {
           keysPressed: `"${register}dd` + `@${register}`,
           stepResult: {
             end: ['ab|c', 'two', 'three'],
-            endAfterTimeout: ['ab|c', 'two', 'three'],
           },
         },
         {
@@ -261,7 +259,6 @@ suite('Record and execute a macro', () => {
           keysPressed: 'j0' + `@${register}`,
           stepResult: {
             end: ['abc', 'ab|c', 'three'],
-            endAfterTimeout: ['abc', 'ab|c', 'three'],
           },
         }
       ],
