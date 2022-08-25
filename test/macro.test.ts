@@ -1,10 +1,16 @@
 import { Mode } from '../src/mode/mode';
 import { newTest, newTestWithRemaps } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import * as testConfiguration from './testConfiguration';
 
 suite('Record and execute a macro', () => {
   setup(async () => {
-    await setupWorkspace();
+    const configuration = new testConfiguration.Configuration();
+
+    // for testing with <leader>
+    configuration.camelCaseMotion.enable = true;
+
+    await setupWorkspace(configuration);
   });
 
   teardown(cleanUpWorkspace);
@@ -200,6 +206,8 @@ suite('Record and execute a macro', () => {
 
       [':2d\\n', ['one', '|three']],
 
+      ['jjl~l~0' + '<leader>w' + '<leader>w', ['one', 'two', 'tHr|Ee']],
+
       // TODO: control characters...
     ];
     for (const [macro, end] of testCases) {
@@ -263,5 +271,21 @@ suite('Record and execute a macro', () => {
         }
       ],
     });
+
+    newTestWithRemaps({
+      title: 'test with remaps: leader',
+      start: [`|<leader>J`, ...start],
+      remaps: ['nmap <leader>J jj'],
+      steps: [
+        {
+          // Step 0:
+          keysPressed: `"${register}dd` + `@${register}`,
+          stepResult: {
+            end: ['one', 'two', '|three'],
+          },
+        },
+      ],
+    });
+
   });
 });
