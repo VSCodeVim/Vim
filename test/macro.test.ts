@@ -212,6 +212,22 @@ suite('Record and execute a macro', () => {
       });
     }
 
+    newTest({
+      title: `test @@ - 1`,
+      start: [`|j`, ...start],
+      keysPressed: `"${register}dd` + `@${register}` + `@@`,
+      end: ['one', 'two', '|three'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: `test @@ - 2`,
+      start: [`|dd`, ...start],
+      keysPressed: `"${register}dd` + `@${register}` + `@@`,
+      end: ['|three'],
+      endMode: Mode.Normal,
+    });
+
     newTestWithRemaps({
       title: 'test with remaps',
       start: [`|J`, ...start],
