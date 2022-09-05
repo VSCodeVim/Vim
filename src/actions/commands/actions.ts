@@ -1029,13 +1029,32 @@ class CommandOpenFile extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoToDefinition extends BaseCommand {
+class GoToDeclaration extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['g', 'd'], ['<C-]>']];
+  keys = [
+    ['g', 'd'],
+    ['g', 'D'],
+  ];
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
+      // We didn't switch to a different editor
+      vimState.cursorStopPosition = vimState.editor.selection.start;
+    }
+  }
+}
+
+@RegisterAction
+class GoToDefinition extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['<C-]>'];
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('editor.action.revealDefinition');
 
     if (vimState.editor === vscode.window.activeTextEditor) {
       // We didn't switch to a different editor
@@ -1811,8 +1830,7 @@ class ActionDeleteVisualBlock extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const lines: string[] = [];
-
+    let lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       lines.push(line);
       vimState.recordedState.transformer.addTransformation({
@@ -1821,6 +1839,9 @@ class ActionDeleteVisualBlock extends BaseCommand {
         manuallySetCursorPositions: true,
       });
     }
+
+    const maxLineLength = Math.max(...lines.map((line) => line.length));
+    lines = lines.map((line) => line.padEnd(maxLineLength, ' '));
 
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     vimState.currentRegisterMode = RegisterMode.BlockWise;
