@@ -97,20 +97,27 @@ suite(':sort', () => {
     title: 'Sort range, numeric',
     start: ['2', '|10', '1', '2', '-1', '5'],
     keysPressed: ':2,4sort n\n',
-    end: ['2', '|-1', '1', '2', '10', '5'],
+    end: ['2', '|1', '2', '10', '-1', '5'],
   });
 
   newTest({
-    title: 'Sort whole file, numeric mixed with ascii',
+    title: 'Sort range descending, numeric',
+    start: ['2', '|10', '1', '2', '-1', '5'],
+    keysPressed: ':2,5sort! n\n',
+    end: ['2', '|10', '2', '1', '-1', '5'],
+  });
+
+  newTest({
+    title: 'Sort whole file ascending, numeric mixed with ascii',
     start: ['banana2', 'apple|10', 'cabbage1', 'App2le'],
     keysPressed: ':sort n\n',
-    end: ['|cabbage1', 'App2le', 'banana2', 'apple10'],
+    end: ['|cabbage1', 'banana2', 'App2le', 'apple10'],
   });
 
   newTest({
-    title: 'Sort whole file, numeric mixed with ascii',
+    title: 'Sort whole file descending, numeric mixed with ascii',
     start: ['banana2', 'apple|10', 'cabbage1', 'App2le'],
     keysPressed: ':sort! n\n',
-    end: ['|apple10', 'banana2', 'App2le', 'cabbage1'],
+    end: ['|apple10', 'App2le', 'banana2', 'cabbage1'],
   });
 });

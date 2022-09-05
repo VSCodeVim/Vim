@@ -41,7 +41,7 @@ suite('numeric string', () => {
     assert.strictEqual(NumericString.parse('07', NumericStringRadix.Dec)?.num.value, 7);
     assert.strictEqual(NumericString.parse('07', NumericStringRadix.Dec)?.num.negative, false);
 
-    assert.strictEqual(NumericString.parse('hi-07hello', NumericStringRadix.Dec)?.num.value, 7);
+    assert.strictEqual(NumericString.parse('hi-07hello', NumericStringRadix.Dec)?.num.value, -7);
     assert.strictEqual(NumericString.parse('hi-07hello', NumericStringRadix.Dec)?.num.negative, true);
   });
 });
