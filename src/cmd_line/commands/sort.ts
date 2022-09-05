@@ -1,5 +1,5 @@
 import { oneOf, optWhitespace, Parser, seq } from 'parsimmon';
-import { NumericString, NumericStringRadix } from 'src/common/number/numericString';
+import { NumericString, NumericStringRadix } from '../../common/number/numericString';
 import * as vscode from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 
