@@ -595,14 +595,11 @@ class YankVisualBlockMode extends BaseOperator {
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     const ranges: vscode.Range[] = [];
-    let lines: string[] = [];
+    const lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       lines.push(line);
       ranges.push(new vscode.Range(start, end));
     }
-
-    const maxLineLength = Math.max(...lines.map((line) => line.length));
-    lines = lines.map((line) => line.padEnd(maxLineLength, ' '));
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
