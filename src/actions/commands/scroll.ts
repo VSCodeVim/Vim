@@ -78,7 +78,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   /**
    * @returns the number of lines this command should move the cursor
    */
-  protected abstract getNumLines(visibleRanges: vscode.Range[]): number;
+  protected abstract getNumLines(visibleRanges: readonly vscode.Range[]): number;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const { visibleRanges } = vimState.editor;

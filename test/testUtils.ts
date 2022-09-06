@@ -30,6 +30,10 @@ class TestMemento implements vscode.Memento {
   async update(key: string, value: any): Promise<void> {
     this.mapping.set(key, value);
   }
+
+  keys(): readonly string[] {
+    return Array.from(this.mapping.keys());
+  }
 }
 
 export class TestExtensionContext implements vscode.ExtensionContext {
