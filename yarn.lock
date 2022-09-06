@@ -3,7 +3,7 @@
 
 
 "@babel/code-frame@^7.0.0":
-  version "7.12.2"
+  version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
   integrity sha512-vG6SvB6oYEhvgisZNFRmRCUkLz11c7rp+tbNTynGqc6mS1d5ATd/sGyV6W0KZZnXRKMTzZDRgQT3Ou9jhpAfUg==
   dependencies:
@@ -305,10 +305,10 @@
   dependencies:
     source-map "^0.6.0"
 
-"@types/vscode@1.57.0":
-  version "1.57.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.57.0.tgz#cc648e0573b92f725cd1baf2621f8da9f8bc689f"
-  integrity sha512-FeznBFtIDCWRluojTsi9c3LLcCHOXP5etQfBK42+ixo1CoEAchkw39tuui9zomjZuKfUVL33KZUDIwHZ/xvOkQ==
+"@types/vscode@1.67.0":
+  version "1.67.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.67.0.tgz#8eaba41d1591aa02f5d960b7dfae3b16e066f08c"
+  integrity sha512-GH8BDf8cw9AC9080uneJfulhSa7KHSMI2s/CyKePXoGNos9J486w2V4YKoeNUqIEkW4hKoEAWp6/cXTwyGj47g==
 
 "@ungap/promise-all-settled@1.1.2":
   version "1.1.2"

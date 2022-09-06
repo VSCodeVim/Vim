@@ -68,16 +68,18 @@ abstract class MoveByScreenLine extends BaseMovement {
         // for some reason vscode doesn't update them. But doing it this way does
         // update vscode's selections.
         const selections = vimState.editor.selections;
-        selections.forEach((s, i) => {
+        const newSelections = selections.map((s, i) => {
           if (s.active.isAfter(s.anchor)) {
             // The selection is on the right side of the cursor, while our representation
             // considers the cursor to be the left edge, so we need to move the selection
             // to the right place before executing the 'cursorMove' command.
             const active = s.active.getLeftThroughLineBreaks();
-            vimState.editor.selections[i] = new vscode.Selection(s.anchor, active);
+            return new vscode.Selection(s.anchor, active);
+          } else {
+            return s;
           }
         });
-        vimState.editor.selections = selections;
+        vimState.editor.selections = newSelections;
       }
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
