@@ -67,8 +67,7 @@ abstract class MoveByScreenLine extends BaseMovement {
         // If we change the `vimState.editor.selections` directly with the forEach
         // for some reason vscode doesn't update them. But doing it this way does
         // update vscode's selections.
-        const selections = vimState.editor.selections;
-        const newSelections = selections.map((s, i) => {
+        vimState.editor.selections = vimState.editor.selections.map((s, i) => {
           if (s.active.isAfter(s.anchor)) {
             // The selection is on the right side of the cursor, while our representation
             // considers the cursor to be the left edge, so we need to move the selection
@@ -79,7 +78,7 @@ abstract class MoveByScreenLine extends BaseMovement {
             return s;
           }
         });
-        vimState.editor.selections = newSelections;
+        ;
       }
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
@@ -568,10 +567,10 @@ class CommandPreviousSearchMatch extends BaseMovement {
     const prevMatch =
       positionIsEOL && !searchForward
         ? searchState.getNextSearchMatchPosition(
-            vimState,
-            position.getRight(),
-            SearchDirection.Backward
-          )
+          vimState,
+          position.getRight(),
+          SearchDirection.Backward
+        )
         : searchState.getNextSearchMatchPosition(vimState, position, SearchDirection.Backward);
 
     if (!prevMatch) {
@@ -735,8 +734,8 @@ class MoveLeft extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getLeftThroughLineBreaks(
-          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
-        )
+        [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+      )
       : getLeftWhile(position);
   }
 }
@@ -763,8 +762,8 @@ class MoveRight extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getRightThroughLineBreaks(
-          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
-        )
+        [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+      )
       : getRightWhile(position);
   }
 }
