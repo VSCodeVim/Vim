@@ -22,6 +22,8 @@ abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override createsUndoPoint = true;
 
+  protected overwritesRegisterWithSelection = true;
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
@@ -96,8 +98,15 @@ abstract class BasePutCommand extends BaseCommand {
         end: replaceRange.start.advancePositionByText(text),
       };
 
-      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      Register.put(vimState, vimState.document.getText(replaceRange), this.multicursorIndex, true);
+      if (this.overwritesRegisterWithSelection) {
+        vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+        Register.put(
+          vimState,
+          vimState.document.getText(replaceRange),
+          this.multicursorIndex,
+          true
+        );
+      }
     }
 
     // Report lines changed
@@ -391,6 +400,9 @@ class PutCommand extends BasePutCommand {
 class PutBeforeCommand extends PutCommand {
   override keys: string[] | string[][] = ['P'];
 
+  // Since Vim 9.0, Visual `P` does not overwrite the unnamed register with selection's contents
+  override overwritesRegisterWithSelection = false;
+
   protected override putBefore(): boolean {
     return true;
   }
@@ -512,6 +524,7 @@ class GPutCommand extends PutCommand {
 @PlaceCursorAfterText
 class GPutBeforeCommand extends PutBeforeCommand {
   override keys = ['g', 'P'];
+  override overwritesRegisterWithSelection = true;
 }
 
 function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {

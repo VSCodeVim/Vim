@@ -2,9 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- Support for `zf`/`zd` commands, which fold/unfold arbitrary ranges ([@elazarcoh](https://github.com/elazarcoh)).
+- Support for surrounding with function call ([@riccardofano](https://github.com/riccardofano)).
+
+### Changed
+
+- `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
+- Yanking block-wise now pads shorter lines with spaces ([@J-Fields](https://github.com/J-Fields)).
+- `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
+
 ### Fixed
 
-- Search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
+- Fix the jump list ([@pitkali](https://github.com/pitkali)).
+- Make increment/decrement (`<C-a>` and `<C-x>`) preserve case of hex numbers ([@smallkirby](https://github.com/smallkirby)).
+- Fix search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.1](https://github.com/vscodevim/vim/tree/v1.23.1) (2022-06-28)
 

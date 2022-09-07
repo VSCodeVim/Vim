@@ -2192,6 +2192,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can ctrl-a can preserve uppercase',
+    start: ['|0xDEAD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to lowercase',
+    start: ['|0xDEAd'],
+    keysPressed: '<C-a>',
+    end: ['0xdea|e'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 1',
+    start: ['|0xdeaD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 2',
+    start: ['|0xDeaD1'],
+    keysPressed: '<C-a>',
+    end: ['0xDEAD|2'],
+  });
+
+  newTest({
     title: 'can ctrl-a preserve leading zeros of octal',
     start: ['|000007'],
     keysPressed: '<C-a>',

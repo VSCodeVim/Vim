@@ -595,11 +595,14 @@ class YankVisualBlockMode extends BaseOperator {
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<void> {
     const ranges: vscode.Range[] = [];
-    const lines: string[] = [];
+    let lines: string[] = [];
     for (const { line, start, end } of TextEditor.iterateLinesInBlock(vimState)) {
       lines.push(line);
       ranges.push(new vscode.Range(start, end));
     }
+
+    const maxLineLength = Math.max(...lines.map((line) => line.length));
+    lines = lines.map((line) => line.padEnd(maxLineLength, ' '));
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
@@ -638,7 +641,7 @@ export class ROT13Operator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    let selections: vscode.Selection[];
+    let selections: readonly vscode.Selection[];
     if (isVisualMode(vimState.currentMode)) {
       selections = vimState.editor.selections;
     } else if (vimState.currentRegisterMode === RegisterMode.LineWise) {
