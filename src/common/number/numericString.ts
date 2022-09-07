@@ -112,13 +112,15 @@ export class NumericString {
     // remove the width of negative sign.
     const numLength = coreLength - NumericString.numPrefix[coreRadix].length - (coreSign ? 1 : 0);
 
-    const negative = coreSign;
     // According to original vim's behavior, for hex and octal, the leading
     // '-' *should* be captured and preserved but *should not* be regarded as
     // part of number, which means with <C-a>, `-0xf` turns into `-0x10`. So
-    // for hex and octal, we make the value absolute.
+    // for hex and octal, we make the value absolute and set the negative
+    // sign flag.
+    let negative = false;
     if (coreRadix !== 10 && coreSign) {
       value = -value;
+      negative = true;
     }
 
     let isCapital = false;
