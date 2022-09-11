@@ -13,6 +13,11 @@
 - `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
 - Yanking block-wise now pads shorter lines with spaces ([@burnsdy](https://github.com/burnsdy)).
 - `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
+- `:tabn[ext] {N}` now goes to the Nth tab, not N tabs forward [@elazarcoh](https://github.com/elazarcoh).
+
+### Fixed
+
+- Fixed `<BS>` and `<Del>` when cursor is at start of command line ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
 
