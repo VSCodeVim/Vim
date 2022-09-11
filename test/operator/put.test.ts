@@ -60,17 +60,11 @@ suite('put operator', () => {
         end: ['ABCD', 'ab|[1][1]cd', 'wx[2][2]yz', 'WXYZ'],
       });
 
-      // TODO: write ragged blockwise tests for other modes & put variants
       newTest({
-        title: 'Yank block-wise (ragged), <count>p',
-        start: ['|longlonglong', 'shortshort', 'verylongverylong', 'veryshort'],
-        keysPressed: '<C-v>G$' + 'd' + '2p',
-        end: [
-          '|longlonglong    longlonglong    ',
-          'shortshort      shortshort      ',
-          'verylongverylongverylongverylong',
-          'veryshort       veryshort       ',
-        ],
+        title: 'Yank ragged block-wise selection, <count>p',
+        start: ['|ABCDEFG', 'abcd', 'wxyz', 'WXYZ'],
+        keysPressed: '3l' + '<C-v>j$' + 'y' + 'jh' + '2p',
+        end: ['ABCDEFG', 'abc|DEFGDEFGd', 'wxyd   d   z', 'WXYZ'],
       });
 
       newTest({
@@ -202,6 +196,13 @@ suite('put operator', () => {
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl' + '2P',
         end: ['ABCD', 'a|[1][1]bcd', 'w[2][2]xyz', 'WXYZ'],
+      });
+
+      newTest({
+        title: 'Yank ragged block-wise selection, <count>P',
+        start: ['|ABCDEFG', 'abcd', 'wxyz', 'WXYZ'],
+        keysPressed: '3l' + '<C-v>j$' + 'y' + 'jh' + '2P',
+        end: ['ABCDEFG', 'ab|DEFGDEFGcd', 'wxd   d   yz', 'WXYZ'],
       });
 
       newTest({

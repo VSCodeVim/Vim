@@ -6,11 +6,12 @@
 
 - Support for `zf`/`zd` commands, which fold/unfold arbitrary ranges ([@elazarcoh](https://github.com/elazarcoh)).
 - Support for surrounding with function call ([@riccardofano](https://github.com/riccardofano)).
+- Support for `:sor[t] n`, which sorts lines numerically, rather than lexicographically ([@jan25](https://github.com/jan25)).
 
 ### Changed
 
 - `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
-- Yanking block-wise now pads shorter lines with spaces ([@J-Fields](https://github.com/J-Fields)).
+- Yanking block-wise now pads shorter lines with spaces ([@burnsdy](https://github.com/burnsdy)).
 - `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
