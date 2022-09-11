@@ -139,9 +139,14 @@ abstract class BasePutCommand extends BaseCommand {
     } else if (register.registerMode === RegisterMode.LineWise || mode === Mode.VisualLine) {
       return Array(count).fill(register.text).join('\n');
     } else if (register.registerMode === RegisterMode.BlockWise) {
-      return register.text
-        .split('\n')
-        .map((line) => line.repeat(count))
+      const lines = register.text.split('\n');
+      const longestLength = Math.max(...lines.map((line) => line.length));
+      return lines
+        .map((line) => {
+          const space = longestLength - line.length;
+          const lineWithSpace = line + ' '.repeat(space);
+          return lineWithSpace.repeat(count - 1) + line;
+        })
         .join('\n');
     } else {
       throw new Error(`Unexpected RegisterMode ${register.registerMode}`);
@@ -180,6 +185,7 @@ abstract class BasePutCommand extends BaseCommand {
       const transformations: Transformation[] = [];
       const lines = text.split('\n');
       const lineCount = Math.max(lines.length, replaceRange.end.line - replaceRange.start.line + 1);
+      const longestLength = Math.max(...lines.map((line) => line.length));
 
       // Only relevant for Visual mode
       // If we replace 2 newlines, subsequent transformations need to take that into account (otherwise we get overlaps)
@@ -219,14 +225,20 @@ abstract class BasePutCommand extends BaseCommand {
             text: '\n' + ' '.repeat(replaceRange.start.character) + lineText,
           });
         } else {
-          const spaces = Math.max(
-            replaceRange.start.character - document.lineAt(lineNumber).text.length,
-            0
-          );
+          const lineLength = document.lineAt(lineNumber).text.length;
+          const leftPadding = Math.max(replaceRange.start.character - lineLength, 0);
+          let rightPadding = 0;
+          if (
+            mode !== Mode.VisualBlock &&
+            ((lineNumber <= replaceRange.end.line && replaceRange.end.character < lineLength) ||
+              (lineNumber > replaceRange.end.line && replaceRange.start.character < lineLength))
+          ) {
+            rightPadding = longestLength - lineText.length;
+          }
           transformations.push({
             type: 'replaceText',
             range,
-            text: ' '.repeat(spaces) + lineText,
+            text: ' '.repeat(leftPadding) + lineText + ' '.repeat(rightPadding),
           });
         }
       }
