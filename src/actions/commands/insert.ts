@@ -239,7 +239,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
     let text = char;
 
-    if (char.length > 0) {
+    if (char.length === 1) {
       const prevHighSurrogate =
         vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : null;
 
