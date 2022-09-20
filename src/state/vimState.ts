@@ -273,6 +273,11 @@ export class VimState implements vscode.Disposable {
             commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
             firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
           }
+        : mode === Mode.Insert
+        ? {
+            mode,
+            highSurrogate: null,
+          }
         : { mode }
     );
   }
