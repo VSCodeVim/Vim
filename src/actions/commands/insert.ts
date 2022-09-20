@@ -239,26 +239,28 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
     let text = char;
 
-    const prevHighSurrogate =
-      vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : null;
+    if (char.length > 0) {
+      const prevHighSurrogate =
+        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : null;
 
-    if (isHighSurrogate(char.charCodeAt(0))) {
-      vimState.setModeData({
-        mode: Mode.Insert,
-        highSurrogate: char,
-      });
+      if (isHighSurrogate(char.charCodeAt(0))) {
+        vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: char,
+        });
 
-      if (prevHighSurrogate === null) return;
-      text = prevHighSurrogate;
-    } else {
-      if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== null) {
-        text = prevHighSurrogate + char;
+        if (prevHighSurrogate === null) return;
+        text = prevHighSurrogate;
+      } else {
+        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== null) {
+          text = prevHighSurrogate + char;
+        }
+
+        vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: null,
+        });
       }
-
-      vimState.setModeData({
-        mode: Mode.Insert,
-        highSurrogate: null,
-      });
     }
 
     vimState.recordedState.transformer.addTransformation({
