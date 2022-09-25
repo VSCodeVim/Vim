@@ -241,7 +241,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
     if (char.length === 1) {
       const prevHighSurrogate =
-        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : null;
+        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
 
       if (isHighSurrogate(char.charCodeAt(0))) {
         vimState.setModeData({
@@ -249,16 +249,16 @@ export class CommandInsertInInsertMode extends BaseCommand {
           highSurrogate: char,
         });
 
-        if (prevHighSurrogate === null) return;
+        if (prevHighSurrogate === undefined) return;
         text = prevHighSurrogate;
       } else {
-        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== null) {
+        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== undefined) {
           text = prevHighSurrogate + char;
         }
 
         vimState.setModeData({
           mode: Mode.Insert,
-          highSurrogate: null,
+          highSurrogate: undefined,
         });
       }
     }

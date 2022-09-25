@@ -27,7 +27,7 @@ export type ModeData =
   | {
       mode: Mode.Insert;
       /** The high surrogate of an incomplete pair */
-      highSurrogate: string | null;
+      highSurrogate: string | undefined;
     }
   | {
       mode: SimpleMode;
