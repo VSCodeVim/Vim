@@ -111,7 +111,10 @@ export abstract class CommandLine {
    */
   public async backspace(vimState: VimState): Promise<void> {
     if (this.cursorIndex === 0) {
-      return this.escape(vimState);
+      if (this.text.length === 0) {
+        await this.escape(vimState);
+      }
+      return;
     }
 
     this.text = this.text.slice(0, this.cursorIndex - 1) + this.text.slice(this.cursorIndex);
@@ -122,13 +125,11 @@ export abstract class CommandLine {
    * Called when `<Del>` is pressed
    */
   public async delete(vimState: VimState): Promise<void> {
-    if (this.cursorIndex === 0) {
-      return this.escape(vimState);
-    } else if (this.cursorIndex === this.text.length) {
+    if (this.cursorIndex === this.text.length) {
       return this.backspace(vimState);
-    } else {
-      this.text = this.text.slice(0, this.cursorIndex) + this.text.slice(this.cursorIndex + 1);
     }
+
+    this.text = this.text.slice(0, this.cursorIndex) + this.text.slice(this.cursorIndex + 1);
   }
 
   /**

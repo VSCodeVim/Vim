@@ -2,9 +2,31 @@
 
 ## Unreleased
 
+### Added
+
+- Support for `zf`/`zd` commands, which fold/unfold arbitrary ranges ([@elazarcoh](https://github.com/elazarcoh)).
+- Support for surrounding with function call ([@riccardofano](https://github.com/riccardofano)).
+- Support for `:sor[t] n`, which sorts lines numerically, rather than lexicographically ([@jan25](https://github.com/jan25)).
+
+### Changed
+
+- `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
+- Yanking block-wise now pads shorter lines with spaces ([@burnsdy](https://github.com/burnsdy)).
+- `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
+- `:tabn[ext] {N}` now goes to the Nth tab, not N tabs forward [@elazarcoh](https://github.com/elazarcoh).
+
 ### Fixed
 
-- Search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
+- Fixed insertion of surrogate pairs, like emoji ([@garzj](https://github.com/garzj)).
+- Fixed `<BS>` and `<Del>` when cursor is at start of command line ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
+
+### Fixed
+
+- Fix the jump list ([@pitkali](https://github.com/pitkali)).
+- Make increment/decrement (`<C-a>` and `<C-x>`) preserve case of hex numbers ([@smallkirby](https://github.com/smallkirby)).
+- Fix search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.1](https://github.com/vscodevim/vim/tree/v1.23.1) (2022-06-28)
 

@@ -638,7 +638,7 @@ export class ROT13Operator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    let selections: vscode.Selection[];
+    let selections: readonly vscode.Selection[];
     if (isVisualMode(vimState.currentMode)) {
       selections = vimState.editor.selections;
     } else if (vimState.currentRegisterMode === RegisterMode.LineWise) {
