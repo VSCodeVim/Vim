@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [v1.24.0](https://github.com/vscodevim/vim/tree/v1.24.0) (2022-09-26)
 
 ### Added
 
@@ -17,7 +17,7 @@
 
 ### Fixed
 
-- Fixed insertion of surrogate pairs, like emoji ([@garzj](https://github.com/garzj)).
+- Fixed insertion of surrogate pairs, like emoji 🙂 ([@garzj](https://github.com/garzj)).
 - Fixed `<BS>` and `<Del>` when cursor is at start of command line ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
