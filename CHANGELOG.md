@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [v1.24.1](https://github.com/vscodevim/vim/tree/v1.24.1) (2022-09-26)
 
 ### Fixed
 
