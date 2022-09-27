@@ -1,17 +1,30 @@
 # Change Log
 
-## Unreleased
+## [v1.24.1](https://github.com/vscodevim/vim/tree/v1.24.1) (2022-09-26)
+
+### Fixed
+
+- Fixed `gt` and `gT` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.24.0](https://github.com/vscodevim/vim/tree/v1.24.0) (2022-09-26)
 
 ### Added
 
 - Support for `zf`/`zd` commands, which fold/unfold arbitrary ranges ([@elazarcoh](https://github.com/elazarcoh)).
 - Support for surrounding with function call ([@riccardofano](https://github.com/riccardofano)).
+- Support for `:sor[t] n`, which sorts lines numerically, rather than lexicographically ([@jan25](https://github.com/jan25)).
 
 ### Changed
 
 - `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
-- Yanking block-wise now pads shorter lines with spaces ([@J-Fields](https://github.com/J-Fields)).
+- Yanking block-wise now pads shorter lines with spaces ([@burnsdy](https://github.com/burnsdy)).
 - `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
+- `:tabn[ext] {N}` now goes to the Nth tab, not N tabs forward [@elazarcoh](https://github.com/elazarcoh).
+
+### Fixed
+
+- Fixed insertion of surrogate pairs, like emoji 🙂 ([@garzj](https://github.com/garzj)).
+- Fixed `<BS>` and `<Del>` when cursor is at start of command line ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
 

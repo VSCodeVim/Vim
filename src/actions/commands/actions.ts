@@ -1311,7 +1311,6 @@ class CommandTabNext extends BaseCommand {
       new TabCommand({
         type: TabCommandType.Next,
         bang: false,
-        count: 1,
       }).execute(vimState);
     }
   }
@@ -1327,7 +1326,6 @@ class CommandTabPrevious extends BaseCommand {
     new TabCommand({
       type: TabCommandType.Previous,
       bang: false,
-      count: 1,
     }).execute(vimState);
   }
 }
