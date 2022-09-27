@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Fixed `gt` and `gT` ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.24.0](https://github.com/vscodevim/vim/tree/v1.24.0) (2022-09-26)
 
 ### Added
