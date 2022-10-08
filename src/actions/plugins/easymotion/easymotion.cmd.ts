@@ -77,12 +77,6 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       // Search all occurences of the character pressed
       const matches = this.getMatches(position, vimState);
 
-      // If previous mode was visual, restore visual selection
-      if (isVisualMode(vimState.easyMotion.previousMode)) {
-        vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
-        vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
-      }
-
       // Stop if there are no matches
       if (matches.length > 0) {
         vimState.easyMotion = new EasyMotion();
@@ -362,12 +356,6 @@ class MoveEasyMotion extends BaseCommand {
 
       // Find markers starting with "nail"
       const markers = vimState.easyMotion.findMarkers(nail, true);
-
-      // If previous mode was visual, restore visual selection
-      if (isVisualMode(vimState.easyMotion.previousMode)) {
-        vimState.cursorStartPosition = vimState.lastVisualSelection!.start;
-        vimState.cursorStopPosition = vimState.lastVisualSelection!.end;
-      }
 
       if (markers.length === 1) {
         // Only one found, navigate to it

@@ -20,7 +20,9 @@ function firstNonBlankChar(text: string): number {
 
 abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  override canBeRepeatedWithDot = true;
+  override createsUndoPoint = true;
+
+  protected overwritesRegisterWithSelection = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
@@ -67,13 +69,11 @@ abstract class BasePutCommand extends BaseCommand {
       count,
       text
     );
-    for (let i = 0; i < vimState.editor.selections.length; i++) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'moveCursor',
-        diff: PositionDiff.exactPosition(newCursorPosition),
-        cursorIndex: i,
-      });
-    }
+
+    vimState.recordedState.transformer.moveCursor(
+      PositionDiff.exactPosition(newCursorPosition),
+      this.multicursorIndex ?? 0
+    );
 
     if (registerMode === RegisterMode.LineWise) {
       text = this.adjustLinewiseRegisterText(mode, text);
@@ -89,7 +89,8 @@ abstract class BasePutCommand extends BaseCommand {
       vimState.recordedState.transformer.addTransformation(transformation);
     }
 
-    if (isVisualMode(mode)) {
+    // We do not run this in multi-cursor mode as it will overwrite the register for upcoming put iterations
+    if (isVisualMode(mode) && !vimState.isMultiCursor) {
       // After using "p" or "P" in Visual mode the text that was put will be selected (from Vim's ":help gv").
       vimState.lastVisualSelection = {
         mode,
@@ -97,8 +98,15 @@ abstract class BasePutCommand extends BaseCommand {
         end: replaceRange.start.advancePositionByText(text),
       };
 
-      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      Register.put(vimState, vimState.document.getText(replaceRange), this.multicursorIndex, true);
+      if (this.overwritesRegisterWithSelection) {
+        vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+        Register.put(
+          vimState,
+          vimState.document.getText(replaceRange),
+          this.multicursorIndex,
+          true
+        );
+      }
     }
 
     // Report lines changed
@@ -108,7 +116,12 @@ abstract class BasePutCommand extends BaseCommand {
     }
     reportLinesChanged(numNewlinesAfterPut, vimState);
 
-    await vimState.setCurrentMode(Mode.Normal);
+    const isLastCursor =
+      !vimState.isMultiCursor || vimState.cursors.length - 1 === this.multicursorIndex;
+    // Place the cursor back into normal mode after all puts are completed
+    if (isLastCursor) {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 
   private getRegisterText(mode: Mode, register: IRegisterContent, count: number): string {
@@ -126,9 +139,14 @@ abstract class BasePutCommand extends BaseCommand {
     } else if (register.registerMode === RegisterMode.LineWise || mode === Mode.VisualLine) {
       return Array(count).fill(register.text).join('\n');
     } else if (register.registerMode === RegisterMode.BlockWise) {
-      return register.text
-        .split('\n')
-        .map((line) => line.repeat(count))
+      const lines = register.text.split('\n');
+      const longestLength = Math.max(...lines.map((line) => line.length));
+      return lines
+        .map((line) => {
+          const space = longestLength - line.length;
+          const lineWithSpace = line + ' '.repeat(space);
+          return lineWithSpace.repeat(count - 1) + line;
+        })
         .join('\n');
     } else {
       throw new Error(`Unexpected RegisterMode ${register.registerMode}`);
@@ -139,16 +157,18 @@ abstract class BasePutCommand extends BaseCommand {
     const lines = text.split('\n');
 
     // Adjust indent to current line
-    const indentationWidth = TextEditor.getIndentationLevel(lineToMatch);
-    const firstLineIdentationWidth = TextEditor.getIndentationLevel(lines[0]);
+    const tabSize = configuration.tabstop; // TODO: Use `editor.options.tabSize`, I think
+    const indentationWidth = TextEditor.getIndentationLevel(lineToMatch, tabSize);
+    const firstLineIdentationWidth = TextEditor.getIndentationLevel(lines[0], tabSize);
 
     return lines
       .map((line) => {
-        const currentIdentationWidth = TextEditor.getIndentationLevel(line);
+        const currentIdentationWidth = TextEditor.getIndentationLevel(line, tabSize);
         const newIndentationWidth =
           currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
 
-        return TextEditor.setIndentationLevel(line, newIndentationWidth);
+        // TODO: Use `editor.options.insertSpaces`, I think
+        return TextEditor.setIndentationLevel(line, newIndentationWidth, configuration.expandtab);
       })
       .join('\n');
   }
@@ -165,6 +185,7 @@ abstract class BasePutCommand extends BaseCommand {
       const transformations: Transformation[] = [];
       const lines = text.split('\n');
       const lineCount = Math.max(lines.length, replaceRange.end.line - replaceRange.start.line + 1);
+      const longestLength = Math.max(...lines.map((line) => line.length));
 
       // Only relevant for Visual mode
       // If we replace 2 newlines, subsequent transformations need to take that into account (otherwise we get overlaps)
@@ -204,14 +225,20 @@ abstract class BasePutCommand extends BaseCommand {
             text: '\n' + ' '.repeat(replaceRange.start.character) + lineText,
           });
         } else {
-          const spaces = Math.max(
-            replaceRange.start.character - document.lineAt(lineNumber).text.length,
-            0
-          );
+          const lineLength = document.lineAt(lineNumber).text.length;
+          const leftPadding = Math.max(replaceRange.start.character - lineLength, 0);
+          let rightPadding = 0;
+          if (
+            mode !== Mode.VisualBlock &&
+            ((lineNumber <= replaceRange.end.line && replaceRange.end.character < lineLength) ||
+              (lineNumber > replaceRange.end.line && replaceRange.start.character < lineLength))
+          ) {
+            rightPadding = longestLength - lineText.length;
+          }
           transformations.push({
             type: 'replaceText',
             range,
-            text: ' '.repeat(spaces) + lineText,
+            text: ' '.repeat(leftPadding) + lineText + ' '.repeat(rightPadding),
           });
         }
       }
@@ -385,6 +412,9 @@ class PutCommand extends BasePutCommand {
 class PutBeforeCommand extends PutCommand {
   override keys: string[] | string[][] = ['P'];
 
+  // Since Vim 9.0, Visual `P` does not overwrite the unnamed register with selection's contents
+  override overwritesRegisterWithSelection = false;
+
   protected override putBefore(): boolean {
     return true;
   }
@@ -506,6 +536,7 @@ class GPutCommand extends PutCommand {
 @PlaceCursorAfterText
 class GPutBeforeCommand extends PutBeforeCommand {
   override keys = ['g', 'P'];
+  override overwritesRegisterWithSelection = true;
 }
 
 function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {

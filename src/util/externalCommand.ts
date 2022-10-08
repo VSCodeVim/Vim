@@ -1,5 +1,5 @@
 import { VimError, ErrorCode } from '../error';
-import { exec } from '../util/child_process';
+import { configuration } from '../configuration/configuration';
 
 class ExternalCommand {
   private previousExternalCommand: string | undefined;
@@ -42,9 +42,14 @@ class ExternalCommand {
    */
   private async execute(command: string, stdin: string): Promise<string> {
     const output: string[] = [];
+    const options = {
+      shell: configuration.shell || undefined,
+    };
 
     try {
-      const promise = exec(command);
+      const exec = (await import('../util/child_process')).exec;
+
+      const promise = exec(command, options);
       const process = promise.child;
 
       if (process.stdin !== null) {
@@ -80,6 +85,8 @@ class ExternalCommand {
   public async run(command: string, stdin: string = ''): Promise<string> {
     command = this.expandCommand(command);
     this.previousExternalCommand = command;
+    // combines stdout and stderr (compatible for all platforms)
+    command += ' 2>&1';
 
     let output = await this.execute(command, stdin);
     // vim behavior, trim newlines

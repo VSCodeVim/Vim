@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout VSCodeVim
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v2-beta
@@ -34,7 +34,7 @@ jobs:
       - name: Build extension package
         id: build_vsix
         run: |
-          yarn run vsce package;
+          yarn package;
           echo ::set-output name=vsix_path::$(ls *.vsix);
 
       - name: Create release on GitHub
@@ -62,3 +62,9 @@ jobs:
         run: yarn run vsce publish --yarn
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v1
+        id: publishToOpenVSX
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}

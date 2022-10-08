@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
 import { IEasyMotion } from '../actions/plugins/easymotion/types';
-import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
@@ -14,7 +13,10 @@ import { ReplaceState } from './../state/replaceState';
 import { SurroundState } from '../actions/plugins/surround';
 import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
 import { Position } from 'vscode';
-import { CommandLine } from '../cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
+import { ModeData } from '../mode/modeData';
+import { SearchDirection } from '../vimscript/pattern';
+import { globalState } from './globalState';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -61,7 +63,7 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public readonly identity: EditorIdentity;
+  public readonly documentUri: vscode.Uri;
 
   public editor: vscode.TextEditor;
 
@@ -96,6 +98,12 @@ export class VimState implements vscode.Disposable {
   // TODO: move into ModeHandler
   public lastMovementFailed: boolean = false;
 
+  /**
+   * Keep track of whether the last command that ran is able to be repeated
+   * with the dot command.
+   */
+  public lastCommandDotRepeatable: boolean = true;
+
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
 
@@ -103,11 +111,6 @@ export class VimState implements vscode.Disposable {
    * The last visual selection before running the dot command
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
-
-  /**
-   * The first line number that was visible when SearchInProgressMode began (undefined if not searching)
-   */
-  public firstVisibleLineBeforeSearch: number | undefined = undefined;
 
   public surround: SurroundState | undefined = undefined;
 
@@ -186,8 +189,6 @@ export class VimState implements vscode.Disposable {
     this._cursorsInitialState = [...cursors];
   }
 
-  public replaceState: ReplaceState | undefined = undefined;
-
   /**
    * Stores last visual mode as well as what was selected for `gv`
    */
@@ -200,37 +201,12 @@ export class VimState implements vscode.Disposable {
     | undefined = undefined;
 
   /**
-   * Was the previous mouse click past EOL
+   * The current mode and its associated state.
    */
-  public lastClickWasPastEol: boolean = false;
-
-  /**
-   * Used internally to ignore selection changes that were performed by us.
-   * 'ignoreIntermediateSelections': set to true when running an action, during this time
-   * all selections change events will be ignored.
-   * 'ourSelections': keeps track of our selections that will trigger a selection change event
-   * so that we can ignore them.
-   */
-  public selectionsChanged = {
-    /**
-     * Set to true when running an action, during this time
-     * all selections change events will be ignored.
-     */
-    ignoreIntermediateSelections: false,
-    /**
-     * keeps track of our selections that will trigger a selection change event
-     * so that we can ignore them.
-     */
-    ourSelections: Array<string>(),
-  };
-
-  /**
-   * The mode Vim will be in once this action finishes.
-   */
-  private _currentMode: Mode = Mode.Normal;
+  public modeData: ModeData = { mode: Mode.Normal };
 
   public get currentMode(): Mode {
-    return this._currentMode;
+    return this.modeData.mode;
   }
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
@@ -240,9 +216,34 @@ export class VimState implements vscode.Disposable {
    * use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.getOperatorState(this._currentMode) === 'pending'
+    return this.recordedState.getOperatorState(this.currentMode) === 'pending'
       ? Mode.OperatorPendingMode
-      : this._currentMode;
+      : this.currentMode;
+  }
+
+  public async setModeData(modeData: ModeData): Promise<void> {
+    if (modeData === undefined) {
+      // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
+      throw new Error('Tried setting modeData to undefined');
+    }
+
+    await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
+    if (this.returnToInsertAfterCommand && modeData.mode === Mode.Insert) {
+      this.returnToInsertAfterCommand = false;
+    }
+
+    if (modeData.mode === Mode.SearchInProgressMode) {
+      globalState.searchState = modeData.commandLine.getSearchState();
+    }
+
+    if (configuration.smartRelativeLine) {
+      this.editor.options.lineNumbers =
+        modeData.mode === Mode.Insert
+          ? vscode.TextEditorLineNumbersStyle.On
+          : vscode.TextEditorLineNumbersStyle.Relative;
+    }
+
+    this.modeData = modeData;
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
@@ -251,24 +252,34 @@ export class VimState implements vscode.Disposable {
       throw new Error('Tried setting currentMode to undefined');
     }
 
-    await this.inputMethodSwitcher?.switchInputMethod(this._currentMode, mode);
-    if (this.returnToInsertAfterCommand && mode === Mode.Insert) {
-      this.returnToInsertAfterCommand = false;
-    }
-    this._currentMode = mode;
-
-    if (configuration.smartRelativeLine) {
-      this.editor.options.lineNumbers =
-        mode === Mode.Insert
-          ? vscode.TextEditorLineNumbersStyle.On
-          : vscode.TextEditorLineNumbersStyle.Relative;
-    }
-
-    if (mode === Mode.SearchInProgressMode) {
-      this.firstVisibleLineBeforeSearch = this.editor.visibleRanges[0].start.line;
-    } else {
-      this.firstVisibleLineBeforeSearch = undefined;
-    }
+    await this.setModeData(
+      mode === Mode.Replace
+        ? {
+            mode,
+            replaceState: new ReplaceState(
+              this.document,
+              this.cursors.map((cursor) => cursor.stop),
+              this.recordedState.count
+            ),
+          }
+        : mode === Mode.CommandlineInProgress
+        ? {
+            mode,
+            commandLine: new ExCommandLine('', this.modeData.mode),
+          }
+        : mode === Mode.SearchInProgressMode
+        ? {
+            mode,
+            commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
+            firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
+          }
+        : mode === Mode.Insert
+        ? {
+            mode,
+            highSurrogate: undefined,
+          }
+        : { mode }
+    );
   }
 
   /**
@@ -294,8 +305,6 @@ export class VimState implements vscode.Disposable {
   }
   private _currentRegisterMode: RegisterMode | undefined;
 
-  public commandLine: CommandLine | undefined;
-
   public recordedState = new RecordedState();
 
   /** The macro currently being recorded, if one exists. */
@@ -307,7 +316,7 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
-    this.identity = EditorIdentity.fromEditor(editor);
+    this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
   }

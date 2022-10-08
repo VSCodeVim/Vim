@@ -1,6 +1,7 @@
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
+import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
@@ -21,8 +22,10 @@ import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
 import { RegisterCommand } from '../cmd_line/commands/register';
+import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
+import { ShiftCommand } from '../cmd_line/commands/shift';
 import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
 import { SubstituteCommand } from '../cmd_line/commands/substitute';
@@ -55,12 +58,12 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['', ''], succeed(new GotoLineCommand())],
   [['!', ''], BangCommand.argParser],
   [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
-  // TODO: Ignore #! (shebang)
+  [['#!', ''], all.map((_) => new NoOpCommand())],
   [['&', ''], undefined],
   [['*', ''], undefined],
-  [['<', ''], undefined],
+  [['<', ''], ShiftCommand.argParser('<')],
   [['=', ''], PrintCommand.argParser({ printNumbers: true, printText: false })],
-  [['>', ''], undefined],
+  [['>', ''], ShiftCommand.argParser('>')],
   [['@', ''], undefined],
   [['@@', ''], undefined],
   [['N', 'ext'], undefined],
@@ -91,17 +94,17 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['bd', 'elete'], BufferDeleteCommand.argParser],
   [['be', 'have'], undefined],
   [['bel', 'owright'], undefined],
-  [['bf', 'irst'], undefined],
-  [['bl', 'ast'], undefined],
+  [['bf', 'irst'], TabCommand.argParsers.bfirst],
+  [['bl', 'ast'], TabCommand.argParsers.blast],
   [['bm', 'odified'], undefined],
   [['bn', 'ext'], TabCommand.argParsers.bnext],
   [['bo', 'tright'], undefined],
   [['bp', 'revious'], TabCommand.argParsers.bprev],
-  [['br', 'ewind'], undefined],
+  [['br', 'ewind'], TabCommand.argParsers.bfirst],
   [['brea', 'k'], undefined],
-  [['breaka', 'dd'], undefined],
-  [['breakd', 'el'], undefined],
-  [['breakl', 'ist'], undefined],
+  [['breaka', 'dd'], Breakpoints.argParsers.add],
+  [['breakd', 'el'], Breakpoints.argParsers.del],
+  [['breakl', 'ist'], Breakpoints.argParsers.list],
   [['bro', 'wse'], undefined],
   [['bufdo', ''], undefined],
   [['buffers', ''], undefined],
@@ -428,7 +431,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['redrawt', 'abline'], undefined],
   [['reg', 'isters'], RegisterCommand.argParser],
   [['res', 'ize'], undefined],
-  [['ret', 'ab'], undefined],
+  [['ret', 'ab'], RetabCommand.argParser],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
   [['ri', 'ght'], RightCommand.argParser],
@@ -522,7 +525,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['tabnew', ''], TabCommand.argParsers.tabnew],
   [['tabo', 'nly'], TabCommand.argParsers.tabonly],
   [['tabp', 'revious'], TabCommand.argParsers.bprev],
-  [['tabr', 'ewind'], undefined],
+  [['tabr', 'ewind'], TabCommand.argParsers.bfirst],
   [['tabs', ''], undefined],
   [['tags', ''], undefined],
   [['tc', 'd'], undefined],
@@ -625,6 +628,12 @@ class UnimplementedCommand extends ExCommand {
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     await this.execute(vimState);
+  }
+}
+
+export class NoOpCommand extends ExCommand {
+  async execute(vimState: VimState): Promise<void> {
+    // nothing
   }
 }
 

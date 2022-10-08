@@ -6,6 +6,7 @@ import {
   IHighlightedYankConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
+  ITargetsConfiguration,
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
@@ -33,18 +34,24 @@ export class Configuration implements IConfiguration {
   easymotion = false;
   easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
   easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
   easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
   easymotionIncSearchForegroundColor = '#7fbf00';
   easymotionDimColor = '#777777';
-  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
-  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
   easymotionMarkerFontWeight = 'bold';
-  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
+  targets: ITargetsConfiguration = {
+    enable: false,
+    bracketObjects: {
+      enable: true,
+    },
+    smartQuotes: {
+      enable: false,
+      breakThroughLines: true,
+      aIncludesSurroundingSpaces: true,
+    },
+  };
   autoSwitchInputMethod = {
     enable: false,
     defaultIM: '',
@@ -58,6 +65,7 @@ export class Configuration implements IConfiguration {
   leader = '//';
   history = 50;
   incsearch = true;
+  inccommand = '' as const;
   startInInsertMode = false;
   statusBarColorControl = false;
   statusBarColors: IModeSpecificStrings<string | string[]> = {
@@ -75,6 +83,10 @@ export class Configuration implements IConfiguration {
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';
+  searchMatchColor = 'rgba(255, 150, 150, 0.3)';
+  searchMatchTextColor = '';
+  substitutionColor = 'rgba(100, 255, 150, 0.3)';
+  substitutionTextColor = '';
   highlightedyank: IHighlightedYankConfiguration = {
     enable: false,
     color: 'rgba(250, 240, 170, 0.5)',
@@ -134,4 +146,5 @@ export class Configuration implements IConfiguration {
   scroll = 20;
   startofline = true;
   showMarksInGutter = true;
+  shell = '';
 }

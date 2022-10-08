@@ -5,6 +5,16 @@ import { configuration } from '../configuration/configuration';
 import { Position } from 'vscode';
 
 /**
+ * Escapes substrings that would be interpreted as css icon markdown in certain
+ * ui labels, including the status bar.
+ */
+export function escapeCSSIcons(text: string): string {
+  // regex from iconLabel implementation at
+  // https://github.com/microsoft/vscode/blob/9b75bd1f813e683bf46897d85387089ec083fb24/src/vs/base/browser/ui/iconLabel/iconLabels.ts#L9
+  return text.replace(/\\?\$\([A-Za-z0-9\-]+(?:~[A-Za-z]+)?\)/g, '\\$&');
+}
+
+/**
  * Shows the number of lines you just changed (with `dG`, for instance), if it
  * crosses a configured threshold.
  * @param numLinesChanged The number of lines changed

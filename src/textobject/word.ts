@@ -190,7 +190,7 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   // prettier-ignore
   const firstSegment =
       '(' +                                             // OPEN: group for matching camel case words
-      `[^\\s${escaped}]` +                              //   words can start with any word character
+      `[^\\s${escaped}_]` +                             //   words can start with any non-keyword non-underscore character
       '(?:' +                                           //   OPEN: group for characters after initial char
       `(?:${supportsLookbehind ? '(?<=[A-Z_])' : ''}` + //     If first char was a capital
       `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +             //       the word can continue with all caps
