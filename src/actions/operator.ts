@@ -12,6 +12,7 @@ import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtil
 import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
 import { isHighSurrogate, isLowSurrogate } from '../util/util';
+import { Cursor } from './../common/motion/cursor';
 
 export abstract class BaseOperator extends BaseAction {
   override actionType = 'operator' as const;
@@ -453,8 +454,8 @@ class IndentOperator extends BaseOperator {
  * walked into my life.
  */
 @RegisterAction
-class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+class IndentOperatorVisualAndVisualLine extends BaseOperator {
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
@@ -482,6 +483,47 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 }
 
 @RegisterAction
+class IndentOperatorVisualBlock extends BaseOperator {
+  modes = [Mode.VisualBlock];
+  keys = ['>'];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    /**
+     * Repeating this command with dot should apply the indent to the left edge of the
+     * block formed by extending the cursor start position downward by the number of lines
+     * in the previous visual block selection.
+     */
+    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+      const shiftSelectionByNum = Math.abs(
+        vimState.dotCommandPreviousVisualSelection.end.line -
+          vimState.dotCommandPreviousVisualSelection.start.line
+      );
+
+      start = vimState.cursorStartPosition;
+      end = vimState.cursorStartPosition.getDown(shiftSelectionByNum);
+
+      vimState.editor.selection = new vscode.Selection(start, end);
+    }
+
+    for (let lineIdx = 0; lineIdx < end.line - start.line + 1; lineIdx++) {
+      const tabSize = Number(vimState.editor.options.tabSize);
+      const currentLineEnd = vimState.document.lineAt(start.line + lineIdx).range.end.character;
+
+      if (currentLineEnd > start.character) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          text: ' '.repeat(tabSize).repeat(vimState.recordedState.count || 1),
+          position: start.getDown(lineIdx),
+          manuallySetCursorPositions: true,
+        });
+      }
+    }
+
+    await vimState.setCurrentMode(Mode.Normal);
+    vimState.cursors = [new Cursor(start, start)];
+  }
+}
+@RegisterAction
 class OutdentOperator extends BaseOperator {
   modes = [Mode.Normal];
   keys = ['<'];
@@ -499,10 +541,10 @@ class OutdentOperator extends BaseOperator {
 }
 
 /**
- * See comment for IndentOperatorInVisualModesIsAWeirdSpecialCase
+ * See comment for IndentOperatorVisualAndVisualLine
  */
 @RegisterAction
-class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
+class OutdentOperatorVisualModes extends BaseOperator {
   modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<'];
 
