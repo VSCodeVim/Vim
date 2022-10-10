@@ -58,6 +58,9 @@ export class Configuration implements IConfiguration {
     switchIMCmd: '',
     obtainIMCmd: '',
   };
+  imTurnOffConversionMode = {
+    enable: false,
+  };
   timeout = 1000;
   maxmapdepth = 1000;
   showcmd = true;

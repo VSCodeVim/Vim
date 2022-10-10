@@ -652,7 +652,9 @@ By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete th
 
 ### Input Method
 
-Disable input method when exiting Insert Mode.
+#### Input Method Switcher
+
+Change Input Method to the default specified by vim.autoSwitchInputMethod.defaultIM when exiting Insert Mode.
 
 | Setting                                 | Description                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -709,6 +711,18 @@ Any third-party program can be used to switch input methods. The following will 
       ```
 
 The `{im}` argument above is a command-line option that will be passed to `im-select` denoting the input method to switch to. If using an alternative program to switch input methods, you should add a similar option to the configuration. For example, if the program's usage is `my-program -s imKey` to switch input method, the `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
+
+#### Turn off Conversion Mode
+
+Turn off Conversion Mode on Intput Method when exiting Insert Mode.
+At present, this feature supports win32 only, and it requires PowerShell which version should be greater than or equal to 7.2 and **ExecutionPolicy** should be set as **Unristriced**(Sorry for inconvinient).
+This feature is usefull if you have only one Input Method, and the Input Method has Converson Mode such Japanese IM.
+
+![TurnOff](./images/readme/imTurnOffCM/turnOff.png) ![TurnOn](./images/readme/imTurnOffCM/turnOn.png)
+
+| Setting                              | Description                                         |
+| ------------------------------------ | --------------------------------------------------- |
+| `vim.imTurnOffConversionMode.enable` | Boolean denoting whether Conversion Mode is on/off. |
 
 ### ReplaceWithRegister
 

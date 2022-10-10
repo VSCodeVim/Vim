@@ -11,15 +11,20 @@ import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 import { SurroundState } from '../actions/plugins/surround';
-import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
+import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER, SUPPORT_IM_TURNOFF_CM } from 'platform/constants';
 import { Position } from 'vscode';
 import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ModeData } from '../mode/modeData';
 import { SearchDirection } from '../vimscript/pattern';
 import { globalState } from './globalState';
+import { platform } from 'process';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
+}
+
+interface IImTurnOffCM {
+  turnOffConversionMode(prevMode: Mode, newMode: Mode): Promise<void>;
 }
 
 interface IBaseMovement {
@@ -210,6 +215,8 @@ export class VimState implements vscode.Disposable {
   }
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
+
+  private imTurnOffCM?: IImTurnOffCM;
   /**
    * The mode Vim is currently including pseudo-modes like OperatorPendingMode
    * This is to be used only by the Remappers when getting the remappings so don't
@@ -226,6 +233,9 @@ export class VimState implements vscode.Disposable {
       // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
       throw new Error('Tried setting modeData to undefined');
     }
+
+    // imTurnOffCM shoud be at the line before calling inputMethodSwitcher.
+    await this.imTurnOffCM?.turnOffConversionMode(this.currentMode, modeData.mode);
 
     await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
     if (this.returnToInsertAfterCommand && modeData.mode === Mode.Insert) {
@@ -330,6 +340,11 @@ export class VimState implements vscode.Disposable {
     if (SUPPORT_IME_SWITCHER) {
       const ime = await import('../actions/plugins/imswitcher');
       this.inputMethodSwitcher = new ime.InputMethodSwitcher();
+    }
+
+    if (SUPPORT_IM_TURNOFF_CM && platform === 'win32') {
+      const imopt = await import('../actions/plugins/imTurnOffCM');
+      this.imTurnOffCM = new imopt.ImTurnOffCM();
     }
   }
 

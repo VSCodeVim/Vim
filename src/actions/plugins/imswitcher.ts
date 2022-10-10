@@ -1,37 +1,17 @@
 import { Logger } from '../../util/logger';
 import { Mode } from '../../mode/mode';
 import { configuration } from '../../configuration/configuration';
-import { exec } from 'child_process';
-
-/**
- * This function executes a shell command and returns the standard output as a string.
- */
-function executeShell(cmd: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    try {
-      exec(cmd, (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(stdout);
-        }
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
+import { executeShell, InputMethod } from '../../inputmethod/inputmethod';
 
 /**
  * InputMethodSwitcher changes input method when mode changed
  */
-export class InputMethodSwitcher {
+export class InputMethodSwitcher extends InputMethod {
   private static readonly logger = Logger.get('IMSwitcher');
-  private execute: (cmd: string) => Promise<string>;
   private savedIMKey = '';
 
   constructor(execute: (cmd: string) => Promise<string> = executeShell) {
-    this.execute = execute;
+    super(execute);
   }
 
   public async switchInputMethod(prevMode: Mode, newMode: Mode) {
@@ -39,8 +19,8 @@ export class InputMethodSwitcher {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
-    const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
-    const isNewModeInsertLike = this.isInsertLikeMode(newMode);
+    const isPrevModeInsertLike = InputMethod.isInsertLikeMode(prevMode);
+    const isNewModeInsertLike = InputMethod.isInsertLikeMode(newMode);
     if (isPrevModeInsertLike !== isNewModeInsertLike) {
       if (isNewModeInsertLike) {
         await this.resumeIM();
@@ -85,9 +65,5 @@ export class InputMethodSwitcher {
         InputMethodSwitcher.logger.error(`Error switching to IM. err=${e}`);
       }
     }
-  }
-
-  private isInsertLikeMode(mode: Mode): boolean {
-    return [Mode.Insert, Mode.Replace, Mode.SurroundInputMode].includes(mode);
   }
 }
