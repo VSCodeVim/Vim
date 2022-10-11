@@ -1064,6 +1064,17 @@ class GoToDefinition extends BaseCommand {
 }
 
 @RegisterAction
+class GoToReferences extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['g', 'r'];
+  override isJump = true;
+
+  public override async exec(_position: Position, _vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('editor.action.goToReferences');
+  }
+}
+
+@RegisterAction
 class CommandOpenLink extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['g', 'x'];
