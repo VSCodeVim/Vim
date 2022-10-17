@@ -298,12 +298,46 @@ suite('Mode Normal', () => {
     endMode: Mode.Insert,
   });
 
-  newTest({
-    title: "Can handle 's'",
-    start: ['tex|t'],
-    keysPressed: '^sk',
-    end: ['k|ext'],
-    endMode: Mode.Insert,
+  suite('`s` (synonym for `cl`)', () => {
+    newTest({
+      title: '`s` deletes a character and enters Insert mode',
+      start: ['12|345'],
+      keysPressed: 's',
+      end: ['12|45'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes [count] characters',
+      start: ['12|345678'],
+      keysPressed: '5s',
+      end: ['12|8'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` does not go over EOL or delete characters before cursor',
+      start: ['12345|678', 'nextline'],
+      keysPressed: '5s',
+      end: ['12345|', 'nextline'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: 's',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '`[count]s` deletes nothing on an empty line',
+      start: ['123', '|', '456'],
+      keysPressed: '8s',
+      end: ['123', '|', '456'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
@@ -2155,6 +2189,34 @@ suite('Mode Normal', () => {
     start: ['|00xf'],
     keysPressed: '<C-a>',
     end: ['0|1xf'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can preserve uppercase',
+    start: ['|0xDEAD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to lowercase',
+    start: ['|0xDEAd'],
+    keysPressed: '<C-a>',
+    end: ['0xdea|e'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 1',
+    start: ['|0xdeaD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 2',
+    start: ['|0xDeaD1'],
+    keysPressed: '<C-a>',
+    end: ['0xDEAD|2'],
   });
 
   newTest({

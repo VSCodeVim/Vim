@@ -15,6 +15,7 @@ import {
   IDebugConfiguration,
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
+  ITargetsConfiguration,
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
@@ -208,7 +209,7 @@ class Configuration implements IConfiguration {
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
-  handleKeys: IHandleKeys[] = [];
+  handleKeys: IHandleKeys = {};
 
   useSystemClipboard = false;
 
@@ -217,8 +218,6 @@ class Configuration implements IConfiguration {
   useCtrlKeys = false;
 
   overrideCopy = true;
-
-  textwidth = 80;
 
   hlsearch = false;
 
@@ -253,19 +252,28 @@ class Configuration implements IConfiguration {
   easymotion = false;
   easymotionMarkerBackgroundColor = '#0000';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500'; // Deprecated! Use the ones bellow
   easymotionMarkerForegroundColorTwoCharFirst = '#ffb400';
   easymotionMarkerForegroundColorTwoCharSecond = '#b98300';
   easymotionIncSearchForegroundColor = '#7fbf00';
   easymotionDimColor = '#777777';
-  easymotionMarkerWidthPerChar = 8; // Deprecated! No longer needed!
   easymotionDimBackground = true;
-  easymotionMarkerFontFamily = 'Consolas'; // Deprecated! No longer needed!
-  easymotionMarkerFontSize = '14'; // Deprecated! No longer needed!
   easymotionMarkerFontWeight = 'bold';
-  easymotionMarkerMargin = 0; // Deprecated! No longer needed!
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
+
+  targets: ITargetsConfiguration = {
+    enable: false,
+
+    bracketObjects: {
+      enable: true,
+    },
+
+    smartQuotes: {
+      enable: false,
+      breakThroughLines: false,
+      aIncludesSurroundingSpaces: true,
+    },
+  };
 
   autoSwitchInputMethod: IAutoSwitchInputMethod = {
     enable: false,
@@ -461,6 +469,16 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+
+  get textwidth(): number {
+    const textwidth = this.getConfiguration('vim').get('textwidth', 80);
+
+    if (typeof textwidth !== 'number') {
+      return 80;
+    }
+
+    return textwidth;
+  }
 
   private static unproxify(obj: object): object {
     const result = {};

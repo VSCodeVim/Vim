@@ -360,7 +360,7 @@ export class EasyMotion implements IEasyMotion {
           });
         } else {
           const prevMarker = markers[markers.indexOf(marker) - 1];
-          const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
+          const prevKeystroke = prevMarker.name.substring(this.accumulation.length);
           const prevDimPos = prevMarker.position;
           const offsetPrevDimPos = prevDimPos.withColumn(
             prevDimPos.character + prevKeystroke.length
@@ -389,9 +389,9 @@ export class EasyMotion implements IEasyMotion {
     }
 
     // for the last marker dim till document end
-    if (configuration.easymotionDimBackground) {
+    if (configuration.easymotionDimBackground && markers.length > 0) {
       const prevMarker = markers[markers.length - 1];
-      const prevKeystroke = prevMarker.name.substr(this.accumulation.length);
+      const prevKeystroke = prevMarker.name.substring(this.accumulation.length);
       const prevDimPos = dimmingZones[dimmingZones.length - 1].range.end;
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 

@@ -1,5 +1,4 @@
 import { VimError, ErrorCode } from '../error';
-import { exec } from '../util/child_process';
 import { configuration } from '../configuration/configuration';
 
 class ExternalCommand {
@@ -48,6 +47,8 @@ class ExternalCommand {
     };
 
     try {
+      const exec = (await import('../util/child_process')).exec;
+
       const promise = exec(command, options);
       const process = promise.child;
 

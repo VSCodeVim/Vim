@@ -5,3 +5,4 @@ import './plugins/easymotion/registerMoveActions';
 import './plugins/sneak';
 import './plugins/replaceWithRegister';
 import './plugins/surround';
+import './plugins/targets/targets';

@@ -27,40 +27,55 @@
  *          of the number. This is achieved by using `negative` boolean value
  *          in `NumericString`.
  */
+export enum NumericStringRadix {
+  Oct = 8,
+  Dec = 10,
+  Hex = 16,
+}
+
 export class NumericString {
-  radix: number;
+  radix: NumericStringRadix;
   value: number;
   numLength: number;
   prefix: string;
   suffix: string;
   // If a negative sign should be manually added when converting to string.
   negative: boolean;
+  isCapital: boolean;
 
   // Map radix to number prefix
   private static numPrefix = {
-    8: '0',
-    10: '',
-    16: '0x',
+    [NumericStringRadix.Oct]: '0',
+    [NumericStringRadix.Dec]: '',
+    [NumericStringRadix.Hex]: '0x',
   };
 
   // Keep octal at the top of decimal to avoid regarding 0000007 as decimal.
   // '000009' matches decimal.
   // '000007' matches octal.
   // '-0xf' matches hex rather than decimal '-0'
-  private static matchings: Array<{ regex: RegExp; radix: number }> = [
-    { regex: /(-)?0[0-7]+/, radix: 8 },
-    { regex: /(-)?\d+/, radix: 10 },
-    { regex: /(-)?0x[\da-fA-F]+/, radix: 16 },
+  private static matchings: Array<{ regex: RegExp; radix: NumericStringRadix }> = [
+    { regex: /(-)?0[0-7]+/, radix: NumericStringRadix.Oct },
+    { regex: /(-)?\d+/, radix: NumericStringRadix.Dec },
+    { regex: /(-)?0x[\da-fA-F]+/, radix: NumericStringRadix.Hex },
   ];
 
   // Return parse result and offset of suffix
-  public static parse(input: string): { num: NumericString; suffixOffset: number } | undefined {
+  public static parse(
+    input: string,
+    targetRadix?: NumericStringRadix
+  ): { num: NumericString; suffixOffset: number } | undefined {
+    const filteredMatchings =
+      targetRadix !== undefined
+        ? NumericString.matchings.filter(matching => matching.radix === targetRadix)
+        : NumericString.matchings;
+
     // Find core numeric part of input
     let coreBegin = -1;
     let coreLength = -1;
     let coreRadix = -1;
     let coreSign = false;
-    for (const { regex, radix } of NumericString.matchings) {
+    for (const { regex, radix } of filteredMatchings) {
       const match = regex.exec(input);
       if (match != null) {
         // Get the leftmost and largest match
@@ -108,19 +123,33 @@ export class NumericString {
       negative = true;
     }
 
+    let isCapital = false;
+    if (coreRadix === 16) {
+      for (const c of Array.from(input).reverse()) {
+        if ('A' <= c && c <= 'F') {
+          isCapital = true;
+          break;
+        } else if ('a' <= c && c <= 'f') {
+          isCapital = false;
+          break;
+        }
+      }
+    }
+
     return {
-      num: new NumericString(value, coreRadix, numLength, prefix, suffix, negative),
+      num: new NumericString(value, coreRadix, numLength, prefix, suffix, negative, isCapital),
       suffixOffset: coreEnd,
     };
   }
 
   private constructor(
     value: number,
-    radix: number,
+    radix: NumericStringRadix,
     numLength: number,
     prefix: string,
     suffix: string,
-    negative: boolean
+    negative: boolean,
+    isCapital: boolean
   ) {
     this.value = value;
     this.radix = radix;
@@ -128,6 +157,7 @@ export class NumericString {
     this.prefix = prefix;
     this.suffix = suffix;
     this.negative = negative;
+    this.isCapital = isCapital;
   }
 
   public toString(): string {
@@ -142,6 +172,9 @@ export class NumericString {
     // Gen num part
     const absValue = Math.abs(this.value);
     let num = absValue.toString(this.radix);
+    if (this.isCapital) {
+      num = num.toUpperCase();
+    }
     // numLength of decimal *should not* be preserved.
     if (this.radix !== 10) {
       const diff = this.numLength - num.length;

@@ -11,9 +11,11 @@ import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
+import { isHighSurrogate, isLowSurrogate } from '../util/util';
+import { Cursor } from './../common/motion/cursor';
 
 export abstract class BaseOperator extends BaseAction {
-  override isOperator = true;
+  override actionType = 'operator' as const;
 
   constructor(multicursorIndex?: number) {
     super();
@@ -197,6 +199,22 @@ export class YankOperator extends BaseOperator {
       extendedEnd = extendedEnd.getLineEnd();
     }
 
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(extendedEnd.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      extendedEnd.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(extendedEnd.character)) &&
+      isHighSurrogate(eLine.charCodeAt(extendedEnd.character - 1))
+    ) {
+      extendedEnd = extendedEnd.getRight();
+    }
     const range = new vscode.Range(start, extendedEnd);
     let text = vimState.document.getText(range);
 
@@ -248,8 +266,12 @@ class FilterOperator extends BaseOperator {
       vimState.cursors = vimState.cursorsInitialState;
     }
 
-    vimState.commandLine = new ExCommandLine(commandLineText, vimState.currentMode);
+    const previousMode = vimState.currentMode;
     await vimState.setCurrentMode(Mode.CommandlineInProgress);
+    // TODO: Change or supplement `setCurrentMode` API so this isn't necessary
+    if (vimState.modeData.mode === Mode.CommandlineInProgress) {
+      vimState.modeData.commandLine = new ExCommandLine(commandLineText, previousMode);
+    }
   }
 }
 
@@ -329,11 +351,10 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       // HACK: currently must do this nonsense to collapse all cursors into one
       for (let i = 0; i < vimState.editor.selections.length; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'moveCursor',
-          diff: PositionDiff.exactPosition(earlierOf(startPos, endPos)),
-          cursorIndex: i,
-        });
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.exactPosition(earlierOf(startPos, endPos)),
+          i
+        );
       }
     } else {
       if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -433,8 +454,8 @@ class IndentOperator extends BaseOperator {
  * walked into my life.
  */
 @RegisterAction
-class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+class IndentOperatorVisualAndVisualLine extends BaseOperator {
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
@@ -462,6 +483,47 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 }
 
 @RegisterAction
+class IndentOperatorVisualBlock extends BaseOperator {
+  modes = [Mode.VisualBlock];
+  keys = ['>'];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    /**
+     * Repeating this command with dot should apply the indent to the left edge of the
+     * block formed by extending the cursor start position downward by the number of lines
+     * in the previous visual block selection.
+     */
+    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+      const shiftSelectionByNum = Math.abs(
+        vimState.dotCommandPreviousVisualSelection.end.line -
+          vimState.dotCommandPreviousVisualSelection.start.line
+      );
+
+      start = vimState.cursorStartPosition;
+      end = vimState.cursorStartPosition.getDown(shiftSelectionByNum);
+
+      vimState.editor.selection = new vscode.Selection(start, end);
+    }
+
+    for (let lineIdx = 0; lineIdx < end.line - start.line + 1; lineIdx++) {
+      const tabSize = Number(vimState.editor.options.tabSize);
+      const currentLineEnd = vimState.document.lineAt(start.line + lineIdx).range.end.character;
+
+      if (currentLineEnd > start.character) {
+        vimState.recordedState.transformer.addTransformation({
+          type: 'insertText',
+          text: ' '.repeat(tabSize).repeat(vimState.recordedState.count || 1),
+          position: start.getDown(lineIdx),
+          manuallySetCursorPositions: true,
+        });
+      }
+    }
+
+    await vimState.setCurrentMode(Mode.Normal);
+    vimState.cursors = [new Cursor(start, start)];
+  }
+}
+@RegisterAction
 class OutdentOperator extends BaseOperator {
   modes = [Mode.Normal];
   keys = ['<'];
@@ -479,10 +541,10 @@ class OutdentOperator extends BaseOperator {
 }
 
 /**
- * See comment for IndentOperatorInVisualModesIsAWeirdSpecialCase
+ * See comment for IndentOperatorVisualAndVisualLine
  */
 @RegisterAction
-class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
+class OutdentOperatorVisualModes extends BaseOperator {
   modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['<'];
 
@@ -550,11 +612,11 @@ export class ChangeOperator extends BaseOperator {
       );
 
       if (vimState.document.languageId !== 'plaintext') {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'reindent',
-          cursorIndex: this.multicursorIndex,
-          diff: PositionDiff.endOfLine(),
-        });
+        vimState.recordedState.transformer.vscodeCommand('editor.action.reindentselectedlines');
+        vimState.recordedState.transformer.moveCursor(
+          PositionDiff.endOfLine(),
+          this.multicursorIndex
+        );
       }
     } else {
       vimState.recordedState.transformer.delete(deleteRange);
@@ -618,7 +680,7 @@ export class ROT13Operator extends BaseOperator {
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    let selections: vscode.Selection[];
+    let selections: readonly vscode.Selection[];
     if (isVisualMode(vimState.currentMode)) {
       selections = vimState.editor.selections;
     } else if (vimState.currentRegisterMode === RegisterMode.LineWise) {

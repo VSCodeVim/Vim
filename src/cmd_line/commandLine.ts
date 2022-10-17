@@ -13,12 +13,8 @@ import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/w
 import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
-import {
-  SearchDecorations,
-  ensureVisible,
-  getDecorationsForSearchMatchRanges,
-} from '../util/decorationUtils';
-import { Position, ExtensionContext, window, DecorationOptions, Range } from 'vscode';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
+import { Position, ExtensionContext, window } from 'vscode';
 import { globalState } from '../state/globalState';
 import { scrollView } from '../util/util';
 import { ExCommand } from '../vimscript/exCommand';
@@ -102,7 +98,7 @@ export abstract class CommandLine {
     if (this.historyIndex === historyEntries.length - 1) {
       this.historyIndex = undefined;
       this.text = this.savedText;
-    } else {
+    } else if (this.historyIndex < historyEntries.length - 1) {
       this.historyIndex++;
       this.text = historyEntries[this.historyIndex];
     }
@@ -115,7 +111,10 @@ export abstract class CommandLine {
    */
   public async backspace(vimState: VimState): Promise<void> {
     if (this.cursorIndex === 0) {
-      return this.escape(vimState);
+      if (this.text.length === 0) {
+        await this.escape(vimState);
+      }
+      return;
     }
 
     this.text = this.text.slice(0, this.cursorIndex - 1) + this.text.slice(this.cursorIndex);
@@ -126,13 +125,11 @@ export abstract class CommandLine {
    * Called when `<Del>` is pressed
    */
   public async delete(vimState: VimState): Promise<void> {
-    if (this.cursorIndex === 0) {
-      return this.escape(vimState);
-    } else if (this.cursorIndex === this.text.length) {
+    if (this.cursorIndex === this.text.length) {
       return this.backspace(vimState);
-    } else {
-      this.text = this.text.slice(0, this.cursorIndex) + this.text.slice(this.cursorIndex + 1);
     }
+
+    this.text = this.text.slice(0, this.cursorIndex) + this.text.slice(this.cursorIndex + 1);
   }
 
   /**
@@ -307,8 +304,6 @@ export class ExCommandLine extends CommandLine {
 
     // Update state if this command is repeatable via dot command.
     vimState.lastCommandDotRepeatable = this.command?.isRepeatableWithDot ?? false;
-
-    await vimState.setCurrentMode(Mode.Normal);
   }
 
   public async escape(vimState: VimState): Promise<void> {
@@ -468,8 +463,6 @@ export class SearchCommandLine extends CommandLine {
   }
 
   public async run(vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(this.previousMode);
-
     // Repeat the previous search if no new string is entered
     if (this.text === '') {
       if (SearchCommandLine.previousSearchStates.length > 0) {
@@ -518,9 +511,10 @@ export class SearchCommandLine extends CommandLine {
       ? prevSearchList[prevSearchList.length - 1]
       : undefined;
 
-    if (vimState.firstVisibleLineBeforeSearch !== undefined) {
+    if (vimState.modeData.mode === Mode.SearchInProgressMode) {
       const offset =
-        vimState.editor.visibleRanges[0].start.line - vimState.firstVisibleLineBeforeSearch;
+        vimState.editor.visibleRanges[0].start.line -
+        vimState.modeData.firstVisibleLineBeforeSearch;
       scrollView(vimState, offset);
     }
 
