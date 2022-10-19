@@ -2056,6 +2056,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'dW' on last character of word",
+    start: ['first secon|d third fourth'],
+    keysPressed: 'dW',
+    end: ['first secon|third fourth'],
+  });
+
+  newTest({
     title: 'can delete linewise with d2G',
     start: ['on|e', 'two', 'three'],
     keysPressed: 'd2G',
