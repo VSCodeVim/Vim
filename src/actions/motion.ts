@@ -1492,7 +1492,9 @@ export class MoveFullWordBegin extends BaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      return position
+        .nextWordEnd(vimState.document, { wordType: WordType.Big, inclusive: true })
+        .getRight();
     } else {
       return position.nextWordStart(vimState.document, { wordType: WordType.Big });
     }
