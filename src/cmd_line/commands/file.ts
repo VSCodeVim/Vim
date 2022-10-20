@@ -26,7 +26,7 @@ export type IFileCommandArguments =
       bang: boolean;
       opt: FileOpt;
       cmd?: FileCmd;
-      file?: string;
+      file: string;
       createFileIfNotExists?: boolean;
     }
   | {
@@ -84,7 +84,7 @@ export class FileCommand extends ExCommand {
       bangParser,
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback('')
     ).map(([bang, opt, cmd, file]) => new FileCommand({ name: 'edit', bang, opt, cmd, file })),
     enew: bangParser.map((bang) => new FileCommand({ name: 'enew', bang })),
     new: seq(

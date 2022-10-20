@@ -215,11 +215,11 @@ suite('Ex command parsing', () => {
   suite(':e[dit]', () => {
     exParseTest(
       ':edit',
-      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: undefined })
+      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: '' })
     );
     exParseTest(
       ':edit!',
-      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: undefined })
+      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: '' })
     );
 
     exParseTest(
