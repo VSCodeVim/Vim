@@ -259,6 +259,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'cW' on last character of word",
+    start: ['first secon|d third fourth'],
+    keysPressed: 'cW',
+    end: ['first secon| third fourth'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c2w'",
     start: ['|const a = 1;'],
     keysPressed: 'c2w',
@@ -2048,6 +2056,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'dW' on last character of word",
+    start: ['first secon|d third fourth'],
+    keysPressed: 'dW',
+    end: ['first secon|third fourth'],
+  });
+
+  newTest({
     title: 'can delete linewise with d2G',
     start: ['on|e', 'two', 'three'],
     keysPressed: 'd2G',
@@ -2189,6 +2204,34 @@ suite('Mode Normal', () => {
     start: ['|00xf'],
     keysPressed: '<C-a>',
     end: ['0|1xf'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can preserve uppercase',
+    start: ['|0xDEAD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to lowercase',
+    start: ['|0xDEAd'],
+    keysPressed: '<C-a>',
+    end: ['0xdea|e'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 1',
+    start: ['|0xdeaD'],
+    keysPressed: '<C-a>',
+    end: ['0xDEA|E'],
+  });
+
+  newTest({
+    title: 'can ctrl-a can transform to uppercase 2',
+    start: ['|0xDeaD1'],
+    keysPressed: '<C-a>',
+    end: ['0xDEAD|2'],
   });
 
   newTest({
