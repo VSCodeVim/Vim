@@ -615,6 +615,12 @@ class MarkMovementBOL extends BaseMovement {
       await ensureEditorIsActive(mark.document);
     }
 
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
+    }
+    vimState.editor = editor;
+
     return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
   }
 }
