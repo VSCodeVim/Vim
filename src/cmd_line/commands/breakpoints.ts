@@ -102,7 +102,7 @@ class DeleteBreakpointCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     if (this.delBreakpoint.type === 'byId') {
       return vscode.debug.removeBreakpoints(
-        vscode.debug.breakpoints.splice(this.delBreakpoint.id - 1, 1)
+        vscode.debug.breakpoints.slice(this.delBreakpoint.id - 1, 1)
       );
     } else if (this.delBreakpoint.type === 'all') {
       return vscode.debug.removeBreakpoints(vscode.debug.breakpoints);

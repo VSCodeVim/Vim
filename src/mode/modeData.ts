@@ -5,7 +5,7 @@ import { Mode } from './mode';
 /** Modes which have no extra associated data. */
 export type SimpleMode = Exclude<
   Mode,
-  Mode.Replace | Mode.SearchInProgressMode | Mode.CommandlineInProgress
+  Mode.Replace | Mode.SearchInProgressMode | Mode.CommandlineInProgress | Mode.Insert
 >;
 
 /** State associated with the current mode. */
@@ -23,6 +23,11 @@ export type ModeData =
       commandLine: SearchCommandLine;
       /** The first line number that was visible when SearchInProgressMode began */
       firstVisibleLineBeforeSearch: number;
+    }
+  | {
+      mode: Mode.Insert;
+      /** The high surrogate of an incomplete pair */
+      highSurrogate: string | undefined;
     }
   | {
       mode: SimpleMode;
