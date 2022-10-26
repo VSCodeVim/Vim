@@ -1190,7 +1190,7 @@
     "@types/glob": "8.0.0",
     "@types/lodash": "4.14.186",
     "@types/mocha": "10.0.0",
-    "@types/node": "16.18.1",
+    "@types/node": "16.18.2",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
     "@types/source-map-support": "0.5.6",
