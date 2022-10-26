@@ -728,6 +728,14 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'Can do vi) on a matching parenthesis from outside parathesis for multiple lines',
+    start: ['|test(test)', 'test(test)'],
+    keysPressed: 'vi)d',
+    end: ['test(|)', 'test(test)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can do vi) on multiple matching parens',
     start: ['test(te(te|st)st)'],
     keysPressed: 'vi)i)d',
