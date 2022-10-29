@@ -722,7 +722,7 @@
         },
         "vim.targets.bracketObjects.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable last/next movements for bracket objects",
+          "markdownDescription": "Enable last/next movements for bracket objects.",
           "default": true
         },
         "vim.targets.smartQuotes.enable": {
