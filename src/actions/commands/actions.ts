@@ -1029,13 +1029,32 @@ class CommandOpenFile extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoToDefinition extends BaseCommand {
+class GoToDeclaration extends BaseCommand {
   modes = [Mode.Normal];
-  keys = [['g', 'd'], ['<C-]>']];
+  keys = [
+    ['g', 'd'],
+    ['g', 'D'],
+  ];
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
+      // We didn't switch to a different editor
+      vimState.cursorStopPosition = vimState.editor.selection.start;
+    }
+  }
+}
+
+@RegisterAction
+class GoToDefinition extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['<C-]>'];
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('editor.action.revealDefinition');
 
     if (vimState.editor === vscode.window.activeTextEditor) {
       // We didn't switch to a different editor
@@ -1292,7 +1311,6 @@ class CommandTabNext extends BaseCommand {
       new TabCommand({
         type: TabCommandType.Next,
         bang: false,
-        count: 1,
       }).execute(vimState);
     }
   }
@@ -1308,7 +1326,6 @@ class CommandTabPrevious extends BaseCommand {
     new TabCommand({
       type: TabCommandType.Previous,
       bang: false,
-      count: 1,
     }).execute(vimState);
   }
 }

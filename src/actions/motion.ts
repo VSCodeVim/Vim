@@ -67,17 +67,17 @@ abstract class MoveByScreenLine extends BaseMovement {
         // If we change the `vimState.editor.selections` directly with the forEach
         // for some reason vscode doesn't update them. But doing it this way does
         // update vscode's selections.
-        const selections = vimState.editor.selections;
-        selections.forEach((s, i) => {
+        vimState.editor.selections = vimState.editor.selections.map((s, i) => {
           if (s.active.isAfter(s.anchor)) {
             // The selection is on the right side of the cursor, while our representation
             // considers the cursor to be the left edge, so we need to move the selection
             // to the right place before executing the 'cursorMove' command.
             const active = s.active.getLeftThroughLineBreaks();
-            vimState.editor.selections[i] = new vscode.Selection(s.anchor, active);
+            return new vscode.Selection(s.anchor, active);
+          } else {
+            return s;
           }
         });
-        vimState.editor.selections = selections;
       }
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
@@ -254,10 +254,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line >= vimState.document.lineCount - 1) {
       return position;
     }
@@ -293,10 +290,7 @@ class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<down>' &&
@@ -334,10 +328,7 @@ class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<up>' &&
@@ -377,10 +368,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line === 0) {
       return position;
     }
@@ -420,16 +408,10 @@ export class ArrowsInInsertMode extends BaseMovement {
     let newPosition: Position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -457,10 +439,10 @@ class ArrowsInReplaceMode extends BaseMovement {
     let newPosition: Position = position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -1491,7 +1473,9 @@ export class MoveFullWordBegin extends BaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      return position
+        .nextWordEnd(vimState.document, { wordType: WordType.Big, inclusive: true })
+        .getRight();
     } else {
       return position.nextWordStart(vimState.document, { wordType: WordType.Big });
     }

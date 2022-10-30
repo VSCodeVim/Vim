@@ -19,6 +19,7 @@ import { Cursor } from '../common/motion/cursor';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
+import { keystrokesExpressionParser } from '../vimscript/expression';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -161,38 +162,64 @@ export async function executeTransformations(
 
       case 'macro':
         const recordedMacro = (await Register.get(transformation.register))?.text;
-        if (!(recordedMacro instanceof RecordedState)) {
+        if (!recordedMacro) {
           return;
-        }
 
-        vimState.isReplayingMacro = true;
-
-        vimState.recordedState = new RecordedState();
-        if (transformation.register === ':') {
-          await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
-        } else if (transformation.replay === 'contentChange') {
-          await modeHandler.runMacro(recordedMacro);
-        } else {
-          let keyStrokes: string[] = [];
-          for (const action of recordedMacro.actionsRun) {
-            keyStrokes = keyStrokes.concat(action.keysPressed);
+        } else if (typeof recordedMacro === 'string') {
+          // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
+          const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
+          if (!keystrokes.status) {
+            throw new Error(`Failed to execute macro: ${recordedMacro}`);
           }
-          await modeHandler.handleMultipleKeyEvents(keyStrokes);
-        }
 
-        await executeTransformations(
-          modeHandler,
-          vimState.recordedState.transformer.transformations
-        );
+          vimState.isReplayingMacro = true;
 
-        vimState.isReplayingMacro = false;
-        vimState.lastInvokedMacro = recordedMacro;
+          vimState.recordedState = new RecordedState();
+          await modeHandler.handleMultipleKeyEvents(keystrokes.value);
 
-        if (vimState.lastMovementFailed) {
-          // movement in last invoked macro failed then we should stop all following repeating macros.
-          // Besides, we should reset `lastMovementFailed`.
-          vimState.lastMovementFailed = false;
-          return;
+          // Set the executed register as the registerName, otherwise the last action register is used.
+          vimState.recordedState.registerName = transformation.register;
+
+          vimState.lastInvokedMacro = vimState.recordedState;
+          vimState.isReplayingMacro = false;
+
+          if (vimState.lastMovementFailed) {
+            // movement in last invoked macro failed then we should stop all following repeating macros.
+            // Besides, we should reset `lastMovementFailed`.
+            vimState.lastMovementFailed = false;
+            return;
+          }
+
+        } else {
+          vimState.isReplayingMacro = true;
+
+          vimState.recordedState = new RecordedState();
+          if (transformation.register === ':') {
+            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
+          } else if (transformation.replay === 'contentChange') {
+            await modeHandler.runMacro(recordedMacro);
+          } else {
+            let keyStrokes: string[] = [];
+            for (const action of recordedMacro.actionsRun) {
+              keyStrokes = keyStrokes.concat(action.keysPressed);
+            }
+            await modeHandler.handleMultipleKeyEvents(keyStrokes);
+          }
+
+          await executeTransformations(
+            modeHandler,
+            vimState.recordedState.transformer.transformations
+          );
+
+          vimState.isReplayingMacro = false;
+          vimState.lastInvokedMacro = recordedMacro;
+
+          if (vimState.lastMovementFailed) {
+            // movement in last invoked macro failed then we should stop all following repeating macros.
+            // Besides, we should reset `lastMovementFailed`.
+            vimState.lastMovementFailed = false;
+            return;
+          }
         }
         break;
 

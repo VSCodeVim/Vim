@@ -184,7 +184,7 @@ class TextEditorStub implements vscode.TextEditor {
   selections!: vscode.Selection[];
   readonly visibleRanges!: vscode.Range[];
   options!: vscode.TextEditorOptions;
-  viewColumn?: vscode.ViewColumn;
+  readonly viewColumn!: vscode.ViewColumn;
 
   constructor() {}
   async edit(
