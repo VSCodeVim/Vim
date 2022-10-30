@@ -169,7 +169,7 @@ export async function executeTransformations(
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
           const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
           if (!keystrokes.status) {
-            return;
+            throw new Error(`Failed to execute macro: ${recordedMacro}`);
           }
 
           vimState.isReplayingMacro = true;
