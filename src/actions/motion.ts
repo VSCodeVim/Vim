@@ -78,7 +78,6 @@ abstract class MoveByScreenLine extends BaseMovement {
             return s;
           }
         });
-        ;
       }
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
@@ -255,10 +254,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line >= vimState.document.lineCount - 1) {
       return position;
     }
@@ -294,10 +290,7 @@ class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<down>' &&
@@ -335,10 +328,7 @@ class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<up>' &&
@@ -378,10 +368,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line === 0) {
       return position;
     }
@@ -421,16 +408,10 @@ export class ArrowsInInsertMode extends BaseMovement {
     let newPosition: Position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -458,10 +439,10 @@ class ArrowsInReplaceMode extends BaseMovement {
     let newPosition: Position = position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -567,10 +548,10 @@ class CommandPreviousSearchMatch extends BaseMovement {
     const prevMatch =
       positionIsEOL && !searchForward
         ? searchState.getNextSearchMatchPosition(
-          vimState,
-          position.getRight(),
-          SearchDirection.Backward
-        )
+            vimState,
+            position.getRight(),
+            SearchDirection.Backward
+          )
         : searchState.getNextSearchMatchPosition(vimState, position, SearchDirection.Backward);
 
     if (!prevMatch) {
@@ -734,8 +715,8 @@ class MoveLeft extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getLeftThroughLineBreaks(
-        [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
-      )
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+        )
       : getLeftWhile(position);
   }
 }
@@ -762,8 +743,8 @@ class MoveRight extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getRightThroughLineBreaks(
-        [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
-      )
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+        )
       : getRightWhile(position);
   }
 }
