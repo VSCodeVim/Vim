@@ -164,7 +164,6 @@ export async function executeTransformations(
         const recordedMacro = (await Register.get(transformation.register))?.text;
         if (!recordedMacro) {
           return;
-
         } else if (typeof recordedMacro === 'string') {
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
           const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
@@ -189,13 +188,14 @@ export async function executeTransformations(
             vimState.lastMovementFailed = false;
             return;
           }
-
         } else {
           vimState.isReplayingMacro = true;
 
           vimState.recordedState = new RecordedState();
           if (transformation.register === ':') {
-            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
+            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(
+              vimState
+            );
           } else if (transformation.replay === 'contentChange') {
             await modeHandler.runMacro(recordedMacro);
           } else {
@@ -204,6 +204,13 @@ export async function executeTransformations(
               keyStrokes = keyStrokes.concat(action.keysPressed);
             }
             await modeHandler.handleMultipleKeyEvents(keyStrokes);
+          }
+
+          // TODO: Copied from `BaseAction.execCount`. This is all terrible.
+          for (const t of vimState.recordedState.transformer.transformations) {
+            if (isTextTransformation(t) && t.cursorIndex === undefined) {
+              t.cursorIndex = 0;
+            }
           }
 
           await executeTransformations(
