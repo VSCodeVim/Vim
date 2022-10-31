@@ -1918,24 +1918,68 @@ export class MoveAroundParentheses extends MoveInsideCharacter {
   override includeSurrounding = true;
 }
 
+// special treatment for curly braces
+export abstract class MoveCurlyBrace extends MoveInsideCharacter {
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  protected charToMatch: string = '{'
+
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
+
+    // curly braces has a special treatment. In case the cursor is before an opening curly brace,
+    // and there are no characters before the opening curly brace in the same line, it should jump
+    // to the next opening curly brace, even if it already inside a pair of curly braces.
+    const text = vimState.document.lineAt(position).text;
+    const openCurlyBraceIndex = text.indexOf('{');
+    const startSameAsEnd = vimState.cursorStartPosition.isEqual(position);
+    if (openCurlyBraceIndex !== -1 && text.substring(0, openCurlyBraceIndex).trim().length === 0 && startSameAsEnd) {
+      const curlyPos = position.with(position.line, openCurlyBraceIndex);
+      vimState.cursorStartPosition = vimState.cursorStopPosition = curlyPos;
+      const movement = await super.execAction(curlyPos, vimState, firstIteration, lastIteration);
+      if (movement.failed) {
+        return movement;
+      }
+      const { start, stop } = movement;
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(start)) {
+        vimState.recordedState.operatorPositionDiff = start.subtract(position);
+      } else if (!isVisualMode(vimState.currentMode) && position.isAfter(stop)) {
+        if (position.line === stop.line) {
+          vimState.recordedState.operatorPositionDiff = stop.subtract(position);
+        } else {
+          vimState.recordedState.operatorPositionDiff = start.subtract(position);
+        }
+      }
+
+      vimState.cursorStartPosition = start;
+      vimState.cursorStopPosition = stop;
+      return movement;
+    }
+    else {
+      return super.execAction(position, vimState, firstIteration, lastIteration);
+    }
+  }
+}
+
 @RegisterAction
-export class MoveInsideCurlyBrace extends MoveInsideCharacter {
+export class MoveInsideCurlyBrace extends MoveCurlyBrace {
   keys = [
     ['i', '{'],
     ['i', '}'],
     ['i', 'B'],
   ];
-  charToMatch = '{';
 }
 
 @RegisterAction
-export class MoveAroundCurlyBrace extends MoveInsideCharacter {
+export class MoveAroundCurlyBrace extends MoveCurlyBrace {
   keys = [
     ['a', '{'],
     ['a', '}'],
     ['a', 'B'],
   ];
-  charToMatch = '{';
   override includeSurrounding = true;
 }
 
