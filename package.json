@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.24.1",
+  "version": "1.24.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -722,7 +722,7 @@
         },
         "vim.targets.bracketObjects.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable last/next movements for bracket objects",
+          "markdownDescription": "Enable last/next movements for bracket objects.",
           "default": true
         },
         "vim.targets.smartQuotes.enable": {
@@ -1193,7 +1193,7 @@
     "@types/glob": "8.0.0",
     "@types/lodash": "4.14.186",
     "@types/mocha": "10.0.0",
-    "@types/node": "16.18.0",
+    "@types/node": "16.18.3",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
     "@types/source-map-support": "0.5.6",
