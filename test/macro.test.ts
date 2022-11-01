@@ -106,18 +106,27 @@ suite('Record and execute a macro', () => {
     end: ['|test'],
   });
 
-  newTest({
-    title: ': (command) register can be used as a macro to repeat :s',
-    start: ['|old', 'old', 'old'],
-    keysPressed: ':s/old/new\nj@:j@@',
-    end: ['new', 'new', '|new'],
-  });
+  suite('`:` (command) register used as macro', () => {
+    newTest({
+      title: 'Repeat :s',
+      start: ['|old', 'old', 'old'],
+      keysPressed: ':s/old/new\nj@:j@@',
+      end: ['new', 'new', '|new'],
+    });
 
-  newTest({
-    title: ': (command) register can be used as a macro to repeat :d',
-    start: ['one', 't|wo', 'three', 'four', 'five'],
-    keysPressed: ':d/\n' + '@:' + '@@',
-    end: ['one', '|five'],
+    newTest({
+      title: 'Repeat :d',
+      start: ['one', 't|wo', 'three', 'four', 'five'],
+      keysPressed: ':d/\n' + '@:' + '@@',
+      end: ['one', '|five'],
+    });
+
+    newTest({
+      title: 'Repeat :co',
+      start: ['|one', 'two'],
+      keysPressed: ':.co$\n' + '@:',
+      end: ['one', 'two', '|one', 'one'], // TODO: Cursor should be on line 3, not 4
+    });
   });
 
   newTest({
@@ -269,7 +278,7 @@ suite('Record and execute a macro', () => {
           stepResult: {
             end: ['abc', 'ab|c', 'three'],
           },
-        }
+        },
       ],
     });
 
@@ -287,6 +296,5 @@ suite('Record and execute a macro', () => {
         },
       ],
     });
-
   });
 });
