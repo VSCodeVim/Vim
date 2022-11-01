@@ -1934,10 +1934,14 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
     // and there are no characters before the opening curly brace in the same line, it should jump
     // to the next opening curly brace, even if it already inside a pair of curly braces.
     const text = vimState.document.lineAt(position).text;
-    const openCurlyBraceIndex = position.character + text.substring(position.character).indexOf('{');
+    const openCurlyBraceIndexFromCursor = text.substring(position.character).indexOf('{');
     const startSameAsEnd = vimState.cursorStartPosition.isEqual(position);
-    if (openCurlyBraceIndex !== -1 && text.substring(0, openCurlyBraceIndex).trim().length === 0 && startSameAsEnd) {
-      const curlyPos = position.with(position.line, openCurlyBraceIndex);
+    if (
+      openCurlyBraceIndexFromCursor !== -1 &&
+      text.substring(0, position.character + openCurlyBraceIndexFromCursor).trim().length === 0 &&
+      startSameAsEnd
+    ) {
+      const curlyPos = position.with(position.line, position.character + openCurlyBraceIndexFromCursor);
       vimState.cursorStartPosition = vimState.cursorStopPosition = curlyPos;
       const movement = await super.execAction(curlyPos, vimState, firstIteration, lastIteration);
       if (movement.failed) {
