@@ -1,3 +1,4 @@
+import { Position, Range, window } from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PositionDiff, sorted } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
@@ -25,7 +26,7 @@ import {
   SelectABigWord,
   SelectWord,
 } from '../../textobject/textobject';
-import { Position, Range, window } from 'vscode';
+import { TextEditor } from './../../textEditor';
 
 type SurroundEdge = {
   leftEdge: Range;
@@ -60,7 +61,7 @@ export interface SurroundState {
   function?: string;
 
   /** for visual line mode */
-  addNewline?: boolean;
+  multiline?: boolean;
 
   edges: SurroundEdge[];
 
@@ -166,7 +167,7 @@ class CommandSurroundModeStartVisualLine extends SurroundOperator {
         target: undefined,
         operator: 'yank',
         replacement: '',
-        addNewline: true,
+        multiline: true,
         edges: [],
         previousMode: vimState.currentMode,
       };
@@ -307,6 +308,7 @@ class CommandSurroundAddSurrounding extends BaseCommand {
       configuration.surround &&
       super.doesActionApply(vimState, keysPressed) &&
       replacement !== 't' && // do not run this for surrounding with a tag
+      replacement !== 'T' &&
       replacement !== '<' &&
       replacement !== 'f' && // or for surrounding with a function
       replacement !== 'F' &&
@@ -335,7 +337,7 @@ class CommandSurroundAddSurrounding extends BaseCommand {
 export class CommandSurroundAddSurroundingTag extends BaseCommand {
   modes = [Mode.SurroundInputMode];
   // add surrounding / read X when: ys + motion + X
-  keys = [['<'], ['t']];
+  keys = [['<'], ['t'], ['T']];
   override isCompleteAction = true;
   recordedTag = ''; // to save for repeat
   override runsOnceForEveryCursor() {
@@ -346,7 +348,9 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
       return;
     }
 
-    vimState.surround.replacement = 't';
+    const lastKey = this.keysPressed[this.keysPressed.length - 1];
+    // 'T' is handled slightly differently from the rest
+    vimState.surround.replacement = lastKey === 'T' ? 'T' : 't';
     const tagInput =
       vimState.isRunningDotCommand || vimState.isReplayingMacro
         ? this.recordedTag
@@ -418,7 +422,7 @@ export class CommandSurroundAddSurroundingFunction extends BaseCommand {
     this.recordedFunction = functionInput;
 
     // format the left side of the replacement based on the key pressed
-    vimState.surround.function = this.formatFunction(functionInput);
+    vimState.surround.function = this.formatFunction(functionInput, vimState.surround.multiline);
 
     await SurroundHelper.ExecuteSurround(vimState);
   }
@@ -430,15 +434,16 @@ export class CommandSurroundAddSurroundingFunction extends BaseCommand {
     });
   }
 
-  private formatFunction(fn: string): string {
+  private formatFunction(fn: string, omitSpace = false): string {
+    const space = omitSpace ? '' : ' ';
     switch (this.keysPressed[this.keysPressed.length - 1]) {
       case 'f':
         return fn + '(';
       case 'F':
-        return fn + '( ';
+        return fn + '(' + space;
       case '<C-f>':
       default:
-        return '(' + fn + ' ';
+        return '(' + fn + space;
     }
   }
 }
@@ -451,69 +456,113 @@ class SurroundHelper {
     [key: string]: {
       left: string;
       right: string;
-      /** do we consume space on the edges? "(" vs ")" */
-      removeSpace: boolean;
+      /** introduce/consume space on the edges? "(" vs ")" */
+      hasSpace?: boolean;
+      /** force multi line mode? */
+      multiline?: boolean;
       movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObject;
-      /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
+      /** typically to extend an inner word. with *foo*, from "foo" to "*foo*" */
       extraChars?: number;
     };
   } = {
     // helpful linter is helpful :-D
     '(': {
-      left: '( ',
-      right: ' )',
-      removeSpace: true,
+      left: '(',
+      right: ')',
+      hasSpace: true,
       movement: () => new MoveAroundParentheses(),
     },
-    ')': { left: '(', right: ')', removeSpace: false, movement: () => new MoveAroundParentheses() },
+    ')': {
+      left: '(',
+      right: ')',
+      movement: () => new MoveAroundParentheses(),
+    },
     '[': {
-      left: '[ ',
-      right: ' ]',
-      removeSpace: true,
+      left: '[',
+      right: ']',
+      hasSpace: true,
       movement: () => new MoveAroundSquareBracket(),
     },
     ']': {
       left: '[',
       right: ']',
-      removeSpace: false,
       movement: () => new MoveAroundSquareBracket(),
     },
-    '{': { left: '{ ', right: ' }', removeSpace: true, movement: () => new MoveAroundCurlyBrace() },
-    '}': { left: '{', right: '}', removeSpace: false, movement: () => new MoveAroundCurlyBrace() },
-    '>': { left: '<', right: '>', removeSpace: false, movement: () => new MoveAroundCaret() },
+    '{': {
+      left: '{',
+      right: '}',
+      hasSpace: true,
+      movement: () => new MoveAroundCurlyBrace(),
+    },
+    '}': {
+      left: '{',
+      right: '}',
+      movement: () => new MoveAroundCurlyBrace(),
+    },
+    '<': {
+      left: '',
+      right: '',
+      movement: () => new MoveAroundTag(),
+    },
+    '>': {
+      left: '<',
+      right: '>',
+      movement: () => new MoveAroundCaret(),
+    },
     '"': {
       left: '"',
       right: '"',
-      removeSpace: false,
       movement: () => new MoveAroundDoubleQuotes(false),
     },
     "'": {
       left: "'",
       right: "'",
-      removeSpace: false,
       movement: () => new MoveAroundSingleQuotes(false),
     },
     '`': {
       left: '`',
       right: '`',
-      removeSpace: false,
       movement: () => new MoveAroundBacktick(false),
     },
-    '<': { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
     '*': {
       left: '*',
       right: '*',
-      removeSpace: false,
       movement: () => new SelectInnerWord(),
       extraChars: 1,
     },
     // aliases
-    b: { left: '(', right: ')', removeSpace: false, movement: () => new MoveAroundParentheses() },
-    r: { left: '[', right: ']', removeSpace: false, movement: () => new MoveAroundSquareBracket() },
-    B: { left: '{', right: '}', removeSpace: false, movement: () => new MoveAroundCurlyBrace() },
-    a: { left: '<', right: '>', removeSpace: false, movement: () => new MoveAroundCaret() },
-    t: { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
-    _: { left: '_', right: '_', removeSpace: false, movement: () => new SelectInnerWord() },
+    b: {
+      left: '(',
+      right: ')',
+      movement: () => new MoveAroundParentheses(),
+    },
+    r: {
+      left: '[',
+      right: ']',
+      movement: () => new MoveAroundSquareBracket(),
+    },
+    B: {
+      left: '{',
+      right: '}',
+      movement: () => new MoveAroundCurlyBrace(),
+    },
+    '\n': {
+      left: '{',
+      right: '}',
+      hasSpace: true,
+      multiline: true,
+      movement: () => new MoveAroundCurlyBrace(),
+    },
+    a: { left: '<', right: '>', movement: () => new MoveAroundCaret() },
+    t: { left: '', right: '', movement: () => new MoveAroundTag() },
+    T: {
+      left: '',
+      right: '',
+      hasSpace: true,
+      multiline: true,
+      movement: () => new MoveAroundTag(),
+    },
+    _: { left: '_', right: '_', movement: () => new SelectInnerWord() },
   };
 
   /** returns two ranges (for left and right replacement) for our surround target (X in dsX, csXy) relative to position */
@@ -539,7 +588,7 @@ class SurroundHelper {
     }
 
     // we want start, end of executing movement for surround target count times from position
-    const { removeSpace, movement } = target;
+    const { hasSpace, movement } = target;
     vimState.cursorStartPosition = position; // some textobj (MoveInsideCharacter) expect this
     const count = vimState.recordedState.count || 1;
     const targetMovement = await movement().execActionWithCount(position, vimState, count);
@@ -551,7 +600,9 @@ class SurroundHelper {
     let rangeEnd = targetMovement.stop;
 
     // good to go, now we can calculate our ranges based on rangeStart and rangeEnd
-    return vimState.surround.target === 't' ? getAdjustedRangesForTag() : getAdjustedRanges();
+    return vimState.surround.target.toLowerCase() === 't'
+      ? getAdjustedRangesForTag()
+      : getAdjustedRanges();
 
     // some local helpers
     function getAdjustedRanges(): SurroundEdge {
@@ -581,7 +632,9 @@ class SurroundHelper {
         new Range(rangeStart.getRight(), rangeStart.getRight(2))
       );
       const rightSpace = vimState.editor.document.getText(new Range(rangeEnd.getLeft(), rangeEnd));
-      return removeSpace && leftSpace === ' ' && rightSpace === ' ' ? 1 : 0;
+      return hasSpace && !vimState.surround?.multiline && leftSpace === ' ' && rightSpace === ' '
+        ? 1
+        : 0;
     }
     async function getAdjustedRangesForTag(): Promise<SurroundEdge | undefined> {
       // we are on start of opening tag and end of closing tag
@@ -623,13 +676,20 @@ class SurroundHelper {
       return;
     }
 
-    const replacement = this.edgePairings[surroundState.replacement];
+    const isDelete = surroundState.operator === 'delete';
+    const deletePairing = isDelete ? SurroundHelper.edgePairings[surroundState.target!] : undefined;
+    const pairing = this.edgePairings[surroundState.replacement];
+
     // undefined allowed only for delete operator
-    if (!replacement && surroundState.operator !== 'delete') {
+    if (!pairing && !isDelete) {
       throw new Error('replacement missing in pairs');
     }
     // handle special case: cstt, replace only tag name
-    if (surroundState.target === 't' && surroundState.tag && surroundState.tag.keepAttributes) {
+    if (
+      surroundState.target?.toLowerCase() === 't' &&
+      surroundState.tag &&
+      surroundState.tag.keepAttributes
+    ) {
       for (const { leftTagName, rightTagName } of surroundState.edges) {
         if (!surroundState.tag || !leftTagName || !rightTagName) {
           // throw ?
@@ -641,40 +701,86 @@ class SurroundHelper {
     }
     // all other cases: ys, ds, cs
     else {
-      const optNewline = surroundState.addNewline ? '\n' : '';
-      const leftFixed =
-        surroundState.operator === 'delete'
-          ? ''
-          : surroundState.tag
-          ? '<' + surroundState.tag.tag + '>' + optNewline
-          : surroundState.function
-          ? surroundState.function + optNewline
-          : replacement.left + optNewline;
+      const multiline = surroundState.multiline || pairing?.multiline || deletePairing?.multiline;
+      const optSpace = !multiline && pairing?.hasSpace ? ' ' : '';
+      let leftFixed = isDelete
+        ? ''
+        : surroundState.tag
+        ? '<' + surroundState.tag.tag + '>'
+        : surroundState.function || pairing.left + optSpace;
 
-      const rightFixed =
-        surroundState.operator === 'delete'
-          ? ''
-          : surroundState.tag
-          ? optNewline + '</' + surroundState.tag.tag + '>'
-          : optNewline + replacement.right;
+      let rightFixed = isDelete
+        ? ''
+        : surroundState.tag
+        ? '</' + surroundState.tag.tag + '>'
+        : optSpace + pairing.right;
+
+      const tabSize = Number(vimState.editor.options.tabSize);
+      const { document } = window.activeTextEditor!;
 
       for (const { leftEdge, rightEdge, cursorIndex } of surroundState.edges) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: leftFixed,
-          range: leftEdge,
-          cursorIndex,
-          // keep cursor on left edge / start. todo: not completly correct vor visual S
-          diff:
-            surroundState.operator === 'yank'
-              ? PositionDiff.offset({ character: -leftFixed.length })
-              : undefined,
-        });
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: rightFixed,
-          range: rightEdge,
-        });
+        if (multiline) {
+          const startLine = vimState.document.lineAt(leftEdge.start);
+          const startIndent = TextEditor.getIndentationLevel(startLine.text, tabSize);
+          const startStr = TextEditor.setIndentationLevel('', startIndent, configuration.expandtab);
+          const nestedStr =
+            configuration.autoindent && pairing?.hasSpace && !isDelete
+              ? TextEditor.setIndentationLevel(
+                  '',
+                  Math.floor(startIndent / tabSize + 1) * tabSize,
+                  configuration.expandtab
+                )
+              : startStr;
+
+          if (leftFixed) {
+            // Indent unless selection already started at beginning of line
+            leftFixed = (leftEdge.start.character === 0 ? startStr : '') + leftFixed + '\n';
+          }
+          if (rightFixed) {
+            rightFixed = '\n' + startStr + rightFixed;
+          }
+
+          const innerRange = new Range(leftEdge.end, rightEdge.start);
+          let innerText = document.getText(innerRange).replace(/^\s*/gm, nestedStr);
+
+          // trim whitespace surrounding text to keep if removing
+          if (isDelete) {
+            innerText = innerText.replace(/^\s+|\s+$/g, '');
+          }
+
+          vimState.recordedState.transformer.addTransformation({
+            type: 'replaceText',
+            text: leftFixed + innerText + rightFixed,
+            range: new Range(leftEdge.start, rightEdge.end),
+            cursorIndex,
+            // FIXME: No idea why the cursor ends up where it does
+            // diff: isDelete ? PositionDiff.offset({ line: multiline ? -1 : 0 }) : undefined,
+          });
+        } else {
+          if (leftFixed && multiline) {
+            leftFixed = leftFixed + '\n';
+          }
+          if (rightFixed && multiline) {
+            rightFixed = '\n' + rightFixed;
+          }
+
+          vimState.recordedState.transformer.addTransformation({
+            type: 'replaceText',
+            text: leftFixed,
+            range: leftEdge,
+            cursorIndex,
+            // keep cursor on left edge / start. todo: not completly correct vor visual S
+            diff:
+              surroundState.operator === 'yank'
+                ? PositionDiff.offset({ character: -leftFixed.length })
+                : undefined,
+          });
+          vimState.recordedState.transformer.addTransformation({
+            type: 'replaceText',
+            text: rightFixed,
+            range: rightEdge,
+          });
+        }
       }
     }
 
