@@ -544,8 +544,8 @@ class OutdentOperator extends BaseOperator {
  * See comment for IndentOperatorVisualAndVisualLine
  */
 @RegisterAction
-class OutdentOperatorVisualModes extends BaseOperator {
-  modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+class OutdentOperatorVisualAndVisualLine extends BaseOperator {
+  modes = [Mode.Visual, Mode.VisualLine];
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
@@ -572,6 +572,60 @@ class OutdentOperatorVisualModes extends BaseOperator {
       vimState.document,
       start.line
     );
+  }
+}
+
+@RegisterAction
+class OutdentOperatorVisualBlock extends BaseOperator {
+  modes = [Mode.VisualBlock];
+  keys = ['<'];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    /**
+     * Repeating this command with dot should apply the outdent to the left edge of the
+     * block formed by extending the cursor start position downward by the number of lines
+     * in the previous visual block selection.
+     */
+    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+      const shiftSelectionByNum = Math.abs(
+        vimState.dotCommandPreviousVisualSelection.end.line -
+          vimState.dotCommandPreviousVisualSelection.start.line
+      );
+
+      start = vimState.cursorStartPosition;
+      end = vimState.cursorStartPosition.getDown(shiftSelectionByNum);
+
+      vimState.editor.selection = new vscode.Selection(start, end);
+    }
+
+    for (let lineIdx = 0; lineIdx < end.line - start.line + 1; lineIdx++) {
+      const tabSize = Number(vimState.editor.options.tabSize);
+      const currentLine = vimState.document.lineAt(start.line + lineIdx);
+      const currentLineEnd = currentLine.range.end.character;
+
+      if (currentLineEnd > start.character) {
+        const currentLineFromStart = currentLine.text.slice(start.character);
+        const isFirstCharBlank = /\s/.test(currentLineFromStart.charAt(0));
+
+        if (isFirstCharBlank) {
+          const currentLinePosition = start.getDown(lineIdx);
+          const distToNonBlankChar = currentLineFromStart.match(/\S/)?.index ?? 0;
+          const outdentDist = Math.min(
+            distToNonBlankChar,
+            tabSize * (vimState.recordedState.count || 1)
+          );
+
+          vimState.recordedState.transformer.addTransformation({
+            type: 'deleteRange',
+            range: new vscode.Range(currentLinePosition, currentLinePosition.getRight(outdentDist)),
+            manuallySetCursorPositions: true,
+          });
+        }
+      }
+    }
+
+    await vimState.setCurrentMode(Mode.Normal);
+    vimState.cursors = [new Cursor(start, start)];
   }
 }
 

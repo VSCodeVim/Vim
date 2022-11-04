@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.24.2](https://github.com/vscodevim/vim/tree/v1.24.2) (2022-10-29)
+
+### Added
+
+- Support for the `'scrolloff'` option, which is mapped to VS Code's `editor.cursorSurroundingLines` setting ([@LinHeLurking](https://github.com/LinHeLurking)).
+
+### Fixed
+
+- Fixed indent (`>`) and outdent (`<`) in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed `cW` when the cursor is on the last character of a word ([@wgr45097](https://github.com/wgr45097)).
+- Fixed indent textobjects (`ii`, `ai`, and `aI`) in VisualLine mode ([@mogelbrod](https://github.com/mogelbrod)).
+
 ## [v1.24.1](https://github.com/vscodevim/vim/tree/v1.24.1) (2022-09-26)
 
 ### Fixed

@@ -259,6 +259,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'cW' on last character of word",
+    start: ['first secon|d third fourth'],
+    keysPressed: 'cW',
+    end: ['first secon| third fourth'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'c2w'",
     start: ['|const a = 1;'],
     keysPressed: 'c2w',
@@ -2045,6 +2053,13 @@ suite('Mode Normal', () => {
     start: ['one |two three four five'],
     keysPressed: 'dw2.',
     end: ['one |five'],
+  });
+
+  newTest({
+    title: "Can handle 'dW' on last character of word",
+    start: ['first secon|d third fourth'],
+    keysPressed: 'dW',
+    end: ['first secon|third fourth'],
   });
 
   newTest({

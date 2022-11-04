@@ -49,6 +49,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['rnu', 'relativenumber'],
   ['sc', 'showcmd'],
   ['scr', 'scroll'],
+  ['so', 'scrolloff'],
   ['scs', 'smartcase'],
   ['smd', 'showmode'],
   ['sol', 'startofline'],
@@ -390,6 +391,12 @@ class Configuration implements IConfiguration {
     ]),
   })
   wrap!: boolean;
+
+  @overlapSetting({
+    settingName: 'cursorSurroundingLines',
+    defaultValue: 0,
+  })
+  scrolloff!: number;
 
   boundKeyCombinations: IKeyBinding[] = [];
 
