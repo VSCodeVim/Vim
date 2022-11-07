@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.24.3](https://github.com/vscodevim/vim/tree/v1.24.3) (2022-11-06)
+
+### Added
+
+- Text registers can now be executed as macros with `@` ([@elazarcoh](https://github.com/elazarcoh)).
+
+### Fixed
+
+- Fixed some ex commands when repeated with `@:` ([@J-Fields](https://github.com/J-Fields)).
+- Fixed cursor position after `gp` or `gP` in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed edge case of `i{` and `a{` ([@elazarcoh](https://github.com/elazarcoh)).
+
 ## [v1.24.2](https://github.com/vscodevim/vim/tree/v1.24.2) (2022-10-29)
 
 ### Added
