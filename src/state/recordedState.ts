@@ -5,6 +5,9 @@ import { Transformer } from './../transformations/transformer';
 import { SpecialKeys } from '../util/specialKeys';
 import { IBaseAction, IBaseOperator, IBaseCommand } from '../actions/types';
 
+const ESCAPE_REGEX = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
+const BUFFERED_KEYS_REGEX = new RegExp(SpecialKeys.TimeoutFinished, 'g');
+
 /**
  * Much of Vim's power comes from the composition of individual actions.
  *
@@ -55,12 +58,10 @@ export class RecordedState {
       // Used for the registers and macros that only record on commandList
       result = this.commandList.join('');
     }
-    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
-    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
-    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
 
-    return result;
+    return result
+      .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
+      .replace(BUFFERED_KEYS_REGEX, '');
   }
 
   /**
@@ -77,12 +78,9 @@ export class RecordedState {
       // if there are any bufferedKeys waiting for other key append them
       result += this.bufferedKeys.join('');
     }
-    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
-    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
-    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
-
-    return result;
+    return result
+      .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
+      .replace(BUFFERED_KEYS_REGEX, '');
   }
 
   /**
@@ -203,7 +201,9 @@ export class RecordedState {
    */
   public get command(): IBaseCommand {
     // TODO: this is probably wrong
-    const list = this.actionsRun.filter((a): a is IBaseCommand => a.actionType === 'command').reverse();
+    const list = this.actionsRun
+      .filter((a): a is IBaseCommand => a.actionType === 'command')
+      .reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
