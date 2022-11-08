@@ -330,6 +330,13 @@ suite('put operator', () => {
       });
 
       newTest({
+        title: 'Yank ragged block-wise selection, <count>gp',
+        start: ['|abcd', 'ABCDEFG', 'wxyz', 'WXYZ'],
+        keysPressed: '2l' + '<C-v>j$' + 'y' + '2gp',
+        end: ['abccd   cd   d', 'ABCCDEFGCDEFG|DEFG', 'wxyz', 'WXYZ'],
+      });
+
+      newTest({
         title: 'Yank block-wise, <count>gp past last line',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'Gl' + '2gp',
@@ -457,7 +464,14 @@ suite('put operator', () => {
         title: 'Yank block-wise, <count>gP',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl' + '2gP',
-        end: ['ABCD', 'a[1][1]bcd', 'w[2][2]x|yz', 'WXYZ'],
+        end: ['ABCD', 'a[1][1]bcd', 'w[2][2]|xyz', 'WXYZ'],
+      });
+
+      newTest({
+        title: 'Yank ragged block-wise selection, <count>gP',
+        start: ['|abcd', 'ABCDEFG', 'wxyz', 'WXYZ'],
+        keysPressed: '2l' + '<C-v>j$' + 'y' + '2gP',
+        end: ['abcd   cd   cd', 'ABCDEFGCDEFG|CDEFG', 'wxyz', 'WXYZ'],
       });
 
       newTest({

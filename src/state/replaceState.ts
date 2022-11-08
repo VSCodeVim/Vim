@@ -1,4 +1,4 @@
-import { Position, TextDocument } from 'vscode';
+import { Position } from 'vscode';
 
 type ReplaceModeChange = {
   before: string;
@@ -26,7 +26,7 @@ export class ReplaceState {
     this._changes[cursorIdx] = [];
   }
 
-  constructor(document: TextDocument, startPositions: Position[], timesToRepeat: number = 1) {
+  constructor(startPositions: Position[], timesToRepeat: number = 1) {
     this.timesToRepeat = timesToRepeat;
     this._changes = startPositions.map((pos) => []);
   }
