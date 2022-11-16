@@ -45,14 +45,14 @@ export class ReplaceString {
       .join('');
   }
 
-  public resolve(matches: RegExpMatchArray): string {
+  public resolve(matches: string[]): string {
     return this.components
       .map((component) => {
         if (component.type === 'string') {
           return component.value;
         } else if (component.type === 'capture_group') {
           const group: number = component.group === '&' ? 0 : component.group;
-          return matches?.[group] ?? '';
+          return matches[group] ?? '';
         } else if (component.type === 'prev_replace_string') {
           return globalState.substituteState?.replaceString.toString() ?? '';
         } else {
