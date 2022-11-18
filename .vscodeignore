@@ -4,6 +4,7 @@
 .vscode-test/**
 
 **/*.ts
+*.map
 *.yml
 
 src/**
