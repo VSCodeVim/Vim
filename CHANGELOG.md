@@ -1,5 +1,29 @@
 # Change Log
 
+## [v1.24.3](https://github.com/vscodevim/vim/tree/v1.24.3) (2022-11-06)
+
+### Added
+
+- Text registers can now be executed as macros with `@` ([@elazarcoh](https://github.com/elazarcoh)).
+
+### Fixed
+
+- Fixed some ex commands when repeated with `@:` ([@J-Fields](https://github.com/J-Fields)).
+- Fixed cursor position after `gp` or `gP` in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed edge case of `i{` and `a{` ([@elazarcoh](https://github.com/elazarcoh)).
+
+## [v1.24.2](https://github.com/vscodevim/vim/tree/v1.24.2) (2022-10-29)
+
+### Added
+
+- Support for the `'scrolloff'` option, which is mapped to VS Code's `editor.cursorSurroundingLines` setting ([@LinHeLurking](https://github.com/LinHeLurking)).
+
+### Fixed
+
+- Fixed indent (`>`) and outdent (`<`) in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed `cW` when the cursor is on the last character of a word ([@wgr45097](https://github.com/wgr45097)).
+- Fixed indent textobjects (`ii`, `ai`, and `aI`) in VisualLine mode ([@mogelbrod](https://github.com/mogelbrod)).
+
 ## [v1.24.1](https://github.com/vscodevim/vim/tree/v1.24.1) (2022-09-26)
 
 ### Fixed
