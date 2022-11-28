@@ -1189,7 +1189,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/glob": "8.0.0",
     "@types/lodash": "4.14.189",
-    "@types/mocha": "10.0.0",
+    "@types/mocha": "10.0.1",
     "@types/node": "16.18.3",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
