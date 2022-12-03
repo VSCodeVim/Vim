@@ -1473,9 +1473,9 @@ decamelize@^4.0.0:
   integrity sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
-  integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
+  integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
 
 decompress-response@^4.2.0:
   version "4.2.1"
@@ -5527,10 +5527,10 @@ vinyl@^2.0.0, vinyl@^2.0.1, vinyl@^2.1.0, vinyl@^2.2.1:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.14.0.tgz#f264c427f52cb6c1b1ba2e5f8a84063a034f2438"
-  integrity sha512-LH0j++sHjcFNT++SYcJ86Zyw49GvyoTRfzYJGmaCgfzTyL7MyMhZeVEnj9K9qKh/m1N3/sdWWNxP+PFS/AvWiA==
+vsce@2.15.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/vsce/-/vsce-2.15.0.tgz#4a992e78532092a34a755143c6b6c2cabcb7d729"
+  integrity sha512-P8E9LAZvBCQnoGoizw65JfGvyMqNGlHdlUXD1VAuxtvYAaHBKLBdKPnpy60XKVDAkQCfmMu53g+gq9FM+ydepw==
   dependencies:
     azure-devops-node-api "^11.0.1"
     chalk "^2.4.2"
