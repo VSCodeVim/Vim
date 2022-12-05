@@ -717,7 +717,7 @@
         },
         "vim.targets.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implmeneted yet).",
+          "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implemented yet).",
           "default": false
         },
         "vim.targets.bracketObjects.enable": {
