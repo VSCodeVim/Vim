@@ -218,6 +218,20 @@ suite('Repeat content change', () => {
     keysPressed: 'a<C-t>b<left>c<Esc>j.',
     end: ['\tonecb', 'tw|co'],
   });
+
+  newTest({
+    title: 'Can repeat change after v<Esc> and :<Esc>',
+    start: ['aaa bbb ccc dd|d'],
+    keysPressed: 'ciwxxx<Esc>' + 'bb.' + 'bbv<Esc>.' + 'bb:<Esc>.',
+    end: ['xx|x xxx xxx xxx'],
+  });
+
+  newTest({
+    title: 'Can repeat change after V<Esc> and <C-q><Esc>',
+    start: ['aaa bbb ccc dd|d'],
+    keysPressed: 'ciwxxx<Esc>' + 'bb.' + 'bbV<Esc>.' + 'bb<C-q><Esc>.',
+    end: ['xx|x xxx xxx xxx'],
+  });
 });
 
 suite('Dot Operator repeat with remap', () => {

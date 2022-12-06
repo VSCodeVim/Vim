@@ -797,6 +797,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
       this.createUndoPointForBrackets();
 
+    // We don't want to record a repeatable action when exiting from these modes
+    // by pressing <Esc>
+    if (
+      (prevMode === Mode.Visual ||
+        prevMode === Mode.VisualBlock ||
+        prevMode === Mode.VisualLine ||
+        prevMode === Mode.CommandlineInProgress) &&
+      action.keysPressed[0] === '<Esc>'
+    ) {
+      ranRepeatableAction = false;
+    }
+
     // Record down previous action and flush temporary state
     if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
       globalState.previousFullAction = this.vimState.recordedState;
