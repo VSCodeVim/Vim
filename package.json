@@ -1209,7 +1209,7 @@
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.7",
     "mocha": "10.1.0",
-    "plugin-error": "2.0.0",
+    "plugin-error": "2.0.1",
     "prettier": "2.8.0",
     "sinon": "15.0.0",
     "ts-loader": "9.4.2",

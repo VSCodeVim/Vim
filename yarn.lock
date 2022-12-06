@@ -4178,10 +4178,10 @@ plugin-error@1.0.1, plugin-error@^1.0.1:
     arr-union "^3.1.0"
     extend-shallow "^3.0.2"
 
-plugin-error@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/plugin-error/-/plugin-error-2.0.0.tgz#d05da1ab0737220ae06ea04e1683d177b55f5ca4"
-  integrity sha512-o4bwIOmuFwUg2MU6xt7plGEQY3YyENx6kvwaFZBrUpamA91FdS9w3U+pU0y4OuDoBQe+jf3RLGSfQebSRBEVsQ==
+plugin-error@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/plugin-error/-/plugin-error-2.0.1.tgz#f2ac92bac8c85e3e23492d76d0c3ca12f30eb00b"
+  integrity sha512-zMakqvIDyY40xHOvzXka0kUvf40nYIuwRE8dWhti2WtjQZ31xAgBZBhxsK7vK3QbRXS1Xms/LO7B5cuAsfB2Gg==
   dependencies:
     ansi-colors "^1.0.1"
 
