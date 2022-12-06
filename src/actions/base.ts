@@ -10,6 +10,8 @@ import { VimState } from './../state/vimState';
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
 
+  public name = '';
+
   /**
    * If true, the cursor position will be added to the jump list on completion.
    */
