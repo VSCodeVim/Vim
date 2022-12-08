@@ -615,5 +615,56 @@ suite('lastNextObject plugin', () => {
         '(|)b', //
       ],
     });
+    // Test next/last argument
+    newTest({
+      title: 'Can select the first argument before opening bracket',
+      start: ['fu|nction(foo, bar, baz)'],
+      keysPressed: 'dina',
+      end: ['function(|, bar, baz)'],
+    });
+    newTest({
+      title: 'Can select the second argument with cursor on opening bracket',
+      start: ['function|(foo, bar, baz)'],
+      keysPressed: 'dina',
+      end: ['function(foo, |, baz)'],
+    });
+    newTest({
+      title:
+        'Can search backwards for an argument if there is no last argument in current bracket pair',
+      start: ['(foo, bar) function(f|oo, bar, baz)'],
+      keysPressed: 'dila',
+      end: ['(foo, |) function(foo, bar, baz)'],
+    });
+    newTest({
+      title:
+        'Can search forward for an argument if there is no next argument in current bracket pair',
+      start: ['function(foo, bar, b|az)(foo, bar)'],
+      keysPressed: 'dina',
+      end: ['function(foo, bar, baz)(|, bar)'],
+    });
+    newTest({
+      title: 'Can select inside next argument',
+      start: ['function(foo, b|ar, baz)'],
+      keysPressed: 'dina',
+      end: ['function(foo, bar, |)'],
+    });
+    newTest({
+      title: 'Can select around next argument',
+      start: ['function(foo, b|ar, baz)'],
+      keysPressed: 'dana',
+      end: ['function(foo, bar|)'],
+    });
+    newTest({
+      title: 'Can select inside last argument',
+      start: ['function(foo, b|ar, baz)'],
+      keysPressed: 'dila',
+      end: ['function(|, bar, baz)'],
+    });
+    newTest({
+      title: 'Can select around last argument',
+      start: ['function(foo, b|ar, baz)'],
+      keysPressed: 'dala',
+      end: ['function(|bar, baz)'],
+    });
   });
 });
