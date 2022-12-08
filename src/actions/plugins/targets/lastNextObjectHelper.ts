@@ -131,10 +131,6 @@ export function NextObject<T extends MoveInsideCharacter>(type: new () => T) {
 }
 
 function LastNextArgument<T extends SelectArgument>(type: new () => T, which: 'l' | 'n') {
-  // Here we find the first or the last character of an argument depending on the direction.
-  // We cannot just grab the delimiter and call it a day (like in the LastNextObject)
-  // because SelectArgument textobject will assume it to be the delimiter BEFORE an argument.
-  // In practice, we first find the delimiter like before, and advance exactly 1 char to reach into the argument.
   abstract class NextHandlerClass extends BaseMovement {
     public override readonly keys: readonly string[] | readonly string[][];
     override isJump = true;
@@ -206,6 +202,8 @@ function LastNextArgument<T extends SelectArgument>(type: new () => T, which: 'l
       let maybePosition;
 
       // Get the nearest char possible
+      // TODO: Can be optimized to find the nearest char in one run
+      // But it requires massive refactoring or code duplication
       for (const char of this.charsToFind) {
         const foundPosition = searchPosition(char, vimState.document, position, {
           direction: which === 'l' ? '<' : '>',
@@ -227,11 +225,12 @@ function LastNextArgument<T extends SelectArgument>(type: new () => T, which: 'l
         return failedMovement(vimState);
       }
 
-      // Move the cursor into argument
-      maybePosition =
-        which === 'l'
-          ? maybePosition.getLeftThroughLineBreaks(true)
-          : maybePosition.getRightThroughLineBreaks(true);
+      // If we are searching backwards, We cannot just grab the delimiter and call it a day (like in the LastNextObject)
+      // because SelectArgument textobject will assume it to be the delimiter BEFORE the argument.
+      // In practice, we first find the delimiter like before, and advance to the left exactly 1 char to reach into the argument.
+      if (which === 'l') {
+        maybePosition = maybePosition.getLeftThroughLineBreaks(true);
+      }
 
       vimState.cursorStartPosition = maybePosition;
       vimState.cursorStopPosition = maybePosition;
