@@ -723,5 +723,45 @@ suite('lastNextObject plugin', () => {
       end: ['function(,|,,)'],
       endMode: Mode.Insert,
     });
+    newTest({
+      title: 'Can do cina before ()',
+      start: ['fu|nction()'],
+      keysPressed: 'cina',
+      end: ['function(|)'],
+      endMode: Mode.Insert,
+    });
+    newTest({
+      title: 'Can do cila after ()',
+      start: ['function()ba|r'],
+      keysPressed: 'cila',
+      end: ['function(|)bar'],
+      endMode: Mode.Insert,
+    });
+    newTest({
+      title: 'Can do cina before (,)',
+      start: ['fu|nction(,)'],
+      keysPressed: 'cina',
+      end: ['function(|,)'],
+      endMode: Mode.Insert,
+    });
+    newTest({
+      title: 'Can do cila after (,)',
+      start: ['function(,)ba|r'],
+      keysPressed: 'cila',
+      end: ['function(,|)bar'],
+      endMode: Mode.Insert,
+    });
+    newTest({
+      title: 'cina will look for the next argument across lines',
+      start: ['fu|nction (', '  foo', ') {}'],
+      keysPressed: 'cina',
+      end: ['function (', '  |', ') {}'],
+    });
+    newTest({
+      title: 'cila will look for the last argument across lines',
+      start: ['function (', '  foo', ') {|}'],
+      keysPressed: 'cila',
+      end: ['function (', '  |', ') {}'],
+    });
   });
 });
