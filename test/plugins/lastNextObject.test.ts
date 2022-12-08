@@ -678,7 +678,7 @@ suite('lastNextObject plugin', () => {
       title: 'Can do clia after (,,,)',
       start: ['function(,,,)(f|oo, bar)'],
       keysPressed: 'cila',
-      end: ['function(,,,|)'],
+      end: ['function(,,,|)(foo, bar)'],
       endMode: Mode.Insert,
     });
     newTest({
