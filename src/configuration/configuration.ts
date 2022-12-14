@@ -21,7 +21,7 @@ import {
 import * as packagejson from '../../package.json';
 import { SUPPORT_VIMRC } from 'platform/constants';
 
-// https://stackovrflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
+// https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
 type RemoveIndex<T> = {
   [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P];
 };
@@ -49,6 +49,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['rnu', 'relativenumber'],
   ['sc', 'showcmd'],
   ['scr', 'scroll'],
+  ['so', 'scrolloff'],
   ['scs', 'smartcase'],
   ['smd', 'showmode'],
   ['sol', 'startofline'],
@@ -398,6 +399,12 @@ class Configuration implements IConfiguration {
     ]),
   })
   wrap!: boolean;
+
+  @overlapSetting({
+    settingName: 'cursorSurroundingLines',
+    defaultValue: 0,
+  })
+  scrolloff!: number;
 
   boundKeyCombinations: IKeyBinding[] = [];
 

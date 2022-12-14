@@ -151,6 +151,7 @@ export class Configuration implements IConfiguration {
   digraphs = {};
   wrapscan = true;
   scroll = 20;
+  scrolloff = 5;
   startofline = true;
   showMarksInGutter = true;
   shell = '';
