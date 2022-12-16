@@ -257,7 +257,6 @@ export class VimState implements vscode.Disposable {
         ? {
             mode,
             replaceState: new ReplaceState(
-              this.document,
               this.cursors.map((cursor) => cursor.stop),
               this.recordedState.count
             ),
