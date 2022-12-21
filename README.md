@@ -597,8 +597,9 @@ since 1.20, we internally use special key notation for surround ( `<plugys>`, `<
 
 - custom mappings need to use these too.\
   Example: `nnoremap s" <plugys>iw"`
-- the default mappings will not fit for users of custom keyboard layouts (workman, dvorak, etc.).
-  They need to disable them using `vim.disableDefaultPluginMappings`
+- if you use a custom keyboard layout (workman, dvorak, etc.), the default mappings will not fit for you.
+  You need to disable by settting `vim.disableDefaultPluginMappings` to true and then create a mapping for the 3 key sequences above, like so:\
+  Example: `nnoremap ys <plugys>` where you replace `ys` with what fits for your layout.
 ### vim-commentary
 
 Similar to [vim-commentary](https://github.com/tpope/vim-commentary), but uses the VS Code native _Toggle Line Comment_ and _Toggle Block Comment_ features.
