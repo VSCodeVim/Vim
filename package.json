@@ -1208,7 +1208,7 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.7",
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "plugin-error": "2.0.1",
     "prettier": "2.8.1",
     "sinon": "15.0.0",
