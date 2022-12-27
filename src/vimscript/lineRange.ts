@@ -278,7 +278,7 @@ export class LineRange {
   }
 
   public static parser: Parser<LineRange> = seq(
-    Address.parser.skip(optWhitespace),
+    Address.parser.fallback<Address>(new Address({ type: 'current_line' }, 0)).skip(optWhitespace),
     seq(
       alt(string(','), string(';')).skip(optWhitespace),
       Address.parser.fallback(undefined)
