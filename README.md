@@ -373,7 +373,7 @@ Custom remappings are defined on a per-mode basis.
     ```console
     debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
     debug: Remapper: insertModeKeyBindings. before=j,j. after=<Esc>.
-    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
+    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'commands'. before=j,k.
     ```
 
     Misconfigured configurations are ignored.

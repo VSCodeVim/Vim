@@ -7,10 +7,9 @@ import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { Register } from '../register/register';
 import { RecordedState } from '../state/recordedState';
-import { exCommandParser } from '../vimscript/exCommandParser';
+import { Parser } from 'parsimmon';
 import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
 import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
-import { CommandShowCommandHistory, CommandShowSearchHistory } from '../actions/commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
@@ -190,6 +189,8 @@ export abstract class CommandLine {
 
 export class ExCommandLine extends CommandLine {
   static history: CommandLineHistory;
+  static parser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }>;
+  static onSearch: (vimState: VimState) => Promise<void>;
 
   public static async loadHistory(context: ExtensionContext): Promise<void> {
     ExCommandLine.history = new CommandLineHistory(context);
@@ -231,7 +232,7 @@ export class ExCommandLine extends CommandLine {
 
     try {
       // TODO: This eager parsing is costly, and if it's not `:s` or similar, don't need to parse the args at all
-      const { lineRange, command } = exCommandParser.tryParse(this.commandText);
+      const { lineRange, command } = ExCommandLine.parser.tryParse(this.commandText);
       this.lineRange = lineRange;
       this.command = command;
     } catch (err) {
@@ -270,7 +271,7 @@ export class ExCommandLine extends CommandLine {
     try {
       if (this.command === undefined) {
         // TODO: A bit gross:
-        exCommandParser.tryParse(this.text);
+        ExCommandLine.parser.tryParse(this.text);
         throw new Error(`Expected parsing ExCommand '${this.text}' to fail`);
       }
 
@@ -314,13 +315,14 @@ export class ExCommandLine extends CommandLine {
   }
 
   public async ctrlF(vimState: VimState): Promise<void> {
-    new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+    ExCommandLine.onSearch(vimState);
   }
 }
 
 export class SearchCommandLine extends CommandLine {
   public static history: SearchHistory;
   public static readonly previousSearchStates: SearchState[] = [];
+  public static onSearch: (vimState: VimState, direction: SearchDirection) => Promise<void>;
 
   /**
    * Shows the search history as a QuickPick (popup list)
@@ -525,10 +527,7 @@ export class SearchCommandLine extends CommandLine {
   }
 
   public async ctrlF(vimState: VimState): Promise<void> {
-    await new CommandShowSearchHistory(this.searchState.direction).exec(
-      vimState.cursorStopPosition,
-      vimState
-    );
+    await SearchCommandLine.onSearch(vimState, this.searchState.direction);
   }
 
   /**

@@ -7,7 +7,6 @@ import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
-import { CommandNumber } from './commands/actions';
 import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
 import { ExCommandLine } from './../cmd_line/commandLine';
 import { Position } from 'vscode';
@@ -55,9 +54,7 @@ export abstract class BaseOperator extends BaseAction {
   }
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
-    const nonCountActions = vimState.recordedState.actionsRun.filter(
-      (x) => !(x instanceof CommandNumber)
-    );
+    const nonCountActions = vimState.recordedState.actionsRun.filter((x) => x.name !== 'cmd_num');
     const prevAction = nonCountActions[nonCountActions.length - 1];
     return (
       keysPressed.length === 1 &&
@@ -101,6 +98,7 @@ export abstract class BaseOperator extends BaseAction {
 
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
+  public override name = 'delete_op';
   public keys = ['d'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
@@ -188,6 +186,7 @@ class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
   public keys = ['y'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  override name = 'yank_op';
   override createsUndoPoint = false;
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
