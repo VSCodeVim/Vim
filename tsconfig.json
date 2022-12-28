@@ -18,7 +18,8 @@
       "platform/*": ["src/platform/node/*"]
     },
     "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }

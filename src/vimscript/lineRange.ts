@@ -277,19 +277,30 @@ export class LineRange {
     this.separator = separator;
   }
 
-  public static parser: Parser<LineRange> = seq(
-    Address.parser.skip(optWhitespace),
+  public static parser: Parser<LineRange> = alt(
     seq(
+      // with the start line
+      Address.parser.skip(optWhitespace),
+      seq(
+        alt(string(','), string(';')).skip(optWhitespace),
+        Address.parser.fallback(undefined)
+      ).fallback(undefined)
+    ).map(([start, sepEnd]) => {
+      if (sepEnd) {
+        const [sep, end] = sepEnd;
+        return new LineRange(start, sep, end);
+      }
+      return new LineRange(start);
+    }),
+    seq(
+      // without the start line
       alt(string(','), string(';')).skip(optWhitespace),
       Address.parser.fallback(undefined)
-    ).fallback(undefined)
-  ).map(([start, sepEnd]) => {
-    if (sepEnd) {
+    ).map((sepEnd) => {
       const [sep, end] = sepEnd;
-      return new LineRange(start, sep, end);
-    }
-    return new LineRange(start);
-  });
+      return new LineRange(new Address({ type: 'current_line' }), sep, end);
+    })
+  );
 
   public resolve(vimState: VimState): { start: number; end: number } {
     // TODO: *,4 is not a valid range

@@ -12,7 +12,6 @@ import {
   IKeyRemapping,
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
-  IDebugConfiguration,
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
   ITargetsConfiguration,
@@ -310,12 +309,6 @@ class Configuration implements IConfiguration {
     visualline: '#005f87',
     visualblock: '#86592d',
     replace: '#000000',
-  };
-
-  debug: IDebugConfiguration = {
-    silent: false,
-    loggingLevelForAlert: 'error',
-    loggingLevelForConsole: 'error',
   };
 
   searchHighlightColor = '';

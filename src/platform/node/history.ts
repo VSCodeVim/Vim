@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
-import { ILogger } from '../common/logger';
 import { Globals } from '../../globals';
+import { Logger } from '../../util/logger';
 
 export class HistoryBase {
   private readonly extensionStoragePath: string;
-  private readonly logger: ILogger;
+  private readonly logger: Logger;
   private readonly historyFileName: string;
   private history: string[] = [];
 
@@ -18,7 +18,7 @@ export class HistoryBase {
     context: vscode.ExtensionContext,
     historyFileName: string,
     extensionStoragePath: string,
-    logger: ILogger
+    logger: Logger
   ) {
     this.historyFileName = historyFileName;
     this.extensionStoragePath = extensionStoragePath;
