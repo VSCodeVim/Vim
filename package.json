@@ -1093,17 +1093,20 @@
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
           "markdownDescription": "The input method for your normal mode, find more information [here](https://github.com/VSCodeVim/Vim#input-method).",
-          "default": ""
+          "default": "",
+          "scope": "machine"
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
           "type": "string",
           "description": "The shell command to switch input method.",
-          "default": "/path/to/im-select {im}"
+          "default": "/path/to/im-select {im}",
+          "scope": "machine"
         },
         "vim.autoSwitchInputMethod.obtainIMCmd": {
           "type": "string",
           "description": "The shell command to get current input method.",
-          "default": "/path/to/im-select"
+          "default": "/path/to/im-select",
+          "scope": "machine"
         },
         "vim.whichwrap": {
           "type": "string",
