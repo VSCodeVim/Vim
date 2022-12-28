@@ -646,7 +646,11 @@ abstract class IndentObjectMatch extends TextObject {
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
     let endCharacter: number;
-    if (endLineNumber === vimState.document.lineCount - 1 || vimState.currentMode === Mode.Visual) {
+    if (
+      endLineNumber === vimState.document.lineCount - 1 ||
+      vimState.currentMode === Mode.Visual ||
+      vimState.currentMode === Mode.VisualLine
+    ) {
       endCharacter = TextEditor.getLineLength(endLineNumber);
     } else {
       endCharacter = 0;
@@ -707,17 +711,20 @@ abstract class IndentObjectMatch extends TextObject {
 @RegisterAction
 class InsideIndentObject extends IndentObjectMatch {
   keys = ['i', 'i'];
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 }
 
 @RegisterAction
 class InsideIndentObjectAbove extends IndentObjectMatch {
   keys = ['a', 'i'];
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override includeLineAbove = true;
 }
 
 @RegisterAction
 class InsideIndentObjectBoth extends IndentObjectMatch {
   keys = ['a', 'I'];
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override includeLineAbove = true;
   override includeLineBelow = true;
 }

@@ -165,5 +165,32 @@ suite('cmd_line/search command', () => {
       await modeHandler.handleKeyEvent(key);
       assert.strictEqual(modeHandler.currentMode, Mode.Normal);
     });
+
+    test(`${key} at start of non-empty command does nothing`, async () => {
+      await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+      await modeHandler.handleKeyEvent('<Home>');
+      await modeHandler.handleKeyEvent(key);
+      assertStatusBarEqual(':|abc');
+    });
   }
+
+  test(`<Del> removes one character from command line`, async () => {
+    await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<left>', '<left>']);
+    await modeHandler.handleMultipleKeyEvents(['<Del>']);
+    assertStatusBarEqual(':a|c');
+  });
+
+  test(`<Del> with empty command line goes to normal mode`, async () => {
+    await modeHandler.handleKeyEvent(':');
+    await modeHandler.handleKeyEvent('<Del>');
+    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+  });
+
+  test(`<Del> at start of non-empty command acts normally`, async () => {
+    await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+    await modeHandler.handleKeyEvent('<Home>');
+    await modeHandler.handleKeyEvent('<Del>');
+    assertStatusBarEqual(':|bc');
+  });
 });

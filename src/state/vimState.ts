@@ -257,7 +257,6 @@ export class VimState implements vscode.Disposable {
         ? {
             mode,
             replaceState: new ReplaceState(
-              this.document,
               this.cursors.map((cursor) => cursor.stop),
               this.recordedState.count
             ),
@@ -272,6 +271,11 @@ export class VimState implements vscode.Disposable {
             mode,
             commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
             firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
+          }
+        : mode === Mode.Insert
+        ? {
+            mode,
+            highSurrogate: undefined,
           }
         : { mode }
     );

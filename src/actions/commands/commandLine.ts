@@ -185,6 +185,15 @@ class CommandLineEscape extends CommandLineAction {
 }
 
 @RegisterAction
+class CommandLineCtrlF extends CommandLineAction {
+  keys = ['<C-f>'];
+
+  protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
+    await commandLine.ctrlF(vimState);
+  }
+}
+
+@RegisterAction
 class CommandLineBackspace extends CommandLineAction {
   keys = [['<BS>'], ['<S-BS>'], ['<C-h>']];
 

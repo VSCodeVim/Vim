@@ -26,6 +26,7 @@ import { DefaultDigraphs } from './digraphs';
 import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
+import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 
 @RegisterAction
 export class CommandEscInsertMode extends BaseCommand {
@@ -236,9 +237,35 @@ export class CommandInsertInInsertMode extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
+    let text = char;
+
+    if (char.length === 1) {
+      const prevHighSurrogate =
+        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
+
+      if (isHighSurrogate(char.charCodeAt(0))) {
+        vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: char,
+        });
+
+        if (prevHighSurrogate === undefined) return;
+        text = prevHighSurrogate;
+      } else {
+        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== undefined) {
+          text = prevHighSurrogate + char;
+        }
+
+        vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: undefined,
+        });
+      }
+    }
+
     vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',
-      text: char,
+      text,
       isMultiCursor: vimState.isMultiCursor,
     });
   }

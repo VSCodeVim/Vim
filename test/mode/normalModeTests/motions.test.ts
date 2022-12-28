@@ -1031,6 +1031,20 @@ suite('Motions in Normal Mode', () => {
     end: ['blah', 'duh', 'a', 'hu|r '],
   });
 
+  newTest({
+    title: 'special treatment of curly braces',
+    start: ['{', '|    {  {  }   }   ', '}'],
+    keysPressed: 'di{',
+    end: ['{', '    {|}   ', '}'],
+  });
+
+  newTest({
+    title: 'no special treatment of curly braces if any other character is present',
+    start: ['{', 'a  |  {  {  }   }   ', '}'],
+    keysPressed: 'di{',
+    end: ['{', '|}'],
+  });
+
   suite("doesn't update desiredColumn when it shouldn't", () => {
     newTest({
       title: 'Preserves desired cursor position when pressing zz',
