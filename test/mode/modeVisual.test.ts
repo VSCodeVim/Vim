@@ -595,6 +595,14 @@ suite('Mode Visual', () => {
       });
 
       newTest({
+        title: `Can do di${buttonToPress} on a matching bracket from outside bracket`,
+        start: [`| ${start} one ${start} two ${start} three ${end} four ${end} five ${end}`],
+        keysPressed: `di${buttonToPress}`,
+        end: [` ${start}|${end}`],
+        endMode: Mode.Normal,
+      });
+
+      newTest({
         title: `Can do i${buttonToPress} on multiple matching brackets`,
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `vi${buttonToPress}i${buttonToPress}i${buttonToPress}d`,
@@ -630,6 +638,14 @@ suite('Mode Visual', () => {
     });
 
     newTest({
+      title: 'Cannot do vit on a matching tag from outside tag',
+      start: ['|one <blink>hello</blink> two'],
+      keysPressed: 'vitd',
+      end: ['|ne <blink>hello</blink> two'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
       title:
         'Count-prefixed vit alternates expanding selection between inner and outer tag brackets',
       start: ['<div> one <p> t|wo </p> three </div>'],
@@ -643,6 +659,14 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vatd',
       end: ['one | two'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Cannot do vat on a matching tag from from outside tag',
+      start: ['|one <blink>hello</blink> two'],
+      keysPressed: 'vatd',
+      end: ['|ne <blink>hello</blink> two'],
       endMode: Mode.Normal,
     });
   });
@@ -696,6 +720,22 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'Can do vi) on a matching parenthesis from outside parathesis',
+    start: ['|test(test)'],
+    keysPressed: 'vi)d',
+    end: ['test(|)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can do vi) on a matching parenthesis from outside parathesis for multiple lines',
+    start: ['|test(test)', 'test(test)'],
+    keysPressed: 'vi)d',
+    end: ['test(|)', 'test(test)'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
     title: 'Can do vi) on multiple matching parens',
     start: ['test(te(te|st)st)'],
     keysPressed: 'vi)i)d',
@@ -706,6 +746,14 @@ suite('Mode Visual', () => {
   newTest({
     title: 'Can do va) on a matching parenthesis',
     start: ['test(te|st);'],
+    keysPressed: 'va)d',
+    end: ['test|;'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can do va) on a matching parenthesis from outside parenthesis',
+    start: ['|test(test);'],
     keysPressed: 'va)d',
     end: ['test|;'],
     endMode: Mode.Normal,
