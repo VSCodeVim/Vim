@@ -1,5 +1,20 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Support for `:cw[indow]`, `:lw[indow]`, and related commands ([@mogelbrod](https://github.com/mogelbrod)).
+
+### Changed
+
+- Scope for settings under `vim.autoSwitchInputMethod.*` is now `machine` ([@Quanuanc](https://github.com/Quanuanc)).
+
+### Fixed
+
+- Fixed `.` after exiting Visual mode or command line with `<Esc>` ([@wgr45097](https://github.com/wgr45097)).
+- Fixed ex command line ranges with no explicit start, such as `,5` ([@lazygyu](https://github.com/lazygyu)).
+
 ## [v1.24.3](https://github.com/vscodevim/vim/tree/v1.24.3) (2022-11-06)
 
 ### Added
