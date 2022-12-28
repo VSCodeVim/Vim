@@ -545,11 +545,11 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      this.logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
+      this.logger.debug(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         const precedingKeys = inputtedString.slice(0, inputtedString.length - keySlice.length);
         if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
-          this.logger.verbose(
+          this.logger.debug(
             `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
           );
           break;

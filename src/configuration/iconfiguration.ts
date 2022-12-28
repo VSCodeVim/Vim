@@ -33,24 +33,6 @@ export interface IAutoSwitchInputMethod {
   obtainIMCmd: string;
 }
 
-export interface IDebugConfiguration {
-  /**
-   * Boolean indicating whether all logs should be suppressed
-   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
-   */
-  silent: boolean;
-
-  /**
-   * Maximum level of messages to show as VS Code information message
-   */
-  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
-
-  /**
-   * Maximum level of messages to log to console.
-   */
-  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
-}
-
 export interface IHighlightedYankConfiguration {
   /**
    * Boolean indicating whether yank highlighting should be enabled.
@@ -268,11 +250,6 @@ export interface IConfiguration {
    * Status bar colors to change to based on mode
    */
   statusBarColors: IModeSpecificStrings<string | string[]>;
-
-  /**
-   * Extension debugging settings
-   */
-  debug: IDebugConfiguration;
 
   /**
    * Color of search highlights.

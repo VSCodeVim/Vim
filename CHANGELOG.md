@@ -8,6 +8,7 @@
 
 ### Changed
 
+- Logging is now done to a `LogOutputChannel`. It can be accessed in the `Output` panel and configured using `workbench.action.setLogLevel` ([@J-Fields](https://github.com/J-Fields)).
 - Scope for settings under `vim.autoSwitchInputMethod.*` is now `machine` ([@Quanuanc](https://github.com/Quanuanc)).
 
 ### Fixed

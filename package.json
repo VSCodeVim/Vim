@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.67.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Other",
@@ -448,35 +448,6 @@
       "title": "Vim",
       "type": "object",
       "properties": {
-        "vim.debug.silent": {
-          "type": "boolean",
-          "description": "If true, all logs are suppressed.",
-          "default": false
-        },
-        "vim.debug.loggingLevelForAlert": {
-          "type": "string",
-          "description": "Maximum level of messages to present as VS Code information window.",
-          "default": "error",
-          "enum": [
-            "error",
-            "warn",
-            "info",
-            "verbose",
-            "debug"
-          ]
-        },
-        "vim.debug.loggingLevelForConsole": {
-          "type": "string",
-          "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
-          "default": "error",
-          "enum": [
-            "error",
-            "warn",
-            "info",
-            "verbose",
-            "debug"
-          ]
-        },
         "vim.normalModeKeyBindings": {
           "type": "array",
           "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
@@ -1182,10 +1153,7 @@
     "queue": "^6.0.2",
     "source-map-support": "0.5.21",
     "untildify": "4.0.0",
-    "util": "0.12.5",
-    "winston": "3.8.2",
-    "winston-console-for-electron": "0.0.6",
-    "winston-transport": "4.5.0"
+    "util": "0.12.5"
   },
   "devDependencies": {
     "@types/diff": "5.0.2",
@@ -1197,7 +1165,7 @@
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
     "@types/source-map-support": "0.5.6",
-    "@types/vscode": "1.67.0",
+    "@types/vscode": "1.74.0",
     "@vscode/test-electron": "2.2.1",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
