@@ -67,17 +67,17 @@ abstract class MoveByScreenLine extends BaseMovement {
         // If we change the `vimState.editor.selections` directly with the forEach
         // for some reason vscode doesn't update them. But doing it this way does
         // update vscode's selections.
-        const selections = vimState.editor.selections;
-        selections.forEach((s, i) => {
+        vimState.editor.selections = vimState.editor.selections.map((s, i) => {
           if (s.active.isAfter(s.anchor)) {
             // The selection is on the right side of the cursor, while our representation
             // considers the cursor to be the left edge, so we need to move the selection
             // to the right place before executing the 'cursorMove' command.
             const active = s.active.getLeftThroughLineBreaks();
-            vimState.editor.selections[i] = new vscode.Selection(s.anchor, active);
+            return new vscode.Selection(s.anchor, active);
+          } else {
+            return s;
           }
         });
-        vimState.editor.selections = selections;
       }
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
@@ -254,10 +254,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line >= vimState.document.lineCount - 1) {
       return position;
     }
@@ -293,10 +290,7 @@ class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<down>' &&
@@ -334,10 +328,7 @@ class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
   override preservesDesiredColumn = true;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<up>' &&
@@ -377,10 +368,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   override by: CursorMoveByUnit = 'line';
   override value = 1;
 
-  public override async execAction(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
+  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (position.line === 0) {
       return position;
     }
@@ -420,16 +408,10 @@ export class ArrowsInInsertMode extends BaseMovement {
     let newPosition: Position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown(this.keysPressed).execAction(
-          position,
-          vimState
-        )) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -457,10 +439,10 @@ class ArrowsInReplaceMode extends BaseMovement {
     let newPosition: Position = position;
     switch (this.keysPressed[0]) {
       case '<up>':
-        newPosition = (await new MoveUp().execAction(position, vimState)) as Position;
+        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
         break;
       case '<down>':
-        newPosition = (await new MoveDown().execAction(position, vimState)) as Position;
+        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
         break;
       case '<left>':
         newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
@@ -1491,7 +1473,9 @@ export class MoveFullWordBegin extends BaseMovement {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w
-      return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
+      return position
+        .nextWordEnd(vimState.document, { wordType: WordType.Big, inclusive: true })
+        .getRight();
     } else {
       return position.nextWordStart(vimState.document, { wordType: WordType.Big });
     }
@@ -1857,7 +1841,21 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     // First, search backwards for the opening character of the sequence
     let openPos = PairMatcher.nextPairedChar(selStart, closingChar, vimState, true);
     if (openPos === undefined) {
-      return failedMovement(vimState);
+      // If opening character not found, search forwards
+      let lineNum = selStart.line;
+      while (true) {
+        if (lineNum >= vimState.document.lineCount) {
+          break;
+        }
+        const lineText = vimState.document.lineAt(lineNum).text;
+        const matchIndex = lineText.indexOf(this.charToMatch);
+        if (matchIndex !== -1) {
+          openPos = new Position(lineNum, matchIndex);
+          break;
+        }
+        ++lineNum;
+      }
+      if (openPos === undefined) return failedMovement(vimState);
     }
 
     // Next, search forwards for the closing character which matches
@@ -1934,24 +1932,72 @@ export class MoveAroundParentheses extends MoveInsideCharacter {
   override includeSurrounding = true;
 }
 
+// special treatment for curly braces
+export abstract class MoveCurlyBrace extends MoveInsideCharacter {
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  protected charToMatch: string = '{'
+
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ): Promise<IMovement> {
+
+    // curly braces has a special treatment. In case the cursor is before an opening curly brace,
+    // and there are no characters before the opening curly brace in the same line, it should jump
+    // to the next opening curly brace, even if it already inside a pair of curly braces.
+    const text = vimState.document.lineAt(position).text;
+    const openCurlyBraceIndexFromCursor = text.substring(position.character).indexOf('{');
+    const startSameAsEnd = vimState.cursorStartPosition.isEqual(position);
+    if (
+      openCurlyBraceIndexFromCursor !== -1 &&
+      text.substring(0, position.character + openCurlyBraceIndexFromCursor).trim().length === 0 &&
+      startSameAsEnd
+    ) {
+      const curlyPos = position.with(position.line, position.character + openCurlyBraceIndexFromCursor);
+      vimState.cursorStartPosition = vimState.cursorStopPosition = curlyPos;
+      const movement = await super.execAction(curlyPos, vimState, firstIteration, lastIteration);
+      if (movement.failed) {
+        return movement;
+      }
+      const { start, stop } = movement;
+      if (!isVisualMode(vimState.currentMode) && position.isBefore(start)) {
+        vimState.recordedState.operatorPositionDiff = start.subtract(position);
+      } else if (!isVisualMode(vimState.currentMode) && position.isAfter(stop)) {
+        if (position.line === stop.line) {
+          vimState.recordedState.operatorPositionDiff = stop.subtract(position);
+        } else {
+          vimState.recordedState.operatorPositionDiff = start.subtract(position);
+        }
+      }
+
+      vimState.cursorStartPosition = start;
+      vimState.cursorStopPosition = stop;
+      return movement;
+    }
+    else {
+      return super.execAction(position, vimState, firstIteration, lastIteration);
+    }
+  }
+}
+
 @RegisterAction
-export class MoveInsideCurlyBrace extends MoveInsideCharacter {
+export class MoveInsideCurlyBrace extends MoveCurlyBrace {
   keys = [
     ['i', '{'],
     ['i', '}'],
     ['i', 'B'],
   ];
-  charToMatch = '{';
 }
 
 @RegisterAction
-export class MoveAroundCurlyBrace extends MoveInsideCharacter {
+export class MoveAroundCurlyBrace extends MoveCurlyBrace {
   keys = [
     ['a', '{'],
     ['a', '}'],
     ['a', 'B'],
   ];
-  charToMatch = '{';
   override includeSurrounding = true;
 }
 

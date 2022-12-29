@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
@@ -184,7 +184,7 @@ class TextEditorStub implements vscode.TextEditor {
   selections!: vscode.Selection[];
   readonly visibleRanges!: vscode.Range[];
   options!: vscode.TextEditorOptions;
-  viewColumn?: vscode.ViewColumn;
+  readonly viewColumn!: vscode.ViewColumn;
 
   constructor() {}
   async edit(

@@ -22,6 +22,8 @@ abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override createsUndoPoint = true;
 
+  protected overwritesRegisterWithSelection = true;
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
@@ -96,8 +98,15 @@ abstract class BasePutCommand extends BaseCommand {
         end: replaceRange.start.advancePositionByText(text),
       };
 
-      vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
-      Register.put(vimState, vimState.document.getText(replaceRange), this.multicursorIndex, true);
+      if (this.overwritesRegisterWithSelection) {
+        vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+        Register.put(
+          vimState,
+          vimState.document.getText(replaceRange),
+          this.multicursorIndex,
+          true
+        );
+      }
     }
 
     // Report lines changed
@@ -130,9 +139,14 @@ abstract class BasePutCommand extends BaseCommand {
     } else if (register.registerMode === RegisterMode.LineWise || mode === Mode.VisualLine) {
       return Array(count).fill(register.text).join('\n');
     } else if (register.registerMode === RegisterMode.BlockWise) {
-      return register.text
-        .split('\n')
-        .map((line) => line.repeat(count))
+      const lines = register.text.split('\n');
+      const longestLength = Math.max(...lines.map((line) => line.length));
+      return lines
+        .map((line) => {
+          const space = longestLength - line.length;
+          const lineWithSpace = line + ' '.repeat(space);
+          return lineWithSpace.repeat(count - 1) + line;
+        })
         .join('\n');
     } else {
       throw new Error(`Unexpected RegisterMode ${register.registerMode}`);
@@ -171,6 +185,7 @@ abstract class BasePutCommand extends BaseCommand {
       const transformations: Transformation[] = [];
       const lines = text.split('\n');
       const lineCount = Math.max(lines.length, replaceRange.end.line - replaceRange.start.line + 1);
+      const longestLength = Math.max(...lines.map((line) => line.length));
 
       // Only relevant for Visual mode
       // If we replace 2 newlines, subsequent transformations need to take that into account (otherwise we get overlaps)
@@ -210,14 +225,20 @@ abstract class BasePutCommand extends BaseCommand {
             text: '\n' + ' '.repeat(replaceRange.start.character) + lineText,
           });
         } else {
-          const spaces = Math.max(
-            replaceRange.start.character - document.lineAt(lineNumber).text.length,
-            0
-          );
+          const lineLength = document.lineAt(lineNumber).text.length;
+          const leftPadding = Math.max(replaceRange.start.character - lineLength, 0);
+          let rightPadding = 0;
+          if (
+            mode !== Mode.VisualBlock &&
+            ((lineNumber <= replaceRange.end.line && replaceRange.end.character < lineLength) ||
+              (lineNumber > replaceRange.end.line && replaceRange.start.character < lineLength))
+          ) {
+            rightPadding = longestLength - lineText.length;
+          }
           transformations.push({
             type: 'replaceText',
             range,
-            text: ' '.repeat(spaces) + lineText,
+            text: ' '.repeat(leftPadding) + lineText + ' '.repeat(rightPadding),
           });
         }
       }
@@ -391,6 +412,9 @@ class PutCommand extends BasePutCommand {
 class PutBeforeCommand extends PutCommand {
   override keys: string[] | string[][] = ['P'];
 
+  // Since Vim 9.0, Visual `P` does not overwrite the unnamed register with selection's contents
+  override overwritesRegisterWithSelection = false;
+
   protected override putBefore(): boolean {
     return true;
   }
@@ -470,12 +494,9 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
           return new Position(line, 0);
         } else if (registerMode === RegisterMode.BlockWise) {
           const lines = text.split('\n');
-          return new Position(
-            rangeStart.line + lines.length - 1,
-            rangeStart.character +
-              lines[0].length +
-              (this.putBefore() && mode === Mode.Normal ? 1 : 0)
-          );
+          const lastLine = rangeStart.line + lines.length - 1;
+          const longestLineLength = Math.max(...lines.map((line) => line.length));
+          return new Position(lastLine, rangeStart.character + longestLineLength);
         }
       } else if (mode === Mode.VisualLine) {
         return new Position(rangeStart.line + text.split('\n').length, 0);
@@ -512,6 +533,7 @@ class GPutCommand extends PutCommand {
 @PlaceCursorAfterText
 class GPutBeforeCommand extends PutBeforeCommand {
   override keys = ['g', 'P'];
+  override overwritesRegisterWithSelection = true;
 }
 
 function AdjustIndent<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {

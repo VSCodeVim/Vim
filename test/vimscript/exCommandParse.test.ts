@@ -51,6 +51,8 @@ suite('Ex command parsing', () => {
     exParseTest(':%', new GotoLineCommand());
     exParseTest(':.+5', new GotoLineCommand());
     exParseTest(':.+,.+-+3', new GotoLineCommand());
+    exParseTest(':,5', new GotoLineCommand());
+    exParseTest(':,', new GotoLineCommand());
   });
 
   suite(':!', () => {
@@ -385,17 +387,63 @@ suite('Ex command parsing', () => {
   });
 
   suite(':sor[t]', () => {
-    exParseTest(':sort', new SortCommand({ reverse: false, ignoreCase: false, unique: false }));
-    exParseTest(':sort i', new SortCommand({ reverse: false, ignoreCase: true, unique: false }));
-    exParseTest(':sort u', new SortCommand({ reverse: false, ignoreCase: false, unique: true }));
-    exParseTest(':sort iu', new SortCommand({ reverse: false, ignoreCase: true, unique: true }));
-    exParseTest(':sort ui', new SortCommand({ reverse: false, ignoreCase: true, unique: true }));
+    exParseTest(
+      ':sort',
+      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: false })
+    );
+    exParseTest(
+      ':sort i',
+      new SortCommand({ reverse: false, ignoreCase: true, unique: false, numeric: false })
+    );
+    exParseTest(
+      ':sort u',
+      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort iu',
+      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort ui',
+      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort n',
+      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: true })
+    );
+    exParseTest(
+      ':sort nu',
+      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: true })
+    );
 
-    exParseTest(':sort!', new SortCommand({ reverse: true, ignoreCase: false, unique: false }));
-    exParseTest(':sort! i', new SortCommand({ reverse: true, ignoreCase: true, unique: false }));
-    exParseTest(':sort! u', new SortCommand({ reverse: true, ignoreCase: false, unique: true }));
-    exParseTest(':sort! iu', new SortCommand({ reverse: true, ignoreCase: true, unique: true }));
-    exParseTest(':sort! ui', new SortCommand({ reverse: true, ignoreCase: true, unique: true }));
+    exParseTest(
+      ':sort!',
+      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: false })
+    );
+    exParseTest(
+      ':sort! i',
+      new SortCommand({ reverse: true, ignoreCase: true, unique: false, numeric: false })
+    );
+    exParseTest(
+      ':sort! u',
+      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort! iu',
+      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort! ui',
+      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false })
+    );
+    exParseTest(
+      ':sort! n',
+      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: true })
+    );
+    exParseTest(
+      ':sort! nu',
+      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: true })
+    );
 
     // TODO
   });

@@ -2,9 +2,77 @@
 
 ## Unreleased
 
+### Added
+
+- Support for `:cw[indow]`, `:lw[indow]`, and related commands ([@mogelbrod](https://github.com/mogelbrod)).
+
+### Changed
+
+- Logging is now done to a `LogOutputChannel`. It can be accessed in the `Output` panel and configured using `workbench.action.setLogLevel` ([@J-Fields](https://github.com/J-Fields)).
+- Scope for settings under `vim.autoSwitchInputMethod.*` is now `machine` ([@Quanuanc](https://github.com/Quanuanc)).
+
 ### Fixed
 
-- Search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `.` after exiting Visual mode or command line with `<Esc>` ([@wgr45097](https://github.com/wgr45097)).
+- Fixed ex command line ranges with no explicit start, such as `,5` ([@lazygyu](https://github.com/lazygyu)).
+
+## [v1.24.3](https://github.com/vscodevim/vim/tree/v1.24.3) (2022-11-06)
+
+### Added
+
+- Text registers can now be executed as macros with `@` ([@elazarcoh](https://github.com/elazarcoh)).
+
+### Fixed
+
+- Fixed some ex commands when repeated with `@:` ([@J-Fields](https://github.com/J-Fields)).
+- Fixed cursor position after `gp` or `gP` in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed edge case of `i{` and `a{` ([@elazarcoh](https://github.com/elazarcoh)).
+
+## [v1.24.2](https://github.com/vscodevim/vim/tree/v1.24.2) (2022-10-29)
+
+### Added
+
+- Support for the `'scrolloff'` option, which is mapped to VS Code's `editor.cursorSurroundingLines` setting ([@LinHeLurking](https://github.com/LinHeLurking)).
+
+### Fixed
+
+- Fixed indent (`>`) and outdent (`<`) in VisualBlock mode ([@burnsdy](https://github.com/burnsdy)).
+- Fixed `cW` when the cursor is on the last character of a word ([@wgr45097](https://github.com/wgr45097)).
+- Fixed indent textobjects (`ii`, `ai`, and `aI`) in VisualLine mode ([@mogelbrod](https://github.com/mogelbrod)).
+
+## [v1.24.1](https://github.com/vscodevim/vim/tree/v1.24.1) (2022-09-26)
+
+### Fixed
+
+- Fixed `gt` and `gT` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.24.0](https://github.com/vscodevim/vim/tree/v1.24.0) (2022-09-26)
+
+### Added
+
+- Support for `zf`/`zd` commands, which fold/unfold arbitrary ranges ([@elazarcoh](https://github.com/elazarcoh)).
+- Support for surrounding with function call ([@riccardofano](https://github.com/riccardofano)).
+- Support for `:sor[t] n`, which sorts lines numerically, rather than lexicographically ([@jan25](https://github.com/jan25)).
+
+### Changed
+
+- `P` in Visual modes no longer overwrites the default register with the selection's contents ([@J-Fields](https://github.com/J-Fields)).
+- Yanking block-wise now pads shorter lines with spaces ([@burnsdy](https://github.com/burnsdy)).
+- `<C-]>` now goes to definition, not declaration ([@J-Fields](https://github.com/J-Fields)).
+- `:tabn[ext] {N}` now goes to the Nth tab, not N tabs forward [@elazarcoh](https://github.com/elazarcoh).
+
+### Fixed
+
+- Fixed insertion of surrogate pairs, like emoji 🙂 ([@garzj](https://github.com/garzj)).
+- Fixed `<BS>` and `<Del>` when cursor is at start of command line ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.23.2](https://github.com/vscodevim/vim/tree/v1.23.2) (2022-08-01)
+
+### Fixed
+
+- Fix the jump list ([@pitkali](https://github.com/pitkali)).
+- Make increment/decrement (`<C-a>` and `<C-x>`) preserve case of hex numbers ([@smallkirby](https://github.com/smallkirby)).
+- Fix search highlights on inactive but visible editors ([@J-Fields](https://github.com/J-Fields)).
 
 ## [v1.23.1](https://github.com/vscodevim/vim/tree/v1.23.1) (2022-06-28)
 

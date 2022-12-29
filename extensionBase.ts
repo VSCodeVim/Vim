@@ -17,6 +17,7 @@ import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
+import { exCommandParser } from './src/vimscript/exCommandParser';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -74,8 +75,6 @@ export async function getAndUpdateModeHandler(
 async function loadConfiguration() {
   const validatorResults = await configuration.load();
 
-  Logger.configChanged(configuration);
-
   const logger = Logger.get('Configuration');
   logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
@@ -97,6 +96,8 @@ async function loadConfiguration() {
  * The extension's entry point
  */
 export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
+  ExCommandLine.parser = exCommandParser;
+
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
@@ -244,6 +245,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         Register.setReadonlyRegister('%', relativePath);
       }
 
+      if (activeTextEditor === undefined) {
+        return;
+      }
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler(true);
         if (mh) {
@@ -298,7 +302,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
           // wanted this one to be ignored as well.
-          logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+          logger.warn(`Selections: Ignoring slipped selection: ${selectionsHash}`);
           return;
         }
       }

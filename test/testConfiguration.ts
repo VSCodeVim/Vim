@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import {
   IConfiguration,
-  IDebugConfiguration,
   IHighlightedYankConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
@@ -76,11 +75,6 @@ export class Configuration implements IConfiguration {
     visualblock: '#A3BE8C',
     replace: '#D08770',
   };
-  debug: IDebugConfiguration = {
-    silent: false,
-    loggingLevelForAlert: 'error',
-    loggingLevelForConsole: 'warn',
-  };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';
   searchMatchColor = 'rgba(255, 150, 150, 0.3)';
@@ -144,6 +138,7 @@ export class Configuration implements IConfiguration {
   digraphs = {};
   wrapscan = true;
   scroll = 20;
+  scrolloff = 5;
   startofline = true;
   showMarksInGutter = true;
   shell = '';

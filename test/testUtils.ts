@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { strict as assert } from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import { join } from 'path';
@@ -29,6 +29,10 @@ class TestMemento implements vscode.Memento {
 
   async update(key: string, value: any): Promise<void> {
     this.mapping.set(key, value);
+  }
+
+  keys(): readonly string[] {
+    return Array.from(this.mapping.keys());
   }
 }
 

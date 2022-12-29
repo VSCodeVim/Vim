@@ -4,7 +4,8 @@ import type { VimState } from '../state/vimState';
 export type ActionType = 'command' | 'motion' | 'operator' | 'number';
 
 export interface IBaseAction {
-  readonly actionType: ActionType
+  name: string;
+  readonly actionType: ActionType;
   readonly isJump: boolean;
   readonly createsUndoPoint: boolean;
 

@@ -36,4 +36,18 @@ suite('surrogate-pair', () => {
     keysPressed: 'vjllyP',
     end: ['|𩸽𩸽𩸽🐕🐕🐕', '🐕🐕🐕𩸽𩸽𩸽🐕🐕🐕', '🐕🐕🐕𩸽𩸽𩸽'],
   });
+
+  newTest({
+    title: 'insert a cute dog',
+    start: ['|'],
+    keysPressed: 'i🐕weee<ESC>',
+    end: ['🐕weee|'],
+  });
+
+  newTest({
+    title: 'insert some more cute dogs',
+    start: ['|'],
+    keysPressed: 'i🐕🐕<ESC>',
+    end: ['🐕🐕|'],
+  });
 });

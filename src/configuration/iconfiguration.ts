@@ -42,24 +42,6 @@ export interface IAutoSwitchInputMethod {
   obtainIMCmd: string;
 }
 
-export interface IDebugConfiguration {
-  /**
-   * Boolean indicating whether all logs should be suppressed
-   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
-   */
-  silent: boolean;
-
-  /**
-   * Maximum level of messages to show as VS Code information message
-   */
-  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
-
-  /**
-   * Maximum level of messages to log to console.
-   */
-  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
-}
-
 export interface IHighlightedYankConfiguration {
   /**
    * Boolean indicating whether yank highlighting should be enabled.
@@ -279,11 +261,6 @@ export interface IConfiguration {
   statusBarColors: IModeSpecificStrings<string | string[]>;
 
   /**
-   * Extension debugging settings
-   */
-  debug: IDebugConfiguration;
-
-  /**
    * Color of search highlights.
    */
   searchHighlightColor: string;
@@ -451,6 +428,11 @@ export interface IConfiguration {
    * Number of lines to scroll with CTRL-U and CTRL-D commands. Set to 0 to use a half page scroll.
    */
   scroll: number;
+
+  /**
+   * Number of line offset above or below cursor when moving.
+   */
+  scrolloff: number;
 
   /**
    * When `true` the commands listed below move the cursor to the first non-blank of the line. When

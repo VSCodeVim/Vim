@@ -1,13 +1,4 @@
 import { Clipboard } from './../util/clipboard';
-import {
-  ActionDeleteChar,
-  ActionDeleteCharVisualLineMode,
-  ActionDeleteCharWithDeleteKey,
-  ActionDeleteLastChar,
-  CommandRegister,
-  CommandYankFullLine,
-} from './../actions/commands/actions';
-import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { readFileAsync, writeFileAsync } from 'platform/fs';
@@ -216,11 +207,14 @@ export class Register {
   private static processNumberedRegisters(vimState: VimState, content: RegisterContent): void {
     // Find the BaseOperator of the current actions
     const baseOperator = vimState.recordedState.operator || vimState.recordedState.command;
+    if (!baseOperator) {
+      return;
+    }
 
-    if (baseOperator instanceof YankOperator || baseOperator instanceof CommandYankFullLine) {
+    if (baseOperator.name === 'yank_op' || baseOperator.name === 'yank_full_line') {
       // 'yank' to 0 only if no register was specified
       const registerCommand = vimState.recordedState.actionsRun.find((value) => {
-        return value instanceof CommandRegister;
+        return value.name === 'cmd_register';
       });
 
       if (!registerCommand) {
@@ -232,11 +226,11 @@ export class Register {
         ]);
       }
     } else if (
-      (baseOperator instanceof DeleteOperator ||
-        baseOperator instanceof ActionDeleteChar ||
-        baseOperator instanceof ActionDeleteLastChar ||
-        baseOperator instanceof ActionDeleteCharVisualLineMode ||
-        baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
+      (baseOperator.name === 'delete_op' ||
+        baseOperator.name === 'delete_char' ||
+        baseOperator.name === 'delete_last_char' ||
+        baseOperator.name === 'delete_char_visual_line_mode' ||
+        baseOperator.name === 'delete_char_with_del') &&
       !(vimState.macro !== undefined || vimState.isReplayingMacro)
     ) {
       if (

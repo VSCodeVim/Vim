@@ -63,9 +63,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public focusChanged = false;
 
-  private searchDecorationCacheKey:
-    | { searchString: string; documentVersion: number }
-    | undefined;
+  private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -315,6 +313,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         );
         this.vimState.cursorStopPosition = selection.active;
         this.vimState.cursorStartPosition = selection.anchor;
+        this.vimState.desiredColumn = selection.active.character;
         await this.updateView({ drawSelection: false, revealRange: false });
       }
       return;
@@ -798,6 +797,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
       this.createUndoPointForBrackets();
 
+    // We don't want to record a repeatable action when exiting from these modes
+    // by pressing <Esc>
+    if (
+      (prevMode === Mode.Visual ||
+        prevMode === Mode.VisualBlock ||
+        prevMode === Mode.VisualLine ||
+        prevMode === Mode.CommandlineInProgress) &&
+      action.keysPressed[0] === '<Esc>'
+    ) {
+      ranRepeatableAction = false;
+    }
+
     // Record down previous action and flush temporary state
     if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
       globalState.previousFullAction = this.vimState.recordedState;
@@ -1254,7 +1265,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
           case Mode.VisualBlock:
             for (const line of TextEditor.iterateLinesInBlock(this.vimState, cursor)) {
-              selections.push(new vscode.Selection(line.start, line.end));
+              selections.push(
+                new vscode.Selection(
+                  this.vimState.document.validatePosition(line.start),
+                  this.vimState.document.validatePosition(line.end)
+                )
+              );
             }
             break;
 
@@ -1356,7 +1372,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         );
         this.selectionsChanged.ourSelections.push(selectionsHash);
         ModeHandler.logger.debug(
-          `Selections: Adding Selection Change to be Ignored! Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
+          `Selections: Adding Selection Change to be Ignored! (total: ${
+            this.selectionsChanged.ourSelections.length
+          }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );
       }
 

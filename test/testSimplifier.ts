@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
@@ -80,6 +80,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  registers?: { [name: string]: string | undefined };
   statusBar?: string;
   jumps?: string[];
   stub?: {
@@ -291,12 +292,17 @@ function tokenizeKeySequence(sequence: string): string[] {
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
   function rawTokenize(characters: string): void {
-    for (const char of characters) {
-      result.push(char);
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < characters.length; i++) {
+      result.push(characters[i]);
     }
   }
 
-  for (const char of sequence) {
+  // don't use a for of here, since the iterator doesn't split surrogate pairs
+  // tslint:disable-next-line:prefer-for-of
+  for (let i = 0; i < sequence.length; i++) {
+    const char = sequence[i];
+
     key += char;
 
     if (char === '<') {
@@ -383,11 +389,20 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     'Cursor position is wrong.'
   );
 
-  // endMode: check end mode is correct if given
   if (testObj.endMode !== undefined) {
     const actualMode = Mode[modeHandler.currentMode].toUpperCase();
     const expectedMode = Mode[testObj.endMode].toUpperCase();
     assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
+  }
+
+  if (testObj.registers !== undefined) {
+    for (const reg in testObj.registers) {
+      if (testObj.registers[reg] !== undefined) {
+        assert.strictEqual((await Register.get(reg))?.text, testObj.registers[reg]);
+      } else {
+        assert.strictEqual(await Register.get(reg), undefined);
+      }
+    }
   }
 
   if (testObj.statusBar !== undefined) {
