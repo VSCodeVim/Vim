@@ -437,7 +437,7 @@ export class VimrcImpl {
   }
 
   private static async findDefaultVimrc(): Promise<string | undefined> {
-    let vscodeVimrcPath = path.join(os.homedir(), '.vscodevimrc');
+    const vscodeVimrcPath = path.join(os.homedir(), '.vscodevimrc');
     if (await fs.existsAsync(vscodeVimrcPath)) {
       return vscodeVimrcPath;
     }
