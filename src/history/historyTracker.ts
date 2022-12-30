@@ -26,8 +26,6 @@ import { earlierOf } from '../common/motion/position';
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
 
-const logger = Logger.get('HistoryTracker');
-
 class DocumentChange {
   /**
    * The Position at which this change starts
@@ -652,7 +650,7 @@ export class HistoryTracker {
     if (this.nextStepStartPosition === undefined) {
       const cursor = this.vimState.cursorsInitialState[0];
       this.nextStepStartPosition = earlierOf(cursor.start, cursor.stop);
-      logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
+      Logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
     }
 
     if (
@@ -743,7 +741,7 @@ export class HistoryTracker {
         this.changeList.addChangePosition(changePos);
       }
 
-      logger.debug(`Finished history step with ${changes.length} change(s)`);
+      Logger.debug(`Finished history step with ${changes.length} change(s)`);
     }
   }
 

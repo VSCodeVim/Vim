@@ -7,12 +7,10 @@ import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { vimrcSetOptionBuilder } from './vimrcToConfigurationBuilder';
 import { window } from 'vscode';
-import { configuration } from './configuration';
 import { Logger } from '../util/logger';
 
 export class VimrcImpl {
   private _vimrcPath?: string;
-  private static readonly logger = Logger.get('VimRC');
 
   /**
    * Fully resolved path to the user's .vimrc
@@ -47,10 +45,10 @@ export class VimrcImpl {
         const source = this.buildSource(line);
         if (source) {
           if (!(await fs.existsAsync(source))) {
-            VimrcImpl.logger.warn(`Unable to find "${source}" file for configuration.`);
+            Logger.warn(`Unable to find "${source}" file for configuration.`);
             continue;
           }
-          VimrcImpl.logger.debug(`Loading "${source}" file for configuration.`);
+          Logger.debug(`Loading "${source}" file for configuration.`);
           await VimrcImpl.loadConfig(config, source);
           continue;
         }
@@ -98,7 +96,13 @@ export class VimrcImpl {
             });
             if (newVimrc) {
               await fs.writeFileAsync(newVimrc.fsPath, '', 'utf-8');
-              configuration.getConfiguration('vim').update('vimrc.path', newVimrc.fsPath, true);
+              const document = vscode.window.activeTextEditor?.document;
+              const resource = document
+                ? { uri: document.uri, languageId: document.languageId }
+                : undefined;
+              vscode.workspace
+                .getConfiguration('vim', resource)
+                .update('vimrc.path', newVimrc.fsPath, true);
               await vscode.workspace.openTextDocument(newVimrc);
               // TODO: add some sample remaps/settings in here?
               await vscode.window.showTextDocument(newVimrc);
@@ -229,9 +233,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          VimrcImpl.logger.warn(
-            `Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`
-          );
+          Logger.warn(`Encountered an unrecognized mapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();
@@ -313,9 +315,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          VimrcImpl.logger.warn(
-            `Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`
-          );
+          Logger.warn(`Encountered an unrecognized unmapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();
@@ -407,9 +407,7 @@ export class VimrcImpl {
             config.commandLineModeKeyBindingsNonRecursive,
           ];
         default:
-          VimrcImpl.logger.warn(
-            `Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`
-          );
+          Logger.warn(`Encountered an unrecognized clearMapping type: '${remap.keyRemappingType}'`);
           return undefined;
       }
     })();

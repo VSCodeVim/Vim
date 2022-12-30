@@ -30,8 +30,6 @@ export interface IModeHandler {
   rerunRecordedState(recordedState: RecordedState): Promise<void>;
 }
 
-const logger = Logger.get('Parser');
-
 export async function executeTransformations(
   modeHandler: IModeHandler,
   transformations: Transformation[]
@@ -69,7 +67,7 @@ export async function executeTransformations(
       case 'moveCursor':
         break;
       default:
-        logger.warn(`Unhandled text transformation type: ${command.type}.`);
+        Logger.warn(`Unhandled text transformation type: ${command.type}.`);
         break;
     }
 
@@ -90,7 +88,7 @@ export async function executeTransformations(
     const overlapping = overlappingTransformations(textTransformations);
     if (overlapping !== undefined) {
       const msg = `Transformations overlapping: ${JSON.stringify(overlapping)}`;
-      logger.warn(msg);
+      Logger.warn(msg);
       if (Globals.isTesting) {
         throw new Error(msg);
       }
@@ -145,7 +143,7 @@ export async function executeTransformations(
       // await vscode.commands.executeCommand('default:type', { text });
       await TextEditor.insert(vimState.editor, text);
     } else {
-      logger.warn(`Unhandled multicursor transformations. Not all transformations are the same!`);
+      Logger.warn(`Unhandled multicursor transformations. Not all transformations are the same!`);
     }
   }
 
@@ -164,7 +162,6 @@ export async function executeTransformations(
         const recordedMacro = (await Register.get(transformation.register))?.text;
         if (!recordedMacro) {
           return;
-
         } else if (typeof recordedMacro === 'string') {
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
           const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
@@ -189,13 +186,14 @@ export async function executeTransformations(
             vimState.lastMovementFailed = false;
             return;
           }
-
         } else {
           vimState.isReplayingMacro = true;
 
           vimState.recordedState = new RecordedState();
           if (transformation.register === ':') {
-            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(vimState);
+            await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(
+              vimState
+            );
           } else if (transformation.replay === 'contentChange') {
             await modeHandler.runMacro(recordedMacro);
           } else {
@@ -204,6 +202,13 @@ export async function executeTransformations(
               keyStrokes = keyStrokes.concat(action.keysPressed);
             }
             await modeHandler.handleMultipleKeyEvents(keyStrokes);
+          }
+
+          // TODO: Copied from `BaseAction.execCount`. This is all terrible.
+          for (const t of vimState.recordedState.transformer.transformations) {
+            if (isTextTransformation(t) && t.cursorIndex === undefined) {
+              t.cursorIndex = 0;
+            }
           }
 
           await executeTransformations(
@@ -237,7 +242,7 @@ export async function executeTransformations(
         break;
 
       default:
-        logger.warn(`Unhandled text transformation type: ${transformation.type}.`);
+        Logger.warn(`Unhandled text transformation type: ${transformation.type}.`);
         break;
     }
   }

@@ -494,12 +494,9 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
           return new Position(line, 0);
         } else if (registerMode === RegisterMode.BlockWise) {
           const lines = text.split('\n');
-          return new Position(
-            rangeStart.line + lines.length - 1,
-            rangeStart.character +
-              lines[0].length +
-              (this.putBefore() && mode === Mode.Normal ? 1 : 0)
-          );
+          const lastLine = rangeStart.line + lines.length - 1;
+          const longestLineLength = Math.max(...lines.map((line) => line.length));
+          return new Position(lastLine, rangeStart.character + longestLineLength);
         }
       } else if (mode === Mode.VisualLine) {
         return new Position(rangeStart.line + text.split('\n').length, 0);

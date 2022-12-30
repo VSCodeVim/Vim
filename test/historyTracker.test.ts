@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { Position } from 'vscode';
 
 import { HistoryTracker, IMark } from '../src/history/historyTracker';
