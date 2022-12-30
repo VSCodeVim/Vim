@@ -207,8 +207,6 @@ export class ExCommandLine extends CommandLine {
   private lineRange: LineRange | undefined;
   private command: ExCommand | undefined;
 
-  private static readonly logger = Logger.get('CommandLine');
-
   constructor(commandText: string, previousMode: Mode) {
     super(commandText, previousMode);
     this.commandText = commandText;
@@ -299,7 +297,7 @@ export class ExCommandLine extends CommandLine {
           StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
-        ExCommandLine.logger.error(`Error executing cmd=${this.text}. err=${e}.`);
+        Logger.error(`Error executing cmd=${this.text}. err=${e}.`);
       }
     }
 

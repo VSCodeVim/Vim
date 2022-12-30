@@ -4,7 +4,6 @@ import { Logger } from './util/logger';
 import { extensionVersion } from './configuration/configuration';
 
 class TaskQueue {
-  private readonly logger = Logger.get('TaskQueue');
   private readonly taskQueue = new Queue({ autostart: true, concurrency: 1 });
 
   constructor() {
@@ -43,7 +42,7 @@ class TaskQueue {
             }
           });
       } else {
-        this.logger.error(`Error running task due to an unknown error: ${err}.`);
+        Logger.error(`Error running task due to an unknown error: ${err}.`);
       }
     });
   }

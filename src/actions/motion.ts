@@ -1841,7 +1841,21 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     // First, search backwards for the opening character of the sequence
     let openPos = PairMatcher.nextPairedChar(selStart, closingChar, vimState, true);
     if (openPos === undefined) {
-      return failedMovement(vimState);
+      // If opening character not found, search forwards
+      let lineNum = selStart.line;
+      while (true) {
+        if (lineNum >= vimState.document.lineCount) {
+          break;
+        }
+        const lineText = vimState.document.lineAt(lineNum).text;
+        const matchIndex = lineText.indexOf(this.charToMatch);
+        if (matchIndex !== -1) {
+          openPos = new Position(lineNum, matchIndex);
+          break;
+        }
+        ++lineNum;
+      }
+      if (openPos === undefined) return failedMovement(vimState);
     }
 
     // Next, search forwards for the closing character which matches

@@ -47,7 +47,6 @@ export class Remappers implements IRemapper {
 export class Remapper implements IRemapper {
   private readonly configKey: string;
   private readonly remappedModes: Mode[];
-  private readonly logger = Logger.get('Remapper');
 
   /**
    * Checks if the current commandList is a potential remap.
@@ -122,7 +121,7 @@ export class Remapper implements IRemapper {
       return true;
     }
 
-    this.logger.debug(
+    Logger.debug(
       `trying to find matching remap. keys=${keys}. mode=${
         Mode[vimState.currentMode]
       }. keybindings=${this.configKey}.`
@@ -210,11 +209,11 @@ export class Remapper implements IRemapper {
 
           keys.push(SpecialKeys.TimeoutFinished); // include the '<TimeoutFinished>' key
 
-          this.logger.debug(
+          Logger.debug(
             `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
           );
         }
-        this.logger.debug(
+        Logger.debug(
           `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
         );
         this.hasPotentialRemap = false;
@@ -233,7 +232,7 @@ export class Remapper implements IRemapper {
             await modeHandler.handleMultipleKeyEvents(keys);
           } catch (e) {
             if (e instanceof ForceStopRemappingError) {
-              this.logger.debug(
+              Logger.debug(
                 `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
               );
             }
@@ -269,12 +268,12 @@ export class Remapper implements IRemapper {
         // it again.
         this.hasAmbiguousRemap = remapping;
 
-        this.logger.debug(
+        Logger.debug(
           `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
         );
       } else {
         this.hasPotentialRemap = true;
-        this.logger.debug(
+        Logger.debug(
           `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`
         );
       }
@@ -336,7 +335,7 @@ export class Remapper implements IRemapper {
       // Increase mapDepth
       remapState.mapDepth++;
 
-      this.logger.debug(
+      Logger.debug(
         `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`
       );
 
@@ -380,12 +379,12 @@ export class Remapper implements IRemapper {
             throw e;
           }
 
-          this.logger.debug(
+          Logger.debug(
             `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
           );
         } else {
           // If some other error happens during the remapping handling it should stop the remap and rethrow
-          this.logger.debug(
+          Logger.debug(
             `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
           );
           throw e;
@@ -443,7 +442,7 @@ export class Remapper implements IRemapper {
               remapState.isCurrentlyPerformingRecursiveRemapping = true;
               await modeHandler.handleMultipleKeyEvents(remainingKeys);
             } catch (e) {
-              this.logger.debug(
+              Logger.debug(
                 `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
               );
             } finally {
@@ -545,13 +544,11 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      this.logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
+      Logger.debug(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         const precedingKeys = inputtedString.slice(0, inputtedString.length - keySlice.length);
         if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
-          this.logger.verbose(
-            `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
-          );
+          Logger.debug(`key sequences need to match precisely. precedingKeys=${precedingKeys}.`);
           break;
         }
 
