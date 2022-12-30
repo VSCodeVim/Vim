@@ -1,42 +1,25 @@
 import { LogOutputChannel, window } from 'vscode';
 
 export class Logger {
-  private static output: LogOutputChannel | undefined;
-  private static readonly cache = new Map<string, Logger>();
+  private static output: LogOutputChannel;
 
-  static get(prefix: string): Logger {
-    if (!this.output) {
-      this.output = window.createOutputChannel('Vim', { log: true });
-    }
-
-    let logger = Logger.cache.get(prefix);
-    if (logger === undefined) {
-      logger = new Logger(prefix);
-      Logger.cache.set(prefix, logger);
-    }
-
-    return logger;
+  public static init(): void {
+    Logger.output = window.createOutputChannel('Vim', { log: true });
   }
 
-  private scope: string;
-
-  private constructor(scope: string) {
-    this.scope = scope;
+  public static error(msg: string): void {
+    Logger.output.error(msg);
   }
-
-  error(msg: string): void {
-    Logger.output?.error(`[${this.scope}] ${msg}`);
+  public static warn(msg: string): void {
+    Logger.output.warn(msg);
   }
-  warn(msg: string): void {
-    Logger.output?.warn(`[${this.scope}] ${msg}`);
+  public static info(msg: string): void {
+    Logger.output.info(msg);
   }
-  info(msg: string): void {
-    Logger.output?.info(`[${this.scope}] ${msg}`);
+  public static debug(msg: string): void {
+    Logger.output.debug(msg);
   }
-  debug(msg: string): void {
-    Logger.output?.debug(`[${this.scope}] ${msg}`);
-  }
-  trace(msg: string): void {
-    Logger.output?.trace(`[${this.scope}] ${msg}`);
+  public static trace(msg: string): void {
+    Logger.output.trace(msg);
   }
 }

@@ -39,7 +39,6 @@ export class WriteCommand extends ExCommand {
   public override isRepeatableWithDot = false;
 
   public readonly arguments: IWriteCommandArguments;
-  private readonly logger = Logger.get('Write');
 
   constructor(args: IWriteCommandArguments) {
     super();
@@ -88,7 +87,7 @@ export class WriteCommand extends ExCommand {
             }C written`
           );
         } else {
-          this.logger.warn(':w failed');
+          Logger.warn(':w failed');
           // TODO: What's the right thing to do here?
         }
       })

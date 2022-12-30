@@ -75,17 +75,16 @@ export async function getAndUpdateModeHandler(
 async function loadConfiguration() {
   const validatorResults = await configuration.load();
 
-  const logger = Logger.get('Configuration');
-  logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
+  Logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
   if (validatorResults.numErrors > 0) {
     for (const validatorResult of validatorResults.get()) {
       switch (validatorResult.level) {
         case 'error':
-          logger.error(validatorResult.message);
+          Logger.error(validatorResult.message);
           break;
         case 'warning':
-          logger.warn(validatorResult.message);
+          Logger.warn(validatorResult.message);
           break;
       }
     }
@@ -98,11 +97,12 @@ async function loadConfiguration() {
 export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
   ExCommandLine.parser = exCommandParser;
 
+  Logger.init();
+
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
-  const logger = Logger.get('Extension Startup');
-  logger.debug('Start');
+  Logger.debug('Start');
 
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
@@ -290,19 +290,19 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
           mh.selectionsChanged.ourSelections.splice(idx, 1);
-          logger.debug(
+          Logger.debug(
             `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.selectionsChanged.ourSelections.length}`
           );
           return;
         } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
-          logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
+          Logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
           return;
         } else if (mh.selectionsChanged.ourSelections.length > 0) {
           // Some intermediate selection must have slipped in after setting the
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
           // wanted this one to be ignored as well.
-          logger.warn(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+          Logger.warn(`Selections: Ignoring slipped selection: ${selectionsHash}`);
           return;
         }
       }
@@ -529,7 +529,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   await toggleExtension(configuration.disableExtension, compositionState);
 
-  logger.debug('Finish.');
+  Logger.debug('Finish.');
 }
 
 /**
