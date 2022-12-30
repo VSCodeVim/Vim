@@ -25,7 +25,7 @@ let lastClosedModeHandler: ModeHandler | null = null;
 
 interface ICodeKeybinding {
   after?: string[];
-  commands?: Array<{ command: string; args: any[] }>;
+  commands?: Array<{ command: string; args: any[] } | string>;
 }
 
 export async function getAndUpdateModeHandler(
@@ -460,15 +460,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (args.commands) {
         for (const command of args.commands) {
-          // Check if this is a vim command by looking for :
-          if (command.command.startsWith(':')) {
-            await new ExCommandLine(
-              command.command.slice(1, command.command.length),
-              mh.vimState.currentMode
-            ).run(mh.vimState);
-            mh.updateView();
+          if (typeof command === 'string') {
+            executeRemapCommand({ command }, mh);
           } else {
-            vscode.commands.executeCommand(command.command, command.args);
+            executeRemapCommand(command, mh);
           }
         }
       }
@@ -634,4 +629,22 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
     .forEach((modeHandler) => {
       modeHandler.vimState.historyTracker = new HistoryTracker(modeHandler.vimState);
     });
+}
+
+async function executeRemapCommand(
+  cmd: { command: string; args?: object },
+  mh: ModeHandler
+) {
+  // Check if this is a vim command by looking for :
+  if (cmd.command.startsWith(':')) {
+    await new ExCommandLine(cmd.command.slice(1, cmd.command.length), mh.vimState.currentMode).run(
+      mh.vimState
+    );
+    mh.updateView();
+  } else {
+    const commandArgs: [string, object] | [string] = cmd.args
+      ? [cmd.command, cmd.args]
+      : [cmd.command];
+    await vscode.commands.executeCommand.apply(null, commandArgs);
+  }
 }
