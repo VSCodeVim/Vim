@@ -135,8 +135,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
     const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
-      (changeEvent.contentChanges[0].text === '\n' ||
-        changeEvent.contentChanges[0].text === '\r\n') &&
+      changeEvent.contentChanges[0].text.includes('\n') &&
       changeEvent.contentChanges[0].range.start.line ===
         changeEvent.contentChanges[0].range.end.line;
 
@@ -148,6 +147,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         event.contentChanges[0].range,
         event.contentChanges[0].text
       );
+    } else {
+      // TODO: In this case, we should probably loop over the content changes...
     }
 
     // Change from VSCode editor should set document.isDirty to true but they initially don't!
