@@ -110,7 +110,6 @@ export class FileCommand extends ExCommand {
   };
 
   private readonly arguments: IFileCommandArguments;
-  private readonly logger = Logger.get('File');
 
   constructor(args: IFileCommandArguments) {
     super();
@@ -214,7 +213,7 @@ export class FileCommand extends ExCommand {
             // untitled tab
             fileUri = uriPath.with({ scheme: 'untitled' });
           } else {
-            this.logger.error(`${args.file} does not exist.`);
+            Logger.error(`${args.file} does not exist.`);
             return;
           }
         }
