@@ -497,7 +497,7 @@ export class Remapper implements IRemapper {
             commandArgs = [];
           } else {
             commandString = command.command;
-            commandArgs = command.args;
+            commandArgs = Array.isArray(command.args) ? command.args : command.args ? [command.args] : [];
           }
 
           if (commandString.slice(0, 1) === ':') {
@@ -520,7 +520,7 @@ export class Remapper implements IRemapper {
 
           // TODO add test cases (silent defined in IKeyRemapping)
           if (!remapping.silent) {
-            StatusBar.setText(vimState, `${commandString} ${(commandArgs ?? []).join(' ')}`);
+            StatusBar.setText(vimState, `${commandString} ${commandArgs.join(' ')}`);
           }
         }
       }
