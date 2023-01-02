@@ -514,15 +514,13 @@ export class Remapper implements IRemapper {
               throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
             }
             await modeHandler.updateView();
-          } else if (commandArgs) {
-            await vscode.commands.executeCommand(commandString, commandArgs);
           } else {
-            await vscode.commands.executeCommand(commandString);
+            await vscode.commands.executeCommand(commandString, ...commandArgs);
           }
 
           // TODO add test cases (silent defined in IKeyRemapping)
           if (!remapping.silent) {
-            StatusBar.setText(vimState, `${commandString} ${commandArgs ?? ''}`);
+            StatusBar.setText(vimState, `${commandString} ${(commandArgs ?? []).join(' ')}`);
           }
         }
       }
