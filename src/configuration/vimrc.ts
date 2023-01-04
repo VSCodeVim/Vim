@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
-import * as fs from 'platform/fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'platform/fs';
 import * as vscode from 'vscode';
-import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
-import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { window } from 'vscode';
 import { Logger } from '../util/logger';
+import { configuration } from './configuration';
+import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
+import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 
 export class VimrcImpl {
   private _vimrcPath?: string;
@@ -435,6 +436,11 @@ export class VimrcImpl {
   }
 
   private static async findDefaultVimrc(): Promise<string | undefined> {
+    const vscodeVimrcPath = path.join(os.homedir(), '.vscodevimrc');
+    if (await fs.existsAsync(vscodeVimrcPath)) {
+      return vscodeVimrcPath;
+    }
+
     let vimrcPath = path.join(os.homedir(), '.vimrc');
     if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;
