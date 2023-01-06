@@ -1645,6 +1645,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
 
+    if (this.currentMode !== Mode.LeapPrepareMode && this.currentMode !== Mode.LeapMode) {
+      this.vimState.leap?.cleanupMarkers();
+    }
+
     StatusBar.clear(this.vimState, false);
 
     // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
@@ -1726,6 +1730,10 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;
     case Mode.EasyMotionInputMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.LeapPrepareMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.LeapMode:
       return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);

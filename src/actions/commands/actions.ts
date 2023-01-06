@@ -902,11 +902,15 @@ class CommandClearLine extends BaseCommand {
 
   // Don't clash with sneak
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
+    return (
+      super.doesActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap
+    );
   }
 
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && !configuration.sneak;
+    return (
+      super.couldActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap
+    );
   }
 }
 
@@ -2214,6 +2218,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.doesActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
+      !configuration.leap &&
       !vimState.recordedState.operator
     );
   }
@@ -2222,6 +2227,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.couldActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
+      !configuration.leap &&
       !vimState.recordedState.operator
     );
   }

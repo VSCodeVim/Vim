@@ -12,6 +12,10 @@ export class SneakForward extends BaseMovement {
   ];
   override isJump = true;
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]) {
+    return super.doesActionApply(vimState, keysPressed) && configuration.sneak;
+  }
+
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
 
@@ -78,6 +82,10 @@ export class SneakBackward extends BaseMovement {
     ['Z', '<character>', '<character>'],
   ];
   override isJump = true;
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]) {
+    return super.doesActionApply(vimState, keysPressed) && configuration.sneak;
+  }
 
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
