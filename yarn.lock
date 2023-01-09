@@ -305,10 +305,10 @@
   resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.74.0.tgz#4adc21b4e7f527b893de3418c21a91f1e503bdcd"
   integrity sha512-LyeCIU3jb9d38w0MXFwta9r0Jx23ugujkAxdwLTNCyspdZTKUc43t7ppPbCiPoQ/Ivd/pnDFZrb4hWd45wrsgA==
 
-"@vscode/test-electron@2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.2.1.tgz#6d1ac128e27c18e1d20bcb299e830b50587f74ca"
-  integrity sha512-DUdwSYVc9p/PbGveaq20dbAAXHfvdq4zQ24ILp6PKizOBxrOfMsOq8Vts5nMzeIo0CxtA/RxZLFyDv001PiUSg==
+"@vscode/test-electron@2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.2.2.tgz#2ec559ad6b879bc4024ffc0c5e192e4c5d0ff704"
+  integrity sha512-s5d2VtMySvff0UgqkJ0BMCr1es+qREE194EAodGIefq518W53ifvv69e80l9e2MrYJEqUUKwukE/w3H9o15YEw==
   dependencies:
     http-proxy-agent "^4.0.1"
     https-proxy-agent "^5.0.0"
