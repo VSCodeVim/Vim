@@ -1170,7 +1170,7 @@
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.2.14",
+    "fork-ts-checker-webpack-plugin": "7.3.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
