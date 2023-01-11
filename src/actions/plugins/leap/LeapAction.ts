@@ -11,7 +11,7 @@ import { VimError, ErrorCode } from '../../../error';
 
 @RegisterAction
 export class LeapPrepareAction extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = [
     ['s', '<character>'],
     ['S', '<character>'],
@@ -61,11 +61,23 @@ export class LeapPrepareAction extends BaseCommand {
     }
   }
 
-  private getDirection() {
+  protected getDirection() {
     return this.keysPressed[0] === 's' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
   }
 }
 
+@RegisterAction
+export class LeapVisualPrepareAction extends LeapPrepareAction {
+  override modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
+  override keys = [
+    ['x', '<character>'],
+    ['X', '<character>'],
+  ];
+
+  override getDirection() {
+    return this.keysPressed[0] === 'x' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
+  }
+}
 @RegisterAction
 export class LeapAction extends BaseCommand {
   modes = [Mode.LeapPrepareMode];

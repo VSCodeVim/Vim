@@ -2136,6 +2136,10 @@ export class ActionDeleteCharVisualLineMode extends BaseCommand {
   keys = ['x'];
   override name = 'delete_char_visual_line_mode';
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     await new operator.DeleteOperator(this.multicursorIndex).run(
@@ -2150,6 +2154,10 @@ export class ActionDeleteCharVisualLineMode extends BaseCommand {
 class ActionDeleteLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['X'];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
