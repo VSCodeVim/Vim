@@ -262,7 +262,7 @@ class Configuration implements IConfiguration {
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
   leap = false;
-  leapShowMarkerPosition = 'after';
+  leapShowMarkerPosition: 'after' | 'target' = 'after';
   leapLabels = 'sklyuiopnm,qwertzxcvbahdgjf;';
   leapCaseSensitive = false;
 
