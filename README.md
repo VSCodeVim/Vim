@@ -533,6 +533,15 @@ Based on [vim-leap](https://github.com/ggandor/leap.nvim) and configured through
 | vim.leapLabels               | The characters used for jump marker name     | String  | "sklyuiopnm,qwertzxcvbahdgjf;" |                    |
 | vim.leapCaseSensitive      | Whether to consider case in search patterns  | Boolean | false                          |                    |
 
+Once leap is active, initiate motions using the following commands.After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. For visual mode leap uses x instead of s because s is already taken by the surround plugin.
+
+| Motion Command            | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `s<char><char>`           | Search backwards of `<char><char>`                |
+| `S<char><char>`           | Search forward of `<char><char>`                 |
+| `{Visual}x<char><char>` | Search backwards of `<char><char>` on Visual mode  |
+| `{Visual}X<char><char>` | Search forward of `<char><char>` on Visual mode  |
+
 ### vim-easymotion
 
 Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and configured through the following settings:
