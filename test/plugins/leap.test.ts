@@ -126,4 +126,19 @@ suite('leap plugin', () => {
     keysPressed: leapCommand('s', ['o', 'l']),
     end: ['bo|olean'],
   });
+
+  suite('visual model', () => {
+    newTest({
+      title: 'forward search',
+      start: ['|boolean'],
+      keysPressed: 'vxead',
+      end: ['|an'],
+    });
+    newTest({
+      title: 'backward search',
+      start: ['boole|an'],
+      keysPressed: 'vXood',
+      end: ['b|n'],
+    });
+  });
 });

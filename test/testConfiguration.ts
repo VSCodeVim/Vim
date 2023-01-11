@@ -27,7 +27,7 @@ export class Configuration implements IConfiguration {
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
   leap = false;
-  leapShowMarkerPosition = 'after';
+  leapShowMarkerPosition: 'after' | 'target' = 'after';
   leapLabels = 'sklyuiopnm,qwertzxcvbahdgjf;';
   leapCaseSensitive = false;
   surround = false;
