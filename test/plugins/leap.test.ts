@@ -132,13 +132,13 @@ suite('leap plugin', () => {
       title: 'forward search',
       start: ['|boolean'],
       keysPressed: 'vxead',
-      end: ['|an'],
+      end: ['|ean'],
     });
     newTest({
       title: 'backward search',
       start: ['boole|an'],
       keysPressed: 'vXood',
-      end: ['b|n'],
+      end: ['boo|n'],
     });
   });
 });

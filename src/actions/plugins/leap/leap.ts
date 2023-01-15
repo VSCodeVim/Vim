@@ -3,6 +3,7 @@ import { Match } from './match';
 import { Marker, createMarker, generateMarkerNames } from './Marker';
 import { VimState } from '../../../state/vimState';
 import { LeapAction } from './LeapAction';
+import { Position } from 'vscode';
 
 export enum LeapSearchDirection {
   Forward = -1,
@@ -113,6 +114,33 @@ export class Leap {
     this.markers.forEach((marker) => {
       marker.show();
     });
+  }
+
+  public changeCursorStopPosition(position: Position) {
+    const isVisualModel =
+      this.vimState.leap.previousMode === Mode.Visual ||
+      this.vimState.leap.previousMode === Mode.VisualLine ||
+      this.vimState.leap.previousMode === Mode.VisualBlock;
+
+    if (isVisualModel) {
+      if (this.vimState.leap.direction === LeapSearchDirection.Backward) {
+        let line;
+        let character;
+        const isFirstCharacter = position.character === 0;
+        if (isFirstCharacter) {
+          line = position.line - 1;
+          character = this.vimState.editor.document.lineAt(position.line - 1).range.end.character;
+        } else {
+          line = position.line;
+          character = position.character - 1;
+        }
+        this.vimState.cursorStopPosition = new Position(line, character);
+      } else {
+        this.vimState.cursorStopPosition = new Position(position.line, position.character + 2);
+      }
+    } else {
+      this.vimState.cursorStopPosition = position;
+    }
   }
 }
 

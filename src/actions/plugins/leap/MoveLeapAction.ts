@@ -28,7 +28,7 @@ export class MoveLeapAction extends BaseCommand {
 
   private async handleDirectFoundMarker(marker: Marker) {
     this.vimState.leap.cleanupMarkers();
-    this.vimState.cursorStopPosition = marker.matchPosition;
+    this.vimState.leap.changeCursorStopPosition(marker.matchPosition);
     await this.vimState.setCurrentMode(this.vimState.leap.previousMode);
   }
 
