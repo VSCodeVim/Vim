@@ -43,7 +43,8 @@ export class LeapPrepareAction extends BaseCommand {
       generatePrepareRegex(firstSearchString),
       direction,
       cursorPosition,
-      vimState.document
+      vimState.document,
+      vimState.editor.visibleRanges[0]
     );
 
     vimState.leap.createMarkers(matches);
@@ -135,7 +136,8 @@ export class LeapAction extends BaseCommand {
         generateMarkerRegex(this.searchString),
         this.vimState.leap.direction!,
         cursorPosition,
-        this.vimState.document
+        this.vimState.document,
+        this.vimState.editor.visibleRanges[0]
       );
       this.vimState.leap.createMarkers(matches);
       this.vimState.leap.showMarkers();

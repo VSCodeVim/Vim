@@ -43,21 +43,18 @@ export function generateMarkerRegex(searchString: string) {
   return new RegExp(getPattern(searchString), getFlags());
 }
 
-const MATCH_LINE_COUNT = 50;
 const MATCH_COUNT_LIMIT = 400;
 export function getMatches(
   searchRegex: RegExp,
   direction: LeapSearchDirection,
   position: Position,
-  document: vscode.TextDocument
+  document: vscode.TextDocument,
+  visibleRange: vscode.Range
 ) {
   const matches: Match[] = [];
-
   const lineStart = position.line;
   const lineEnd =
-    direction === LeapSearchDirection.Backward
-      ? Math.min(position.line + MATCH_LINE_COUNT, document.lineCount - 1)
-      : Math.max(position.line - MATCH_LINE_COUNT, 0);
+    direction === LeapSearchDirection.Backward ? visibleRange.end.line : visibleRange.start.line;
 
   function checkPosition(lineCount: number, index: number) {
     return (
