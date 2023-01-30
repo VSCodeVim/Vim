@@ -1166,7 +1166,7 @@
     "@types/sinon": "10.0.13",
     "@types/source-map-support": "0.5.6",
     "@types/vscode": "1.74.0",
-    "@vscode/test-electron": "2.2.2",
+    "@vscode/test-electron": "2.2.3",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
