@@ -121,12 +121,29 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.workspace.onDidChangeConfiguration,
     async () => {
+      Logger.info('Configuration changed');
       await loadConfiguration();
     },
     false
   );
 
   registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async (event) => {
+    if (event.document.uri.scheme === 'output') {
+      // Without this, we'll get an infinite logging loop
+      return;
+    }
+    if (event.contentChanges.length === 0) {
+      // This happens when the document is saved
+      return;
+    }
+
+    Logger.debug(
+      `${event.contentChanges.length} change(s) to ${event.document.fileName} because ${event.reason}`
+    );
+    for (const x of event.contentChanges) {
+      Logger.trace(`\t-${x.rangeLength}, +'${x.text}'`);
+    }
+
     const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
@@ -189,7 +206,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.workspace.onDidCloseTextDocument,
     async (closedDocument) => {
-      const documents = vscode.workspace.textDocuments;
+      Logger.info(`${closedDocument.fileName} closed`);
 
       // Delete modehandler once all tabs of this document have been closed
       for (const uri of ModeHandlerMap.keys()) {
@@ -200,7 +217,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           shouldDelete = true;
         } else {
           const document = modeHandler.vimState.document;
-          if (!documents.includes(document)) {
+          if (!vscode.workspace.textDocuments.includes(document)) {
             shouldDelete = true;
             if (closedDocument === document) {
               lastClosedModeHandler = modeHandler;
@@ -220,7 +237,13 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   registerEventListener(
     context,
     vscode.window.onDidChangeActiveTextEditor,
-    async () => {
+    async (activeTextEditor: vscode.TextEditor | undefined) => {
+      if (activeTextEditor) {
+        Logger.info(`Active editor: ${activeTextEditor.document.uri}`);
+      } else {
+        Logger.debug(`No active editor`);
+      }
+
       const mhPrevious: ModeHandler | undefined = previousActiveEditorUri
         ? ModeHandlerMap.get(previousActiveEditorUri)
         : undefined;
@@ -233,7 +256,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // once a new file is opened.
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
-      const activeTextEditor = vscode.window.activeTextEditor;
       const oldFileRegister = (await Register.get('%'))?.text;
       const relativePath = activeTextEditor
         ? vscode.workspace.asRelativePath(activeTextEditor.document.uri, false)
@@ -291,19 +313,19 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
           mh.selectionsChanged.ourSelections.splice(idx, 1);
-          Logger.debug(
-            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.selectionsChanged.ourSelections.length}`
+          Logger.trace(
+            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelections.length} left`
           );
           return;
         } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
-          Logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
+          Logger.trace(`Ignoring intermediate selection change: ${selectionsHash}`);
           return;
         } else if (mh.selectionsChanged.ourSelections.length > 0) {
           // Some intermediate selection must have slipped in after setting the
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably
           // wanted this one to be ignored as well.
-          Logger.warn(`Selections: Ignoring slipped selection: ${selectionsHash}`);
+          Logger.warn(`Ignoring slipped selection: ${selectionsHash}`);
           return;
         }
       }
@@ -333,6 +355,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.window.onDidChangeTextEditorVisibleRanges,
     async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
+      if (e.textEditor !== vscode.window.activeTextEditor) {
+        return;
+      }
       taskQueue.enqueueTask(async () => {
         // Scrolling the viewport clears any status bar message, even errors.
         const mh = await getAndUpdateModeHandler();
@@ -629,6 +654,7 @@ async function forceStopRecursiveRemap(mh: ModeHandler): Promise<boolean> {
 }
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
+  Logger.info(`Resetting history for ${document.fileName} because content changed from disk`);
   ModeHandlerMap.getAll()
     .filter((modeHandler) => modeHandler.vimState.documentUri === document.uri)
     .forEach((modeHandler) => {

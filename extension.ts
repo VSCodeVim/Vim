@@ -24,6 +24,7 @@ import { Register } from './src/register/register';
 import { vimrc } from './src/configuration/vimrc';
 import { configuration } from './src/configuration/configuration';
 import * as path from 'path';
+import { Logger } from './src/util/logger';
 
 export { getAndUpdateModeHandler } from './extensionBase';
 
@@ -42,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
       path.relative(document.fileName, vimrc.vimrcPath) === ''
     ) {
       await configuration.load();
-      vscode.window.showInformationMessage('Sourced new .vimrc');
+      Logger.info('Sourced new .vimrc');
     }
   });
 
