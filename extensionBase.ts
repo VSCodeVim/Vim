@@ -188,18 +188,18 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         contentChangeHandler(modeHandler);
       });
 
-    if (handleLocal) {
-      setTimeout(() => {
-        if (
-          !event.document.isDirty &&
-          !event.document.isUntitled &&
-          event.document.uri.scheme !== 'vscode-notebook-cell' && // TODO: Notebooks never seem to be marked dirty...
-          event.contentChanges.length
-        ) {
-          handleContentChangedFromDisk(event.document);
-        }
-      }, 0);
-    }
+    // if (handleLocal) {
+    //   setTimeout(() => {
+    //     if (
+    //       !event.document.isDirty &&
+    //       !event.document.isUntitled &&
+    //       event.document.uri.scheme !== 'vscode-notebook-cell' && // TODO: Notebooks never seem to be marked dirty...
+    //       event.contentChanges.length
+    //     ) {
+    //       handleContentChangedFromDisk(event.document);
+    //     }
+    //   }, 0);
+    // }
   });
 
   registerEventListener(
