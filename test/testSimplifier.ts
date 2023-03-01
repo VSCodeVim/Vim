@@ -686,4 +686,5 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export { ITestObject, testIt };
+export type { ITestObject };
+export { testIt };
