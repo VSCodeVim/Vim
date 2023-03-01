@@ -20,7 +20,7 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "isolatedModules": true
+    // "isolatedModules": true,
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }
