@@ -1,6 +1,6 @@
 # Change Log
 
-## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2022-02-28)
+## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2023-02-28)
 
 ### Added
 
