@@ -1,7 +1,6 @@
 const gulp = require('gulp');
 const bump = require('gulp-bump');
 const git = require('gulp-git');
-const sourcemaps = require('gulp-sourcemaps');
 const tag_version = require('gulp-tag-version');
 const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
@@ -126,7 +125,6 @@ gulp.task('tsc', function () {
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
   var tsResult = tsProject
     .src()
-    .pipe(sourcemaps.init())
     .pipe(tsProject())
     .on('error', () => {
       isError = true;
@@ -136,7 +134,6 @@ gulp.task('tsc', function () {
     });
 
   return tsResult.js
-    .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
     .pipe(updatePath())
     .pipe(gulp.dest('out'));
 });
