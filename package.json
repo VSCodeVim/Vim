@@ -1137,6 +1137,8 @@
   "scripts": {
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
+    "build-dev": "gulp build-dev",
+    "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
     "forceprettier": "gulp forceprettier",
     "watch": "npx webpack -c webpack.dev.js --watch",
