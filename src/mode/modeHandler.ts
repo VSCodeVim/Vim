@@ -68,7 +68,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
   private readonly remappers: Remappers;
-  private static readonly logger = Logger.get('ModeHandler');
 
   /**
    * Used internally to ignore selection changes that were performed by us.
@@ -184,10 +183,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       return;
     }
     const selection = e.selections[0];
-    ModeHandler.logger.debug(
-      `Selections: Handling Selection Change! Selection: ${selection.anchor.toString()}, ${
-        selection.active
-      }, SelectionsLength: ${e.selections.length}`
+    Logger.debug(
+      `Selection change: ${selection.anchor.toString()}, ${selection.active}, SelectionsLength: ${
+        e.selections.length
+      }`
     );
 
     // If our previous cursors are not included on any of the current selections, then a snippet
@@ -247,13 +246,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
-              ModeHandler.logger.debug('Selections: Updating Visual Selection!');
+              Logger.trace('Updating Visual Selection!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
-              ModeHandler.logger.debug('Selections: Creating Visual Selection from command!');
+              Logger.trace('Creating Visual Selection from command!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
@@ -306,7 +305,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // We still need to be careful with this because this here might be changing our cursors
         // in ways we don't want to. So with future selection issues this is a good place to start
         // looking.
-        ModeHandler.logger.debug(
+        Logger.debug(
           `Selections: Changing Cursors from selection handler... ${selection.anchor.toString()}, ${
             selection.active
           }`
@@ -401,15 +400,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(key: string): Promise<void> {
-    const now = Date.now();
-    const printableKey = Notation.printableKey(key, configuration.leader);
-
-    // Check forceStopRemapping
     if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
 
-    ModeHandler.logger.debug(`handling key=${printableKey}.`);
+    const now = Date.now();
+
+    const printableKey = Notation.printableKey(key, configuration.leader);
+    Logger.debug(`Handling key: ${printableKey}`);
 
     if (
       (key === SpecialKeys.TimeoutFinished ||
@@ -550,7 +548,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    ModeHandler.logger.debug(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
+    Logger.trace(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
@@ -590,7 +588,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   private async handleKeyAsAnAction(key: string): Promise<boolean> {
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
-      ModeHandler.logger.warn('Current window is not active');
+      Logger.warn('Current window is not active');
       return false;
     }
 
@@ -1371,8 +1369,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           ''
         );
         this.selectionsChanged.ourSelections.push(selectionsHash);
-        ModeHandler.logger.debug(
-          `Selections: Adding Selection Change to be Ignored! (total: ${
+        Logger.trace(
+          `Adding selection change to be ignored! (total: ${
             this.selectionsChanged.ourSelections.length
           }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );

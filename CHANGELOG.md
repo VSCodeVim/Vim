@@ -1,5 +1,22 @@
 # Change Log
 
+## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2023-02-28)
+
+### Added
+
+- Support for `:cw[indow]`, `:lw[indow]`, and related commands ([@mogelbrod](https://github.com/mogelbrod)).
+
+### Changed
+
+- Logging is now done to a `LogOutputChannel`. It can be accessed in the `Output` panel and configured using `workbench.action.setLogLevel` ([@J-Fields](https://github.com/J-Fields)).
+- Scope for settings under `vim.autoSwitchInputMethod.*` is now `machine` ([@Quanuanc](https://github.com/Quanuanc)).
+
+### Fixed
+
+- Fixed undo/redo after recent VS Code update ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `.` after exiting Visual mode or command line with `<Esc>` ([@wgr45097](https://github.com/wgr45097)).
+- Fixed ex command line ranges with no explicit start, such as `,5` ([@lazygyu](https://github.com/lazygyu)).
+
 ## [v1.24.3](https://github.com/vscodevim/vim/tree/v1.24.3) (2022-11-06)
 
 ### Added

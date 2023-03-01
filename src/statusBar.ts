@@ -3,6 +3,7 @@ import { Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { VimError } from './error';
+import { Logger } from './util/logger';
 
 class StatusBarImpl implements vscode.Disposable {
   // Displays the current state (mode, recording macro, etc.) and messages to the user
@@ -50,10 +51,12 @@ class StatusBarImpl implements vscode.Disposable {
    * @param isError If true, text rendered in red
    */
   public setText(vimState: VimState, text: string, isError = false) {
-    const hasModeChanged = vimState.currentMode !== this.previousMode;
-
     // Text
-    this.updateText(text);
+    text = text.replace(/\n/g, '^M');
+    if (this.statusBarItem.text !== text) {
+      this.statusBarItem.text = text;
+      Logger.debug(`Status bar: ${text}`);
+    }
 
     // StatusBarItem color
     if (!configuration.statusBarColorControl) {
@@ -66,7 +69,8 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     // StatusBar color
-    const shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
+    const shouldUpdateColor =
+      configuration.statusBarColorControl && vimState.currentMode !== this.previousMode;
     if (shouldUpdateColor) {
       this.updateColor(vimState.currentMode);
     }
@@ -115,11 +119,6 @@ class StatusBarImpl implements vscode.Disposable {
     StatusBar.setText(vimState, text.join(' '));
 
     this.showingDefaultMessage = true;
-  }
-
-  private updateText(text: string) {
-    const escaped = text.replace(/\n/g, '^M');
-    this.statusBarItem.text = escaped || '';
   }
 
   private updateColor(mode: Mode) {
