@@ -1151,7 +1151,6 @@
     "path-browserify": "1.0.1",
     "process": "0.11.10",
     "queue": "^6.0.2",
-    "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.5"
   },
@@ -1164,7 +1163,6 @@
     "@types/node": "16.18.13",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
-    "@types/source-map-support": "0.5.6",
     "@types/vscode": "1.74.0",
     "@vscode/test-electron": "2.3.0",
     "circular-dependency-plugin": "^5.2.2",
