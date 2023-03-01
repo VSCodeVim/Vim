@@ -133,9 +133,7 @@ gulp.task('tsc', function () {
       isError && process.exit(1);
     });
 
-  return tsResult.js
-    .pipe(updatePath())
-    .pipe(gulp.dest('out'));
+  return tsResult.js.pipe(updatePath()).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack', function () {
