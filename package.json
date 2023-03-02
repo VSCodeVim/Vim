@@ -1142,7 +1142,8 @@
     "test": "node ./out/test/runTest.js",
     "prettier": "npx prettier -w .",
     "watch": "npx webpack -c webpack.dev.js --watch",
-    "package": "yarn run vsce package --yarn --allow-star-activation"
+    "package": "yarn run vsce package --yarn --allow-star-activation",
+    "prepare": "husky install"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1177,6 +1178,8 @@
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2",
     "minimist": "1.2.8",
     "mocha": "10.2.0",
     "plugin-error": "2.0.1",
@@ -1190,5 +1193,8 @@
     "webpack-cli": "5.0.1",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,md,yml}": "prettier --write"
   }
 }
