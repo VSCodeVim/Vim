@@ -21,7 +21,7 @@ jobs:
         run: yarn install
 
       - name: Lint
-        run: npx tslint -c tslint.json -p tsconfig.json
+        run: yarn lint
 
       - name: Build
         run: gulp webpack

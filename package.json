@@ -1140,6 +1140,8 @@
     "build-dev": "gulp build-dev",
     "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
+    "lint": "npx tslint --project .",
+    "lint:fix": "npx tslint --project . --fix",
     "prettier": "npx prettier --write .",
     "prettier:check": "npx prettier --check .",
     "watch": "npx webpack -c webpack.dev.js --watch",
