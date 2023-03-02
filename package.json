@@ -1140,7 +1140,7 @@
     "build-dev": "gulp build-dev",
     "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
-    "forceprettier": "gulp forceprettier",
+    "prettier": "npx prettier -w .",
     "watch": "npx webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation"
   },
