@@ -1198,6 +1198,6 @@
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",
-    "*.{ts}": "tslint --fix"
+    "*.ts": "tslint --fix"
   }
 }
