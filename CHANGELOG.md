@@ -1,5 +1,21 @@
 # Change Log
 
+## [v1.25.2](https://github.com/vscodevim/vim/tree/v1.25.2) (2023-03-01)
+
+### Added
+
+- Support for `:w <FILENAME>` ([@JLMSC](https://github.com/JLMSC)).
+
+### Changed
+
+- Reduced extension bundle size by removing source maps ([@kidonng](https://github.com/kidonng)).
+- Replaced "Report bug" popup on exceptions with an error log message ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed remaps which pass multiple positional arguments to a command ([@elmar-peise](https://github.com/elmar-peise)).
+- Fixed cursor position after certain surround actions ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2023-02-28)
 
 ### Added
