@@ -14,42 +14,9 @@ const es = require('event-stream');
 const webpack_config = require('./webpack.config.js');
 const webpack_dev_config = require('./webpack.dev.js');
 
-const { exec } = require('child_process');
-
 const releaseOptions = {
   semver: '',
 };
-
-// prettier
-function runPrettier(command, done) {
-  exec(command, function (err, stdout) {
-    if (err) {
-      return done(new PluginError('runPrettier', { message: err }));
-    }
-
-    if (!stdout) {
-      return done();
-    }
-
-    const filetypes = ['.ts', '.js', '.json', '.md', '.yml'];
-    const files = stdout
-      .split(/\r?\n/)
-      .filter((f) => filetypes.some((filetype) => f.endsWith(filetype)))
-      .join(' ');
-
-    if (!files) {
-      return done();
-    }
-
-    const prettierPath = path.normalize('./node_modules/.bin/prettier');
-    exec(`${prettierPath} --write ${files}`, function (err) {
-      if (err) {
-        return done(new PluginError('runPrettier', { message: err }));
-      }
-      return done();
-    });
-  });
-}
 
 function validateArgs(done) {
   const options = minimist(process.argv.slice(2), releaseOptions);
@@ -169,17 +136,6 @@ gulp.task('tslint', function () {
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
-gulp.task('prettier', function (done) {
-  // Files changed
-  runPrettier('git diff --diff-filter=d --name-only HEAD', done);
-});
-
-gulp.task('forceprettier', function (done) {
-  // Files managed by git
-  // TODO: if any file is deleted, but not yet staged, this will fail
-  runPrettier('git ls-files', done);
-});
-
 gulp.task('commit-hash', function (done) {
   git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
     require('fs').writeFileSync('out/version.txt', hash);
@@ -240,15 +196,9 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
-gulp.task(
-  'build-dev',
-  gulp.series('prettier', gulp.parallel('webpack-dev', 'tslint'), 'commit-hash')
-);
+gulp.task('build', gulp.series(gulp.parallel('webpack', 'tslint'), 'commit-hash'));
+gulp.task('build-dev', gulp.series(gulp.parallel('webpack-dev', 'tslint'), 'commit-hash'));
 gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
 gulp.task('test', gulp.series('prepare-test', 'run-test'));
-gulp.task(
-  'release',
-  gulp.series(validateArgs, updateVersion, 'prettier', createGitCommit, createGitTag)
-);
+gulp.task('release', gulp.series(validateArgs, updateVersion, createGitCommit, createGitTag));
 gulp.task('default', gulp.series('build', 'test'));
