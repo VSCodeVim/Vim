@@ -1935,7 +1935,7 @@ export class MoveAroundParentheses extends MoveInsideCharacter {
 // special treatment for curly braces
 export abstract class MoveCurlyBrace extends MoveInsideCharacter {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  protected charToMatch: string = '{'
+  protected charToMatch: string = '{';
 
   public override async execAction(
     position: Position,
@@ -1943,7 +1943,6 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
     firstIteration: boolean,
     lastIteration: boolean
   ): Promise<IMovement> {
-
     // curly braces has a special treatment. In case the cursor is before an opening curly brace,
     // and there are no characters before the opening curly brace in the same line, it should jump
     // to the next opening curly brace, even if it already inside a pair of curly braces.
@@ -1955,7 +1954,10 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
       text.substring(0, position.character + openCurlyBraceIndexFromCursor).trim().length === 0 &&
       startSameAsEnd
     ) {
-      const curlyPos = position.with(position.line, position.character + openCurlyBraceIndexFromCursor);
+      const curlyPos = position.with(
+        position.line,
+        position.character + openCurlyBraceIndexFromCursor
+      );
       vimState.cursorStartPosition = vimState.cursorStopPosition = curlyPos;
       const movement = await super.execAction(curlyPos, vimState, firstIteration, lastIteration);
       if (movement.failed) {
@@ -1975,8 +1977,7 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
       vimState.cursorStartPosition = start;
       vimState.cursorStopPosition = stop;
       return movement;
-    }
-    else {
+    } else {
       return super.execAction(position, vimState, firstIteration, lastIteration);
     }
   }

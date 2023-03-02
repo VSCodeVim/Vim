@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.24.3",
+  "version": "1.25.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -1137,10 +1137,16 @@
   "scripts": {
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
+    "build-dev": "gulp build-dev",
+    "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
-    "forceprettier": "gulp forceprettier",
-    "watch": "npx webpack -c webpack.dev.js --watch",
-    "package": "yarn run vsce package --yarn --allow-star-activation"
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "watch": "webpack -c webpack.dev.js --watch",
+    "package": "yarn run vsce package --yarn --allow-star-activation",
+    "prepare": "husky install"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1151,22 +1157,20 @@
     "path-browserify": "1.0.1",
     "process": "0.11.10",
     "queue": "^6.0.2",
-    "source-map-support": "0.5.21",
     "untildify": "4.0.0",
     "util": "0.12.5"
   },
   "devDependencies": {
     "@types/diff": "5.0.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/glob": "8.0.1",
+    "@types/glob": "8.1.0",
     "@types/lodash": "4.14.191",
     "@types/mocha": "10.0.1",
-    "@types/node": "16.18.11",
+    "@types/node": "16.18.13",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
-    "@types/source-map-support": "0.5.6",
     "@types/vscode": "1.74.0",
-    "@vscode/test-electron": "2.2.3",
+    "@vscode/test-electron": "2.3.0",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
@@ -1174,11 +1178,11 @@
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
-    "gulp-sourcemaps": "3.0.0",
     "gulp-tag-version": "1.3.1",
-    "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "minimist": "1.2.7",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2",
+    "minimist": "1.2.8",
     "mocha": "10.2.0",
     "plugin-error": "2.0.1",
     "prettier": "2.8.4",
@@ -1191,5 +1195,9 @@
     "webpack-cli": "5.0.1",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,md,yml}": "prettier --write",
+    "*.{ts}": "tslint --fix"
   }
 }

@@ -16,7 +16,6 @@ import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
-import { HistoryTracker } from './src/history/historyTracker';
 import { exCommandParser } from './src/vimscript/exCommandParser';
 
 let extensionContext: vscode.ExtensionContext;
@@ -187,19 +186,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       .forEach((modeHandler) => {
         contentChangeHandler(modeHandler);
       });
-
-    if (handleLocal) {
-      setTimeout(() => {
-        if (
-          !event.document.isDirty &&
-          !event.document.isUntitled &&
-          event.document.uri.scheme !== 'vscode-notebook-cell' && // TODO: Notebooks never seem to be marked dirty...
-          event.contentChanges.length
-        ) {
-          handleContentChangedFromDisk(event.document);
-        }
-      }, 0);
-    }
   });
 
   registerEventListener(
@@ -651,13 +637,4 @@ async function forceStopRecursiveRemap(mh: ModeHandler): Promise<boolean> {
   }
 
   return false;
-}
-
-function handleContentChangedFromDisk(document: vscode.TextDocument): void {
-  Logger.info(`Resetting history for ${document.fileName} because content changed from disk`);
-  ModeHandlerMap.getAll()
-    .filter((modeHandler) => modeHandler.vimState.documentUri === document.uri)
-    .forEach((modeHandler) => {
-      modeHandler.vimState.historyTracker = new HistoryTracker(modeHandler.vimState);
-    });
 }
