@@ -2,8 +2,19 @@ import { Position } from 'vscode';
 import { TextEditor } from '../textEditor';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { getAllPositions, getAllEndPositions } from './util';
+import { configuration } from '../configuration/configuration';
 
-const sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
+const sentenceEndRegex = (() => {
+  let lastEndRegexStr = '';
+  let endRegex = new RegExp(lastEndRegexStr, 'g');
+  return () => {
+    if (lastEndRegexStr !== configuration.sentenceEndRegex) {
+      lastEndRegexStr = configuration.sentenceEndRegex;
+      endRegex = new RegExp(lastEndRegexStr, 'g');
+    }
+    return endRegex;
+  };
+})();
 
 export function getSentenceBegin(position: Position, args: { forward: boolean }): Position {
   if (args.forward) {
@@ -16,7 +27,7 @@ export function getSentenceBegin(position: Position, args: { forward: boolean })
 export function getSentenceEnd(pos: Position): Position {
   const paragraphEnd = getCurrentParagraphEnd(pos);
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
-    const allPositions = getAllPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
+    const allPositions = getAllPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex());
     const newCharacter = allPositions.find(
       (index) => index > pos.character || currentLine !== pos.line
     );
@@ -32,7 +43,10 @@ export function getSentenceEnd(pos: Position): Position {
 function getPreviousSentenceBegin(pos: Position): Position {
   const paragraphBegin = getCurrentParagraphBeginning(pos);
   for (let currentLine = pos.line; currentLine >= paragraphBegin.line; currentLine--) {
-    const endPositions = getAllEndPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
+    const endPositions = getAllEndPositions(
+      TextEditor.getLine(currentLine).text,
+      sentenceEndRegex()
+    );
     const newCharacter = endPositions.reverse().find((index) => {
       const newPositionBeforeThis = new Position(currentLine, index)
         .getRightThroughLineBreaks()
@@ -57,7 +71,10 @@ function getNextSentenceBegin(pos: Position): Position {
   // A paragraph and section boundary is also a sentence boundary.
   const paragraphEnd = getCurrentParagraphEnd(pos);
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
-    const endPositions = getAllEndPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
+    const endPositions = getAllEndPositions(
+      TextEditor.getLine(currentLine).text,
+      sentenceEndRegex()
+    );
     const newCharacter = endPositions.find(
       (index) => index > pos.character || currentLine !== pos.line
     );
