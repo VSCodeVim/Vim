@@ -2,7 +2,6 @@ const gulp = require('gulp');
 const bump = require('gulp-bump');
 const git = require('gulp-git');
 const tag_version = require('gulp-tag-version');
-const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
 const PluginError = require('plugin-error');
 const minimist = require('minimist');
@@ -123,19 +122,6 @@ gulp.task('webpack-dev', function () {
   ).pipe(gulp.dest('out'));
 });
 
-gulp.task('tslint', function () {
-  const program = require('tslint').Linter.createProgram('./tsconfig.json');
-  return gulp
-    .src(['**/*.ts', '!node_modules/**', '!typings/**'])
-    .pipe(
-      tslint({
-        formatter: 'prose',
-        program: program,
-      })
-    )
-    .pipe(tslint.report({ summarizeFailureOutput: true }));
-});
-
 gulp.task('commit-hash', function (done) {
   git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
     require('fs').writeFileSync('out/version.txt', hash);
@@ -196,8 +182,8 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series(gulp.parallel('webpack', 'tslint'), 'commit-hash'));
-gulp.task('build-dev', gulp.series(gulp.parallel('webpack-dev', 'tslint'), 'commit-hash'));
+gulp.task('build', gulp.series('webpack', 'commit-hash'));
+gulp.task('build-dev', gulp.series('webpack-dev', 'commit-hash'));
 gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
 gulp.task('test', gulp.series('prepare-test', 'run-test'));
 gulp.task('release', gulp.series(validateArgs, updateVersion, createGitCommit, createGitTag));
