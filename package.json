@@ -1140,7 +1140,8 @@
     "build-dev": "gulp build-dev",
     "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
-    "prettier": "npx prettier -w .",
+    "prettier": "npx prettier --write .",
+    "prettier:check": "npx prettier --check .",
     "watch": "npx webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation",
     "prepare": "husky install"

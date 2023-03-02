@@ -28,9 +28,7 @@ jobs:
 
       - name: Prettier
         if: matrix.os != 'windows-latest'
-        uses: creyD/prettier_action@v3.3
-        with:
-          dry: true
+        run: yarn prettier:check
 
       - name: Lint
         run: npx tslint -c tslint.json -p tsconfig.json
