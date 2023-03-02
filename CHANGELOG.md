@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2023-02-28)
 
 ### Added
 
@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Fixed undo/redo after recent VS Code update ([@J-Fields](https://github.com/J-Fields)).
 - Fixed `.` after exiting Visual mode or command line with `<Esc>` ([@wgr45097](https://github.com/wgr45097)).
 - Fixed ex command line ranges with no explicit start, such as `,5` ([@lazygyu](https://github.com/lazygyu)).
 

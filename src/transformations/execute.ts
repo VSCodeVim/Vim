@@ -116,13 +116,6 @@ export async function executeTransformations(
         // Messages like "TextEditor(vs.editor.ICodeEditor:1,$model8) has been disposed" can be ignored.
         // They occur when the user switches to a new tab while an action is running.
         if (e.name !== 'DISPOSED') {
-          e.context = {
-            currentMode: Mode[vimState.currentMode],
-            cursors: vimState.cursors.map((cursor) => cursor.toString()),
-            actionsRunPressedKeys: vimState.recordedState.actionsRunPressedKeys,
-            actionsRun: vimState.recordedState.actionsRun.map((action) => action.constructor.name),
-            textTransformations,
-          };
           throw e;
         }
       }

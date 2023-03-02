@@ -67,7 +67,7 @@ export class NumericString {
   ): { num: NumericString; suffixOffset: number } | undefined {
     const filteredMatchings =
       targetRadix !== undefined
-        ? NumericString.matchings.filter(matching => matching.radix === targetRadix)
+        ? NumericString.matchings.filter((matching) => matching.radix === targetRadix)
         : NumericString.matchings;
 
     // Find core numeric part of input

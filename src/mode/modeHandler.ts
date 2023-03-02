@@ -184,9 +184,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
     const selection = e.selections[0];
     Logger.debug(
-      `Selections: Handling Selection Change! Selection: ${selection.anchor.toString()}, ${
-        selection.active
-      }, SelectionsLength: ${e.selections.length}`
+      `Selection change: ${selection.anchor.toString()}, ${selection.active}, SelectionsLength: ${
+        e.selections.length
+      }`
     );
 
     // If our previous cursors are not included on any of the current selections, then a snippet
@@ -246,13 +246,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
-              Logger.debug('Selections: Updating Visual Selection!');
+              Logger.trace('Updating Visual Selection!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
-              Logger.debug('Selections: Creating Visual Selection from command!');
+              Logger.trace('Creating Visual Selection from command!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
@@ -400,15 +400,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(key: string): Promise<void> {
-    const now = Date.now();
-    const printableKey = Notation.printableKey(key, configuration.leader);
-
-    // Check forceStopRemapping
     if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
 
-    Logger.debug(`handling key=${printableKey}.`);
+    const now = Date.now();
+
+    const printableKey = Notation.printableKey(key, configuration.leader);
+    Logger.debug(`Handling key: ${printableKey}`);
 
     if (
       (key === SpecialKeys.TimeoutFinished ||
@@ -549,7 +548,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    Logger.debug(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
+    Logger.trace(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
@@ -1370,8 +1369,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           ''
         );
         this.selectionsChanged.ourSelections.push(selectionsHash);
-        Logger.debug(
-          `Selections: Adding Selection Change to be Ignored! (total: ${
+        Logger.trace(
+          `Adding selection change to be ignored! (total: ${
             this.selectionsChanged.ourSelections.length
           }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );

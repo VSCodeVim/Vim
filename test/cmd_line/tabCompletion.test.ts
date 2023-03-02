@@ -297,16 +297,18 @@ suite('cmd_line tabComplete', () => {
           `:e ${filePath}|`.toLowerCase(),
           'Cannot complete path case-insensitive on windows'
         );
-      }
-      else {
+      } else {
         await modeHandler.handleMultipleKeyEvents(cmd);
         const statusBarBeforeTab = StatusBar.getText();
         await modeHandler.handleKeyEvent('<tab>');
         const statusBarAfterTab = StatusBar.getText().trim();
         await modeHandler.handleKeyEvent('<Esc>');
-        assert.strictEqual(statusBarBeforeTab, statusBarAfterTab, 'Is case-insensitive on non-windows');
+        assert.strictEqual(
+          statusBarBeforeTab,
+          statusBarAfterTab,
+          'Is case-insensitive on non-windows'
+        );
       }
-
     } finally {
       await t.removeFile(filePath);
       await t.removeDir(dirPath);
