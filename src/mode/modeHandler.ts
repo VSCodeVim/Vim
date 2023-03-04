@@ -371,7 +371,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If we prevented from clicking past eol but it is part of this selection, include the last char
         if (this.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
-          this.vimState.editor.selection = new vscode.Selection(newStart, selection.end);
+          this.vimState.editor.selection = new vscode.Selection(newStart, selection.active);
           this.vimState.cursorStartPosition = selectionStart;
           this.lastClickWasPastEol = false;
         }
