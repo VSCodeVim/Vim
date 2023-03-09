@@ -144,6 +144,11 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use Clever-f plugin?
+   */
+  cleverF: boolean;
+
+  /**
    * Use ReplaceWithRegister plugin?
    */
   replaceWithRegister: boolean;

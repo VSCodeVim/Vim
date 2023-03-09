@@ -12,6 +12,8 @@ export enum Mode {
   Replace,
   EasyMotionMode,
   EasyMotionInputMode,
+  CleverFForwardMode,
+  CleverFBackwardMode,
   SurroundInputMode,
   OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,

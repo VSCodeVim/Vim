@@ -29,6 +29,8 @@ import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
 import { ModeDataFor } from '../mode/modeData';
+import { config } from 'process';
+import { CountQueuingStrategy } from 'stream/web';
 
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
@@ -819,7 +821,7 @@ class MoveToColumn extends BaseMovement {
  * @param count number of times to look
  * @param direction direction to look in
  */
-function findHelper(
+export function findHelper(
   vimState: VimState,
   start: Position,
   char: string,
@@ -991,7 +993,7 @@ class MoveTilBackward extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeat extends BaseMovement {
+export class MoveRepeat extends BaseMovement {
   keys = [';'];
 
   public override async execActionWithCount(
@@ -1008,7 +1010,7 @@ class MoveRepeat extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRepeatReversed extends BaseMovement {
+export class MoveRepeatReversed extends BaseMovement {
   keys = [','];
 
   public override async execActionWithCount(

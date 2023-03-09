@@ -17,6 +17,7 @@ import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ModeData } from '../mode/modeData';
 import { SearchDirection } from '../vimscript/pattern';
 import { globalState } from './globalState';
+import { ICleverF } from '../actions/plugins/cleverF';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -60,6 +61,8 @@ export class VimState implements vscode.Disposable {
   public historyTracker: HistoryTracker;
 
   public easyMotion: IEasyMotion;
+
+  public cleverF: ICleverF;
 
   public readonly documentUri: vscode.Uri;
 
@@ -311,11 +314,12 @@ export class VimState implements vscode.Disposable {
 
   public nvim?: INVim;
 
-  public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
+  public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion, cleverF: ICleverF) {
     this.editor = editor;
     this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
+    this.cleverF = cleverF;
   }
 
   async load() {

@@ -6,6 +6,7 @@ import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
+import { CleverF } from '../../src/actions/plugins/cleverF';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
@@ -29,7 +30,7 @@ suite('base action', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
+    vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion(), new CleverF());
     await vimState.load();
   });
 

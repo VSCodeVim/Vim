@@ -46,6 +46,8 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { CleverF } from '../../src/actions/plugins/cleverF';
+import { config } from 'process';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -123,7 +125,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.handlerMap = handlerMap;
     this.remappers = new Remappers();
 
-    this.vimState = new VimState(textEditor, new EasyMotion());
+    this.vimState = new VimState(textEditor, new EasyMotion(), new CleverF());
     this.remapState = new RemapState();
     this.disposables.push(this.vimState);
   }
@@ -438,6 +440,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         ) {
           key = '<copy>';
         }
+      }
+
+      // clear cleverF decorations
+      if (configuration.cleverF) {
+        this.vimState.cleverF.clearDecorations(this.vimState.editor);
       }
     }
 
@@ -764,7 +771,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        prevMode !== Mode.CleverFForwardMode &&
+        prevMode !== Mode.CleverFBackwardMode
       ) {
         ranRepeatableAction = true;
       }
@@ -838,7 +847,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // for VSCode to select including the last character we shift our stop position to the
     // right now that all steps that need that position have already run. On the next action
     // we will shift it back again on the start of 'runAction'.
-    if (this.vimState.currentMode === Mode.Visual) {
+    if (this.vimState.currentMode === Mode.Visual && !this.vimState.cleverF.isStartVisualBackward) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
@@ -1231,6 +1240,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       let selections = [] as vscode.Selection[];
+      if (
+        (this.vimState.cleverF.isStartVisualForward ||
+          this.vimState.cleverF.isStartVisualBackward) &&
+        configuration.cleverF
+      ) {
+        this.vimState.cursorStartPosition = new Position(
+          this.vimState.cleverF.startVisualPosition[0],
+          this.vimState.cleverF.startVisualPosition[1]
+        );
+        this.vimState.cleverF.isStartVisualForward = false;
+        this.vimState.cleverF.isStartVisualBackward = false;
+      }
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {
@@ -1722,6 +1743,10 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
+    case Mode.CleverFForwardMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.CleverFBackwardMode:
+      return VSCodeVimCursorType.Block;
     case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;
     case Mode.EasyMotionInputMode:

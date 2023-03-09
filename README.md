@@ -650,6 +650,43 @@ Once CamelCaseMotion is enabled, the following motions are available:
 
 By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete the current and next camelCase word segment.
 
+### clever-F
+
+Based on [clever-F](https://github.com/rhysd/clever-f.vim), instead of `;`, `f` is available
+to repeat after you type `f{char}` or `F{char}`. `F` after `f{char}` and `F{char}` is also available
+to undo a jump.
+
+| Setting     | Description             | Type    | Default Value |
+| ----------- | ----------------------- | ------- | ------------- |
+| vim.cleverF | Enable/disable clever-F | Boolean | false         |
+
+Once clever-F is active, "f" command and "F" command become more convenience.
+
+#### **`f`**
+
+```
+input:       fh         f         f      e         fo         f
+move :  _---------->_------>_---------->_->_---------------->_->_
+input:                            F                            F
+move :                        _<-----------------------------_<-_
+text :  hoge        huga    hoo         hugu                ponyo
+```
+
+#### **`F`**
+
+```
+input:        f        Fh       b     f                         Fo
+move :  _<----------_<------_<-_<-----------------------------_<-_
+input:        F        F          F
+move :  _---------->_------>_----------->_
+text :  hoge        huga    huyo         hugu                ponyo
+```
+
+| Motion Command | Description                                     |
+| -------------- | ----------------------------------------------- |
+| `f<char>`      | Move forward to the first position of `<char>`  |
+| `F<char>`      | Move backward to the first position of `<char>` |
+
 ### Input Method
 
 Disable input method when exiting Insert Mode.

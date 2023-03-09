@@ -205,6 +205,8 @@ class DisableExtension extends BaseCommand {
     Mode.SearchInProgressMode,
     Mode.CommandlineInProgress,
     Mode.Replace,
+    Mode.CleverFForwardMode,
+    Mode.CleverFBackwardMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
     Mode.SurroundInputMode,
@@ -422,6 +424,8 @@ class CommandEsc extends BaseCommand {
     Mode.VisualBlock,
     Mode.Normal,
     Mode.SurroundInputMode,
+    Mode.CleverFForwardMode,
+    Mode.CleverFBackwardMode,
     Mode.EasyMotionMode,
     Mode.EasyMotionInputMode,
   ];
@@ -436,6 +440,7 @@ class CommandEsc extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (vimState.currentMode === Mode.Normal) {
       vimState.surround = undefined;
+      vimState.cleverF.clearDecorations(vimState.editor);
 
       if (vimState.isMultiCursor) {
         vimState.cursors = [vimState.cursors[0]];
