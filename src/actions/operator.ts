@@ -291,6 +291,10 @@ class DeleteOperatorXVisual extends BaseOperator {
   public keys = [['x'], ['<Del>']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap;
+  }
+
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }

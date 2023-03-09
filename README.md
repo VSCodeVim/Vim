@@ -34,6 +34,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 - [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
 - [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
+  - [vim-leap](#vim-leap)
   - [vim-easymotion](#vim-easymotion)
   - [vim-surround](#vim-surround)
   - [vim-commentary](#vim-commentary)
@@ -521,6 +522,25 @@ Change the color of the status bar based on the current mode. Once enabled, conf
     "vim.statusBarColors.easymotioninputmode": "#007ACC",
     "vim.statusBarColors.surroundinputmode": "#007ACC",
 ```
+### vim-leap
+
+Based on [vim-leap](https://github.com/ggandor/leap.nvim) and configured through the following settings:
+
+| Setting                    | Description                                  | Type    | Default Value                  | Value              |
+| -------------------------- | -------------------------------------------- | ------- | ------------------------------ | ------------------ |
+| vim.leap                   | Enable/disable leap plugin                   | Boolean | false                          |                    |
+| vim.leapShowMarkerPosition | Set the position of the marker point display | String  | "after"                        | "after" , "target" |
+| vim.leapLabels               | The characters used for jump marker name     | String  | "sklyuiopnm,qwertzxcvbahdgjf;" |                    |
+| vim.leapCaseSensitive      | Whether to consider case in search patterns  | Boolean | false                          |                    |
+
+Once leap is active, initiate motions using the following commands.After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. For visual mode leap uses x instead of s because s is already taken by the surround plugin.
+
+| Motion Command            | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `s<char><char>`           | Search backwards of `<char><char>`                |
+| `S<char><char>`           | Search forward of `<char><char>`                 |
+| `{Visual}x<char><char>` | Search backwards of `<char><char>` on Visual mode  |
+| `{Visual}X<char><char>` | Search forward of `<char><char>` on Visual mode  |
 
 ### vim-easymotion
 

@@ -621,6 +621,26 @@
           "markdownDescription": "Enable the [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion) plugin for Vim.",
           "default": false
         },
+        "vim.leap": {
+          "type": "boolean",
+          "markdownDescription": "Enable the [Leap](https://github.com/ggandor/leap.nvim) plugin for Vim.",
+          "default": false
+        },
+        "vim.leapShowMarkerPosition": {
+          "type": "string",
+          "markdownDescription": "Set the position of the marker point display for Leap markers",
+          "default": "after"
+        },
+        "vim.leapLabels": {
+          "type": "string",
+          "markdownDescription": "Set the characters used for jump marker label.",
+          "default": "sklyuiopnm,qwertzxcvbahdgjf;"
+        },
+        "vim.leapCaseSensitive": {
+          "type": "boolean",
+          "markdownDescription": "Set to consider case sensitive in search patterns",
+          "default": false
+        },
         "vim.easymotion": {
           "type": "boolean",
           "markdownDescription": "Enable the [EasyMotion](https://github.com/easymotion/vim-easymotion) plugin for Vim.",

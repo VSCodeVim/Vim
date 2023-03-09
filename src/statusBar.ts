@@ -184,6 +184,10 @@ export function statusBarText(vimState: VimState) {
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:
       return '-- EASYMOTION INPUT --';
+    case Mode.LeapMode:
+      return '-- LEAP --';
+    case Mode.LeapPrepareMode:
+      return '-- LEAP PREPARE --';
     case Mode.SurroundInputMode:
       return '-- SURROUND INPUT --';
     case Mode.Disabled:
@@ -251,6 +255,14 @@ export function statusBarCommandText(vimState: VimState): string {
     case Mode.Insert:
     case Mode.Replace:
       return vimState.recordedState.pendingCommandString;
+    case Mode.LeapPrepareMode:
+    case Mode.LeapMode:
+      if (vimState.leap?.isRepeatLastSearch) {
+        const searchString =
+          vimState.leap.firstSearchString + vimState.leap.leapAction!.keysPressed[0];
+        return 's' + searchString;
+      }
+      return vimState.recordedState.commandString;
     case Mode.Normal:
     case Mode.Disabled:
       return vimState.recordedState.commandString;

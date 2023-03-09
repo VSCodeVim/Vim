@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { IMovement } from '../actions/baseMotion';
 import { configuration } from '../configuration/configuration';
 import { IEasyMotion } from '../actions/plugins/easymotion/types';
+import { Leap } from '../actions/plugins/leap/leap';
 import { HistoryTracker } from './../history/historyTracker';
 import { Logger } from '../util/logger';
 import { Mode } from '../mode/mode';
@@ -60,6 +61,8 @@ export class VimState implements vscode.Disposable {
   public historyTracker: HistoryTracker;
 
   public easyMotion: IEasyMotion;
+
+  public leap!: Leap;
 
   public readonly documentUri: vscode.Uri;
 
