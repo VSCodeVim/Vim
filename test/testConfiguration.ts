@@ -30,6 +30,7 @@ export class Configuration implements IConfiguration {
   leapShowMarkerPosition: 'after' | 'target' = 'after';
   leapLabels = 'sklyuiopnm,qwertzxcvbahdgjf;';
   leapCaseSensitive = false;
+  leapBidirectionalSearch = false;
   surround = false;
   argumentObjectSeparators = [','];
   argumentObjectOpeningDelimiters = ['(', '['];

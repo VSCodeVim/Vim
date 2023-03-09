@@ -203,6 +203,7 @@ export interface IConfiguration {
   leapShowMarkerPosition: "after" | "target";
   leapLabels: string;
   leapCaseSensitive: boolean;
+  leapBidirectionalSearch: boolean;
 
   /**
    * Timeout in milliseconds for remapped commands.

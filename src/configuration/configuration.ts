@@ -265,6 +265,7 @@ class Configuration implements IConfiguration {
   leapShowMarkerPosition: 'after' | 'target' = 'after';
   leapLabels = 'sklyuiopnm,qwertzxcvbahdgjf;';
   leapCaseSensitive = false;
+  leapBidirectionalSearch = true;
 
   targets: ITargetsConfiguration = {
     enable: false,

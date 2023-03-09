@@ -4,10 +4,11 @@ import { Position } from 'vscode';
 import { VimState } from '../../../state/vimState';
 import { configuration } from '../../../configuration/configuration';
 import { LeapSearchDirection, createLeap } from './leap';
-import { getMatches, generateMarkerRegex, generatePrepareRegex } from './match';
+import { getAllMatches, getMatches, generateMarkerRegex, generatePrepareRegex } from './match';
 import { StatusBar } from '../../../statusBar';
 import { Marker } from './Marker';
 import { VimError, ErrorCode } from '../../../error';
+import { Match } from './match';
 
 @RegisterAction
 export class LeapPrepareAction extends BaseCommand {
@@ -24,10 +25,16 @@ export class LeapPrepareAction extends BaseCommand {
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
     if (!configuration.leap) return;
 
-    if (this.keysPressed[1] === '\n') {
-      this.execRepeatLastSearch(vimState);
+    if (configuration.leapBidirectionalSearch) {
+      if (this.keysPressed[0] === 's') {
+        await this.execPrepare(cursorPosition, vimState);
+      }
     } else {
-      await this.execPrepare(cursorPosition, vimState);
+      if (this.keysPressed[1] === '\n') {
+        this.execRepeatLastSearch(vimState);
+      } else {
+        await this.execPrepare(cursorPosition, vimState);
+      }
     }
   }
 
@@ -39,13 +46,22 @@ export class LeapPrepareAction extends BaseCommand {
     vimState.leap = leap;
     vimState.leap.previousMode = vimState.currentMode;
 
-    const matches = getMatches(
-      generatePrepareRegex(firstSearchString),
-      direction,
-      cursorPosition,
-      vimState.document,
-      vimState.editor.visibleRanges[0]
-    );
+    let matches: Match[] = [];
+    if (configuration.leapBidirectionalSearch) {
+      matches = getAllMatches(
+        generatePrepareRegex(firstSearchString),
+        vimState.document,
+        vimState.editor.visibleRanges[0]
+      );
+    } else {
+      matches = getMatches(
+        generatePrepareRegex(firstSearchString),
+        direction,
+        cursorPosition,
+        vimState.document,
+        vimState.editor.visibleRanges[0]
+      );
+    }
 
     vimState.leap.createMarkers(matches);
     vimState.leap.showMarkers();
