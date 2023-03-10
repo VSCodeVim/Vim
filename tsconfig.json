@@ -8,7 +8,6 @@
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
