@@ -284,8 +284,8 @@ class CommandInsertDigraph extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const digraph = this.keysPressed.slice(1, 3).join('');
     const reverseDigraph = digraph.split('').reverse().join('');
-    let charCodes = (DefaultDigraphs[digraph] ||
-      DefaultDigraphs[reverseDigraph] ||
+    let charCodes = (DefaultDigraphs.get(digraph) ||
+      DefaultDigraphs.get(reverseDigraph) ||
       configuration.digraphs[digraph] ||
       configuration.digraphs[reverseDigraph])[1];
     if (!(charCodes instanceof Array)) {
@@ -304,8 +304,8 @@ class CommandInsertDigraph extends BaseCommand {
     return (
       chars in configuration.digraphs ||
       reverseChars in configuration.digraphs ||
-      chars in DefaultDigraphs ||
-      reverseChars in DefaultDigraphs
+      DefaultDigraphs.has(chars) ||
+      DefaultDigraphs.has(reverseChars)
     );
   }
 
@@ -322,7 +322,7 @@ class CommandInsertDigraph extends BaseCommand {
       };
       const match =
         Object.keys(configuration.digraphs).find(predicate) ||
-        Object.keys(DefaultDigraphs).find(predicate);
+        [...DefaultDigraphs.keys()].find(predicate);
       return match !== undefined;
     }
     return true;

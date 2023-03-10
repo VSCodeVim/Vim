@@ -44,7 +44,7 @@ export class NumericString {
   isCapital: boolean;
 
   // Map radix to number prefix
-  private static numPrefix = {
+  private static numPrefix: { [key: number]: string } = {
     [NumericStringRadix.Oct]: '0',
     [NumericStringRadix.Dec]: '',
     [NumericStringRadix.Hex]: '0x',
