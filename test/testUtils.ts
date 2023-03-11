@@ -143,9 +143,9 @@ export async function setupWorkspace(
   fileExtension: string = ''
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
+
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
-
   await vscode.window.showTextDocument(doc);
 
   Globals.mockConfiguration = config;
@@ -156,15 +156,7 @@ export async function setupWorkspace(
 
   activeTextEditor.options.tabSize = config.tabstop;
   activeTextEditor.options.insertSpaces = config.expandtab;
-
-  await mockAndEnable();
 }
-
-const mockAndEnable = async () => {
-  await vscode.commands.executeCommand('setContext', 'vim.active', true);
-  const mh = (await getAndUpdateModeHandler())!;
-  await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
-};
 
 export async function cleanUpWorkspace(): Promise<void> {
   return new Promise<void>((c, e) => {
