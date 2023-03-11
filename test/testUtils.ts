@@ -159,34 +159,21 @@ export async function setupWorkspace(
 }
 
 export async function cleanUpWorkspace(): Promise<void> {
-  return new Promise<void>((c, e) => {
+  await new Promise<void>(async (c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
     }
-
-    // TODO: the visibleTextEditors variable doesn't seem to be
-    // up to date after a onDidChangeActiveTextEditor event, not
-    // even using a setTimeout 0... so we MUST poll :(
-    const interval = setInterval(() => {
-      if (vscode.window.visibleTextEditors.length > 0) {
-        return;
+    const subscription = vscode.window.onDidChangeActiveTextEditor(() => {
+      if (vscode.window.visibleTextEditors.length === 0) {
+        subscription.dispose();
+        c();
       }
+    });
 
-      clearInterval(interval);
-      c();
-    }, 10);
-
-    vscode.commands.executeCommand('workbench.action.closeAllEditors').then(
-      () => null,
-      (err: any) => {
-        clearInterval(interval);
-        e(err);
-      }
-    );
-  }).then(() => {
-    assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
-    assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
+  assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+  assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
 export async function reloadConfiguration() {
