@@ -123,6 +123,7 @@ interface ITestWithRemapsObject {
 
 class DocState {
   public static parse(lines: string[]): DocState {
+    lines = [...lines];
     const cursor = (() => {
       for (let i = 0; i < lines.length; i++) {
         const columnIdx = lines[i].indexOf('|');
@@ -147,15 +148,8 @@ class DocState {
 }
 
 class TestWithRemapsObjectHelper {
-  /**
-   * Position that the test says that the cursor starts at.
-   */
-  currentStepStartPosition = new Position(0, 0);
-
-  /**
-   * Position that the test says that the cursor ends at.
-   */
-  currentStepEndPosition = new Position(0, 0);
+  currentStepStart!: DocState;
+  currentStepEnd!: DocState;
 
   /**
    * Position that the test says that the cursor ends at after timeout finishes.
@@ -167,7 +161,6 @@ class TestWithRemapsObjectHelper {
    */
   currentStep = 0;
 
-  private _isValid = false;
   private testObject: ITestWithRemapsObject;
 
   constructor(testObject: ITestWithRemapsObject) {
@@ -176,67 +169,19 @@ class TestWithRemapsObjectHelper {
     this.parseStep(testObject);
   }
 
-  public get isValid(): boolean {
-    return this._isValid;
-  }
-
-  private setStartCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.currentStepStartPosition = result.position;
-    return result.success;
-  }
-
-  private setEndCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.currentStepEndPosition = result.position;
-    return result.success;
-  }
-
-  private setEndAfterTimeoutCursorPosition(lines: string[] | undefined): boolean {
-    if (!lines) {
-      return true;
-    }
-    const result = this.getCursorPosition(lines);
-    this.currentStepEndAfterTimeoutPosition = result.position;
-    return result.success;
-  }
-
-  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
-    const ret = { success: false, position: new Position(0, 0) };
-    for (let i = 0; i < lines.length; i++) {
-      const columnIdx = lines[i].indexOf('|');
-      if (columnIdx >= 0) {
-        ret.position = new Position(i, columnIdx);
-        ret.success = true;
-      }
-    }
-
-    return ret;
-  }
-
   public parseStep(t: ITestWithRemapsObject): void {
-    this._isValid = true;
     const stepIdx = this.currentStep;
     if (stepIdx === 0) {
-      if (!this.setStartCursorPosition(t.start)) {
-        this._isValid = false;
-        return;
-      }
+      this.currentStepStart = DocState.parse(t.start);
     } else {
       const lastStepEnd =
         t.steps[stepIdx - 1].stepResult.endAfterTimeout ?? t.steps[stepIdx - 1].stepResult.end;
-      if (!this.setStartCursorPosition(lastStepEnd)) {
-        this._isValid = false;
-        return;
-      }
+      this.currentStepStart = DocState.parse(lastStepEnd);
     }
-    if (!this.setEndCursorPosition(t.steps[stepIdx].stepResult.end)) {
-      this._isValid = false;
-      return;
-    }
-    if (!this.setEndAfterTimeoutCursorPosition(t.steps[stepIdx].stepResult.endAfterTimeout)) {
-      this._isValid = false;
-      return;
+    this.currentStepEnd = DocState.parse(t.steps[stepIdx].stepResult.end);
+    const endAfterTimeout = t.steps[stepIdx].stepResult.endAfterTimeout;
+    if (endAfterTimeout) {
+      this.currentStepEndAfterTimeoutPosition = DocState.parse(endAfterTimeout).cursor;
     }
   }
 
@@ -247,7 +192,7 @@ class TestWithRemapsObjectHelper {
       : step.stepResult.end.slice(0);
     const cursorLine = afterTimeout
       ? this.currentStepEndAfterTimeoutPosition!.line
-      : this.currentStepEndPosition.line;
+      : this.currentStepEnd.cursor.line;
     ret[cursorLine] = ret[cursorLine].replace('|', '');
     return ret;
   }
@@ -309,8 +254,8 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  const start = DocState.parse([...testObj.start]);
-  const end = DocState.parse([...testObj.end]);
+  const start = DocState.parse(testObj.start);
+  const end = DocState.parse(testObj.end);
 
   if (testObj.editorOptions) {
     editor.options = testObj.editorOptions;
@@ -414,14 +359,13 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   assert(editor, 'Expected an active editor');
 
   const helper = new TestWithRemapsObjectHelper(testObj);
-  assert(helper.isValid, "Missing '|' in test object.");
 
   // Initialize the editor with the starting text and cursor selection
   await editor.edit((builder) => {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
   editor.selections = [
-    new vscode.Selection(helper.currentStepStartPosition, helper.currentStepStartPosition),
+    new vscode.Selection(helper.currentStepStart.cursor, helper.currentStepStart.cursor),
   ];
 
   // Generate a brand new ModeHandler for this editor
@@ -466,9 +410,6 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     helper.parseStep(testObj);
 
     const stepTitleOrIndex = step.title ? `nr. ${index} - "${step.title}"` : index;
-
-    // Check valid step object input
-    assert(helper.isValid, `Step ${stepTitleOrIndex} Missing '|' in test object.`);
 
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();
@@ -548,7 +489,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
     // Check end cursor position
     const actualEndPosition = result1.position;
-    const expectedEndPosition = helper.currentStepEndPosition;
+    const expectedEndPosition = helper.currentStepEnd.cursor;
     assert.deepStrictEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
       { line: expectedEndPosition.line, character: expectedEndPosition.character },
