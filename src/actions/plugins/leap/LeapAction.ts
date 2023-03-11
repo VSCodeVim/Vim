@@ -1,10 +1,15 @@
 import { Mode } from '../../../mode/mode';
-import { BaseCommand, RegisterAction } from '../../base';
+import { BaseCommand, KeypressState, RegisterAction } from '../../base';
 import { Position } from 'vscode';
 import { VimState } from '../../../state/vimState';
 import { configuration } from '../../../configuration/configuration';
 import { LeapSearchDirection, createLeap } from './leap';
-import { getAllMatches, getMatches, generateMarkerRegex, generatePrepareRegex } from './match';
+import {
+  getMatches,
+  generateMarkerRegex,
+  generatePrepareRegex,
+  getBidirectionalSearchMatches,
+} from './match';
 import { StatusBar } from '../../../statusBar';
 import { Marker } from './Marker';
 import { VimError, ErrorCode } from '../../../error';
@@ -25,16 +30,10 @@ export class LeapPrepareAction extends BaseCommand {
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
     if (!configuration.leap) return;
 
-    if (configuration.leapBidirectionalSearch) {
-      if (this.keysPressed[0] === 's') {
-        await this.execPrepare(cursorPosition, vimState);
-      }
+    if (this.keysPressed[1] === '\n' && !configuration.leapBidirectionalSearch) {
+      this.execRepeatLastSearch(vimState);
     } else {
-      if (this.keysPressed[1] === '\n') {
-        this.execRepeatLastSearch(vimState);
-      } else {
-        await this.execPrepare(cursorPosition, vimState);
-      }
+      await this.execPrepare(cursorPosition, vimState);
     }
   }
 
@@ -43,13 +42,15 @@ export class LeapPrepareAction extends BaseCommand {
     const firstSearchString = this.keysPressed[1];
 
     const leap = createLeap(vimState, direction, firstSearchString);
+    leap.searchMode = this.keysPressed[0];
     vimState.leap = leap;
     vimState.leap.previousMode = vimState.currentMode;
 
     let matches: Match[] = [];
     if (configuration.leapBidirectionalSearch) {
-      matches = getAllMatches(
+      matches = getBidirectionalSearchMatches(
         generatePrepareRegex(firstSearchString),
+        cursorPosition,
         vimState.document,
         vimState.editor.visibleRanges[0]
       );

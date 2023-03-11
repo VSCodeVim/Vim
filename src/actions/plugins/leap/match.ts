@@ -6,6 +6,7 @@ import { configuration } from '../../../configuration/configuration';
 export interface Match {
   position: Position;
   searchString: string;
+  direction: LeapSearchDirection;
 }
 
 const needEscapeStrings: string = '$()*+.[]?\\^{}|';
@@ -76,7 +77,7 @@ export function getMatches(
         const pos = new Position(lineCount, result.index);
         const rawText = result[0].length === 1 ? result[0] + ' ' : result[0];
         const searchString = configuration.leapCaseSensitive ? rawText : rawText.toLowerCase();
-        lineMatches.push({ position: pos, searchString });
+        lineMatches.push({ position: pos, searchString, direction });
         if (searchString[0] === searchString[1]) {
           searchRegex.lastIndex--;
         }
@@ -101,39 +102,28 @@ export function getMatches(
   return matches;
 }
 
-export function getAllMatches(
+export function getBidirectionalSearchMatches(
   searchRegex: RegExp,
+  position: Position,
   document: vscode.TextDocument,
   visibleRange: vscode.Range
 ) {
-  function calcCurrentLineMatches(lineCount: number) {
-    const lineText = document.lineAt(lineCount).text;
-    let result = searchRegex.exec(lineText);
-    const lineMatches: Match[] = [];
+  const backwardMatches = getMatches(
+    searchRegex,
+    LeapSearchDirection.Backward,
+    position,
+    document,
+    visibleRange
+  );
 
-    while (result) {
-      const pos = new Position(lineCount, result.index);
-      const rawText = result[0].length === 1 ? result[0] + ' ' : result[0];
-      const searchString = configuration.leapCaseSensitive ? rawText : rawText.toLowerCase();
-      lineMatches.push({ position: pos, searchString });
-      if (searchString[0] === searchString[1]) {
-        searchRegex.lastIndex--;
-      }
-      result = searchRegex.exec(lineText);
-    }
+  const forwardMatches = getMatches(
+    searchRegex,
+    LeapSearchDirection.Forward,
+    position,
+    document,
+    visibleRange
+  );
 
-    return lineMatches;
-  }
-
-  const matches: Match[] = [];
-
-  const startLine = visibleRange.start.line;
-  const endLine = visibleRange.end.line;
-
-  for (let i = startLine; i < endLine; i++) {
-    const lineMatches = calcCurrentLineMatches(i);
-    matches.push(...lineMatches);
-  }
-
-  return matches;
+  return [...backwardMatches, ...forwardMatches];
 }
+

@@ -1,15 +1,18 @@
 import { Match } from './match';
 import * as vscode from 'vscode';
 import { configuration } from './../../../configuration/configuration';
+import { LeapSearchDirection } from './leap';
 
 export class Marker {
   private decoration!: MarkerDecoration;
   label: string = '';
   searchString: string;
   matchPosition: vscode.Position;
-  constructor({ position, searchString }: Match, editor: vscode.TextEditor) {
+  direction: LeapSearchDirection;
+  constructor({ position, searchString, direction }: Match, editor: vscode.TextEditor) {
     this.matchPosition = position;
     this.searchString = searchString;
+    this.direction = direction;
     this.decoration = new MarkerDecoration(editor, this);
   }
 
