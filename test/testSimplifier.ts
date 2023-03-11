@@ -121,57 +121,29 @@ interface ITestWithRemapsObject {
   steps: Step[];
 }
 
-class TestObjectHelper {
-  /**
-   * Position that the test says that the cursor starts at.
-   */
-  startPosition = new Position(0, 0);
-
-  /**
-   * Position that the test says that the cursor ends at.
-   */
-  endPosition = new Position(0, 0);
-
-  public readonly isValid: boolean;
-  private readonly testObject: ITestObject;
-
-  constructor(testObject: ITestObject) {
-    this.testObject = testObject;
-
-    this.isValid =
-      this.setStartCursorPosition(testObject.start) && this.setEndCursorPosition(testObject.end);
-  }
-
-  private setStartCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.startPosition = result.position;
-    return result.success;
-  }
-
-  private setEndCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.endPosition = result.position;
-    return result.success;
-  }
-
-  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
-    const ret = { success: false, position: new Position(0, 0) };
-    for (let i = 0; i < lines.length; i++) {
-      const columnIdx = lines[i].indexOf('|');
-      if (columnIdx >= 0) {
-        ret.position = new Position(i, columnIdx);
-        ret.success = true;
+class DocState {
+  public static parse(lines: string[]): DocState {
+    const cursor = (() => {
+      for (let i = 0; i < lines.length; i++) {
+        const columnIdx = lines[i].indexOf('|');
+        if (columnIdx >= 0) {
+          lines[i] = lines[i].replace('|', '');
+          return new Position(i, columnIdx);
+        }
       }
-    }
 
-    return ret;
+      throw new Error("Missing '|' in test object");
+    })();
+    return new DocState(cursor, lines);
   }
 
-  public asVimOutputText(): string[] {
-    const ret = this.testObject.end.slice(0);
-    ret[this.endPosition.line] = ret[this.endPosition.line].replace('|', '');
-    return ret;
+  constructor(cursor: Position, lines: string[]) {
+    this.cursor = cursor;
+    this.lines = lines;
   }
+
+  cursor: Position;
+  lines: string[];
 }
 
 class TestWithRemapsObjectHelper {
@@ -337,8 +309,8 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  const helper = new TestObjectHelper(testObj);
-  assert(helper.isValid, "Missing '|' in test object.");
+  const start = DocState.parse([...testObj.start]);
+  const end = DocState.parse([...testObj.end]);
 
   if (testObj.editorOptions) {
     editor.options = testObj.editorOptions;
@@ -349,7 +321,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
   await editor.document.save();
-  editor.selections = [new vscode.Selection(helper.startPosition, helper.startPosition)];
+  editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
@@ -377,12 +349,12 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   }
 
   // Check given end output is correct
-  const lines = helper.asVimOutputText();
+  const lines = end.lines;
   assertEqualLines(lines);
 
   // Check final cursor position
   const actualPosition = modeHandler.vimState.editor.selection.start;
-  const expectedPosition = helper.endPosition;
+  const expectedPosition = end.cursor;
   assert.deepStrictEqual(
     { line: actualPosition.line, character: actualPosition.character },
     { line: expectedPosition.line, character: expectedPosition.character },
