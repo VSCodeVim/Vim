@@ -8,11 +8,8 @@ import { Position } from 'vscode';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({

@@ -5,11 +5,8 @@ import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import * as testUtils from './../testUtils';
 
 suite(':retab', () => {
-  setup(async () => {
-    await testUtils.setupWorkspace();
-  });
-
-  teardown(testUtils.cleanUpWorkspace);
+  suiteSetup(testUtils.setupWorkspace);
+  suiteTeardown(testUtils.cleanUpWorkspace);
 
   suite('Retab line segments', () => {
     test('replaceSpaces=false', () => {

@@ -7,13 +7,12 @@ import {
 } from '../../src/actions/plugins/surround';
 
 suite('surround plugin', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.surround = true;
     await setupWorkspace(configuration, '.js');
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "'ysiw)' surrounds word without space",
