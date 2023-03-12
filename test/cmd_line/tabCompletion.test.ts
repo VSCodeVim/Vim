@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { join, sep, basename } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
@@ -112,7 +113,7 @@ suite('cmd_line tabComplete', () => {
         'Cannot complete with / at the end'
       );
     } finally {
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 
@@ -164,11 +165,7 @@ suite('cmd_line tabComplete', () => {
 
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
-      await t.removeDir(inner100);
-      await t.removeDir(inner10);
-      await t.removeDir(inner1);
-      await t.removeDir(inner0);
-      await t.removeDir(tmpDir);
+      await vscode.workspace.fs.delete(vscode.Uri.file(tmpDir), { recursive: true });
     }
   });
 
@@ -236,8 +233,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
-      await t.removeFile(testFilePath);
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 
@@ -276,7 +272,7 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(statusBarAfterTab, `:e ${spacedFilePath}|`, `(${failMsg} full path)`);
     } finally {
-      await t.removeFile(spacedFilePath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(spacedFilePath));
     }
   });
 
@@ -310,8 +306,7 @@ suite('cmd_line tabComplete', () => {
         );
       }
     } finally {
-      await t.removeFile(filePath);
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 });

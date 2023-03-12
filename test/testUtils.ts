@@ -73,8 +73,7 @@ export async function createRandomFile(contents: string, fileExtension: string):
 }
 
 export async function createRandomDir() {
-  const dirPath = join(os.tmpdir(), rndName());
-  return createDir(dirPath);
+  return createDir(join(os.tmpdir(), rndName()));
 }
 
 export async function createEmptyFile(fsPath: string) {
@@ -85,14 +84,6 @@ export async function createEmptyFile(fsPath: string) {
 export async function createDir(fsPath: string) {
   await promisify(fs.mkdir)(fsPath);
   return fsPath;
-}
-
-export async function removeFile(fsPath: string) {
-  return promisify(fs.unlink)(fsPath);
-}
-
-export async function removeDir(fsPath: string) {
-  return promisify(fs.rmdir)(fsPath);
 }
 
 /**
