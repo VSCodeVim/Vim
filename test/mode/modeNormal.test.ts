@@ -10,7 +10,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
 
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
@@ -18,8 +18,7 @@ suite('Mode Normal', () => {
     await setupWorkspace(configuration);
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test('Can be activated', async () => {
     const activationKeys = ['<Esc>', '<C-[>'];
