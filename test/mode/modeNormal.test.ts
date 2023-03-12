@@ -3570,6 +3570,7 @@ suite('Mode Normal', () => {
       keysPressed: '<C-g>',
       end: ['o|ne', 'two', 'three'],
       statusBar: '"{FILENAME}" 3 lines --33%--',
+      saveDocBeforeTest: true,
     });
 
     newTest({
@@ -3578,6 +3579,7 @@ suite('Mode Normal', () => {
       keysPressed: '<C-g>',
       end: ['one', '|two', 'three'],
       statusBar: '"{FILENAME}" 3 lines --66%--',
+      saveDocBeforeTest: true,
     });
 
     newTest({
@@ -3586,6 +3588,7 @@ suite('Mode Normal', () => {
       keysPressed: '<C-g>',
       end: ['one', 'two', 'thr|ee'],
       statusBar: '"{FILENAME}" 3 lines --100%--',
+      saveDocBeforeTest: true,
     });
 
     newTest({
@@ -3594,6 +3597,7 @@ suite('Mode Normal', () => {
       keysPressed: '<C-g>',
       end: ['o|ne'],
       statusBar: '"{FILENAME}" 1 line --100%--',
+      saveDocBeforeTest: true,
     });
 
     newTest({
@@ -3602,6 +3606,7 @@ suite('Mode Normal', () => {
       keysPressed: '<C-g>',
       end: ['|'],
       statusBar: '"{FILENAME}" --No lines in buffer--',
+      saveDocBeforeTest: true,
     });
 
     newTest({
@@ -3610,6 +3615,7 @@ suite('Mode Normal', () => {
       keysPressed: 'x' + '<C-g>',
       end: ['one', 't|o', 'three'],
       statusBar: '"{FILENAME}" [Modified] 3 lines --66%--',
+      saveDocBeforeTest: true,
     });
   });
 });

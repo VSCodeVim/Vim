@@ -87,6 +87,7 @@ interface ITestObject {
     methodName: string;
     returnValue: any;
   };
+  saveDocBeforeTest?: boolean;
 }
 
 type Step = {
@@ -97,7 +98,6 @@ type Step = {
     endAfterTimeout?: string[];
     endMode?: Mode;
     endModeAfterTimeout?: Mode;
-    jumps?: string[];
   };
 };
 
@@ -218,7 +218,9 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
       );
     })
   );
-  await editor.document.save();
+  if (testObj.saveDocBeforeTest) {
+    assert.ok(await editor.document.save());
+  }
   editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
   // Generate a brand new ModeHandler for this editor
@@ -498,29 +500,6 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
           `Didn't enter correct mode on step ${stepTitleOrIndex} after Timeout.`
         );
       }
-    }
-
-    // jumps: check jumps are correct if given
-    if (step.stepResult.jumps !== undefined) {
-      assert.deepStrictEqual(
-        jumpTracker.jumps.map((j) => resolvedStep.end.lines[j.position.line] || '<MISSING>'),
-        step.stepResult.jumps.map((t) => t.replace('|', '')),
-        'Incorrect jumps found'
-      );
-
-      const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
-      const actualJumpPosition =
-        (jumpTracker.currentJump &&
-          resolvedStep.end.lines[jumpTracker.currentJump.position.line]) ||
-        '<FRONT>';
-      const expectedJumpPosition =
-        stripBar(step.stepResult.jumps.find((t) => t.includes('|'))) || '<FRONT>';
-
-      assert.deepStrictEqual(
-        actualJumpPosition,
-        expectedJumpPosition,
-        `Incorrect jump position found on step ${stepTitleOrIndex}`
-      );
     }
   }
   return modeHandler;
