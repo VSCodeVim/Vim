@@ -10,10 +10,8 @@ import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
-import { getAndUpdateModeHandler } from '../extension';
 import { ExCommandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
-import { SpecialKeys } from '../src/util/specialKeys';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
@@ -109,8 +107,9 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
       return c();
     }
 
-    vscode.window.onDidChangeVisibleTextEditors(() => {
+    const subscription = vscode.window.onDidChangeVisibleTextEditors(() => {
       if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+        subscription.dispose();
         c();
       }
     });
@@ -159,19 +158,7 @@ export async function setupWorkspace(
 }
 
 export async function cleanUpWorkspace(): Promise<void> {
-  await new Promise<void>(async (c, e) => {
-    if (vscode.window.visibleTextEditors.length === 0) {
-      return c();
-    }
-    const subscription = vscode.window.onDidChangeActiveTextEditor(() => {
-      if (vscode.window.visibleTextEditors.length === 0) {
-        subscription.dispose();
-        c();
-      }
-    });
-
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-  });
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
@@ -180,7 +167,7 @@ export async function reloadConfiguration() {
   const validatorResults =
     (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
   for (const validatorResult of validatorResults.get()) {
-    console.log(validatorResult);
+    console.warn(validatorResult);
   }
 }
 
@@ -194,8 +181,8 @@ export async function waitForTabChange(): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 500);
 
-    const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
-      disposer.dispose();
+    const subscription = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
+      subscription.dispose();
 
       resolve(textEditor);
     });

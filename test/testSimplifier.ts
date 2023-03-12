@@ -16,6 +16,7 @@ import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { StatusBar } from '../src/statusBar';
 import { Register } from '../src/register/register';
 import { ModeHandler } from '../src/mode/modeHandler';
+import { TextEditor } from '../src/textEditor';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -209,11 +210,13 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   }
 
   // Initialize the editor with the starting text and cursor selection
-  assert.equal(
+  assert.ok(
     await editor.edit((builder) => {
-      builder.insert(new Position(0, 0), start.lines.join('\n'));
-    }),
-    true
+      builder.replace(
+        new vscode.Range(new Position(0, 0), TextEditor.getDocumentEnd(editor.document)),
+        start.lines.join('\n')
+      );
+    })
   );
   await editor.document.save();
   editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
