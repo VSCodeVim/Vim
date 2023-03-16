@@ -20,6 +20,7 @@ import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
 import { keystrokesExpressionParser } from '../vimscript/expression';
+import { globalState } from '../state/globalState';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -170,7 +171,7 @@ export async function executeTransformations(
           // Set the executed register as the registerName, otherwise the last action register is used.
           vimState.recordedState.registerName = transformation.register;
 
-          vimState.lastInvokedMacro = vimState.recordedState;
+          globalState.lastInvokedMacro = vimState.recordedState;
           vimState.isReplayingMacro = false;
 
           if (vimState.lastMovementFailed) {
@@ -209,8 +210,8 @@ export async function executeTransformations(
             vimState.recordedState.transformer.transformations
           );
 
+          globalState.lastInvokedMacro = recordedMacro;
           vimState.isReplayingMacro = false;
-          vimState.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
