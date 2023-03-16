@@ -275,6 +275,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      if (e.textEditor.document.uri.scheme === 'output') {
+        // Without this, we can an infinite logging loop
+        return;
+      }
       if (
         vscode.window.activeTextEditor === undefined ||
         e.textEditor.document !== vscode.window.activeTextEditor.document
