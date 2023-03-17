@@ -379,7 +379,6 @@ class ChangeList {
 }
 
 export class HistoryTracker {
-  public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
   private nextStepStartPosition: Position | undefined;
@@ -407,7 +406,6 @@ export class HistoryTracker {
       text: this.getDocumentText(),
       versionNumber: this.getDocumentVersion(),
     };
-    this.lastContentChanges = [];
     this.currentContentChanges = [];
   }
 
@@ -940,29 +938,5 @@ export class HistoryTracker {
    */
   public prevChangeInChangeList(): Position | VimError {
     return this.changeList.prevChangePosition();
-  }
-
-  /**
-   * Handy for debugging the undo/redo stack. + means our current position, check means active.
-   */
-  public toString(): string {
-    let result = '';
-
-    for (let i = 0; i < this.undoStack.getStackDepth(); i++) {
-      const step = this.undoStack.getHistoryStepAtIndex(i)!;
-
-      result += step.changes
-        .map((x) => `${x.before.replace(/\n/g, '\\n')} => ${x.after.replace(/\n/g, '\\n')}`)
-        .join('');
-      if (i === this.undoStack.getCurrentHistoryStepIndex()) {
-        result += '+';
-      }
-      if (step.isFinished) {
-        result += '✓';
-      }
-      result += '| ';
-    }
-
-    return result;
   }
 }

@@ -106,7 +106,6 @@ export class CommandEscInsertMode extends BaseCommand {
     }
 
     if (vimState.historyTracker.currentContentChanges.length > 0) {
-      vimState.historyTracker.lastContentChanges = vimState.historyTracker.currentContentChanges;
       vimState.historyTracker.currentContentChanges = [];
     }
 
