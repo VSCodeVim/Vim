@@ -227,8 +227,8 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
 
-  const jumpTracker = globalState.jumpTracker;
-  jumpTracker.clearJumps();
+  globalState.lastInvokedMacro = undefined;
+  globalState.jumpTracker.clearJumps();
 
   Register.clearAllRegisters();
 
@@ -285,14 +285,16 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   if (testObj.jumps !== undefined) {
     // TODO: Jumps should be specified by Positions, not line contents
     assert.deepStrictEqual(
-      jumpTracker.jumps.map((j) => end.lines[j.position.line] || '<MISSING>'),
+      globalState.jumpTracker.jumps.map((j) => end.lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),
       'Incorrect jumps found'
     );
 
     const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
     const actualJumpPosition =
-      (jumpTracker.currentJump && end.lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
+      (globalState.jumpTracker.currentJump &&
+        end.lines[globalState.jumpTracker.currentJump.position.line]) ||
+      '<FRONT>';
     const expectedJumpPosition = stripBar(testObj.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
     assert.deepStrictEqual(
