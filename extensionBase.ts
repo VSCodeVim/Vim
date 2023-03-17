@@ -181,11 +181,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
     };
 
-    ModeHandlerMap.getAll()
-      .filter((modeHandler) => modeHandler.vimState.documentUri === event.document.uri)
-      .forEach((modeHandler) => {
-        contentChangeHandler(modeHandler);
-      });
+    const mh = ModeHandlerMap.get(event.document.uri);
+    if (mh) {
+      contentChangeHandler(mh);
+    }
   });
 
   registerEventListener(
@@ -195,9 +194,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       Logger.info(`${closedDocument.fileName} closed`);
 
       // Delete modehandler once all tabs of this document have been closed
-      for (const uri of ModeHandlerMap.keys()) {
-        const modeHandler = ModeHandlerMap.get(uri);
-
+      for (const [uri, modeHandler] of ModeHandlerMap.entries()) {
         let shouldDelete = false;
         if (modeHandler == null) {
           shouldDelete = true;
