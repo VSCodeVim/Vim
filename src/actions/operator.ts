@@ -702,8 +702,8 @@ class YankVisualBlockMode extends BaseOperator {
 
     Register.put(vimState, lines.join('\n'), this.multicursorIndex, true);
 
-    vimState.historyTracker.addMark(startPos, '<');
-    vimState.historyTracker.addMark(endPos, '>');
+    vimState.historyTracker.addMark(vimState.document, startPos, '<');
+    vimState.historyTracker.addMark(vimState.document, endPos, '>');
 
     const numLinesYanked = lines.length;
     reportLinesYanked(numLinesYanked, vimState);
