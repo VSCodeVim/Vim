@@ -809,7 +809,7 @@ class CommandUndoOnLine extends BaseCommand {
 }
 
 @RegisterAction
-class CommandRedo extends BaseCommand {
+export class CommandRedo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['<C-r>'];
   override runsOnceForEveryCursor() {
