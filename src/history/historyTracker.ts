@@ -426,8 +426,8 @@ export class HistoryTracker {
    * the same character when the user does a document edit that would move the
    * text that was marked.
    */
-  private updateAndReturnMarks(): IMark[] {
-    const previousMarks = this.getAllCurrentDocumentMarks();
+  private updateAndReturnMarks(document: vscode.TextDocument): IMark[] {
+    const previousMarks = this.getAllMarksInDocument(document);
     const newMarks: IMark[] = [];
 
     // clone old marks into new marks
@@ -515,19 +515,17 @@ export class HistoryTracker {
   }
 
   /**
-   * @returns all local and global marks in this editor
+   * @returns all local and global marks in the given editor
    */
-  private getAllCurrentDocumentMarks(): IMark[] {
-    const globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.document === vscode.window.activeTextEditor?.document
-    );
+  private getAllMarksInDocument(document: vscode.TextDocument): IMark[] {
+    const globalMarks = HistoryStep.globalMarks.filter((mark) => mark.document === document);
     return [...this.getLocalMarks(), ...globalMarks];
   }
 
   /**
    * Adds a mark.
    */
-  public addMark(position: Position, markName: string): void {
+  public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
     // Sets previous context mark (adds current position to jump list).
 
     if (markName === "'" || markName === '`') {
@@ -539,7 +537,7 @@ export class HistoryTracker {
       position,
       name: markName,
       isUppercaseMark,
-      document: isUppercaseMark ? vscode.window.activeTextEditor?.document : undefined,
+      document: isUppercaseMark ? document : undefined,
     };
     this.putMarkInList(newMark);
   }
@@ -731,7 +729,7 @@ export class HistoryTracker {
 
       currentHistoryStep.merge(this.vimState.document);
 
-      currentHistoryStep.marks = this.updateAndReturnMarks();
+      currentHistoryStep.marks = this.updateAndReturnMarks(this.vimState.document);
 
       const changes = currentHistoryStep.changes;
       if (changes) {
