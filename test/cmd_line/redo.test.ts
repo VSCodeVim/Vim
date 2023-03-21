@@ -14,10 +14,10 @@ suite('Redo command', () => {
   teardown(cleanUpWorkspace);
 
   test('redoes last undoed action after insert mode', async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', '<Esc>']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'b', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(['I', 'a', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(['I', 'b', '<Esc>']);
     await new ExCommandLine('undo', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     await new ExCommandLine('redo', modeHandler.vimState.currentMode).run(modeHandler.vimState);
-    assertEqualLines(['ab']);
+    assertEqualLines(['ba']);
   });
 });
