@@ -33,18 +33,15 @@ export class MoveCommand extends ExCommand {
       [sourceStart, sourceEnd] = [sourceEnd, sourceStart];
     }
     /*make sure
-    1. there is no intersection between two ranges, which leads to wrong performance and has no practical use.
-    2. not move a range to the place right below itself, which leads to no change.
+    1. not move a range to the place inside itself.
+    2. not move a range to the place right below or above itself, which leads to no change.
     */
-    if (
-      (dest + 1 >= sourceStart && dest + 1 <= sourceEnd) ||
-      (sourceStart >= dest + 1 && sourceStart <= dest + 1 + (sourceEnd - sourceStart)) ||
-      sourceEnd == dest
-    ) {
+    if (dest >= sourceStart && dest <= sourceEnd) {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidAddress));
       return;
     }
 
+    // copy
     const copiedText = vimState.document.getText(
       new Range(new Position(sourceStart, 0), new Position(sourceEnd, 0).getLineEnd())
     );
@@ -73,13 +70,7 @@ export class MoveCommand extends ExCommand {
         lines[lines.length - 1].match(/\S/)?.index ?? 0
       );
     }
-
-    vimState.recordedState.transformer.insert(
-      position,
-      text,
-      PositionDiff.exactPosition(cursorPosition)
-    );
-
+    // delete
     let start = new Position(sourceStart, 0);
     let end = new Position(sourceEnd, 0).getLineEndIncludingEOL();
 
@@ -93,6 +84,13 @@ export class MoveCommand extends ExCommand {
       range: new Range(start, end),
       manuallySetCursorPositions: true,
     });
+
+    // insert
+    vimState.recordedState.transformer.insert(
+      position,
+      text,
+      PositionDiff.exactPosition(cursorPosition)
+    );
   }
 
   public async execute(vimState: VimState): Promise<void> {
