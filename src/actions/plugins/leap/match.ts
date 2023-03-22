@@ -1,7 +1,8 @@
 import { Position } from 'vscode';
-import { LeapSearchDirection } from './leap';
+import { isBackward, LeapSearchDirection } from './leap';
 import * as vscode from 'vscode';
 import { configuration } from '../../../configuration/configuration';
+import { VimState } from '../../../state/vimState';
 
 export interface Match {
   position: Position;
@@ -44,86 +45,101 @@ export function generateMarkerRegex(searchString: string) {
   return new RegExp(getPattern(searchString), getFlags());
 }
 
-const MATCH_COUNT_LIMIT = 400;
 export function getMatches(
   searchRegex: RegExp,
   direction: LeapSearchDirection,
   position: Position,
-  document: vscode.TextDocument,
-  visibleRange: vscode.Range
+  vimState: VimState
 ) {
-  const matches: Match[] = [];
-  const lineStart = position.line;
-  const lineEnd =
-    direction === LeapSearchDirection.Backward ? visibleRange.end.line : visibleRange.start.line;
+  const document = vimState.document;
+  const visibleRanges = vimState.editor.visibleRanges;
 
-  function checkPosition(lineCount: number, index: number) {
-    return (
-      (lineCount === lineStart &&
-        (direction === LeapSearchDirection.Forward
-          ? index < position.character - 1
-          : index > position.character)) ||
-      lineCount !== lineStart
-    );
-  }
+  function matchRange(range: vscode.Range) {
+    const matches: Match[] = [];
+    const lineStart = range.start.line;
+    const lineEnd = range.end.line;
 
-  function calcCurrentLineMatches(lineCount: number) {
-    const lineText = document.lineAt(lineCount).text;
-    let result = searchRegex.exec(lineText);
-    const lineMatches: Match[] = [];
+    function calcCurrentLineMatches(lineCount: number) {
+      const lineText = document.lineAt(lineCount).text;
+      let result = searchRegex.exec(lineText);
+      const lineMatches: Match[] = [];
 
-    while (result) {
-      if (checkPosition(lineCount, result.index)) {
+      while (result) {
         const pos = new Position(lineCount, result.index);
         const rawText = result[0].length === 1 ? result[0] + ' ' : result[0];
         const searchString = configuration.leapCaseSensitive ? rawText : rawText.toLowerCase();
-        lineMatches.push({ position: pos, searchString, direction });
+        let dir = direction;
+        if (direction === LeapSearchDirection.Bidirectional) {
+          dir = isBackward(pos, position)
+            ? LeapSearchDirection.Backward
+            : LeapSearchDirection.Forward;
+        }
+        lineMatches.push({ position: pos, searchString, direction: dir });
         if (searchString[0] === searchString[1]) {
           searchRegex.lastIndex--;
         }
+        result = searchRegex.exec(lineText);
       }
-      result = searchRegex.exec(lineText);
+
+      return lineMatches;
     }
 
-    return lineMatches;
+    for (let i = lineStart; i <= lineEnd; i++) {
+      matches.push(...calcCurrentLineMatches(i));
+    }
+
+    return matches;
   }
 
-  const s = direction === LeapSearchDirection.Backward ? lineStart : lineEnd;
-  const e = direction === LeapSearchDirection.Backward ? lineEnd : lineStart;
+  const matches = visibleRanges.reduce((result, range) => {
+    result.push(...matchRange(range));
+    return result;
+  }, [] as Match[]);
 
-  for (let i = s; i <= e; i++) {
-    matches.push(...calcCurrentLineMatches(i));
+  if (direction === LeapSearchDirection.Backward) {
+    return matches.filter((match) => {
+      if (match.position.line > position.line) {
+        return true;
+      } else if (
+        match.position.line === position.line &&
+        match.position.character > position.character
+      ) {
+        return true;
+      }
+      return false;
+    });
+  } else if (direction === LeapSearchDirection.Forward) {
+    return matches
+      .filter((match) => {
+        if (match.position.line < position.line) {
+          return true;
+        } else if (
+          match.position.line === position.line &&
+          match.position.character < position.character - 1
+        ) {
+          return true;
+        }
+
+        return false;
+      })
+      .reverse();
+  } else if (direction === LeapSearchDirection.Bidirectional) {
+    const backwardMatches = matches.filter((m) => m.direction === LeapSearchDirection.Backward);
+    const forwardMatches = matches
+      .filter((m) => m.direction === LeapSearchDirection.Forward)
+      .reverse();
+
+    return [...backwardMatches, ...forwardMatches].filter((m) => {
+      if (
+        m.position.line === position.line &&
+        (m.position.character === position.character ||
+          m.position.character === position.character - 1)
+      )
+        return false;
+
+      return true;
+    });
   }
 
-  if (direction === LeapSearchDirection.Forward) matches.reverse();
-
-  if (matches.length > MATCH_COUNT_LIMIT) matches.length = MATCH_COUNT_LIMIT;
-
-  return matches;
+  return matches
 }
-
-export function getBidirectionalSearchMatches(
-  searchRegex: RegExp,
-  position: Position,
-  document: vscode.TextDocument,
-  visibleRange: vscode.Range
-) {
-  const backwardMatches = getMatches(
-    searchRegex,
-    LeapSearchDirection.Backward,
-    position,
-    document,
-    visibleRange
-  );
-
-  const forwardMatches = getMatches(
-    searchRegex,
-    LeapSearchDirection.Forward,
-    position,
-    document,
-    visibleRange
-  );
-
-  return [...backwardMatches, ...forwardMatches];
-}
-

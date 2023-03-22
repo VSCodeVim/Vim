@@ -9,6 +9,7 @@ import { configuration } from '../../../configuration/configuration';
 export enum LeapSearchDirection {
   Forward = -1,
   Backward = 1,
+  Bidirectional = 2,
 }
 
 export class Leap {
@@ -59,12 +60,8 @@ export class Leap {
   private reorder(group: Marker[]) {
     let result: Marker[] = [];
 
-    const diacriticalIndex = group.findIndex((m) => {
-      return m.direction === LeapSearchDirection.Forward;
-    });
-
-    const backwardMatches = group.slice(0, diacriticalIndex);
-    const forwardMatches = group.slice(diacriticalIndex);
+    const backwardMatches = group.filter((m) => m.direction === LeapSearchDirection.Backward);
+    const forwardMatches = group.filter((m) => m.direction === LeapSearchDirection.Forward);
 
     let i = 0;
     let backwardMatchesLen = backwardMatches.length;
@@ -169,9 +166,9 @@ export class Leap {
           }
         } else if (this.searchMode === 'x') {
           if (isBackward(position, this.vimState.cursorStopPosition)) {
-            this.excludeMarkerBackwardJump(position)
+            this.excludeMarkerBackwardJump(position);
           } else {
-            this.excludeMarkerForwardJump(position)
+            this.excludeMarkerForwardJump(position);
           }
         }
       } else {
@@ -229,7 +226,7 @@ export function createLeap(
   return leap;
 }
 
-function isBackward(positionA: Position, positionB: Position) {
+export function isBackward(positionA: Position, positionB: Position) {
   if (positionA.line !== positionB.line) {
     return positionA.line > positionB.line;
   } else {

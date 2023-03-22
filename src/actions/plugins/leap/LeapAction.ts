@@ -4,12 +4,7 @@ import { Position } from 'vscode';
 import { VimState } from '../../../state/vimState';
 import { configuration } from '../../../configuration/configuration';
 import { LeapSearchDirection, createLeap } from './leap';
-import {
-  getMatches,
-  generateMarkerRegex,
-  generatePrepareRegex,
-  getBidirectionalSearchMatches,
-} from './match';
+import { getMatches, generateMarkerRegex, generatePrepareRegex } from './match';
 import { StatusBar } from '../../../statusBar';
 import { Marker } from './Marker';
 import { VimError, ErrorCode } from '../../../error';
@@ -46,23 +41,12 @@ export class LeapPrepareAction extends BaseCommand {
     vimState.leap = leap;
     vimState.leap.previousMode = vimState.currentMode;
 
-    let matches: Match[] = [];
-    if (configuration.leapBidirectionalSearch) {
-      matches = getBidirectionalSearchMatches(
-        generatePrepareRegex(firstSearchString),
-        cursorPosition,
-        vimState.document,
-        vimState.editor.visibleRanges[0]
-      );
-    } else {
-      matches = getMatches(
-        generatePrepareRegex(firstSearchString),
-        direction,
-        cursorPosition,
-        vimState.document,
-        vimState.editor.visibleRanges[0]
-      );
-    }
+    let matches: Match[] = getMatches(
+      generatePrepareRegex(firstSearchString),
+      this.getDirection(),
+      cursorPosition,
+      vimState
+    );
 
     vimState.leap.createMarkers(matches);
     vimState.leap.showMarkers();
@@ -80,6 +64,9 @@ export class LeapPrepareAction extends BaseCommand {
   }
 
   protected getDirection() {
+    if (configuration.leapBidirectionalSearch) {
+      return LeapSearchDirection.Bidirectional;
+    }
     return this.keysPressed[0] === 's' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
   }
 }
@@ -93,6 +80,9 @@ export class LeapVisualPrepareAction extends LeapPrepareAction {
   ];
 
   override getDirection() {
+    if (configuration.leapBidirectionalSearch) {
+      return LeapSearchDirection.Bidirectional;
+    }
     return this.keysPressed[0] === 'x' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
   }
 }
@@ -153,8 +143,7 @@ export class LeapAction extends BaseCommand {
         generateMarkerRegex(this.searchString),
         this.vimState.leap.direction!,
         cursorPosition,
-        this.vimState.document,
-        this.vimState.editor.visibleRanges[0]
+        this.vimState
       );
       this.vimState.leap.createMarkers(matches);
       this.vimState.leap.showMarkers();
