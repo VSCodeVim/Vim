@@ -208,7 +208,7 @@ export class NeovimWrapper implements vscode.Disposable {
     }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
-    const vimRegToVsReg = {
+    const vimRegToVsReg: { [key: string]: RegisterMode } = {
       v: RegisterMode.CharacterWise,
       V: RegisterMode.LineWise,
       '\x16': RegisterMode.BlockWise,

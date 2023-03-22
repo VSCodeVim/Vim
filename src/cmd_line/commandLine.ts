@@ -255,6 +255,7 @@ export class ExCommandLine extends CommandLine {
   }
 
   public async run(vimState: VimState): Promise<void> {
+    Logger.info(`Executing :${this.text}`);
     ExCommandLine.history.add(this.text);
     this.historyIndex = ExCommandLine.history.get().length;
 
@@ -472,6 +473,7 @@ export class SearchCommandLine extends CommandLine {
           ].searchString;
       }
     }
+    Logger.info(`Searching for ${this.text}`);
 
     this.cursorIndex = 0;
     Register.setReadonlyRegister('/', this.text);

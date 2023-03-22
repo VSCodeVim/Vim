@@ -3,11 +3,10 @@ import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('comment operator', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace(undefined, '.js');
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'gcc comments out current line',

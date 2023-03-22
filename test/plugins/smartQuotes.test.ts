@@ -4,14 +4,14 @@ import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('smartQuotes plugin', () => {
   suite('smartQuotes.breakThroughLines = false', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.targets.enable = true;
       configuration.targets.smartQuotes.enable = true;
       configuration.targets.smartQuotes.breakThroughLines = false;
       await setupWorkspace(configuration, '.js');
     });
-    teardown(cleanUpWorkspace);
+    suiteTeardown(cleanUpWorkspace);
     // test quotes types
     newTest({
       title: 'single quote - 1',
@@ -709,15 +709,14 @@ suite('smartQuotes plugin', () => {
   });
 
   suite('smartQuotes.breakThroughLines = true', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.targets.enable = true;
       configuration.targets.smartQuotes.enable = true;
       configuration.targets.smartQuotes.breakThroughLines = true;
       await setupWorkspace(configuration, '.js');
     });
-
-    teardown(cleanUpWorkspace);
+    suiteTeardown(cleanUpWorkspace);
 
     // test next
     newTest({

@@ -7,13 +7,12 @@ import {
 } from '../../src/actions/plugins/surround';
 
 suite('surround plugin', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.surround = true;
     await setupWorkspace(configuration, '.js');
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "'ysiw)' surrounds word without space",
@@ -482,14 +481,14 @@ suite('surround plugin', () => {
     title: "'S)' surrounds visual selection without space",
     start: ['first li|ne test'],
     keysPressed: 'viwS)',
-    end: ['first (li|ne) test'],
+    end: ['first (l|ine) test'],
   });
 
   newTest({
     title: "'S(' surrounds visual selection with space",
     start: ['first li|ne test'],
     keysPressed: 'viwS(',
-    end: ['first ( l|ine ) test'],
+    end: ['first ( |line ) test'],
   });
 
   newTest({

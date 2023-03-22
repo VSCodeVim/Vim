@@ -372,7 +372,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const { lastInvokedMacro } = vimState;
+    const { lastInvokedMacro } = globalState;
 
     if (lastInvokedMacro) {
       vimState.recordedState.transformer.addTransformation({
@@ -586,7 +586,7 @@ class MarkCommand extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const markName = this.keysPressed[1];
 
-    vimState.historyTracker.addMark(position, markName);
+    vimState.historyTracker.addMark(vimState.document, position, markName);
   }
 }
 
@@ -809,7 +809,7 @@ class CommandUndoOnLine extends BaseCommand {
 }
 
 @RegisterAction
-class CommandRedo extends BaseCommand {
+export class CommandRedo extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['<C-r>'];
   override runsOnceForEveryCursor() {

@@ -10,9 +10,10 @@ suite('basic motion', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    await TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
+    });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   test('char right: should move one column right', () => {
@@ -146,12 +147,12 @@ suite('word motion', () => {
     '} // endif',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
@@ -390,12 +391,12 @@ suite('unicode word motion', () => {
     '100£and100$and100¥#♯x',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
@@ -493,12 +494,12 @@ suite('sentence motion', () => {
     'Another sentence inside one paragraph.',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('sentence forward', () => {
@@ -567,12 +568,12 @@ suite('paragraph motion', () => {
     'WOW', // 8
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('paragraph down', () => {

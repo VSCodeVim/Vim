@@ -47,7 +47,10 @@ export class ReadCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const textToInsert = await this.getTextToInsert(vimState);
     if (textToInsert) {
-      vimState.recordedState.transformer.insert(vimState.cursorStopPosition.getLineEnd(), '\n' + textToInsert);
+      vimState.recordedState.transformer.insert(
+        vimState.cursorStopPosition.getLineEnd(),
+        '\n' + textToInsert
+      );
     }
   }
 
@@ -55,7 +58,7 @@ export class ReadCommand extends ExCommand {
 
   async getTextToInsert(vimState: VimState): Promise<string> {
     if ('file' in this.arguments) {
-        return readFileAsync(this.arguments.file, 'utf8');
+      return readFileAsync(this.arguments.file, 'utf8');
     } else if ('cmd' in this.arguments) {
       if (this.arguments.cmd.length > 0) {
         if (SUPPORT_READ_COMMAND) {
