@@ -14,7 +14,7 @@ import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { laterOf } from './../common/motion/position';
+import { earlierOf, laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './../state/recordedState';
 import { IBaseAction } from '../actions/types';
@@ -1230,7 +1230,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         selectionMode = this.vimState.surround!.previousMode;
       }
 
-      let selections = [] as vscode.Selection[];
+      let selections: vscode.Selection[] = [];
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {
@@ -1295,50 +1295,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             const previousSelection = combinedSelections[combinedSelections.length - 1];
             const overlap = s.intersection(previousSelection);
             if (overlap) {
-              // If anchor is after active we have a backwards selection and in that case we want
-              // the anchor that is lower and/or to the right and the active that is up and/or to
-              // the left. Otherwise we want the anchor that is upper and/or to the left and the
-              // active that is lower and/or to the right.
-
-              let anchor: Position;
-              let active: Position;
-              if (s.anchor.isBeforeOrEqual(s.active)) {
-                // Forwards Selection
-
-                // Get min anchor
-                if (s.anchor.isBeforeOrEqual(previousSelection.anchor)) {
-                  anchor = s.anchor;
-                } else {
-                  anchor = previousSelection.anchor;
-                }
-
-                // Get max active
-                if (s.active.isAfterOrEqual(previousSelection.active)) {
-                  active = s.active;
-                } else {
-                  active = previousSelection.active;
-                }
-              } else {
-                // Backwards Selection
-
-                // Get max anchor
-                if (s.anchor.isAfterOrEqual(previousSelection.anchor)) {
-                  anchor = s.anchor;
-                } else {
-                  anchor = previousSelection.anchor;
-                }
-
-                // Get min active
-                if (s.active.isBeforeOrEqual(previousSelection.active)) {
-                  active = s.active;
-                } else {
-                  active = previousSelection.active;
-                }
-              }
-              combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
-                anchor,
-                active
-              );
+              combinedSelections[combinedSelections.length - 1] = s.anchor.isBeforeOrEqual(s.active)
+                ? // Forwards Selection
+                  new vscode.Selection(
+                    earlierOf(s.anchor, previousSelection.anchor),
+                    laterOf(s.active, previousSelection.active)
+                  )
+                : // Backwards Selection
+                  new vscode.Selection(
+                    laterOf(s.anchor, previousSelection.anchor),
+                    earlierOf(s.active, previousSelection.active)
+                  );
             } else {
               combinedSelections.push(s);
             }
@@ -1560,19 +1527,16 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         let text = TextEditor.getCharAt(this.vimState.document, cursorStop);
         // the ' ' (<space>) needs to be changed to '&nbsp;'
         text = text === ' ' ? '\u00a0' : text;
-        const renderOptions: vscode.ThemableDecorationRenderOptions = {
-          before: {
-            contentText: text,
+        const decorationOptions = {
+          range: new vscode.Range(cursorStop, cursorStop.getRight()),
+          renderOptions: {
+            before: {
+              contentText: text,
+            },
           },
         };
-        opCursorDecorations.push({
-          range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions,
-        });
-        opCursorCharDecorations.push({
-          range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions,
-        });
+        opCursorDecorations.push(decorationOptions);
+        opCursorCharDecorations.push(decorationOptions);
       }
     }
 
