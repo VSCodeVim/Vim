@@ -675,7 +675,7 @@ export class ChangeOperator extends BaseOperator {
       vimState.recordedState.transformer.delete(deleteRange);
     }
 
-    vimState.setCurrentMode(Mode.Insert);
+    await vimState.setCurrentMode(Mode.Insert);
   }
 }
 
