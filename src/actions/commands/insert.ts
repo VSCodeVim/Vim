@@ -243,7 +243,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
         vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
 
       if (isHighSurrogate(char.charCodeAt(0))) {
-        vimState.setModeData({
+        await vimState.setModeData({
           mode: Mode.Insert,
           highSurrogate: char,
         });
@@ -255,7 +255,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           text = prevHighSurrogate + char;
         }
 
-        vimState.setModeData({
+        await vimState.setModeData({
           mode: Mode.Insert,
           highSurrogate: undefined,
         });

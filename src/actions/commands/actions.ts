@@ -2346,7 +2346,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
       vimState.recordedState.transformer.moveCursor(PositionDiff.exactPosition(ranges[0].start));
     }
 
-    vimState.setCurrentMode(Mode.Normal);
+    await vimState.setCurrentMode(Mode.Normal);
   }
 
   private async replaceNum(
