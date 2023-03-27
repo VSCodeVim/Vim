@@ -570,9 +570,11 @@ suite.only('Builtin functions', () => {
     exprTest('range(2, 4)', { display: '[2, 3, 4]' });
     exprTest('range(2, 9, 3)', { display: '[2, 5, 8]' });
     exprTest('range(2, -2, -1)', { display: '[2, 1, 0, -1, -2]' });
+    exprTest('range(2, -2, -2)', { display: '[2, 0, -2]' });
     exprTest('range(0)', { display: '[]' });
     exprTest('range(1, 10, 0)', { error: ErrorCode.StrideIsZero });
     exprTest('range(2, 0)', { error: ErrorCode.StartPastEnd });
+    exprTest('range(0, 2, -1)', { error: ErrorCode.StartPastEnd });
   });
 
   suite('repeat', () => {
