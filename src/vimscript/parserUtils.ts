@@ -3,6 +3,7 @@ import { alt, any, Parser, regexp, seq, string, succeed, whitespace } from 'pars
 export const numberParser: Parser<number> = regexp(/\d+/)
   .map((num) => Number.parseInt(num, 10))
   .desc('a number');
+export const integerParser: Parser<number> = regexp(/-?\d+/).map((num) => Number.parseInt(num, 10));
 
 export const bangParser: Parser<boolean> = string('!')
   .fallback(undefined)

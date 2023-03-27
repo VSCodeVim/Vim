@@ -57,7 +57,7 @@ function toFloat(value: Value): number {
   }
 }
 
-function toString(value: Value): string {
+export function toString(value: Value): string {
   switch (value.type) {
     case 'number':
       return value.value.toString();

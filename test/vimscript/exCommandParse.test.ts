@@ -24,7 +24,7 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
-import { int, str, variable } from '../../src/vimscript/expression/build';
+import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -344,6 +344,18 @@ suite('Ex command parsing', () => {
     // No space, alpha register
     exParseFails(':putx');
     exParseTest(':put!x', new PutExCommand({ bang: true, register: 'x' }));
+
+    // Expression register
+    exParseTest(':put=', new PutExCommand({ bang: false, register: '=' }));
+    exParseTest(':put=5+2', new PutExCommand({ bang: false, fromExpression: add(int(5), int(2)) }));
+    exParseTest(
+      ':put = range(4)',
+      new PutExCommand({ bang: false, fromExpression: funcCall('range', [int(4)]) })
+    );
+    exParseTest(
+      ':put!=[1,2,3]',
+      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) })
+    );
   });
 
   suite(':q[uit] and :qa[ll]', () => {

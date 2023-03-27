@@ -41,6 +41,7 @@ export class Register {
     '%', // Current file path (relative to workspace root)
     '#', // Previous file path (relative to workspace root)
     '_', // Black hole (always empty)
+    '=', // Expression register
   ];
 
   private static registers: Map<string, IRegisterContent[]>;
@@ -114,7 +115,7 @@ export class Register {
    * Puts the content at the specified index of the multicursor Register.
    * If multicursorIndex === 0, the register will be completely overwritten. Otherwise, just that index will be.
    */
-  private static overwriteRegister(
+  public static overwriteRegister(
     vimState: VimState,
     register: string,
     content: RegisterContent,
