@@ -15,8 +15,7 @@ suite('ModeHandler', () => {
   test('ModeHandlerMap', async () => {
     let isNew: boolean;
 
-    assert.deepStrictEqual(ModeHandlerMap.getAll(), []);
-    assert.deepStrictEqual([...ModeHandlerMap.keys()], []);
+    assert.deepStrictEqual([...ModeHandlerMap.entries()], []);
 
     const document1 = await workspace.openTextDocument({ content: 'document1' });
     const editor1 = await window.showTextDocument(document1);
@@ -26,7 +25,10 @@ suite('ModeHandler', () => {
       [modeHandler1, isNew] = await ModeHandlerMap.getOrCreate(editor1);
       assert.strictEqual(isNew, true);
       assert.notStrictEqual(modeHandler1, undefined);
-      assert.deepStrictEqual(new Set(ModeHandlerMap.getAll()), new Set([modeHandler1]));
+      assert.deepStrictEqual(
+        new Set(ModeHandlerMap.entries()),
+        new Set([[document1.uri, modeHandler1]])
+      );
     }
 
     const document2 = await workspace.openTextDocument({ content: 'document2' });
@@ -39,8 +41,11 @@ suite('ModeHandler', () => {
       assert.notStrictEqual(modeHandler2, undefined);
       assert.notStrictEqual(modeHandler1, modeHandler2);
       assert.deepStrictEqual(
-        new Set(ModeHandlerMap.getAll()),
-        new Set([modeHandler1, modeHandler2])
+        new Set(ModeHandlerMap.entries()),
+        new Set([
+          [document1.uri, modeHandler1],
+          [document2.uri, modeHandler2],
+        ])
       );
     }
 

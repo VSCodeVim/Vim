@@ -3,10 +3,10 @@ import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   suite('whichwrap enabled', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
@@ -76,7 +76,7 @@ suite('motion line wrapping', () => {
   });
 
   suite('whichwrap disabled', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.tabstop = 4;
       configuration.expandtab = false;
@@ -132,7 +132,7 @@ suite('motion line wrapping', () => {
   });
 
   suite('wrapscan enabled', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.wrapscan = true;
 
@@ -155,7 +155,7 @@ suite('motion line wrapping', () => {
   });
 
   suite('wrapscan disabled', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.wrapscan = false;
 

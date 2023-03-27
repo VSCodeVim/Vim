@@ -33,7 +33,6 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
     constructor() {
       super();
       this.actual = new type();
-      const logger = Logger.get(`${this.secondKey} Handler for ${type.name}`);
 
       const secondKey = this.secondKey;
       const withWhichKey = (keys: string[]): string[] | undefined => {
@@ -50,7 +49,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
       if (this.actual.keys.length < 1) {
         this.valid = false;
         this.keys = [];
-        logger.error(errMsg);
+        Logger.error(errMsg);
         return;
       }
       if (typeof this.actual.keys[0] === 'string') {
@@ -59,7 +58,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
         if (keys === undefined) {
           this.valid = false;
           this.keys = [];
-          logger.error(errMsg);
+          Logger.error(errMsg);
           return;
         } else {
           this.keys = keys;
@@ -70,7 +69,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
         if (!keys.every((p) => p !== undefined)) {
           this.valid = false;
           this.keys = [];
-          logger.error(errMsg);
+          Logger.error(errMsg);
           return;
         } else {
           this.keys = keys as string[][];
