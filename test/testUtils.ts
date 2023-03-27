@@ -10,10 +10,8 @@ import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
 import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
-import { getAndUpdateModeHandler } from '../extension';
 import { ExCommandLine } from '../src/cmd_line/commandLine';
 import { StatusBar } from '../src/statusBar';
-import { SpecialKeys } from '../src/util/specialKeys';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
@@ -65,7 +63,7 @@ export function rndName(): string {
   return Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
-    .substr(0, 10);
+    .substring(0, 10);
 }
 
 export async function createRandomFile(contents: string, fileExtension: string): Promise<string> {
@@ -75,8 +73,7 @@ export async function createRandomFile(contents: string, fileExtension: string):
 }
 
 export async function createRandomDir() {
-  const dirPath = join(os.tmpdir(), rndName());
-  return createDir(dirPath);
+  return createDir(join(os.tmpdir(), rndName()));
 }
 
 export async function createEmptyFile(fsPath: string) {
@@ -87,14 +84,6 @@ export async function createEmptyFile(fsPath: string) {
 export async function createDir(fsPath: string) {
   await promisify(fs.mkdir)(fsPath);
   return fsPath;
-}
-
-export async function removeFile(fsPath: string) {
-  return promisify(fs.unlink)(fsPath);
-}
-
-export async function removeDir(fsPath: string) {
-  return promisify(fs.rmdir)(fsPath);
 }
 
 /**
@@ -109,8 +98,9 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
       return c();
     }
 
-    vscode.window.onDidChangeVisibleTextEditors(() => {
+    const subscription = vscode.window.onDidChangeVisibleTextEditors(() => {
       if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+        subscription.dispose();
         c();
       }
     });
@@ -143,9 +133,9 @@ export async function setupWorkspace(
   fileExtension: string = ''
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
+
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
-
   await vscode.window.showTextDocument(doc);
 
   Globals.mockConfiguration = config;
@@ -156,52 +146,19 @@ export async function setupWorkspace(
 
   activeTextEditor.options.tabSize = config.tabstop;
   activeTextEditor.options.insertSpaces = config.expandtab;
-
-  await mockAndEnable();
 }
 
-const mockAndEnable = async () => {
-  await vscode.commands.executeCommand('setContext', 'vim.active', true);
-  const mh = (await getAndUpdateModeHandler())!;
-  await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
-};
-
 export async function cleanUpWorkspace(): Promise<void> {
-  return new Promise<void>((c, e) => {
-    if (vscode.window.visibleTextEditors.length === 0) {
-      return c();
-    }
-
-    // TODO: the visibleTextEditors variable doesn't seem to be
-    // up to date after a onDidChangeActiveTextEditor event, not
-    // even using a setTimeout 0... so we MUST poll :(
-    const interval = setInterval(() => {
-      if (vscode.window.visibleTextEditors.length > 0) {
-        return;
-      }
-
-      clearInterval(interval);
-      c();
-    }, 10);
-
-    vscode.commands.executeCommand('workbench.action.closeAllEditors').then(
-      () => null,
-      (err: any) => {
-        clearInterval(interval);
-        e(err);
-      }
-    );
-  }).then(() => {
-    assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
-    assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
-  });
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+  assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
 export async function reloadConfiguration() {
   const validatorResults =
     (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
   for (const validatorResult of validatorResults.get()) {
-    console.log(validatorResult);
+    console.warn(validatorResult);
   }
 }
 
@@ -215,8 +172,8 @@ export async function waitForTabChange(): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 500);
 
-    const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
-      disposer.dispose();
+    const subscription = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
+      subscription.dispose();
 
       resolve(textEditor);
     });

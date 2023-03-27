@@ -6,6 +6,7 @@ import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
+import { MoveCommand } from '../cmd_line/commands/move';
 import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
@@ -46,6 +47,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
+import { RedoCommand } from '../cmd_line/commands/redo';
 import { LetCommand } from '../cmd_line/commands/let';
 
 type ArgParser = Parser<ExCommand>;
@@ -340,7 +342,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lv', 'imgrep'], undefined],
   [['lvimgrepa', 'dd'], undefined],
   [['lw', 'indow'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
-  [['m', 'ove'], undefined],
+  [['m', 'ove'], MoveCommand.argParser],
   [['ma', 'rk'], undefined],
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
@@ -427,7 +429,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['quita', 'll'], QuitCommand.argParser(true)],
   [['r', 'ead'], ReadCommand.argParser],
   [['rec', 'over'], undefined],
-  [['red', 'o'], undefined],
+  [['red', 'o'], RedoCommand.argParser],
   [['redi', 'r'], undefined],
   [['redr', 'aw'], undefined],
   [['redraws', 'tatus'], undefined],

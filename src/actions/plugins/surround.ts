@@ -667,7 +667,7 @@ class SurroundHelper {
           // keep cursor on left edge / start. todo: not completly correct vor visual S
           diff:
             surroundState.operator === 'yank'
-              ? PositionDiff.offset({ character: 1 - leftFixed.length })
+              ? PositionDiff.offset({ character: -leftFixed.length })
               : undefined,
         });
         vimState.recordedState.transformer.addTransformation({

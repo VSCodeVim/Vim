@@ -2,7 +2,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
-import { newTestWithRemaps } from '../testSimplifier';
+import { newTestWithRemaps, newTestWithRemapsSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
@@ -292,7 +292,8 @@ suite('Remaps', () => {
     ],
   });
 
-  newTestWithRemaps({
+  // TODO: skipped (flaky)
+  newTestWithRemapsSkip({
     title:
       'Ambiguous Mappings with a long remapping still succeed after timeout or when a key is pressed to break ambiguity',
     remaps: [

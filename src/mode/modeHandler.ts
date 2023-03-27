@@ -14,7 +14,7 @@ import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
-import { laterOf } from './../common/motion/position';
+import { earlierOf, laterOf } from './../common/motion/position';
 import { Cursor } from '../common/motion/cursor';
 import { RecordedState } from './../state/recordedState';
 import { IBaseAction } from '../actions/types';
@@ -184,9 +184,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
     const selection = e.selections[0];
     Logger.debug(
-      `Selections: Handling Selection Change! Selection: ${selection.anchor.toString()}, ${
-        selection.active
-      }, SelectionsLength: ${e.selections.length}`
+      `Selection change: ${selection.anchor.toString()}, ${selection.active}, SelectionsLength: ${
+        e.selections.length
+      }`
     );
 
     // If our previous cursors are not included on any of the current selections, then a snippet
@@ -246,13 +246,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
-              Logger.debug('Selections: Updating Visual Selection!');
+              Logger.trace('Updating Visual Selection!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.updateView({ drawSelection: false, revealRange: false });
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
-              Logger.debug('Selections: Creating Visual Selection from command!');
+              Logger.trace('Creating Visual Selection from command!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
@@ -371,7 +371,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If we prevented from clicking past eol but it is part of this selection, include the last char
         if (this.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
-          this.vimState.editor.selection = new vscode.Selection(newStart, selection.end);
+          this.vimState.editor.selection = new vscode.Selection(newStart, selection.active);
           this.vimState.cursorStartPosition = selectionStart;
           this.lastClickWasPastEol = false;
         }
@@ -400,15 +400,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(key: string): Promise<void> {
-    const now = Date.now();
-    const printableKey = Notation.printableKey(key, configuration.leader);
-
-    // Check forceStopRemapping
     if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
 
-    Logger.debug(`handling key=${printableKey}.`);
+    const now = Date.now();
+
+    const printableKey = Notation.printableKey(key, configuration.leader);
+    Logger.debug(`Handling key: ${printableKey}`);
 
     if (
       (key === SpecialKeys.TimeoutFinished ||
@@ -549,7 +548,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // with the next remapper check.
     this.vimState.recordedState.resetCommandList();
 
-    Logger.debug(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
+    Logger.trace(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
 
     // If we are handling a remap and the last movement failed stop handling the remap
     // and discard the rest of the keys. We throw an Exception here to stop any other
@@ -1231,7 +1230,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         selectionMode = this.vimState.surround!.previousMode;
       }
 
-      let selections = [] as vscode.Selection[];
+      let selections: vscode.Selection[] = [];
       for (const cursor of this.vimState.cursors) {
         let { start, stop } = cursor;
         switch (selectionMode) {
@@ -1296,50 +1295,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             const previousSelection = combinedSelections[combinedSelections.length - 1];
             const overlap = s.intersection(previousSelection);
             if (overlap) {
-              // If anchor is after active we have a backwards selection and in that case we want
-              // the anchor that is lower and/or to the right and the active that is up and/or to
-              // the left. Otherwise we want the anchor that is upper and/or to the left and the
-              // active that is lower and/or to the right.
-
-              let anchor: Position;
-              let active: Position;
-              if (s.anchor.isBeforeOrEqual(s.active)) {
-                // Forwards Selection
-
-                // Get min anchor
-                if (s.anchor.isBeforeOrEqual(previousSelection.anchor)) {
-                  anchor = s.anchor;
-                } else {
-                  anchor = previousSelection.anchor;
-                }
-
-                // Get max active
-                if (s.active.isAfterOrEqual(previousSelection.active)) {
-                  active = s.active;
-                } else {
-                  active = previousSelection.active;
-                }
-              } else {
-                // Backwards Selection
-
-                // Get max anchor
-                if (s.anchor.isAfterOrEqual(previousSelection.anchor)) {
-                  anchor = s.anchor;
-                } else {
-                  anchor = previousSelection.anchor;
-                }
-
-                // Get min active
-                if (s.active.isBeforeOrEqual(previousSelection.active)) {
-                  active = s.active;
-                } else {
-                  active = previousSelection.active;
-                }
-              }
-              combinedSelections[combinedSelections.length - 1] = new vscode.Selection(
-                anchor,
-                active
-              );
+              combinedSelections[combinedSelections.length - 1] = s.anchor.isBeforeOrEqual(s.active)
+                ? // Forwards Selection
+                  new vscode.Selection(
+                    earlierOf(s.anchor, previousSelection.anchor),
+                    laterOf(s.active, previousSelection.active)
+                  )
+                : // Backwards Selection
+                  new vscode.Selection(
+                    laterOf(s.anchor, previousSelection.anchor),
+                    earlierOf(s.active, previousSelection.active)
+                  );
             } else {
               combinedSelections.push(s);
             }
@@ -1370,8 +1336,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           ''
         );
         this.selectionsChanged.ourSelections.push(selectionsHash);
-        Logger.debug(
-          `Selections: Adding Selection Change to be Ignored! (total: ${
+        Logger.trace(
+          `Adding selection change to be ignored! (total: ${
             this.selectionsChanged.ourSelections.length
           }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`
         );
@@ -1561,19 +1527,16 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         let text = TextEditor.getCharAt(this.vimState.document, cursorStop);
         // the ' ' (<space>) needs to be changed to '&nbsp;'
         text = text === ' ' ? '\u00a0' : text;
-        const renderOptions: vscode.ThemableDecorationRenderOptions = {
-          before: {
-            contentText: text,
+        const decorationOptions = {
+          range: new vscode.Range(cursorStop, cursorStop.getRight()),
+          renderOptions: {
+            before: {
+              contentText: text,
+            },
           },
         };
-        opCursorDecorations.push({
-          range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions,
-        });
-        opCursorCharDecorations.push({
-          range: new vscode.Range(cursorStop, cursorStop.getRight()),
-          renderOptions,
-        });
+        opCursorDecorations.push(decorationOptions);
+        opCursorCharDecorations.push(decorationOptions);
       }
     }
 

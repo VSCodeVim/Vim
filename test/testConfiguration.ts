@@ -9,6 +9,8 @@ import {
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
+  [key: string]: any;
+
   useSystemClipboard = false;
   useCtrlKeys = false;
   overrideCopy = true;

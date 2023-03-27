@@ -4,11 +4,11 @@ import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('lastNextObject plugin', () => {
   suite('lastNextObject plugin disabled', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       await setupWorkspace(configuration, '.js');
     });
-    teardown(cleanUpWorkspace);
+    suiteTeardown(cleanUpWorkspace);
     // test next
     newTest({
       title: "next object - should not work as it's disabled",
@@ -30,13 +30,13 @@ suite('lastNextObject plugin', () => {
     });
   });
   suite('lastNextObject plugin', () => {
-    setup(async () => {
+    suiteSetup(async () => {
       const configuration = new Configuration();
       configuration.targets.enable = true;
       configuration.targets.bracketObjects.enable = true;
       await setupWorkspace(configuration, '.js');
     });
-    teardown(cleanUpWorkspace);
+    suiteTeardown(cleanUpWorkspace);
     // test next
     newTest({
       title: 'next object - 1',

@@ -57,12 +57,14 @@ const floatParser: Parser<FloatValue> = regexp(/\d+\.\d+/)
 export const numberParser: Parser<NumberValue> = seq(
   alt(string('+'), string('-')).fallback(undefined),
   alt(binaryNumberParser, hexadecimalNumberParser, decimalOrOctalNumberParser)
-).map(([sign, num]) => {
-  if (sign === '-') {
-    num.value = -num.value;
-  }
-  return num;
-});
+)
+  .map(([sign, num]) => {
+    if (sign === '-') {
+      num.value = -num.value;
+    }
+    return num;
+  })
+  .desc('a number');
 
 const stringParser: Parser<StringValue> = alt(
   string('\\')

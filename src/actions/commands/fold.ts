@@ -84,12 +84,12 @@ class AddFold extends BaseOperator {
   readonly commandName = 'editor.createFoldingRangeFromSelection';
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    const previousSelections = vimState.lastVisualSelection;  // keep in case of Normal mode
+    const previousSelections = vimState.lastVisualSelection; // keep in case of Normal mode
     vimState.editor.selection = new vscode.Selection(start, end);
     await vscode.commands.executeCommand(this.commandName);
     vimState.lastVisualSelection = previousSelections;
     vimState.cursors = [new Cursor(start, start)];
-    await vimState.setCurrentMode(Mode.Normal);  // Vim behavior
+    await vimState.setCurrentMode(Mode.Normal); // Vim behavior
   }
 }
 
@@ -100,13 +100,11 @@ class RemoveFold extends BaseCommand {
   readonly commandName = 'editor.removeManualFoldingRanges';
 
   override async exec(position: Position, vimState: VimState): Promise<void> {
-
     await vscode.commands.executeCommand(this.commandName);
 
-    const newCursorPosition = vimState.currentMode === Mode.Visual
-      ? vimState.editor.selection.start
-      : position;
+    const newCursorPosition =
+      vimState.currentMode === Mode.Visual ? vimState.editor.selection.start : position;
     vimState.cursors = [new Cursor(newCursorPosition, newCursorPosition)];
-    await vimState.setCurrentMode(Mode.Normal);  // Vim behavior
+    await vimState.setCurrentMode(Mode.Normal); // Vim behavior
   }
 }
