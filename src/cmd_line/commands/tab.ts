@@ -151,10 +151,19 @@ export class TabCommand extends ExCommand {
           break;
         }
 
-        await this.executeCommandWithCount(
-          this.arguments.count || 1,
-          'workbench.action.nextEditorInGroup'
-        );
+        if (this.arguments.count) {
+          const tabGroup = vscode.window.tabGroups.activeTabGroup;
+          if (0 < this.arguments.count && this.arguments.count <= tabGroup.tabs.length) {
+            const tab = tabGroup.tabs[this.arguments.count - 1];
+            if ((tab.input as vscode.TextDocument).uri !== undefined) {
+              const uri = (tab.input as vscode.TextDocument).uri;
+              await vscode.commands.executeCommand('vscode.open', uri);
+            }
+          }
+        } else {
+          await vscode.commands.executeCommand('workbench.action.nextEditorInGroup');
+        }
+
         break;
       case TabCommandType.Previous:
         if (this.arguments.count !== undefined && this.arguments.count <= 0) {

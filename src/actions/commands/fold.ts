@@ -1,7 +1,10 @@
-import { Position } from "vscode";
-import { Mode } from "../../mode/mode";
-import { VimState } from "../../state/vimState";
-import { BaseCommand, RegisterAction } from "../base";
+import * as vscode from 'vscode';
+import { Position } from 'vscode';
+import { Cursor } from '../../common/motion/cursor';
+import { Mode } from '../../mode/mode';
+import { VimState } from '../../state/vimState';
+import { BaseCommand, RegisterAction } from '../base';
+import { BaseOperator } from '../operator';
 
 type FoldDirection = 'up' | 'down' | undefined;
 abstract class CommandFold extends BaseCommand {
@@ -71,4 +74,37 @@ class CommandOpenAllFoldsRecursively extends CommandFold {
   override modes = [Mode.Normal];
   keys = ['z', 'O'];
   commandName = 'editor.unfoldRecursively';
+}
+
+@RegisterAction
+class AddFold extends BaseOperator {
+  override modes = [Mode.Normal, Mode.Visual];
+  keys = ['z', 'f'];
+
+  readonly commandName = 'editor.createFoldingRangeFromSelection';
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
+    const previousSelections = vimState.lastVisualSelection; // keep in case of Normal mode
+    vimState.editor.selection = new vscode.Selection(start, end);
+    await vscode.commands.executeCommand(this.commandName);
+    vimState.lastVisualSelection = previousSelections;
+    vimState.cursors = [new Cursor(start, start)];
+    await vimState.setCurrentMode(Mode.Normal); // Vim behavior
+  }
+}
+
+@RegisterAction
+class RemoveFold extends BaseCommand {
+  override modes = [Mode.Normal, Mode.Visual];
+  keys = ['z', 'd'];
+  readonly commandName = 'editor.removeManualFoldingRanges';
+
+  override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand(this.commandName);
+
+    const newCursorPosition =
+      vimState.currentMode === Mode.Visual ? vimState.editor.selection.start : position;
+    vimState.cursors = [new Cursor(newCursorPosition, newCursorPosition)];
+    await vimState.setCurrentMode(Mode.Normal); // Vim behavior
+  }
 }

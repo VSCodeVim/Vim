@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { NumericString } from '../../src/common/number/numericString';
+import { NumericString, NumericStringRadix } from '../../src/common/number/numericString';
 
 suite('numeric string', () => {
   test('fails on non-string', () => {
@@ -29,5 +29,16 @@ suite('numeric string', () => {
     const input = '07';
     assert.strictEqual(input, NumericString.parse(input)?.num.toString());
     assert.strictEqual(input, NumericString.parse(input)?.num.toString());
+  });
+
+  test('handles octal trip', () => {
+    const input = '07';
+    assert.strictEqual(input, NumericString.parse(input)?.num.toString());
+    assert.strictEqual(input, NumericString.parse(input)?.num.toString());
+  });
+
+  test('handles decimal radix', () => {
+    assert.strictEqual(NumericString.parse('07', NumericStringRadix.Dec)?.num.value, 7);
+    assert.strictEqual(NumericString.parse('hi-07hello', NumericStringRadix.Dec)?.num.value, -7);
   });
 });

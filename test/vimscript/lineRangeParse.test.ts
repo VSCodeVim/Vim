@@ -90,6 +90,20 @@ suite('LineRange parsing', () => {
         new LineRange(new Address({ type: 'number', num: 5 }), sep)
       );
       parseTest(
+        'Separator but no first address',
+        `${sep}5`,
+        new LineRange(
+          new Address({ type: 'current_line' }),
+          sep,
+          new Address({ type: 'number', num: 5 })
+        )
+      );
+      parseTest(
+        'Separator but no address at all',
+        `${sep}`,
+        new LineRange(new Address({ type: 'current_line' }), sep)
+      );
+      parseTest(
         'Two numbers',
         `14${sep}23`,
         new LineRange(

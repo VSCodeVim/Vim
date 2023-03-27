@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
@@ -16,17 +16,16 @@ import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { StatusBar } from '../src/statusBar';
 import { Register } from '../src/register/register';
 import { ModeHandler } from '../src/mode/modeHandler';
-
-function getNiceStack(stack: string | undefined): string {
-  return stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
-}
+import { TextEditor } from '../src/textEditor';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
   testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
   innerTest: (testObj: T) => Promise<ModeHandler>
 ): void {
-  const stack = getNiceStack(new Error().stack);
+  const stack = ((s) => (s ? s.split('\n').splice(2, 1).join('\n') : 'no stack available :('))(
+    new Error().stack
+  );
 
   testFunc(testObj.title, async () => {
     const prevConfig = { ...Globals.mockConfiguration };
@@ -80,6 +79,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  registers?: { [name: string]: string | undefined };
   statusBar?: string;
   jumps?: string[];
   stub?: {
@@ -87,6 +87,7 @@ interface ITestObject {
     methodName: string;
     returnValue: any;
   };
+  saveDocBeforeTest?: boolean;
 }
 
 type Step = {
@@ -97,7 +98,6 @@ type Step = {
     endAfterTimeout?: string[];
     endMode?: Mode;
     endModeAfterTimeout?: Mode;
-    jumps?: string[];
   };
 };
 
@@ -120,164 +120,30 @@ interface ITestWithRemapsObject {
   steps: Step[];
 }
 
-class TestObjectHelper {
-  /**
-   * Position that the test says that the cursor starts at.
-   */
-  startPosition = new Position(0, 0);
-
-  /**
-   * Position that the test says that the cursor ends at.
-   */
-  endPosition = new Position(0, 0);
-
-  public readonly isValid: boolean;
-  private readonly testObject: ITestObject;
-
-  constructor(testObject: ITestObject) {
-    this.testObject = testObject;
-
-    this.isValid =
-      this.setStartCursorPosition(testObject.start) && this.setEndCursorPosition(testObject.end);
-  }
-
-  private setStartCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.startPosition = result.position;
-    return result.success;
-  }
-
-  private setEndCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.endPosition = result.position;
-    return result.success;
-  }
-
-  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
-    const ret = { success: false, position: new Position(0, 0) };
-    for (let i = 0; i < lines.length; i++) {
-      const columnIdx = lines[i].indexOf('|');
-      if (columnIdx >= 0) {
-        ret.position = new Position(i, columnIdx);
-        ret.success = true;
+class DocState {
+  public static parse(lines: string[]): DocState {
+    lines = [...lines];
+    const cursor = (() => {
+      for (let i = 0; i < lines.length; i++) {
+        const columnIdx = lines[i].indexOf('|');
+        if (columnIdx >= 0) {
+          lines[i] = lines[i].replace('|', '');
+          return new Position(i, columnIdx);
+        }
       }
-    }
 
-    return ret;
+      throw new Error("Missing '|' in test object");
+    })();
+    return new DocState(cursor, lines);
   }
 
-  public asVimOutputText(): string[] {
-    const ret = this.testObject.end.slice(0);
-    ret[this.endPosition.line] = ret[this.endPosition.line].replace('|', '');
-    return ret;
-  }
-}
-
-class TestWithRemapsObjectHelper {
-  /**
-   * Position that the test says that the cursor starts at.
-   */
-  currentStepStartPosition = new Position(0, 0);
-
-  /**
-   * Position that the test says that the cursor ends at.
-   */
-  currentStepEndPosition = new Position(0, 0);
-
-  /**
-   * Position that the test says that the cursor ends at after timeout finishes.
-   */
-  currentStepEndAfterTimeoutPosition: Position | undefined;
-
-  /**
-   * Current step index
-   */
-  currentStep = 0;
-
-  private _isValid = false;
-  private testObject: ITestWithRemapsObject;
-
-  constructor(testObject: ITestWithRemapsObject) {
-    this.testObject = testObject;
-
-    this.parseStep(testObject);
+  constructor(cursor: Position, lines: string[]) {
+    this.cursor = cursor;
+    this.lines = lines;
   }
 
-  public get isValid(): boolean {
-    return this._isValid;
-  }
-
-  private setStartCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.currentStepStartPosition = result.position;
-    return result.success;
-  }
-
-  private setEndCursorPosition(lines: string[]): boolean {
-    const result = this.getCursorPosition(lines);
-    this.currentStepEndPosition = result.position;
-    return result.success;
-  }
-
-  private setEndAfterTimeoutCursorPosition(lines: string[] | undefined): boolean {
-    if (!lines) {
-      return true;
-    }
-    const result = this.getCursorPosition(lines);
-    this.currentStepEndAfterTimeoutPosition = result.position;
-    return result.success;
-  }
-
-  private getCursorPosition(lines: string[]): { success: boolean; position: Position } {
-    const ret = { success: false, position: new Position(0, 0) };
-    for (let i = 0; i < lines.length; i++) {
-      const columnIdx = lines[i].indexOf('|');
-      if (columnIdx >= 0) {
-        ret.position = new Position(i, columnIdx);
-        ret.success = true;
-      }
-    }
-
-    return ret;
-  }
-
-  public parseStep(t: ITestWithRemapsObject): void {
-    this._isValid = true;
-    const stepIdx = this.currentStep;
-    if (stepIdx === 0) {
-      if (!this.setStartCursorPosition(t.start)) {
-        this._isValid = false;
-        return;
-      }
-    } else {
-      const lastStepEnd =
-        t.steps[stepIdx - 1].stepResult.endAfterTimeout ?? t.steps[stepIdx - 1].stepResult.end;
-      if (!this.setStartCursorPosition(lastStepEnd)) {
-        this._isValid = false;
-        return;
-      }
-    }
-    if (!this.setEndCursorPosition(t.steps[stepIdx].stepResult.end)) {
-      this._isValid = false;
-      return;
-    }
-    if (!this.setEndAfterTimeoutCursorPosition(t.steps[stepIdx].stepResult.endAfterTimeout)) {
-      this._isValid = false;
-      return;
-    }
-  }
-
-  public asVimOutputText(afterTimeout: boolean = false): string[] {
-    const step = this.testObject.steps[this.currentStep];
-    const ret = afterTimeout
-      ? step.stepResult.endAfterTimeout!.slice(0)
-      : step.stepResult.end.slice(0);
-    const cursorLine = afterTimeout
-      ? this.currentStepEndAfterTimeoutPosition!.line
-      : this.currentStepEndPosition.line;
-    ret[cursorLine] = ret[cursorLine].replace('|', '');
-    return ret;
-  }
+  cursor: Position;
+  lines: string[];
 }
 
 /**
@@ -291,12 +157,17 @@ function tokenizeKeySequence(sequence: string): string[] {
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
   function rawTokenize(characters: string): void {
-    for (const char of characters) {
-      result.push(char);
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < characters.length; i++) {
+      result.push(characters[i]);
     }
   }
 
-  for (const char of sequence) {
+  // don't use a for of here, since the iterator doesn't split surrogate pairs
+  // tslint:disable-next-line:prefer-for-of
+  for (let i = 0; i < sequence.length; i++) {
+    const char = sequence[i];
+
     key += char;
 
     if (char === '<') {
@@ -331,31 +202,33 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  const helper = new TestObjectHelper(testObj);
-  assert(helper.isValid, "Missing '|' in test object.");
+  const start = DocState.parse(testObj.start);
+  const end = DocState.parse(testObj.end);
 
   if (testObj.editorOptions) {
     editor.options = testObj.editorOptions;
   }
 
   // Initialize the editor with the starting text and cursor selection
-  await editor.edit((builder) => {
-    builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
-  });
-  await editor.document.save();
-  editor.selections = [new vscode.Selection(helper.startPosition, helper.startPosition)];
+  assert.ok(
+    await editor.edit((builder) => {
+      builder.replace(
+        new vscode.Range(new Position(0, 0), TextEditor.getDocumentEnd(editor.document)),
+        start.lines.join('\n')
+      );
+    })
+  );
+  if (testObj.saveDocBeforeTest) {
+    assert.ok(await editor.document.save());
+  }
+  editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
 
-  let keysPressed = testObj.keysPressed;
-  if (process.platform === 'win32') {
-    keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
-  }
-
-  const jumpTracker = globalState.jumpTracker;
-  jumpTracker.clearJumps();
+  globalState.lastInvokedMacro = undefined;
+  globalState.jumpTracker.clearJumps();
 
   Register.clearAllRegisters();
 
@@ -363,31 +236,41 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     const confirmStub = sinon
       .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
       .resolves(testObj.stub.returnValue);
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
     confirmStub.restore();
   } else {
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
   }
 
   // Check given end output is correct
-  const lines = helper.asVimOutputText();
-  assertEqualLines(lines);
+  assertEqualLines(end.lines);
 
   // Check final cursor position
   const actualPosition = modeHandler.vimState.editor.selection.start;
-  const expectedPosition = helper.endPosition;
+  const expectedPosition = end.cursor;
   assert.deepStrictEqual(
     { line: actualPosition.line, character: actualPosition.character },
     { line: expectedPosition.line, character: expectedPosition.character },
     'Cursor position is wrong.'
   );
 
-  // endMode: check end mode is correct if given
   if (testObj.endMode !== undefined) {
-    const actualMode = Mode[modeHandler.currentMode].toUpperCase();
-    const expectedMode = Mode[testObj.endMode].toUpperCase();
-    assert.strictEqual(actualMode, expectedMode, "Didn't enter correct mode.");
+    assert.strictEqual(
+      Mode[modeHandler.currentMode],
+      Mode[testObj.endMode],
+      "Didn't enter correct mode."
+    );
+  }
+
+  if (testObj.registers !== undefined) {
+    for (const reg in testObj.registers) {
+      if (testObj.registers[reg] !== undefined) {
+        assert.strictEqual((await Register.get(reg))?.text, testObj.registers[reg]);
+      } else {
+        assert.strictEqual(await Register.get(reg), undefined);
+      }
+    }
   }
 
   if (testObj.statusBar !== undefined) {
@@ -402,19 +285,21 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   if (testObj.jumps !== undefined) {
     // TODO: Jumps should be specified by Positions, not line contents
     assert.deepStrictEqual(
-      jumpTracker.jumps.map((j) => lines[j.position.line] || '<MISSING>'),
+      globalState.jumpTracker.jumps.map((j) => end.lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),
       'Incorrect jumps found'
     );
 
     const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
     const actualJumpPosition =
-      (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
+      (globalState.jumpTracker.currentJump &&
+        end.lines[globalState.jumpTracker.currentJump.position.line]) ||
+      '<FRONT>';
     const expectedJumpPosition = stripBar(testObj.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
     assert.deepStrictEqual(
-      actualJumpPosition.toString(),
-      expectedJumpPosition.toString(),
+      actualJumpPosition,
+      expectedJumpPosition,
       'Incorrect jump position found'
     );
   }
@@ -426,16 +311,14 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  const helper = new TestWithRemapsObjectHelper(testObj);
-  assert(helper.isValid, "Missing '|' in test object.");
-
   // Initialize the editor with the starting text and cursor selection
   await editor.edit((builder) => {
     builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
-  editor.selections = [
-    new vscode.Selection(helper.currentStepStartPosition, helper.currentStepStartPosition),
-  ];
+  {
+    const start = DocState.parse(testObj.start);
+    editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
+  }
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
@@ -469,19 +352,26 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   await reloadConfiguration();
 
   for (const { step, index } of testObj.steps.map((value, i) => ({ step: value, index: i }))) {
-    let keysPressed = step.keysPressed;
-    if (process.platform === 'win32') {
-      keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
-    }
+    const resolvedStep = (() => {
+      let start: DocState;
+      if (index === 0) {
+        start = DocState.parse(testObj.start);
+      } else {
+        const prevStepResult = testObj.steps[index - 1].stepResult;
+        start = DocState.parse(prevStepResult.endAfterTimeout ?? prevStepResult.end);
+      }
 
-    // Parse current step
-    helper.currentStep = index;
-    helper.parseStep(testObj);
+      const stepResult = testObj.steps[index].stepResult;
+      return {
+        start,
+        end: DocState.parse(stepResult.end),
+        endAfterTimeout: stepResult.endAfterTimeout
+          ? DocState.parse(stepResult.endAfterTimeout)
+          : undefined,
+      };
+    })();
 
     const stepTitleOrIndex = step.title ? `nr. ${index} - "${step.title}"` : index;
-
-    // Check valid step object input
-    assert(helper.isValid, `Step ${stepTitleOrIndex} Missing '|' in test object.`);
 
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();
@@ -542,7 +432,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     };
 
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed));
 
     // Only start the end check promises after the keys were handled to make sure they don't
     // finish before all the keys are pressed. The keys handler above will resolve when the
@@ -552,16 +442,15 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     // Lines after keys pressed but before any timeout
 
     // Check given end output is correct
-    const endLines = helper.asVimOutputText(false);
     assert.strictEqual(
       result1.lines,
-      endLines.join(os.EOL),
+      resolvedStep.end.lines.join(os.EOL),
       `Document content does not match on step ${stepTitleOrIndex}.`
     );
 
     // Check end cursor position
     const actualEndPosition = result1.position;
-    const expectedEndPosition = helper.currentStepEndPosition;
+    const expectedEndPosition = resolvedStep.end.cursor;
     assert.deepStrictEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
       { line: expectedEndPosition.line, character: expectedEndPosition.character },
@@ -571,11 +460,9 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     // endMode: check end mode is correct if given
     const expectedEndMode = step.stepResult.endMode;
     if (expectedEndMode !== undefined) {
-      const actualMode = Mode[result1.endMode].toUpperCase();
-      const expectedMode = Mode[expectedEndMode].toUpperCase();
       assert.strictEqual(
-        actualMode,
-        expectedMode,
+        Mode[result1.endMode],
+        Mode[expectedEndMode],
         `Didn't enter correct mode on step ${stepTitleOrIndex}.`
       );
     }
@@ -585,16 +472,15 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
       assert.notStrictEqual(result2, undefined);
 
       // Check given endAfterTimeout output is correct
-      const endAfterTimeoutLines = helper.asVimOutputText(true);
       assert.strictEqual(
         result2.lines,
-        endAfterTimeoutLines.join(os.EOL),
+        resolvedStep.endAfterTimeout?.lines.join(os.EOL),
         `Document content does not match on step ${stepTitleOrIndex} after timeout.`
       );
 
       // Check endAfterTimeout cursor position
       const actualEndAfterTimeoutPosition = result2.position;
-      const expectedEndAfterTimeoutPosition = helper.currentStepEndAfterTimeoutPosition!;
+      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursor;
       assert.deepStrictEqual(
         {
           line: actualEndAfterTimeoutPosition.line,
@@ -610,35 +496,12 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
       // endMode: check end mode is correct if given
       const expectedEndAfterTimeoutMode = step.stepResult.endModeAfterTimeout;
       if (expectedEndAfterTimeoutMode !== undefined) {
-        const actualMode = Mode[result2.endMode].toUpperCase();
-        const expectedMode = Mode[expectedEndAfterTimeoutMode].toUpperCase();
         assert.strictEqual(
-          actualMode,
-          expectedMode,
+          Mode[result2.endMode],
+          Mode[expectedEndAfterTimeoutMode],
           `Didn't enter correct mode on step ${stepTitleOrIndex} after Timeout.`
         );
       }
-    }
-
-    // jumps: check jumps are correct if given
-    if (step.stepResult.jumps !== undefined) {
-      assert.deepStrictEqual(
-        jumpTracker.jumps.map((j) => endLines[j.position.line] || '<MISSING>'),
-        step.stepResult.jumps.map((t) => t.replace('|', '')),
-        'Incorrect jumps found'
-      );
-
-      const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
-      const actualJumpPosition =
-        (jumpTracker.currentJump && endLines[jumpTracker.currentJump.position.line]) || '<FRONT>';
-      const expectedJumpPosition =
-        stripBar(step.stepResult.jumps.find((t) => t.includes('|'))) || '<FRONT>';
-
-      assert.deepStrictEqual(
-        actualJumpPosition.toString(),
-        expectedJumpPosition.toString(),
-        `Incorrect jump position found on step ${stepTitleOrIndex}`
-      );
     }
   }
   return modeHandler;
@@ -671,4 +534,5 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export { ITestObject, testIt };
+export type { ITestObject };
+export { testIt };

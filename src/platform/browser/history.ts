@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { ILogger } from '../common/logger';
 
 export class HistoryBase {
   private readonly context: vscode.ExtensionContext;
@@ -13,8 +12,7 @@ export class HistoryBase {
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
-    extensionStoragePath: string,
-    logger: ILogger
+    extensionStoragePath: string
   ) {
     this.context = context;
     this.historyFileName = historyFileName;

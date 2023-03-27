@@ -1,16 +1,18 @@
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
-import { CommandSurroundAddSurroundingTag } from '../../src/actions/plugins/surround';
+import {
+  CommandSurroundAddSurroundingFunction,
+  CommandSurroundAddSurroundingTag,
+} from '../../src/actions/plugins/surround';
 
 suite('surround plugin', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.surround = true;
     await setupWorkspace(configuration, '.js');
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "'ysiw)' surrounds word without space",
@@ -126,6 +128,78 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: "'ysiwf' surrounds word with function",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwf',
+    end: ['first |print(line) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
+    title: 'surround word with function and repeat',
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwfW.',
+    end: ['first print(line) |print(test)'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
+    title: "'ysiwF' surrounds word with function with space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwF',
+    end: ['first |print( line ) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
+    title: 'surround word with function with space and repeat',
+    start: ['first li|ne test'],
+    keysPressed: 'ysiwFWWW.',
+    end: ['first print( line ) |print( test )'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
+    title: "'ysiw<C-f>' surrounds word and function with parentheses",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiw<C-f>',
+    end: ['first |(print line) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
+    title: 'surround word and function with pathentheses and repeat',
+    start: ['first li|ne test'],
+    keysPressed: 'ysiw<C-f>WW.',
+    end: ['first (print line) |(print test)'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'print',
+    },
+  });
+
+  newTest({
     title: "'yss)' surrounds entire line respecting whitespace",
     start: ['foo', '    foob|ar  '],
     keysPressed: 'yss)',
@@ -204,6 +278,42 @@ suite('surround plugin', () => {
       stubClass: CommandSurroundAddSurroundingTag,
       methodName: 'readTag',
       returnValue: 'abc',
+    },
+  });
+
+  newTest({
+    title: 'change surround to function',
+    start: ['first {li|ne} test'],
+    keysPressed: 'cs}f',
+    end: ['first hello(li|ne) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'hello',
+    },
+  });
+
+  newTest({
+    title: 'change surround to function with space',
+    start: ['first (li|ne) test'],
+    keysPressed: 'cs)F',
+    end: ['first hello( li|ne ) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'hello',
+    },
+  });
+
+  newTest({
+    title: 'change surround to function surrounded by parentheses',
+    start: ['first <tag>li|ne</tag> test'],
+    keysPressed: 'cst<C-f>',
+    end: ['first (hello li|ne) test'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'hello',
     },
   });
 
@@ -371,14 +481,14 @@ suite('surround plugin', () => {
     title: "'S)' surrounds visual selection without space",
     start: ['first li|ne test'],
     keysPressed: 'viwS)',
-    end: ['first (li|ne) test'],
+    end: ['first (l|ine) test'],
   });
 
   newTest({
     title: "'S(' surrounds visual selection with space",
     start: ['first li|ne test'],
     keysPressed: 'viwS(',
-    end: ['first ( l|ine ) test'],
+    end: ['first ( |line ) test'],
   });
 
   newTest({
@@ -420,6 +530,42 @@ suite('surround plugin', () => {
       stubClass: CommandSurroundAddSurroundingTag,
       methodName: 'readTag',
       returnValue: 'div',
+    },
+  });
+
+  newTest({
+    title: "'Sfcall' surrounds visual line selection with call()",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VSf',
+    end: ['first', 'call(', 'second', '|)', 'third'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'call',
+    },
+  });
+
+  newTest({
+    title: "'SFcall' surrounds visual line selection with call(  )",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VSF',
+    end: ['first', 'call( ', 'second', '| )', 'third'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'call',
+    },
+  });
+
+  newTest({
+    title: "'S<C-f>call' surrounds visual line selection with (call )",
+    start: ['first', 'sec|ond', 'third'],
+    keysPressed: 'VS<C-f>',
+    end: ['first', '(call ', 'second', '|)', 'third'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingFunction,
+      methodName: 'readFunction',
+      returnValue: 'call',
     },
   });
 

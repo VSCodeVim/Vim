@@ -2,11 +2,8 @@ import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('put operator', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   suite('p', () => {
     suite('Normal mode', () => {
@@ -61,6 +58,13 @@ suite('put operator', () => {
       });
 
       newTest({
+        title: 'Yank ragged block-wise selection, <count>p',
+        start: ['|ABCDEFG', 'abcd', 'wxyz', 'WXYZ'],
+        keysPressed: '3l' + '<C-v>j$' + 'y' + 'jh' + '2p',
+        end: ['ABCDEFG', 'abc|DEFGDEFGd', 'wxyd   d   z', 'WXYZ'],
+      });
+
+      newTest({
         title: 'Yank block-wise, <count>p past last line',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'Gl' + '2p',
@@ -79,15 +83,17 @@ suite('put operator', () => {
       newTest({
         title: 'Yank character-wise, <count>p in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'ye' + 've' + '3p',
+        keysPressed: 'ye' + 'R123<Esc>' + 'viw' + '3p',
         end: ['one', 'twotwotw|o', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({
         title: 'Yank line-wise, <count>p in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'yy' + 've' + '3p',
+        keysPressed: 'yy' + 'R123<Esc>' + 'viw' + '3p',
         end: ['one', '', '|two', 'two', 'two', '', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({
@@ -190,6 +196,13 @@ suite('put operator', () => {
       });
 
       newTest({
+        title: 'Yank ragged block-wise selection, <count>P',
+        start: ['|ABCDEFG', 'abcd', 'wxyz', 'WXYZ'],
+        keysPressed: '3l' + '<C-v>j$' + 'y' + 'jh' + '2P',
+        end: ['ABCDEFG', 'ab|DEFGDEFGcd', 'wxd   d   yz', 'WXYZ'],
+      });
+
+      newTest({
         title: 'Yank block-wise, <count>P past last line',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'Gl' + '2P',
@@ -201,15 +214,17 @@ suite('put operator', () => {
       newTest({
         title: 'Yank character-wise, <count>P in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'ye' + 've' + '3P',
+        keysPressed: 'ye' + 'R123<Esc>' + 'viw' + '3P',
         end: ['one', 'twotwotw|o', 'three'],
+        registers: { '"': 'two' }, // NOTE: unnamed register not overwritten
       });
 
       newTest({
         title: 'Yank line-wise, <count>P in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'yy' + 've' + '3P',
+        keysPressed: 'yy' + 'R123<Esc>' + 'viw' + '3P',
         end: ['one', '', '|two', 'two', 'two', '', 'three'],
+        registers: { '"': 'two' }, // NOTE: unnamed register not overwritten
       });
 
       newTest({
@@ -312,6 +327,13 @@ suite('put operator', () => {
       });
 
       newTest({
+        title: 'Yank ragged block-wise selection, <count>gp',
+        start: ['|abcd', 'ABCDEFG', 'wxyz', 'WXYZ'],
+        keysPressed: '2l' + '<C-v>j$' + 'y' + '2gp',
+        end: ['abccd   cd   d', 'ABCCDEFGCDEFG|DEFG', 'wxyz', 'WXYZ'],
+      });
+
+      newTest({
         title: 'Yank block-wise, <count>gp past last line',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'Gl' + '2gp',
@@ -323,8 +345,9 @@ suite('put operator', () => {
       newTest({
         title: 'Yank character-wise, <count>gp in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'ye' + 've' + '3gp',
+        keysPressed: 'ye' + 'R123<Esc>' + 'viw' + '3gp',
         end: ['one', 'twotwotw|o', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({
@@ -337,8 +360,9 @@ suite('put operator', () => {
       newTest({
         title: 'Yank line-wise, <count>gp in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'yy' + 've' + '3gp',
+        keysPressed: 'yy' + 'R123<Esc>' + 'viw' + '3gp',
         end: ['one', '', 'two', 'two', 'two', '|', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({
@@ -437,7 +461,14 @@ suite('put operator', () => {
         title: 'Yank block-wise, <count>gP',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl' + '2gP',
-        end: ['ABCD', 'a[1][1]bcd', 'w[2][2]x|yz', 'WXYZ'],
+        end: ['ABCD', 'a[1][1]bcd', 'w[2][2]|xyz', 'WXYZ'],
+      });
+
+      newTest({
+        title: 'Yank ragged block-wise selection, <count>gP',
+        start: ['|abcd', 'ABCDEFG', 'wxyz', 'WXYZ'],
+        keysPressed: '2l' + '<C-v>j$' + 'y' + '2gP',
+        end: ['abcd   cd   cd', 'ABCDEFGCDEFG|CDEFG', 'wxyz', 'WXYZ'],
       });
 
       newTest({
@@ -452,8 +483,9 @@ suite('put operator', () => {
       newTest({
         title: 'Yank character-wise, <count>gP in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'ye' + 've' + '3gP',
+        keysPressed: 'ye' + 'R123<Esc>' + 'viw' + '3gP',
         end: ['one', 'twotwotw|o', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({
@@ -466,8 +498,9 @@ suite('put operator', () => {
       newTest({
         title: 'Yank line-wise, <count>gP in Visual mode',
         start: ['one', '|two', 'three'],
-        keysPressed: 'yy' + 've' + '3gP',
+        keysPressed: 'yy' + 'R123<Esc>' + 'viw' + '3gP',
         end: ['one', '', 'two', 'two', 'two', '|', 'three'],
+        registers: { '"': '123' },
       });
 
       newTest({

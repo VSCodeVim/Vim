@@ -1,6 +1,6 @@
 # Change Log
 
-## ***NOTE: For versions 1.23.0 and newer, include the lastest changes; please see [CHANGELOG.md](CHANGELOG.md).***
+## **_NOTE: For versions 1.23.0 and newer, include the lastest changes; please see [CHANGELOG.md](CHANGELOG.md)._**
 
 ## [v1.22.2](https://github.com/vscodevim/vim/tree/v1.22.2) (2022-02-18)
 

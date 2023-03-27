@@ -278,6 +278,7 @@ export const areAllSameTransformation = (transformations: Transformation[]): boo
 
   return transformations.every((t) => {
     return Object.entries(t).every(([key, value]) => {
+      // @ts-ignore: TODO: this is all quite janky
       return firstTransformation[key] === value;
     });
   });

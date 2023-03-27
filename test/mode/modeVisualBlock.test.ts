@@ -151,6 +151,83 @@ suite('VisualBlock mode', () => {
     end: ['t123|est', 't123est'],
   });
 
+  suite('`>` (indent at left edge of block)', () => {
+    newTest({
+      title: 'Repeated multiline `[count]>` indent (2 spaces) top down selection',
+      editorOptions: { tabSize: 2 },
+      start: ['This is |a long line', 'Short', 'Another long line'],
+      keysPressed: '<C-v>jj3>jhh.',
+      end: ['This is       a long line', 'Sh|      ort', 'An      other       long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]>` indent (2 spaces) bottom up selection',
+      editorOptions: { tabSize: 2 },
+      start: ['This is a long line', 'Short', 'Another |long line'],
+      keysPressed: '<C-v>kk3>jhh.',
+      end: ['This is       a long line', 'Sh|      ort', 'An      other       long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]>` indent (4 spaces) top down selection',
+      editorOptions: { tabSize: 4 },
+      start: ['This is |a long line', 'Short', 'Another long line'],
+      keysPressed: '<C-v>jj3>jhh.',
+      end: [
+        'This is             a long line',
+        'Sh|            ort',
+        'An            other             long line',
+      ],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]>` indent (4 spaces) bottom up selection',
+      editorOptions: { tabSize: 4 },
+      start: ['This is a long line', 'Short', 'Another |long line'],
+      keysPressed: '<C-v>kk3>jhh.',
+      end: [
+        'This is             a long line',
+        'Sh|            ort',
+        'An            other             long line',
+      ],
+    });
+  });
+
+  suite('`<` (outdent at left edge of block)', () => {
+    newTest({
+      title: '`[count]<` outdent (2 spaces) should have no effect on non-whitespace character',
+      editorOptions: { tabSize: 2 },
+      start: ['This is |a long line', 'Short', 'Another long line'],
+      keysPressed: '<C-v>2<',
+      end: ['This is |a long line', 'Short', 'Another long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]<` outdent (2 spaces) top down selection',
+      editorOptions: { tabSize: 2 },
+      start: ['This is |  a long line', 'Short', 'Another           long line'],
+      keysPressed: '<C-v>jj2<jj.',
+      end: ['This is a long line', 'Short', 'Another |  long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]<` outdent (2 spaces) bottom up selection',
+      editorOptions: { tabSize: 2 },
+      start: ['This is   a long line', 'Short', 'Another |          long line'],
+      keysPressed: '<C-v>kk2<jj.',
+      end: ['This is a long line', 'Short', 'Another |  long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]<` outdent (4 spaces) top down selection',
+      editorOptions: { tabSize: 4 },
+      start: ['This is |  a long line', 'Short', 'Another           long line'],
+      keysPressed: '<C-v>jj2<jj.',
+      end: ['This is a long line', 'Short', 'Another |long line'],
+    });
+    newTest({
+      title: 'Repeated multiline `[count]<` outdent (4 spaces) bottom up selection',
+      editorOptions: { tabSize: 4 },
+      start: ['This is   a long line', 'Short', 'Another |          long line'],
+      keysPressed: '<C-v>kk2<jj.',
+      end: ['This is a long line', 'Short', 'Another |long line'],
+    });
+  });
+
   suite('Non-darwin `<C-c>` tests', () => {
     if (process.platform === 'darwin') {
       return;

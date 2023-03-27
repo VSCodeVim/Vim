@@ -56,6 +56,9 @@ export interface SurroundState {
   /** name of tag */
   tag?: TagReplacement;
 
+  /** name of function */
+  function?: string;
+
   /** for visual line mode */
   addNewline?: boolean;
 
@@ -304,7 +307,10 @@ class CommandSurroundAddSurrounding extends BaseCommand {
       configuration.surround &&
       super.doesActionApply(vimState, keysPressed) &&
       replacement !== 't' && // do not run this for surrounding with a tag
-      replacement !== '<'
+      replacement !== '<' &&
+      replacement !== 'f' && // or for surrounding with a function
+      replacement !== 'F' &&
+      replacement !== '<C-f>'
     );
   }
 
@@ -374,6 +380,66 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
       prompt: 'Enter tag',
       ignoreFocusOut: true,
     });
+  }
+}
+
+@RegisterAction
+export class CommandSurroundAddSurroundingFunction extends BaseCommand {
+  modes = [Mode.SurroundInputMode];
+  // add surrounding / read X when: ys + motion + X
+  keys = [['f'], ['F'], ['<C-f>']];
+  override isCompleteAction = true;
+  recordedFunction = ''; // to save for repeat
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!vimState.surround) {
+      return;
+    }
+
+    // reuse the spacing logic from the parentheses
+    // for the right side of the replacement
+    vimState.surround.replacement =
+      this.keysPressed[this.keysPressed.length - 1] === 'F' ? '(' : ')';
+
+    const functionInput =
+      vimState.isRunningDotCommand || vimState.isReplayingMacro
+        ? this.recordedFunction
+        : await this.readFunction();
+
+    if (!functionInput) {
+      vimState.surround = undefined;
+      await vimState.setCurrentMode(Mode.Normal);
+      return;
+    }
+
+    // record function for repeat.
+    this.recordedFunction = functionInput;
+
+    // format the left side of the replacement based on the key pressed
+    vimState.surround.function = this.formatFunction(functionInput);
+
+    await SurroundHelper.ExecuteSurround(vimState);
+  }
+
+  private async readFunction(): Promise<string | undefined> {
+    return window.showInputBox({
+      prompt: 'Enter function',
+      ignoreFocusOut: true,
+    });
+  }
+
+  private formatFunction(fn: string): string {
+    switch (this.keysPressed[this.keysPressed.length - 1]) {
+      case 'f':
+        return fn + '(';
+      case 'F':
+        return fn + '( ';
+      case '<C-f>':
+      default:
+        return '(' + fn + ' ';
+    }
   }
 }
 
@@ -581,6 +647,8 @@ class SurroundHelper {
           ? ''
           : surroundState.tag
           ? '<' + surroundState.tag.tag + '>' + optNewline
+          : surroundState.function
+          ? surroundState.function + optNewline
           : replacement.left + optNewline;
 
       const rightFixed =
@@ -599,7 +667,7 @@ class SurroundHelper {
           // keep cursor on left edge / start. todo: not completly correct vor visual S
           diff:
             surroundState.operator === 'yank'
-              ? PositionDiff.offset({ character: 1 - leftFixed.length })
+              ? PositionDiff.offset({ character: -leftFixed.length })
               : undefined,
         });
         vimState.recordedState.transformer.addTransformation({

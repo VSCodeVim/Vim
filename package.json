@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.23.2",
+  "version": "1.25.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.57.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Other",
@@ -448,35 +448,6 @@
       "title": "Vim",
       "type": "object",
       "properties": {
-        "vim.debug.silent": {
-          "type": "boolean",
-          "description": "If true, all logs are suppressed.",
-          "default": false
-        },
-        "vim.debug.loggingLevelForAlert": {
-          "type": "string",
-          "description": "Maximum level of messages to present as VS Code information window.",
-          "default": "error",
-          "enum": [
-            "error",
-            "warn",
-            "info",
-            "verbose",
-            "debug"
-          ]
-        },
-        "vim.debug.loggingLevelForConsole": {
-          "type": "string",
-          "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
-          "default": "error",
-          "enum": [
-            "error",
-            "warn",
-            "info",
-            "verbose",
-            "debug"
-          ]
-        },
         "vim.normalModeKeyBindings": {
           "type": "array",
           "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
@@ -717,12 +688,12 @@
         },
         "vim.targets.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implmeneted yet).",
+          "markdownDescription": "Enable [targets.vim](https://github.com/wellle/targets.vim#quote-text-objects) plugin (not fully implemented yet).",
           "default": false
         },
         "vim.targets.bracketObjects.enable": {
           "type": "boolean",
-          "markdownDescription": "Enable last/next movements for bracket objects",
+          "markdownDescription": "Enable last/next movements for bracket objects.",
           "default": true
         },
         "vim.targets.smartQuotes.enable": {
@@ -993,7 +964,7 @@
         },
         "vim.vimrc.path": {
           "type": "string",
-          "markdownDescription": "Path to a Vim configuration file. If unset, it will check for `$HOME/.vimrc`, `$HOME/_vimrc`, and `$HOME/.config/nvim/init.vim`, in that order."
+          "markdownDescription": "Path to a Vim configuration file. If unset, it will check for `$HOME/.vscodevimrc`, `$HOME/.vimrc`, `$HOME/_vimrc`, and `$HOME/.config/nvim/init.vim`, in that order."
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
@@ -1093,17 +1064,20 @@
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
           "markdownDescription": "The input method for your normal mode, find more information [here](https://github.com/VSCodeVim/Vim#input-method).",
-          "default": ""
+          "default": "",
+          "scope": "machine"
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
           "type": "string",
           "description": "The shell command to switch input method.",
-          "default": "/path/to/im-select {im}"
+          "default": "/path/to/im-select {im}",
+          "scope": "machine"
         },
         "vim.autoSwitchInputMethod.obtainIMCmd": {
           "type": "string",
           "description": "The shell command to get current input method.",
-          "default": "/path/to/im-select"
+          "default": "/path/to/im-select",
+          "scope": "machine"
         },
         "vim.whichwrap": {
           "type": "string",
@@ -1163,10 +1137,16 @@
   "scripts": {
     "vscode:prepublish": "gulp build",
     "build": "gulp build",
+    "build-dev": "gulp build-dev",
+    "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
-    "forceprettier": "gulp forceprettier",
-    "watch": "npx webpack -c webpack.dev.js --watch",
-    "package": "yarn run vsce package --yarn --allow-star-activation"
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "watch": "webpack -c webpack.dev.js --watch",
+    "package": "yarn run vsce package --yarn --allow-star-activation",
+    "prepare": "husky install"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1177,47 +1157,47 @@
     "path-browserify": "1.0.1",
     "process": "0.11.10",
     "queue": "^6.0.2",
-    "source-map-support": "0.5.21",
     "untildify": "4.0.0",
-    "util": "0.12.4",
-    "winston": "3.8.1",
-    "winston-console-for-electron": "0.0.6",
-    "winston-transport": "4.5.0"
+    "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "5.0.2",
+    "@types/diff": "5.0.3",
     "@types/diff-match-patch": "1.0.32",
-    "@types/glob": "7.2.0",
-    "@types/lodash": "4.14.182",
-    "@types/mocha": "9.1.1",
-    "@types/node": "16.11.47",
+    "@types/glob": "8.1.0",
+    "@types/lodash": "4.14.191",
+    "@types/mocha": "10.0.1",
+    "@types/node": "16.18.21",
     "@types/parsimmon": "1.10.6",
     "@types/sinon": "10.0.13",
-    "@types/source-map-support": "0.5.4",
-    "@types/vscode": "1.57.0",
-    "@vscode/test-electron": "2.1.5",
+    "@types/vscode": "1.74.0",
+    "@vscode/test-electron": "2.3.0",
+    "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "7.2.13",
+    "fork-ts-checker-webpack-plugin": "8.0.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
-    "gulp-sourcemaps": "3.0.0",
     "gulp-tag-version": "1.3.1",
-    "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
-    "minimist": "1.2.6",
-    "mocha": "10.0.0",
-    "plugin-error": "2.0.0",
-    "prettier": "2.7.1",
-    "sinon": "14.0.0",
-    "ts-loader": "9.3.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2",
+    "minimist": "1.2.8",
+    "mocha": "10.2.0",
+    "plugin-error": "2.0.1",
+    "prettier": "2.8.7",
+    "sinon": "15.0.3",
+    "ts-loader": "9.4.2",
     "tslint": "6.1.3",
-    "typescript": "4.7.4",
-    "vsce": "2.10.0",
-    "webpack": "5.74.0",
-    "webpack-cli": "4.10.0",
+    "typescript": "5.0.2",
+    "vsce": "2.15.0",
+    "webpack": "5.76.3",
+    "webpack-cli": "5.0.1",
     "webpack-merge": "5.8.0",
     "webpack-stream": "7.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md,yml}": "prettier --write",
+    "*.ts": "tslint --fix"
   }
 }
