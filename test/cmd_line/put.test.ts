@@ -137,5 +137,4 @@ suite('put cmd_line', () => {
     await modeHandler.handleMultipleKeyEvents(':put=range(4,1,-2)\n'.split(''));
     assertEqualLines(['', '4', '2']);
   });
-
 });
