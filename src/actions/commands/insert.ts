@@ -58,10 +58,9 @@ export class CommandEscInsertMode extends BaseCommand {
           lastActionBeforeEsc.keysPressed[lastActionBeforeEsc.keysPressed.length - 1] === '\n'))
     ) {
       for (const cursor of vimState.cursors) {
-        if (/^\s+$/.test(vimState.document.lineAt(cursor.stop).text)) {
-          vimState.recordedState.transformer.delete(
-            new vscode.Range(cursor.stop.getLineBegin(), cursor.stop.getLineEnd())
-          );
+        const line = vimState.document.lineAt(cursor.stop);
+        if (line.text.length > 0 && line.isEmptyOrWhitespace) {
+          vimState.recordedState.transformer.delete(line.range);
         }
       }
     }
