@@ -48,10 +48,10 @@ export class PluginDefaultMappings {
   ];
 
   public static getPluginDefaultMappings(mode: string, config: IConfiguration): IKeyRemapping[] {
-    return config.disableDefaultPluginMappings
-      ? []
-      : this.defaultMappings
+    return config.enableDefaultPluginMappings
+      ? this.defaultMappings
           .filter((m) => m.mode === mode && config[m.configSwitch])
-          .map((m) => m.mapping);
+          .map((m) => m.mapping)
+      : [];
   }
 }

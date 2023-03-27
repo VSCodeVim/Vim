@@ -192,9 +192,9 @@ export interface IConfiguration {
   surround: boolean;
 
   /**
-   * Do not create default mappings for surround plugin
+   * create default mappings for surround plugin
    */
-  disableDefaultPluginMappings: boolean;
+  enableDefaultPluginMappings: boolean;
   /**
    * Customize argument textobject delimiter and separator characters
    */

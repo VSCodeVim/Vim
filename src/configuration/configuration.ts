@@ -246,7 +246,7 @@ class Configuration implements IConfiguration {
 
   surround = true;
 
-  disableDefaultPluginMappings = false;
+  enableDefaultPluginMappings = true;
 
   argumentObjectSeparators = [','];
   argumentObjectOpeningDelimiters = ['(', '['];
