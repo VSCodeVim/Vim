@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
@@ -5,6 +6,7 @@ import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
+import { MoveCommand } from '../cmd_line/commands/move';
 import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
@@ -44,6 +46,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
+import { RedoCommand } from '../cmd_line/commands/redo';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -127,7 +130,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cbel', 'ow'], undefined],
   [['cbo', 'ttom'], undefined],
   [['cc', ''], undefined],
-  [['ccl', 'ose'], undefined],
+  [['ccl', 'ose'], succeed(new VsCodeCommand('workbench.action.closePanel'))],
   [['cd', ''], undefined],
   [['cdo', ''], undefined],
   [['ce', 'nter'], CenterCommand.argParser],
@@ -151,9 +154,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cm', 'ap'], undefined],
   [['cmapc', 'lear'], undefined],
   [['cme', 'nu'], undefined],
-  [['cn', 'ext'], undefined],
+  [['cn', 'ext'], succeed(new VsCodeCommand('editor.action.marker.nextInFiles'))],
   [['cnew', 'er'], undefined],
-  [['cnf', 'ile'], undefined],
+  [['cnf', 'ile'], succeed(new VsCodeCommand('editor.action.marker.nextInFiles'))],
   [['cno', 'remap'], undefined],
   [['cnorea', 'bbrev'], undefined],
   [['cnoreme', 'nu'], undefined],
@@ -166,9 +169,9 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['con', 'tinue'], undefined],
   [['conf', 'irm'], undefined],
   [['cons', 't'], undefined],
-  [['cope', 'n'], undefined],
-  [['cp', 'revious'], undefined],
-  [['cpf', 'ile'], undefined],
+  [['cope', 'n'], succeed(new VsCodeCommand('workbench.panel.markers.view.focus'))],
+  [['cp', 'revious'], succeed(new VsCodeCommand('editor.action.marker.prevInFiles'))],
+  [['cpf', 'ile'], succeed(new VsCodeCommand('editor.action.marker.prevInFiles'))],
   [['cq', 'uit'], undefined],
   [['cr', 'ewind'], undefined],
   [['cs', 'cope'], undefined],
@@ -176,7 +179,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cu', 'nmap'], undefined],
   [['cuna', 'bbrev'], undefined],
   [['cunme', 'nu'], undefined],
-  [['cw', 'indow'], undefined],
+  [['cw', 'indow'], succeed(new VsCodeCommand('workbench.panel.markers.view.focus'))],
   [['d', 'elete'], DeleteCommand.argParser],
   [['deb', 'ug'], undefined],
   [['debugg', 'reedy'], undefined],
@@ -292,7 +295,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lbo', 'ttom'], undefined],
   [['lc', 'd'], undefined],
   [['lch', 'dir'], undefined],
-  [['lcl', 'ose'], undefined],
+  [['lcl', 'ose'], succeed(new VsCodeCommand('workbench.action.closePanel'))],
   [['lcs', 'cope'], undefined],
   [['ld', 'o'], undefined],
   [['le', 'ft'], LeftCommand.argParser],
@@ -316,7 +319,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lmak', 'e'], undefined],
   [['lmapc', 'lear'], undefined],
   [['ln', 'oremap'], undefined],
-  [['lne', 'xt'], undefined],
+  [['lne', 'xt'], succeed(new VsCodeCommand('editor.action.nextCommentThreadAction'))],
   [['lnew', 'er'], undefined],
   [['lnf', 'ile'], undefined],
   [['lo', 'adview'], undefined],
@@ -324,8 +327,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['loc', 'kmarks'], undefined],
   [['lockv', 'ar'], undefined],
   [['lol', 'der'], undefined],
-  [['lope', 'n'], undefined],
-  [['lp', 'revious'], undefined],
+  [['lope', 'n'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
+  [['lp', 'revious'], succeed(new VsCodeCommand('editor.action.previousCommentThreadAction'))],
   [['lpf', 'ile'], undefined],
   [['lr', 'ewind'], undefined],
   [['ls', ''], undefined],
@@ -336,8 +339,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['luaf', 'ile'], undefined],
   [['lv', 'imgrep'], undefined],
   [['lvimgrepa', 'dd'], undefined],
-  [['lw', 'indow'], undefined],
-  [['m', 'ove'], undefined],
+  [['lw', 'indow'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
+  [['m', 'ove'], MoveCommand.argParser],
   [['ma', 'rk'], undefined],
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
@@ -424,7 +427,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['quita', 'll'], QuitCommand.argParser(true)],
   [['r', 'ead'], ReadCommand.argParser],
   [['rec', 'over'], undefined],
-  [['red', 'o'], undefined],
+  [['red', 'o'], RedoCommand.argParser],
   [['redi', 'r'], undefined],
   [['redr', 'aw'], undefined],
   [['redraws', 'tatus'], undefined],

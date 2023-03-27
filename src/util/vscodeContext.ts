@@ -14,7 +14,7 @@ export abstract class VSCodeContext {
   public static async set(key: string, value: ContextValue): Promise<void> {
     const prev = this.get(key);
     if (prev !== value) {
-      Logger.get('vscode-context').debug(`Setting key='${key}' to value='${value}'`);
+      Logger.trace(`Setting key='${key}' to value='${value}'`);
       this.cache.set(key, value);
       await vscode.commands.executeCommand('setContext', key, value);
     }

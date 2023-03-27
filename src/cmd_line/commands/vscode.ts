@@ -11,7 +11,8 @@ export class VsCodeCommand extends ExCommand {
     .map((command) => new VsCodeCommand(command));
 
   private command?: string;
-  private constructor(command?: string) {
+
+  public constructor(command?: string) {
     super();
     this.command = command;
   }

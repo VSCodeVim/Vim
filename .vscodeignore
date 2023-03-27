@@ -12,6 +12,7 @@ test/**
 typings/**
 out/src/**
 out/test/**
+out/*.map
 node_modules/**
 images/design/**
 

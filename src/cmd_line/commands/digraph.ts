@@ -7,6 +7,7 @@ import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
 import { any, Parser, seq, whitespace } from 'parsimmon';
 import { bangParser, numberParser } from '../../vimscript/parserUtils';
+import { Digraph } from '../../configuration/iconfiguration';
 
 export interface IDigraphsCommandArguments {
   bang: boolean;
@@ -29,25 +30,24 @@ export class DigraphsCommand extends ExCommand {
     this.arguments = args;
   }
 
-  // TODO: replace 'any' with sensible index signature
-  private makeQuickPicks(digraphs: any): DigraphQuickPickItem[] {
-    const quickPicks = new Array<DigraphQuickPickItem>();
-    for (const digraphKey of Object.keys(digraphs)) {
-      const [charDesc, charCodes] = digraphs[digraphKey];
-      quickPicks.push({
-        label: digraphKey,
+  private makeQuickPicks(digraphs: Array<[string, Digraph]>): DigraphQuickPickItem[] {
+    return digraphs.map(([shortcut, [charDesc, charCodes]]) => {
+      if (!Array.isArray(charCodes)) {
+        charCodes = [charCodes];
+      }
+      return {
+        label: shortcut,
         description: `${charDesc} (user)`,
         charCodes,
-      });
-    }
-    return quickPicks;
+      };
+    });
   }
 
   async execute(vimState: VimState): Promise<void> {
     // TODO: use arguments
 
-    const digraphKeyAndContent = this.makeQuickPicks(configuration.digraphs).concat(
-      this.makeQuickPicks(DefaultDigraphs)
+    const digraphKeyAndContent = this.makeQuickPicks(Object.entries(configuration.digraphs)).concat(
+      this.makeQuickPicks([...DefaultDigraphs.entries()])
     );
 
     vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {

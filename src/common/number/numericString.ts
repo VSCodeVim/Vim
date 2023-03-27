@@ -44,7 +44,7 @@ export class NumericString {
   isCapital: boolean;
 
   // Map radix to number prefix
-  private static numPrefix = {
+  private static numPrefix: { [key: number]: string } = {
     [NumericStringRadix.Oct]: '0',
     [NumericStringRadix.Dec]: '',
     [NumericStringRadix.Hex]: '0x',
@@ -67,7 +67,7 @@ export class NumericString {
   ): { num: NumericString; suffixOffset: number } | undefined {
     const filteredMatchings =
       targetRadix !== undefined
-        ? NumericString.matchings.filter(matching => matching.radix === targetRadix)
+        ? NumericString.matchings.filter((matching) => matching.radix === targetRadix)
         : NumericString.matchings;
 
     // Find core numeric part of input

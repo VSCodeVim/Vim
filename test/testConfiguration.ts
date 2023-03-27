@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 
 import {
   IConfiguration,
-  IDebugConfiguration,
   IHighlightedYankConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
@@ -10,6 +9,8 @@ import {
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
+  [key: string]: any;
+
   useSystemClipboard = false;
   useCtrlKeys = false;
   overrideCopy = true;
@@ -76,11 +77,6 @@ export class Configuration implements IConfiguration {
     visualline: '#B48EAD',
     visualblock: '#A3BE8C',
     replace: '#D08770',
-  };
-  debug: IDebugConfiguration = {
-    silent: false,
-    loggingLevelForAlert: 'error',
-    loggingLevelForConsole: 'warn',
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';

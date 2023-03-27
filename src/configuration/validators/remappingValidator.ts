@@ -99,7 +99,7 @@ export class RemappingValidator implements IConfigurationValidator {
     if (!remapping.after && !remapping.commands) {
       result.append({
         level: 'error',
-        message: `${remapping.before} missing 'after' key or 'command'.`,
+        message: `${remapping.before} missing 'after' key or 'commands'.`,
       });
     }
 
