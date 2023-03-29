@@ -53,7 +53,9 @@ class EasyMotionTwoCharTilCharacterForwardCommand extends EasyMotionCharMoveComm
   keys = buildTriggerKeys({ key: '2t' });
 
   constructor() {
-    super(new SearchByCharCommand({ charCount: 2, searchDirection: 'forward', labelPosition: 'before' }));
+    super(
+      new SearchByCharCommand({ charCount: 2, searchDirection: 'forward', labelPosition: 'before' })
+    );
   }
 }
 
@@ -73,7 +75,9 @@ class EasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveCommandBase 
   keys = buildTriggerKeys({ key: '2T' });
 
   constructor() {
-    super(new SearchByCharCommand({ charCount: 2, searchDirection: 'backward', labelPosition: 'after' }));
+    super(
+      new SearchByCharCommand({ charCount: 2, searchDirection: 'backward', labelPosition: 'after' })
+    );
   }
 }
 
@@ -109,7 +113,9 @@ class EasyMotionTilCharacterForwardCommand extends EasyMotionCharMoveCommandBase
   keys = buildTriggerKeys({ key: 't' });
 
   constructor() {
-    super(new SearchByCharCommand({ charCount: 1, searchDirection: 'forward', labelPosition: 'before' }));
+    super(
+      new SearchByCharCommand({ charCount: 1, searchDirection: 'forward', labelPosition: 'before' })
+    );
   }
 }
 
@@ -129,7 +135,9 @@ class EasyMotionTilBackwardCommand extends EasyMotionCharMoveCommandBase {
   keys = buildTriggerKeys({ key: 'T' });
 
   constructor() {
-    super(new SearchByCharCommand({ charCount: 1, searchDirection: 'backward', labelPosition: 'after' }));
+    super(
+      new SearchByCharCommand({ charCount: 1, searchDirection: 'backward', labelPosition: 'after' })
+    );
   }
 }
 
@@ -248,9 +256,9 @@ class EasyMotionStartOfLineBidirectionalCommand extends EasyMotionLineMoveComman
 // easymotion-sl
 @RegisterAction
 class EasyMotionSearchWithinLine extends EasyMotionCharMoveCommandBase {
-  keys = buildTriggerKeys({ key: 'sl', leaderCount: 3});
+  keys = buildTriggerKeys({ key: 'sl', leaderCount: 3 });
 
   constructor() {
-    super(new SearchByCharCommand({ charCount: 1, searchRange: "within_line" }));
+    super(new SearchByCharCommand({ charCount: 1, searchRange: 'within_line' }));
   }
 }

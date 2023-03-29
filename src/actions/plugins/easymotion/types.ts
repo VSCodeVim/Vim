@@ -7,8 +7,8 @@ export type LabelPosition = 'after' | 'before';
 export type JumpToAnywhere = true | false;
 
 export interface EasyMotionMoveOptionsBase {
-  searchDirection?: 'forward' | 'backward' // If empty, assume bidirectional
-  searchRange?: 'within_line' // If empty, assume full page
+  searchDirection?: 'forward' | 'backward'; // If empty, assume bidirectional
+  searchRange?: 'within_line'; // If empty, assume full page
   // searchOptions?: 'min' | 'max';
 }
 

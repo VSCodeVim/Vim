@@ -230,20 +230,20 @@ suite('easymotion plugin', () => {
     title: 'Can handle within-line search with single match',
     start: ['abc', '|abc'],
     keysPressed: easymotionCommand({ key: 'sl', leaderCount: 3 }, '', 'c'),
-    end: ['abc', 'ab|c']
-  })
+    end: ['abc', 'ab|c'],
+  });
 
   newTest({
     title: 'Can handle within-line search with multiple matches',
     start: ['aaa', 'a|aa', 'aaa'],
     keysPressed: easymotionCommand({ key: 'sl', leaderCount: 3 }, 'a', 'h'),
-    end: ['aaa', 'aa|a', 'aaa']
-  })
+    end: ['aaa', 'aa|a', 'aaa'],
+  });
 
   newTest({
     title: 'Can handle within-line search with no match',
     start: ['abc', '|def'],
     keysPressed: easymotionCommand({ key: 'sl', leaderCount: 3 }, '', 'a'),
-    end: ['abc', '|def']
-  })
+    end: ['abc', '|def'],
+  });
 });
