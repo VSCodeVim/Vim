@@ -337,18 +337,20 @@ export class JumpTracker {
   }
 
   private removeDuplicateJumps() {
-    const linesSeenPerFile = {};
+    const linesSeenPerFile = new Map<string, number[]>();
     for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];
 
-      if (!linesSeenPerFile[jump.fileName]) {
-        linesSeenPerFile[jump.fileName] = [];
+      if (!linesSeenPerFile.has(jump.fileName)) {
+        linesSeenPerFile.set(jump.fileName, []);
       }
 
-      if (linesSeenPerFile[jump.fileName].includes(jump.position.line)) {
+      const lines = linesSeenPerFile.get(jump.fileName)!;
+
+      if (lines.includes(jump.position.line)) {
         this._jumps.splice(i, 1);
       } else {
-        linesSeenPerFile[jump.fileName].push(jump.position.line);
+        lines.push(jump.position.line);
       }
     }
   }

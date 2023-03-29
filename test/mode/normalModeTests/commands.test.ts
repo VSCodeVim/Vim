@@ -3,11 +3,8 @@ import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
 suite('Mode Normal', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "Can handle 'x'",

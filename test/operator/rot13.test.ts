@@ -5,11 +5,8 @@ import { ROT13Operator } from '../../src/actions/operator';
 import { newTest } from '../testSimplifier';
 
 suite('rot13 operator', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test('rot13() unit test', () => {
     const testCases = [

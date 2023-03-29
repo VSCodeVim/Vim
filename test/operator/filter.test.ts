@@ -7,11 +7,8 @@ suite('filter operator', () => {
     return;
   }
 
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: '!! with no count',

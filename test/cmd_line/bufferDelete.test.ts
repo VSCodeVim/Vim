@@ -64,10 +64,7 @@ suite('Buffer delete', () => {
       assert.strictEqual(vscode.window.visibleTextEditors.length, 2);
       assert.strictEqual(vscode.window.activeTextEditor?.document.uri.fsPath, filePaths[2]);
     } finally {
-      for (const file of filePaths) {
-        await t.removeFile(file);
-      }
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 });

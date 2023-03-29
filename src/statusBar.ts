@@ -125,6 +125,7 @@ class StatusBarImpl implements vscode.Disposable {
     let foreground: string | undefined;
     let background: string | undefined;
 
+    // @ts-ignore
     const colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {

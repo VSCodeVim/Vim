@@ -11,14 +11,13 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.easymotion = true;
 
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s move',

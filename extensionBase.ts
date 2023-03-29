@@ -143,26 +143,18 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       Logger.trace(`\t-${x.rangeLength}, +'${x.text}'`);
     }
 
-    const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
-      changeEvent.contentChanges.length === 1 &&
-      changeEvent.contentChanges[0].text === '' &&
-      changeEvent.contentChanges[0].range.start.line !==
-        changeEvent.contentChanges[0].range.end.line;
+    if (event.contentChanges.length === 1) {
+      const change = event.contentChanges[0];
 
-    const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
-      changeEvent.contentChanges.length === 1 &&
-      changeEvent.contentChanges[0].text.includes('\n') &&
-      changeEvent.contentChanges[0].range.start.line ===
-        changeEvent.contentChanges[0].range.end.line;
+      const anyLinesDeleted = change.range.start.line !== change.range.end.line;
 
-    if (textWasDeleted(event)) {
-      globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
-    } else if (textWasAdded(event)) {
-      globalState.jumpTracker.handleTextAdded(
-        event.document,
-        event.contentChanges[0].range,
-        event.contentChanges[0].text
-      );
+      if (anyLinesDeleted && change.text === '') {
+        globalState.jumpTracker.handleTextDeleted(event.document, change.range);
+      } else if (!anyLinesDeleted && change.text.includes('\n')) {
+        globalState.jumpTracker.handleTextAdded(event.document, change.range, change.text);
+      } else {
+        // TODO: What to do here?
+      }
     } else {
       // TODO: In this case, we should probably loop over the content changes...
     }
@@ -181,11 +173,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
     };
 
-    ModeHandlerMap.getAll()
-      .filter((modeHandler) => modeHandler.vimState.documentUri === event.document.uri)
-      .forEach((modeHandler) => {
-        contentChangeHandler(modeHandler);
-      });
+    const mh = ModeHandlerMap.get(event.document.uri);
+    if (mh) {
+      contentChangeHandler(mh);
+    }
   });
 
   registerEventListener(
@@ -195,9 +186,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       Logger.info(`${closedDocument.fileName} closed`);
 
       // Delete modehandler once all tabs of this document have been closed
-      for (const uri of ModeHandlerMap.keys()) {
-        const modeHandler = ModeHandlerMap.get(uri);
-
+      for (const [uri, modeHandler] of ModeHandlerMap.entries()) {
         let shouldDelete = false;
         if (modeHandler == null) {
           shouldDelete = true;
@@ -275,6 +264,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      if (e.textEditor.document.uri.scheme === 'output') {
+        // Without this, we can an infinite logging loop
+        return;
+      }
       if (
         vscode.window.activeTextEditor === undefined ||
         e.textEditor.document !== vscode.window.activeTextEditor.document

@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "lib": ["ES2020"],
+    "lib": ["ES2021"],
     "module": "commonjs",
-    "target": "ES2019",
+    "target": "ES2021",
     "outDir": "out",
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
