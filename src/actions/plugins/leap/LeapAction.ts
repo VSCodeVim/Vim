@@ -19,13 +19,13 @@ export class LeapPrepareAction extends BaseCommand {
   ];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]) {
-    return super.doesActionApply(vimState, keysPressed) && configuration.leap;
+    return super.doesActionApply(vimState, keysPressed) && configuration.leap.enable;
   }
 
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
-    if (!configuration.leap) return;
+    if (!configuration.leap.enable) return;
 
-    if (this.keysPressed[1] === '\n' && !configuration.leapBidirectionalSearch) {
+    if (this.keysPressed[1] === '\n' && !configuration.leap.bidirectionalSearch) {
       this.execRepeatLastSearch(vimState);
     } else {
       await this.execPrepare(cursorPosition, vimState);
@@ -39,7 +39,6 @@ export class LeapPrepareAction extends BaseCommand {
     const leap = createLeap(vimState, direction, firstSearchString);
     leap.searchMode = this.keysPressed[0];
     vimState.leap = leap;
-    vimState.leap.previousMode = vimState.currentMode;
 
     let matches: Match[] = getMatches(
       generatePrepareRegex(firstSearchString),
@@ -64,7 +63,7 @@ export class LeapPrepareAction extends BaseCommand {
   }
 
   protected getDirection() {
-    if (configuration.leapBidirectionalSearch) {
+    if (configuration.leap.bidirectionalSearch) {
       return LeapSearchDirection.Bidirectional;
     }
     return this.keysPressed[0] === 's' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
@@ -80,7 +79,7 @@ export class LeapVisualPrepareAction extends LeapPrepareAction {
   ];
 
   override getDirection() {
-    if (configuration.leapBidirectionalSearch) {
+    if (configuration.leap.bidirectionalSearch) {
       return LeapSearchDirection.Bidirectional;
     }
     return this.keysPressed[0] === 'x' ? LeapSearchDirection.Backward : LeapSearchDirection.Forward;
@@ -94,7 +93,7 @@ export class LeapAction extends BaseCommand {
   private vimState!: VimState;
   private searchString: string = '';
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
-    if (!configuration.leap) return;
+    if (!configuration.leap.enable) return;
     this.vimState = vimState;
     this.searchString = vimState.leap.firstSearchString + this.keysPressed[0];
     const markers: Marker[] = this.getMarkers(cursorPosition);

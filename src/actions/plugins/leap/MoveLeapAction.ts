@@ -10,36 +10,34 @@ export class MoveLeapAction extends BaseCommand {
   keys = ['<character>'];
   override isJump = true;
 
-  private vimState!: VimState;
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchString = this.keysPressed[0];
     if (!searchString) return;
-    this.vimState = vimState;
 
     const marker = vimState.leap.findMarkerByName(searchString);
     if (marker) {
-      await this.handleDirectFoundMarker(marker);
+      await this.handleDirectFoundMarker(marker, vimState);
     } else if (vimState.leap.isPrefixOfMarker(searchString)) {
-      this.handleIsPrefixOfMarker(searchString);
+      this.handleIsPrefixOfMarker(searchString, vimState);
     } else {
-      await this.handleNoFoundMarker();
+      await this.handleNoFoundMarker(vimState);
     }
   }
 
-  private async handleDirectFoundMarker(marker: Marker) {
-    this.vimState.leap.cleanupMarkers();
-    this.vimState.leap.changeCursorStopPosition(marker.matchPosition);
-    await this.vimState.setCurrentMode(this.vimState.leap.previousMode);
+  private async handleDirectFoundMarker(marker: Marker, vimState: VimState) {
+    vimState.leap.cleanupMarkers();
+    vimState.leap.changeCursorStopPosition(marker.matchPosition);
+    await vimState.setCurrentMode(vimState.leap.previousMode);
   }
 
-  private async handleIsPrefixOfMarker(searchString: string) {
-    this.vimState.leap.keepMarkersByPrefix(searchString);
-    this.vimState.leap.deletePrefixOfMarkers();
+  private async handleIsPrefixOfMarker(searchString: string, vimState: VimState) {
+    vimState.leap.keepMarkersByPrefix(searchString);
+    vimState.leap.deletePrefixOfMarkers();
   }
 
-  private async handleNoFoundMarker() {
-    this.vimState.leap.cleanupMarkers();
-    await this.vimState.setCurrentMode(this.vimState.leap.previousMode);
+  private async handleNoFoundMarker(vimState: VimState) {
+    vimState.leap.cleanupMarkers();
+    await vimState.setCurrentMode(vimState.leap.previousMode);
   }
 }
 

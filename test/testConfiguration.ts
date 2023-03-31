@@ -4,6 +4,7 @@ import {
   IConfiguration,
   IHighlightedYankConfiguration,
   IKeyRemapping,
+  ILeapConfiguration,
   IModeSpecificStrings,
   ITargetsConfiguration,
 } from '../src/configuration/iconfiguration';
@@ -28,11 +29,13 @@ export class Configuration implements IConfiguration {
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   sneakReplacesF = false;
-  leap = false;
-  leapShowMarkerPosition: 'after' | 'target' = 'after';
-  leapLabels = 'sklyuiopnm,qwertzxcvbahdgjf;';
-  leapCaseSensitive = false;
-  leapBidirectionalSearch = false;
+  leap: ILeapConfiguration = {
+    enable: false,
+    showMarkerPosition: 'after',
+    labels: 'sklyuiopnm,qwertzxcvbahdgjf;',
+    caseSensitive: false,
+    bidirectionalSearch: false,
+  };
   surround = false;
   argumentObjectSeparators = [','];
   argumentObjectOpeningDelimiters = ['(', '['];

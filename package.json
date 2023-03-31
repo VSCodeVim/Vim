@@ -621,27 +621,27 @@
           "markdownDescription": "Enable the [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion) plugin for Vim.",
           "default": false
         },
-        "vim.leap": {
+        "vim.leap.enable": {
           "type": "boolean",
           "markdownDescription": "Enable the [Leap](https://github.com/ggandor/leap.nvim) plugin for Vim.",
           "default": false
         },
-        "vim.leapShowMarkerPosition": {
+        "vim.leap.showMarkerPosition": {
           "type": "string",
           "markdownDescription": "Set the position of the marker point display for Leap markers",
           "default": "after"
         },
-        "vim.leapLabels": {
+        "vim.leap.labels":{
           "type": "string",
           "markdownDescription": "Set the characters used for jump marker label.",
           "default": "sklyuiopnm,qwertzxcvbahdgjf;"
         },
-        "vim.leapCaseSensitive": {
+        "vim.leap.caseSensitive":{
           "type": "boolean",
           "markdownDescription": "Set to consider case sensitive in search patterns",
           "default": false
         },
-        "vim.leapBidirectionalSearch": {
+        "vim.leap.bidirectionalSearch":{
           "type": "boolean",
           "markdownDescription": "Set to bidirectional search",
           "default": false

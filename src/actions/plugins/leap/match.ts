@@ -16,7 +16,7 @@ function escapeString(str: string) {
 }
 
 function getFlags() {
-  const caseSensitiveFlag = configuration.leapCaseSensitive ? '' : 'i';
+  const caseSensitiveFlag = configuration.leap.caseSensitive ? '' : 'i';
   return `g${caseSensitiveFlag}`;
 }
 
@@ -32,14 +32,11 @@ export function generateMarkerRegex(searchString: string) {
 
     const firstChar = searchChars[0];
     const secondChar = searchChars[1];
-    let pattern = '';
     if (secondChar === ' ') {
-      pattern = firstChar + '\\s' + '|' + firstChar + '$';
+      return firstChar + '\\s' + '|' + firstChar + '$';
     } else {
-      pattern = firstChar + secondChar;
+      return firstChar + secondChar;
     }
-
-    return pattern;
   }
 
   return new RegExp(getPattern(searchString), getFlags());
@@ -67,7 +64,7 @@ export function getMatches(
       while (result) {
         const pos = new Position(lineCount, result.index);
         const rawText = result[0].length === 1 ? result[0] + ' ' : result[0];
-        const searchString = configuration.leapCaseSensitive ? rawText : rawText.toLowerCase();
+        const searchString = configuration.leap.caseSensitive ? rawText : rawText.toLowerCase();
         let dir = direction;
         if (direction === LeapSearchDirection.Bidirectional) {
           dir = isBackward(pos, position)
@@ -141,5 +138,5 @@ export function getMatches(
     });
   }
 
-  return matches
+  return matches;
 }

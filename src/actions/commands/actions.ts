@@ -902,13 +902,13 @@ class CommandClearLine extends BaseCommand {
 
   // Don't clash with sneak
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const leapSwitch = configuration.leap && !configuration.leapBidirectionalSearch;
+    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch;
     return super.doesActionApply(vimState, keysPressed) && !configuration.sneak && !leapSwitch;
   }
 
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
-      super.couldActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap
+      super.couldActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap.enable
     );
   }
 }
@@ -2136,7 +2136,7 @@ export class ActionDeleteCharVisualLineMode extends BaseCommand {
   override name = 'delete_char_visual_line_mode';
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !configuration.leap;
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap.enable;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -2155,7 +2155,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ['X'];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const leapSwitch = configuration.leap && !configuration.leapBidirectionalSearch;
+    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch
     return super.doesActionApply(vimState, keysPressed) && !leapSwitch
   }
 
@@ -2226,7 +2226,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.doesActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
-      !configuration.leap &&
+      !configuration.leap.enable &&
       !vimState.recordedState.operator
     );
   }
@@ -2235,7 +2235,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.couldActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
-      !configuration.leap &&
+      !configuration.leap.enable &&
       !vimState.recordedState.operator
     );
   }

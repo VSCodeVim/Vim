@@ -86,6 +86,14 @@ export interface ITargetsConfiguration {
   smartQuotes: ISmartQuotesConfiguration;
 }
 
+export interface ILeapConfiguration{
+  enable: boolean;
+  showMarkerPosition:'after' | 'target'
+  labels:string;
+  caseSensitive: boolean;
+  bidirectionalSearch:boolean
+}
+
 export interface IConfiguration {
   [key: string]: any;
 
@@ -147,7 +155,7 @@ export interface IConfiguration {
   /**
    * Use Leap plugin?
    */
-  leap: boolean;
+  leap: ILeapConfiguration;
 
   /**
    * Use ReplaceWithRegister plugin?
@@ -198,14 +206,6 @@ export interface IConfiguration {
   easymotionDimBackground: boolean;
   easymotionMarkerFontWeight: string;
   easymotionKeys: string;
-
-  /**
-   * Leap marker appearance settings
-   */
-  leapShowMarkerPosition: "after" | "target";
-  leapLabels: string;
-  leapCaseSensitive: boolean;
-  leapBidirectionalSearch: boolean;
 
   /**
    * Timeout in milliseconds for remapped commands.
