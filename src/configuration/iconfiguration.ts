@@ -86,12 +86,16 @@ export interface ITargetsConfiguration {
   smartQuotes: ISmartQuotesConfiguration;
 }
 
-export interface ILeapConfiguration{
+export interface ILeapConfiguration {
   enable: boolean;
-  showMarkerPosition:'after' | 'target'
-  labels:string;
+  showMarkerPosition: 'after' | 'target';
+  labels: string;
   caseSensitive: boolean;
-  bidirectionalSearch:boolean
+  bidirectionalSearch: boolean;
+  marker: {
+    backgroundColors: string[];
+    charColor: string;
+  };
 }
 
 export interface IConfiguration {

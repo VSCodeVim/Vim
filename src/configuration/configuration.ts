@@ -266,11 +266,15 @@ class Configuration implements IConfiguration {
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
   leap: ILeapConfiguration = {
-    enable: true,
+    enable: false,
     showMarkerPosition: 'after',
     labels: 'sklyuiopnm,qwertzxcvbahdgjf;',
     caseSensitive: false,
     bidirectionalSearch: false,
+    marker: {
+      backgroundColors: ['#ccff88', '#99ccff'],
+      charColor: '#000000',
+    },
   };
 
   targets: ITargetsConfiguration = {

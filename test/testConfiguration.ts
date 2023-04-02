@@ -35,6 +35,10 @@ export class Configuration implements IConfiguration {
     labels: 'sklyuiopnm,qwertzxcvbahdgjf;',
     caseSensitive: false,
     bidirectionalSearch: false,
+    marker: {
+      backgroundColors: ['#ccff88', '#99ccff'],
+      charColor:"#000000"
+    },
   };
   surround = false;
   argumentObjectSeparators = [','];

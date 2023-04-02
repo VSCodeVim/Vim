@@ -43,7 +43,6 @@ class MarkerDecoration {
   private range: vscode.Range | undefined;
   private textEditorDecorationType: vscode.TextEditorDecorationType;
 
-  private static backgroundColors = ['#ccff88', '#99ccff'];
   constructor(editor: vscode.TextEditor, marker: Marker) {
     this.editor = editor;
     this.marker = marker;
@@ -75,7 +74,7 @@ class MarkerDecoration {
       }
     }
 
-    return MarkerDecoration.backgroundColors[index];
+    return configuration.leap.marker.backgroundColors[index]
   }
 
   show() {
@@ -87,7 +86,7 @@ class MarkerDecoration {
       before: {
         contentText: this.marker.label,
         backgroundColor: this.calcDecorationBackgroundColor(),
-        color: '#000000',
+        color: configuration.leap.marker.charColor,
         margin: `0 -1ch 0 0;
             position: absolute;
             font-weight: normal;`,

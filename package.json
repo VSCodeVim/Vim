@@ -631,20 +631,33 @@
           "markdownDescription": "Set the position of the marker point display for Leap markers",
           "default": "after"
         },
-        "vim.leap.labels":{
+        "vim.leap.labels": {
           "type": "string",
           "markdownDescription": "Set the characters used for jump marker label.",
           "default": "sklyuiopnm,qwertzxcvbahdgjf;"
         },
-        "vim.leap.caseSensitive":{
+        "vim.leap.caseSensitive": {
           "type": "boolean",
           "markdownDescription": "Set to consider case sensitive in search patterns",
           "default": false
         },
-        "vim.leap.bidirectionalSearch":{
+        "vim.leap.bidirectionalSearch": {
           "type": "boolean",
           "markdownDescription": "Set to bidirectional search",
           "default": false
+        },
+        "vim.leap.marker.backgroundColors": {
+          "type": "array",
+          "markdownDescription": "The background colors of the marker box",
+          "default": [
+            "#ccff88",
+            "#99ccff"
+          ]
+        },
+        "vim.leap.marker.charColor": {
+          "type": "string",
+          "markdownDescription": "The color of the marker char",
+          "default": "#000000"
         },
         "vim.easymotion": {
           "type": "boolean",
