@@ -291,6 +291,10 @@ class MoveDown extends BaseMovement {
   override preservesDesiredColumn = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (vimState.currentMode === Mode.Normal) {
+      globalState.hl = false;
+    }
+
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<down>' &&
@@ -329,6 +333,10 @@ class MoveUp extends BaseMovement {
   override preservesDesiredColumn = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (vimState.currentMode === Mode.Normal) {
+      globalState.hl = false;
+    }
+
     if (
       vimState.currentMode === Mode.Insert &&
       this.keysPressed[0] === '<up>' &&
@@ -698,6 +706,10 @@ class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (vimState.currentMode === Mode.Normal) {
+      globalState.hl = false;
+    }
+
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
       const newPosition = p.getLeft();
@@ -726,6 +738,10 @@ class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (vimState.currentMode === Mode.Normal) {
+      globalState.hl = false;
+    }
+
     const getRightWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
       const newPosition = p.getRight();
