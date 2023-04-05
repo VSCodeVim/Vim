@@ -22,9 +22,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: yarn
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Prettier
         if: matrix.os != 'windows-latest'
