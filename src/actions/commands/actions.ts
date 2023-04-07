@@ -908,7 +908,9 @@ class CommandClearLine extends BaseCommand {
 
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
-      super.couldActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap.enable
+      super.couldActionApply(vimState, keysPressed) &&
+      !configuration.sneak &&
+      !configuration.leap.enable
     );
   }
 }
@@ -2155,8 +2157,8 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ['X'];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch
-    return super.doesActionApply(vimState, keysPressed) && !leapSwitch
+    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch;
+    return super.doesActionApply(vimState, keysPressed) && !leapSwitch;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {

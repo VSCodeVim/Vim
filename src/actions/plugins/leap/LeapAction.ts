@@ -1,14 +1,13 @@
 import { Mode } from '../../../mode/mode';
-import { BaseCommand, KeypressState, RegisterAction } from '../../base';
+import { BaseCommand, RegisterAction } from '../../base';
 import { Position } from 'vscode';
 import { VimState } from '../../../state/vimState';
 import { configuration } from '../../../configuration/configuration';
-import { LeapSearchDirection, createLeap } from './leap';
+import { LeapSearchDirection, getLeapInstance, initLeap } from './leap';
 import { getMatches, generateMarkerRegex, generatePrepareRegex } from './match';
 import { StatusBar } from '../../../statusBar';
 import { Marker } from './Marker';
 import { VimError, ErrorCode } from '../../../error';
-import { Match } from './match';
 
 @RegisterAction
 export class LeapPrepareAction extends BaseCommand {
@@ -33,30 +32,30 @@ export class LeapPrepareAction extends BaseCommand {
   }
 
   private async execPrepare(cursorPosition: Position, vimState: VimState) {
+    initLeap(vimState);
+
     const direction = this.getDirection();
     const firstSearchString = this.keysPressed[1];
 
-    const leap = createLeap(vimState, direction, firstSearchString);
+    const leap = getLeapInstance();
+    leap.direction = direction;
+    leap.firstSearchString = firstSearchString;
     leap.searchMode = this.keysPressed[0];
-    vimState.leap = leap;
 
-    let matches: Match[] = getMatches(
-      generatePrepareRegex(firstSearchString),
-      this.getDirection(),
-      cursorPosition,
-      vimState
+    leap.createMarkers(
+      getMatches(generatePrepareRegex(firstSearchString), direction, cursorPosition, vimState)
     );
 
-    vimState.leap.createMarkers(matches);
-    vimState.leap.showMarkers();
+    leap.showMarkers();
     await vimState.setCurrentMode(Mode.LeapPrepareMode);
   }
 
   private execRepeatLastSearch(vimState: VimState) {
-    if (vimState.leap?.leapAction) {
-      vimState.leap.isRepeatLastSearch = true;
-      vimState.leap.direction = this.getDirection();
-      vimState.leap.leapAction.fire();
+    const leap = getLeapInstance();
+    if (leap.leapAction) {
+      leap.isRepeatLastSearch = true;
+      leap.direction = this.getDirection();
+      leap.leapAction.fire();
     } else {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.LeapNoPreviousSearch));
     }
@@ -95,7 +94,8 @@ export class LeapAction extends BaseCommand {
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
     if (!configuration.leap.enable) return;
     this.vimState = vimState;
-    this.searchString = vimState.leap.firstSearchString + this.keysPressed[0];
+    const leap = getLeapInstance();
+    this.searchString = leap.firstSearchString + this.keysPressed[0];
     const markers: Marker[] = this.getMarkers(cursorPosition);
 
     if (markers.length === 0) {
@@ -107,7 +107,7 @@ export class LeapAction extends BaseCommand {
     // This is to repeat the last search command
     // As long as it is recorded, it means that the search was successfully executed once.
     // As long as the search has been executed successfully, it will be ok when we execute "repeat last search".
-    vimState.leap.leapAction = this;
+    leap.leapAction = this;
 
     if (markers.length === 1) {
       await this.handleOneMarkers(markers[0]);
@@ -116,15 +116,17 @@ export class LeapAction extends BaseCommand {
 
     await this.handleMultipleMarkers();
   }
+
   private async handleMultipleMarkers() {
-    this.vimState.leap.keepMarkersBySearchString(this.searchString);
+    getLeapInstance().keepMarkersBySearchString(this.searchString);
     await this.vimState.setCurrentMode(Mode.LeapMode);
   }
 
   private async handleOneMarkers(marker: Marker) {
-    this.vimState.leap.changeCursorStopPosition(marker.matchPosition);
-    this.vimState.leap.cleanupMarkers();
-    await this.vimState.setCurrentMode(this.vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.changeCursorStopPosition(marker.matchPosition);
+    leap.cleanupMarkers();
+    await this.vimState.setCurrentMode(leap.previousMode);
   }
 
   private async handleNoFoundMarkers() {
@@ -132,23 +134,26 @@ export class LeapAction extends BaseCommand {
       this.vimState,
       VimError.fromCode(ErrorCode.LeapNoFoundSearchString, this.searchString)
     );
-    this.vimState.leap.cleanupMarkers();
-    await this.vimState.setCurrentMode(this.vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.cleanupMarkers();
+    await this.vimState.setCurrentMode(leap.previousMode);
   }
 
   private getMarkers(cursorPosition: Position) {
-    if (this.vimState.leap.isRepeatLastSearch) {
+    const leap = getLeapInstance();
+
+    if (leap.isRepeatLastSearch) {
       const matches = getMatches(
         generateMarkerRegex(this.searchString),
-        this.vimState.leap.direction!,
+        leap.direction!,
         cursorPosition,
         this.vimState
       );
-      this.vimState.leap.createMarkers(matches);
-      this.vimState.leap.showMarkers();
-      return this.vimState.leap.markers;
+      leap.createMarkers(matches);
+      leap.showMarkers();
+      return leap.markers;
     } else {
-      return this.vimState.leap.findMarkersBySearchString(this.searchString);
+      return leap.findMarkersBySearchString(this.searchString);
     }
   }
 

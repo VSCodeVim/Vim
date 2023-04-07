@@ -46,6 +46,7 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { disposeLeap } from '../actions/plugins/leap/leap';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -1607,9 +1608,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
-
     if (this.currentMode !== Mode.LeapPrepareMode && this.currentMode !== Mode.LeapMode) {
-      this.vimState.leap?.cleanupMarkers();
+      disposeLeap();
     }
 
     StatusBar.clear(this.vimState, false);

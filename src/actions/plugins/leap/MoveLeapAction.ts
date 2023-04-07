@@ -3,6 +3,7 @@ import { BaseCommand, RegisterAction } from '../../base';
 import { VimState } from '../../../state/vimState';
 import { Mode } from '../../../mode/mode';
 import { Marker } from './Marker';
+import { getLeapInstance } from './leap';
 
 @RegisterAction
 export class MoveLeapAction extends BaseCommand {
@@ -13,11 +14,12 @@ export class MoveLeapAction extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const searchString = this.keysPressed[0];
     if (!searchString) return;
+    const leap = getLeapInstance();
 
-    const marker = vimState.leap.findMarkerByName(searchString);
+    const marker = leap.findMarkerByName(searchString);
     if (marker) {
       await this.handleDirectFoundMarker(marker, vimState);
-    } else if (vimState.leap.isPrefixOfMarker(searchString)) {
+    } else if (leap.isPrefixOfMarker(searchString)) {
       this.handleIsPrefixOfMarker(searchString, vimState);
     } else {
       await this.handleNoFoundMarker(vimState);
@@ -25,19 +27,22 @@ export class MoveLeapAction extends BaseCommand {
   }
 
   private async handleDirectFoundMarker(marker: Marker, vimState: VimState) {
-    vimState.leap.cleanupMarkers();
-    vimState.leap.changeCursorStopPosition(marker.matchPosition);
-    await vimState.setCurrentMode(vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.cleanupMarkers();
+    leap.changeCursorStopPosition(marker.matchPosition);
+    await vimState.setCurrentMode(leap.previousMode);
   }
 
   private async handleIsPrefixOfMarker(searchString: string, vimState: VimState) {
-    vimState.leap.keepMarkersByPrefix(searchString);
-    vimState.leap.deletePrefixOfMarkers();
+    const leap = getLeapInstance();
+    leap.keepMarkersByPrefix(searchString);
+    leap.deletePrefixOfMarkers();
   }
 
   private async handleNoFoundMarker(vimState: VimState) {
-    vimState.leap.cleanupMarkers();
-    await vimState.setCurrentMode(vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.cleanupMarkers();
+    await vimState.setCurrentMode(leap.previousMode);
   }
 }
 
@@ -47,8 +52,9 @@ class CommandEscLeapMode extends BaseCommand {
   keys = ['<Esc>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.leap.cleanupMarkers();
-    await vimState.setCurrentMode(vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.cleanupMarkers();
+    await vimState.setCurrentMode(leap.previousMode);
   }
 }
 
@@ -58,7 +64,8 @@ class CommandEscLeapPrepareMode extends BaseCommand {
   keys = ['<Esc>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.leap.cleanupMarkers();
-    await vimState.setCurrentMode(vimState.leap.previousMode);
+    const leap = getLeapInstance();
+    leap.cleanupMarkers();
+    await vimState.setCurrentMode(leap.previousMode);
   }
 }

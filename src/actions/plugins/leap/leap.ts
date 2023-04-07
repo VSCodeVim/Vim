@@ -154,10 +154,12 @@ export class Leap {
   }
 
   public changeCursorStopPosition(position: Position) {
+    const leap = getLeapInstance();
+
     const isVisualModel =
-      this.vimState.leap.previousMode === Mode.Visual ||
-      this.vimState.leap.previousMode === Mode.VisualLine ||
-      this.vimState.leap.previousMode === Mode.VisualBlock;
+      leap.previousMode === Mode.Visual ||
+      leap.previousMode === Mode.VisualLine ||
+      leap.previousMode === Mode.VisualBlock;
 
     if (isVisualModel) {
       if (configuration.leap.bidirectionalSearch) {
@@ -217,22 +219,22 @@ export class Leap {
   }
 }
 
-export function createLeap(
-  vimState: VimState,
-  direction: LeapSearchDirection = LeapSearchDirection.Backward,
-  firstSearchString: string = ''
-) {
-  const leap = new Leap(vimState);
-  leap.direction = direction;
-  leap.firstSearchString = firstSearchString;
-
-  return leap;
-}
-
 export function isBackward(positionA: Position, positionB: Position) {
   if (positionA.line !== positionB.line) {
     return positionA.line > positionB.line;
   } else {
     return positionA.character > positionB.character;
   }
+}
+
+let leap: Leap;
+export function initLeap(vimState: VimState) {
+  leap = new Leap(vimState);
+}
+export function getLeapInstance(): Leap {
+  return leap;
+}
+
+export function disposeLeap() {
+  leap?.cleanupMarkers()
 }
