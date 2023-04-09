@@ -532,7 +532,7 @@ Based on [vim-leap](https://github.com/ggandor/leap.nvim) and configured through
 | vim.leap.enable                    | Enable/disable leap plugin                   | Boolean | false                          |                    |
 | vim.leap.showMarkerPosition  | Set the position of the marker point display | String  | "after"                        | "after" , "target" |
 | vim.leap.labels              | The characters used for jump marker name     | String  | "sklyuiopnm,qwertzxcvbahdgjf;" |                    |
-| vim.leap.laseSensitive       | Whether to consider case in search patterns  | Boolean | false                          |                    |
+| vim.leap.caseSensitive       | Whether to consider case in search patterns  | Boolean | false                          |                    |
 | vim.leap.bidirectionalSearch | Enable/disable bidirectional search          | Boolean | false                          |                    |
 | vim.leap.marker.backgroundColors              | The background colors of the marker box.                                                                  | Array  | ['#ccff88', '#99ccff']                                            |
 | vim.leap.marker.charColor              | The color of the marker char.                                                                  | String  | "#000000"                                            |
