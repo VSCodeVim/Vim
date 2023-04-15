@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import * as fs from 'fs';
-import * as childProcess from 'child_process';
+import fs from 'fs';
+import childProcess from 'child_process';
 import { Configuration } from '../../testConfiguration';
 import { NeovimValidator } from '../../../src/configuration/validators/neovimValidator';
 

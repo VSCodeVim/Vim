@@ -13,7 +13,6 @@ import { clamp } from './util/util';
  */
 export class TextEditor {
   private static readonly whitespaceRegExp = new RegExp('\\s+');
-  private static readonly logger = Logger.get('TextEditor');
 
   /**
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
@@ -62,7 +61,7 @@ export class TextEditor {
 
   public static getLineLength(line: number): number {
     if (line < 0 || line >= TextEditor.getLineCount()) {
-      this.logger.warn(`getLineLength() called with out-of-bounds line ${line}`);
+      Logger.warn(`getLineLength() called with out-of-bounds line ${line}`);
       return 0;
     }
 

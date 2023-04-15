@@ -4,15 +4,14 @@ import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat '~' with <num>",
@@ -65,15 +64,14 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can repeat `<BS>`',
@@ -217,6 +215,20 @@ suite('Repeat content change', () => {
     start: ['on|e', 'two'],
     keysPressed: 'a<C-t>b<left>c<Esc>j.',
     end: ['\tonecb', 'tw|co'],
+  });
+
+  newTest({
+    title: 'Can repeat change after v<Esc> and :<Esc>',
+    start: ['aaa bbb ccc dd|d'],
+    keysPressed: 'ciwxxx<Esc>' + 'bb.' + 'bbv<Esc>.' + 'bb:<Esc>.',
+    end: ['xx|x xxx xxx xxx'],
+  });
+
+  newTest({
+    title: 'Can repeat change after V<Esc> and <C-q><Esc>',
+    start: ['aaa bbb ccc dd|d'],
+    keysPressed: 'ciwxxx<Esc>' + 'bb.' + 'bbV<Esc>.' + 'bb<C-q><Esc>.',
+    end: ['xx|x xxx xxx xxx'],
   });
 });
 

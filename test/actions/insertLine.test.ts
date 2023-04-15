@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 import { Position, window } from 'vscode';
-import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../../src/textobject/paragraph';
+import {
+  getCurrentParagraphBeginning,
+  getCurrentParagraphEnd,
+} from '../../src/textobject/paragraph';
 import { WordType } from '../../src/textobject/word';
 import { TextEditor } from '../../src/textEditor';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
