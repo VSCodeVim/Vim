@@ -57,7 +57,7 @@ function exprTest(
   });
 }
 
-suite('Vimscript expressions', () => {
+suite.only('Vimscript expressions', () => {
   suite('Parse & evaluate expression', () => {
     suite('Numbers', () => {
       exprTest('0', { expr: int(0) });
@@ -466,6 +466,31 @@ suite('Vimscript expressions', () => {
   });
 
   suite('Builtin functions', () => {
+    suite('count', () => {
+      exprTest('add([1,2,3], 4)', { display: '[1, 2, 3, 4]' });
+      exprTest('add(add(add([], 1), 2), 3)', { display: '[1, 2, 3]' });
+    });
+
+    suite('count', () => {
+      exprTest('count([1,2,3,2,3,2,1], 2)', { value: int(3) });
+      exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple")', {
+        value: int(1),
+      });
+      exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple", v:true)', {
+        value: int(3),
+      });
+      exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple", v:true, 2)', {
+        value: int(2),
+      });
+      exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple", v:true, -1)', {
+        value: int(1),
+      });
+
+      exprTest('count(#{a:3,b:2,c:3}, 3)', { value: int(2) });
+      exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple")', { value: int(1) });
+      exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple", v:true)', { value: int(2) });
+    });
+
     suite('empty', () => {
       exprTest('empty(0)', { value: bool(true) });
       exprTest('empty(0.0)', { value: bool(true) });
@@ -512,11 +537,31 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
+    suite('has_key', () => {
+      exprTest('has_key(#{a:1, b:2, c:3}, "b")', { value: bool(true) });
+      exprTest('has_key(#{a:1, b:2, c:3}, "d")', { value: bool(false) });
+    });
+
     suite('isnan/isinf', () => {
       exprTest('isnan(0.0 / 0.0)', { value: bool(true) });
 
       exprTest('isinf(1.0 / 0.0)', { value: int(1) });
       exprTest('isinf(-1.0 / 0.0)', { value: int(-1) });
+    });
+
+    suite('join', () => {
+      exprTest('join([1,2,3])', { value: str('123') });
+      exprTest('join([1,2,3], ",")', { value: str('1,2,3') });
+    });
+
+    suite('len', () => {
+      exprTest('len(12345)', { value: int(5) });
+      exprTest('len(012345)', { value: int(4) });
+      exprTest('len(-8)', { value: int(2) });
+      exprTest('len("hello world!")', { value: int(12) });
+      exprTest('len([5, 2, 3, 7])', { value: int(4) });
+      exprTest('len(#{a:1, b:2, c:3})', { value: int(3) });
+      exprTest('len(function("abs"))', { error: ErrorCode.InvalidTypeForLen });
     });
 
     suite('map', () => {

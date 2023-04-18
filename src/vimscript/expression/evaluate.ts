@@ -74,6 +74,19 @@ export function toString(value: Value): string {
   }
 }
 
+function toList(value: Value): ListValue {
+  switch (value.type) {
+    case 'number':
+    case 'float':
+    case 'string':
+    case 'funcref':
+    case 'dict_val':
+      throw VimError.fromCode(ErrorCode.ListRequired);
+    case 'list':
+      return value;
+  }
+}
+
 function toDict(value: Value): DictionaryValue {
   switch (value.type) {
     case 'number':
@@ -175,6 +188,13 @@ export class EvaluationContext {
             const [x] = getArgs(1);
             return float(Math.acos(toFloat(x!)));
           }
+          case 'add': {
+            const [l, expr] = getArgs(2);
+            // TODO: should also work with blob
+            const lst = toList(l!);
+            lst.items.push(expr!);
+            return lst;
+          }
           case 'asin': {
             const [x] = getArgs(1);
             return float(Math.asin(toFloat(x!)));
@@ -188,6 +208,8 @@ export class EvaluationContext {
             // tslint:disable-next-line: no-bitwise
             return int(toInt(x!) & toInt(y!));
           }
+          // TODO: assert_*()
+          // TODO: call()
           case 'ceil': {
             const [x] = getArgs(1);
             return float(Math.ceil(toFloat(x!)));
@@ -212,6 +234,43 @@ export class EvaluationContext {
           case 'cosh': {
             const [x] = getArgs(1);
             return float(Math.cosh(toFloat(x!)));
+          }
+          case 'count': {
+            let [comp, expr, ic, start] = getArgs(2, 4);
+            const matchCase = toInt(ic ?? bool(false)) === 0;
+            if (start !== undefined) {
+              if (comp!.type !== 'list') {
+                throw VimError.fromCode(ErrorCode.InvalidArgument);
+              }
+              if (toInt(start) >= comp!.items.length) {
+                throw VimError.fromCode(ErrorCode.ListIndexOutOfRange);
+              }
+              while (toInt(start) < 0) {
+                start = int(toInt(start) + comp!.items.length);
+              }
+            }
+            let count = 0;
+            switch (comp!.type) {
+              // TODO: case 'string':
+              case 'list':
+                const startIdx = start ? toInt(start) : 0;
+                for (let i = startIdx; i < comp!.items.length; i++) {
+                  if (this.evaluateComparison('==', matchCase, comp!.items[i], expr!)) {
+                    count++;
+                  }
+                }
+                break;
+              case 'dict_val':
+                for (const val of comp!.items.values()) {
+                  if (this.evaluateComparison('==', matchCase, val, expr!)) {
+                    count++;
+                  }
+                }
+                break;
+              default:
+                throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
+            }
+            return int(count);
           }
           case 'deepcopy': {
             // TODO: real deep copy once references are implemented
@@ -241,10 +300,14 @@ export class EvaluationContext {
             const [expr] = getArgs(1);
             return this.evaluate(expressionParser.tryParse(toString(expr!)));
           }
+          // TODO: exists()
           case 'exp': {
             const [x] = getArgs(1);
             return float(Math.exp(toFloat(x!)));
           }
+          // TODO: extend()
+          // TODO: filter()
+          // TODO: flatten()
           case 'float2nr': {
             const [x] = getArgs(1);
             return int(Math.trunc(toFloat(x!)));
@@ -289,6 +352,19 @@ export class EvaluationContext {
             const [x, y] = getArgs(2);
             return float(toFloat(x!) % toFloat(y!));
           }
+          // TODO: get()
+          // TODO: getcurpos()
+          // TODO: getline()
+          // TODO: getreg()
+          case 'has_key': {
+            const [d, k] = getArgs(2);
+            return bool(toDict(d!).items.has(toString(k!)));
+          }
+          // TODO: id()
+          // TODO: index()
+          // TODO: input()/inputlist()
+          // TODO: insert()
+          // TODO: invert()
           case 'isinf': {
             const [x] = getArgs(1);
             const _x = toFloat(x!);
@@ -302,9 +378,34 @@ export class EvaluationContext {
             const [d] = getArgs(1);
             return list([...toDict(d!).items.entries()].map(([k, v]) => list([str(k), v])));
           }
+          case 'join': {
+            const [l, sep] = getArgs(1, 2);
+            return str(
+              toList(l!)
+                .items.map(toString)
+                .join(sep ? toString(sep) : '')
+            );
+          }
+          // TODO: json_encode()/json_decode()
           case 'keys': {
             const [d] = getArgs(1);
             return list([...toDict(d!).items.keys()].map(str));
+          }
+          case 'len': {
+            const [x] = getArgs(1);
+            switch (x!.type) {
+              case 'number':
+                return int(x!.value.toString().length);
+              case 'string':
+                return int(x!.value.length);
+              case 'list':
+                return int(x!.items.length);
+              case 'dict_val':
+                return int(x!.items.size);
+              // TODO: case 'blob':
+              default:
+                throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
+            }
           }
           case 'log': {
             const [x] = getArgs(1);
@@ -373,6 +474,7 @@ export class EvaluationContext {
             }
             return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
           }
+          // TODO: mode()
           case 'or': {
             const [x, y] = getArgs(2);
             // tslint:disable-next-line: no-bitwise
@@ -399,6 +501,7 @@ export class EvaluationContext {
             }
             return list(items);
           }
+          // TODO: reduce()
           case 'repeat': {
             const [val, count] = getArgs(2);
             if (val?.type === 'list') {
@@ -408,6 +511,7 @@ export class EvaluationContext {
               return str(toString(val!).repeat(toInt(count!)));
             }
           }
+          // TODO: remove()
           case 'reverse': {
             const [l] = getArgs(1);
             if (l?.type === 'list') {
@@ -466,6 +570,7 @@ export class EvaluationContext {
             // TODO: Numbers after Strings, Lists after Numbers
             return list(l.items.sort(compare));
           }
+          // TODO: split()
           case 'sqrt': {
             const [x] = getArgs(1);
             return float(Math.sqrt(toFloat(x!)));
@@ -490,6 +595,8 @@ export class EvaluationContext {
             const [s] = getArgs(1);
             return str(toString(s!).toUpperCase());
           }
+          // TODO: tr()
+          // TODO: trim()
           case 'trunc': {
             const [x] = getArgs(1);
             return float(Math.trunc(toFloat(x!)));
@@ -521,10 +628,12 @@ export class EvaluationContext {
                 throw new Error('type() got unexpected type');
             }
           }
+          // TODO: uniq()
           case 'values': {
             const [d] = getArgs(1);
             return list([...toDict(d!).items.values()]);
           }
+          // TODO: visualmode()
           case 'xor': {
             const [x, y] = getArgs(2);
             // tslint:disable-next-line: no-bitwise
@@ -659,6 +768,12 @@ export class EvaluationContext {
         return _var.value;
       }
     } else if (varExpr.namespace === 'v') {
+      // TODO: v:count, v:count1, v:prevcount
+      // TODO: v:operator
+      // TODO: v:register
+      // TODO: v:searchforward
+      // TODO: v:statusmsg, v:warningmsg, v:errmsg
+      // TODO: v:t_blob
       if (varExpr.name === 'true') {
         return bool(true);
       } else if (varExpr.name === 'false') {
@@ -683,6 +798,9 @@ export class EvaluationContext {
         return int(Number.MAX_VALUE);
       } else if (varExpr.name === 'numbermin') {
         return int(Number.MIN_VALUE);
+      } else if (varExpr.name === 'numbersize') {
+        // NOTE: In VimScript this refers to a 64 bit integer; we have a 64 bit float because JavaScript
+        return int(64);
       }
 
       // HACK: for things like v:key & v:val
