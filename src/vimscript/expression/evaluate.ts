@@ -310,7 +310,7 @@ export class EvaluationContext {
           // TODO: flatten()
           case 'float2nr': {
             const [x] = getArgs(1);
-            return int(Math.trunc(toFloat(x!)));
+            return int(toFloat(x!));
           }
           case 'function': {
             const [name, arglist, dict] = getArgs(1, 3);
@@ -368,7 +368,7 @@ export class EvaluationContext {
           case 'isinf': {
             const [x] = getArgs(1);
             const _x = toFloat(x!);
-            return bool(_x === Infinity || _x === -Infinity);
+            return int(_x === Infinity ? 1 : _x === -Infinity ? -1 : 0);
           }
           case 'isnan': {
             const [x] = getArgs(1);
@@ -525,7 +525,7 @@ export class EvaluationContext {
             const [x] = getArgs(1);
             const _x = toFloat(x!);
             // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
-            return float(_x < 0 ? -Math.round(-_x) : _x);
+            return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
           }
           case 'sin': {
             const [x] = getArgs(1);
@@ -543,11 +543,13 @@ export class EvaluationContext {
             }
             let compare: (x: Value, y: Value) => number;
             if (func !== undefined) {
-              if (func.type === 'string') {
-                if (func.value === '1' || func.value === 'i') {
+              if (func.type === 'string' || func.type === 'number') {
+                if (func.value === 1 || func.value === '1' || func.value === 'i') {
                   // Ignore case
-                  compare = (x, y) =>
-                    displayValue(x).toLowerCase().localeCompare(displayValue(y).toLowerCase());
+                  compare = (x, y) => {
+                    const [_x, _y] = [displayValue(x).toLowerCase(), displayValue(y).toLowerCase()];
+                    return _x === _y ? 0 : _x > _y ? 1 : -1;
+                  };
                 } else {
                   // TODO: handle other special cases ('l', 'n', 'N', 'f')
                   throw Error('compare() with function name is not yet implemented');
@@ -565,7 +567,7 @@ export class EvaluationContext {
                 throw VimError.fromCode(ErrorCode.InvalidArgument);
               }
             } else {
-              compare = (x, y) => displayValue(x).localeCompare(displayValue(y));
+              compare = (x, y) => (displayValue(x) > displayValue(y) ? 1 : -1);
             }
             // TODO: Numbers after Strings, Lists after Numbers
             return list(l.items.sort(compare));
@@ -903,23 +905,35 @@ export class EvaluationContext {
   }
 
   private evaluateBinary(operator: BinaryOp, lhsExpr: Expression, rhsExpr: Expression): Value {
-    const [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)];
+    let [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)];
+
+    const arithmetic = (f: (x: number, y: number) => number) => {
+      const numType = lhs.type === 'float' || rhs.type === 'float' ? float : int;
+      if (lhs.type === 'string') {
+        lhs = int(toInt(lhs));
+      }
+      if (rhs.type === 'string') {
+        rhs = int(toInt(rhs));
+      }
+      return numType(f(toFloat(lhs), toFloat(rhs)));
+    };
+
     switch (operator) {
       case '+':
         if (lhs.type === 'list' && rhs.type === 'list') {
           return listExpr(lhs.items.concat(rhs.items)) as ListValue;
         } else {
-          return int(toInt(lhs) + toInt(rhs));
+          return arithmetic((x, y) => x + y);
         }
       case '-':
-        return int(toInt(lhs) - toInt(rhs));
+        return arithmetic((x, y) => x - y);
+      case '*':
+        return arithmetic((x, y) => x * y);
+      case '/':
+        return arithmetic((x, y) => x / y);
       case '.':
       case '..':
         return str(toString(lhs) + toString(rhs));
-      case '*':
-        return int(toInt(lhs) * toInt(rhs));
-      case '/':
-        return int(Math.trunc(toInt(lhs) / toInt(rhs)));
       case '%': {
         if (lhs.type === 'float' || rhs.type === 'float') {
           throw VimError.fromCode(ErrorCode.CannotUseModuloWithFloat);
@@ -975,7 +989,8 @@ export class EvaluationContext {
     operator: '==' | '>' | '=~' | 'is',
     matchCase: boolean,
     lhsExpr: Expression,
-    rhsExpr: Expression
+    rhsExpr: Expression,
+    topLevel: boolean = true
   ): boolean {
     if (operator === 'is' && lhsExpr.type !== rhsExpr.type) {
       return false;
@@ -988,7 +1003,7 @@ export class EvaluationContext {
             return (
               lhsExpr.items.length === rhsExpr.items.length &&
               lhsExpr.items.every((left, idx) =>
-                this.evaluateBasicComparison('==', matchCase, left, rhsExpr.items[idx])
+                this.evaluateBasicComparison('==', matchCase, left, rhsExpr.items[idx], false)
               )
             );
           case 'is':
@@ -1014,7 +1029,7 @@ export class EvaluationContext {
               [...lhs.items.entries()].every(
                 ([key, value]) =>
                   rhs.items.has(key) &&
-                  this.evaluateBasicComparison('==', matchCase, value, rhs.items.get(key)!)
+                  this.evaluateBasicComparison('==', matchCase, value, rhs.items.get(key)!, false)
               )
             );
           case 'is':
@@ -1033,8 +1048,11 @@ export class EvaluationContext {
         NumberValue | StringValue
       ];
       if (lhs.type === 'number' || rhs.type === 'number') {
-        // TODO: this conversion should only be done at top level (not in list/dictionary)
-        [lhs, rhs] = [int(toInt(lhs)), int(toInt(rhs))];
+        if (topLevel) {
+          // Strings are automatically coerced to numbers, except within a list/dict
+          // i.e. 4 == "4" but [4] != ["4"]
+          [lhs, rhs] = [int(toInt(lhs)), int(toInt(rhs))];
+        }
       } else if (!matchCase) {
         lhs.value = lhs.value.toLowerCase();
         rhs.value = rhs.value.toLowerCase();

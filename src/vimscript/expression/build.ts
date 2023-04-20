@@ -20,7 +20,7 @@ import {
 export function int(value: number): NumberValue {
   return {
     type: 'number',
-    value,
+    value: Math.trunc(value),
   };
 }
 

@@ -57,7 +57,7 @@ function exprTest(
   });
 }
 
-suite.only('Vimscript expressions', () => {
+suite('Vimscript expressions', () => {
   suite('Parse & evaluate expression', () => {
     suite('Numbers', () => {
       exprTest('0', { expr: int(0) });
@@ -543,8 +543,10 @@ suite.only('Vimscript expressions', () => {
     });
 
     suite('isnan/isinf', () => {
+      exprTest('isnan(2.0 / 3.0)', { value: bool(false) });
       exprTest('isnan(0.0 / 0.0)', { value: bool(true) });
 
+      exprTest('isinf(2.0 / 3.0)', { value: int(0) });
       exprTest('isinf(1.0 / 0.0)', { value: int(1) });
       exprTest('isinf(-1.0 / 0.0)', { value: int(-1) });
     });
@@ -681,12 +683,11 @@ suite.only('Vimscript expressions', () => {
         display: "['A', 'B', 'C', 'a', 'b', 'c']",
       });
 
-      exprTest("sort(['A', 'c', 'B', 'a', 'C', 'b'], 'i')", {
-        display: "['A', 'a', 'B', 'b', 'C', 'c']",
-      });
-      exprTest("sort(['A', 'c', 'B', 'a', 'C', 'b'], 1)", {
-        display: "['A', 'a', 'B', 'b', 'C', 'c']",
-      });
+      for (const func of ["'i'", "'1'", '1']) {
+        exprTest(`sort(['A', 'c', 'B', 'a', 'C', 'b'], ${func})`, {
+          display: "['A', 'a', 'B', 'b', 'c', 'C']",
+        });
+      }
 
       exprTest('sort([4,2,1,3,5])', { display: '[1, 2, 3, 4, 5]' });
       exprTest('sort([4,2,1,3,5], {x,y->x-y})', { display: '[1, 2, 3, 4, 5]' });
