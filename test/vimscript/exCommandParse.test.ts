@@ -303,19 +303,39 @@ suite('Ex command parsing', () => {
 
     exParseTest(
       ':let foo = 5',
-      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5) })
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: false })
     );
     exParseTest(
       ':let foo += 5',
-      new LetCommand({ operation: '+=', variable: variable('foo'), expression: int(5) })
+      new LetCommand({
+        operation: '+=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      })
     );
     exParseTest(
       ':let foo -= 5',
-      new LetCommand({ operation: '-=', variable: variable('foo'), expression: int(5) })
+      new LetCommand({
+        operation: '-=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      })
     );
     exParseTest(
       ":let foo .= 'bar'",
-      new LetCommand({ operation: '.=', variable: variable('foo'), expression: str('bar') })
+      new LetCommand({
+        operation: '.=',
+        variable: variable('foo'),
+        expression: str('bar'),
+        lock: false,
+      })
+    );
+
+    exParseTest(
+      ':const foo = 5',
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true })
     );
 
     // TODO

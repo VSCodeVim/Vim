@@ -63,6 +63,7 @@ export enum ErrorCode {
   UsingDictionaryAsAString = 731,
   CanOnlyCompareDictionaryWithDictionary = 735,
   InvalidOperationForDictionary = 736,
+  ValueIsLocked = 741,
   UsingAListAsANumber = 745,
   NoPreviouslyUsedRegister = 748,
   CannotUseModuloWithFloat = 804,
@@ -72,6 +73,8 @@ export enum ErrorCode {
   ArgumentOfMapMustBeAListDictionaryOrBlob = 896,
   ExpectedADict = 922,
   SecondArgumentOfFunction = 923,
+  CannotModifyExistingVariable = 995,
+  CannotLockARegister = 996,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -135,6 +138,7 @@ export const ErrorMessage: IErrorMessage = {
   731: 'Using Dictionary as a String',
   735: 'Can only compare Dictionary with Dictionary',
   736: 'Invalid operation for Dictionary',
+  741: 'Value is locked',
   745: 'Using a List as a Number',
   748: 'No previously used register',
   804: "Cannot use '%' with Float",
@@ -144,6 +148,8 @@ export const ErrorMessage: IErrorMessage = {
   896: 'Argument of map() must be a List, Dictionary or Blob',
   922: 'expected a dict',
   923: 'Second argument of function() must be a list or a dict',
+  995: 'Cannot modify existing variable',
+  996: 'Cannot lock a register',
 };
 
 export class VimError extends Error {

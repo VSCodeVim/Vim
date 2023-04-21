@@ -114,8 +114,9 @@ export class Variable {
   public value: Value;
   public locked: boolean = false;
 
-  constructor(value: Value) {
+  constructor(value: Value, locked: boolean = false) {
     this.value = value;
+    this.locked = locked;
   }
 }
 
@@ -245,7 +246,7 @@ export class EvaluationContext {
     }
   }
 
-  public setVariable(varExpr: VariableExpression, value: Value): void {
+  public setVariable(varExpr: VariableExpression, value: Value, lock: boolean): void {
     if (value.type === 'funcref' && varExpr.name[0] === varExpr.name[0].toLowerCase()) {
       throw VimError.fromCode(ErrorCode.FuncrefVariableNameMustStartWithACapital, varExpr.name);
     }
@@ -262,9 +263,15 @@ export class EvaluationContext {
     if (store) {
       const _var = store.get(varExpr.name);
       if (_var) {
+        if (lock) {
+          throw VimError.fromCode(ErrorCode.CannotModifyExistingVariable);
+        }
+        if (_var.locked) {
+          throw VimError.fromCode(ErrorCode.ValueIsLocked, varExpr.name);
+        }
         _var.value = value;
       } else {
-        store.set(varExpr.name, new Variable(value));
+        store.set(varExpr.name, new Variable(value, lock));
       }
     }
   }

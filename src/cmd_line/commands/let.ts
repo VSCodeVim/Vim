@@ -28,6 +28,7 @@ import {
   VariableExpression,
 } from '../../vimscript/expression/types';
 import { displayValue } from '../../vimscript/expression/displayValue';
+import { ErrorCode, VimError } from '../../error';
 
 export type LetCommandOperation = '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '.=' | '..=';
 export type LetCommandVariable =
@@ -40,6 +41,7 @@ export type LetCommandArgs =
       operation: LetCommandOperation;
       variable: LetCommandVariable;
       expression: Expression;
+      lock: boolean;
     }
   | {
       operation: 'print';
@@ -68,27 +70,29 @@ export class LetCommand extends ExCommand {
   // TODO: Support unpacking
   // TODO: Support indexing
   // TODO: Support slicing
-  public static readonly argParser: Parser<LetCommand> = alt(
-    // `:let {var} = {expr}`
-    // `:let {var} += {expr}`
-    // `:let {var} -= {expr}`
-    // `:let {var} .= {expr}`
-    whitespace.then(
-      seq(letVarParser, operationParser.wrap(optWhitespace, optWhitespace), expressionParser).map(
-        ([variable, operation, expression]) =>
-          new LetCommand({
-            operation,
-            variable,
-            expression,
-          })
-      )
-    ),
-    // `:let`
-    // `:let {var-name} ...`
-    optWhitespace
-      .then(letVarParser.sepBy(whitespace))
-      .map((variables) => new LetCommand({ operation: 'print', variables }))
-  );
+  public static readonly argParser = (lock: boolean) =>
+    alt<LetCommand>(
+      // `:let {var} = {expr}`
+      // `:let {var} += {expr}`
+      // `:let {var} -= {expr}`
+      // `:let {var} .= {expr}`
+      whitespace.then(
+        seq(letVarParser, operationParser.wrap(optWhitespace, optWhitespace), expressionParser).map(
+          ([variable, operation, expression]) =>
+            new LetCommand({
+              operation,
+              variable,
+              expression,
+              lock,
+            })
+        )
+      ),
+      // `:let`
+      // `:let {var-name} ...`
+      optWhitespace
+        .then(letVarParser.sepBy(whitespace))
+        .map((variables) => new LetCommand({ operation: 'print', variables }))
+    );
 
   private args: LetCommandArgs;
   constructor(args: LetCommandArgs) {
@@ -109,6 +113,16 @@ export class LetCommand extends ExCommand {
       }
     } else {
       const variable = this.args.variable;
+
+      if (this.args.lock) {
+        if (this.args.operation !== '=') {
+          throw VimError.fromCode(ErrorCode.CannotModifyExistingVariable);
+        } else if (this.args.variable.type !== 'variable') {
+          // TODO: this error message should vary by type
+          throw VimError.fromCode(ErrorCode.CannotLockARegister);
+        }
+      }
+
       let value = context.evaluate(this.args.expression);
       if (variable.type === 'variable') {
         if (this.args.operation === '+=') {
@@ -126,7 +140,7 @@ export class LetCommand extends ExCommand {
         } else if (this.args.operation === '..=') {
           value = context.evaluate(concat(variable, value));
         }
-        context.setVariable(variable, value);
+        context.setVariable(variable, value, this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
       } else if (variable.type === 'option') {
