@@ -203,7 +203,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     ) {
       const allowedModes = [Mode.Normal];
       if (!isSnippetSelectionChange()) {
-        allowedModes.push(...[Mode.Insert, Mode.Replace]);
+        allowedModes.push(Mode.Insert, Mode.Replace);
       }
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
@@ -239,7 +239,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           const allowedModes = [Mode.Normal, Mode.Visual];
           if (!isSnippetSelectionChange()) {
             // if we just inserted a snippet then don't allow insert modes to go to visual mode
-            allowedModes.push(...[Mode.Insert, Mode.Replace]);
+            allowedModes.push(Mode.Insert, Mode.Replace);
           }
           if (allowedModes.includes(this.vimState.currentMode)) {
             // Since the selections weren't ignored then probably we got change of selection from
