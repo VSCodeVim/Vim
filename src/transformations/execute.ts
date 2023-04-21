@@ -19,8 +19,8 @@ import { Cursor } from '../common/motion/cursor';
 import { VimState } from '../state/vimState';
 import { Transformer } from './transformer';
 import { Globals } from '../globals';
-import { keystrokesExpressionParser } from '../vimscript/expression';
 import { globalState } from '../state/globalState';
+import { keystrokesExpressionParser } from '../vimscript/parserUtils';
 
 export interface IModeHandler {
   vimState: VimState;
