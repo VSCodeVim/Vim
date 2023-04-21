@@ -3,7 +3,7 @@ import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
 import { globalState } from '../../state/globalState';
-import { bool, float, funcref, listExpr, int, str, list } from './build';
+import { bool, float, funcref, listExpr, int, str, list, funcCall } from './build';
 import { expressionParser, numberParser } from './parser';
 import {
   BinaryOp,
@@ -11,6 +11,7 @@ import {
   DictionaryValue,
   Expression,
   FloatValue,
+  FunctionCallExpression,
   ListValue,
   NumberValue,
   StringValue,
@@ -163,489 +164,7 @@ export class EvaluationContext {
       case 'env_variable':
         return str(process.env[expression.name] ?? '');
       case 'function_call':
-        const getArgs = (min: number, max?: number) => {
-          if (max === undefined) {
-            max = min;
-          }
-          if (expression.args.length < min) {
-            throw VimError.fromCode(ErrorCode.NotEnoughArgs, expression.func);
-          }
-          if (expression.args.length > max) {
-            throw VimError.fromCode(ErrorCode.TooManyArgs, expression.func);
-          }
-          const args: Array<Value | undefined> = expression.args.map((arg) => this.evaluate(arg));
-          while (args.length < max) {
-            args.push(undefined);
-          }
-          return args;
-        };
-        switch (expression.func) {
-          case 'abs': {
-            const [x] = getArgs(1);
-            return float(Math.abs(toFloat(x!)));
-          }
-          case 'acos': {
-            const [x] = getArgs(1);
-            return float(Math.acos(toFloat(x!)));
-          }
-          case 'add': {
-            const [l, expr] = getArgs(2);
-            // TODO: should also work with blob
-            const lst = toList(l!);
-            lst.items.push(expr!);
-            return lst;
-          }
-          case 'asin': {
-            const [x] = getArgs(1);
-            return float(Math.asin(toFloat(x!)));
-          }
-          case 'atan2': {
-            const [x, y] = getArgs(2);
-            return float(Math.atan2(toFloat(x!), toFloat(y!)));
-          }
-          case 'and': {
-            const [x, y] = getArgs(2);
-            // tslint:disable-next-line: no-bitwise
-            return int(toInt(x!) & toInt(y!));
-          }
-          // TODO: assert_*()
-          // TODO: call()
-          case 'ceil': {
-            const [x] = getArgs(1);
-            return float(Math.ceil(toFloat(x!)));
-          }
-          case 'copy': {
-            const [x] = getArgs(1);
-            switch (x?.type) {
-              case 'list':
-                return list([...x.items]);
-              case 'dict_val':
-                return {
-                  type: 'dict_val',
-                  items: new Map(x.items),
-                };
-            }
-            return x!;
-          }
-          case 'cos': {
-            const [x] = getArgs(1);
-            return float(Math.cos(toFloat(x!)));
-          }
-          case 'cosh': {
-            const [x] = getArgs(1);
-            return float(Math.cosh(toFloat(x!)));
-          }
-          case 'count': {
-            let [comp, expr, ic, start] = getArgs(2, 4);
-            const matchCase = toInt(ic ?? bool(false)) === 0;
-            if (start !== undefined) {
-              if (comp!.type !== 'list') {
-                throw VimError.fromCode(ErrorCode.InvalidArgument);
-              }
-              if (toInt(start) >= comp!.items.length) {
-                throw VimError.fromCode(ErrorCode.ListIndexOutOfRange);
-              }
-              while (toInt(start) < 0) {
-                start = int(toInt(start) + comp!.items.length);
-              }
-            }
-            let count = 0;
-            switch (comp!.type) {
-              // TODO: case 'string':
-              case 'list':
-                const startIdx = start ? toInt(start) : 0;
-                for (let i = startIdx; i < comp!.items.length; i++) {
-                  if (this.evaluateComparison('==', matchCase, comp!.items[i], expr!)) {
-                    count++;
-                  }
-                }
-                break;
-              case 'dict_val':
-                for (const val of comp!.items.values()) {
-                  if (this.evaluateComparison('==', matchCase, val, expr!)) {
-                    count++;
-                  }
-                }
-                break;
-              default:
-                throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
-            }
-            return int(count);
-          }
-          case 'deepcopy': {
-            // TODO: real deep copy once references are implemented
-            const [x] = getArgs(1);
-            return x!;
-          }
-          case 'empty': {
-            let [x] = getArgs(1);
-            x = x!;
-            switch (x.type) {
-              case 'number':
-              case 'float':
-                return bool(x.value === 0);
-              case 'string':
-                return bool(x.value.length === 0);
-              case 'list':
-                return bool(x.items.length === 0);
-              case 'dict_val':
-                return bool(x.items.size === 0);
-              // TODO:
-              // case 'blob':
-              default:
-                return bool(false);
-            }
-          }
-          case 'eval': {
-            const [expr] = getArgs(1);
-            return this.evaluate(expressionParser.tryParse(toString(expr!)));
-          }
-          // TODO: exists()
-          case 'exp': {
-            const [x] = getArgs(1);
-            return float(Math.exp(toFloat(x!)));
-          }
-          // TODO: extend()
-          // TODO: filter()
-          // TODO: flatten()
-          case 'float2nr': {
-            const [x] = getArgs(1);
-            return int(toFloat(x!));
-          }
-          case 'function': {
-            const [name, arglist, dict] = getArgs(1, 3);
-            if (arglist) {
-              if (arglist.type === 'list') {
-                if (dict && dict.type !== 'dict_val') {
-                  throw VimError.fromCode(ErrorCode.ExpectedADict);
-                }
-                return funcref(toString(name!), arglist, dict);
-              } else if (arglist.type === 'dict_val') {
-                if (dict) {
-                  // function('abs', {}, {})
-                  throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
-                }
-                return funcref(toString(name!), undefined, arglist);
-              } else {
-                throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
-              }
-            }
-            if (dict && dict.type !== 'dict_val') {
-              throw VimError.fromCode(ErrorCode.ExpectedADict);
-            }
-            // TODO:
-            // if (toString(name!) is invalid function) {
-            //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
-            // }
-            return {
-              type: 'funcref',
-              name: toString(name!),
-              arglist,
-              dict,
-            };
-          }
-          case 'floor': {
-            const [x] = getArgs(1);
-            return float(Math.floor(toFloat(x!)));
-          }
-          case 'fmod': {
-            const [x, y] = getArgs(2);
-            return float(toFloat(x!) % toFloat(y!));
-          }
-          // TODO: get()
-          // TODO: getcurpos()
-          // TODO: getline()
-          // TODO: getreg()
-          case 'has_key': {
-            const [d, k] = getArgs(2);
-            return bool(toDict(d!).items.has(toString(k!)));
-          }
-          // TODO: id()
-          // TODO: index()
-          // TODO: input()/inputlist()
-          // TODO: insert()
-          // TODO: invert()
-          case 'isinf': {
-            const [x] = getArgs(1);
-            const _x = toFloat(x!);
-            return int(_x === Infinity ? 1 : _x === -Infinity ? -1 : 0);
-          }
-          case 'isnan': {
-            const [x] = getArgs(1);
-            return bool(isNaN(toFloat(x!)));
-          }
-          case 'items': {
-            const [d] = getArgs(1);
-            return list([...toDict(d!).items.entries()].map(([k, v]) => list([str(k), v])));
-          }
-          case 'join': {
-            const [l, sep] = getArgs(1, 2);
-            return str(
-              toList(l!)
-                .items.map(toString)
-                .join(sep ? toString(sep) : '')
-            );
-          }
-          // TODO: json_encode()/json_decode()
-          case 'keys': {
-            const [d] = getArgs(1);
-            return list([...toDict(d!).items.keys()].map(str));
-          }
-          case 'len': {
-            const [x] = getArgs(1);
-            switch (x!.type) {
-              case 'number':
-                return int(x!.value.toString().length);
-              case 'string':
-                return int(x!.value.length);
-              case 'list':
-                return int(x!.items.length);
-              case 'dict_val':
-                return int(x!.items.size);
-              // TODO: case 'blob':
-              default:
-                throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
-            }
-          }
-          case 'log': {
-            const [x] = getArgs(1);
-            return float(Math.log(toFloat(x!)));
-          }
-          case 'log10': {
-            const [x] = getArgs(1);
-            return float(Math.log10(toFloat(x!)));
-          }
-          case 'map': {
-            const [seq, fn] = getArgs(2);
-            switch (seq?.type) {
-              case 'list':
-                return list(
-                  seq.items.map((val, idx) => {
-                    switch (fn?.type) {
-                      case 'funcref':
-                        return this.evaluate({
-                          type: 'funcrefCall',
-                          expression: fn,
-                          args: [int(idx), val],
-                        });
-                      default:
-                        this.localScopes.push(
-                          new Map([
-                            ['v:key', new Variable(int(idx))],
-                            ['v:val', new Variable(val)],
-                          ])
-                        );
-                        const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
-                        this.localScopes.pop();
-                        return retval;
-                    }
-                  })
-                );
-              case 'dict_val':
-              // TODO
-              // case 'blob':
-              // TODO
-              default:
-                throw VimError.fromCode(ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob);
-            }
-          }
-          case 'max': {
-            const [l] = getArgs(1);
-            let values: Value[];
-            if (l?.type === 'list') {
-              values = l.items;
-            } else if (l?.type === 'dict_val') {
-              values = [...l.items.values()];
-            } else {
-              throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
-            }
-            return int(values.length === 0 ? 0 : Math.max(...values.map(toInt)));
-          }
-          case 'min': {
-            const [l] = getArgs(1);
-            let values: Value[];
-            if (l?.type === 'list') {
-              values = l.items;
-            } else if (l?.type === 'dict_val') {
-              values = [...l.items.values()];
-            } else {
-              // TODO: This should say "min", but still have code 712
-              throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
-            }
-            return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
-          }
-          // TODO: mode()
-          case 'or': {
-            const [x, y] = getArgs(2);
-            // tslint:disable-next-line: no-bitwise
-            return int(toInt(x!) | toInt(y!));
-          }
-          case 'pow': {
-            const [x, y] = getArgs(2);
-            return float(Math.pow(toFloat(x!), toFloat(y!)));
-          }
-          case 'range': {
-            const [val, max, stride] = getArgs(1, 3);
-            const start = max !== undefined ? toInt(val!) : 0;
-            const end = max !== undefined ? toInt(max) : toInt(val!) - 1;
-            const step = stride !== undefined ? toInt(stride) : 1;
-            if (step === 0) {
-              throw VimError.fromCode(ErrorCode.StrideIsZero);
-            }
-            if (step > 0 !== start < end && Math.abs(start - end) > 1) {
-              throw VimError.fromCode(ErrorCode.StartPastEnd);
-            }
-            const items: Value[] = [];
-            for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
-              items.push(int(i));
-            }
-            return list(items);
-          }
-          // TODO: reduce()
-          case 'repeat': {
-            const [val, count] = getArgs(2);
-            if (val?.type === 'list') {
-              const items: Value[] = new Array<Value[]>(toInt(count!)).fill(val.items).flat();
-              return list(items);
-            } else {
-              return str(toString(val!).repeat(toInt(count!)));
-            }
-          }
-          // TODO: remove()
-          case 'reverse': {
-            const [l] = getArgs(1);
-            if (l?.type === 'list') {
-              l.items.reverse();
-              return l;
-            }
-            // TODO: handle Blob
-            return int(0);
-          }
-          case 'round': {
-            const [x] = getArgs(1);
-            const _x = toFloat(x!);
-            // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
-            return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
-          }
-          case 'sin': {
-            const [x] = getArgs(1);
-            return float(Math.sin(toFloat(x!)));
-          }
-          case 'sinh': {
-            const [x] = getArgs(1);
-            return float(Math.sinh(toFloat(x!)));
-          }
-          case 'sort': {
-            // TODO: use dict
-            const [l, func, dict] = getArgs(1, 3);
-            if (l?.type !== 'list') {
-              throw VimError.fromCode(ErrorCode.ArgumentOfSortMustBeAList);
-            }
-            let compare: (x: Value, y: Value) => number;
-            if (func !== undefined) {
-              if (func.type === 'string' || func.type === 'number') {
-                if (func.value === 1 || func.value === '1' || func.value === 'i') {
-                  // Ignore case
-                  compare = (x, y) => {
-                    const [_x, _y] = [displayValue(x).toLowerCase(), displayValue(y).toLowerCase()];
-                    return _x === _y ? 0 : _x > _y ? 1 : -1;
-                  };
-                } else {
-                  // TODO: handle other special cases ('l', 'n', 'N', 'f')
-                  throw Error('compare() with function name is not yet implemented');
-                }
-              } else if (func.type === 'funcref') {
-                compare = (x, y) =>
-                  toInt(
-                    this.evaluate({
-                      type: 'funcrefCall',
-                      expression: func,
-                      args: [x, y],
-                    })
-                  );
-              } else {
-                throw VimError.fromCode(ErrorCode.InvalidArgument);
-              }
-            } else {
-              compare = (x, y) => (displayValue(x) > displayValue(y) ? 1 : -1);
-            }
-            // TODO: Numbers after Strings, Lists after Numbers
-            return list(l.items.sort(compare));
-          }
-          // TODO: split()
-          case 'sqrt': {
-            const [x] = getArgs(1);
-            return float(Math.sqrt(toFloat(x!)));
-          }
-          case 'string': {
-            const [x] = getArgs(1);
-            return str(displayValue(x!));
-          }
-          case 'tan': {
-            const [x] = getArgs(1);
-            return float(Math.tan(toFloat(x!)));
-          }
-          case 'tanh': {
-            const [x] = getArgs(1);
-            return float(Math.tanh(toFloat(x!)));
-          }
-          case 'tolower': {
-            const [s] = getArgs(1);
-            return str(toString(s!).toLowerCase());
-          }
-          case 'toupper': {
-            const [s] = getArgs(1);
-            return str(toString(s!).toUpperCase());
-          }
-          // TODO: tr()
-          // TODO: trim()
-          case 'trunc': {
-            const [x] = getArgs(1);
-            return float(Math.trunc(toFloat(x!)));
-          }
-          case 'type': {
-            let [x] = getArgs(1);
-            x = x!;
-            switch (x.type) {
-              case 'number':
-                return int(0);
-              case 'string':
-                return int(1);
-              case 'funcref':
-                return int(2);
-              case 'list':
-                return int(3);
-              case 'dict_val':
-                return int(4);
-              case 'float':
-                return int(5);
-              // case 'bool':
-              //   return num(6);
-              // case 'null':
-              //   return num(7);
-              // case 'blob':
-              //   return num(8);
-              default:
-                const guard: never = x;
-                throw new Error('type() got unexpected type');
-            }
-          }
-          // TODO: uniq()
-          case 'values': {
-            const [d] = getArgs(1);
-            return list([...toDict(d!).items.values()]);
-          }
-          // TODO: visualmode()
-          case 'xor': {
-            const [x, y] = getArgs(2);
-            // tslint:disable-next-line: no-bitwise
-            return int(toInt(x!) ^ toInt(y!));
-          }
-          // TODO: many, many more
-          default: {
-            throw VimError.fromCode(ErrorCode.UnknownFunction_call, expression.func);
-          }
-        }
+        return this.evaluateFunctionCall(expression);
       case 'index': {
         return this.evaluateIndex(
           this.evaluate(expression.expression),
@@ -676,11 +195,12 @@ export class EvaluationContext {
         if (fref.body) {
           return fref.body(expression.args.map((x) => this.evaluate(x)));
         } else {
-          return this.evaluate({
-            type: 'function_call',
-            func: fref.name,
-            args: (fref.arglist?.items ?? []).concat(expression.args.map((x) => this.evaluate(x))),
-          });
+          return this.evaluateFunctionCall(
+            funcCall(
+              fref.name,
+              (fref.arglist?.items ?? []).concat(expression.args.map((x) => this.evaluate(x)))
+            )
+          );
         }
       }
       case 'lambda': {
@@ -1066,6 +586,492 @@ export class EvaluationContext {
           return lhs.value > rhs.value;
         case '=~':
           return false; // TODO
+      }
+    }
+  }
+
+  private evaluateFunctionCall(call: FunctionCallExpression): Value {
+    const getArgs = (min: number, max?: number) => {
+      if (max === undefined) {
+        max = min;
+      }
+      if (call.args.length < min) {
+        throw VimError.fromCode(ErrorCode.NotEnoughArgs, call.func);
+      }
+      if (call.args.length > max) {
+        throw VimError.fromCode(ErrorCode.TooManyArgs, call.func);
+      }
+      const args: Array<Value | undefined> = call.args.map((arg) => this.evaluate(arg));
+      while (args.length < max) {
+        args.push(undefined);
+      }
+      return args;
+    };
+    switch (call.func) {
+      case 'abs': {
+        const [x] = getArgs(1);
+        return float(Math.abs(toFloat(x!)));
+      }
+      case 'acos': {
+        const [x] = getArgs(1);
+        return float(Math.acos(toFloat(x!)));
+      }
+      case 'add': {
+        const [l, expr] = getArgs(2);
+        // TODO: should also work with blob
+        const lst = toList(l!);
+        lst.items.push(expr!);
+        return lst;
+      }
+      case 'asin': {
+        const [x] = getArgs(1);
+        return float(Math.asin(toFloat(x!)));
+      }
+      case 'atan2': {
+        const [x, y] = getArgs(2);
+        return float(Math.atan2(toFloat(x!), toFloat(y!)));
+      }
+      case 'and': {
+        const [x, y] = getArgs(2);
+        // tslint:disable-next-line: no-bitwise
+        return int(toInt(x!) & toInt(y!));
+      }
+      // TODO: assert_*()
+      // TODO: call()
+      case 'ceil': {
+        const [x] = getArgs(1);
+        return float(Math.ceil(toFloat(x!)));
+      }
+      case 'copy': {
+        const [x] = getArgs(1);
+        switch (x?.type) {
+          case 'list':
+            return list([...x.items]);
+          case 'dict_val':
+            return {
+              type: 'dict_val',
+              items: new Map(x.items),
+            };
+        }
+        return x!;
+      }
+      case 'cos': {
+        const [x] = getArgs(1);
+        return float(Math.cos(toFloat(x!)));
+      }
+      case 'cosh': {
+        const [x] = getArgs(1);
+        return float(Math.cosh(toFloat(x!)));
+      }
+      case 'count': {
+        let [comp, expr, ic, start] = getArgs(2, 4);
+        const matchCase = toInt(ic ?? bool(false)) === 0;
+        if (start !== undefined) {
+          if (comp!.type !== 'list') {
+            throw VimError.fromCode(ErrorCode.InvalidArgument);
+          }
+          if (toInt(start) >= comp!.items.length) {
+            throw VimError.fromCode(ErrorCode.ListIndexOutOfRange);
+          }
+          while (toInt(start) < 0) {
+            start = int(toInt(start) + comp!.items.length);
+          }
+        }
+        let count = 0;
+        switch (comp!.type) {
+          // TODO: case 'string':
+          case 'list':
+            const startIdx = start ? toInt(start) : 0;
+            for (let i = startIdx; i < comp!.items.length; i++) {
+              if (this.evaluateComparison('==', matchCase, comp!.items[i], expr!)) {
+                count++;
+              }
+            }
+            break;
+          case 'dict_val':
+            for (const val of comp!.items.values()) {
+              if (this.evaluateComparison('==', matchCase, val, expr!)) {
+                count++;
+              }
+            }
+            break;
+          default:
+            throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
+        }
+        return int(count);
+      }
+      case 'deepcopy': {
+        // TODO: real deep copy once references are implemented
+        const [x] = getArgs(1);
+        return x!;
+      }
+      case 'empty': {
+        let [x] = getArgs(1);
+        x = x!;
+        switch (x.type) {
+          case 'number':
+          case 'float':
+            return bool(x.value === 0);
+          case 'string':
+            return bool(x.value.length === 0);
+          case 'list':
+            return bool(x.items.length === 0);
+          case 'dict_val':
+            return bool(x.items.size === 0);
+          // TODO:
+          // case 'blob':
+          default:
+            return bool(false);
+        }
+      }
+      case 'eval': {
+        const [expr] = getArgs(1);
+        return this.evaluate(expressionParser.tryParse(toString(expr!)));
+      }
+      // TODO: exists()
+      case 'exp': {
+        const [x] = getArgs(1);
+        return float(Math.exp(toFloat(x!)));
+      }
+      // TODO: extend()
+      // TODO: filter()
+      // TODO: flatten()
+      case 'float2nr': {
+        const [x] = getArgs(1);
+        return int(toFloat(x!));
+      }
+      case 'function': {
+        const [name, arglist, dict] = getArgs(1, 3);
+        if (arglist) {
+          if (arglist.type === 'list') {
+            if (dict && dict.type !== 'dict_val') {
+              throw VimError.fromCode(ErrorCode.ExpectedADict);
+            }
+            return funcref(toString(name!), arglist, dict);
+          } else if (arglist.type === 'dict_val') {
+            if (dict) {
+              // function('abs', {}, {})
+              throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
+            }
+            return funcref(toString(name!), undefined, arglist);
+          } else {
+            throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
+          }
+        }
+        if (dict && dict.type !== 'dict_val') {
+          throw VimError.fromCode(ErrorCode.ExpectedADict);
+        }
+        // TODO:
+        // if (toString(name!) is invalid function) {
+        //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
+        // }
+        return {
+          type: 'funcref',
+          name: toString(name!),
+          arglist,
+          dict,
+        };
+      }
+      case 'floor': {
+        const [x] = getArgs(1);
+        return float(Math.floor(toFloat(x!)));
+      }
+      case 'fmod': {
+        const [x, y] = getArgs(2);
+        return float(toFloat(x!) % toFloat(y!));
+      }
+      // TODO: get()
+      // TODO: getcurpos()
+      // TODO: getline()
+      // TODO: getreg()
+      case 'has_key': {
+        const [d, k] = getArgs(2);
+        return bool(toDict(d!).items.has(toString(k!)));
+      }
+      // TODO: id()
+      // TODO: index()
+      // TODO: input()/inputlist()
+      // TODO: insert()
+      // TODO: invert()
+      case 'isinf': {
+        const [x] = getArgs(1);
+        const _x = toFloat(x!);
+        return int(_x === Infinity ? 1 : _x === -Infinity ? -1 : 0);
+      }
+      case 'isnan': {
+        const [x] = getArgs(1);
+        return bool(isNaN(toFloat(x!)));
+      }
+      case 'items': {
+        const [d] = getArgs(1);
+        return list([...toDict(d!).items.entries()].map(([k, v]) => list([str(k), v])));
+      }
+      case 'join': {
+        const [l, sep] = getArgs(1, 2);
+        return str(
+          toList(l!)
+            .items.map(toString)
+            .join(sep ? toString(sep) : '')
+        );
+      }
+      // TODO: json_encode()/json_decode()
+      case 'keys': {
+        const [d] = getArgs(1);
+        return list([...toDict(d!).items.keys()].map(str));
+      }
+      case 'len': {
+        const [x] = getArgs(1);
+        switch (x!.type) {
+          case 'number':
+            return int(x!.value.toString().length);
+          case 'string':
+            return int(x!.value.length);
+          case 'list':
+            return int(x!.items.length);
+          case 'dict_val':
+            return int(x!.items.size);
+          // TODO: case 'blob':
+          default:
+            throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
+        }
+      }
+      case 'log': {
+        const [x] = getArgs(1);
+        return float(Math.log(toFloat(x!)));
+      }
+      case 'log10': {
+        const [x] = getArgs(1);
+        return float(Math.log10(toFloat(x!)));
+      }
+      case 'map': {
+        const [seq, fn] = getArgs(2);
+        switch (seq?.type) {
+          case 'list':
+            return list(
+              seq.items.map((val, idx) => {
+                switch (fn?.type) {
+                  case 'funcref':
+                    return this.evaluate({
+                      type: 'funcrefCall',
+                      expression: fn,
+                      args: [int(idx), val],
+                    });
+                  default:
+                    this.localScopes.push(
+                      new Map([
+                        ['v:key', new Variable(int(idx))],
+                        ['v:val', new Variable(val)],
+                      ])
+                    );
+                    const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
+                    this.localScopes.pop();
+                    return retval;
+                }
+              })
+            );
+          case 'dict_val':
+          // TODO
+          // case 'blob':
+          // TODO
+          default:
+            throw VimError.fromCode(ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob);
+        }
+      }
+      case 'max': {
+        const [l] = getArgs(1);
+        let values: Value[];
+        if (l?.type === 'list') {
+          values = l.items;
+        } else if (l?.type === 'dict_val') {
+          values = [...l.items.values()];
+        } else {
+          throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
+        }
+        return int(values.length === 0 ? 0 : Math.max(...values.map(toInt)));
+      }
+      case 'min': {
+        const [l] = getArgs(1);
+        let values: Value[];
+        if (l?.type === 'list') {
+          values = l.items;
+        } else if (l?.type === 'dict_val') {
+          values = [...l.items.values()];
+        } else {
+          // TODO: This should say "min", but still have code 712
+          throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
+        }
+        return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
+      }
+      // TODO: mode()
+      case 'or': {
+        const [x, y] = getArgs(2);
+        // tslint:disable-next-line: no-bitwise
+        return int(toInt(x!) | toInt(y!));
+      }
+      case 'pow': {
+        const [x, y] = getArgs(2);
+        return float(Math.pow(toFloat(x!), toFloat(y!)));
+      }
+      case 'range': {
+        const [val, max, stride] = getArgs(1, 3);
+        const start = max !== undefined ? toInt(val!) : 0;
+        const end = max !== undefined ? toInt(max) : toInt(val!) - 1;
+        const step = stride !== undefined ? toInt(stride) : 1;
+        if (step === 0) {
+          throw VimError.fromCode(ErrorCode.StrideIsZero);
+        }
+        if (step > 0 !== start < end && Math.abs(start - end) > 1) {
+          throw VimError.fromCode(ErrorCode.StartPastEnd);
+        }
+        const items: Value[] = [];
+        for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
+          items.push(int(i));
+        }
+        return list(items);
+      }
+      // TODO: reduce()
+      case 'repeat': {
+        const [val, count] = getArgs(2);
+        if (val?.type === 'list') {
+          const items: Value[] = new Array<Value[]>(toInt(count!)).fill(val.items).flat();
+          return list(items);
+        } else {
+          return str(toString(val!).repeat(toInt(count!)));
+        }
+      }
+      // TODO: remove()
+      case 'reverse': {
+        const [l] = getArgs(1);
+        if (l?.type === 'list') {
+          l.items.reverse();
+          return l;
+        }
+        // TODO: handle Blob
+        return int(0);
+      }
+      case 'round': {
+        const [x] = getArgs(1);
+        const _x = toFloat(x!);
+        // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
+        return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
+      }
+      case 'sin': {
+        const [x] = getArgs(1);
+        return float(Math.sin(toFloat(x!)));
+      }
+      case 'sinh': {
+        const [x] = getArgs(1);
+        return float(Math.sinh(toFloat(x!)));
+      }
+      case 'sort': {
+        // TODO: use dict
+        const [l, func, dict] = getArgs(1, 3);
+        if (l?.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.ArgumentOfSortMustBeAList);
+        }
+        let compare: (x: Value, y: Value) => number;
+        if (func !== undefined) {
+          if (func.type === 'string' || func.type === 'number') {
+            if (func.value === 1 || func.value === '1' || func.value === 'i') {
+              // Ignore case
+              compare = (x, y) => {
+                const [_x, _y] = [displayValue(x).toLowerCase(), displayValue(y).toLowerCase()];
+                return _x === _y ? 0 : _x > _y ? 1 : -1;
+              };
+            } else {
+              // TODO: handle other special cases ('l', 'n', 'N', 'f')
+              throw Error('compare() with function name is not yet implemented');
+            }
+          } else if (func.type === 'funcref') {
+            compare = (x, y) =>
+              toInt(
+                this.evaluate({
+                  type: 'funcrefCall',
+                  expression: func,
+                  args: [x, y],
+                })
+              );
+          } else {
+            throw VimError.fromCode(ErrorCode.InvalidArgument);
+          }
+        } else {
+          compare = (x, y) => (displayValue(x) > displayValue(y) ? 1 : -1);
+        }
+        // TODO: Numbers after Strings, Lists after Numbers
+        return list(l.items.sort(compare));
+      }
+      // TODO: split()
+      case 'sqrt': {
+        const [x] = getArgs(1);
+        return float(Math.sqrt(toFloat(x!)));
+      }
+      case 'string': {
+        const [x] = getArgs(1);
+        return str(displayValue(x!));
+      }
+      case 'tan': {
+        const [x] = getArgs(1);
+        return float(Math.tan(toFloat(x!)));
+      }
+      case 'tanh': {
+        const [x] = getArgs(1);
+        return float(Math.tanh(toFloat(x!)));
+      }
+      case 'tolower': {
+        const [s] = getArgs(1);
+        return str(toString(s!).toLowerCase());
+      }
+      case 'toupper': {
+        const [s] = getArgs(1);
+        return str(toString(s!).toUpperCase());
+      }
+      // TODO: tr()
+      // TODO: trim()
+      case 'trunc': {
+        const [x] = getArgs(1);
+        return float(Math.trunc(toFloat(x!)));
+      }
+      case 'type': {
+        let [x] = getArgs(1);
+        x = x!;
+        switch (x.type) {
+          case 'number':
+            return int(0);
+          case 'string':
+            return int(1);
+          case 'funcref':
+            return int(2);
+          case 'list':
+            return int(3);
+          case 'dict_val':
+            return int(4);
+          case 'float':
+            return int(5);
+          // case 'bool':
+          //   return num(6);
+          // case 'null':
+          //   return num(7);
+          // case 'blob':
+          //   return num(8);
+          default:
+            const guard: never = x;
+            throw new Error('type() got unexpected type');
+        }
+      }
+      // TODO: uniq()
+      case 'values': {
+        const [d] = getArgs(1);
+        return list([...toDict(d!).items.values()]);
+      }
+      // TODO: visualmode()
+      case 'xor': {
+        const [x, y] = getArgs(2);
+        // tslint:disable-next-line: no-bitwise
+        return int(toInt(x!) ^ toInt(y!));
+      }
+      // TODO: many, many more
+      default: {
+        throw VimError.fromCode(ErrorCode.UnknownFunction_call, call.func);
       }
     }
   }
