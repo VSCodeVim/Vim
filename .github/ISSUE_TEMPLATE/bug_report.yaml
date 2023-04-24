@@ -1,0 +1,118 @@
+name: Bug Report
+description: Create a report to help us improve
+body:
+  - type: markdown
+    id: welcome
+    attributes:
+      value: |
+        ## Thanks for opening an issue!
+
+        Because we have > 1000 issues, we've structured the issue input so the project can triage and track issues.
+
+        This lets us quickly understand and prioritize what's going wrong, and gives contributors the ability to find where they can best contribute.
+
+        Thanks in advance for your patience and diligence.
+
+  - type: textarea
+    id: whats-wrong
+    attributes:
+      label: What's wrong?
+      description: |
+        Please describe the bug as clearly and concisely as possible.
+
+        If it's not possible to complete the test cases below, please describe how to reproduce it. Add screenshots if helpful.
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior
+      description: |
+        If possible, describe the current behavior using our test format; e.g.:
+
+        ```
+        {(
+          title: 'w moves to next word',
+          start: ['one |two three four'],
+          keysPressed: 'w',
+          end: ['one two |three four'],
+          endMode: Mode.Normal,
+        })
+        ```
+
+        More examples are in our [tests path](https://github.com/VSCodeVim/Vim/tree/master/test).
+      placeholder: |-
+        {(
+          title: 'w moves to next word',
+          start: ['one |two three four'],
+          keysPressed: 'w',
+          end: ['one two |three four'],
+          endMode: Mode.Normal,
+        })
+      value: |-
+        {(
+          title:
+          start:
+          keysPressed:
+          end:
+          endMode:
+        })
+      render: js
+
+  - type: textarea
+    id: intended-behavior
+    attributes:
+      label: Intended behavior
+      description: |-
+        If possible, describe the intended behavior using our test format:
+      placeholder: |
+        {(
+          title: 'w moves to next word',
+          start: ['one |two three four'],
+          keysPressed: 'w',
+          end: ['one two |three four'],
+          endMode: Mode.Normal,
+        })
+      value: |-
+        {(
+          title:
+          start:
+          keysPressed:
+          end:
+          endMode:
+        })
+      render: js
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: "Extension (VsCodeVim) version"
+  - type: input
+    id: vscode-version
+    attributes:
+      label: "VSCode version"
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      options:
+        - MacOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: log-output
+    attributes:
+      label: If it's remapping related, please attach the logs
+      description: Check out [debugging remappings](https://github.com/VSCodeVim/Vim#debugging-remappings) for how to enable log output.
+
+  - type: checkboxes
+    id: check-issue-search
+    attributes:
+      label: Confirmations
+      options:
+        - label: I've searched the existing issues; this isn't a duplicate.
