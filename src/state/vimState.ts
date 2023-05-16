@@ -163,10 +163,6 @@ export class VimState implements vscode.Disposable {
       return;
     }
 
-    if (value[0].equals(new Cursor(new Position(0, 0), new Position(0, 0)))) {
-      return;
-    }
-
     const map = new Map<string, Cursor>();
     for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
