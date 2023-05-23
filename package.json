@@ -1192,7 +1192,7 @@
     "vsce": "2.15.0",
     "webpack": "5.83.1",
     "webpack-cli": "5.1.1",
-    "webpack-merge": "5.8.0",
+    "webpack-merge": "5.9.0",
     "webpack-stream": "7.0.0"
   },
   "lint-staged": {
