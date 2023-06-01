@@ -3,13 +3,12 @@ import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 
 suite('camelCaseMotion plugin if not enabled', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.camelCaseMotion.enable = false;
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "basic motion doesn't work",
@@ -20,13 +19,12 @@ suite('camelCaseMotion plugin if not enabled', () => {
 });
 
 suite('camelCaseMotion plugin', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.camelCaseMotion.enable = true;
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   suite('handles <leader>w for camelCaseText', () => {
     newTest({

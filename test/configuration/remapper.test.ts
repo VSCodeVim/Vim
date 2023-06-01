@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 
 import { Remappers, Remapper } from '../../src/configuration/remapper';
@@ -79,10 +79,9 @@ suite('Remapper', () => {
 
     public override findMatchingRemap(
       userDefinedRemappings: Map<string, IKeyRemapping>,
-      inputtedKeys: string[],
-      currentMode: Mode
+      inputtedKeys: string[]
     ) {
-      return super.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
+      return super.findMatchingRemap(userDefinedRemappings, inputtedKeys);
     }
 
     public getRemappedKeySequenceLengthRange(
@@ -202,11 +201,7 @@ suite('Remapper', () => {
 
       // act
       const testRemapper = new TestRemapper();
-      const actual = testRemapper.findMatchingRemap(
-        remappings,
-        testCase.input.split(''),
-        testCase.mode
-      );
+      const actual = testRemapper.findMatchingRemap(remappings, testCase.input.split(''));
 
       // assert
       if (testCase.expectedAfter) {

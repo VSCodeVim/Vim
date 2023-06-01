@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
-import { ILogger } from '../common/logger';
 import { Globals } from '../../globals';
+import { Logger } from '../../util/logger';
 
 export class HistoryBase {
   private readonly extensionStoragePath: string;
-  private readonly logger: ILogger;
   private readonly historyFileName: string;
   private history: string[] = [];
 
@@ -17,12 +16,10 @@ export class HistoryBase {
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
-    extensionStoragePath: string,
-    logger: ILogger
+    extensionStoragePath: string
   ) {
     this.historyFileName = historyFileName;
     this.extensionStoragePath = extensionStoragePath;
-    this.logger = logger;
   }
 
   public async add(value: string | undefined, history: number): Promise<void> {
@@ -61,7 +58,7 @@ export class HistoryBase {
       this.history = [];
       unlinkSync(this.historyKey);
     } catch (err) {
-      this.logger.warn(`Unable to delete ${this.historyKey}. err=${err}.`);
+      Logger.warn(`Unable to delete ${this.historyKey}. err=${err}.`);
     }
   }
 
@@ -73,9 +70,9 @@ export class HistoryBase {
       data = await readFileAsync(this.historyKey, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        this.logger.debug(`History does not exist. path=${this.historyKey}`);
+        Logger.debug(`History does not exist. path=${this.historyKey}`);
       } else {
-        this.logger.warn(`Failed to load history. path=${this.historyKey} err=${err}.`);
+        Logger.warn(`Failed to load history. path=${this.historyKey} err=${err}.`);
       }
       return;
     }
@@ -91,7 +88,7 @@ export class HistoryBase {
       }
       this.history = parsedData;
     } catch (e) {
-      this.logger.warn(`Deleting corrupted history file. path=${this.historyKey} err=${e}.`);
+      Logger.warn(`Deleting corrupted history file. path=${this.historyKey} err=${e}.`);
       this.clear();
     }
   }
@@ -110,7 +107,7 @@ export class HistoryBase {
       // create file
       await writeFileAsync(this.historyKey, JSON.stringify(this.history), 'utf-8');
     } catch (err) {
-      this.logger.error(`Failed to save history. filepath=${this.historyKey}. err=${err}.`);
+      Logger.error(`Failed to save history. filepath=${this.historyKey}. err=${err}.`);
       throw err;
     }
   }

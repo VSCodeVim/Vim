@@ -20,13 +20,12 @@ suite('matchpair empty', () => {
 });
 
 suite('matchpairs enabled', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.matchpairs = '<:>';
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   suite('Tests for % with matchpairs', () => {
     newTest({

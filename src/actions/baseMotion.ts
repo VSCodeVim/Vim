@@ -28,8 +28,8 @@ export interface IMovement {
   failed?: boolean;
 
   /**
-   * Wheter this motion resulted in the current multicursor index being removed. This
-   * happens when multiple selections combine into one.
+   * Whether this motion resulted in the current multicursor index being removed.
+   * This happens when multiple selections combine into one.
    */
   removed?: boolean;
 }
