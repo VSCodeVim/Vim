@@ -7,6 +7,7 @@
 - Implemented `:m[ove]` ([@zhanyi22333](https://github.com/zhanyi22333)).
 - Implemented `:red[o]` ([@hamza-tam](https://github.com/hamza-tam)).
 - Implemented `:pu[t] =` ([@elazarcoh](https://github.com/elazarcoh)).
+- Implemented `vim.selectionExclusive to approximate behavior of :set selection=exclusive` ([@sfinktah](https://github.com/sfinktah)).
 
 ### Fixed
 

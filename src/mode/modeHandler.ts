@@ -356,6 +356,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
+
         let selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
@@ -1236,17 +1237,38 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         switch (selectionMode) {
           case Mode.Visual:
             /**
-             * Always select the letter that we started visual mode on, no matter
-             * if we are in front or behind it. Imagine that we started visual mode
-             * with some text like this:
+             * If selectionExclusive is not set, always select the letter that
+             * we started visual mode on, no matter if we are in front or
+             * behind it. Imagine that we started visual mode with some text
+             * like this:
              *
              *   abc|def
              *
              * (The | represents the cursor.) If we now press w, we'll select def,
              * but if we hit b we expect to select abcd, so we need to getRight() on the
              * start of the selection when it precedes where we started visual mode.
+             *
+             * Conversely, if selectionExclusive is set, we do not select the
+             * letter that we started visual mode on **if we are behind it**.
+             * So we would expect `w` to select def, and `b` to select abc. 
              */
-            if (start.isAfterOrEqual(stop)) {
+
+            /**
+             * There is another aspect of selectionExclusive, which prevents
+             * the selection of an extra trailing character. Though this PR
+             * appears to have corrected that (visually), the extra character
+             * is still included in the subsequent action (e.g., deleted).
+             */
+            if (configuration.selectionExclusive) {
+              if (stop.isAfter(start)) {
+                // XXX: This changes the visual appearance of the selection not to
+                // include trailing characters, but subsequent actions still
+                // act as if that trailing character is included.
+                stop = stop.getLeft();
+              }
+            }
+
+            else if (start.isAfterOrEqual(stop)) {
               start = start.getRight();
             }
 

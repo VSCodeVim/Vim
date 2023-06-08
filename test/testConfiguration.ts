@@ -98,6 +98,7 @@ export class Configuration implements IConfiguration {
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
+  selectionExclusive = false;
   changeWordIncludesWhitespace = false;
   foldfix = false;
   disableExtension = false;

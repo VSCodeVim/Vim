@@ -400,6 +400,8 @@ class Configuration implements IConfiguration {
 
   mouseSelectionGoesIntoVisualMode = true;
 
+  selectionExclusive = false;
+
   changeWordIncludesWhitespace = false;
 
   foldfix = false;

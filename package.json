@@ -1114,6 +1114,11 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.selectionExclusive": {
+          "type": "boolean",
+          "description": "In visual mode, selection excludes characters under the cursor",
+          "default": false
         }
       }
     },

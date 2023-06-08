@@ -326,6 +326,12 @@ export interface IConfiguration {
   mouseSelectionGoesIntoVisualMode: boolean;
 
   /**
+   * In visual mode, selection excludes characters under the cursor
+   * (hack to emulate behavior of vim's selection=exclusive setting)
+   */
+  selectionExclusive: boolean;
+
+  /**
    * Includes trailing whitespace when changing word.
    */
   changeWordIncludesWhitespace: boolean;
