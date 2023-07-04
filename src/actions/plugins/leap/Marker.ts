@@ -106,6 +106,7 @@ class MarkerDecoration {
   }
 
   dispose() {
+    this.editor.setDecorations(this.textEditorDecorationType, []);
     this.textEditorDecorationType.dispose();
   }
 }
