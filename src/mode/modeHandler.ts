@@ -765,7 +765,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        prevMode !== Mode.LeapPrepareMode &&
+        prevMode !== Mode.LeapMode
       ) {
         ranRepeatableAction = true;
       }
