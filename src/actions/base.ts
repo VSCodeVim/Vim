@@ -6,6 +6,7 @@ import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { Langmap } from '../configuration/langmap';
 
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
@@ -41,7 +42,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public abstract readonly keys: readonly string[] | readonly string[][];
+  public abstract keys: readonly string[] | readonly string[][];
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -288,6 +289,8 @@ export function RegisterAction(action: new () => BaseAction): void {
       // action that can't be called directly
       continue;
     }
+
+    actionInstance.keys = Langmap.remapKeys(actionInstance.keys);
 
     actions.push(action);
   }
