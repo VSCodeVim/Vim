@@ -24,7 +24,7 @@ export class LeapPrepareAction extends BaseCommand {
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
     if (!configuration.leap.enable) return;
 
-    if (this.keysPressed[1] === '\n' && !configuration.leap.bidirectionalSearch) {
+    if (this.keysPressed[1] === '\n') {
       this.execRepeatLastSearch(vimState);
     } else {
       await this.execPrepare(cursorPosition, vimState);
