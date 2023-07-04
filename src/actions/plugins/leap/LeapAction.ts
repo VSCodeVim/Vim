@@ -18,7 +18,11 @@ export class LeapPrepareAction extends BaseCommand {
   ];
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]) {
-    return super.doesActionApply(vimState, keysPressed) && configuration.leap.enable;
+    return (
+      super.doesActionApply(vimState, keysPressed) &&
+      configuration.leap.enable &&
+      !vimState.isMultiCursor
+    );
   }
 
   public override async exec(cursorPosition: Position, vimState: VimState): Promise<void> {
