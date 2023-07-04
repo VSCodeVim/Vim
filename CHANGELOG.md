@@ -1,5 +1,19 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Implemented `:m[ove]` ([@zhanyi22333](https://github.com/zhanyi22333)).
+- Implemented `:red[o]` ([@hamza-tam](https://github.com/hamza-tam)).
+- Implemented `:pu[t] =` ([@elazarcoh](https://github.com/elazarcoh)).
+
+### Fixed
+
+- Fixed misbehavior when selecting from bottom to top with shift+click ([@lqqyt2423](https://github.com/lqqyt2423)).
+- Fixed `@@` when used in a different editor ([@J-Fields](https://github.com/J-Fields)).
+- Fixed race condition in the `c` operator and a few other actions when `vim.autoSwitchInputMethod` is enabled ([@listenerri](https://github.com/listenerri)).
+
 ## [v1.25.2](https://github.com/vscodevim/vim/tree/v1.25.2) (2023-03-01)
 
 ### Added
