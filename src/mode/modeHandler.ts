@@ -46,6 +46,7 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { Langmap } from '../configuration/langmap';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -399,10 +400,16 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   }
 
-  public async handleKeyEvent(key: string): Promise<void> {
+  public async handleKeyEvent(keyRaw: string): Promise<void> {
     if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
+
+    let key = [Mode.Normal, Mode.Visual, Mode.VisualBlock, Mode.VisualLine].includes(
+      this.currentMode
+    )
+      ? Langmap.remapKey(keyRaw)
+      : keyRaw;
 
     const now = Date.now();
 

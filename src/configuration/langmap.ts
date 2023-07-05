@@ -1,5 +1,5 @@
 export class Langmap {
-  private static keymap: { [key: string]: string } = {
+  private static qwertyToDvorak: { [key: string]: string } = {
     q: "'",
     w: ',',
     e: '.',
@@ -70,9 +70,13 @@ export class Langmap {
     '?': 'Z',
   };
 
+  private static dvorakToQwerty = Object.fromEntries(
+    Object.entries(this.qwertyToDvorak).map((x) => [x[1], x[0]])
+  );
+
   public static remapKey(key: string): string {
-    if (key.length !== 1 || !(key in this.keymap)) return key;
-    return this.keymap[key]; // notice that we're not remapping <C-> combinations. this is because in vim, ctrl remapping is not handled either
+    if (key.length !== 1 || !(key in this.dvorakToQwerty)) return key;
+    return this.dvorakToQwerty[key]; // notice that we're not remapping <C-> combinations. this is because in vim, ctrl remapping is not handled either
   }
 
   private static remapArray(keys: readonly string[]): string[] {
@@ -84,7 +88,6 @@ export class Langmap {
   }
 
   public static remapKeys(keys: readonly string[] | readonly string[][]): string[] | string[][] {
-    console.log('remapping ' + keys);
     if (keys === undefined || keys.length === 0) return [...keys] as string[] | string[][];
     if (Array.isArray(keys[0])) return this.remap2DArray(keys as readonly string[][]);
     return this.remapArray(keys as string[]);
