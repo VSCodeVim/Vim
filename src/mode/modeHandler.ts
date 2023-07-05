@@ -401,14 +401,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   public async handleKeyEvent(keyRaw: string): Promise<void> {
-    const key = [
-      Mode.Insert,
-      Mode.Replace,
-      Mode.SearchInProgressMode,
-      Mode.CommandlineInProgress,
-    ].includes(this.currentMode)
-      ? keyRaw
-      : Langmap.remapKey(keyRaw);
+    const key = Langmap.isLiteralMode(this.currentMode) ? keyRaw : Langmap.remapKey(keyRaw);
     return this.handleKeyEventLangmapped(key);
   }
 

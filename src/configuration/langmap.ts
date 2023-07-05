@@ -1,3 +1,5 @@
+import { Mode } from '../mode/mode';
+
 export class Langmap {
   private static qwertyToDvorak: { [key: string]: string } = {
     q: "'",
@@ -70,26 +72,64 @@ export class Langmap {
     '?': 'Z',
   };
 
-  private static dvorakToQwerty = Object.fromEntries(
+  private static nonMatchable = /<(any|leader|number|alpha|character)>/;
+  private static literalKeys = /<(any|number|alpha|character)>/;
+
+  public static isLiteralMode(mode: Mode): boolean {
+    return [
+      Mode.Insert,
+      Mode.Replace,
+      Mode.CommandlineInProgress,
+      Mode.SearchInProgressMode,
+    ].includes(mode);
+  }
+
+  private static dvorakToQwerty: { [key: string]: string } = Object.fromEntries(
     Object.entries(this.qwertyToDvorak).map((x) => [x[1], x[0]])
   );
 
+  private static map(map: { [key: string]: string }, key: string) {
+    if (key.length !== 1 || !(key in map)) return key;
+    return map[key]; // notice that we're not remapping <C-> combinations. this is because in vim, ctrl remapping is not handled either
+  }
+
   public static remapKey(key: string): string {
-    if (key.length !== 1 || !(key in this.dvorakToQwerty)) return key;
-    return this.dvorakToQwerty[key]; // notice that we're not remapping <C-> combinations. this is because in vim, ctrl remapping is not handled either
+    return this.map(this.dvorakToQwerty, key);
   }
 
-  private static remapArray(keys: readonly string[]): string[] {
-    return keys.map((x) => this.remapKey(x));
+  private static unmapKey(key: string): string {
+    return this.map(this.qwertyToDvorak, key);
   }
 
-  private static remap2DArray(keys: readonly string[][]): string[][] {
-    return keys.map((x) => this.remapArray(x));
-  }
+  public static unmapLiteral(
+    reference: readonly string[] | readonly string[][],
+    keys: readonly string[]
+  ): string[] {
+    if (reference.length === 0 || keys.length === 0) return [];
 
-  public static remapKeys(keys: readonly string[] | readonly string[][]): string[] | string[][] {
-    if (keys === undefined || keys.length === 0) return [...keys] as string[] | string[][];
-    if (Array.isArray(keys[0])) return this.remap2DArray(keys as readonly string[][]);
-    return this.remapArray(keys as string[]);
+    // find best matching
+    if (Array.isArray(reference[0])) {
+      for (const possibility of reference as string[][]) {
+        if (possibility.length !== keys.length) continue;
+        let allMatch = true;
+        for (let i = 0; i < possibility.length; ++i) {
+          if (this.nonMatchable.test(possibility[i])) continue;
+          if (possibility[i] !== keys[i]) {
+            allMatch = false;
+            break;
+          }
+        }
+        if (allMatch) return this.unmapLiteral(possibility, keys);
+      }
+    }
+
+    // unmap <character> <number> <alpha> and <any>
+    const unmapped = [...keys];
+    for (let i = 0; i < keys.length; ++i) {
+      if (this.literalKeys.test((reference as string[])[i])) {
+        unmapped[i] = this.unmapKey(keys[i]);
+      }
+    }
+    return unmapped;
   }
 }
