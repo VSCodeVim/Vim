@@ -396,20 +396,26 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
     for (const key of keys) {
-      await this.handleKeyEvent(key);
+      await this.handleKeyEventLangmapped(key);
     }
   }
 
   public async handleKeyEvent(keyRaw: string): Promise<void> {
+    const key = [
+      Mode.Insert,
+      Mode.Replace,
+      Mode.SearchInProgressMode,
+      Mode.CommandlineInProgress,
+    ].includes(this.currentMode)
+      ? keyRaw
+      : Langmap.remapKey(keyRaw);
+    return this.handleKeyEventLangmapped(key);
+  }
+
+  private async handleKeyEventLangmapped(key: string): Promise<void> {
     if (this.remapState.forceStopRecursiveRemapping) {
       return;
     }
-
-    let key = [Mode.Normal, Mode.Visual, Mode.VisualBlock, Mode.VisualLine].includes(
-      this.currentMode
-    )
-      ? Langmap.remapKey(keyRaw)
-      : keyRaw;
 
     const now = Date.now();
 
