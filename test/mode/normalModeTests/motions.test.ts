@@ -3,11 +3,8 @@ import { Mode } from '../../../src/mode/mode';
 import { newTest, newTestSkip } from '../../testSimplifier';
 
 suite('Motions in Normal Mode', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   suite('w', () => {
     newTest({

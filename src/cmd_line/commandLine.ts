@@ -207,8 +207,6 @@ export class ExCommandLine extends CommandLine {
   private lineRange: LineRange | undefined;
   private command: ExCommand | undefined;
 
-  private static readonly logger = Logger.get('CommandLine');
-
   constructor(commandText: string, previousMode: Mode) {
     super(commandText, previousMode);
     this.commandText = commandText;
@@ -257,6 +255,7 @@ export class ExCommandLine extends CommandLine {
   }
 
   public async run(vimState: VimState): Promise<void> {
+    Logger.info(`Executing :${this.text}`);
     ExCommandLine.history.add(this.text);
     this.historyIndex = ExCommandLine.history.get().length;
 
@@ -299,7 +298,7 @@ export class ExCommandLine extends CommandLine {
           StatusBar.setText(vimState, e.toString(), true);
         }
       } else {
-        ExCommandLine.logger.error(`Error executing cmd=${this.text}. err=${e}.`);
+        Logger.error(`Error executing cmd=${this.text}. err=${e}.`);
       }
     }
 
@@ -474,6 +473,7 @@ export class SearchCommandLine extends CommandLine {
           ].searchString;
       }
     }
+    Logger.info(`Searching for ${this.text}`);
 
     this.cursorIndex = 0;
     Register.setReadonlyRegister('/', this.text);

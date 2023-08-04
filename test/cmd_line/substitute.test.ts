@@ -1,4 +1,3 @@
-import { getAndUpdateModeHandler } from '../../extension';
 import { Globals } from '../../src/globals';
 import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 import { newTest } from '../testSimplifier';
@@ -15,11 +14,7 @@ function sub(
 }
 
 suite('Basic substitute', () => {
-  setup(async () => {
-    await setupWorkspace();
-    await getAndUpdateModeHandler();
-  });
-
+  setup(setupWorkspace);
   suiteTeardown(cleanUpWorkspace);
 
   newTest({

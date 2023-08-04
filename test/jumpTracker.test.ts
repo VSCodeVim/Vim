@@ -8,11 +8,8 @@ import { Position } from 'vscode';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({
@@ -317,8 +314,7 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['{', '}'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         keysPressed: '/^\nnnn<C-o><C-o><C-o><C-i>gg',
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
@@ -369,22 +365,19 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Line Mode', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkdd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a3'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkdd',
         end: ['start', 'a1', 'a2', '|a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a4'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnnn<C-o><C-o><C-o><C-o>dd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
@@ -399,8 +392,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Mode', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkklvjjhx',
         end: ['start', 'a1', 'a|4', 'a5', 'end'],
@@ -448,8 +440,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can track jumps from macros', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
         keysPressed: 'qq/^\nnq@q@q<C-o><C-o>',
         end: ['start', 'a1', 'a2', 'a3', '|a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],

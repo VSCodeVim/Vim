@@ -16,6 +16,7 @@ import {
   ICamelCaseMotionConfiguration,
   ITargetsConfiguration,
   IModeSpecificStringsExtended,
+  Digraph,
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
@@ -98,8 +99,10 @@ interface IKeyBinding {
  *
  */
 class Configuration implements IConfiguration {
+  [key: string]: any;
+
   private readonly leaderDefault = '\\';
-  private readonly cursorTypeMap = {
+  private readonly cursorTypeMap: { [key: string]: vscode.TextEditorCursorStyle } = {
     line: vscode.TextEditorCursorStyle.Line,
     block: vscode.TextEditorCursorStyle.Block,
     underline: vscode.TextEditorCursorStyle.Underline,
@@ -433,7 +436,7 @@ class Configuration implements IConfiguration {
     path: '',
   };
 
-  digraphs = {};
+  digraphs: { [shortcut: string]: Digraph } = {};
 
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
@@ -464,6 +467,7 @@ class Configuration implements IConfiguration {
   };
 
   getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    // @ts-ignore: TODO: this function should take the mode directly
     const cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
@@ -500,11 +504,11 @@ class Configuration implements IConfiguration {
     return textwidth;
   }
 
-  private static unproxify(obj: object): object {
-    const result = {};
+  private static unproxify(obj: { [key: string]: any }): object {
+    const result: { [key: string]: any } = {};
     // tslint:disable-next-line: forin
     for (const key in obj) {
-      const val = obj[key] as any;
+      const val = obj[key];
       if (val !== null && val !== undefined) {
         result[key] = val;
       }
@@ -526,6 +530,7 @@ function overlapSetting(args: {
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
         // if that is not defined then defer to the default value
+        // @ts-ignore
         let val = this['_' + propertyKey];
         if (val !== undefined && val !== '') {
           return val;

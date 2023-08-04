@@ -27,35 +27,35 @@ export enum TabCommandType {
 // TODO: many of these arguments aren't used
 export type ITabCommandArguments =
   | {
-    type: TabCommandType.Absolute;
-    count: number;
-  }
+      type: TabCommandType.Absolute;
+      count: number;
+    }
   | {
-    type: TabCommandType.First | TabCommandType.Last;
-    cmd?: FileCmd;
-  }
+      type: TabCommandType.First | TabCommandType.Last;
+      cmd?: FileCmd;
+    }
   | {
-    type: TabCommandType.Next | TabCommandType.Previous;
-    bang: boolean;
-    cmd?: FileCmd;
-    count?: number;
-  }
+      type: TabCommandType.Next | TabCommandType.Previous;
+      bang: boolean;
+      cmd?: FileCmd;
+      count?: number;
+    }
   | {
-    type: TabCommandType.Close | TabCommandType.Only;
-    bang: boolean;
-    count?: number;
-  }
+      type: TabCommandType.Close | TabCommandType.Only;
+      bang: boolean;
+      count?: number;
+    }
   | {
-    type: TabCommandType.New;
-    opt: FileOpt;
-    cmd?: FileCmd;
-    file?: string;
-  }
+      type: TabCommandType.New;
+      opt: FileOpt;
+      cmd?: FileCmd;
+      file?: string;
+    }
   | {
-    type: TabCommandType.Move;
-    direction?: 'left' | 'right';
-    count?: number;
-  };
+      type: TabCommandType.Move;
+      direction?: 'left' | 'right';
+      count?: number;
+    };
 
 //
 //  Implements most buffer and tab ex commands
@@ -152,7 +152,6 @@ export class TabCommand extends ExCommand {
         }
 
         if (this.arguments.count) {
-
           const tabGroup = vscode.window.tabGroups.activeTabGroup;
           if (0 < this.arguments.count && this.arguments.count <= tabGroup.tabs.length) {
             const tab = tabGroup.tabs[this.arguments.count - 1];

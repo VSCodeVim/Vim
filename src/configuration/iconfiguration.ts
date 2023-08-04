@@ -96,6 +96,8 @@ export interface ITargetsConfiguration {
 }
 
 export interface IConfiguration {
+  [key: string]: any;
+
   /**
    * Use the system's clipboard when copying.
    */

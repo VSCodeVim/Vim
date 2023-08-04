@@ -15,12 +15,11 @@ import { SmileCommand } from '../../src/cmd_line/commands/smile';
 suite('Smile command', () => {
   let modeHandler: ModeHandler;
 
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test(':smile creates new tab', async () => {
     await new ExCommandLine('smile', modeHandler.vimState.currentMode).run(modeHandler.vimState);

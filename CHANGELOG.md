@@ -4,6 +4,36 @@
 
 ### Added
 
+- Implemented `:m[ove]` ([@zhanyi22333](https://github.com/zhanyi22333)).
+- Implemented `:red[o]` ([@hamza-tam](https://github.com/hamza-tam)).
+- Implemented `:pu[t] =` ([@elazarcoh](https://github.com/elazarcoh)).
+
+### Fixed
+
+- Fixed misbehavior when selecting from bottom to top with shift+click ([@lqqyt2423](https://github.com/lqqyt2423)).
+- Fixed `@@` when used in a different editor ([@J-Fields](https://github.com/J-Fields)).
+- Fixed race condition in the `c` operator and a few other actions when `vim.autoSwitchInputMethod` is enabled ([@listenerri](https://github.com/listenerri)).
+
+## [v1.25.2](https://github.com/vscodevim/vim/tree/v1.25.2) (2023-03-01)
+
+### Added
+
+- Support for `:w <FILENAME>` ([@JLMSC](https://github.com/JLMSC)).
+
+### Changed
+
+- Reduced extension bundle size by removing source maps ([@kidonng](https://github.com/kidonng)).
+- Replaced "Report bug" popup on exceptions with an error log message ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed remaps which pass multiple positional arguments to a command ([@elmar-peise](https://github.com/elmar-peise)).
+- Fixed cursor position after certain surround actions ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.25.0](https://github.com/vscodevim/vim/tree/v1.25.0) (2023-02-28)
+
+### Added
+
 - Support for `:cw[indow]`, `:lw[indow]`, and related commands ([@mogelbrod](https://github.com/mogelbrod)).
 
 ### Changed
@@ -13,6 +43,7 @@
 
 ### Fixed
 
+- Fixed undo/redo after recent VS Code update ([@J-Fields](https://github.com/J-Fields)).
 - Fixed `.` after exiting Visual mode or command line with `<Esc>` ([@wgr45097](https://github.com/wgr45097)).
 - Fixed ex command line ranges with no explicit start, such as `,5` ([@lazygyu](https://github.com/lazygyu)).
 

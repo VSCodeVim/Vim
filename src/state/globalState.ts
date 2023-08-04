@@ -18,6 +18,8 @@ class GlobalState {
    */
   public previousFullAction: RecordedState | undefined = undefined;
 
+  public lastInvokedMacro: RecordedState | undefined = undefined;
+
   /**
    * Last substitute state for running :s by itself
    */

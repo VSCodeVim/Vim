@@ -13,15 +13,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2-beta
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: 16
+          cache: yarn
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Lint
-        run: npx tslint -c tslint.json -p tsconfig.json
+        run: yarn lint
 
       - name: Build
         run: gulp webpack
