@@ -1117,7 +1117,7 @@
         },
         "vim.langmap": {
           "type": "string",
-          "description": "Language map for Insert, Visual and similar modes."
+          "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted derectly. Otherwise, they are translated based on the provided map."
         }
       }
     },
