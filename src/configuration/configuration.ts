@@ -20,6 +20,7 @@ import {
 
 import * as packagejson from '../../package.json';
 import { SUPPORT_VIMRC } from 'platform/constants';
+import { Langmap } from './langmap';
 
 // https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
 type RemoveIndex<T> = {
@@ -189,6 +190,8 @@ class Configuration implements IConfiguration {
 
     VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
     VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+
+    Langmap.updateLangmap(this.langmap);
 
     return validatorResults;
   }
@@ -473,6 +476,9 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+
+  // langmap
+  langmap = '';
 
   get textwidth(): number {
     const textwidth = this.getConfiguration('vim').get('textwidth', 80);

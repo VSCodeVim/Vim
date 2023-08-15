@@ -1114,6 +1114,10 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.langmap": {
+          "type": "string",
+          "description": "Language map for Insert, Visual and similar modes."
         }
       }
     },

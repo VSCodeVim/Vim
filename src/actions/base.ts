@@ -266,9 +266,10 @@ export function getRelevantAction(
     //       I think we can make `doesActionApply` and `couldActionApply` static...
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = Langmap.isLiteralMode(vimState.currentMode)
-        ? [...vimState.recordedState.actionKeys]
-        : Langmap.unmapLiteral(action.keys, vimState.recordedState.actionKeys);
+      action.keysPressed =
+        !Langmap.isRemapped || Langmap.isLiteralMode(vimState.currentMode)
+          ? [...vimState.recordedState.actionKeys]
+          : Langmap.getLangmap().unmapLiteral(action.keys, vimState.recordedState.actionKeys);
       return action;
     }
 
