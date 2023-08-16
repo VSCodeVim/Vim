@@ -4,7 +4,6 @@ import { VimError, ErrorCode } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
-import { Langmap } from '../../configuration/langmap';
 
 type SetOperation =
   | {
