@@ -76,7 +76,7 @@ export class Langmap {
       const characters = [];
       let escaped = false;
       for (const character of list) {
-        if (character === '/') {
+        if (character === '\\') {
           escaped = !escaped;
           if (escaped) continue;
         }
