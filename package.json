@@ -35,7 +35,7 @@
   ],
   "sideEffects": false,
   "activationEvents": [
-    "*",
+    "onStartupFinished",
     "onCommand:type"
   ],
   "qna": "https://vscodevim.herokuapp.com/",
