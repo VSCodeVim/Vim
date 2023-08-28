@@ -368,7 +368,6 @@ Custom remappings are defined on a per-mode basis.
     2.  Select `Vim`, then `Debug`
     3.  Run `Developer: Reload window`
     4.  In the bottom panel, open the `Output` tab and select `Vim` from the dropdown selection.
-       
 2.  Are your configurations correct?
 
     As each remapped configuration is loaded, it is logged to the Vim Output panel. Do you see any errors?
