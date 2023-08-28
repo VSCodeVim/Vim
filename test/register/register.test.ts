@@ -78,7 +78,7 @@ suite('register', () => {
 
     // TODO: Not sure why this sleep should be necessary
     await new Promise((resolve) => {
-      setTimeout(resolve, 10);
+      setTimeout(resolve, 100);
     });
 
     assertEqualLines([testString + testString]);
