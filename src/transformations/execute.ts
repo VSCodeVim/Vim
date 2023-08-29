@@ -241,13 +241,19 @@ export async function executeTransformations(
     }
   }
 
-  const selections = vimState.editor.selections.map((sel) => {
-    let range = Cursor.FromVSCodeSelection(sel);
-    if (range.start.isBefore(range.stop)) {
-      range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
-    }
-    return new vscode.Selection(range.start, range.stop);
-  });
+  let selections;
+  if (vimState.currentMode === Mode.Insert) {
+    // Insert mode selections do not need to be modified
+    selections = vimState.editor.selections;
+  } else {
+    selections = vimState.editor.selections.map((sel) => {
+      let range = Cursor.FromVSCodeSelection(sel);
+      if (range.start.isBefore(range.stop)) {
+        range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
+      }
+      return new vscode.Selection(range.start, range.stop);
+    });
+  }
   const firstTransformation = transformations[0];
   const manuallySetCursorPositions =
     (firstTransformation.type === 'deleteRange' ||

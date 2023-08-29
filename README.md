@@ -126,9 +126,6 @@ These settings are specific to VSCodeVim.
 | vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                                 | Boolean | false                                                         |
 | vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                         | String  | None                                                          |
 | vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                  | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`                             |
-| vim.debug.silent                 | Boolean indicating whether log messages will be suppressed.                                                                                                                                                                                                                                                                                                                                                                        | Boolean | false                                                         |
-| vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                              | String  | error                                                         |
-| vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                | String  | error                                                         |
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                     | Boolean | false                                                         |
 | vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behavior): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`<br /> `"<C-z>": false` |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                   | Boolean | false                                                         |
@@ -366,9 +363,14 @@ Custom remappings are defined on a per-mode basis.
 
 #### Debugging Remappings
 
-1.  Are your configurations correct?
+1.  Adjust the extension's logging level to 'debug' and open the Output window:
+    1.  Run `Developer: Set Log Level` from the command palette.
+    2.  Select `Vim`, then `Debug`
+    3.  Run `Developer: Reload window`
+    4.  In the bottom panel, open the `Output` tab and select `Vim` from the dropdown selection.
+2.  Are your configurations correct?
 
-    Adjust the extension's [logging level](#vscodevim-settings) to 'debug', restart VS Code. As each remapped configuration is loaded, it is outputted to console. In the Developer Tools console, do you see any errors?
+    As each remapped configuration is loaded, it is logged to the Vim Output panel. Do you see any errors?
 
     ```console
     debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
@@ -378,9 +380,9 @@ Custom remappings are defined on a per-mode basis.
 
     Misconfigured configurations are ignored.
 
-2.  Does the extension handle the keys you are trying to remap?
+3.  Does the extension handle the keys you are trying to remap?
 
-    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/9bab33c75d0a53873880a79c5d2de41c8be1bef9/package.json#L62). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vscodevim-settings) adjusted to 'debug', as you press keys, you should see output similar to:
+    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/9bab33c75d0a53873880a79c5d2de41c8be1bef9/package.json#L62). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. In the Vim Output panel, you should see:
 
     ```console
     debug: ModeHandler: handling key=A.
