@@ -3,7 +3,7 @@ import { TextEditor } from '../textEditor';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
 import { getAllPositions, getAllEndPositions } from './util';
 
-const sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
+const sentenceEndRegex = /[\.!\?]["')\]]*?([ \n\t]+|$)/g;
 
 export function getSentenceBegin(position: Position, args: { forward: boolean }): Position {
   if (args.forward) {
