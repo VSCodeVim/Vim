@@ -1272,6 +1272,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             }
             break;
 
+          case Mode.Insert:
+            // Don't collapse existing selections in insert mode
+            selections.push(new vscode.Selection(start, stop));
+            break;
           default:
             // Note that this collapses the selection onto one position
             selections.push(new vscode.Selection(stop, stop));

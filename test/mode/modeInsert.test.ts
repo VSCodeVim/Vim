@@ -625,4 +625,48 @@ suite('Mode Insert', () => {
       endMode: Mode.Insert,
     });
   });
+
+  suite('VSCode auto-surround', () => {
+    test('preserves selection', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 's', 'e', 'l', 'e', 'c', 't']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+      await modeHandler.handleKeyEvent('"');
+      assertEqualLines(['"select"']);
+      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 1);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 7);
+    });
+
+    test('replaces selection', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'm', 'p']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+      await modeHandler.handleMultipleKeyEvents(['"', 'f', 'i', 'n', 'a', 'l']);
+      assertEqualLines(['"final"']);
+      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 6);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 6);
+    });
+
+    test('stacks', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'x', 't']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+
+      await modeHandler.handleMultipleKeyEvents(['"', "'", '(', '[', '{', '<', '`']);
+      assertEqualLines(['"\'([{<`text`>}])\'"']);
+    });
+
+    test('handles snippet', async () => {
+      await modeHandler.handleKeyEvent('i');
+      await vscode.commands.executeCommand('editor.action.insertSnippet', {
+        snippet: '${3:foo} ${1:bar} ${2:baz}',
+      });
+      await modeHandler.handleMultipleKeyEvents(['(', 'o', 'n', 'e']);
+      await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
+      await modeHandler.handleMultipleKeyEvents(['<', 't', 'w', 'o']);
+      await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
+      await modeHandler.handleKeyEvent('`');
+      assertEqualLines(['`foo` (one) <two>']);
+      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    });
+  });
 });
