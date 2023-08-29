@@ -539,7 +539,6 @@ suite('sentence motion', () => {
       motion = motion.getSentenceBegin({ forward: true });
       assert.strictEqual(motion.line, 11);
       assert.strictEqual(motion.character, 96);
-
     });
   });
 
