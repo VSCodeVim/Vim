@@ -15,6 +15,8 @@ export enum Mode {
   SurroundInputMode,
   OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
+  LeapPrepareMode,
+  LeapMode,
 }
 
 export enum VSCodeVimCursorType {

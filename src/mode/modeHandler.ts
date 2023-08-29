@@ -46,6 +46,7 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { disposeLeap } from '../actions/plugins/leap/leap';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -764,7 +765,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        prevMode !== Mode.LeapPrepareMode &&
+        prevMode !== Mode.LeapMode
       ) {
         ranRepeatableAction = true;
       }
@@ -1611,6 +1614,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
+    if (this.currentMode !== Mode.LeapPrepareMode && this.currentMode !== Mode.LeapMode) {
+      disposeLeap();
+    }
 
     StatusBar.clear(this.vimState, false);
 
@@ -1693,6 +1699,10 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.EasyMotionMode:
       return VSCodeVimCursorType.Block;
     case Mode.EasyMotionInputMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.LeapPrepareMode:
+      return VSCodeVimCursorType.Block;
+    case Mode.LeapMode:
       return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);

@@ -291,6 +291,10 @@ class DeleteOperatorXVisual extends BaseOperator {
   public keys = [['x'], ['<Del>']];
   public modes = [Mode.Visual, Mode.VisualLine];
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap.enable;
+  }
+
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
@@ -303,7 +307,9 @@ class ChangeOperatorSVisual extends BaseOperator {
 
   // Don't clash with Sneak plugin
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
+    return (
+      super.doesActionApply(vimState, keysPressed) && !configuration.sneak && !configuration.leap.enable
+    );
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {

@@ -902,11 +902,16 @@ class CommandClearLine extends BaseCommand {
 
   // Don't clash with sneak
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
+    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch;
+    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak && !leapSwitch;
   }
 
   public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && !configuration.sneak;
+    return (
+      super.couldActionApply(vimState, keysPressed) &&
+      !configuration.sneak &&
+      !configuration.leap.enable
+    );
   }
 }
 
@@ -2132,6 +2137,10 @@ export class ActionDeleteCharVisualLineMode extends BaseCommand {
   keys = ['x'];
   override name = 'delete_char_visual_line_mode';
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.leap.enable;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
     await new operator.DeleteOperator(this.multicursorIndex).run(
@@ -2146,6 +2155,11 @@ export class ActionDeleteCharVisualLineMode extends BaseCommand {
 class ActionDeleteLineVisualMode extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['X'];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const leapSwitch = configuration.leap.enable && !configuration.leap.bidirectionalSearch;
+    return super.doesActionApply(vimState, keysPressed) && !leapSwitch;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const [start, end] = sorted(vimState.cursorStartPosition, vimState.cursorStopPosition);
@@ -2214,6 +2228,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.doesActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
+      !configuration.leap.enable &&
       !vimState.recordedState.operator
     );
   }
@@ -2222,6 +2237,7 @@ class ActionChangeChar extends BaseCommand {
     return (
       super.couldActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
+      !configuration.leap.enable &&
       !vimState.recordedState.operator
     );
   }

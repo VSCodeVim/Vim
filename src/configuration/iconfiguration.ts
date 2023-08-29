@@ -86,6 +86,18 @@ export interface ITargetsConfiguration {
   smartQuotes: ISmartQuotesConfiguration;
 }
 
+export interface ILeapConfiguration {
+  enable: boolean;
+  showMarkerPosition: 'after' | 'target';
+  labels: string;
+  caseSensitive: boolean;
+  bidirectionalSearch: boolean;
+  marker: {
+    backgroundColors: string[];
+    charColor: string;
+  };
+}
+
 export interface IConfiguration {
   [key: string]: any;
 
@@ -144,6 +156,10 @@ export interface IConfiguration {
    * Use EasyMotion plugin?
    */
   easymotion: boolean;
+  /**
+   * Use Leap plugin?
+   */
+  leap: ILeapConfiguration;
 
   /**
    * Use ReplaceWithRegister plugin?

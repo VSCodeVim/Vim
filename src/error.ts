@@ -36,6 +36,8 @@ export enum ErrorCode {
   ChangeListIsEmpty = 664,
   StartPastEnd = 727,
   NoPreviouslyUsedRegister = 748,
+  LeapNoPreviousSearch = 800,
+  LeapNoFoundSearchString = 801,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -72,6 +74,8 @@ export const ErrorMessage: IErrorMessage = {
   664: 'changelist is empty',
   727: 'Start past end',
   748: 'No previously used register',
+  800: 'No previous search',
+  801: 'Not found',
 };
 
 export class VimError extends Error {
