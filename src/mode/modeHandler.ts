@@ -137,7 +137,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // TODO: getCursorsAfterSync() is basically this, but stupider
     const { selections } = this.vimState.editor;
     if (
-      selections.length == 1 &&
+      selections.length === 1 &&
       selections[0].isEqual(new Range(new Position(0, 0), new Position(0, 0)))
     ) {
       return;
