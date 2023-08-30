@@ -136,6 +136,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
     const { selections } = this.vimState.editor;
+    // TODO: this if block is a workaround for a problem described here https://github.com/VSCodeVim/Vim/pull/8426
     if (
       selections.length === 1 &&
       selections[0].isEqual(new Range(new Position(0, 0), new Position(0, 0)))
