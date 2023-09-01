@@ -85,10 +85,13 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     if (visibleRanges.length === 0) {
       return;
     }
+
     const smoothScrolling = configuration
       .getConfiguration('editor')
       .get<boolean>('smoothScrolling', false);
-    const moveLines = (vimState.actionCount || 1) * this.getNumLines(visibleRanges);
+
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const moveLines = timesToRepeat * this.getNumLines(visibleRanges);
 
     let scrollLines = moveLines;
     if (this.to === 'down') {
