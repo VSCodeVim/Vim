@@ -1053,7 +1053,8 @@ class GoToDeclaration extends BaseCommand {
 
     if (vimState.editor === vscode.window.activeTextEditor) {
       // We didn't switch to a different editor
-      vimState.cursorStopPosition = vimState.editor.selection.start;
+      vimState.cursorStartPosition = vimState.editor.selection.start;
+      vimState.cursorStopPosition = vimState.editor.selection.end;
     }
   }
 }
