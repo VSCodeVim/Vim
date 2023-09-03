@@ -444,4 +444,9 @@ export interface IConfiguration {
    * Path to the shell to use for `!` and `:!` commands.
    */
   shell: string;
+
+  /**
+   * When true, `:q` closes all tabs in a split. This behavior mimics the workflow from native Vim.
+   */
+  closeSplitEditorsOnQuit: boolean;
 }
