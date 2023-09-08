@@ -36,9 +36,6 @@ async function searchCurrentWord(
       isExact = false;
     }
 
-    if (isExact) {
-      currentWord = _.escapeRegExp(currentWord);
-    }
     // If the search is going left then use `getWordLeft()` on position to start
     // at the beginning of the word. This ensures that any matches happen
     // outside of the currently selected word.
