@@ -1114,6 +1114,11 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.closeSplitEditorsOnQuit": {
+          "type": "boolean",
+          "description": "When true, `:q` closes all tabs in a split. This behavior mimics the workflow from native Vim.",
+          "default": false
         }
       }
     },

@@ -5,6 +5,7 @@ import * as error from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser } from '../../vimscript/parserUtils';
+import { configuration } from './../../configuration/configuration';
 
 export interface IQuitCommandArguments {
   bang?: boolean;
@@ -12,20 +13,13 @@ export interface IQuitCommandArguments {
 }
 
 //
-//  Implements :quit
-//  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
+// Implements :quit
+// http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
 export class QuitCommand extends ExCommand {
   public static readonly argParser: (quitAll: boolean) => Parser<QuitCommand> = (
     quitAll: boolean
-  ) =>
-    bangParser.map(
-      (bang) =>
-        new QuitCommand({
-          bang,
-          quitAll,
-        })
-    );
+  ) => bangParser.map((bang) => new QuitCommand({ bang, quitAll }));
 
   public override isRepeatableWithDot = false;
 
@@ -50,12 +44,19 @@ export class QuitCommand extends ExCommand {
 
     if (this.arguments.quitAll) {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    } else {
-      if (!this.arguments.bang) {
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-      } else {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-      }
+      return;
     }
+
+    if (this.arguments.bang) {
+      await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+      return;
+    }
+
+    if (configuration.closeSplitEditorsOnQuit) {
+      await vscode.commands.executeCommand('workbench.action.closeEditorsInGroup');
+      return;
+    }
+
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }
 }

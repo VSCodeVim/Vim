@@ -431,6 +431,9 @@ class Configuration implements IConfiguration {
   wrapscan = true;
 
   scroll = 0;
+
+  closeSplitEditorsOnQuit = false;
+
   getScrollLines(visibleRanges: vscode.Range[]): number {
     return this.scroll === 0
       ? Math.ceil((visibleRanges[0].end.line - visibleRanges[0].start.line) / 2)
