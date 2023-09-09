@@ -27,7 +27,7 @@ interface ICodeKeybinding {
 }
 
 export async function getAndUpdateModeHandler(
-  forceSyncAndUpdate = false
+  forceSyncAndUpdate = false,
 ): Promise<ModeHandler | undefined> {
   const activeTextEditor = vscode.window.activeTextEditor;
   if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
@@ -122,7 +122,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       Logger.info('Configuration changed');
       await loadConfiguration();
     },
-    false
+    false,
   );
 
   registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async (event) => {
@@ -136,7 +136,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     }
 
     Logger.debug(
-      `${event.contentChanges.length} change(s) to ${event.document.fileName} because ${event.reason}`
+      `${event.contentChanges.length} change(s) to ${event.document.fileName} because ${event.reason}`,
     );
     for (const x of event.contentChanges) {
       Logger.trace(`\t-${x.rangeLength}, +'${x.text}'`);
@@ -204,7 +204,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         }
       }
     },
-    false
+    false,
   );
 
   // window events
@@ -250,12 +250,12 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh) {
         globalState.jumpTracker.handleFileJump(
           lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
-          Jump.fromStateNow(mh.vimState)
+          Jump.fromStateNow(mh.vimState),
         );
       }
     },
     true,
-    true
+    true,
   );
 
   registerEventListener(
@@ -285,13 +285,13 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           (hash, s) =>
             hash +
             `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-          ''
+          '',
         );
         const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
           mh.selectionsChanged.ourSelections.splice(idx, 1);
           Logger.trace(
-            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelections.length} left`
+            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelections.length} left`,
           );
           return;
         } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
@@ -325,7 +325,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       await mh.handleSelectionChange(e);
     },
     true,
-    false
+    false,
   );
 
   registerEventListener(
@@ -344,7 +344,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           StatusBar.clear(mh.vimState, true);
         }
       }
-    }
+    },
   );
 
   const compositionState = new CompositionState();
@@ -372,7 +372,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         compositionState.composingText =
           compositionState.composingText.substr(
             0,
-            compositionState.composingText.length - args.replaceCharCnt
+            compositionState.composingText.length - args.replaceCharCnt,
           ) + args.text;
       }
       if (compositionState.insertedText) {
@@ -439,7 +439,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
     if (!args) {
       throw new Error(
-        "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'"
+        "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'",
       );
     }
 
@@ -455,7 +455,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         if (command.command.startsWith(':')) {
           await new ExCommandLine(
             command.command.slice(1, command.command.length),
-            mh.vimState.currentMode
+            mh.vimState.currentMode,
           ).run(mh.vimState);
           mh.updateView();
         } else {
@@ -544,7 +544,7 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
 function overrideCommand(
   context: vscode.ExtensionContext,
   command: string,
-  callback: (...args: any[]) => any
+  callback: (...args: any[]) => any,
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (configuration.disableExtension) {
@@ -571,7 +571,7 @@ export function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
   callback: (...args: any[]) => any,
-  requiresActiveEditor: boolean = true
+  requiresActiveEditor: boolean = true,
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (requiresActiveEditor && !vscode.window.activeTextEditor) {
@@ -588,7 +588,7 @@ export function registerEventListener<T>(
   event: vscode.Event<T>,
   listener: (e: T) => void,
   exitOnExtensionDisable = true,
-  exitOnTests = false
+  exitOnTests = false,
 ) {
   const disposable = event(async (e) => {
     if (exitOnExtensionDisable && configuration.disableExtension) {

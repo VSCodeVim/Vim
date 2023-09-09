@@ -124,7 +124,7 @@ export class Remapper implements IRemapper {
     Logger.trace(
       `trying to find matching remap. keys=${keys}. mode=${
         Mode[vimState.currentMode]
-      }. keybindings=${this.configKey}.`
+      }. keybindings=${this.configKey}.`,
     );
 
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(userDefinedRemappings, keys);
@@ -206,11 +206,11 @@ export class Remapper implements IRemapper {
           keys.push(SpecialKeys.TimeoutFinished); // include the '<TimeoutFinished>' key
 
           Logger.trace(
-            `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
+            `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`,
           );
         }
         Logger.trace(
-          `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
+          `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`,
         );
         this.hasPotentialRemap = false;
         vimState.recordedState.allowPotentialRemapOnFirstKey = false;
@@ -229,7 +229,7 @@ export class Remapper implements IRemapper {
           } catch (e) {
             if (e instanceof ForceStopRemappingError) {
               Logger.trace(
-                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
               );
             }
           } finally {
@@ -266,12 +266,12 @@ export class Remapper implements IRemapper {
         this.hasAmbiguousRemap = remapping;
 
         Logger.trace(
-          `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
+          `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`,
         );
       } else {
         this.hasPotentialRemap = true;
         Logger.trace(
-          `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`
+          `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`,
         );
       }
 
@@ -333,7 +333,7 @@ export class Remapper implements IRemapper {
       remapState.mapDepth++;
 
       Logger.trace(
-        `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`
+        `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`,
       );
 
       let remapFailed = false;
@@ -377,12 +377,12 @@ export class Remapper implements IRemapper {
           }
 
           Logger.trace(
-            `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+            `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
           );
         } else {
           // If some other error happens during the remapping handling it should stop the remap and rethrow
           Logger.trace(
-            `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
+            `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`,
           );
           throw e;
         }
@@ -440,7 +440,7 @@ export class Remapper implements IRemapper {
               await modeHandler.handleMultipleKeyEvents(remainingKeys);
             } catch (e) {
               Logger.trace(
-                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
               );
             } finally {
               remapState.isCurrentlyPerformingRecursiveRemapping = false;
@@ -466,7 +466,7 @@ export class Remapper implements IRemapper {
   private async handleRemapping(
     remapping: IKeyRemapping,
     modeHandler: ModeHandler,
-    skipFirstCharacter: boolean
+    skipFirstCharacter: boolean,
   ) {
     const { vimState, remapState } = modeHandler;
 
@@ -531,7 +531,7 @@ export class Remapper implements IRemapper {
 
   protected findMatchingRemap(
     userDefinedRemappings: Map<string, IKeyRemapping>,
-    inputtedKeys: string[]
+    inputtedKeys: string[],
   ): IKeyRemapping | undefined {
     if (userDefinedRemappings.size === 0) {
       return undefined;
@@ -563,7 +563,7 @@ export class Remapper implements IRemapper {
    * @param remappings
    */
   protected static getRemappedKeysLengthRange(
-    remappings: ReadonlyMap<string, IKeyRemapping>
+    remappings: ReadonlyMap<string, IKeyRemapping>,
   ): [number, number] {
     if (remappings.size === 0) {
       return [0, 0];
@@ -581,7 +581,7 @@ export class Remapper implements IRemapper {
   protected static hasPotentialRemap(
     keys: string[],
     remappings: ReadonlyMap<string, IKeyRemapping>,
-    countRemapAsPotential: boolean = false
+    countRemapAsPotential: boolean = false,
   ): boolean {
     const keysAsString = keys.join('');
     const re = /^<([^>]+)>/;

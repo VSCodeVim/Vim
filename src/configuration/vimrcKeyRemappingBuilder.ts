@@ -139,7 +139,7 @@ class VimrcKeyRemappingBuilderImpl {
    */
   public async build(
     line: string,
-    vscodeCommands: string[]
+    vscodeCommands: string[],
   ): Promise<IVimrcKeyRemapping | undefined> {
     const matches = VimrcKeyRemappingBuilderImpl.KEY_REMAPPING_REG_EX.exec(line);
     if (!matches || matches.length < 4) {

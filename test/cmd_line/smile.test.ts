@@ -28,7 +28,7 @@ suite('Smile command', () => {
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
-      ':smile did not create a new untitled file'
+      ':smile did not create a new untitled file',
     );
   });
 

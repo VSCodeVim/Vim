@@ -47,7 +47,7 @@ suite('Mode Insert', () => {
     assert.strictEqual(
       vscode.window.activeTextEditor!.selection.start.character,
       4,
-      '<Esc> moved cursor position.'
+      '<Esc> moved cursor position.',
     );
   });
 
@@ -221,7 +221,7 @@ suite('Mode Insert', () => {
     assert.strictEqual(
       vscode.window.activeTextEditor!.selection.start.character,
       3,
-      '<BS> moved cursor to correct position'
+      '<BS> moved cursor to correct position',
     );
   });
 

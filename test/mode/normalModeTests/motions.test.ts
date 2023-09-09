@@ -968,7 +968,7 @@ suite('Motions in Normal Mode', () => {
         keysPressed: '10go',
         end: ['abc', 'def', 'g|hi'],
       },
-      process.platform === 'win32'
+      process.platform === 'win32',
     );
   });
 

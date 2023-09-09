@@ -19,7 +19,7 @@ export class WriteQuitCommand extends ExCommand {
   public static readonly argParser: Parser<WriteQuitCommand> = seq(
     bangParser.skip(optWhitespace),
     fileOptParser.skip(optWhitespace),
-    fileNameParser.fallback(undefined)
+    fileNameParser.fallback(undefined),
   ).map(([bang, opt, file]) => new WriteQuitCommand(file ? { bang, opt, file } : { bang, opt }));
 
   public override isRepeatableWithDot = false;

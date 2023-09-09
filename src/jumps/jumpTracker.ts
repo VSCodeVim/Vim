@@ -132,7 +132,7 @@ export class JumpTracker {
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        (e) => e.document.fileName === jump.fileName
+        (e) => e.document.fileName === jump.fileName,
       )[0];
 
       if (editor) {
@@ -158,7 +158,7 @@ export class JumpTracker {
   private async jumpThroughHistory(
     getJump: (j: Jump) => Jump,
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<void> {
     let jump = new Jump({
       document: vimState.document,
@@ -326,13 +326,14 @@ export class JumpTracker {
       new Jump({
         document: jump.document,
         position: newPosition,
-      })
+      }),
     );
   }
 
   private clearJumpsOnSameLine(jump: Jump): void {
     this._jumps = this._jumps.filter(
-      (j) => j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line)
+      (j) =>
+        j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line),
     );
   }
 

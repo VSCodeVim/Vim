@@ -21,7 +21,7 @@ class StatusBarImpl implements vscode.Disposable {
     this.statusBarItem = vscode.window.createStatusBarItem(
       'primary',
       vscode.StatusBarAlignment.Left,
-      Number.MIN_SAFE_INTEGER // Furthest right on the left
+      Number.MIN_SAFE_INTEGER, // Furthest right on the left
     );
     this.statusBarItem.name = 'Vim Command Line';
     this.statusBarItem.show();
@@ -29,7 +29,7 @@ class StatusBarImpl implements vscode.Disposable {
     this.recordedStateStatusBarItem = vscode.window.createStatusBarItem(
       'showcmd',
       vscode.StatusBarAlignment.Right,
-      Number.MAX_SAFE_INTEGER // Furthest left on the right
+      Number.MAX_SAFE_INTEGER, // Furthest left on the right
     );
     this.recordedStateStatusBarItem.name = 'Vim Pending Command Keys';
     this.recordedStateStatusBarItem.show();

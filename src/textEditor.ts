@@ -21,7 +21,7 @@ export class TextEditor {
     editor: vscode.TextEditor,
     text: string,
     at?: Position,
-    letVSCodeHandleKeystrokes?: boolean
+    letVSCodeHandleKeystrokes?: boolean,
   ): Promise<void> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
@@ -46,7 +46,7 @@ export class TextEditor {
   static async replace(
     editor: vscode.TextEditor,
     range: vscode.Range,
-    text: string
+    text: string,
   ): Promise<boolean> {
     return editor.edit((editBuilder) => {
       editBuilder.replace(range, text);
@@ -190,7 +190,7 @@ export class TextEditor {
    */
   public static getFirstNonWhitespaceCharOnLine(
     document: vscode.TextDocument,
-    line: number
+    line: number,
   ): Position {
     line = clamp(line, 0, document.lineCount - 1);
     return new Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
@@ -205,7 +205,7 @@ export class TextEditor {
   public static *iterateLinesInBlock(
     vimState: VimState,
     cursor?: Cursor,
-    options: { reverse?: boolean } = { reverse: false }
+    options: { reverse?: boolean } = { reverse: false },
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
 
@@ -243,7 +243,7 @@ export class TextEditor {
    */
   public static *iterateWords(
     document: vscode.TextDocument,
-    start: Position
+    start: Position,
   ): Iterable<{ start: Position; end: Position; word: string }> {
     const text = document.lineAt(start).text;
     if (/\s/.test(text[start.character])) {

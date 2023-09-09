@@ -17,14 +17,14 @@ export interface IQuitCommandArguments {
 //
 export class QuitCommand extends ExCommand {
   public static readonly argParser: (quitAll: boolean) => Parser<QuitCommand> = (
-    quitAll: boolean
+    quitAll: boolean,
   ) =>
     bangParser.map(
       (bang) =>
         new QuitCommand({
           bang,
           quitAll,
-        })
+        }),
     );
 
   public override isRepeatableWithDot = false;
