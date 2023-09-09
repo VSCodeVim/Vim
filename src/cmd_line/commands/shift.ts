@@ -25,8 +25,8 @@ export class ShiftCommand extends ExCommand {
             .map((shifts) => shifts.length + 1)
             .skip(optWhitespace),
           // `:> 2` indents 2 lines
-          numberParser.fallback(undefined)
-        )
+          numberParser.fallback(undefined),
+        ),
       )
       .map(([depth, numLines]) => new ShiftCommand({ dir, depth, numLines }));
 

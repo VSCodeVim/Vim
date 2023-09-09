@@ -43,7 +43,7 @@ export class MoveCommand extends ExCommand {
 
     // copy
     const copiedText = vimState.document.getText(
-      new Range(new Position(sourceStart, 0), new Position(sourceEnd, 0).getLineEnd())
+      new Range(new Position(sourceStart, 0), new Position(sourceEnd, 0).getLineEnd()),
     );
 
     let text: string;
@@ -62,12 +62,12 @@ export class MoveCommand extends ExCommand {
       // make the cursor position at the beginning of the endline.
       cursorPosition = new Position(
         Math.max(dest, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0
+        lines[lines.length - 1].match(/\S/)?.index ?? 0,
       );
     } else {
       cursorPosition = new Position(
         Math.max(dest + lines.length, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0
+        lines[lines.length - 1].match(/\S/)?.index ?? 0,
       );
     }
     // delete
@@ -89,7 +89,7 @@ export class MoveCommand extends ExCommand {
     vimState.recordedState.transformer.insert(
       position,
       text,
-      PositionDiff.exactPosition(cursorPosition)
+      PositionDiff.exactPosition(cursorPosition),
     );
   }
 

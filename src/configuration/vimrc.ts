@@ -320,7 +320,7 @@ export class VimrcImpl {
         // Don't remove a mapping present in settings.json; those are more specific to VSCodeVim.
         _.remove(
           remaps,
-          (r) => r.source === 'vimrc' && _.isEqual(r.before, remap.keyRemapping.before)
+          (r) => r.source === 'vimrc' && _.isEqual(r.before, remap.keyRemapping.before),
         );
       });
       return true;

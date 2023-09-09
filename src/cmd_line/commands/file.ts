@@ -84,28 +84,28 @@ export class FileCommand extends ExCommand {
       bangParser,
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([bang, opt, cmd, file]) => new FileCommand({ name: 'edit', bang, opt, cmd, file })),
     enew: bangParser.map((bang) => new FileCommand({ name: 'enew', bang })),
     new: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'new', opt, cmd, file })),
     split: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'split', opt, cmd, file })),
     vnew: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'vnew', opt, cmd, file })),
     vsplit: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'vsplit', opt, cmd, file })),
   };
 
@@ -231,7 +231,7 @@ export class FileCommand extends ExCommand {
         : undefined;
     if (lineNumber !== undefined && lineNumber >= 0) {
       vscode.window.activeTextEditor!.revealRange(
-        new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0))
+        new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0)),
       );
     }
     await hidePreviousEditor();

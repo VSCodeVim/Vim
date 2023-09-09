@@ -119,11 +119,11 @@ class CommandLineTab extends CommandLineAction {
         p.sep,
         currentUri,
         isRemote,
-        shouldAddDotItems
+        shouldAddDotItems,
       );
       const startWithBaseNameRegex = new RegExp(
         `^${baseName}`,
-        process.platform === 'win32' ? 'i' : ''
+        process.platform === 'win32' ? 'i' : '',
       );
       newCompletionItems = dirItems
         .map((name): [RegExpExecArray | null, string] => [startWithBaseNameRegex.exec(name), name])
@@ -298,7 +298,7 @@ class CommandInsertRegisterContentInCommandLine extends CommandLineAction {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
       );
       return;
     }

@@ -54,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
       }
     },
-    false
+    false,
   );
 }
 

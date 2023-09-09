@@ -17,7 +17,7 @@ export interface IWriteQuitAllCommandArguments {
 export class WriteQuitAllCommand extends ExCommand {
   public static readonly argParser: Parser<WriteQuitAllCommand> = seq(
     bangParser,
-    whitespace.then(fileOptParser).fallback([])
+    whitespace.then(fileOptParser).fallback([]),
   ).map(([bang, fileOpt]) => new WriteQuitAllCommand({ bang, fileOpt }));
 
   public override isRepeatableWithDot = false;

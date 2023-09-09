@@ -23,7 +23,7 @@ const RangeExpression: Expression = {
     optWhitespace,
     ['step', string(',').then(optWhitespace).then(integerParser).fallback(1)],
     optWhitespace,
-    string(')')
+    string(')'),
   ).map(({ start, end, step }): string => {
     const numbers = range(start, end, step);
     if (numbers.length === 0) {
@@ -42,5 +42,5 @@ export const expressionParser = seqObj<{ register: string; fromExpression: strin
   optWhitespace,
   ['register', EXPRESSION_REGISTER],
   optWhitespace,
-  ['fromExpression', altExpressions]
+  ['fromExpression', altExpressions],
 );

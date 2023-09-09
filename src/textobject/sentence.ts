@@ -18,7 +18,7 @@ export function getSentenceEnd(pos: Position): Position {
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
     const allPositions = getAllPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
     const newCharacter = allPositions.find(
-      (index) => index > pos.character || currentLine !== pos.line
+      (index) => index > pos.character || currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -59,7 +59,7 @@ function getNextSentenceBegin(pos: Position): Position {
   for (let currentLine = pos.line; currentLine <= paragraphEnd.line; currentLine++) {
     const endPositions = getAllEndPositions(TextEditor.getLine(currentLine).text, sentenceEndRegex);
     const newCharacter = endPositions.find(
-      (index) => index > pos.character || currentLine !== pos.line
+      (index) => index > pos.character || currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -73,7 +73,7 @@ function getNextSentenceBegin(pos: Position): Position {
 function getFirstNonWhitespaceInParagraph(
   pos: Position,
   paragraphEnd: Position,
-  inclusive: boolean
+  inclusive: boolean,
 ): Position {
   // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
   // Find the first non-whitespace character.
@@ -86,7 +86,7 @@ function getFirstNonWhitespaceInParagraph(
         (index) =>
           (index > pos.character && !inclusive) ||
           (index >= pos.character && inclusive) ||
-          currentLine !== pos.line
+          currentLine !== pos.line,
       );
 
       if (newCharacter !== undefined) {
