@@ -46,6 +46,7 @@ import { Position, Uri } from 'vscode';
 import { RemapState } from '../state/remapState';
 import * as process from 'process';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { Range } from 'vscode';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -135,6 +136,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public syncCursors() {
     // TODO: getCursorsAfterSync() is basically this, but stupider
     const { selections } = this.vimState.editor;
+    // TODO: this if block is a workaround for a problem described here https://github.com/VSCodeVim/Vim/pull/8426
+    if (
+      selections.length === 1 &&
+      selections[0].isEqual(new Range(new Position(0, 0), new Position(0, 0)))
+    ) {
+      return;
+    }
+
     if (
       !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
       !this.vimState.cursorStopPosition.isEqual(selections[0].active)
@@ -1272,6 +1281,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             }
             break;
 
+          case Mode.Insert:
+            // Don't collapse existing selections in insert mode
+            selections.push(new vscode.Selection(start, stop));
+            break;
           default:
             // Note that this collapses the selection onto one position
             selections.push(new vscode.Selection(stop, stop));
