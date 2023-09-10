@@ -59,4 +59,11 @@ suite('cursor', () => {
     keysPressed: cursor(`a${CH}bc${CH}d`, 'x', 2),
     end: ['abcde', 'a|ce', 'ace', 'abcde'],
   });
+
+  newTest({
+    title: 'With multiple cursor position indicators with regex',
+    start: ['|abc!e', 'a123!e'],
+    keysPressed: cursor(`${CH}a\\w+${CH}!`, 'x'),
+    end: ['|bce', '123e'],
+  });
 });
