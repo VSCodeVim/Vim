@@ -5,7 +5,7 @@ import { newTest } from '../testSimplifier';
 function sub(
   pattern: string,
   replace: string,
-  args?: { lineRange?: string; flags?: string; count?: number }
+  args?: { lineRange?: string; flags?: string; count?: number },
 ): string {
   const lineRange = args?.lineRange ?? '';
   const flags = args?.flags !== undefined ? `/${args.flags}` : '';

@@ -29,11 +29,11 @@ suite('Breakpoints command', () => {
     const breakpoint = vscode.debug.breakpoints[0] as vscode.SourceBreakpoint;
     assert.strictEqual(
       breakpoint.location.uri.fsPath,
-      modeHandler.vimState.editor.document.uri.fsPath
+      modeHandler.vimState.editor.document.uri.fsPath,
     );
     assert.strictEqual(
       breakpoint.location.range.start.line,
-      modeHandler.vimState.cursorStartPosition.line
+      modeHandler.vimState.cursorStartPosition.line,
     );
   });
 
@@ -48,11 +48,11 @@ suite('Breakpoints command', () => {
   test('test "here" is redundant', async () => {
     assert.deepStrictEqual(
       exCommandParser.tryParse(':breaka here'),
-      exCommandParser.tryParse(':breaka')
+      exCommandParser.tryParse(':breaka'),
     );
     assert.deepStrictEqual(
       exCommandParser.tryParse(':breakd here'),
-      exCommandParser.tryParse(':breakd')
+      exCommandParser.tryParse(':breakd'),
     );
   });
 });

@@ -117,20 +117,20 @@ export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(
     vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
-    'Document content does not match.'
+    'Document content does not match.',
   );
 }
 
 export function assertStatusBarEqual(
   expectedText: string,
-  message: string = 'Status bar text does not match'
+  message: string = 'Status bar text does not match',
 ) {
   assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
-  fileExtension: string = ''
+  fileExtension: string = '',
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 

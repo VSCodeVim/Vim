@@ -152,7 +152,7 @@ suite('VimrcKeyRemappingBuilder', () => {
     for (const testCase of testCases) {
       const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.build(
         testCase.vimrcLine,
-        vscodeCommands
+        vscodeCommands,
       );
 
       if (testCase.expectNull) {
@@ -361,7 +361,7 @@ suite('VimrcKeyRemappingBuilder', () => {
 
     for (const testCase of testCases) {
       const vimrcKeyRemapping = await vimrcKeyRemappingBuilder.buildClearMapping(
-        testCase.vimrcLine
+        testCase.vimrcLine,
       );
 
       if (testCase.expectNull) {

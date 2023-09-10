@@ -23,15 +23,15 @@ export class DeleteCommand extends ExCommand {
       seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
         ([register, count]) => {
           return { register, count };
-        }
-      )
+        },
+      ),
     ).map(
       ({ register, count }) =>
         new DeleteCommand({
           register,
           count,
-        })
-    )
+        }),
+    ),
   );
 
   private readonly arguments: IDeleteCommandArguments;

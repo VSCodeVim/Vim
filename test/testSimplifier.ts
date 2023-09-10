@@ -21,10 +21,10 @@ import { TextEditor } from '../src/textEditor';
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
   testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
-  innerTest: (testObj: T) => Promise<ModeHandler>
+  innerTest: (testObj: T) => Promise<ModeHandler>,
 ): void {
   const stack = ((s) => (s ? s.split('\n').splice(2, 1).join('\n') : 'no stack available :('))(
-    new Error().stack
+    new Error().stack,
   );
 
   testFunc(testObj.title, async () => {
@@ -214,9 +214,9 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     await editor.edit((builder) => {
       builder.replace(
         new vscode.Range(new Position(0, 0), TextEditor.getDocumentEnd(editor.document)),
-        start.lines.join('\n')
+        start.lines.join('\n'),
       );
-    })
+    }),
   );
   if (testObj.saveDocBeforeTest) {
     assert.ok(await editor.document.save());
@@ -252,14 +252,14 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   assert.deepStrictEqual(
     { line: actualPosition.line, character: actualPosition.character },
     { line: expectedPosition.line, character: expectedPosition.character },
-    'Cursor position is wrong.'
+    'Cursor position is wrong.',
   );
 
   if (testObj.endMode !== undefined) {
     assert.strictEqual(
       Mode[modeHandler.currentMode],
       Mode[testObj.endMode],
-      "Didn't enter correct mode."
+      "Didn't enter correct mode.",
     );
   }
 
@@ -277,7 +277,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     assert.strictEqual(
       StatusBar.getText(),
       testObj.statusBar.replace('{FILENAME}', modeHandler.vimState.document.fileName),
-      'Status bar text is wrong.'
+      'Status bar text is wrong.',
     );
   }
 
@@ -287,7 +287,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     assert.deepStrictEqual(
       globalState.jumpTracker.jumps.map((j) => end.lines[j.position.line] || '<MISSING>'),
       testObj.jumps.map((t) => t.replace('|', '')),
-      'Incorrect jumps found'
+      'Incorrect jumps found',
     );
 
     const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
@@ -300,7 +300,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     assert.deepStrictEqual(
       actualJumpPosition,
       expectedJumpPosition,
-      'Incorrect jump position found'
+      'Incorrect jump position found',
     );
   }
 
@@ -445,7 +445,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     assert.strictEqual(
       result1.lines,
       resolvedStep.end.lines.join(os.EOL),
-      `Document content does not match on step ${stepTitleOrIndex}.`
+      `Document content does not match on step ${stepTitleOrIndex}.`,
     );
 
     // Check end cursor position
@@ -454,7 +454,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     assert.deepStrictEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
       { line: expectedEndPosition.line, character: expectedEndPosition.character },
-      `Cursor position is wrong on step ${stepTitleOrIndex}.`
+      `Cursor position is wrong on step ${stepTitleOrIndex}.`,
     );
 
     // endMode: check end mode is correct if given
@@ -463,7 +463,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
       assert.strictEqual(
         Mode[result1.endMode],
         Mode[expectedEndMode],
-        `Didn't enter correct mode on step ${stepTitleOrIndex}.`
+        `Didn't enter correct mode on step ${stepTitleOrIndex}.`,
       );
     }
 
@@ -475,7 +475,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
       assert.strictEqual(
         result2.lines,
         resolvedStep.endAfterTimeout?.lines.join(os.EOL),
-        `Document content does not match on step ${stepTitleOrIndex} after timeout.`
+        `Document content does not match on step ${stepTitleOrIndex} after timeout.`,
       );
 
       // Check endAfterTimeout cursor position
@@ -490,7 +490,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
           line: expectedEndAfterTimeoutPosition.line,
           character: expectedEndAfterTimeoutPosition.character,
         },
-        `Cursor position is wrong on step ${stepTitleOrIndex} after Timeout.`
+        `Cursor position is wrong on step ${stepTitleOrIndex} after Timeout.`,
       );
 
       // endMode: check end mode is correct if given
@@ -499,7 +499,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
         assert.strictEqual(
           Mode[result2.endMode],
           Mode[expectedEndAfterTimeoutMode],
-          `Didn't enter correct mode on step ${stepTitleOrIndex} after Timeout.`
+          `Didn't enter correct mode on step ${stepTitleOrIndex} after Timeout.`,
         );
       }
     }

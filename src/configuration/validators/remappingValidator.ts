@@ -28,7 +28,7 @@ export class RemappingValidator implements IConfigurationValidator {
       // because we process keybindings backwards in next loop, user mapping will override
       for (const pluginMapping of PluginDefaultMappings.getPluginDefaultMappings(
         modeKeyBindingsKey,
-        config
+        config,
       )) {
         // note concat(all mappings) does not work somehow
         keybindings.push(pluginMapping);
@@ -59,13 +59,13 @@ export class RemappingValidator implements IConfigurationValidator {
         // normalize
         if (remapping.before) {
           remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader))
+            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader)),
           );
         }
 
         if (remapping.after) {
           remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader))
+            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader)),
           );
         }
 
@@ -159,7 +159,7 @@ export class RemappingValidator implements IConfigurationValidator {
   private async getCommandMap(): Promise<Map<string, boolean>> {
     if (this.commandMap == null) {
       this.commandMap = new Map(
-        (await vscode.commands.getCommands(true)).map((x) => [x, true] as [string, boolean])
+        (await vscode.commands.getCommands(true)).map((x) => [x, true] as [string, boolean]),
       );
     }
     return this.commandMap;

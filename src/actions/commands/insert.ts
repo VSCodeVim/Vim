@@ -77,7 +77,7 @@ export class CommandEscInsertMode extends BaseCommand {
           a instanceof CommandInsertAtLineBegin ||
           a instanceof CommandInsertAtLineEnd ||
           a instanceof CommandInsertAtFirstCharacter ||
-          a instanceof CommandInsertAtLastChange
+          a instanceof CommandInsertAtLastChange,
       ) !== undefined;
 
     // If this is the type to repeat insert, do this now
@@ -98,7 +98,7 @@ export class CommandEscInsertMode extends BaseCommand {
 
           // Add a transform containing the change
           vimState.recordedState.transformer.addTransformation(
-            changeAction.getTransformation(positionDiff)
+            changeAction.getTransformation(positionDiff),
           );
         }
       }
@@ -177,13 +177,13 @@ abstract class IndentCommand extends BaseCommand {
     vimState.recordedState.transformer.replace(
       new vscode.Range(
         position.getLineBegin(),
-        position.with({ character: line.firstNonWhitespaceCharacterIndex })
+        position.with({ character: line.firstNonWhitespaceCharacterIndex }),
       ),
       TextEditor.setIndentationLevel(
         line.text,
         newIndentationWidth,
-        vimState.editor.options.insertSpaces as boolean
-      ).match(/^(\s*)/)![1]
+        vimState.editor.options.insertSpaces as boolean,
+      ).match(/^(\s*)/)![1],
     );
   }
 }
@@ -342,7 +342,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1]),
       );
       return;
     }
@@ -530,7 +530,7 @@ class NewLineInsertMode extends BaseCommand {
     vimState.recordedState.transformer.insert(
       position,
       '\n',
-      PositionDiff.offset({ character: -1 })
+      PositionDiff.offset({ character: -1 }),
     );
   }
 }

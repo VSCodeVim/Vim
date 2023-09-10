@@ -21,7 +21,7 @@ export interface ISortCommandArguments {
 export class SortCommand extends ExCommand {
   public static readonly argParser: Parser<SortCommand> = seq(
     bangParser,
-    optWhitespace.then(oneOf('bfilnorux').many())
+    optWhitespace.then(oneOf('bfilnorux').many()),
   ).map(
     ([bang, flags]) =>
       new SortCommand({
@@ -29,7 +29,7 @@ export class SortCommand extends ExCommand {
         ignoreCase: flags.includes('i'),
         unique: flags.includes('u'),
         numeric: flags.includes('n'),
-      })
+      }),
   );
 
   private readonly arguments: ISortCommandArguments;
@@ -82,7 +82,7 @@ export class SortCommand extends ExCommand {
       sortedLines = originalLines.sort(
         (a: string, b: string) =>
           (NumericString.parse(a, NumericStringRadix.Dec)?.num.value ?? Number.MAX_VALUE) -
-          (NumericString.parse(b, NumericStringRadix.Dec)?.num.value ?? Number.MAX_VALUE)
+          (NumericString.parse(b, NumericStringRadix.Dec)?.num.value ?? Number.MAX_VALUE),
       );
     } else if (this.arguments.ignoreCase) {
       sortedLines = originalLines.sort((a: string, b: string) => a.localeCompare(b));
@@ -101,7 +101,7 @@ export class SortCommand extends ExCommand {
       range: new vscode.Range(startLine, 0, endLine, lastLineLength),
       text: sortedContent,
       diff: PositionDiff.exactPosition(
-        new vscode.Position(startLine, sortedLines[0].match(/\S/)?.index ?? 0)
+        new vscode.Position(startLine, sortedLines[0].match(/\S/)?.index ?? 0),
       ),
     });
   }

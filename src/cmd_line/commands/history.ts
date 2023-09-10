@@ -23,7 +23,7 @@ const historyTypeParser: Parser<HistoryCommandType> = alt(
   alt(nameAbbrevParser('e', 'xpr'), string('=')).result(HistoryCommandType.Expr),
   alt(nameAbbrevParser('i', 'nput'), string('@')).result(HistoryCommandType.Input),
   alt(nameAbbrevParser('d', 'ebug'), string('>')).result(HistoryCommandType.Debug),
-  nameAbbrevParser('a', 'll').result(HistoryCommandType.All)
+  nameAbbrevParser('a', 'll').result(HistoryCommandType.All),
 );
 
 export interface IHistoryCommandArguments {
@@ -51,7 +51,7 @@ export class HistoryCommand extends ExCommand {
       case HistoryCommandType.Search:
         await new CommandShowSearchHistory(SearchDirection.Forward).exec(
           vimState.cursorStopPosition,
-          vimState
+          vimState,
         );
         break;
       // TODO: Implement these

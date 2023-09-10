@@ -7,7 +7,7 @@ import { bangParser } from '../../vimscript/parserUtils';
 export class FileInfoCommand extends ExCommand {
   public static readonly argParser: Parser<FileInfoCommand> = seq(
     bangParser,
-    optWhitespace.then(all)
+    optWhitespace.then(all),
   ).map(([bang, fileName]) => new FileInfoCommand({ bang, fileName }));
 
   private args: {

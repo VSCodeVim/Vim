@@ -113,6 +113,11 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
   "vim.handleKeys": {
     "<C-a>": false,
     "<C-f>": false
+  },
+
+  "// To improve performance",
+  "extensions.experimental.affinity": {
+    "vscodevim.vim": 1
   }
 }
 ```
@@ -846,6 +851,18 @@ VS Code has a lot of nifty tricks and we try to preserve some of them:
 - I've swapped Escape and Caps Lock with setxkbmap and VSCodeVim isn't respecting the swap
 
   This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keyCode"` and restart VS Code.
+
+- VSCodeVim is too slow!
+
+  You can try adding the following [setting](https://github.com/microsoft/vscode/issues/75627#issuecomment-1078827311), and reload/restart VSCode:
+
+  ```json
+  "extensions.experimental.affinity": {
+    "vscodevim.vim": 1
+  }
+  ```
+
+  **Caveats:** One issue with using the affinity setting is that each time you update your settings file, the Vim plugin will reload, which can take a few seconds.
 
 ## ❤️ Contributing
 
