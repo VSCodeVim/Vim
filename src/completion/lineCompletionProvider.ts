@@ -29,7 +29,7 @@ const documentsStartingWith = (startingFileName: string) => {
 const linesWithoutIndentation = (
   document: vscode.TextDocument,
   lineToStartScanFrom: number,
-  scanAboveFirst: boolean
+  scanAboveFirst: boolean,
 ): Array<{ sortPriority: number; text: string }> => {
   const distanceFromStartLine = (line: number) => {
     let sortPriority = scanAboveFirst ? lineToStartScanFrom - line : line - lineToStartScanFrom;
@@ -68,7 +68,7 @@ const linesWithoutIndentation = (
 const getCompletionsForText = (
   text: string,
   currentFileName: string,
-  currentPosition: Position
+  currentPosition: Position,
 ): string[] | null => {
   const matchedLines: string[] = [];
 
@@ -115,10 +115,10 @@ const getCompletionsForText = (
  */
 export const getCompletionsForCurrentLine = (
   position: Position,
-  document: vscode.TextDocument
+  document: vscode.TextDocument,
 ): string[] | null => {
   const currentLineText = document.getText(
-    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position)
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position),
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -160,8 +160,8 @@ export const lineCompletionProvider = {
     vimState.recordedState.transformer.delete(
       new vscode.Range(
         TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
-        position.getLineEnd()
-      )
+        position.getLineEnd(),
+      ),
     );
 
     vimState.recordedState.transformer.addTransformation({

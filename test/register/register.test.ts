@@ -164,7 +164,7 @@ suite('register', () => {
 
   test('Search register (/) is set by forward search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
     );
 
     // Register changed by forward search
@@ -182,7 +182,7 @@ suite('register', () => {
 
   test('Search register (/) is set by backward search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$']),
     );
 
     // Register changed by forward search
@@ -200,7 +200,7 @@ suite('register', () => {
 
   test('Search register (/) is set by star search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
     );
 
     await modeHandler.handleKeyEvent('*');

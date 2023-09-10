@@ -35,7 +35,7 @@ suite('cmd_line tab', () => {
   test('tabe with absolute path when not in workspace opens file', async () => {
     const filePath = await createRandomFile('', '');
     await new ExCommandLine(`tabe ${filePath}`, modeHandler.vimState.currentMode).run(
-      modeHandler.vimState
+      modeHandler.vimState,
     );
     const editor = vscode.window.activeTextEditor;
 
@@ -48,7 +48,7 @@ suite('cmd_line tab', () => {
         assert.strictEqual(
           editor.document.fileName.toLowerCase(),
           filePath.toLowerCase(),
-          'Opened wrong file'
+          'Opened wrong file',
         );
       }
     }
@@ -57,19 +57,19 @@ suite('cmd_line tab', () => {
   test('tabe with current file path does nothing', async () => {
     const filePath = await createRandomFile('', '');
     await new ExCommandLine(`tabe ${filePath}`, modeHandler.vimState.currentMode).run(
-      modeHandler.vimState
+      modeHandler.vimState,
     );
 
     const beforeEditor = vscode.window.activeTextEditor;
     await new ExCommandLine(`tabe ${filePath}`, modeHandler.vimState.currentMode).run(
-      modeHandler.vimState
+      modeHandler.vimState,
     );
     const afterEditor = vscode.window.activeTextEditor;
 
     assert.strictEqual(
       beforeEditor,
       afterEditor,
-      'Active editor changed even though :tabe opened the same file'
+      'Active editor changed even though :tabe opened the same file',
     );
   });
 });

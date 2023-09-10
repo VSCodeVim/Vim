@@ -1794,7 +1794,7 @@ suite('Mode Normal', () => {
         '// because it is hard.',
       ],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({
@@ -1812,7 +1812,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|// abc def'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1823,7 +1823,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/*', ' * abc def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1834,7 +1834,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/*', ' * abc def */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1845,7 +1845,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({
@@ -1870,7 +1870,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc */', '/* def */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1881,7 +1881,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc', ' */', '/* def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1892,7 +1892,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({

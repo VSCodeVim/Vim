@@ -234,7 +234,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
     case 'insertText':
       return new Range(
         transformation.position,
-        transformation.position.advancePositionByText(transformation.text)
+        transformation.position.advancePositionByText(transformation.text),
       );
     case 'replaceText':
       // TODO: Do we need to do the same sort of thing here as for insertText?
@@ -249,7 +249,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
 };
 
 export function overlappingTransformations(
-  transformations: TextTransformations[]
+  transformations: TextTransformations[],
 ): [TextTransformations, TextTransformations] | undefined {
   for (let i = 0; i < transformations.length; i++) {
     for (let j = i + 1; j < transformations.length; j++) {

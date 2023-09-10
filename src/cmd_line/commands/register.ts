@@ -10,7 +10,7 @@ import { any, optWhitespace, Parser } from 'parsimmon';
 
 export class RegisterCommand extends ExCommand {
   public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
-    any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers))
+    any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers)),
   );
 
   private readonly registers: string[];
@@ -61,7 +61,7 @@ export class RegisterCommand extends ExCommand {
     } else {
       const currentRegisterKeys = Register.getKeys()
         .filter(
-          (reg) => reg !== '_' && (this.registers.length === 0 || this.registers.includes(reg))
+          (reg) => reg !== '_' && (this.registers.length === 0 || this.registers.includes(reg)),
         )
         .sort((reg1: string, reg2: string) => this.regSortOrder(reg1) - this.regSortOrder(reg2));
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();

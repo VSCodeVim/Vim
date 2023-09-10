@@ -544,7 +544,7 @@ function overlapSetting(args: {
         this.getConfiguration('editor').update(
           args.settingName,
           value,
-          vscode.ConfigurationTarget.Global
+          vscode.ConfigurationTarget.Global,
         );
       },
       enumerable: true,

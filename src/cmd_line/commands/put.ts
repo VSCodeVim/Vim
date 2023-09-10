@@ -31,8 +31,8 @@ export class PutExCommand extends ExCommand {
       optWhitespace
         .then(any)
         .map((x) => ({ register: x }))
-        .fallback({ register: undefined })
-    )
+        .fallback({ register: undefined }),
+    ),
   ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
 
   public readonly arguments: IPutCommandArguments;
@@ -53,7 +53,7 @@ export class PutExCommand extends ExCommand {
         vimState,
         this.arguments.register,
         this.arguments.fromExpression,
-        0
+        0,
       );
     }
 

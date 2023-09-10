@@ -63,7 +63,7 @@ export class NumericString {
   // Return parse result and offset of suffix
   public static parse(
     input: string,
-    targetRadix?: NumericStringRadix
+    targetRadix?: NumericStringRadix,
   ): { num: NumericString; suffixOffset: number } | undefined {
     const filteredMatchings =
       targetRadix !== undefined
@@ -149,7 +149,7 @@ export class NumericString {
     prefix: string,
     suffix: string,
     negative: boolean,
-    isCapital: boolean
+    isCapital: boolean,
   ) {
     this.value = value;
     this.radix = radix;
