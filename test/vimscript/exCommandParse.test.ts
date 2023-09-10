@@ -143,6 +143,12 @@ suite('Ex command parsing', () => {
     );
   });
 
+  suite(':b[uffer]', () => {
+    exParseTest(':b', new TabCommand({ type: TabCommandType.Absolute, count: 0 }));
+    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
+    exParseTest(':b5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
+  });
+
   suite(':clo[se]', () => {
     exParseTest(':clo', new CloseCommand(false));
     exParseTest(':clo!', new CloseCommand(true));
