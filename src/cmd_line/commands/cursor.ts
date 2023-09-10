@@ -50,24 +50,24 @@ export class CursorCommand extends ExCommand {
   cursorFromMatches(matches: PatternMatch[], pattern: Pattern): Cursor[] {
     const matchToPosition = pattern.patternString.includes(CursorCommand.CURSOR_LOCATION_REGEX)
       ? (match: PatternMatch): Position[] => {
-        const groupBetweenCursorRegex = new RegExp(
-          pattern.patternString
-            .split(CursorCommand.CURSOR_LOCATION_REGEX)
-            .slice(undefined, -1)
-            .map((s) => `(${s})`)
-            .join('')
-        );
-        const groupedMatches = groupBetweenCursorRegex.exec(match.groups[0]);
-        const cursorPositions =
-          groupedMatches?.slice(1).reduce((acc: Position[], v): Position[] => {
-            const pos = acc[acc.length - 1] ?? match.range.start;
-            return [...acc, pos.advancePositionByText(v)];
-          }, []) ?? [];
-        return cursorPositions;
-      }
+          const groupBetweenCursorRegex = new RegExp(
+            pattern.patternString
+              .split(CursorCommand.CURSOR_LOCATION_REGEX)
+              .slice(undefined, -1)
+              .map((s) => `(${s})`)
+              .join('')
+          );
+          const groupedMatches = groupBetweenCursorRegex.exec(match.groups[0]);
+          const cursorPositions =
+            groupedMatches?.slice(1).reduce((acc: Position[], v): Position[] => {
+              const pos = acc[acc.length - 1] ?? match.range.start;
+              return [...acc, pos.advancePositionByText(v)];
+            }, []) ?? [];
+          return cursorPositions;
+        }
       : (match: PatternMatch): Position[] => {
-        return [match.range.start];
-      };
+          return [match.range.start];
+        };
 
     return matches.flatMap(matchToPosition).map((p) => new Cursor(p, p));
   }
@@ -95,8 +95,9 @@ function patternFromCurrentSelection(vimState: VimState): Pattern {
   // adapted from actions/commands/search.ts, that's why it's messy
   let needle: string;
   let isExact: boolean;
-  if (vimState.currentMode === Mode.CommandlineInProgress && // should always be true
-    'commandLine' in vimState.modeData &&  // should always be true, given the previous line
+  if (
+    vimState.currentMode === Mode.CommandlineInProgress && // should always be true
+    'commandLine' in vimState.modeData && // should always be true, given the previous line
     isVisualMode(vimState.modeData['commandLine'].previousMode) // the only interesting part of the condition
   ) {
     needle = vimState.document.getText(vimState.editor.selection);

@@ -95,5 +95,4 @@ suite('cursor', () => {
     keysPressed: 'lvll' + cursor('', 'dw', 3),
     end: ['|a', 'a', 'b', 'abcd'],
   });
-
 });
