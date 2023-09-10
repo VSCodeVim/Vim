@@ -1,4 +1,4 @@
-import { optWhitespace, Parser, seq, whitespace } from 'parsimmon';
+import { optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { VimState } from '../../state/vimState';
@@ -8,7 +8,8 @@ import { numberParser } from '../../vimscript/parserUtils';
 import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
 
 export class CursorCommand extends ExCommand {
-  public static readonly CURSOR_HERE = '[$]{0}';
+  public static readonly CURSOR_HERE = '\\#';
+  private static readonly CURSOR_LOCATION_REGEX = '(?:VSCodeVimCursor){0}';
   public override isRepeatableWithDot: boolean = false;
   private readonly count: number | undefined; // undefined mean all matches.
   private readonly pattern: Pattern;
@@ -16,7 +17,12 @@ export class CursorCommand extends ExCommand {
     .then(
       seq(
         numberParser.skip(whitespace).fallback(-1),
-        Pattern.parser({ direction: SearchDirection.Forward })
+        Pattern.parser({
+          direction: SearchDirection.Forward,
+          additionalParsers: [
+            string(CursorCommand.CURSOR_HERE).map(() => CursorCommand.CURSOR_LOCATION_REGEX),
+          ],
+        })
       )
     )
     .map(([c, sp]) => new CursorCommand(c, sp));
@@ -30,11 +36,11 @@ export class CursorCommand extends ExCommand {
   cursorFromMatches(matches: PatternMatch[]): Cursor[] {
     const pattern = this.pattern;
 
-    const matchToPosition = pattern.patternString.includes(CursorCommand.CURSOR_HERE)
+    const matchToPosition = pattern.patternString.includes(CursorCommand.CURSOR_LOCATION_REGEX)
       ? (match: PatternMatch): Position[] => {
           const groupBetweenCursorRegex = new RegExp(
             pattern.patternString
-              .split(CursorCommand.CURSOR_HERE)
+              .split(CursorCommand.CURSOR_LOCATION_REGEX)
               .slice(undefined, -1)
               .map((s) => `(${s})`)
               .join('')
