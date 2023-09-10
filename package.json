@@ -828,7 +828,10 @@
             "array"
           ],
           "description": "Status bar color when in Normal mode.",
-          "default": "#005f5f"
+          "default": [
+            "#005f5f",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.insert": {
           "type": [
@@ -836,7 +839,10 @@
             "array"
           ],
           "description": "Status bar color when in Insert mode.",
-          "default": "#5f0000"
+          "default": [
+            "#5f0000",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visual": {
           "type": [
@@ -844,7 +850,10 @@
             "array"
           ],
           "description": "Status bar color when in Visual mode.",
-          "default": "#5f00af"
+          "default": [
+            "#5f00af",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visualline": {
           "type": [
@@ -852,7 +861,10 @@
             "array"
           ],
           "description": "Status bar color when in VisualLine mode.",
-          "default": "#005f5f"
+          "default": [
+            "#005f5f",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visualblock": {
           "type": [
@@ -860,7 +872,10 @@
             "array"
           ],
           "description": "Status bar color when in VisualBlock mode.",
-          "default": "#86592d"
+          "default": [
+            "#86592d",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.replace": {
           "type": [
@@ -868,7 +883,10 @@
             "array"
           ],
           "description": "Status bar color when in Replace mode.",
-          "default": "#00000"
+          "default": [
+            "#00000",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.commandlineinprogress": {
           "type": [
@@ -876,7 +894,10 @@
             "array"
           ],
           "description": "Status bar color when in CommandLineInProgress mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.searchinprogressmode": {
           "type": [
@@ -884,7 +905,10 @@
             "array"
           ],
           "description": "Status bar color when in SearchInProgress mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.easymotionmode": {
           "type": [
@@ -892,7 +916,10 @@
             "array"
           ],
           "description": "Status bar color when in EasyMotion mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.easymotioninputmode": {
           "type": [
@@ -900,7 +927,10 @@
             "array"
           ],
           "description": "Status bar color when in EasyMotionInput mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.surroundinputmode": {
           "type": [
@@ -908,7 +938,10 @@
             "array"
           ],
           "description": "Status bar color when in SurroundInput mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.visualstar": {
           "type": "boolean",
