@@ -3,6 +3,7 @@ import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 import { numberParser } from '../../vimscript/parserUtils';
 import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
 
@@ -26,34 +27,46 @@ export class CursorCommand extends ExCommand {
     this.pattern = pattern;
   }
 
-  async execute(vimState: VimState): Promise<void> {
-    const allMatches = this.pattern.allMatches(vimState, {
-      fromPosition: vimState.editor.selection.active,
-      maxResults: this.count,
-    });
+  cursorFromMatches(matches: PatternMatch[]): Cursor[] {
     const pattern = this.pattern;
 
     const matchToPosition = pattern.patternString.includes(CursorCommand.CURSOR_HERE)
       ? (match: PatternMatch): Position[] => {
-          const groupedRegex = new RegExp(
+          const groupBetweenCursorRegex = new RegExp(
             pattern.patternString
               .split(CursorCommand.CURSOR_HERE)
               .slice(undefined, -1)
               .map((s) => `(${s})`)
               .join('')
           );
-          const m = groupedRegex.exec(match.groups[0]);
-          const positions =
-            m?.slice(1).reduce((acc: Position[], v): Position[] => {
+          const groupedMatches = groupBetweenCursorRegex.exec(match.groups[0]);
+          const cursorPositions =
+            groupedMatches?.slice(1).reduce((acc: Position[], v): Position[] => {
               const pos = acc[acc.length - 1] ?? match.range.start;
               return [...acc, pos.advancePositionByText(v)];
             }, []) ?? [];
-          return positions;
+          return cursorPositions;
         }
       : (match: PatternMatch): Position[] => {
           return [match.range.start];
         };
 
-    vimState.cursors = allMatches.flatMap(matchToPosition).map((p) => new Cursor(p, p));
+    return matches.flatMap(matchToPosition).map((p) => new Cursor(p, p));
+  }
+
+  async execute(vimState: VimState): Promise<void> {
+    const allMatches = this.pattern.allMatches(vimState, {
+      fromPosition: vimState.editor.selection.active,
+      maxResults: this.count,
+    });
+    vimState.cursors = this.cursorFromMatches(allMatches);
+  }
+
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const allMatches = this.pattern.allMatches(vimState, {
+      lineRange: range,
+      maxResults: this.count,
+    });
+    vimState.cursors = this.cursorFromMatches(allMatches);
   }
 }
