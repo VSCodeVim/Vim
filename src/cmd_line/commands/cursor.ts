@@ -98,7 +98,7 @@ function patternFromCurrentSelection(vimState: VimState): Pattern {
   if (
     vimState.currentMode === Mode.CommandlineInProgress && // should always be true
     'commandLine' in vimState.modeData && // should always be true, given the previous line
-    isVisualMode(vimState.modeData['commandLine'].previousMode) // the only interesting part of the condition
+    isVisualMode(vimState.modeData.commandLine.previousMode) // the only interesting part of the condition
   ) {
     needle = vimState.document.getText(vimState.editor.selection);
     isExact = false;
