@@ -46,7 +46,7 @@ export function ensureVisible(range: Range): DecorationOptions {
 export function formatDecorationText(
   text: string,
   tabsize: number,
-  newlineReplacement: string | ((substring: string, ...args: any[]) => string) = '\u23ce' // "⏎" RETURN SYMBOL
+  newlineReplacement: string | ((substring: string, ...args: any[]) => string) = '\u23ce', // "⏎" RETURN SYMBOL
 ) {
   // surround with zero-width space to prevent trimming
   return `\u200b${text
@@ -62,7 +62,7 @@ export function formatDecorationText(
  */
 export function getDecorationsForSearchMatchRanges(
   ranges: Range[],
-  currentMatchIndex?: number
+  currentMatchIndex?: number,
 ): SearchDecorations {
   const searchHighlight: DecorationOptions[] = [];
   const searchMatch: DecorationOptions[] = [];

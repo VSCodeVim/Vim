@@ -58,7 +58,7 @@ abstract class MoveByScreenLine extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     const multicursorIndex = this.multicursorIndex ?? 0;
 
@@ -133,7 +133,7 @@ abstract class MoveByScreenLine extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<IMovement> {
     const multicursorIndex = this.multicursorIndex ?? 0;
     if (multicursorIndex === 0) {
@@ -184,7 +184,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const prevDesiredColumn = vimState.desiredColumn;
     const prevLine = vimState.editor.selection.active.line;
@@ -316,7 +316,7 @@ class MoveDown extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getDown();
@@ -354,7 +354,7 @@ class MoveUp extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getUp();
@@ -454,7 +454,7 @@ class ArrowsInReplaceMode extends BaseMovement {
         throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
     }
     (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
-      this.multicursorIndex ?? 0
+      this.multicursorIndex ?? 0,
     );
     return newPosition;
   }
@@ -467,7 +467,7 @@ class CommandNextSearchMatch extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
@@ -481,7 +481,7 @@ class CommandNextSearchMatch extends BaseMovement {
     if (searchState.getMatchRanges(vimState).length === 0) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -503,8 +503,8 @@ class CommandNextSearchMatch extends BaseMovement {
           searchState.direction === SearchDirection.Forward
             ? ErrorCode.SearchHitBottom
             : ErrorCode.SearchHitTop,
-          searchState.searchString
-        )
+          searchState.searchString,
+        ),
       );
       return failedMovement(vimState);
     }
@@ -522,7 +522,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const searchState = globalState.searchState;
 
@@ -536,7 +536,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     if (searchState.getMatchRanges(vimState).length === 0) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString)
+        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -550,7 +550,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
         ? searchState.getNextSearchMatchPosition(
             vimState,
             position.getRight(),
-            SearchDirection.Backward
+            SearchDirection.Backward,
           )
         : searchState.getNextSearchMatchPosition(vimState, position, SearchDirection.Backward);
 
@@ -561,8 +561,8 @@ class CommandPreviousSearchMatch extends BaseMovement {
           searchState.direction === SearchDirection.Forward
             ? ErrorCode.SearchHitTop
             : ErrorCode.SearchHitBottom,
-          searchState.searchString
-        )
+          searchState.searchString,
+        ),
       );
       return failedMovement(vimState);
     }
@@ -715,7 +715,7 @@ class MoveLeft extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getLeftThroughLineBreaks(
-          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode),
         )
       : getLeftWhile(position);
   }
@@ -743,7 +743,7 @@ class MoveRight extends BaseMovement {
     };
     return shouldWrapKey(vimState.currentMode, this.keysPressed[0])
       ? position.getRightThroughLineBreaks(
-          [Mode.Insert, Mode.Replace].includes(vimState.currentMode)
+          [Mode.Insert, Mode.Replace].includes(vimState.currentMode),
         )
       : getRightWhile(position);
   }
@@ -756,12 +756,12 @@ class MoveDownNonBlank extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      position.getDown(Math.max(count, 1)).line
+      position.getDown(Math.max(count, 1)).line,
     );
   }
 }
@@ -773,12 +773,12 @@ class MoveUpNonBlank extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      position.getUp(Math.max(count, 1)).line
+      position.getUp(Math.max(count, 1)).line,
     );
   }
 }
@@ -790,7 +790,7 @@ class MoveDownUnderscore extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     const pos = position.getDown(Math.max(count - 1, 0));
@@ -807,7 +807,7 @@ class MoveToColumn extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     return new Position(position.line, Math.max(0, count - 1));
   }
@@ -824,7 +824,7 @@ function findHelper(
   start: Position,
   char: string,
   count: number,
-  direction: 'forward' | 'backward'
+  direction: 'forward' | 'backward',
 ): Position | undefined {
   const line = vimState.document.lineAt(start);
 
@@ -852,12 +852,12 @@ class MoveFindForward extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     if (configuration.sneakReplacesF) {
       const pos = await new SneakForward(
         this.keysPressed.concat('\n'),
-        this.isRepeat
+        this.isRepeat,
       ).execActionWithCount(position, vimState, count);
       if (vimState.recordedState.operator && !isIMovement(pos)) {
         return pos.getRight();
@@ -892,13 +892,13 @@ class MoveFindBackward extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     if (configuration.sneakReplacesF) {
       return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
         position,
         vimState,
-        count
+        count,
       );
     }
 
@@ -922,7 +922,7 @@ function tilHelper(
   start: Position,
   char: string,
   count: number,
-  direction: 'forward' | 'backward'
+  direction: 'forward' | 'backward',
 ) {
   const result = findHelper(vimState, start, char, count, direction);
   return direction === 'forward' ? result?.getLeft() : result?.getRight();
@@ -935,7 +935,7 @@ class MoveTilForward extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
@@ -968,7 +968,7 @@ class MoveTilBackward extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     count ||= 1;
     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
@@ -997,7 +997,7 @@ class MoveRepeat extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     const movement = vimState.lastSemicolonRepeatableMovement;
     if (movement) {
@@ -1014,7 +1014,7 @@ class MoveRepeatReversed extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     const semiColonMovement = vimState.lastSemicolonRepeatableMovement;
     const commaMovement = vimState.lastCommaRepeatableMovement;
@@ -1040,7 +1040,7 @@ class MoveLineEnd extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     return position.getDown(Math.max(count - 1, 0)).getLineEnd();
   }
@@ -1089,7 +1089,7 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     count ||= 1;
     const pos = await super.execActionWithCount(position, vimState, count);
@@ -1173,7 +1173,7 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line > 0) {
       return position.with({ character: vimState.desiredColumn }).getUp();
@@ -1184,7 +1184,7 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getUp();
@@ -1202,7 +1202,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line < vimState.document.lineCount - 1) {
       return position.with({ character: vimState.desiredColumn }).getDown();
@@ -1213,7 +1213,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getDown();
@@ -1328,7 +1328,7 @@ class MoveNonBlankFirst extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
@@ -1349,19 +1349,19 @@ class MoveNonBlankLast extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     let stop: Position;
     if (count === 0) {
       stop = new Position(vimState.document.lineCount - 1, position.character).obeyStartOfLine(
-        vimState.document
+        vimState.document,
       );
     } else {
       stop = new Position(
         Math.min(count, vimState.document.lineCount) - 1,
-        position.character
+        position.character,
       ).obeyStartOfLine(vimState.document);
     }
 
@@ -1379,7 +1379,7 @@ class EndOfSpecificLine extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position> {
     const line = count
       ? clamp(count - 1, 0, vimState.document.lineCount - 1)
@@ -1397,7 +1397,7 @@ export class MoveWordBegin extends BaseMovement {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<Position> {
     if (
       lastIteration &&
@@ -1433,7 +1433,7 @@ export class MoveWordBegin extends BaseMovement {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<Position> {
     const result = await this.execAction(position, vimState, firstIteration, lastIteration);
 
@@ -1492,7 +1492,7 @@ class MoveWordEnd extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     const end = position.nextWordEnd(vimState.document);
 
@@ -1510,7 +1510,7 @@ class MoveFullWordEnd extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     return position.nextWordEnd(vimState.document, { wordType: WordType.Big }).getRight();
   }
@@ -1654,7 +1654,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const document = vimState.document;
 
@@ -1665,7 +1665,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
           position,
           vimState,
           this.forward,
-          this.begin
+          this.begin,
         );
     }
 
@@ -1736,7 +1736,7 @@ class MoveToMatchingBracket extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     position = position.getLeftIfEOL();
 
@@ -1756,7 +1756,7 @@ class MoveToMatchingBracket extends BaseMovement {
             new Position(position.line, col),
             lineText[col],
             vimState,
-            false
+            false,
           ) || failure
         );
       }
@@ -1768,7 +1768,7 @@ class MoveToMatchingBracket extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const result = await this.execAction(position, vimState);
 
@@ -1793,7 +1793,7 @@ class MoveToMatchingBracket extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     // % has a special mode that lets you use it to jump to a percentage of the file
     // However, some other bracket motions inherit from this so only do this behavior for % explicitly
@@ -1833,7 +1833,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<IMovement> {
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const [selStart, selEnd] = sorted(vimState.cursorStartPosition, position);
@@ -1941,7 +1941,7 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<IMovement> {
     // curly braces has a special treatment. In case the cursor is before an opening curly brace,
     // and there are no characters before the opening curly brace in the same line, it should jump
@@ -1956,7 +1956,7 @@ export abstract class MoveCurlyBrace extends MoveInsideCharacter {
     ) {
       const curlyPos = position.with(
         position.line,
-        position.character + openCurlyBraceIndexFromCursor
+        position.character + openCurlyBraceIndexFromCursor,
       );
       vimState.cursorStartPosition = vimState.cursorStopPosition = curlyPos;
       const movement = await super.execAction(curlyPos, vimState, firstIteration, lastIteration);
@@ -2060,7 +2060,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   public override async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<IMovement> {
     // TODO: this is super janky
     return (await super.execActionWithCount(position, vimState, 1)) as IMovement;
@@ -2080,7 +2080,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
     if (useSmartQuotes()) {
       const quoteMatcher = new SmartQuoteMatcher(
         this.anyQuote ? 'any' : this.charToMatch,
-        vimState.document
+        vimState.document,
       );
       const res = quoteMatcher.smartSurroundingQuotes(position, this.which);
 
@@ -2164,7 +2164,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const result = await this.execAction(position, vimState);
     if (isIMovement(result)) {
@@ -2227,7 +2227,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const charToMatch = ')';
     const result = PairMatcher.nextPairedChar(position, charToMatch, vimState, false);
@@ -2245,7 +2245,7 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const charToMatch = '(';
     const result = PairMatcher.nextPairedChar(position, charToMatch, vimState, false);
@@ -2272,7 +2272,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const charToMatch = '}';
     const result = PairMatcher.nextPairedChar(position, charToMatch, vimState, false);
@@ -2290,7 +2290,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const charToMatch = '{';
     const result = PairMatcher.nextPairedChar(position, charToMatch, vimState, false);

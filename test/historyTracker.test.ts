@@ -181,7 +181,7 @@ class TextEditorStub implements vscode.TextEditor {
   constructor() {}
   async edit(
     callback: (editBuilder: vscode.TextEditorEdit) => void,
-    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean },
   ) {
     return true;
   }
@@ -192,13 +192,13 @@ class TextEditorStub implements vscode.TextEditor {
       | vscode.Range
       | ReadonlyArray<Position>
       | ReadonlyArray<vscode.Range>,
-    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean },
   ) {
     return true;
   }
   setDecorations(
     decorationType: vscode.TextEditorDecorationType,
-    rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]
+    rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[],
   ) {}
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {}
   show(column?: vscode.ViewColumn) {}

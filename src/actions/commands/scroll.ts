@@ -85,17 +85,20 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     if (visibleRanges.length === 0) {
       return;
     }
+
     const smoothScrolling = configuration
       .getConfiguration('editor')
       .get<boolean>('smoothScrolling', false);
-    const moveLines = (vimState.actionCount || 1) * this.getNumLines(visibleRanges);
+
+    const timesToRepeat = vimState.recordedState.count || 1;
+    const moveLines = timesToRepeat * this.getNumLines(visibleRanges);
 
     let scrollLines = moveLines;
     if (this.to === 'down') {
       // This makes <C-d> less wonky when `editor.scrollBeyondLastLine` is enabled
       scrollLines = Math.min(
         moveLines,
-        vimState.document.lineCount - 1 - visibleRanges[visibleRanges.length - 1].end.line
+        vimState.document.lineCount - 1 - visibleRanges[visibleRanges.length - 1].end.line,
       );
     }
 
@@ -120,11 +123,11 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
     const newPositionLine = clamp(
       position.line + (this.to === 'down' ? moveLines : -moveLines),
       0,
-      vimState.document.lineCount - 1
+      vimState.document.lineCount - 1,
     );
     vimState.cursorStopPosition = new Position(
       newPositionLine,
-      vimState.desiredColumn
+      vimState.desiredColumn,
     ).obeyStartOfLine(vimState.document);
   }
 }
@@ -187,7 +190,7 @@ class CommandCenterScroll extends BaseCommand {
     // In these modes you want to center on the cursor position
     vimState.editor.revealRange(
       new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
-      vscode.TextEditorRevealType.InCenter
+      vscode.TextEditorRevealType.InCenter,
     );
   }
 }
@@ -209,13 +212,13 @@ class CommandCenterScrollFirstChar extends BaseCommand {
     // This particular one moves cursor to first non blank char though
     vimState.editor.revealRange(
       new vscode.Range(vimState.cursorStopPosition, vimState.cursorStopPosition),
-      vscode.TextEditorRevealType.InCenter
+      vscode.TextEditorRevealType.InCenter,
     );
 
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      vimState.cursorStopPosition.line
+      vimState.cursorStopPosition.line,
     );
   }
 }
@@ -271,7 +274,7 @@ class CommandTopScrollFirstChar extends BaseCommand {
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      vimState.cursorStopPosition.line
+      vimState.cursorStopPosition.line,
     );
   }
 }
@@ -327,7 +330,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
     // Move cursor to first char of line
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      vimState.cursorStopPosition.line
+      vimState.cursorStopPosition.line,
     );
   }
 }

@@ -40,7 +40,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = ['a2', 'a1', 'a3', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.document
+        vimState.document,
       )!.slice(0, expectedCompletions.length);
 
       assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
@@ -56,7 +56,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = ['a 2', 'a1', 'a3  ', 'a4'];
       const topCompletions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.document
+        vimState.document,
       )!.slice(0, expectedCompletions.length);
 
       assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
@@ -68,7 +68,7 @@ suite('Provide line completions', () => {
       const expectedCompletions = [];
       const completions = getCompletionsForCurrentLine(
         vimState.cursorStopPosition,
-        vimState.document
+        vimState.document,
       )!.slice(0, expectedCompletions.length);
 
       assert.strictEqual(completions.length, 0, 'Completions found, but none were expected');

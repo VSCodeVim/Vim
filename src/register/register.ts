@@ -55,7 +55,7 @@ export class Register {
     vimState: VimState,
     content: RegisterContent,
     multicursorIndex?: number,
-    copyToUnnamed?: boolean
+    copyToUnnamed?: boolean,
   ): void {
     const register = vimState.recordedState.registerName;
 
@@ -119,7 +119,7 @@ export class Register {
     vimState: VimState,
     register: string,
     content: RegisterContent,
-    multicursorIndex: number
+    multicursorIndex: number,
   ): void {
     if (multicursorIndex === 0 || !Register.registers.has(register)) {
       Register.registers.set(register, []);
@@ -148,7 +148,7 @@ export class Register {
     vimState: VimState,
     register: string,
     content: RegisterContent,
-    multicursorIndex: number
+    multicursorIndex: number,
   ): void {
     if (!Register.registers.has(register)) {
       Register.registers.set(register, []);
@@ -192,7 +192,7 @@ export class Register {
    */
   public static setReadonlyRegister(
     register: '.' | '%' | ':' | '#' | '/',
-    content: RegisterContent
+    content: RegisterContent,
   ) {
     Register.registers.set(register, [
       {
@@ -269,7 +269,7 @@ export class Register {
    */
   public static async get(
     register: string,
-    multicursorIndex = 0
+    multicursorIndex = 0,
   ): Promise<IRegisterContent | undefined> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
@@ -329,7 +329,7 @@ export class Register {
             version: REGISTER_FORMAT_VERSION,
             registers: serializableRegisters,
           }),
-          'utf8'
+          'utf8',
         );
       });
     }
@@ -345,7 +345,7 @@ export class Register {
             if (parsed.version === REGISTER_FORMAT_VERSION) {
               Register.registers = new Map(parsed.registers);
             }
-          }
+          },
         );
       });
     } else {

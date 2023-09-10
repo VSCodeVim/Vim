@@ -21,7 +21,7 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 export class DigraphsCommand extends ExCommand {
   public static readonly argParser: Parser<DigraphsCommand> = seq(
     bangParser,
-    whitespace.then(seq(any, any, whitespace.then(numberParser))).many()
+    whitespace.then(seq(any, any, whitespace.then(numberParser))).many(),
   ).map(([bang, newDigraphs]) => new DigraphsCommand({ bang, newDigraphs }));
 
   private readonly arguments: IDigraphsCommandArguments;
@@ -47,7 +47,7 @@ export class DigraphsCommand extends ExCommand {
     // TODO: use arguments
 
     const digraphKeyAndContent = this.makeQuickPicks(Object.entries(configuration.digraphs)).concat(
-      this.makeQuickPicks([...DefaultDigraphs.entries()])
+      this.makeQuickPicks([...DefaultDigraphs.entries()]),
     );
 
     vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {

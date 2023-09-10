@@ -35,7 +35,7 @@ suite('cursor location', () => {
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       ':tes|t',
-      'Command Tab Completion Failed'
+      'Command Tab Completion Failed',
     );
   });
 
@@ -59,7 +59,7 @@ suite('cursor location', () => {
     assert.strictEqual(
       statusBarAfterCursorMovement.trim(),
       '/tes|t',
-      'Command Tab Completion Failed'
+      'Command Tab Completion Failed',
     );
   });
 });
