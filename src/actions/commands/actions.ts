@@ -1317,7 +1317,7 @@ class CommandTabNext extends BaseCommand {
     if (vimState.recordedState.count > 0) {
       new TabCommand({
         type: TabCommandType.Absolute,
-        count: vimState.recordedState.count - 1,
+        count: vimState.recordedState.count,
       }).execute(vimState);
     } else {
       new TabCommand({
