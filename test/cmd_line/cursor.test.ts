@@ -66,4 +66,34 @@ suite('cursor', () => {
     keysPressed: cursor(`${CH}a\\w+${CH}!`, 'x'),
     end: ['|bce', '123e'],
   });
+
+  // tests for empty pattern. should use the current word/selection as pattern
+  newTest({
+    title: 'Empty pattern',
+    start: ['|abc', 'abc', 'bbc', 'abc'],
+    keysPressed: cursor('', 'dw'),
+    end: ['|', '', 'bbc', ''],
+  });
+
+  newTest({
+    title: 'Empty pattern with limit',
+    start: ['|abc', 'abc', 'bbc', 'abc'],
+    keysPressed: cursor('', 'dw', 2),
+    end: ['|', '', 'bbc', 'abc'],
+  });
+
+  newTest({
+    title: 'Empty pattern, selection',
+    start: ['|abcd', 'abcd', 'bbcd', 'abcd'],
+    keysPressed: 'lvll' + cursor('', 'dw'),
+    end: ['|a', 'a', 'b', 'a'],
+  });
+
+  newTest({
+    title: 'Empty pattern, selection with limit',
+    start: ['|abcd', 'abcd', 'bbcd', 'abcd'],
+    keysPressed: 'lvll' + cursor('', 'dw', 3),
+    end: ['|a', 'a', 'b', 'abcd'],
+  });
+
 });
