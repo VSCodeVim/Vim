@@ -1161,7 +1161,7 @@
   },
   "devDependencies": {
     "@types/diff": "5.0.3",
-    "@types/diff-match-patch": "1.0.32",
+    "@types/diff-match-patch": "1.0.33",
     "@types/glob": "8.1.0",
     "@types/lodash": "4.14.198",
     "@types/mocha": "10.0.1",
