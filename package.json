@@ -1160,7 +1160,7 @@
     "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "5.0.3",
+    "@types/diff": "5.0.4",
     "@types/diff-match-patch": "1.0.33",
     "@types/glob": "8.1.0",
     "@types/lodash": "4.14.198",
