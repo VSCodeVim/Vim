@@ -64,7 +64,7 @@ suite('register', () => {
 
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
-    Clipboard.Copy(testString);
+    await Clipboard.Copy(testString);
     assert.strictEqual(testString, await Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
@@ -75,6 +75,11 @@ suite('register', () => {
 
     // Now try the built in vscode paste
     await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+
+    // TODO: Not sure why this sleep should be necessary
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
 
     assertEqualLines([testString + testString]);
   });

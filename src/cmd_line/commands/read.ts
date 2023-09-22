@@ -5,10 +5,9 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 
-export type IReadCommandArguments =
-  | {
-      opt: FileOpt;
-    } & ({ cmd: string } | { file: string } | {});
+export type IReadCommandArguments = {
+  opt: FileOpt;
+} & ({ cmd: string } | { file: string } | {});
 
 //
 //  Implements :read and :read!

@@ -122,6 +122,9 @@ export class TabCommand extends ExCommand {
         )
       )
       .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
+    tabAbsolute: optWhitespace
+      .then(numberParser.fallback(undefined))
+      .map((count) => new TabCommand({ type: TabCommandType.Absolute, count: count ?? 0 })),
   };
 
   public readonly arguments: ITabCommandArguments;
@@ -142,7 +145,7 @@ export class TabCommand extends ExCommand {
         if (this.arguments.count !== undefined && this.arguments.count >= 0) {
           await vscode.commands.executeCommand(
             'workbench.action.openEditorAtIndex',
-            this.arguments.count
+            this.arguments.count - 1
           );
         }
         break;

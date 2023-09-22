@@ -8,13 +8,12 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
-export type IWriteCommandArguments =
-  | {
-      bang: boolean;
-      opt: FileOpt;
-      bgWrite: boolean;
-      file?: string;
-    } & ({ cmd: string } | {});
+export type IWriteCommandArguments = {
+  bang: boolean;
+  opt: FileOpt;
+  bgWrite: boolean;
+  file?: string;
+} & ({ cmd: string } | {});
 
 //
 //  Implements :write
