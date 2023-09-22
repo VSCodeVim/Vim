@@ -16,6 +16,7 @@ export class Langmap {
   //
 
   private static instance = new Langmap('');
+  private static langmapString = '';
   public static isRemapped = false;
 
   public static getLangmap(): Langmap {
@@ -23,6 +24,8 @@ export class Langmap {
   }
 
   public static updateLangmap(langmap: string) {
+    if (this.langmapString === langmap) return;
+    this.langmapString = langmap;
     this.instance = new Langmap(langmap);
     this.isRemapped = Object.keys(this.instance.toQwerty).length !== 0;
   }
