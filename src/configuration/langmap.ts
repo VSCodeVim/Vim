@@ -86,7 +86,7 @@ export class Langmap {
     }
 
     for (const part of parts) {
-      const semicolon = [...langmap.matchAll(/(?<!(^|[^\\])\\(\\\\)*)\;/g)].map((x) => x.index);
+      const semicolon = [...part.matchAll(/(?<!(^|[^\\])\\(\\\\)*)\;/g)].map((x) => x.index);
       if (semicolon.length > 1) continue; // skip over malformed part
       if (semicolon.length === 0) {
         // List of pairs of "from" and "to" characters
@@ -98,7 +98,7 @@ export class Langmap {
         const from = getEscaped(part.substring(0, semicolon[0] as number));
         const to = getEscaped(part.substring((semicolon[0] as number) + 1));
         if (from.length !== to.length) continue; // skip over malformed part
-        for (let i = 0; i < from.length; i += 2) this.toQwerty[from[i]] = to[i + 1];
+        for (let i = 0; i < from.length; ++i) this.toQwerty[from[i]] = to[i];
       }
     }
 
