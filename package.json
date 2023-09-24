@@ -1156,6 +1156,7 @@
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
     "process": "0.11.10",
+    "queue": "^6.0.2",
     "untildify": "4.0.0",
     "util": "0.12.5"
   },
