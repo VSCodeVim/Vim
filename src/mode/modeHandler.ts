@@ -64,7 +64,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public focusChanged = false;
 
-  private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
+  private searchDecorationCacheKey: { searchString: string; matchIndex: number | undefined } | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -1187,21 +1187,30 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       ) {
         decorations = this.vimState.modeData.commandLine.getDecorations(this.vimState);
       } else if (globalState.searchState) {
-        // Update decorations highlighting the next match
+        if (
+          cacheKey &&
+          cacheKey.searchString === globalState.searchState.searchString &&
+          cacheKey.matchIndex === globalState.searchState.nextMatchIndex
+        ) {
+          // The decorations are fine as-is, don't waste time re-calculating
+          this.searchDecorationCacheKey = cacheKey;
+          return;
+        }
+        // Update decorations highlighting the current match
         if (globalState.searchState.nextMatchIndex !== undefined) {
           decorations = getDecorationsForSearchMatchRanges(
             globalState.searchState.getMatchRanges(this.vimState),
             globalState.searchState.nextMatchIndex
           );
         } else {
-          // No next match defined update decorations without a currentMatchIndex
+          // No next match defined, update decorations without a currentMatchIndex
           decorations = getDecorationsForSearchMatchRanges(
             globalState.searchState.getMatchRanges(this.vimState),
           );
         }
         this.searchDecorationCacheKey = {
           searchString: globalState.searchState.searchString,
-          documentVersion: this.vimState.document.version,
+          matchIndex: globalState.searchState.nextMatchIndex,
         };
       }
     }
