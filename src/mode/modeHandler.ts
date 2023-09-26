@@ -1187,19 +1187,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       ) {
         decorations = this.vimState.modeData.commandLine.getDecorations(this.vimState);
       } else if (globalState.searchState) {
-        if (
-          cacheKey &&
-          cacheKey.searchString === globalState.searchState.searchString &&
-          cacheKey.documentVersion === this.vimState.document.version
-        ) {
-          // The decorations are fine as-is, don't waste time re-calculating
-          this.searchDecorationCacheKey = cacheKey;
-          return;
+        // Update decorations highlighting the next match
+        if (globalState.searchState.nextMatchIndex !== undefined) {
+          decorations = getDecorationsForSearchMatchRanges(
+            globalState.searchState.getMatchRanges(this.vimState),
+            globalState.searchState.nextMatchIndex
+          );
+        } else {
+          // No next match defined update decorations without a currentMatchIndex
+          decorations = getDecorationsForSearchMatchRanges(
+            globalState.searchState.getMatchRanges(this.vimState),
+          );
         }
-        // If there are no decorations from the command line, get decorations for previous SearchState
-        decorations = getDecorationsForSearchMatchRanges(
-          globalState.searchState.getMatchRanges(this.vimState),
-        );
         this.searchDecorationCacheKey = {
           searchString: globalState.searchState.searchString,
           documentVersion: this.vimState.document.version,
