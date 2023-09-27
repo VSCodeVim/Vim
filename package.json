@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.26.0",
+  "version": "1.26.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -1156,6 +1156,7 @@
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
     "process": "0.11.10",
+    "queue": "^6.0.2",
     "untildify": "4.0.0",
     "util": "0.12.5"
   },
@@ -1167,7 +1168,7 @@
     "@types/mocha": "10.0.1",
     "@types/node": "16.18.54",
     "@types/parsimmon": "1.10.7",
-    "@types/sinon": "10.0.16",
+    "@types/sinon": "10.0.17",
     "@types/vscode": "1.74.0",
     "@vscode/test-electron": "2.3.4",
     "circular-dependency-plugin": "^5.2.2",
