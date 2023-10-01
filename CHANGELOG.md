@@ -1,6 +1,12 @@
 # Change Log
 
-## Unreleased
+## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-09-25)
+
+### Fixed
+
+- Fixed several Insert mode bugs caused by a regression in `v1.26.0` ([@nullbus](https://github.com/nullbus)).
+
+## [v1.26.0](https://github.com/vscodevim/vim/tree/v1.26.0) (2023-09-09)
 
 ### Added
 
