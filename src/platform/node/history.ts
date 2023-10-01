@@ -16,7 +16,7 @@ export class HistoryBase {
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
-    extensionStoragePath: string
+    extensionStoragePath: string,
   ) {
     this.historyFileName = historyFileName;
     this.extensionStoragePath = extensionStoragePath;

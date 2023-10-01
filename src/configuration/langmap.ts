@@ -68,8 +68,8 @@ export class Langmap {
     const parts = separators.map((separatorIndex, arrayIndex) =>
       langmap.substring(
         arrayIndex === 0 ? 0 : (separators[arrayIndex - 1] as number) + 1,
-        separatorIndex
-      )
+        separatorIndex,
+      ),
     );
 
     // Step 2: Parse each part
@@ -129,7 +129,7 @@ export class Langmap {
   public unmapLiteral(
     // for commands that interpret some keys literally, like "f<character>", we must unmap the literal keys
     reference: readonly string[] | readonly string[][],
-    keys: readonly string[]
+    keys: readonly string[],
   ): string[] {
     if (reference.length === 0 || keys.length === 0) return [];
 

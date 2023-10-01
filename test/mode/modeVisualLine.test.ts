@@ -370,14 +370,14 @@ suite('Mode Visual Line', () => {
 
     test('gv selects the last pasted text (which is shorter than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        '2ggyy'.split('') // yank the second line
+        '2ggyy'.split(''), // yank the second line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
@@ -394,14 +394,14 @@ suite('Mode Visual Line', () => {
 
     test('gv selects the last pasted text (which is longer than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        'yy'.split('') // yank the last line
+        'yy'.split(''), // yank the last line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
@@ -424,10 +424,10 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        'Vky'.split('') // yank 'foo\nbar\n'
+        'Vky'.split(''), // yank 'foo\nbar\n'
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 

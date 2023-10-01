@@ -29,9 +29,9 @@ export const fileNameParser: Parser<string> = alt<string>(
         // TODO: anything else that needs escaping?
         return `\\${escaped}`;
       }
-    })
+    }),
   ),
-  regexp(/\S/)
+  regexp(/\S/),
 )
   .atLeast(1)
   .map((chars) => chars.join(''));
@@ -50,10 +50,10 @@ export const fileOptParser: Parser<FileOpt> = string('++')
         alt(string('bin'), string('binary')).result('bin'),
         alt(string('nobin'), string('nobinary')).result('nobin'),
         string('bad'),
-        string('edit')
+        string('edit'),
       ),
-      string('=').then(regexp(/\S+/)).fallback(undefined)
-    )
+      string('=').then(regexp(/\S+/)).fallback(undefined),
+    ),
   )
   .sepBy(whitespace)
   .desc('[++opt]');
@@ -80,8 +80,8 @@ export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
       // TODO: Ex command
       // lazy(() => exCommandParser),
       // Last line
-      succeed({ type: 'last_line' })
-    )
+      succeed({ type: 'last_line' }),
+    ),
   )
   .fallback(undefined)
   .desc('[+cmd]');

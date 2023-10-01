@@ -102,7 +102,7 @@ const setOperationParser: Parser<SetOperation> = whitespace
             option,
             source,
           };
-        }
+        },
       ),
       seq(optionParser.skip(oneOf('=:')), valueParser).map(([option, value]) => {
         return {
@@ -137,14 +137,14 @@ const setOperationParser: Parser<SetOperation> = whitespace
           type: 'show_or_set',
           option,
         };
-      })
-    )
+      }),
+    ),
   )
   .fallback({ type: 'show_or_set', option: undefined });
 
 export class SetCommand extends ExCommand {
   public static readonly argParser: Parser<SetCommand> = setOperationParser.map(
-    (operation) => new SetCommand(operation)
+    (operation) => new SetCommand(operation),
   );
 
   private readonly operation: SetOperation;
@@ -225,7 +225,7 @@ export class SetCommand extends ExCommand {
             // TODO: Could also be {option}:{value}
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}=${this.operation.value}`
+              `${option}=${this.operation.value}`,
             );
           }
           configuration[option] = value;
@@ -242,7 +242,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}+=${this.operation.value}`
+              `${option}+=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue + value;
@@ -259,7 +259,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}^=${this.operation.value}`
+              `${option}^=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue * value;
@@ -276,7 +276,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}-=${this.operation.value}`
+              `${option}-=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue - value;

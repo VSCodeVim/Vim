@@ -78,7 +78,7 @@ export class TagMatcher {
 
     const firstNonWhitespacePositionOnLine = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      vimState.cursorStartPosition.line
+      vimState.cursorStartPosition.line,
     );
 
     /**
@@ -109,7 +109,7 @@ export class TagMatcher {
     const nodeSurrounding = this.determineRelevantTag(
       tagsSurrounding,
       startPosOffset,
-      vimState.cursorStartPosition.compareTo(vimState.cursorStopPosition) !== 0
+      vimState.cursorStartPosition.compareTo(vimState.cursorStopPosition) !== 0,
     );
 
     if (!nodeSurrounding) {
@@ -140,7 +140,7 @@ export class TagMatcher {
   determineRelevantTag(
     tagsSurrounding: MatchedTag[],
     adjustedStartPosOffset: number,
-    selectionActive: boolean
+    selectionActive: boolean,
   ): MatchedTag | undefined {
     const relevantTag = tagsSurrounding[0];
 

@@ -27,10 +27,10 @@ export class ReadCommand extends ExCommand {
             }),
           fileNameParser.map((file) => {
             return { file };
-          })
-        )
+          }),
+        ),
       )
-      .fallback(undefined)
+      .fallback(undefined),
   ).map(([opt, other]) => new ReadCommand({ opt, ...other }));
 
   private readonly arguments: IReadCommandArguments;
@@ -48,7 +48,7 @@ export class ReadCommand extends ExCommand {
     if (textToInsert) {
       vimState.recordedState.transformer.insert(
         vimState.cursorStopPosition.getLineEnd(),
-        '\n' + textToInsert
+        '\n' + textToInsert,
       );
     }
   }

@@ -31,9 +31,9 @@ export class WriteCommand extends ExCommand {
         }),
       fileNameParser.map((file) => {
         return { file };
-      })
+      }),
       // TODO: Support `:help :w_a` ('>>')
-    ).fallback({})
+    ).fallback({}),
   ).map(([bang, opt, other]) => new WriteCommand({ bang, opt, bgWrite: true, ...other }));
 
   public override isRepeatableWithDot = false;
@@ -106,7 +106,7 @@ export class WriteCommand extends ExCommand {
           `File "${fileName}" already exists. Do you want to overwrite it?`,
           { modal: true },
           'Yes',
-          'No'
+          'No',
         );
 
         if (confirmOverwrite === 'No') {
@@ -123,7 +123,7 @@ export class WriteCommand extends ExCommand {
         vimState,
         `"${fileName}" ${fileExists ? '' : '[New]'} ${vimState.document.lineCount}L ${
           vimState.document.getText().length
-        }C written`
+        }C written`,
       );
     } catch (e) {
       StatusBar.setText(vimState, e.message);
@@ -138,13 +138,13 @@ export class WriteCommand extends ExCommand {
             vimState,
             `"${path.basename(vimState.document.fileName)}" ${vimState.document.lineCount}L ${
               vimState.document.getText().length
-            }C written`
+            }C written`,
           );
         } else {
           Logger.warn(':w failed');
           // TODO: What's the right thing to do here?
         }
-      })
+      }),
     );
   }
 
