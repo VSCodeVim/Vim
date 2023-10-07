@@ -36,7 +36,7 @@ function regexForWordType(wordType: WordType): RegExp {
 export function getWordLeftInText(
   text: string,
   pos: number,
-  wordType: WordType
+  wordType: WordType,
 ): number | undefined {
   return getWordLeftOnLine(text, pos, wordType);
 }
@@ -44,7 +44,7 @@ export function getWordLeftInText(
 export function getWordRightInText(
   text: string,
   pos: number,
-  wordType: WordType
+  wordType: WordType,
 ): number | undefined {
   return getAllPositions(text, regexForWordType(wordType)).find((index) => index > pos);
 }
@@ -53,7 +53,7 @@ export function prevWordStart(
   document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
   for (let currentLine = pos.line; currentLine >= 0; currentLine--) {
     const newCharacter = getWordLeftOnLine(
@@ -61,7 +61,7 @@ export function prevWordStart(
       pos.character,
       wordType,
       currentLine !== pos.line,
-      inclusive
+      inclusive,
     );
 
     if (newCharacter !== undefined) {
@@ -77,7 +77,7 @@ function getWordLeftOnLine(
   pos: number,
   wordType: WordType,
   forceFirst: boolean = false,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): number | undefined {
   return getAllPositions(text, regexForWordType(wordType))
     .reverse()
@@ -88,18 +88,18 @@ export function nextWordStart(
   document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
   for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
     const positions = getAllPositions(
       document.lineAt(currentLine).text,
-      regexForWordType(wordType)
+      regexForWordType(wordType),
     );
     const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
-        currentLine !== pos.line
+        currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -114,18 +114,18 @@ export function nextWordEnd(
   document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
   for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
     const positions = getAllEndPositions(
       document.lineAt(currentLine).text,
-      regexForWordType(wordType)
+      regexForWordType(wordType),
     );
     const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
-        currentLine !== pos.line
+        currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -140,7 +140,7 @@ export function prevWordEnd(document: TextDocument, pos: Position, wordType: Wor
   for (let currentLine = pos.line; currentLine > -1; currentLine--) {
     let positions = getAllEndPositions(
       document.lineAt(currentLine).text,
-      regexForWordType(wordType)
+      regexForWordType(wordType),
     );
     // if one line is empty, use the 0 position as the default value
     if (positions.length === 0) {

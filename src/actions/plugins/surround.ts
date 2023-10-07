@@ -126,7 +126,7 @@ class YankSurroundOperator extends SurroundOperator {
   public override async runRepeat(
     vimState: VimState,
     position: Position,
-    count: number
+    count: number,
   ): Promise<void> {
     // we want to act on range: first non whitespace to last non whitespace
     await this.run(
@@ -135,7 +135,7 @@ class YankSurroundOperator extends SurroundOperator {
       position
         .getDown(Math.max(0, count - 1))
         .getLineEnd()
-        .prevWordEnd(vimState.document)
+        .prevWordEnd(vimState.document),
     );
   }
 }
@@ -228,7 +228,7 @@ class CommandSurroundDeleteSurround extends CommandSurround {
     const replaceRanges = await SurroundHelper.getReplaceRanges(
       vimState,
       position,
-      this.multicursorIndex ?? 0
+      this.multicursorIndex ?? 0,
     );
 
     if (replaceRanges) {
@@ -274,7 +274,7 @@ class CommandSurroundChangeSurround extends CommandSurround {
     const replaceRanges = await SurroundHelper.getReplaceRanges(
       vimState,
       position,
-      this.multicursorIndex ?? 0
+      this.multicursorIndex ?? 0,
     );
 
     // collect ranges for all cursors
@@ -520,7 +520,7 @@ class SurroundHelper {
   public static async getReplaceRanges(
     vimState: VimState,
     position: Position,
-    multicursorIndex: number
+    multicursorIndex: number,
   ): Promise<SurroundEdge | undefined> {
     /* so this method is a bit of a dumpster for edge cases and ugly details
     the main idea is this:
@@ -578,7 +578,7 @@ class SurroundHelper {
     function checkRemoveSpace(): number {
       // capiche?
       const leftSpace = vimState.editor.document.getText(
-        new Range(rangeStart.getRight(), rangeStart.getRight(2))
+        new Range(rangeStart.getRight(), rangeStart.getRight(2)),
       );
       const rightSpace = vimState.editor.document.getText(new Range(rangeEnd.getLeft(), rangeEnd));
       return removeSpace && leftSpace === ' ' && rightSpace === ' ' ? 1 : 0;

@@ -19,7 +19,7 @@ interface IBufferDeleteCommandArguments {
 export class BufferDeleteCommand extends ExCommand {
   public static readonly argParser: Parser<BufferDeleteCommand> = seq(
     bangParser.skip(optWhitespace),
-    alt(numberParser, fileNameParser).sepBy(whitespace)
+    alt(numberParser, fileNameParser).sepBy(whitespace),
   ).map(([bang, buffers]) => new BufferDeleteCommand({ bang, buffers }));
 
   public readonly arguments: IBufferDeleteCommandArguments;
@@ -42,7 +42,7 @@ export class BufferDeleteCommand extends ExCommand {
           StatusBar.setText(
             vimState,
             ':bd[elete][!] {bufname} is not yet implemented (PRs are welcome!)',
-            true
+            true,
           );
           continue;
         }

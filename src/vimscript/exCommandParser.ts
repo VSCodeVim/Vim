@@ -89,7 +89,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
-  [['b', 'uffer'], undefined],
+  [['b', 'uffer'], TabCommand.argParsers.tabAbsolute],
   [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],
@@ -625,7 +625,7 @@ class UnimplementedCommand extends ExCommand {
     StatusBar.setText(
       vimState,
       `Command :${this.name} is not yet implemented (PRs are welcome!)`,
-      true
+      true,
     );
   }
 
@@ -642,7 +642,7 @@ export class NoOpCommand extends ExCommand {
 
 function nameParser(
   name: [string, string],
-  argParser: ArgParser | undefined
+  argParser: ArgParser | undefined,
 ): Parser<Parser<ExCommand>> {
   argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
@@ -654,7 +654,7 @@ function nameParser(
 export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
-    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace)))
+    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
 );
 
 export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
@@ -665,14 +665,14 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         LineRange.parser.fallback(undefined),
         optWhitespace,
         commandNameParser.fallback(undefined),
-        all
-      )
+        all,
+      ),
     )
     .map(([lineRange, whitespace, parseArgs, args]) => {
       if (parseArgs === undefined) {
         throw VimError.fromCode(
           ErrorCode.NotAnEditorCommand,
-          `${lineRange?.toString() ?? ''}${whitespace}${args}`
+          `${lineRange?.toString() ?? ''}${whitespace}${args}`,
         );
       }
       const result = seq(parseArgs, optWhitespace.then(all)).parse(args);

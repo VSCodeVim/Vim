@@ -79,31 +79,31 @@ export class TabCommand extends ExCommand {
     bnext: seq(
       bangParser,
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(numberParser).fallback(undefined)
+      optWhitespace.then(numberParser).fallback(undefined),
     ).map(([bang, cmd, count]) => {
       return new TabCommand({ type: TabCommandType.Next, bang, cmd, count });
     }),
     bprev: seq(
       bangParser,
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(numberParser).fallback(undefined)
+      optWhitespace.then(numberParser).fallback(undefined),
     ).map(([bang, cmd, count]) => {
       return new TabCommand({ type: TabCommandType.Previous, bang, cmd, count });
     }),
     tabclose: seq(bangParser, optWhitespace.then(numberParser).fallback(undefined)).map(
       ([bang, count]) => {
         return new TabCommand({ type: TabCommandType.Close, bang, count });
-      }
+      },
     ),
     tabonly: seq(bangParser, optWhitespace.then(numberParser).fallback(undefined)).map(
       ([bang, count]) => {
         return new TabCommand({ type: TabCommandType.Only, bang, count });
-      }
+      },
     ),
     tabnew: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      regexp(/\S+/).fallback(undefined)
+      regexp(/\S+/).fallback(undefined),
     ).map(([opt, cmd, file]) => {
       return new TabCommand({
         type: TabCommandType.New,
@@ -116,12 +116,15 @@ export class TabCommand extends ExCommand {
       .then(
         seq(
           alt<'right' | 'left'>(string('+').result('right'), string('-').result('left')).fallback(
-            undefined
+            undefined,
           ),
-          numberParser.fallback(undefined)
-        )
+          numberParser.fallback(undefined),
+        ),
       )
       .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
+    tabAbsolute: optWhitespace
+      .then(numberParser.fallback(undefined))
+      .map((count) => new TabCommand({ type: TabCommandType.Absolute, count: count ?? 0 })),
   };
 
   public readonly arguments: ITabCommandArguments;
@@ -142,7 +145,7 @@ export class TabCommand extends ExCommand {
         if (this.arguments.count !== undefined && this.arguments.count >= 0) {
           await vscode.commands.executeCommand(
             'workbench.action.openEditorAtIndex',
-            this.arguments.count
+            this.arguments.count - 1,
           );
         }
         break;
@@ -172,7 +175,7 @@ export class TabCommand extends ExCommand {
 
         await this.executeCommandWithCount(
           this.arguments.count || 1,
-          'workbench.action.previousEditorInGroup'
+          'workbench.action.previousEditorInGroup',
         );
         break;
       case TabCommandType.First:

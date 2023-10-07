@@ -24,7 +24,7 @@ suite('Vertical split', () => {
       assert.strictEqual(
         vscode.window.visibleTextEditors.length,
         2,
-        'Editor did not split in 1 sec'
+        'Editor did not split in 1 sec',
       );
     });
   }
