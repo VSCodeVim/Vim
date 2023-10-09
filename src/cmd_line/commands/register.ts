@@ -70,7 +70,7 @@ export class RegisterCommand extends ExCommand {
 
       for (const registerKey of currentRegisterKeys) {
         const displayValue = await this.getRegisterDisplayValue(registerKey);
-        if (typeof (displayValue) === 'string') {
+        if (typeof displayValue === 'string') {
           registerKeyAndContent.push({
             label: registerKey,
             description: displayValue,
