@@ -9,6 +9,8 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { any, optWhitespace, Parser } from 'parsimmon';
 
 export class RegisterCommand extends ExCommand {
+  public override isRepeatableWithDot: boolean = false;
+
   public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
     any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers)),
   );
