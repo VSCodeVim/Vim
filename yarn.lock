@@ -168,10 +168,10 @@
   resolved "https://registry.yarnpkg.com/@types/diff-match-patch/-/diff-match-patch-1.0.34.tgz#a4c1bbf2f992ac272047a76f3de4da6f867fde18"
   integrity sha512-GPT65LkqMpttT0BrYBzSv4FYgiEh7TXYxxFW8ufxn3+d6PhEJKdD4OAS4s0n8reeEku1ki56J2zj5FIPi5unVQ==
 
-"@types/diff@5.0.5":
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-5.0.5.tgz#5fea9742557f5ba76c652e35f6f8461ad9336cae"
-  integrity sha512-rt7WqM1bWwKJMRxlB5Rhke56UN21Bqwp1ILER31bafTivcapYdfhtPd5xRWfhf08yjPxoDcfjVkkECdRwFe7EA==
+"@types/diff@5.0.6":
+  version "5.0.6"
+  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-5.0.6.tgz#0df3196c9f1c15c280484db408e15240128b5766"
+  integrity sha512-OxYeXtiT2eAkK5Js6V6wY+Jb9uKdeSQIXxEZcRBqrE/VBJPMnrmsArARjGjiIulpu13vnpvGf+LLTNyZaJNPuw==
 
 "@types/eslint-scope@^3.7.3":
   version "3.7.3"
@@ -5606,10 +5606,10 @@ webpack-stream@7.0.0:
     through "^2.3.8"
     vinyl "^2.2.1"
 
-webpack@5.88.2:
-  version "5.88.2"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.88.2.tgz#f62b4b842f1c6ff580f3fcb2ed4f0b579f4c210e"
-  integrity sha512-JmcgNZ1iKj+aiR0OvTYtWQqJwq37Pf683dY9bVORwVbUrDhLhdn/PlO2sHsFHPkj7sHNQF3JwaAkp49V+Sq1tQ==
+webpack@5.89.0:
+  version "5.89.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.89.0.tgz#56b8bf9a34356e93a6625770006490bf3a7f32dc"
+  integrity sha512-qyfIC10pOr70V+jkmud8tMfajraGCZMBWJtrmuBymQKCrLTRejBI8STDp1MCyZu/QTdZSeacCQYpYNQVOzX5kw==
   dependencies:
     "@types/eslint-scope" "^3.7.3"
     "@types/estree" "^1.0.0"
