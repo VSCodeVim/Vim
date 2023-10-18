@@ -1164,7 +1164,7 @@
     "@types/diff": "5.0.6",
     "@types/diff-match-patch": "1.0.35",
     "@types/glob": "8.1.0",
-    "@types/lodash": "4.14.199",
+    "@types/lodash": "4.14.200",
     "@types/mocha": "10.0.2",
     "@types/node": "16.18.58",
     "@types/parsimmon": "1.10.7",
