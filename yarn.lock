@@ -168,10 +168,10 @@
   resolved "https://registry.yarnpkg.com/@types/diff-match-patch/-/diff-match-patch-1.0.35.tgz#40e8b2a02d47f648154936c39098a594099d2a80"
   integrity sha512-+RpmGthShsToYni9Df1DBhFfPuMV1/VgDvedhSCgP5ll7QsNYcaxfqv4/8Vzbw7FtEscD80OCyycQuMtIVL07Q==
 
-"@types/diff@5.0.6":
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-5.0.6.tgz#0df3196c9f1c15c280484db408e15240128b5766"
-  integrity sha512-OxYeXtiT2eAkK5Js6V6wY+Jb9uKdeSQIXxEZcRBqrE/VBJPMnrmsArARjGjiIulpu13vnpvGf+LLTNyZaJNPuw==
+"@types/diff@5.0.7":
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-5.0.7.tgz#471bad8be0d911ed04d115863402920f3a84079c"
+  integrity sha512-adBosR2GntaQQiuHnfRN9HtxYpoHHJBcdyz7VSXhjpSAmtvIfu/S1fjTqwuIx/Ypba6LCZdfWIqPYx2BR5TneQ==
 
 "@types/eslint-scope@^3.7.3":
   version "3.7.3"
