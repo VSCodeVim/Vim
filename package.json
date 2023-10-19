@@ -1166,7 +1166,7 @@
     "@types/glob": "8.1.0",
     "@types/lodash": "4.14.200",
     "@types/mocha": "10.0.3",
-    "@types/node": "16.18.58",
+    "@types/node": "16.18.59",
     "@types/parsimmon": "1.10.7",
     "@types/sinon": "10.0.20",
     "@types/vscode": "1.74.0",
