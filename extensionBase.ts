@@ -16,6 +16,7 @@ import { globalState } from './src/state/globalState';
 import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { exCommandParser } from './src/vimscript/exCommandParser';
+import { taskQueue } from './src/taskQueue';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -246,13 +247,15 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      const mh = await getAndUpdateModeHandler(true);
-      if (mh) {
-        globalState.jumpTracker.handleFileJump(
-          lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
-          Jump.fromStateNow(mh.vimState),
-        );
-      }
+      taskQueue.enqueueTask(async () => {
+        const mh = await getAndUpdateModeHandler(true);
+        if (mh) {
+          globalState.jumpTracker.handleFileJump(
+            lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
+            Jump.fromStateNow(mh.vimState),
+          );
+        }
+      });
     },
     true,
     true,
@@ -322,7 +325,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      await mh.handleSelectionChange(e);
+      taskQueue.enqueueTask(() => mh.handleSelectionChange(e));
     },
     true,
     false,
@@ -335,15 +338,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (e.textEditor !== vscode.window.activeTextEditor) {
         return;
       }
-      // Scrolling the viewport clears any status bar message, even errors.
-      const mh = await getAndUpdateModeHandler();
-      if (mh && StatusBar.lastMessageTime) {
-        // TODO: Using the time elapsed works most of the time, but is a bit of a hack
-        const timeElapsed = Date.now() - Number(StatusBar.lastMessageTime);
-        if (timeElapsed > 100) {
-          StatusBar.clear(mh.vimState, true);
+      taskQueue.enqueueTask(async () => {
+        // Scrolling the viewport clears any status bar message, even errors.
+        const mh = await getAndUpdateModeHandler();
+        if (mh && StatusBar.lastMessageTime) {
+          // TODO: Using the time elapsed works most of the time, but is a bit of a hack
+          const timeElapsed = Date.now() - Number(StatusBar.lastMessageTime);
+          if (timeElapsed > 100) {
+            StatusBar.clear(mh.vimState, true);
+          }
         }
-      }
+      });
     },
   );
 
@@ -351,67 +356,75 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   // Override VSCode commands
   overrideCommand(context, 'type', async (args) => {
-    const mh = await getAndUpdateModeHandler();
-    if (mh) {
-      if (compositionState.isInComposition) {
-        compositionState.composingText += args.text;
-        if (mh.vimState.currentMode === Mode.Insert) {
-          compositionState.insertedText = true;
-          vscode.commands.executeCommand('default:type', { text: args.text });
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        if (compositionState.isInComposition) {
+          compositionState.composingText += args.text;
+          if (mh.vimState.currentMode === Mode.Insert) {
+            compositionState.insertedText = true;
+            vscode.commands.executeCommand('default:type', { text: args.text });
+          }
+        } else {
+          await mh.handleKeyEvent(args.text);
         }
-      } else {
-        await mh.handleKeyEvent(args.text);
       }
-    }
+    });
   });
 
   overrideCommand(context, 'replacePreviousChar', async (args) => {
-    const mh = await getAndUpdateModeHandler();
-    if (mh) {
-      if (compositionState.isInComposition) {
-        compositionState.composingText =
-          compositionState.composingText.substr(
-            0,
-            compositionState.composingText.length - args.replaceCharCnt,
-          ) + args.text;
-      }
-      if (compositionState.insertedText) {
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        if (compositionState.isInComposition) {
+          compositionState.composingText =
+            compositionState.composingText.substr(
+              0,
+              compositionState.composingText.length - args.replaceCharCnt,
+            ) + args.text;
+        }
+        if (compositionState.insertedText) {
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: args.text,
+            replaceCharCnt: args.replaceCharCnt,
+          });
+          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+        }
+      } else {
         await vscode.commands.executeCommand('default:replacePreviousChar', {
           text: args.text,
           replaceCharCnt: args.replaceCharCnt,
         });
-        mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
-        mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
       }
-    } else {
-      await vscode.commands.executeCommand('default:replacePreviousChar', {
-        text: args.text,
-        replaceCharCnt: args.replaceCharCnt,
-      });
-    }
+    });
   });
 
   overrideCommand(context, 'compositionStart', async () => {
-    compositionState.isInComposition = true;
+    taskQueue.enqueueTask(async () => {
+      compositionState.isInComposition = true;
+    });
   });
 
   overrideCommand(context, 'compositionEnd', async () => {
-    const mh = await getAndUpdateModeHandler();
-    if (mh) {
-      if (compositionState.insertedText) {
-        mh.selectionsChanged.ignoreIntermediateSelections = true;
-        await vscode.commands.executeCommand('default:replacePreviousChar', {
-          text: '',
-          replaceCharCnt: compositionState.composingText.length,
-        });
-        mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
-        mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-        mh.selectionsChanged.ignoreIntermediateSelections = false;
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        if (compositionState.insertedText) {
+          mh.selectionsChanged.ignoreIntermediateSelections = true;
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: '',
+            replaceCharCnt: compositionState.composingText.length,
+          });
+          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
+          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
+          mh.selectionsChanged.ignoreIntermediateSelections = false;
+        }
+        const text = compositionState.composingText;
+        await mh.handleMultipleKeyEvents(text.split(''));
       }
-      const text = compositionState.composingText;
-      await mh.handleMultipleKeyEvents(text.split(''));
-    }
-    compositionState.reset();
+      compositionState.reset();
+    });
   });
 
   // Register extension commands
@@ -432,37 +445,39 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
-    const mh = await getAndUpdateModeHandler();
-    if (mh === undefined) {
-      return;
-    }
-
-    if (!args) {
-      throw new Error(
-        "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'",
-      );
-    }
-
-    if (args.after) {
-      for (const key of args.after) {
-        await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh === undefined) {
+        return;
       }
-    }
 
-    if (args.commands) {
-      for (const command of args.commands) {
-        // Check if this is a vim command by looking for :
-        if (command.command.startsWith(':')) {
-          await new ExCommandLine(
-            command.command.slice(1, command.command.length),
-            mh.vimState.currentMode,
-          ).run(mh.vimState);
-          mh.updateView();
-        } else {
-          vscode.commands.executeCommand(command.command, command.args);
+      if (!args) {
+        throw new Error(
+          "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'",
+        );
+      }
+
+      if (args.after) {
+        for (const key of args.after) {
+          await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
         }
       }
-    }
+
+      if (args.commands) {
+        for (const command of args.commands) {
+          // Check if this is a vim command by looking for :
+          if (command.command.startsWith(':')) {
+            await new ExCommandLine(
+              command.command.slice(1, command.command.length),
+              mh.vimState.currentMode,
+            ).run(mh.vimState);
+            mh.updateView();
+          } else {
+            await vscode.commands.executeCommand(command.command, command.args);
+          }
+        }
+      }
+    });
   });
 
   registerCommand(context, 'toggleVim', async () => {
@@ -484,7 +499,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             await mh.handleKeyEvent(`${boundKey.key}`);
           }
         };
-    registerCommand(context, boundKey.command, command);
+    registerCommand(context, boundKey.command, async () => {
+      taskQueue.enqueueTask(command);
+    });
   }
 
   {

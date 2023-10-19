@@ -9,6 +9,8 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { any, optWhitespace, Parser } from 'parsimmon';
 
 export class RegisterCommand extends ExCommand {
+  public override isRepeatableWithDot: boolean = false;
+
   public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
     any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers)),
   );
@@ -67,10 +69,13 @@ export class RegisterCommand extends ExCommand {
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();
 
       for (const registerKey of currentRegisterKeys) {
-        registerKeyAndContent.push({
-          label: registerKey,
-          description: await this.getRegisterDisplayValue(registerKey),
-        });
+        const displayValue = await this.getRegisterDisplayValue(registerKey);
+        if (typeof displayValue === 'string') {
+          registerKeyAndContent.push({
+            label: registerKey,
+            description: displayValue,
+          });
+        }
       }
 
       vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
