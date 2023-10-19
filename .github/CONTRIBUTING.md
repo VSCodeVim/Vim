@@ -33,7 +33,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1. Install prerequisites:
 
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
-   - [Node.js](https://nodejs.org/) v16.x or higher
+   - [Node.js](https://nodejs.org/) v18.x or higher
    - [Yarn](https://classic.yarnpkg.com/) v1.x
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
