@@ -92,7 +92,7 @@ export async function mkdirAsync(path: string, options: any): Promise<void> {
 export async function writeFileAsync(
   path: string,
   content: string,
-  encoding: BufferEncoding
+  encoding: BufferEncoding,
 ): Promise<void> {
   return vscode.workspace.fs.writeFile(vscode.Uri.parse(path), Buffer.from(content));
 }

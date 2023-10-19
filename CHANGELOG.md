@@ -1,6 +1,15 @@
 # Change Log
 
-## Unreleased
+## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-10-09)
+
+### Fixed
+
+- Fixed several Insert mode bugs caused by a regression in `v1.26.0` ([@nullbus](https://github.com/nullbus)).
+- Fixed dot repeat (`.`) after `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed overlapping text in Quick Pick caused by `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed some uses of `vim.remap` ([@jdanbrown](https://github.com/jdanbrown)).
+
+## [v1.26.0](https://github.com/vscodevim/vim/tree/v1.26.0) (2023-09-09)
 
 ### Added
 
@@ -13,6 +22,11 @@
 - Fixed misbehavior when selecting from bottom to top with shift+click ([@lqqyt2423](https://github.com/lqqyt2423)).
 - Fixed `@@` when used in a different editor ([@J-Fields](https://github.com/J-Fields)).
 - Fixed race condition in the `c` operator and a few other actions when `vim.autoSwitchInputMethod` is enabled ([@listenerri](https://github.com/listenerri)).
+- Fixed `when` clause for provided `<C-p>` key bind to enable it being remapped ([@grosssoftware](https://github.com/grosssoftware)).
+- Fixed `:sp[lit] [file]` ([@fernando-gap](https://github.com/fernando-gap)).
+- Fixed `<Tab>` key bind which was blocking menu navigation in VS Code's find dialog ([@devrelm](https://github.com/devrelm)).
+- Fixed VSCode's auto-surround functionality in Insert mode ([@Elliot-Roberts](https://github.com/Elliot-Roberts)).
+- Fixed `<C-d>` and `<C-u>` not respecting `[count]` ([@rpuhalovich](https://github.com/rpuhalovich)).
 
 ## [v1.25.2](https://github.com/vscodevim/vim/tree/v1.25.2) (2023-03-01)
 

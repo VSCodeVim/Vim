@@ -59,7 +59,7 @@ suite.skip(':only command', () => {
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
-      'Did not reduce to single editor'
+      'Did not reduce to single editor',
     );
     assert.strictEqual(await isPanelVisible(), false, 'Panel is still visible');
   });

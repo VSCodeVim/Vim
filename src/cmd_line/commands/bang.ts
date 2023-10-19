@@ -14,7 +14,7 @@ export class BangCommand extends ExCommand {
     (command) =>
       new BangCommand({
         command,
-      })
+      }),
   );
 
   protected _arguments: IBangCommandArguments;

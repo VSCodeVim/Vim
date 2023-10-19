@@ -103,7 +103,7 @@ function getMatchesForString(
   position: Position,
   vimState: VimState,
   searchString: string,
-  options?: SearchOptions
+  options?: SearchOptions,
 ): Match[] {
   switch (searchString) {
     case '':
@@ -114,7 +114,7 @@ function getMatchesForString(
         vimState.document,
         position,
         new RegExp(' {1,}', 'g'),
-        options
+        options,
       );
     default:
       // Search all occurences of the character pressed
@@ -131,7 +131,7 @@ function getMatchesForString(
         vimState.document,
         position,
         new RegExp(searchString, regexFlags),
-        options
+        options,
       );
   }
 }
@@ -197,7 +197,7 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
       position,
       vimState,
       this.removeTrailingLineBreak(this.searchString),
-      {}
+      {},
     );
   }
 
@@ -264,7 +264,7 @@ export abstract class EasyMotionWordMoveCommandBase extends BaseEasyMotionComman
   private getMatchesForWord(
     position: Position,
     vimState: VimState,
-    options?: SearchOptions
+    options?: SearchOptions,
   ): Match[] {
     const regex = this._options.jumpToAnywhere
       ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
@@ -292,19 +292,19 @@ export abstract class EasyMotionLineMoveCommandBase extends BaseEasyMotionComman
   private getMatchesForLineStart(
     position: Position,
     vimState: VimState,
-    options?: SearchOptions
+    options?: SearchOptions,
   ): Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor
     const matches = vimState.easyMotion.sortedSearch(
       vimState.document,
       position,
       new RegExp('^.', 'gm'),
-      options
+      options,
     );
     for (const match of matches) {
       match.position = TextEditor.getFirstNonWhitespaceCharOnLine(
         vimState.document,
-        match.position.line
+        match.position.line,
       );
     }
     return matches;
