@@ -306,12 +306,12 @@ class Configuration implements IConfiguration {
   statusBarColorControl = false;
 
   statusBarColors: IModeSpecificStrings<string | string[]> = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
+    normal: ['#005f5f', '#ffffff'],
+    insert: ['#5f0000', '#ffffff'],
+    visual: ['#5f00af', '#ffffff'],
+    visualline: ['#005f87', '#ffffff'],
+    visualblock: ['#86592d', '#ffffff'],
+    replace: ['#000000', '#ffffff'],
   };
 
   searchHighlightColor = '';
