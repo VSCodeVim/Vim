@@ -982,12 +982,12 @@
         },
         "vim.neovimUseConfigFile": {
           "type": "boolean",
-          "markdownDescription": "Use a config file for Neovim, specified by `vim.neovimConfigPath`.",
+          "markdownDescription": "Use a config file for Neovim, specified by `#vim.neovimConfigPath#`.",
           "default": false
         },
         "vim.neovimConfigPath": {
           "type": "string",
-          "markdownDescription": "Path to Neovim configuration file. `vim.neovimUseConfigFile` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
+          "markdownDescription": "Path to Neovim configuration file. `#vim.neovimUseConfigFile#` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
           "default": "",
           "scope": "machine"
         },
