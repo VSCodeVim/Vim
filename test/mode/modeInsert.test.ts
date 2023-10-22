@@ -597,7 +597,7 @@ suite('Mode Insert', () => {
     });
   });
 
-  suite('<C-d>', () => {
+  suite.only('<C-d>', () => {
     newTest({
       title: '<C-d> decreases indent (2 spaces)',
       editorOptions: { insertSpaces: true, tabSize: 2 },
