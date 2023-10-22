@@ -812,7 +812,7 @@
         },
         "vim.handleKeys": {
           "type": "object",
-          "description": "Delegate certain key combinations back to VSCode to be handled natively.",
+          "description": "Delegate certain key combinations back to VS Code to be handled natively.",
           "default": {
             "<C-d>": true,
             "<C-s>": false,
