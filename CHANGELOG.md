@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.26.2](https://github.com/vscodevim/vim/tree/v1.26.2) (2023-10-21)
+
+### Fixed
+
+- Fixed illegible text with certain color schemes when `vim.statusBarColorControl` is enabled ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+### Changed
+
+- Changed extension's `activationEvents` to include `onStartupFinished` rather than `*`, which may improve startup performance ([@whitphx](https://github.com/whitphx)).
+
 ## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-10-09)
 
 ### Fixed
