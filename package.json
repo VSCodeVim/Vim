@@ -793,7 +793,8 @@
           "type": "number",
           "description": "How much search or command history should be remembered.",
           "default": 50,
-          "minimum": 1
+          "minimum": 1,
+          "maximum": 10000
         },
         "vim.autoindent": {
           "type": "boolean",
