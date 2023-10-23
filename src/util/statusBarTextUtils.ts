@@ -63,7 +63,7 @@ export function reportFileInfo(position: Position, vimState: VimState) {
       vimState,
       `"${fileName}"${modified} ${doc.lineCount} line${
         doc.lineCount > 1 ? 's' : ''
-      } --${progress}%--`
+      } --${progress}%--`,
     );
   }
 }

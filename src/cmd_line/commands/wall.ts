@@ -10,7 +10,7 @@ import { bangParser } from '../../vimscript/parserUtils';
 //
 export class WallCommand extends ExCommand {
   public static readonly argParser: Parser<WallCommand> = bangParser.map(
-    (bang) => new WallCommand(bang)
+    (bang) => new WallCommand(bang),
   );
 
   private readonly bang: boolean;

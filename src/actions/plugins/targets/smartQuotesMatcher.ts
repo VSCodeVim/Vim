@@ -200,7 +200,7 @@ export class SmartQuoteMatcher {
 
   public smartSurroundingQuotes(
     position: Position,
-    which: WhichQuotes
+    which: WhichQuotes,
   ): { start: Position; stop: Position; lineText: string } | undefined {
     position = this.document.validatePosition(position);
     const cursorIndex = position.character;
@@ -276,7 +276,7 @@ export class SmartQuoteMatcher {
   private smartSearch(
     start: number,
     action: SearchAction,
-    quoteMap: QuoteMatch[]
+    quoteMap: QuoteMatch[],
   ): [number, number] | undefined {
     const offset = action.includeCurrent ? 1 : 0;
     let cursorPos: number | undefined = start;

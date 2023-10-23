@@ -21,15 +21,15 @@ export class YankCommand extends ExCommand {
       seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
         ([register, count]) => {
           return { register, count };
-        }
-      )
+        },
+      ),
     ).map(
       ({ register, count }) =>
         new YankCommand({
           register,
           count,
-        })
-    )
+        }),
+    ),
   );
 
   private readonly arguments: YankCommandArguments;

@@ -84,13 +84,6 @@ export class RecordedState {
   }
 
   /**
-   * Determines if the current command list is prefixed with a count
-   */
-  public get commandWithoutCountPrefix() {
-    return this.commandList.join('').replace(/^[0-9]+/g, '');
-  }
-
-  /**
    * Reset the command list.
    */
   public resetCommandList() {

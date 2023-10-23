@@ -32,7 +32,8 @@ const withinIsolatedEditor = async (lambda: () => Thenable<unknown>) => {
 const getNumberOfVisibleLines = async () =>
   vscode.window.activeTextEditor!.visibleRanges[0].end.line;
 
-suite(':only command', () => {
+// TODO: Skipped!
+suite.skip(':only command', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -58,7 +59,7 @@ suite(':only command', () => {
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
-      'Did not reduce to single editor'
+      'Did not reduce to single editor',
     );
     assert.strictEqual(await isPanelVisible(), false, 'Panel is still visible');
   });

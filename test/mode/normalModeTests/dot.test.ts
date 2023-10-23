@@ -4,15 +4,14 @@ import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat '~' with <num>",
@@ -65,15 +64,14 @@ suite('Dot Operator', () => {
 });
 
 suite('Repeat content change', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     const configuration = new Configuration();
     configuration.tabstop = 4;
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can repeat `<BS>`',

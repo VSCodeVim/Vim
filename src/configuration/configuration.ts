@@ -15,6 +15,7 @@ import {
   IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
   ITargetsConfiguration,
+  Digraph,
 } from './iconfiguration';
 
 import * as packagejson from '../../package.json';
@@ -97,8 +98,10 @@ interface IKeyBinding {
  *
  */
 class Configuration implements IConfiguration {
+  [key: string]: any;
+
   private readonly leaderDefault = '\\';
-  private readonly cursorTypeMap = {
+  private readonly cursorTypeMap: { [key: string]: vscode.TextEditorCursorStyle } = {
     line: vscode.TextEditorCursorStyle.Line,
     block: vscode.TextEditorCursorStyle.Block,
     underline: vscode.TextEditorCursorStyle.Underline,
@@ -303,12 +306,12 @@ class Configuration implements IConfiguration {
   statusBarColorControl = false;
 
   statusBarColors: IModeSpecificStrings<string | string[]> = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
+    normal: ['#005f5f', '#ffffff'],
+    insert: ['#5f0000', '#ffffff'],
+    visual: ['#5f00af', '#ffffff'],
+    visualline: ['#005f87', '#ffffff'],
+    visualblock: ['#86592d', '#ffffff'],
+    replace: ['#000000', '#ffffff'],
   };
 
   searchHighlightColor = '';
@@ -413,7 +416,7 @@ class Configuration implements IConfiguration {
     path: '',
   };
 
-  digraphs = {};
+  digraphs: { [shortcut: string]: Digraph } = {};
 
   gdefault = false;
   substituteGlobalFlag = false; // Deprecated in favor of gdefault
@@ -444,6 +447,7 @@ class Configuration implements IConfiguration {
   };
 
   getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    // @ts-ignore: TODO: this function should take the mode directly
     const cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
@@ -480,11 +484,11 @@ class Configuration implements IConfiguration {
     return textwidth;
   }
 
-  private static unproxify(obj: object): object {
-    const result = {};
+  private static unproxify(obj: { [key: string]: any }): object {
+    const result: { [key: string]: any } = {};
     // tslint:disable-next-line: forin
     for (const key in obj) {
-      const val = obj[key] as any;
+      const val = obj[key];
       if (val !== null && val !== undefined) {
         result[key] = val;
       }
@@ -506,6 +510,7 @@ function overlapSetting(args: {
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
         // if that is not defined then defer to the default value
+        // @ts-ignore
         let val = this['_' + propertyKey];
         if (val !== undefined && val !== '') {
           return val;
@@ -539,7 +544,7 @@ function overlapSetting(args: {
         this.getConfiguration('editor').update(
           args.settingName,
           value,
-          vscode.ConfigurationTarget.Global
+          vscode.ConfigurationTarget.Global,
         );
       },
       enumerable: true,

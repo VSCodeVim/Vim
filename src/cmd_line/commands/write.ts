@@ -8,12 +8,12 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
-export type IWriteCommandArguments =
-  | {
-      bang: boolean;
-      opt: FileOpt;
-      bgWrite: boolean;
-    } & ({ cmd: string } | { file: string } | {});
+export type IWriteCommandArguments = {
+  bang: boolean;
+  opt: FileOpt;
+  bgWrite: boolean;
+  file?: string;
+} & ({ cmd: string } | {});
 
 //
 //  Implements :write
@@ -31,9 +31,9 @@ export class WriteCommand extends ExCommand {
         }),
       fileNameParser.map((file) => {
         return { file };
-      })
+      }),
       // TODO: Support `:help :w_a` ('>>')
-    ).fallback({})
+    ).fallback({}),
   ).map(([bang, opt, other]) => new WriteCommand({ bang, opt, bgWrite: true, ...other }));
 
   public override isRepeatableWithDot = false;
@@ -55,8 +55,12 @@ export class WriteCommand extends ExCommand {
     }
 
     try {
-      await fs.accessAsync(vimState.document.fileName, fs.constants.W_OK);
-      await this.save(vimState);
+      if (this.arguments.file) {
+        await this.saveAs(vimState, this.arguments.file);
+      } else {
+        await fs.accessAsync(vimState.document.fileName, fs.constants.W_OK);
+        await this.save(vimState);
+      }
     } catch (accessErr) {
       if (this.arguments.bang) {
         try {
@@ -76,6 +80,56 @@ export class WriteCommand extends ExCommand {
     }
   }
 
+  // TODO: Aparentemente foi tudo, claro que falta alguns ERRORS e bla bla bla tipo o do :w 8/ E212 mas fds o E357 sobrepoe
+  // TODO: fazer PR (#1876)
+  private async saveAs(vimState: VimState, fileName: string): Promise<void> {
+    try {
+      const filePath = path.resolve(path.dirname(vimState.document.fileName), fileName);
+      const fileExists = await fs.existsAsync(filePath);
+      const uri = vscode.Uri.file(path.resolve(path.dirname(vimState.document.fileName), filePath));
+      // An extension to the file must be specified.
+      if (path.extname(filePath) === '') {
+        StatusBar.setText(vimState, `E357: The file extension must be specified`, true);
+        return;
+      }
+      // Checks if the file exists.
+      if (fileExists) {
+        const stats = await vscode.workspace.fs.stat(uri);
+        const isDirectory = stats.type === vscode.FileType.Directory;
+        // If it's a directory, throw an error.
+        if (isDirectory) {
+          StatusBar.setText(vimState, `E17: "${filePath}" is a directory`, true);
+          return;
+        }
+        // Create a pop-up asking if user wants to overwrite the file.
+        const confirmOverwrite = await vscode.window.showWarningMessage(
+          `File "${fileName}" already exists. Do you want to overwrite it?`,
+          { modal: true },
+          'Yes',
+          'No',
+        );
+
+        if (confirmOverwrite === 'No') {
+          return;
+        }
+      }
+
+      // Create a new file in 'filePath', appending the current's file content to it.
+      await vscode.window.showTextDocument(vimState.document, { preview: false });
+      await vscode.commands.executeCommand('workbench.action.files.save', uri);
+      await vscode.workspace.fs.copy(vimState.document.uri, uri, { overwrite: true });
+
+      StatusBar.setText(
+        vimState,
+        `"${fileName}" ${fileExists ? '' : '[New]'} ${vimState.document.lineCount}L ${
+          vimState.document.getText().length
+        }C written`,
+      );
+    } catch (e) {
+      StatusBar.setText(vimState, e.message);
+    }
+  }
+
   private async save(vimState: VimState): Promise<void> {
     await this.background(
       vimState.document.save().then((success) => {
@@ -84,13 +138,13 @@ export class WriteCommand extends ExCommand {
             vimState,
             `"${path.basename(vimState.document.fileName)}" ${vimState.document.lineCount}L ${
               vimState.document.getText().length
-            }C written`
+            }C written`,
           );
         } else {
           Logger.warn(':w failed');
           // TODO: What's the right thing to do here?
         }
-      })
+      }),
     );
   }
 

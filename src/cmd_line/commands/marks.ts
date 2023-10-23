@@ -79,11 +79,11 @@ export class DeleteMarksCommand extends ExCommand {
             seq(regexp(/[0-9]/).skip(string('-')), regexp(/[0-9]/)).map(([start, end]) => {
               return { start, end };
             }),
-            noneOf('-')
-          )
+            noneOf('-'),
+          ),
         )
-        .many()
-    )
+        .many(),
+    ),
   ).map((marks) => new DeleteMarksCommand(marks));
 
   private args: DeleteMarksArgs;

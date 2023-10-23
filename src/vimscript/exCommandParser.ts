@@ -6,6 +6,7 @@ import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
+import { MoveCommand } from '../cmd_line/commands/move';
 import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
@@ -45,6 +46,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
+import { RedoCommand } from '../cmd_line/commands/redo';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -87,7 +89,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
-  [['b', 'uffer'], undefined],
+  [['b', 'uffer'], TabCommand.argParsers.tabAbsolute],
   [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],
@@ -338,7 +340,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lv', 'imgrep'], undefined],
   [['lvimgrepa', 'dd'], undefined],
   [['lw', 'indow'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
-  [['m', 'ove'], undefined],
+  [['m', 'ove'], MoveCommand.argParser],
   [['ma', 'rk'], undefined],
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
@@ -425,7 +427,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['quita', 'll'], QuitCommand.argParser(true)],
   [['r', 'ead'], ReadCommand.argParser],
   [['rec', 'over'], undefined],
-  [['red', 'o'], undefined],
+  [['red', 'o'], RedoCommand.argParser],
   [['redi', 'r'], undefined],
   [['redr', 'aw'], undefined],
   [['redraws', 'tatus'], undefined],
@@ -623,7 +625,7 @@ class UnimplementedCommand extends ExCommand {
     StatusBar.setText(
       vimState,
       `Command :${this.name} is not yet implemented (PRs are welcome!)`,
-      true
+      true,
     );
   }
 
@@ -640,7 +642,7 @@ export class NoOpCommand extends ExCommand {
 
 function nameParser(
   name: [string, string],
-  argParser: ArgParser | undefined
+  argParser: ArgParser | undefined,
 ): Parser<Parser<ExCommand>> {
   argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
@@ -652,7 +654,7 @@ function nameParser(
 export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
-    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace)))
+    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
 );
 
 export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
@@ -663,14 +665,14 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         LineRange.parser.fallback(undefined),
         optWhitespace,
         commandNameParser.fallback(undefined),
-        all
-      )
+        all,
+      ),
     )
     .map(([lineRange, whitespace, parseArgs, args]) => {
       if (parseArgs === undefined) {
         throw VimError.fromCode(
           ErrorCode.NotAnEditorCommand,
-          `${lineRange?.toString() ?? ''}${whitespace}${args}`
+          `${lineRange?.toString() ?? ''}${whitespace}${args}`,
         );
       }
       const result = seq(parseArgs, optWhitespace.then(all)).parse(args);

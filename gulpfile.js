@@ -1,9 +1,7 @@
 const gulp = require('gulp');
 const bump = require('gulp-bump');
 const git = require('gulp-git');
-const sourcemaps = require('gulp-sourcemaps');
 const tag_version = require('gulp-tag-version');
-const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
 const PluginError = require('plugin-error');
 const minimist = require('minimist');
@@ -15,42 +13,9 @@ const es = require('event-stream');
 const webpack_config = require('./webpack.config.js');
 const webpack_dev_config = require('./webpack.dev.js');
 
-const { exec } = require('child_process');
-
 const releaseOptions = {
   semver: '',
 };
-
-// prettier
-function runPrettier(command, done) {
-  exec(command, function (err, stdout) {
-    if (err) {
-      return done(new PluginError('runPrettier', { message: err }));
-    }
-
-    if (!stdout) {
-      return done();
-    }
-
-    const filetypes = ['.ts', '.js', '.json', '.md', '.yml'];
-    const files = stdout
-      .split(/\r?\n/)
-      .filter((f) => filetypes.some((filetype) => f.endsWith(filetype)))
-      .join(' ');
-
-    if (!files) {
-      return done();
-    }
-
-    const prettierPath = path.normalize('./node_modules/.bin/prettier');
-    exec(`${prettierPath} --write ${files}`, function (err) {
-      if (err) {
-        return done(new PluginError('runPrettier', { message: err }));
-      }
-      return done();
-    });
-  });
-}
 
 function validateArgs(done) {
   const options = minimist(process.argv.slice(2), releaseOptions);
@@ -58,14 +23,14 @@ function validateArgs(done) {
     return done(
       new PluginError('updateVersion', {
         message: 'Missing `--semver` option. Possible values: patch, minor, major',
-      })
+      }),
     );
   }
   if (!['patch', 'minor', 'major'].includes(options.semver)) {
     return done(
       new PluginError('updateVersion', {
         message: 'Invalid `--semver` option. Possible values: patch, minor, major',
-      })
+      }),
     );
   }
 
@@ -100,18 +65,18 @@ function updatePath() {
       const filePath = f.path;
       let platformRelativepath = path.relative(
         path.dirname(filePath),
-        path.resolve(process.cwd(), 'out/src/platform/node')
+        path.resolve(process.cwd(), 'out/src/platform/node'),
       );
       platformRelativepath = platformRelativepath.replace(/\\/g, '/');
       f.contents = Buffer.from(
         contents.replace(
           /\(\"platform\/([^"]*)\"\)/g,
-          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")'
+          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")',
         ),
-        'utf8'
+        'utf8',
       );
       return f;
-    })
+    }),
   );
   return es.duplex(input, output);
 }
@@ -126,7 +91,6 @@ gulp.task('tsc', function () {
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
   var tsResult = tsProject
     .src()
-    .pipe(sourcemaps.init())
     .pipe(tsProject())
     .on('error', () => {
       isError = true;
@@ -135,10 +99,7 @@ gulp.task('tsc', function () {
       isError && process.exit(1);
     });
 
-  return tsResult.js
-    .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
-    .pipe(updatePath())
-    .pipe(gulp.dest('out'));
+  return tsResult.js.pipe(updatePath()).pipe(gulp.dest('out'));
 });
 
 gulp.task('webpack', function () {
@@ -147,7 +108,7 @@ gulp.task('webpack', function () {
       config: webpack_config,
       entry: ['./extension.ts', './extensionWeb.ts'],
     },
-    webpack
+    webpack,
   ).pipe(gulp.dest('out'));
 });
 
@@ -157,32 +118,8 @@ gulp.task('webpack-dev', function () {
       config: webpack_dev_config,
       entry: ['./extension.ts'],
     },
-    webpack
+    webpack,
   ).pipe(gulp.dest('out'));
-});
-
-gulp.task('tslint', function () {
-  const program = require('tslint').Linter.createProgram('./tsconfig.json');
-  return gulp
-    .src(['**/*.ts', '!node_modules/**', '!typings/**'])
-    .pipe(
-      tslint({
-        formatter: 'prose',
-        program: program,
-      })
-    )
-    .pipe(tslint.report({ summarizeFailureOutput: true }));
-});
-
-gulp.task('prettier', function (done) {
-  // Files changed
-  runPrettier('git diff --diff-filter=d --name-only HEAD', done);
-});
-
-gulp.task('forceprettier', function (done) {
-  // Files managed by git
-  // TODO: if any file is deleted, but not yet staged, this will fail
-  runPrettier('git ls-files', done);
 });
 
 gulp.task('commit-hash', function (done) {
@@ -211,7 +148,7 @@ gulp.task('run-test', function (done) {
     {
       cwd: process.cwd(),
       stdio: 'inherit',
-    }
+    },
   );
 
   dockerBuildCmd.on('exit', function (exitCode) {
@@ -219,7 +156,7 @@ gulp.task('run-test', function (done) {
       return done(
         new PluginError('test', {
           message: 'Docker build failed.',
-        })
+        }),
       );
     }
 
@@ -245,15 +182,9 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('webpack', 'tslint'), 'commit-hash'));
-gulp.task(
-  'build-dev',
-  gulp.series('prettier', gulp.parallel('webpack-dev', 'tslint'), 'commit-hash')
-);
+gulp.task('build', gulp.series('webpack', 'commit-hash'));
+gulp.task('build-dev', gulp.series('webpack-dev', 'commit-hash'));
 gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
 gulp.task('test', gulp.series('prepare-test', 'run-test'));
-gulp.task(
-  'release',
-  gulp.series(validateArgs, updateVersion, 'prettier', createGitCommit, createGitTag)
-);
+gulp.task('release', gulp.series(validateArgs, updateVersion, createGitCommit, createGitTag));
 gulp.task('default', gulp.series('build', 'test'));

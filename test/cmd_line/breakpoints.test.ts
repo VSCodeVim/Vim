@@ -5,10 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { exCommandParser } from '../../src/vimscript/exCommandParser';
-import {
-  cleanUpWorkspace,
-  setupWorkspace,
-} from '../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 function clearBreakpoints() {
   vscode.debug.removeBreakpoints(vscode.debug.breakpoints);
@@ -30,8 +27,14 @@ suite('Breakpoints command', () => {
     await new ExCommandLine('breaka', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     assert.strictEqual(vscode.debug.breakpoints.length, 1);
     const breakpoint = vscode.debug.breakpoints[0] as vscode.SourceBreakpoint;
-    assert.strictEqual(breakpoint.location.uri.fsPath, modeHandler.vimState.editor.document.uri.fsPath);
-    assert.strictEqual(breakpoint.location.range.start.line, modeHandler.vimState.cursorStartPosition.line);
+    assert.strictEqual(
+      breakpoint.location.uri.fsPath,
+      modeHandler.vimState.editor.document.uri.fsPath,
+    );
+    assert.strictEqual(
+      breakpoint.location.range.start.line,
+      modeHandler.vimState.cursorStartPosition.line,
+    );
   });
 
   test('`:breakd` delete breakpoint', async () => {

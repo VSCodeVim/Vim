@@ -25,12 +25,8 @@ class ModeHandlerMapImpl {
     return this.modeHandlerMap.get(uri);
   }
 
-  public keys(): IterableIterator<Uri> {
-    return this.modeHandlerMap.keys();
-  }
-
-  public getAll(): ModeHandler[] {
-    return [...this.modeHandlerMap.values()];
+  public entries(): IterableIterator<[Uri, ModeHandler]> {
+    return this.modeHandlerMap.entries();
   }
 
   public delete(editorId: Uri) {

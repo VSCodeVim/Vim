@@ -9,6 +9,8 @@ import {
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
+  [key: string]: any;
+
   useSystemClipboard = false;
   useCtrlKeys = false;
   overrideCopy = true;
@@ -142,4 +144,7 @@ export class Configuration implements IConfiguration {
   startofline = true;
   showMarksInGutter = true;
   shell = '';
+  handleKeys = {
+    '<C-d>': true,
+  };
 }

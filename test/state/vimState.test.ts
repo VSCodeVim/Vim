@@ -4,15 +4,8 @@ import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Position } from 'vscode';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('VimState', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
-
   test('de-dupes cursors', async () => {
     // setup
     const vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());

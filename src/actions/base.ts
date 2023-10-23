@@ -1,7 +1,7 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { Notation } from '../configuration/notation';
-import { ActionType, IBaseAction } from "./types";
+import { ActionType, IBaseAction } from './types';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
@@ -57,7 +57,8 @@ export abstract class BaseAction implements IBaseAction {
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (
-      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode && this.actionType === 'command'
+      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode &&
+      this.actionType === 'command'
     ) {
       return false;
     }
@@ -73,7 +74,8 @@ export abstract class BaseAction implements IBaseAction {
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (
-      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode && this.actionType === 'command'
+      vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode &&
+      this.actionType === 'command'
     ) {
       return false;
     }
@@ -93,7 +95,7 @@ export abstract class BaseAction implements IBaseAction {
 
   public static CompareKeypressSequence(
     one: readonly string[] | readonly string[][],
-    two: readonly string[]
+    two: readonly string[],
   ): boolean {
     if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
@@ -204,7 +206,7 @@ export abstract class BaseCommand extends BaseAction {
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
-          : -1
+          : -1,
       );
 
     let cursorIndex = 0;
@@ -253,7 +255,7 @@ const actionMap = new Map<Mode, Array<new () => BaseAction>>();
  */
 export function getRelevantAction(
   keysPressed: string[],
-  vimState: VimState
+  vimState: VimState,
 ): BaseAction | KeypressState {
   const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 

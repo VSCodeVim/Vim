@@ -33,7 +33,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1. Install prerequisites:
 
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
-   - [Node.js](https://nodejs.org/) v14.0.0 or higher
+   - [Node.js](https://nodejs.org/) v18.x or higher
    - [Yarn](https://classic.yarnpkg.com/) v1.x
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
@@ -54,9 +54,9 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    code .
 
    # Build with one of these...
-   npx gulp build-dev # Fast build for development
-   npx gulp build     # Slow build for release
-   yarn watch         # Fast build whenever a file changes
+   yarn build-dev # Fast build for development
+   yarn build     # Slow build for release
+   yarn watch     # Fast build whenever a file changes
    ```
 
 4. Run extension using VS Code's "Run and Debug" menu
@@ -65,13 +65,13 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # If Docker is installed and running:
-   npx gulp test                   # Run tests inside Docker container
-   npx gulp test --grep <REGEX>    # Run only tests/suites matching <REGEX> inside Docker container
+   npx gulp test                 # Run tests inside Docker container
+   npx gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
 
    # Otherwise, build and run the tests locally:
-   npx gulp build                  # Build
-   npx gulp prepare-test           # Build tests
-   yarn test                       # Test (must close all instances of VS Code)
+   yarn build                    # Build
+   yarn build-test               # Build tests
+   yarn test                     # Test (must close all instances of VS Code)
    ```
 
 6. Package and install extension:

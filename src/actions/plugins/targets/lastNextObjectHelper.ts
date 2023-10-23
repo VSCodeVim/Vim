@@ -81,7 +81,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
       position: Position,
       vimState: VimState,
       firstIteration: boolean,
-      lastIteration: boolean
+      lastIteration: boolean,
     ): Promise<IMovement> {
       const maybePosition = searchPosition(this.charToFind, vimState.document, position, {
         direction: which === 'l' ? '<' : '>',
@@ -97,7 +97,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
         maybePosition,
         vimState,
         firstIteration,
-        lastIteration
+        lastIteration,
       );
       if (movement.failed) {
         return movement;

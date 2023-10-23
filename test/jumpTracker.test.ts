@@ -8,11 +8,8 @@ import { Position } from 'vscode';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  teardown(cleanUpWorkspace);
+  suiteSetup(setupWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({
@@ -27,7 +24,7 @@ suite('Record and navigate jumps', () => {
         title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,
         ...options,
       },
-      process.platform === 'win32'
+      process.platform === 'win32',
     );
   };
 
@@ -55,12 +52,12 @@ suite('Record and navigate jumps', () => {
       assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3'],
-        'Unexpected jumps found'
+        'Unexpected jumps found',
       );
       assert.strictEqual(
         jumpTracker.currentJump.fileName,
         'file1',
-        'Unexpected current jump found'
+        'Unexpected current jump found',
       );
       assert.strictEqual(jumpTracker.currentJumpNumber, 0, 'Unexpected current jump number found');
     });
@@ -84,12 +81,12 @@ suite('Record and navigate jumps', () => {
       assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3', 'file4'],
-        'Unexpected jumps found'
+        'Unexpected jumps found',
       );
       assert.strictEqual(
         jumpTracker.currentJump.fileName,
         'file2',
-        'Unexpected current jump found'
+        'Unexpected current jump found',
       );
       assert.strictEqual(jumpTracker.currentJumpNumber, 1, 'Unexpected current jump number found');
     });
@@ -106,7 +103,7 @@ suite('Record and navigate jumps', () => {
       assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3', 'file2'],
-        'Unexpected jumps found'
+        'Unexpected jumps found',
       );
       assert.strictEqual(jumpTracker.currentJump, null, 'Unexpected current jump found');
     });
@@ -122,7 +119,7 @@ suite('Record and navigate jumps', () => {
       assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.fileName),
         ['file1', 'file2', 'file3'],
-        'Unexpected jumps found'
+        'Unexpected jumps found',
       );
       assert.strictEqual(jumpTracker.currentJump, null, 'Unexpected current jump found');
     });
@@ -138,7 +135,7 @@ suite('Record and navigate jumps', () => {
       assert.deepStrictEqual(
         jumpTracker.jumps.map((j) => j.position.line),
         range(102).slice(2, 102),
-        "Jump tracker doesn't contain the expected jumps after removing old jumps"
+        "Jump tracker doesn't contain the expected jumps after removing old jumps",
       );
     });
 
@@ -150,12 +147,12 @@ suite('Record and navigate jumps', () => {
       assert.strictEqual(
         jumpTracker.jumps.length,
         1,
-        'Jump tracker failed to record "from"-only jump'
+        'Jump tracker failed to record "from"-only jump',
       );
       assert.deepEqual(
         jumpTracker.jumps.map((j) => [j.position.line, j.position.character, j.fileName]),
         [[0, 0, 'Untitled']],
-        `Jump tracker doesn't contain expected jumps after recording "from"-only jump`
+        `Jump tracker doesn't contain expected jumps after recording "from"-only jump`,
       );
     });
 
@@ -179,7 +176,7 @@ suite('Record and navigate jumps', () => {
           [5, 5, 'file1'],
           [6, 0, 'file1'],
         ],
-        `Jump tracker doesn't contain the expected jumps before handling deleted text`
+        `Jump tracker doesn't contain the expected jumps before handling deleted text`,
       );
 
       // Note that this is just deleting lines 3 and 4.
@@ -187,7 +184,7 @@ suite('Record and navigate jumps', () => {
       // kind of like Array.slice.
       jumpTracker.handleTextDeleted(
         { fileName: 'file1' },
-        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(5, 0))
+        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(5, 0)),
       );
 
       // Vim doesn't delete jumps at the deleted line, it just shifts other lines down
@@ -201,12 +198,12 @@ suite('Record and navigate jumps', () => {
           [3, 5, 'file1'],
           [4, 0, 'file1'],
         ],
-        `Jump tracker doesn't contain the expected jumps after deleting two lines`
+        `Jump tracker doesn't contain the expected jumps after deleting two lines`,
       );
 
       jumpTracker.handleTextDeleted(
         { fileName: 'file1' },
-        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(4, 0))
+        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(4, 0)),
       );
 
       // If that results in multiple jumps on a line, though the duplicate is deleted
@@ -219,12 +216,12 @@ suite('Record and navigate jumps', () => {
           [0, 0, 'file1'],
           [3, 0, 'file1'],
         ],
-        `Jump tracker doesn't contain the expected jumps after deleting another line`
+        `Jump tracker doesn't contain the expected jumps after deleting another line`,
       );
 
       jumpTracker.handleTextDeleted(
         { fileName: 'file1' },
-        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(3, 0))
+        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(3, 0)),
       );
 
       // If you delete lines such that jumps are past EOF, delete the jumps
@@ -235,7 +232,7 @@ suite('Record and navigate jumps', () => {
           [5, 0, 'file2'],
           [0, 0, 'file1'],
         ],
-        `Jump tracker doesn't contain the expected jumps after deleting all lines in file`
+        `Jump tracker doesn't contain the expected jumps after deleting all lines in file`,
       );
     });
   });
@@ -317,8 +314,7 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['{', '}'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         keysPressed: '/^\nnnn<C-o><C-o><C-o><C-i>gg',
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
@@ -369,22 +365,19 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Line Mode', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkdd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a3'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkdd',
         end: ['start', 'a1', 'a2', '|a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a4'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnnn<C-o><C-o><C-o><C-o>dd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
@@ -399,8 +392,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shifts jump lines up after deleting a line with Visual Mode', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkklvjjhx',
         end: ['start', 'a1', 'a|4', 'a5', 'end'],
@@ -448,8 +440,7 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can track jumps from macros', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
         keysPressed: 'qq/^\nnq@q@q<C-o><C-o>',
         end: ['start', 'a1', 'a2', 'a3', '|a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],

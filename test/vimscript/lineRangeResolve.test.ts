@@ -14,7 +14,7 @@ function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, 
             {
               start: input.lineRanges[lineRange][0],
               end: input.lineRanges[lineRange][1],
-            }
+            },
           );
         });
       }

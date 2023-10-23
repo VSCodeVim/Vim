@@ -15,8 +15,6 @@ import './src/configuration/validators/remappingValidator';
 import './src/configuration/validators/neovimValidator';
 import './src/configuration/validators/vimrcValidator';
 
-import { install as installSourceMapSupport } from 'source-map-support';
-
 import * as vscode from 'vscode';
 import { activate as activateFunc, registerCommand, registerEventListener } from './extensionBase';
 import { Globals } from './src/globals';
@@ -24,14 +22,13 @@ import { Register } from './src/register/register';
 import { vimrc } from './src/configuration/vimrc';
 import { configuration } from './src/configuration/configuration';
 import * as path from 'path';
+import { Logger } from './src/util/logger';
 
 export { getAndUpdateModeHandler } from './extensionBase';
 
 export async function activate(context: vscode.ExtensionContext) {
   // Set the storage path to be used by history files
   Globals.extensionStoragePath = context.globalStoragePath;
-
-  installSourceMapSupport();
 
   await activateFunc(context);
 
@@ -41,8 +38,9 @@ export async function activate(context: vscode.ExtensionContext) {
       vimrc.vimrcPath &&
       path.relative(document.fileName, vimrc.vimrcPath) === ''
     ) {
+      // TODO: Should instead probably call `loadConfiguration` (in extensionBase.ts)
       await configuration.load();
-      vscode.window.showInformationMessage('Sourced new .vimrc');
+      Logger.info('Sourced new .vimrc');
     }
   });
 
@@ -57,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await vscode.window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
       }
     },
-    false
+    false,
   );
 }
 

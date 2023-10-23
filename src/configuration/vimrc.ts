@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
-import * as fs from 'platform/fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'platform/fs';
 import * as vscode from 'vscode';
+import { window } from 'vscode';
+import { Logger } from '../util/logger';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 import { vimrcSetOptionBuilder } from './vimrcToConfigurationBuilder';
-import { window } from 'vscode';
-import { Logger } from '../util/logger';
 
 export class VimrcImpl {
   private _vimrcPath?: string;
@@ -325,7 +325,7 @@ export class VimrcImpl {
         // Don't remove a mapping present in settings.json; those are more specific to VSCodeVim.
         _.remove(
           remaps,
-          (r) => r.source === 'vimrc' && _.isEqual(r.before, remap.keyRemapping.before)
+          (r) => r.source === 'vimrc' && _.isEqual(r.before, remap.keyRemapping.before),
         );
       });
       return true;
@@ -441,6 +441,11 @@ export class VimrcImpl {
   }
 
   private static async findDefaultVimrc(): Promise<string | undefined> {
+    const vscodeVimrcPath = path.join(os.homedir(), '.vscodevimrc');
+    if (await fs.existsAsync(vscodeVimrcPath)) {
+      return vscodeVimrcPath;
+    }
+
     let vimrcPath = path.join(os.homedir(), '.vimrc');
     if (await fs.existsAsync(vimrcPath)) {
       return vimrcPath;

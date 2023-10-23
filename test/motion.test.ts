@@ -10,9 +10,10 @@ suite('basic motion', () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    await TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
+    });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   test('char right: should move one column right', () => {
@@ -146,12 +147,12 @@ suite('word motion', () => {
     '} // endif',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
@@ -390,12 +391,12 @@ suite('unicode word motion', () => {
     '100£and100$and100¥#♯x',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
@@ -491,14 +492,16 @@ suite('sentence motion', () => {
     '   ',
     'Wow!',
     'Another sentence inside one paragraph.',
+    '',
+    '"Sentence in quotes." Sentence out of quotes. \'Sentence in singlequotes.\' (Sentence in parens.) [Sentence in square brackets.]',
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('sentence forward', () => {
@@ -514,10 +517,28 @@ suite('sentence motion', () => {
       assert.strictEqual(motion.character, 0);
     });
 
-    test('next sentence when paragraph contains a line of whilte spaces', () => {
+    test('next sentence when paragraph contains a line of white spaces', () => {
       const motion = new Position(6, 2).getSentenceBegin({ forward: true });
       assert.strictEqual(motion.line, 9);
       assert.strictEqual(motion.character, 0);
+    });
+
+    test('next sentence when sentences have closing punctuation', () => {
+      let motion = new Position(11, 0).getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 22);
+
+      motion = motion.getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 46);
+
+      motion = motion.getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 74);
+
+      motion = motion.getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 96);
     });
   });
 
@@ -528,13 +549,13 @@ suite('sentence motion', () => {
       assert.strictEqual(motion.character, 35);
     });
 
-    test('sentence forward when cursor is at the beginning of the second sentence', () => {
+    test('sentence backward when cursor is at the beginning of the second sentence', () => {
       const motion = new Position(0, 35).getSentenceBegin({ forward: false });
       assert.strictEqual(motion.line, 0);
       assert.strictEqual(motion.character, 0);
     });
 
-    test('current sentence begin with no concrete sentense inside', () => {
+    test('current sentence begin with no concrete sentence inside', () => {
       const motion = new Position(3, 0).getSentenceBegin({ forward: false });
       assert.strictEqual(motion.line, 2);
       assert.strictEqual(motion.character, 0);
@@ -549,6 +570,28 @@ suite('sentence motion', () => {
     test('current sentence begin when previous line ends with a concrete sentence', () => {
       const motion = new Position(9, 5).getSentenceBegin({ forward: false });
       assert.strictEqual(motion.line, 9);
+      assert.strictEqual(motion.character, 0);
+    });
+
+    test('sentence backward when sentences have closing punctuation', () => {
+      let motion = new Position(11, 125).getSentenceBegin({ forward: false });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 96);
+
+      motion = motion.getSentenceBegin({ forward: false });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 74);
+
+      motion = motion.getSentenceBegin({ forward: false });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 46);
+
+      motion = motion.getSentenceBegin({ forward: false });
+      assert.strictEqual(motion.line, 11);
+      assert.strictEqual(motion.character, 22);
+
+      motion = motion.getSentenceBegin({ forward: false });
+      assert.strictEqual(motion.line, 10);
       assert.strictEqual(motion.character, 0);
     });
   });
@@ -567,12 +610,12 @@ suite('paragraph motion', () => {
     'WOW', // 8
   ];
 
-  suiteSetup(() => {
-    return setupWorkspace().then(() => {
-      return TextEditor.insert(window.activeTextEditor!, text.join('\n'));
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-
   suiteTeardown(cleanUpWorkspace);
 
   suite('paragraph down', () => {

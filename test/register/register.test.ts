@@ -64,7 +64,7 @@ suite('register', () => {
 
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
-    Clipboard.Copy(testString);
+    await Clipboard.Copy(testString);
     assert.strictEqual(testString, await Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
@@ -75,6 +75,11 @@ suite('register', () => {
 
     // Now try the built in vscode paste
     await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+
+    // TODO: Not sure why this sleep should be necessary
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
 
     assertEqualLines([testString + testString]);
   });
@@ -159,7 +164,7 @@ suite('register', () => {
 
   test('Search register (/) is set by forward search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
     );
 
     // Register changed by forward search
@@ -177,7 +182,7 @@ suite('register', () => {
 
   test('Search register (/) is set by backward search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$']),
     );
 
     // Register changed by forward search
@@ -195,7 +200,7 @@ suite('register', () => {
 
   test('Search register (/) is set by star search', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
     );
 
     await modeHandler.handleKeyEvent('*');

@@ -127,7 +127,7 @@ export class PythonDocument {
           // Calculate position of last non-white character)
           end: new Position(
             endLine.line,
-            endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1
+            endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1,
           ),
         });
       }
@@ -181,7 +181,7 @@ export class PythonDocument {
     position: Position,
     vimState: VimState,
     forward: boolean,
-    start: boolean
+    start: boolean,
   ): Position | IMovement {
     const direction = forward ? 'next' : 'prev';
     const edge = start ? 'start' : 'end';
@@ -207,7 +207,7 @@ abstract class BasePythonMovement extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const document = vimState.document;
     return (

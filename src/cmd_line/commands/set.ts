@@ -7,60 +7,60 @@ import { ExCommand } from '../../vimscript/exCommand';
 
 type SetOperation =
   | {
-    // :se[t]
-    // :se[t] {option}
-    type: 'show_or_set';
-    option: string | undefined;
-  }
+      // :se[t]
+      // :se[t] {option}
+      type: 'show_or_set';
+      option: string | undefined;
+    }
   | {
-    // :se[t] {option}?
-    type: 'show';
-    option: string;
-  }
+      // :se[t] {option}?
+      type: 'show';
+      option: string;
+    }
   | {
-    // :se[t] no{option}
-    type: 'unset';
-    option: string;
-  }
+      // :se[t] no{option}
+      type: 'unset';
+      option: string;
+    }
   | {
-    // :se[t] {option}!
-    // :se[t] inv{option}
-    type: 'invert';
-    option: string;
-  }
+      // :se[t] {option}!
+      // :se[t] inv{option}
+      type: 'invert';
+      option: string;
+    }
   | {
-    // :se[t] {option}&
-    // :se[t] {option}&vi
-    // :se[t] {option}&vim
-    type: 'default';
-    option: string;
-    source: 'vi' | 'vim' | '';
-  }
+      // :se[t] {option}&
+      // :se[t] {option}&vi
+      // :se[t] {option}&vim
+      type: 'default';
+      option: string;
+      source: 'vi' | 'vim' | '';
+    }
   | {
-    // :se[t] {option}={value}
-    // :se[t] {option}:{value}
-    type: 'equal';
-    option: string;
-    value: string;
-  }
+      // :se[t] {option}={value}
+      // :se[t] {option}:{value}
+      type: 'equal';
+      option: string;
+      value: string;
+    }
   | {
-    // :se[t] {option}+={value}
-    type: 'add';
-    option: string;
-    value: string;
-  }
+      // :se[t] {option}+={value}
+      type: 'add';
+      option: string;
+      value: string;
+    }
   | {
-    // :se[t] {option}^={value}
-    type: 'multiply';
-    option: string;
-    value: string;
-  }
+      // :se[t] {option}^={value}
+      type: 'multiply';
+      option: string;
+      value: string;
+    }
   | {
-    // :se[t] {option}-={value}
-    type: 'subtract';
-    option: string;
-    value: string;
-  };
+      // :se[t] {option}-={value}
+      type: 'subtract';
+      option: string;
+      value: string;
+    };
 
 const optionParser = regexp(/[a-z]+/);
 const valueParser = regexp(/\S*/);
@@ -102,7 +102,7 @@ const setOperationParser: Parser<SetOperation> = whitespace
             option,
             source,
           };
-        }
+        },
       ),
       seq(optionParser.skip(oneOf('=:')), valueParser).map(([option, value]) => {
         return {
@@ -137,14 +137,14 @@ const setOperationParser: Parser<SetOperation> = whitespace
           type: 'show_or_set',
           option,
         };
-      })
-    )
+      }),
+    ),
   )
   .fallback({ type: 'show_or_set', option: undefined });
 
 export class SetCommand extends ExCommand {
   public static readonly argParser: Parser<SetCommand> = setOperationParser.map(
-    (operation) => new SetCommand(operation)
+    (operation) => new SetCommand(operation),
   );
 
   private readonly operation: SetOperation;
@@ -169,8 +169,8 @@ export class SetCommand extends ExCommand {
       typeof currentValue === 'boolean'
         ? 'boolean'
         : typeof currentValue === 'string'
-          ? 'string'
-          : 'number';
+        ? 'string'
+        : 'number';
 
     switch (this.operation.type) {
       case 'show_or_set': {
@@ -180,15 +180,13 @@ export class SetCommand extends ExCommand {
           if (type === 'boolean') {
             configuration[option] = true;
           } else {
-            if (vimState)
-              this.showOption(vimState, option, currentValue);
+            if (vimState) this.showOption(vimState, option, currentValue);
           }
         }
         break;
       }
       case 'show': {
-        if (vimState)
-          this.showOption(vimState, option, currentValue);
+        if (vimState) this.showOption(vimState, option, currentValue);
         break;
       }
       case 'unset': {
@@ -228,7 +226,7 @@ export class SetCommand extends ExCommand {
             // TODO: Could also be {option}:{value}
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}=${this.operation.value}`
+              `${option}=${this.operation.value}`,
             );
           }
           configuration[option] = value;
@@ -245,7 +243,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}+=${this.operation.value}`
+              `${option}+=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue + value;
@@ -262,7 +260,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}^=${this.operation.value}`
+              `${option}^=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue * value;
@@ -279,7 +277,7 @@ export class SetCommand extends ExCommand {
           if (isNaN(value)) {
             throw VimError.fromCode(
               ErrorCode.NumberRequiredAfterEqual,
-              `${option}-=${this.operation.value}`
+              `${option}-=${this.operation.value}`,
             );
           }
           configuration[option] = currentValue - value;

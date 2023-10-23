@@ -544,8 +544,8 @@
 | :white_check_mark:        | :tabp[revious] :1234:                | 转上一个的标签页,在第一个到最后一个标签页间循环           |                                                    |
 | :white_check_mark:        | :tabN[ext] :1234:                    | 同上                                                      |                                                    |
 | :white_check_mark:        | {count}&lt;C-PageUp&gt;, {count}gT   | 同上                                                      |                                                    |
-| :white_check_mark:        | :tabfir[st]                          | 跳转到和一个标签页                                        |                                                    |
-| :white_check_mark:        | :tabl[ast]                           | 跳转到和一个标签页                                        |                                                    |
+| :white_check_mark:        | :tabfir[st]                          | 跳转到当前窗口的第一个标签页                              |                                                    |
+| :white_check_mark:        | :tabl[ast]                           | 跳转到当前窗口的最后一个标签页                            |                                                    |
 | :white_check_mark:        | :tabe[dit] {file}                    | 在当前标签页之后打开一个新的标签页                        |                                                    |
 | :arrow_down:              | :[count]tabe[dit], :[count]tabnew    | 同上                                                      | 不支持指定数量                                     |
 | :white_check_mark:        | :tabnew {file}                       | 在当前标签页之后打开一个新的标签页                        |                                                    |
