@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.25.2",
+  "version": "1.26.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -35,7 +35,7 @@
   ],
   "sideEffects": false,
   "activationEvents": [
-    "*",
+    "onStartupFinished",
     "onCommand:type"
   ],
   "qna": "https://vscodevim.herokuapp.com/",
@@ -112,12 +112,12 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "shift+tab",
         "command": "extension.vim_shift+tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "left",
@@ -614,7 +614,8 @@
         "vim.matchpairs": {
           "type": "string",
           "markdownDescription": "Characters that form pairs. The % command jumps from one to the other. Only character pairs are allowed that are different, thus you cannot jump between two double quotes. The characters must be separated by a colon. The pairs must be separated by a comma.",
-          "default": "(:),{:},[:]"
+          "default": "(:),{:},[:]",
+          "pattern": "^(.:.)?(,.:.)*$"
         },
         "vim.camelCaseMotion.enable": {
           "type": "boolean",
@@ -792,7 +793,8 @@
           "type": "number",
           "description": "How much search or command history should be remembered.",
           "default": 50,
-          "minimum": 1
+          "minimum": 1,
+          "maximum": 10000
         },
         "vim.autoindent": {
           "type": "boolean",
@@ -810,7 +812,7 @@
         },
         "vim.handleKeys": {
           "type": "object",
-          "description": "Delegate certain key combinations back to VSCode to be handled natively.",
+          "description": "Delegate certain key combinations back to VS Code to be handled natively.",
           "default": {
             "<C-d>": true,
             "<C-s>": false,
@@ -828,7 +830,10 @@
             "array"
           ],
           "description": "Status bar color when in Normal mode.",
-          "default": "#005f5f"
+          "default": [
+            "#005f5f",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.insert": {
           "type": [
@@ -836,7 +841,10 @@
             "array"
           ],
           "description": "Status bar color when in Insert mode.",
-          "default": "#5f0000"
+          "default": [
+            "#5f0000",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visual": {
           "type": [
@@ -844,7 +852,10 @@
             "array"
           ],
           "description": "Status bar color when in Visual mode.",
-          "default": "#5f00af"
+          "default": [
+            "#5f00af",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visualline": {
           "type": [
@@ -852,7 +863,10 @@
             "array"
           ],
           "description": "Status bar color when in VisualLine mode.",
-          "default": "#005f5f"
+          "default": [
+            "#005f5f",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.visualblock": {
           "type": [
@@ -860,7 +874,10 @@
             "array"
           ],
           "description": "Status bar color when in VisualBlock mode.",
-          "default": "#86592d"
+          "default": [
+            "#86592d",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.replace": {
           "type": [
@@ -868,7 +885,10 @@
             "array"
           ],
           "description": "Status bar color when in Replace mode.",
-          "default": "#00000"
+          "default": [
+            "#00000",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.commandlineinprogress": {
           "type": [
@@ -876,7 +896,10 @@
             "array"
           ],
           "description": "Status bar color when in CommandLineInProgress mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.searchinprogressmode": {
           "type": [
@@ -884,7 +907,10 @@
             "array"
           ],
           "description": "Status bar color when in SearchInProgress mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.easymotionmode": {
           "type": [
@@ -892,7 +918,10 @@
             "array"
           ],
           "description": "Status bar color when in EasyMotion mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.easymotioninputmode": {
           "type": [
@@ -900,7 +929,10 @@
             "array"
           ],
           "description": "Status bar color when in EasyMotionInput mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.statusBarColors.surroundinputmode": {
           "type": [
@@ -908,7 +940,10 @@
             "array"
           ],
           "description": "Status bar color when in SurroundInput mode.",
-          "default": "#007acc"
+          "default": [
+            "#007acc",
+            "#ffffff"
+          ]
         },
         "vim.visualstar": {
           "type": "boolean",
@@ -948,12 +983,12 @@
         },
         "vim.neovimUseConfigFile": {
           "type": "boolean",
-          "markdownDescription": "Use a config file for Neovim, specified by `vim.neovimConfigPath`.",
+          "markdownDescription": "Use a config file for Neovim, specified by `#vim.neovimConfigPath#`.",
           "default": false
         },
         "vim.neovimConfigPath": {
           "type": "string",
-          "markdownDescription": "Path to Neovim configuration file. `vim.neovimUseConfigFile` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
+          "markdownDescription": "Path to Neovim configuration file. `#vim.neovimUseConfigFile#` must be enabled. If path is left blank, Neovim will use its default config path, i.e. `~/.config/nvim/init.vim` or 'C:\\Users\\USERNAME\\AppData\\Local\\nvim\\init.vim'.",
           "default": "",
           "scope": "machine"
         },
@@ -1156,53 +1191,48 @@
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
     "process": "0.11.10",
+    "queue": "^6.0.2",
     "untildify": "4.0.0",
     "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "5.0.3",
-    "@types/diff-match-patch": "1.0.32",
+    "@types/diff": "5.0.7",
+    "@types/diff-match-patch": "1.0.35",
     "@types/glob": "8.1.0",
-    "@types/lodash": "4.14.194",
-    "@types/mocha": "10.0.1",
-    "@types/node": "16.18.24",
-    "@types/parsimmon": "1.10.6",
-    "@types/sinon": "10.0.14",
+    "@types/lodash": "4.14.200",
+    "@types/mocha": "10.0.3",
+    "@types/node": "18.18.6",
+    "@types/parsimmon": "1.10.8",
+    "@types/sinon": "10.0.20",
     "@types/vscode": "1.74.0",
-    "@vscode/test-electron": "2.3.0",
+    "@vscode/test-electron": "2.3.5",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
-    "fork-ts-checker-webpack-plugin": "8.0.0",
+    "fork-ts-checker-webpack-plugin": "9.0.0",
     "gulp": "4.0.2",
     "gulp-bump": "3.2.0",
     "gulp-git": "2.10.1",
     "gulp-tag-version": "1.3.1",
     "gulp-typescript": "5.0.1",
     "husky": "^8.0.3",
-    "lint-staged": "^13.1.2",
+    "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
     "mocha": "10.2.0",
     "plugin-error": "2.0.1",
-    "prettier": "2.8.7",
-    "sinon": "15.0.4",
-    "ts-loader": "9.4.2",
+    "prettier": "3.0.3",
+    "sinon": "17.0.0",
+    "ts-loader": "9.5.0",
     "tslint": "6.1.3",
-    "typescript": "5.0.4",
+    "typescript": "5.2.2",
     "vsce": "2.15.0",
-    "webpack": "5.80.0",
-    "webpack-cli": "5.0.1",
-    "webpack-merge": "5.8.0",
+    "webpack": "5.89.0",
+    "webpack-cli": "5.1.4",
+    "webpack-merge": "5.10.0",
     "webpack-stream": "7.0.0"
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",
     "*.ts": "tslint --fix"
-  },
-  "__metadata": {
-    "id": "d96e79c6-8b25-4be3-8545-0e0ecefcae03",
-    "publisherDisplayName": "vscodevim",
-    "publisherId": "5d63889b-1b67-4b1f-8350-4f1dce041a26",
-    "isPreReleaseVersion": false
   }
 }

@@ -136,18 +136,18 @@ const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
         } else {
           return { type: 'string' as const, value: `\\${escaped}` };
         }
-      })
+      }),
     ),
     string('&').result({ type: 'capture_group' as const, group: '&' }),
     string('~').result({ type: 'prev_replace_string' as const }),
-    noneOf(delimiter).map((value) => ({ type: 'string', value }))
+    noneOf(delimiter).map((value) => ({ type: 'string', value })),
   )
     .many()
     .map((components) => new ReplaceString(components));
 
 const substituteFlagsParser: Parser<SubstituteFlags> = seq(
   string('&').fallback(undefined),
-  oneOf('cegiInp#lr').many()
+  oneOf('cegiInp#lr').many(),
 ).map(([amp, flagChars]) => {
   const flags: SubstituteFlags = {};
   if (amp === '&') {
@@ -228,11 +228,11 @@ export class SubstituteCommand extends ExCommand {
           Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
           replaceStringParser(delimiter),
           string(delimiter).then(substituteFlagsParser).fallback({}),
-          countParser
+          countParser,
         ).map(
           ([pattern, replace, flags, count]) =>
-            new SubstituteCommand({ pattern, replace, flags, count })
-        )
+            new SubstituteCommand({ pattern, replace, flags, count }),
+        ),
       ),
 
       // :s[ubstitute] [flags] [count]
@@ -243,9 +243,9 @@ export class SubstituteCommand extends ExCommand {
             replace: new ReplaceString([]),
             flags,
             count,
-          })
-      )
-    )
+          }),
+      ),
+    ),
   );
 
   public readonly arguments: ISubstituteCommandArguments;
@@ -265,7 +265,7 @@ export class SubstituteCommand extends ExCommand {
 
   public getSubstitutionDecorations(
     vimState: VimState,
-    lineRange = new LineRange(new Address({ type: 'current_line' }))
+    lineRange = new LineRange(new Address({ type: 'current_line' })),
   ): SearchDecorations {
     const substitutionAppend: DecorationOptions[] = [];
     const substitutionReplace: DecorationOptions[] = [];
@@ -298,7 +298,7 @@ export class SubstituteCommand extends ExCommand {
       if (showReplacements) {
         const contentText = formatDecorationText(
           replace.resolve(match.groups),
-          vimState.editor.options.tabSize as number
+          vimState.editor.options.tabSize as number,
         );
 
         subsArr.push({
@@ -320,7 +320,7 @@ export class SubstituteCommand extends ExCommand {
    */
   private async replaceMatchRange(
     vimState: VimState,
-    match: PatternMatch
+    match: PatternMatch,
   ): Promise<number | undefined> {
     if (this.arguments.flags.printCount) {
       return 0;
@@ -346,7 +346,7 @@ export class SubstituteCommand extends ExCommand {
   private async confirmReplacement(
     vimState: VimState,
     match: PatternMatch,
-    replaceText: string
+    replaceText: string,
   ): Promise<boolean> {
     const cancellationToken = new CancellationTokenSource();
     const validSelections: readonly string[] = ['y', 'n', 'a', 'q', 'l'];
@@ -355,8 +355,8 @@ export class SubstituteCommand extends ExCommand {
       `Replace with ${formatDecorationText(
         replaceText,
         vimState.editor.options.tabSize as number,
-        '\\n'
-      )} (${validSelections.join('/')})?`
+        '\\n',
+      )} (${validSelections.join('/')})?`,
     );
 
     const newConfirmationSearchHighlights =
@@ -367,7 +367,7 @@ export class SubstituteCommand extends ExCommand {
     vimState.editor.setDecorations(decoration.searchMatch, [ensureVisible(match.range)]);
     vimState.editor.setDecorations(
       decoration.confirmedSubstitution,
-      this.confirmedSubstitutions ?? []
+      this.confirmedSubstitutions ?? [],
     );
     await window.showInputBox(
       {
@@ -382,7 +382,7 @@ export class SubstituteCommand extends ExCommand {
           return prompt;
         },
       },
-      cancellationToken.token
+      cancellationToken.token,
     );
 
     if (selection === 'q' || selection === 'l' || !selection) {
@@ -402,7 +402,7 @@ export class SubstituteCommand extends ExCommand {
           before: {
             contentText: formatDecorationText(
               replaceText,
-              vimState.editor.options.tabSize as number
+              vimState.editor.options.tabSize as number,
             ),
           },
         },
@@ -481,7 +481,7 @@ export class SubstituteCommand extends ExCommand {
         lineRange: new LineRange(
           new Address({ type: 'number', num: start + 1 }),
           ',',
-          new Address({ type: 'number', num: end + 1 })
+          new Address({ type: 'number', num: end + 1 }),
         ),
       }) ?? [];
 
@@ -539,7 +539,7 @@ export class SubstituteCommand extends ExCommand {
           document: vimState.document,
           position: cursor,
         }),
-        Jump.fromStateNow(vimState)
+        Jump.fromStateNow(vimState),
       );
       vimState.recordedState.transformer.moveCursor(PositionDiff.exactPosition(cursor), 0);
     }
@@ -556,7 +556,7 @@ export class SubstituteCommand extends ExCommand {
         SearchDirection.Forward,
         vimState.cursorStopPosition,
         pattern?.patternString,
-        {}
+        {},
       );
     }
   }
@@ -565,21 +565,21 @@ export class SubstituteCommand extends ExCommand {
     if (substitutions === 0) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern?.patternString)
+        VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern?.patternString),
       );
     } else if (this.arguments.flags.printCount) {
       StatusBar.setText(
         vimState,
         `${substitutions} match${substitutions > 1 ? 'es' : ''} on ${lines} line${
           lines > 1 ? 's' : ''
-        }`
+        }`,
       );
     } else if (substitutions > configuration.report) {
       StatusBar.setText(
         vimState,
         `${substitutions} substitution${substitutions > 1 ? 's' : ''} on ${lines} line${
           lines > 1 ? 's' : ''
-        }`
+        }`,
       );
     }
   }

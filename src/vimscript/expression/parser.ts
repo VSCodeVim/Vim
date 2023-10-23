@@ -35,7 +35,7 @@ import {
 const binaryNumberParser: Parser<NumberValue> = regexp(/0[b]/i).then(
   regexp(/[0-1]+/).map((x) => {
     return int(Number.parseInt(x, 2));
-  })
+  }),
 );
 
 const hexadecimalNumberParser: Parser<NumberValue> = regexp(/0[x]/i)
@@ -56,7 +56,7 @@ const floatParser: Parser<FloatValue> = regexp(/\d+\.\d+/)
 
 export const numberParser: Parser<NumberValue> = seq(
   alt(string('+'), string('-')).fallback(undefined),
-  alt(binaryNumberParser, hexadecimalNumberParser, decimalOrOctalNumberParser)
+  alt(binaryNumberParser, hexadecimalNumberParser, decimalOrOctalNumberParser),
 )
   .map(([sign, num]) => {
     if (sign === '-') {
@@ -85,7 +85,7 @@ const stringParser: Parser<StringValue> = alt(
         return `\\${escaped}`;
       }
     }),
-  noneOf('"')
+  noneOf('"'),
 )
   .many()
   .wrap(string('"'), string('"'))
@@ -118,19 +118,19 @@ const dictionaryParser: Parser<DictionaryExpression> = lazy(() =>
           .map((x) => str(x))
           .skip(string(':'))
           .trim(optWhitespace),
-        expressionParser
+        expressionParser,
       )
         .sepBy(string(',').trim(optWhitespace))
         .skip(string(',').atMost(1))
         .trim(optWhitespace)
-        .wrap(string('{'), string('}'))
+        .wrap(string('{'), string('}')),
     ),
     seq(expressionParser.skip(string(':').trim(optWhitespace)), expressionParser)
       .sepBy(string(',').trim(optWhitespace))
       .skip(string(',').atMost(1))
       .trim(optWhitespace)
-      .wrap(string('{'), string('}'))
-  ).desc('a dictionary')
+      .wrap(string('{'), string('}')),
+  ).desc('a dictionary'),
 ).map((items) => {
   return {
     type: 'dictionary',
@@ -140,7 +140,10 @@ const dictionaryParser: Parser<DictionaryExpression> = lazy(() =>
 
 export const optionParser: Parser<OptionExpression> = string('&')
   .then(
-    seq(alt(string('g'), string('l')).skip(string(':')).atMost(1), regexp(/[a-z]+/).desc('&option'))
+    seq(
+      alt(string('g'), string('l')).skip(string(':')).atMost(1),
+      regexp(/[a-z]+/).desc('&option'),
+    ),
   )
   .map(([scope, name]) => {
     return { type: 'option', scope: scope ? scope[0] : undefined, name };
@@ -160,11 +163,11 @@ export const variableParser: Parser<VariableExpression> = seq(
     string('l'),
     string('s'),
     string('a'),
-    string('v')
+    string('v'),
   )
     .skip(string(':'))
     .fallback(undefined),
-  regexp(/[a-zA-Z][a-zA-Z0-9]*/).desc('a variable')
+  regexp(/[a-zA-Z][a-zA-Z0-9]*/).desc('a variable'),
 ).map(([namespace, name]) => {
   return { type: 'variable', namespace, name };
 });
@@ -187,12 +190,12 @@ const functionArgsParser: Parser<Expression[]> = lazy(() =>
   expressionParser
     .sepBy(string(',').trim(optWhitespace))
     .trim(optWhitespace)
-    .wrap(string('('), string(')'))
+    .wrap(string('('), string(')')),
 );
 
 const functionCallParser: Parser<FunctionCallExpression> = seq(
   regexp(/[a-z0-9_]+/).skip(optWhitespace),
-  functionArgsParser
+  functionArgsParser,
 )
   .desc('a function call')
   .map(([func, args]) => {
@@ -207,7 +210,7 @@ const lambdaParser: Parser<LambdaExpression> = seq(
   regexp(/[a-z]+/i)
     .sepBy(string(',').trim(optWhitespace))
     .skip(string('->').trim(optWhitespace)),
-  lazy(() => expressionParser).desc('a lambda')
+  lazy(() => expressionParser).desc('a lambda'),
 )
   .trim(optWhitespace)
   .wrap(string('{'), string('}'))
@@ -231,11 +234,11 @@ const expr9Parser: Parser<Expression> = alt(
   variableParser,
   envVariableParser,
   registerParser,
-  lambdaParser
+  lambdaParser,
 );
 
 const indexParser: Parser<(expr: Expression) => IndexExpression> = lazy(() =>
-  expressionParser.trim(optWhitespace).wrap(string('['), string(']'))
+  expressionParser.trim(optWhitespace).wrap(string('['), string(']')),
 ).map((index) => {
   return (expression: Expression) => {
     return { type: 'index', expression, index };
@@ -245,7 +248,7 @@ const indexParser: Parser<(expr: Expression) => IndexExpression> = lazy(() =>
 const sliceParser: Parser<(expr: Expression) => SliceExpression> = lazy(() =>
   seq(expressionParser.atMost(1).skip(string(':').trim(optWhitespace)), expressionParser.atMost(1))
     .trim(optWhitespace)
-    .wrap(string('['), string(']'))
+    .wrap(string('['), string(']')),
 ).map(([start, end]) => {
   return (expression: Expression) => {
     return { type: 'slice', expression, start: start[0], end: end[0] };
@@ -282,8 +285,8 @@ const expr8Parser: Parser<Expression> = seq(
     indexParser,
     sliceParser,
     entryParser,
-    funcrefCallParser
-  ).many()
+    funcrefCallParser,
+  ).many(),
 )
   .desc('expr8')
   .map(([expression, things]) => things.reduce((expr, thing) => thing(expr), expression));
@@ -292,17 +295,17 @@ const expr8Parser: Parser<Expression> = seq(
 const expr7Parser: Parser<Expression> = alt<Expression>(
   seq(
     alt(string('!'), string('-'), string('+')),
-    lazy(() => expr7Parser)
+    lazy(() => expr7Parser),
   ).map(([operator, operand]) => {
     return { type: 'unary', operator, operand };
   }),
-  expr8Parser
+  expr8Parser,
 ).desc('expr7');
 
 // Number multiplication/division/modulo
 const expr6Parser: Parser<Expression> = seq(
   expr7Parser,
-  seq(alt(string('*'), string('/'), string('%')).trim(optWhitespace), expr7Parser).many()
+  seq(alt(string('*'), string('/'), string('%')).trim(optWhitespace), expr7Parser).many(),
 )
   .map(leftAssociative)
   .desc('expr6');
@@ -312,8 +315,8 @@ const expr5Parser: Parser<Expression> = seq(
   expr6Parser,
   seq(
     alt(string('+'), string('-'), string('..'), string('.')).trim(optWhitespace),
-    expr6Parser
-  ).many()
+    expr6Parser,
+  ).many(),
 )
   .map(leftAssociative)
   .desc('expr5');
@@ -333,11 +336,11 @@ const expr4Parser: Parser<Expression> = alt<Expression>(
         string('=~'),
         string('!~'),
         string('is'),
-        string('isnot')
+        string('isnot'),
       ),
-      regexp(/[#\?]?/)
+      regexp(/[#\?]?/),
     ).trim(optWhitespace),
-    expr5Parser
+    expr5Parser,
   ).map(([lhs, [operator, matchCase], rhs]) => {
     return {
       type: 'comparison',
@@ -347,13 +350,13 @@ const expr4Parser: Parser<Expression> = alt<Expression>(
       rhs,
     };
   }),
-  expr5Parser
+  expr5Parser,
 ).desc('expr4');
 
 // Logical AND
 const expr3Parser: Parser<Expression> = seq(
   expr4Parser,
-  seq(string('&&').trim(optWhitespace), expr4Parser).many()
+  seq(string('&&').trim(optWhitespace), expr4Parser).many(),
 )
   .map(leftAssociative)
   .desc('expr3');
@@ -361,7 +364,7 @@ const expr3Parser: Parser<Expression> = seq(
 // Logical OR
 const expr2Parser: Parser<Expression> = seq(
   expr3Parser,
-  seq(string('||').trim(optWhitespace), expr3Parser).many()
+  seq(string('||').trim(optWhitespace), expr3Parser).many(),
 )
   .map(leftAssociative)
   .desc('expr2');
@@ -373,11 +376,11 @@ const expr1Parser: Parser<Expression> = alt<Expression>(
     string('?').trim(optWhitespace),
     expr2Parser,
     string(':').trim(optWhitespace),
-    expr2Parser
+    expr2Parser,
   ).map(([_if, x, _then, y, _else]) => {
     return { type: 'ternary', if: _if, then: _then, else: _else };
   }),
-  expr2Parser
+  expr2Parser,
 ).desc('an expression');
 
 function leftAssociative(args: [Expression, Array<[BinaryOp, Expression]>]) {

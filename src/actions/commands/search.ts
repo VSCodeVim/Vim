@@ -25,7 +25,7 @@ async function searchCurrentWord(
   position: Position,
   vimState: VimState,
   direction: SearchDirection,
-  isExact: boolean
+  isExact: boolean,
 ): Promise<void> {
   let currentWord = TextEditor.getWord(vimState.document, position);
 
@@ -107,7 +107,7 @@ async function createSearchStateAndMoveToMatch(args: {
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { ignoreSmartcase: true }
+    { ignoreSmartcase: true },
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
   SearchCommandLine.addSearchStateToHistory(globalState.searchState);
@@ -117,7 +117,7 @@ async function createSearchStateAndMoveToMatch(args: {
 
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
     vimState,
-    args.searchStartCursorPosition
+    args.searchStartCursorPosition,
   );
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
@@ -125,7 +125,7 @@ async function createSearchStateAndMoveToMatch(args: {
     reportSearch(
       nextMatch.index,
       globalState.searchState.getMatchRanges(vimState).length,
-      vimState
+      vimState,
     );
   } else {
     StatusBar.displayError(
@@ -134,8 +134,8 @@ async function createSearchStateAndMoveToMatch(args: {
         args.direction === SearchDirection.Forward
           ? ErrorCode.SearchHitBottom
           : ErrorCode.SearchHitTop,
-        globalState.searchState.searchString
-      )
+        globalState.searchState.searchString,
+      ),
     );
   }
 }
@@ -249,7 +249,7 @@ abstract class SearchObject extends TextObject {
       this.direction,
       vimState.cursorStopPosition,
       searchState.searchString,
-      {}
+      {},
     );
 
     // At first, try to search for current word, and stop searching if matched.
@@ -294,7 +294,7 @@ abstract class SearchObject extends TextObject {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<IMovement> {
     return this.execAction(position, vimState);
   }

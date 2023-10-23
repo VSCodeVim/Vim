@@ -169,14 +169,14 @@ export class EvaluationContext {
       case 'index': {
         return this.evaluateIndex(
           this.evaluate(expression.expression),
-          this.evaluate(expression.index)
+          this.evaluate(expression.index),
         );
       }
       case 'slice': {
         return this.evaluateSlice(
           this.evaluate(expression.expression),
           expression.start ? this.evaluate(expression.start) : int(0),
-          expression.end ? this.evaluate(expression.end) : int(-1)
+          expression.end ? this.evaluate(expression.end) : int(-1),
         );
       }
       case 'entry': {
@@ -199,8 +199,8 @@ export class EvaluationContext {
           return this.evaluateFunctionCall(
             funcCall(
               fref.name,
-              (fref.arglist?.items ?? []).concat(expression.args.map((x) => this.evaluate(x)))
-            )
+              (fref.arglist?.items ?? []).concat(expression.args.map((x) => this.evaluate(x))),
+            ),
           );
         }
       }
@@ -228,7 +228,7 @@ export class EvaluationContext {
         return this.evaluateBinary(expression.operator, expression.lhs, expression.rhs);
       case 'ternary':
         return this.evaluate(
-          toInt(this.evaluate(expression.if)) !== 0 ? expression.then : expression.else
+          toInt(this.evaluate(expression.if)) !== 0 ? expression.then : expression.else,
         );
       case 'comparison':
         return bool(
@@ -236,8 +236,8 @@ export class EvaluationContext {
             expression.operator,
             expression.matchCase ?? configuration.ignorecase,
             expression.lhs,
-            expression.rhs
-          )
+            expression.rhs,
+          ),
         );
       default: {
         const guard: never = expression;
@@ -291,7 +291,7 @@ export class EvaluationContext {
       if (_var === undefined) {
         throw VimError.fromCode(
           ErrorCode.UndefinedVariable,
-          varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name
+          varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name,
         );
       } else {
         return _var.value;
@@ -342,7 +342,7 @@ export class EvaluationContext {
 
     throw VimError.fromCode(
       ErrorCode.UndefinedVariable,
-      varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name
+      varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name,
     );
   }
 
@@ -483,7 +483,7 @@ export class EvaluationContext {
     operator: ComparisonOp,
     matchCase: boolean,
     lhsExpr: Expression,
-    rhsExpr: Expression
+    rhsExpr: Expression,
   ): boolean {
     switch (operator) {
       case '==':
@@ -517,7 +517,7 @@ export class EvaluationContext {
     matchCase: boolean,
     lhsExpr: Expression,
     rhsExpr: Expression,
-    topLevel: boolean = true
+    topLevel: boolean = true,
   ): boolean {
     if (operator === 'is' && lhsExpr.type !== rhsExpr.type) {
       return false;
@@ -530,7 +530,7 @@ export class EvaluationContext {
             return (
               lhsExpr.items.length === rhsExpr.items.length &&
               lhsExpr.items.every((left, idx) =>
-                this.evaluateBasicComparison('==', matchCase, left, rhsExpr.items[idx], false)
+                this.evaluateBasicComparison('==', matchCase, left, rhsExpr.items[idx], false),
               )
             );
           case 'is':
@@ -547,7 +547,7 @@ export class EvaluationContext {
       if (rhsExpr.type === 'dictionary') {
         const [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)] as [
           DictionaryValue,
-          DictionaryValue
+          DictionaryValue,
         ];
         switch (operator) {
           case '==':
@@ -556,7 +556,7 @@ export class EvaluationContext {
               [...lhs.items.entries()].every(
                 ([key, value]) =>
                   rhs.items.has(key) &&
-                  this.evaluateBasicComparison('==', matchCase, value, rhs.items.get(key)!, false)
+                  this.evaluateBasicComparison('==', matchCase, value, rhs.items.get(key)!, false),
               )
             );
           case 'is':
@@ -572,7 +572,7 @@ export class EvaluationContext {
     } else {
       let [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)] as [
         NumberValue | StringValue,
-        NumberValue | StringValue
+        NumberValue | StringValue,
       ];
       if (lhs.type === 'number' || rhs.type === 'number') {
         if (topLevel) {
@@ -818,7 +818,7 @@ export class EvaluationContext {
         return str(
           toList(l!)
             .items.map(toString)
-            .join(sep ? toString(sep) : '')
+            .join(sep ? toString(sep) : ''),
         );
       }
       // TODO: json_encode()/json_decode()
@@ -868,13 +868,13 @@ export class EvaluationContext {
                       new Map([
                         ['v:key', new Variable(int(idx))],
                         ['v:val', new Variable(val)],
-                      ])
+                      ]),
                     );
                     const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
                     this.localScopes.pop();
                     return retval;
                 }
-              })
+              }),
             );
           case 'dict_val':
           // TODO
@@ -996,7 +996,7 @@ export class EvaluationContext {
                   type: 'funcrefCall',
                   expression: func,
                   args: [x, y],
-                })
+                }),
               );
           } else {
             throw VimError.fromCode(ErrorCode.InvalidArgument);

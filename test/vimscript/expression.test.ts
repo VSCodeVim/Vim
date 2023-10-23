@@ -22,7 +22,7 @@ import { ErrorCode, VimError } from '../../src/error';
 
 function exprTest(
   input: string,
-  asserts: { expr?: Expression } & ({ value?: Value; display?: string } | { error: ErrorCode })
+  asserts: { expr?: Expression } & ({ value?: Value; display?: string } | { error: ErrorCode }),
 ) {
   test(input, () => {
     try {

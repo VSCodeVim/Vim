@@ -217,8 +217,8 @@ export class ExCommandLine extends CommandLine {
   public display(cursorChar: string): string {
     return escapeCSSIcons(
       `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-        this.cursorIndex
-      )}`
+        this.cursorIndex,
+      )}`,
     );
   }
 
@@ -353,8 +353,8 @@ export class SearchCommandLine extends CommandLine {
       .get()
       .forEach((val) =>
         SearchCommandLine.previousSearchStates.push(
-          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined)
-        )
+          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined),
+        ),
       );
   }
 
@@ -397,8 +397,8 @@ export class SearchCommandLine extends CommandLine {
     return escapeCSSIcons(
       `${this.searchState.direction === SearchDirection.Forward ? '/' : '?'}${this.text.substring(
         0,
-        this.cursorIndex
-      )}${cursorChar}${this.text.substring(this.cursorIndex)}`
+        this.cursorIndex,
+      )}${cursorChar}${this.text.substring(this.cursorIndex)}`,
     );
   }
 
@@ -436,7 +436,7 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeIndex(vimState)
+      this.getCurrentMatchRelativeIndex(vimState),
     );
   }
 
@@ -450,7 +450,7 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeIndex(vimState)
+      this.getCurrentMatchRelativeIndex(vimState),
     );
   }
 
@@ -459,7 +459,7 @@ export class SearchCommandLine extends CommandLine {
       this.searchState.getMatchRanges(vimState),
       configuration.incsearch && vimState.currentMode === Mode.SearchInProgressMode
         ? this.getCurrentMatchRange(vimState)?.index
-        : undefined
+        : undefined,
     );
   }
 
@@ -494,8 +494,8 @@ export class SearchCommandLine extends CommandLine {
           this.searchState.direction === SearchDirection.Backward
             ? ErrorCode.SearchHitTop
             : ErrorCode.SearchHitBottom,
-          this.text
-        )
+          this.text,
+        ),
       );
       return;
     }

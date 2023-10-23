@@ -33,7 +33,7 @@ export interface IModeHandler {
 
 export async function executeTransformations(
   modeHandler: IModeHandler,
-  transformations: Transformation[]
+  transformations: Transformation[],
 ) {
   if (transformations.length === 0) {
     return;
@@ -42,14 +42,14 @@ export async function executeTransformations(
   const vimState = modeHandler.vimState;
 
   const textTransformations: TextTransformations[] = transformations.filter((x) =>
-    isTextTransformation(x)
+    isTextTransformation(x),
   ) as any;
   const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
-    (x) => isMultiCursorTextTransformation(x)
+    (x) => isMultiCursorTextTransformation(x),
   ) as any;
 
   const otherTransformations = transformations.filter(
-    (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
+    (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x),
   );
 
   const accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
@@ -186,7 +186,7 @@ export async function executeTransformations(
           vimState.recordedState = new RecordedState();
           if (transformation.register === ':') {
             await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(
-              vimState
+              vimState,
             );
           } else if (transformation.replay === 'contentChange') {
             await modeHandler.runMacro(recordedMacro);
@@ -207,7 +207,7 @@ export async function executeTransformations(
 
           await executeTransformations(
             modeHandler,
-            vimState.recordedState.transformer.transformations
+            vimState.recordedState.transformer.transformations,
           );
 
           globalState.lastInvokedMacro = recordedMacro;
@@ -241,13 +241,19 @@ export async function executeTransformations(
     }
   }
 
-  const selections = vimState.editor.selections.map((sel) => {
-    let range = Cursor.FromVSCodeSelection(sel);
-    if (range.start.isBefore(range.stop)) {
-      range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
-    }
-    return new vscode.Selection(range.start, range.stop);
-  });
+  let selections;
+  if (vimState.currentMode === Mode.Insert) {
+    // Insert mode selections do not need to be modified
+    selections = vimState.editor.selections;
+  } else {
+    selections = vimState.editor.selections.map((sel) => {
+      let range = Cursor.FromVSCodeSelection(sel);
+      if (range.start.isBefore(range.stop)) {
+        range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
+      }
+      return new vscode.Selection(range.start, range.stop);
+    });
+  }
   const firstTransformation = transformations[0];
   const manuallySetCursorPositions =
     (firstTransformation.type === 'deleteRange' ||
@@ -268,9 +274,9 @@ export async function executeTransformations(
         (cursor, diff) =>
           new Cursor(
             cursor.start.add(vimState.document, diff),
-            cursor.stop.add(vimState.document, diff)
+            cursor.stop.add(vimState.document, diff),
           ),
-        Cursor.FromVSCodeSelection(sel)
+        Cursor.FromVSCodeSelection(sel),
       );
     });
 

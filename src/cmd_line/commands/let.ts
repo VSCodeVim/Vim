@@ -56,14 +56,14 @@ const operationParser: Parser<LetCommandOperation> = alt(
   string('/='),
   string('%='),
   string('.='),
-  string('..=')
+  string('..='),
 );
 
 const letVarParser: Parser<LetCommandVariable> = alt(
   variableParser,
   optionParser,
   envVariableParser,
-  registerParser
+  registerParser,
 );
 
 export class LetCommand extends ExCommand {
@@ -84,14 +84,14 @@ export class LetCommand extends ExCommand {
               variable,
               expression,
               lock,
-            })
-        )
+            }),
+        ),
       ),
       // `:let`
       // `:let {var-name} ...`
       optWhitespace
         .then(letVarParser.sepBy(whitespace))
-        .map((variables) => new LetCommand({ operation: 'print', variables }))
+        .map((variables) => new LetCommand({ operation: 'print', variables })),
     );
 
   private args: LetCommandArgs;

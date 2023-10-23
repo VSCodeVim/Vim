@@ -25,7 +25,7 @@ If remapping-related, please attach log output: https://github.com/VSCodeVim/Vim
 
 <!--
 Ensure you are on the latest VSCode + VSCodeVim
-You can use "Report Issue" by running "Developers: Show Running Extensions" from the Command Palette to prefill these.
+You can use "Report Issue" by running "Developer: Show Running Extensions" from the Command Palette to prefill these.
 -->
 
 - Extension (VsCodeVim) version:

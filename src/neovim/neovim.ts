@@ -21,7 +21,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
   async run(
     vimState: VimState,
-    command: string
+    command: string,
   ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
       this.nvim = await this.startNeovim(vimState.document);
@@ -137,7 +137,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
     const [rangeStart, rangeEnd] = sorted(
       vimState.cursorStartPosition,
-      vimState.cursorStopPosition
+      vimState.cursorStopPosition,
     );
     await this.nvim.callFunction('setpos', [
       '.',
@@ -189,18 +189,18 @@ export class NeovimWrapper implements vscode.Disposable {
     await TextEditor.replace(
       vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
-      fixedLines.join('\n')
+      fixedLines.join('\n'),
     );
 
     Logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
     const [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as number[]).slice(
       1,
-      3
+      3,
     );
     vimState.editor.selection = new vscode.Selection(
       new Position(row - 1, character),
-      new Position(row - 1, character)
+      new Position(row - 1, character),
     );
 
     if (configuration.expandtab) {

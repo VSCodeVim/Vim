@@ -29,7 +29,7 @@ export function displayValue(value: Value, topLevel = true): string {
       } else {
         if (value.dict) {
           return `function('${value.name}', ${displayValue(value.arglist)}, ${displayValue(
-            value.dict
+            value.dict,
           )})`;
         }
         return `function('${value.name}', ${displayValue(value.arglist)})`;

@@ -27,7 +27,7 @@ class ExitReplaceMode extends BaseCommand {
         .repeat(timesToRepeat - 1);
       vimState.recordedState.transformer.replace(
         new Range(position, position.getRight(newText.length)),
-        newText
+        newText,
       );
     } else {
       vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();

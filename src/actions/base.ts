@@ -95,7 +95,7 @@ export abstract class BaseAction implements IBaseAction {
 
   public static CompareKeypressSequence(
     one: readonly string[] | readonly string[][],
-    two: readonly string[]
+    two: readonly string[],
   ): boolean {
     if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
@@ -206,7 +206,7 @@ export abstract class BaseCommand extends BaseAction {
         a.start.line > b.start.line ||
         (a.start.line === b.start.line && a.start.character > b.start.character)
           ? 1
-          : -1
+          : -1,
       );
 
     let cursorIndex = 0;
@@ -255,7 +255,7 @@ const actionMap = new Map<Mode, Array<new () => BaseAction>>();
  */
 export function getRelevantAction(
   keysPressed: string[],
-  vimState: VimState
+  vimState: VimState,
 ): BaseAction | KeypressState {
   const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 

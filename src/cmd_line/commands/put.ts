@@ -34,9 +34,9 @@ export class PutExCommand extends ExCommand {
           .then(optWhitespace)
           .then(expressionParser)
           .map((expression) => ({ fromExpression: expression })),
-        any.map((register) => ({ register })).fallback({ register: undefined })
-      )
-    )
+        any.map((register) => ({ register })).fallback({ register: undefined }),
+      ),
+    ),
   ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
 
   private static lastExpression: Expression | undefined;

@@ -15,7 +15,7 @@ export function searchStringParser(args: {
 }> {
   return seq(
     Pattern.parser(args),
-    lazy(() => SearchOffset.parser.fallback(undefined))
+    lazy(() => SearchOffset.parser.fallback(undefined)),
   ).map(([pattern, offset]) => {
     return { pattern, offset };
   });
@@ -75,7 +75,7 @@ export class Pattern {
         }
       | {
           lineRange: LineRange;
-        }
+        },
   ): PatternMatch[] {
     if (this.emptyBranch) {
       // HACK: This pattern matches each character, but for purposes of perf when highlighting, merge them.
@@ -109,7 +109,7 @@ export class Pattern {
       // TODO: This is not exactly how Vim implements in-selection search (\%V), see :help \%V for more info.
       const searchRange = new Range(
         vimState.lastVisualSelection.start,
-        vimState.lastVisualSelection.end
+        vimState.lastVisualSelection.end,
       );
       haystack = vimState.document.getText(searchRange);
       searchOffset = vimState.document.offsetAt(vimState.lastVisualSelection.start);
@@ -142,7 +142,7 @@ export class Pattern {
 
         const matchRange = new Range(
           vimState.document.positionAt(searchOffset + match.index),
-          vimState.document.positionAt(searchOffset + match.index + match[0].length)
+          vimState.document.positionAt(searchOffset + match.index + match[0].length),
         );
         if (
           !this.inSelection &&
@@ -231,12 +231,12 @@ export class Pattern {
           string('\\')
             .then(any.fallback(undefined))
             .map((escaped) => '\\' + (escaped ?? '\\')),
-          noneOf(']')
+          noneOf(']'),
         )
           .many()
           .wrap(string('['), string(']'))
           .map((result) => '[' + result.join('') + ']'),
-        noneOf(delimiter)
+        noneOf(delimiter),
       ).many(),
       string(delimiter).fallback(undefined),
       (leadingBar, atoms, delim) => {
@@ -267,7 +267,7 @@ export class Pattern {
           closed: delim !== undefined,
           emptyBranch,
         };
-      }
+      },
     ).map(({ patternString, caseOverride, inSelection, closed, emptyBranch }) => {
       const ignoreCase = Pattern.getIgnoreCase(patternString, {
         caseOverride,
@@ -279,14 +279,14 @@ export class Pattern {
         Pattern.compileRegex(patternString, ignoreCase),
         inSelection ?? false,
         closed,
-        emptyBranch
+        emptyBranch,
       );
     });
   }
 
   private static getIgnoreCase(
     patternString: string,
-    flags: { caseOverride?: boolean; ignoreSmartcase: boolean }
+    flags: { caseOverride?: boolean; ignoreSmartcase: boolean },
   ): boolean {
     if (flags.caseOverride !== undefined) {
       return flags.caseOverride;
@@ -302,7 +302,7 @@ export class Pattern {
     regex: RegExp,
     inSelection: boolean,
     closed: boolean,
-    emptyBranch: boolean
+    emptyBranch: boolean,
   ) {
     this.patternString = patternString;
     this.direction = direction;
@@ -348,14 +348,14 @@ export class SearchOffset {
         new SearchOffset({
           type,
           delta: sign === '-' ? -num : num,
-        })
+        }),
     ),
     seq(searchOffsetTypeParser, oneOf('+-')).map(
       ([type, sign]) =>
         new SearchOffset({
           type,
           delta: sign === '-' ? -1 : 1,
-        })
+        }),
     ),
     seq(searchOffsetTypeParser).map(([type]) => new SearchOffset({ type, delta: 0 })),
     string(';/')
@@ -377,7 +377,7 @@ export class SearchOffset {
           pattern,
           offset,
         });
-      })
+      }),
   );
 
   public constructor(data: SearchOffsetData) {
