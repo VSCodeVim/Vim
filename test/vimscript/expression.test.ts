@@ -474,6 +474,11 @@ suite('Vimscript expressions', () => {
   });
 
   suite('Builtin functions', () => {
+    suite('assert_*', () => {
+      exprTest('assert_equal(1, 1)', { value: int(0) });
+      exprTest('assert_equal(1, 2)', { value: int(1) });
+    });
+
     suite('count', () => {
       exprTest('add([1,2,3], 4)', { display: '[1, 2, 3, 4]' });
       exprTest('add(add(add([], 1), 2), 3)', { display: '[1, 2, 3]' });

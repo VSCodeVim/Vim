@@ -126,6 +126,7 @@ export class EvaluationContext {
   private static globalVariables: VariableStore = new Map();
 
   private localScopes: VariableStore[] = [];
+  private errors: string[] = [];
 
   /**
    * Fully evaluates the given expression and returns the resulting value.
@@ -330,6 +331,8 @@ export class EvaluationContext {
       } else if (varExpr.name === 'numbersize') {
         // NOTE: In VimScript this refers to a 64 bit integer; we have a 64 bit float because JavaScript
         return int(64);
+      } else if (varExpr.name === 'errors') {
+        return list(this.errors.map(str));
       }
 
       // HACK: for things like v:key & v:val
@@ -644,6 +647,18 @@ export class EvaluationContext {
         return int(toInt(x!) & toInt(y!));
       }
       // TODO: assert_*()
+      case 'assert_equal': {
+        const [expected, actual, msg] = getArgs(2, 3);
+        if (this.evaluateComparison('==', true, expected!, actual!)) {
+          return int(0);
+        }
+        this.errors.push(
+          msg
+            ? toString(msg)
+            : `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`, // TODO: Include file & line
+        );
+        return int(1);
+      }
       // TODO: call()
       case 'ceil': {
         const [x] = getArgs(1);
