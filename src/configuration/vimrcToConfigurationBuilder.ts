@@ -1,14 +1,14 @@
-import { SetCommand } from "../cmd_line/commands/set";
+import { SetCommand } from '../cmd_line/commands/set';
 
 class VimrcSetOptionBuilder {
   public buildSetAction(line: string): (() => void) | undefined {
     line = line.trim();
 
-    if (!line.startsWith("se")) {
+    if (!line.startsWith('se')) {
       return undefined;
     }
 
-    const result = SetCommand.argParser.parse(line.replace(/set?/, ""));
+    const result = SetCommand.argParser.parse(line.replace(/set?/, ''));
     if (result.status) {
       const action = result.value;
       return () => action.execute(undefined);
