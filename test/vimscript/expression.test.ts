@@ -86,6 +86,14 @@ suite('Vimscript expressions', () => {
       exprTest('1.2', { expr: float(1.2) });
       exprTest('0.583', { expr: float(0.583) });
       exprTest('-5.3', { expr: negative(float(5.3)), value: float(-5.3) });
+      exprTest('-5.3', { expr: negative(float(5.3)), value: float(-5.3) });
+
+      exprTest('1.23e5', { expr: float(123000) });
+      exprTest('-4.56E-3', { expr: negative(float(0.00456)) });
+      exprTest('0.424e0', { expr: float(0.424) });
+
+      // By default, 6 decimal places when displayed (:help floating-point-precision)
+      exprTest('0.123456789', { expr: float(0.123456789), display: '0.123457' });
     });
 
     suite('Strings', () => {

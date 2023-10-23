@@ -49,9 +49,21 @@ const decimalOrOctalNumberParser: Parser<NumberValue> = regexp(/\d+/).map((x) =>
   return int(Number.parseInt(x, base));
 });
 
-// TODO: support exponent
-const floatParser: Parser<FloatValue> = regexp(/\d+\.\d+/)
-  .map((x) => float(Number.parseFloat(x)))
+const floatParser: Parser<FloatValue> = seq(
+  regexp(/\d+\.\d+/).map((x) => Number.parseFloat(x)),
+  alt(string('e'), string('E'))
+    .then(
+      seq(alt(string('+'), string('-')).fallback(undefined), regexp(/\d+/)).map(([sign, _num]) => {
+        const num = Number.parseInt(_num, 10);
+        if (sign === '-') {
+          return -num;
+        }
+        return num;
+      }),
+    )
+    .fallback(0),
+)
+  .map(([num, exp]) => float(num * Math.pow(10, exp)))
   .desc('a float');
 
 export const numberParser: Parser<NumberValue> = seq(
