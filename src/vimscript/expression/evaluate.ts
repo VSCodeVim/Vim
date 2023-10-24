@@ -659,6 +659,30 @@ export class EvaluationContext {
         );
         return int(1);
       }
+      case 'assert_notequal': {
+        const [expected, actual, msg] = getArgs(2, 3);
+        if (this.evaluateComparison('!=', true, expected!, actual!)) {
+          return int(0);
+        }
+        this.errors.push(
+          msg ? toString(msg) : `Expected not equal to ${displayValue(expected!)}`, // TODO: Include file & line
+        );
+        return int(1);
+      }
+      case 'assert_report': {
+        this.errors.push(toString(getArgs(1)[0]!));
+        return int(1);
+      }
+      case 'assert_true': {
+        const [actual, msg] = getArgs(2, 3);
+        if (this.evaluateComparison('==', true, bool(true), actual!)) {
+          return int(0);
+        }
+        this.errors.push(
+          msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`, // TODO: Include file & line
+        );
+        return int(1);
+      }
       // TODO: call()
       case 'ceil': {
         const [x] = getArgs(1);
