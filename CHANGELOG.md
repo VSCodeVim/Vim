@@ -1,6 +1,25 @@
 # Change Log
 
-## Unreleased
+## [v1.26.2](https://github.com/vscodevim/vim/tree/v1.26.2) (2023-10-21)
+
+### Fixed
+
+- Fixed illegible text with certain color schemes when `vim.statusBarColorControl` is enabled ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+### Changed
+
+- Changed extension's `activationEvents` to include `onStartupFinished` rather than `*`, which may improve startup performance ([@whitphx](https://github.com/whitphx)).
+
+## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-10-09)
+
+### Fixed
+
+- Fixed several Insert mode bugs caused by a regression in `v1.26.0` ([@nullbus](https://github.com/nullbus)).
+- Fixed dot repeat (`.`) after `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed overlapping text in Quick Pick caused by `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed some uses of `vim.remap` ([@jdanbrown](https://github.com/jdanbrown)).
+
+## [v1.26.0](https://github.com/vscodevim/vim/tree/v1.26.0) (2023-09-09)
 
 ### Added
 

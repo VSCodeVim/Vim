@@ -452,6 +452,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // <C-d> triggers "add selection to next find match" by default,
     // unless users explicity make <C-d>: true
+    // TODO: Destroy this silliness
     if (key === '<C-d>' && !(configuration.handleKeys['<C-d>'] === true)) {
       key = '<D-d>';
     }
