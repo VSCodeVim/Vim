@@ -1205,7 +1205,7 @@
     "@types/parsimmon": "1.10.8",
     "@types/sinon": "10.0.20",
     "@types/vscode": "1.74.0",
-    "@vscode/test-electron": "2.3.5",
+    "@vscode/test-electron": "2.3.6",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "event-stream": "4.0.1",
