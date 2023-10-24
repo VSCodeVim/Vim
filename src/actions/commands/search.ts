@@ -27,7 +27,7 @@ async function searchCurrentWord(
   direction: SearchDirection,
   isExact: boolean,
 ): Promise<void> {
-  let currentWord = TextEditor.getWord(vimState.document, position);
+  const currentWord = TextEditor.getWord(vimState.document, position);
 
   if (currentWord) {
     if (/\W/.test(currentWord[0]) || /\W/.test(currentWord[currentWord.length - 1])) {
