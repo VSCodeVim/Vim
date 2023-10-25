@@ -205,7 +205,7 @@ const functionArgsParser: Parser<Expression[]> = lazy(() =>
     .wrap(string('('), string(')')),
 );
 
-const functionCallParser: Parser<FunctionCallExpression> = seq(
+export const functionCallParser: Parser<FunctionCallExpression> = seq(
   regexp(/[a-z0-9_]+/).skip(optWhitespace),
   functionArgsParser,
 )

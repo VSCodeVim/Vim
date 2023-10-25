@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
@@ -49,6 +48,7 @@ import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 import { RedoCommand } from '../cmd_line/commands/redo';
 import { LetCommand } from '../cmd_line/commands/let';
+import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -125,7 +125,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cadde', 'xpr'], undefined],
   [['caddf', 'ile'], undefined],
   [['caf', 'ter'], undefined],
-  [['cal', 'l'], undefined],
+  [['cal', 'l'], CallCommand.argParser],
   [['cat', 'ch'], undefined],
   [['cb', 'uffer'], undefined],
   [['cbef', 'ore'], undefined],
@@ -221,7 +221,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['endt', 'ry'], undefined],
   [['endw', 'hile'], undefined],
   [['ene', 'w'], FileCommand.argParsers.enew],
-  [['ev', 'al'], undefined],
+  [['ev', 'al'], EvalCommand.argParser],
   [['ex', ''], FileCommand.argParsers.edit],
   [['exe', 'cute'], undefined],
   [['exi', 't'], WriteQuitCommand.argParser],
