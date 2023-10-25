@@ -1154,8 +1154,9 @@
     },
     "languages": [
       {
-        "id": "vimrc",
+        "id": "Vimscript",
         "extensions": [
+          ".vim",
           ".vimrc"
         ],
         "configuration": "./language-configuration.json"
@@ -1163,9 +1164,9 @@
     ],
     "grammars": [
       {
-        "language": "vimrc",
-        "scopeName": "source.vimrc",
-        "path": "./syntaxes/vimrc.tmLanguage.json"
+        "language": "Vimscript",
+        "scopeName": "source.vimscript",
+        "path": "./syntaxes/vimscript.tmLanguage.json"
       }
     ]
   },

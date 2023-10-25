@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "vimrc",
-  "fileTypes": [".vimrc"],
-  "scopeName": "source.vimrc",
+  "name": "Vimscript",
+  "fileTypes": [".vim", ".vimrc"],
+  "scopeName": "source.vimscript",
   "patterns": [
     {
       "name": "comment.line",
