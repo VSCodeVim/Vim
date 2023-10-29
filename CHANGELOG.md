@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Allow `:sp[lit]` and `:vs[plit]` to open non-existing files ([@JLMSC](https://github.com/JLMSC)).
+- Support changing case via `:s[ubstitute]` with `\L`, `\U`, `\E`, `\u`, and `\l` ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.26.2](https://github.com/vscodevim/vim/tree/v1.26.2) (2023-10-21)
 
 ### Fixed

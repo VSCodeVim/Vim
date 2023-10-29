@@ -420,7 +420,7 @@ suite('Basic substitute', () => {
       end: ['|foo tr tz'],
     });
 
-    suite.only('Change case', () => {
+    suite('Change case', () => {
       newTest({
         title: '\\U',
         start: ['|she sells seashells by the seashore'],
