@@ -4,8 +4,8 @@ import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
-import { VimError, ErrorCode } from '../../error';
-import { isVisualMode, Mode } from '../../mode/mode';
+import { ErrorCode, VimError } from '../../error';
+import { Mode, isVisualMode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
 import { SearchState } from '../../state/searchState';
@@ -15,8 +15,8 @@ import { TextEditor } from '../../textEditor';
 import { TextObject } from '../../textobject/textobject';
 import { reportSearch } from '../../util/statusBarTextUtils';
 import { SearchDirection } from '../../vimscript/pattern';
-import { RegisterAction, BaseCommand } from '../base';
-import { failedMovement, IMovement } from '../baseMotion';
+import { BaseCommand, RegisterAction } from '../base';
+import { IMovement, failedMovement } from '../baseMotion';
 
 /**
  * Search for the word under the cursor; used by [g]* and [g]#
@@ -110,7 +110,7 @@ async function createSearchStateAndMoveToMatch(args: {
     { ignoreSmartcase: true },
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
-  SearchCommandLine.addSearchStateToHistory(globalState.searchState);
+  void SearchCommandLine.addSearchStateToHistory(globalState.searchState);
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   globalState.hl = true;

@@ -1,4 +1,5 @@
-import { alt, any, optWhitespace, Parser, seq, succeed, whitespace } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { alt, any, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { YankOperator } from '../../actions/operator';
 import { RegisterMode } from '../../register/register';
@@ -18,6 +19,7 @@ export class YankCommand extends ExCommand {
       numberParser.map((count) => {
         return { register: undefined, count };
       }),
+      // eslint-disable-next-line id-denylist
       seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
         ([register, count]) => {
           return { register, count };

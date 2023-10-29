@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { getAllPositions, getAllEndPositions } from './util';
+import { getAllEndPositions, getAllPositions } from './util';
 
 export enum WordType {
   Normal,
@@ -181,7 +181,6 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
   let supportsLookbehind = true;
   try {
-    // tslint:disable-next-line
     new RegExp('(?<=x)');
   } catch {
     supportsLookbehind = false;

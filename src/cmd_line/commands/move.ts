@@ -32,7 +32,7 @@ export class MoveCommand extends ExCommand {
     if (sourceEnd < sourceStart) {
       [sourceStart, sourceEnd] = [sourceEnd, sourceStart];
     }
-    /*make sure
+    /* make sure
     1. not move a range to the place inside itself.
     2. not move a range to the place right below or above itself, which leads to no change.
     */

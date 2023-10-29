@@ -3,7 +3,7 @@ import { OnlyCommand } from '../../cmd_line/commands/only';
 import { QuitCommand } from '../../cmd_line/commands/quit';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class CommandQuit extends BaseCommand {
@@ -16,7 +16,7 @@ class CommandQuit extends BaseCommand {
   ];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    new QuitCommand({}).execute(vimState);
+    void new QuitCommand({}).execute(vimState);
   }
 }
 
@@ -29,7 +29,7 @@ class CommandOnly extends BaseCommand {
   ];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    new OnlyCommand().execute(vimState);
+    void new OnlyCommand().execute(vimState);
   }
 }
 

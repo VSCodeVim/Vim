@@ -1176,8 +1176,8 @@
     "build-dev": "gulp build-dev",
     "build-test": "gulp prepare-test",
     "test": "node ./out/test/runTest.js",
-    "lint": "tslint --project .",
-    "lint:fix": "tslint --project . --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
@@ -1206,9 +1206,15 @@
     "@types/parsimmon": "1.10.8",
     "@types/sinon": "10.0.20",
     "@types/vscode": "1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
     "@vscode/test-electron": "2.3.6",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jsdoc": "^46.8.2",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "9.0.2",
     "gulp": "4.0.2",
@@ -1224,7 +1230,6 @@
     "prettier": "3.0.3",
     "sinon": "17.0.0",
     "ts-loader": "9.5.0",
-    "tslint": "6.1.3",
     "typescript": "5.2.2",
     "vsce": "2.15.0",
     "webpack": "5.89.0",
@@ -1234,6 +1239,6 @@
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",
-    "*.ts": "tslint --fix"
+    "*.ts": "eslint --fix"
   }
 }

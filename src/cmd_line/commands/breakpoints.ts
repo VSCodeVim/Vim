@@ -1,7 +1,3 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import { VimState } from '../../state/vimState';
-import { ExCommand } from '../../vimscript/exCommand';
 import {
   all,
   alt,
@@ -9,10 +5,15 @@ import {
   optWhitespace,
   regexp,
   seqObj,
+  // eslint-disable-next-line id-denylist
   string,
   succeed,
   whitespace,
 } from 'parsimmon';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 import { fileNameParser, numberParser } from '../../vimscript/parserUtils';
 
 function isSourceBreakpoint(b: vscode.Breakpoint): b is vscode.SourceBreakpoint {
@@ -212,7 +213,7 @@ export class Breakpoints {
         // without arg
         eof.result<DelBreakpointHere>({ type: 'here' }),
       )
-      .map((a) => new AddBreakpointCommand(a)),
+      .map((a: AddBreakpoint) => new AddBreakpointCommand(a)),
 
     del: whitespace
       .then(
@@ -241,7 +242,7 @@ export class Breakpoints {
         // without arg
         eof.result<DelBreakpointHere>({ type: 'here' }),
       )
-      .map((a) => new DeleteBreakpointCommand(a)),
+      .map((a: DelBreakpoint) => new DeleteBreakpointCommand(a)),
 
     list: succeed(new ListBreakpointsCommand()),
   };

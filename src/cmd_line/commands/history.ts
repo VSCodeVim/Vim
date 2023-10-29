@@ -1,12 +1,13 @@
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, optWhitespace, string } from 'parsimmon';
 import {
-  CommandShowSearchHistory,
   CommandShowCommandHistory,
+  CommandShowSearchHistory,
 } from '../../actions/commands/actions';
+import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { SearchDirection } from '../../vimscript/pattern';
-import { alt, optWhitespace, Parser, string } from 'parsimmon';
 import { nameAbbrevParser } from '../../vimscript/parserUtils';
+import { SearchDirection } from '../../vimscript/pattern';
 
 export enum HistoryCommandType {
   Cmd,
