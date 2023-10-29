@@ -2097,10 +2097,10 @@ foreach@^2.0.5:
   resolved "https://registry.yarnpkg.com/foreach/-/foreach-2.0.5.tgz#0bee005018aeb260d0a3af3ae658dd0136ec1b99"
   integrity sha1-C+4AUBiusmDQo6865ljdATbsG5k=
 
-fork-ts-checker-webpack-plugin@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-9.0.0.tgz#e12b9e6116d32b07a2dbc0ea08f62b1cea24d35a"
-  integrity sha512-Kw3JjsfGs0piB0V2Em8gCuo51O3p4KyCOK0Tn8X57oq2mSNBrMmONALRBw5frcmWsOVU7iELXXsJ+FVxJeQuhA==
+fork-ts-checker-webpack-plugin@9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-9.0.1.tgz#52b479f11972efbcaeb10e9d6e5e8d713c65364b"
+  integrity sha512-kjLmID/ja88yTygxYpxtUeHedIDxvEiO7WVvMpTPwK4xvCMl6dFLdeq+La0ZfWWs3R3pjuG4wChvs/IF9naKCw==
   dependencies:
     "@babel/code-frame" "^7.16.7"
     chalk "^4.1.2"
