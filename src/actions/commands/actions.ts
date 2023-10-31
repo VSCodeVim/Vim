@@ -1027,7 +1027,7 @@ class CommandOpenFile extends BaseCommand {
     if (fileInfo) {
       const workspaceRootPath = vscode.workspace.getWorkspaceFolder(
         vimState.document.uri,
-      )?.uri.path;
+      )?.uri.fsPath;
       const filePath =
         path.isAbsolute(fileInfo[1]) || !workspaceRootPath
           ? fileInfo[1]
