@@ -119,8 +119,6 @@ class YankSurroundOperator extends SurroundOperator {
     // when called from visual operator, use end for stop to keep visual selection
     vimState.cursorStopPosition = vimState.currentMode === Mode.Visual ? end : start;
     await vimState.setCurrentMode(Mode.SurroundInputMode);
-
-    return;
   }
 
   public override async runRepeat(
