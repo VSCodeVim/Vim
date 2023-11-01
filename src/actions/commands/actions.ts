@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 
+import path from 'path';
 import { doesFileExist } from 'platform/fs';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
@@ -1024,7 +1025,12 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const filePath = fileInfo[1];
+      const workspaceRootPath = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri
+        .fsPath;
+      const filePath =
+        path.isAbsolute(fileInfo[1]) || !workspaceRootPath
+          ? fileInfo[1]
+          : path.join(workspaceRootPath, fileInfo[1]);
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: 'edit',
