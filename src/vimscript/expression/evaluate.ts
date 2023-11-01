@@ -205,6 +205,12 @@ export class EvaluationContext {
           );
         }
       }
+      case 'methodCall': {
+        const obj = this.evaluate(expression.expression);
+        return this.evaluateFunctionCall(
+          funcCall(expression.methodName, [obj, ...expression.args]),
+        );
+      }
       case 'lambda': {
         return {
           type: 'funcref',
@@ -958,6 +964,7 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(Math.pow(toFloat(x!), toFloat(y!)));
       }
+      // TODO: rand()
       case 'range': {
         const [val, max, stride] = getArgs(1, 3);
         const start = max !== undefined ? toInt(val!) : 0;

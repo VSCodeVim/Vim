@@ -115,6 +115,13 @@ export type FuncrefCallExpression = {
   args: Expression[];
 };
 
+export type MethodCallExpression = {
+  type: 'methodCall';
+  expression: Expression;
+  methodName: string;
+  args: Expression[];
+};
+
 export type UnaryOp = '!' | '-' | '+';
 export type UnaryExpression = {
   type: 'unary';
@@ -157,6 +164,7 @@ export type Expression =
   | SliceExpression
   | EntryExpression
   | FuncrefCallExpression
+  | MethodCallExpression
   | EnvVariableExpression
   | RegisterExpression
   | FunctionCallExpression

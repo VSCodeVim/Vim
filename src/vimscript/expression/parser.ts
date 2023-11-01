@@ -24,6 +24,7 @@ import {
   IndexExpression,
   LambdaExpression,
   ListExpression,
+  MethodCallExpression,
   NumberValue,
   OptionExpression,
   RegisterExpression,
@@ -231,7 +232,6 @@ const lambdaParser: Parser<LambdaExpression> = seq(
   });
 
 // TODO: Function call with funcref
-// TODO: Method call
 // TODO: Variable/function with curly braces
 const expr9Parser: Parser<Expression> = alt(
   floatParser,
@@ -291,6 +291,21 @@ const funcrefCallParser: Parser<(expr: Expression) => FuncrefCallExpression> = f
     };
   });
 
+// TODO: Support method call with lambda
+const methodCallParser: Parser<(expr: Expression) => MethodCallExpression> = string('->')
+  .then(seq(regexp(/[a-z]+/i), functionArgsParser))
+  .desc('a method call')
+  .map(([methodName, args]) => {
+    return (expression: Expression) => {
+      return {
+        type: 'methodCall',
+        methodName,
+        expression,
+        args,
+      };
+    };
+  });
+
 const expr8Parser: Parser<Expression> = seq(
   expr9Parser,
   alt<(expr: Expression) => Expression>(
@@ -298,6 +313,7 @@ const expr8Parser: Parser<Expression> = seq(
     sliceParser,
     entryParser,
     funcrefCallParser,
+    methodCallParser,
   ).many(),
 )
   .desc('expr8')

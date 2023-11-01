@@ -367,6 +367,18 @@ suite('Vimscript expressions', () => {
       });
     });
 
+    suite('Method calls', () => {
+      exprTest('[1,2,3]->reverse()', {
+        value: list([int(3), int(2), int(1)]),
+      });
+      // exprTest('[1,2,3,4,5,6]->filter({x->x%2==0})->map({x->x*10})', {
+      //   value: list([int(20), int(40), int(60)]),
+      // });
+      exprTest('[1,2,3]->map({k,v->v*10})->join("|")', {
+        value: str('10|20|30'),
+      });
+    });
+
     suite('Lambda', () => {
       exprTest('{x->x}', { expr: lambda(['x'], variable('x')) });
       exprTest('{x,y->x+y}', { expr: lambda(['x', 'y'], add(variable('x'), variable('y'))) });
