@@ -420,6 +420,50 @@ suite('Basic substitute', () => {
       end: ['|foo tr tz'],
     });
 
+    suite('Change case', () => {
+      newTest({
+        title: '\\U',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s\\S*', '\\U&x', { flags: 'g' }),
+        end: ['|SHEX SELLSX SEASHELLSX by the SEASHOREX'],
+      });
+
+      newTest({
+        title: '\\U then \\E',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s\\S*', '\\U&\\Ex', { flags: 'g' }),
+        end: ['|SHEx SELLSx SEASHELLSx by the SEASHOREx'],
+      });
+
+      newTest({
+        title: '\\u',
+        start: ['|she sells seashells by the seashore'],
+        keysPressed: sub('s\\S*', '\\u&x', { flags: 'g' }),
+        end: ['|Shex Sellsx Seashellsx by the Seashorex'],
+      });
+
+      newTest({
+        title: '\\L',
+        start: ['|SHE SELLS SEASHELLS BY THE SEASHORE'],
+        keysPressed: sub('S\\S*', '\\L&X', { flags: 'g' }),
+        end: ['|shex sellsx seashellsx BY THE seashorex'],
+      });
+
+      newTest({
+        title: '\\L then \\E',
+        start: ['|SHE SELLS SEASHELLS BY THE SEASHORE'],
+        keysPressed: sub('S\\S*', '\\L&\\EX', { flags: 'g' }),
+        end: ['|sheX sellsX seashellsX BY THE seashoreX'],
+      });
+
+      newTest({
+        title: '\\l',
+        start: ['|SHE SELLS SEASHELLS BY THE SEASHORE'],
+        keysPressed: sub('S\\S*', '\\l&X', { flags: 'g' }),
+        end: ['|sHEX sELLSX sEASHELLSX BY THE sEASHOREX'],
+      });
+    });
+
     suite('Capture groups', () => {
       newTest({
         title: '& capture group',
