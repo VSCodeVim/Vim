@@ -207,6 +207,20 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: "'yss<enter>' converts line to an indented curly brace block",
+    start: ['foo', '    foob|ar  '],
+    keysPressed: 'yss\n',
+    end: ['foo', '    |{', '      foobar', '    }  '],
+  });
+
+  newTest({
+    title: "'ysiw<enter>' converts word to an indented curly brace block",
+    start: ['foo', '  foob|ar'],
+    keysPressed: 'ysiw\n',
+    end: ['foo', '  |{', '    foobar', '  }'],
+  });
+
+  newTest({
     title: 'change surround',
     start: ["first 'li|ne' test"],
     keysPressed: "cs')",
@@ -225,6 +239,13 @@ suite('surround plugin', () => {
     start: ['first ((li|ne)) test'],
     keysPressed: "cs)'",
     end: ["first ('li|ne') test"],
+  });
+
+  newTest({
+    title: 'change innermost parentheses to indented curly brace block',
+    start: ['first ((li|ne)) test'],
+    keysPressed: 'cs)\n',
+    end: ['first ({', '  li|ne', '}) test'],
   });
 
   newTest({
@@ -508,17 +529,17 @@ suite('surround plugin', () => {
   });
 
   newTest({
-    title: "'S)' surrounds visual line selection without space",
+    title: "'S)' surrounds visual line selection without indentation",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS)',
     end: ['first', '(', 'second', '|)', 'third'],
   });
 
   newTest({
-    title: "'S(' surrounds visual line selection with space",
+    title: "'S(' indents visual line selection and surrounds it with ()",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS(',
-    end: ['first', '( ', 'second', '| )', 'third'],
+    end: ['first', '(', '  second', '|)', 'third'],
   });
 
   newTest({
@@ -546,10 +567,10 @@ suite('surround plugin', () => {
   });
 
   newTest({
-    title: "'SFcall' surrounds visual line selection with call(  )",
+    title: "'SFcall' indents visual line selection and surrounds it with call()",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VSF',
-    end: ['first', 'call( ', 'second', '| )', 'third'],
+    end: ['first', 'call(', '  second', '|)', 'third'],
     stub: {
       stubClass: CommandSurroundAddSurroundingFunction,
       methodName: 'readFunction',
@@ -558,15 +579,36 @@ suite('surround plugin', () => {
   });
 
   newTest({
-    title: "'S<C-f>call' surrounds visual line selection with (call )",
+    title: "'S<C-f>call' surrounds visual line selection with (call)",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS<C-f>',
-    end: ['first', '(call ', 'second', '|)', 'third'],
+    end: ['first', '(call', 'second', '|)', 'third'],
     stub: {
       stubClass: CommandSurroundAddSurroundingFunction,
       methodName: 'readFunction',
       returnValue: 'call',
     },
+  });
+
+  newTest({
+    title: "'S(' indents visual line selection and surrounds it with parentheses",
+    start: ['one:', '  two', '  th|ree', 'four'],
+    keysPressed: 'VkS(',
+    end: ['one:', '  (', '    two', '    three', '  |)', 'four'],
+  });
+
+  newTest({
+    title: "'S)' surrounds visual line selection with parentheses",
+    start: ['one:', '  two', '  th|ree', 'four'],
+    keysPressed: 'VkS)',
+    end: ['one:', '  (', '  two', '  three', '  |)', 'four'],
+  });
+
+  newTest({
+    title: "'S<enter>' indents visual line selection and surround it with curly braces",
+    start: ['one:', '  two', '  th|ree', 'four'],
+    keysPressed: 'VkS\n',
+    end: ['one:', '  {', '    two', '    three', '  |}', 'four'],
   });
 
   // multi cursor tests
