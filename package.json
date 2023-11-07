@@ -1204,7 +1204,7 @@
     "@types/mocha": "10.0.4",
     "@types/node": "18.18.8",
     "@types/parsimmon": "1.10.8",
-    "@types/sinon": "17.0.0",
+    "@types/sinon": "17.0.1",
     "@types/vscode": "1.74.0",
     "@vscode/test-electron": "2.3.6",
     "circular-dependency-plugin": "^5.2.2",
