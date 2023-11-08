@@ -685,6 +685,17 @@ suite('Vimscript expressions', () => {
       exprTest('string(#{a:1,b:2})', { value: str("{'a': 1, 'b': 2}") });
     });
 
+    suite('split', () => {
+      exprTest('split("  a\t\tb    c  ")', { value: list([str('a'), str('b'), str('c')]) });
+      exprTest('split("  a\t\tb    c  ", "", 1)', {
+        value: list([str(''), str('a'), str('b'), str('c'), str('')]),
+      });
+      exprTest('split("a,b,c,", ",")', { value: list([str('a'), str('b'), str('c')]) });
+      exprTest('split("a,b,c,", ",", v:true)', {
+        value: list([str('a'), str('b'), str('c'), str('')]),
+      });
+    });
+
     suite('floor/ceil/round/trunc', () => {
       exprTest('floor(3.5)', { value: float(3) });
       exprTest('floor(-3.5)', { value: float(-4) });

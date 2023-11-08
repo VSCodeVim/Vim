@@ -1078,7 +1078,20 @@ export class EvaluationContext {
         // TODO: Numbers after Strings, Lists after Numbers
         return list(l.items.sort(compare));
       }
-      // TODO: split()
+      case 'split': {
+        const [s, pattern, keepempty] = getArgs(1, 3);
+        // TODO: Actually parse pattern
+        const result = toString(s!).split(pattern && toString(pattern) ? toString(pattern) : /\s+/);
+        if (!(keepempty && toInt(this.evaluate(keepempty)))) {
+          if (result[0] === '') {
+            result.shift();
+          }
+          if (result && result[result.length - 1] === '') {
+            result.pop();
+          }
+        }
+        return list(result.map(str));
+      }
       case 'sqrt': {
         const [x] = getArgs(1);
         return float(Math.sqrt(toFloat(x!)));
