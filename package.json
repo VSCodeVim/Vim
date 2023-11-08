@@ -864,7 +864,7 @@
           ],
           "description": "Status bar color when in VisualLine mode.",
           "default": [
-            "#005f5f",
+            "#005f87",
             "#ffffff"
           ]
         },
