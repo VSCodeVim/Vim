@@ -1,5 +1,5 @@
 {
-  "name": "vim",
+  "name": "vimacs",
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
