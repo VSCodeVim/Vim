@@ -1149,7 +1149,27 @@ export class EvaluationContext {
             throw new Error('type() got unexpected type');
         }
       }
-      // TODO: uniq()
+      case 'uniq': {
+        const [l, func, dict] = getArgs(1, 3);
+        // TODO: Use func (see sort() and try to re-use implementation)
+        // TODO: Use dict
+        if (l!.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.ArgumentOfSortMustBeAList); // TODO: Correct error message
+        }
+        if (l!.items.length > 1) {
+          let prev: Value = l!.items[0];
+          for (let i = 1; i < l!.items.length; ) {
+            const val = l!.items[i];
+            if (this.evaluateComparison('==', true, prev, val)) {
+              l!.items.splice(i, 1);
+            } else {
+              prev = val;
+              i++;
+            }
+          }
+        }
+        return l!;
+      }
       case 'values': {
         const [d] = getArgs(1);
         return list([...toDict(d!).items.values()]);

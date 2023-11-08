@@ -696,6 +696,11 @@ suite('Vimscript expressions', () => {
       });
     });
 
+    suite('uniq', () => {
+      exprTest('uniq([1,2,1,1,1,,3,2,2,3])', { display: "[1, 2, 1, '1', 3, 2, 3]" });
+      // TODO
+    });
+
     suite('floor/ceil/round/trunc', () => {
       exprTest('floor(3.5)', { value: float(3) });
       exprTest('floor(-3.5)', { value: float(-4) });
