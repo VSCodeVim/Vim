@@ -257,10 +257,10 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/parsimmon@1.10.8":
-  version "1.10.8"
-  resolved "https://registry.yarnpkg.com/@types/parsimmon/-/parsimmon-1.10.8.tgz#308ad54da883f4158ca8af960230542a5ab8c24d"
-  integrity sha512-i6oOxO9QKaqwMdMnnagvtVduc0ii9rl+BkNdAdSDhN27k9ryP8Fm6S9bcvNtuauK7PwTdoxCRorPcJvyGqwHgQ==
+"@types/parsimmon@1.10.9":
+  version "1.10.9"
+  resolved "https://registry.yarnpkg.com/@types/parsimmon/-/parsimmon-1.10.9.tgz#14e60db223c1d213fea0e15985d480b5cfe1789a"
+  integrity sha512-O2M2x1w+m7gWLen8i5DOy6tWRnbRcsW6Pke3j3HAsJUrPb4g0MgjksIUm2aqUtCYxy7Qjr3CzjjwQBzhiGn46A==
 
 "@types/sinon@17.0.1":
   version "17.0.1"
