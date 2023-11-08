@@ -156,6 +156,10 @@ suite('Vimscript expressions', () => {
         value: str('x'),
       });
 
+      exprTest("'xyz'[1]", {
+        value: str('y'),
+      });
+
       exprTest("'xyz'[0][1]", {
         expr: {
           type: 'index',
@@ -167,6 +171,8 @@ suite('Vimscript expressions', () => {
           index: int(1),
         },
       });
+
+      exprTest("['a','b','c'][1]", { value: str('b') });
 
       exprTest("#{one: 1, two: 2, three: 3}['one']", { value: int(1) });
       exprTest("#{one: 1, two: 2, three: 3}['two']", { value: int(2) });
@@ -565,6 +571,15 @@ suite('Vimscript expressions', () => {
     suite('has_key', () => {
       exprTest('has_key(#{a:1, b:2, c:3}, "b")', { value: bool(true) });
       exprTest('has_key(#{a:1, b:2, c:3}, "d")', { value: bool(false) });
+    });
+
+    suite('index', () => {
+      exprTest('index(["a","b","c"], "c")', { value: int(2) });
+      exprTest('index(["a","b","c"], "k")', { value: int(-1) });
+      exprTest('index(["A","C","D","C"], "C", 1)', { value: int(1) });
+      exprTest('index(["A","C","D","C"], "C", 2)', { value: int(3) });
+      exprTest('index(["A","C","D","C"], "C", -2)', { value: int(3) });
+      exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
     });
 
     suite('isnan/isinf', () => {

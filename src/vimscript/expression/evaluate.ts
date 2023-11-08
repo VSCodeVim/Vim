@@ -365,11 +365,11 @@ export class EvaluationContext {
       }
       case 'list': {
         let idx = toInt(index);
-        idx = idx < 0 ? sequence.items.length - idx : 0;
+        idx = idx < 0 ? sequence.items.length - idx : idx;
         if (idx < 0 || idx >= sequence.items.length) {
           throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, idx.toString());
         }
-        return sequence.items[toInt(index)];
+        return sequence.items[idx];
       }
       case 'dict_val': {
         const key = toString(index);
@@ -841,7 +841,32 @@ export class EvaluationContext {
         return bool(toDict(d!).items.has(toString(k!)));
       }
       // TODO: id()
-      // TODO: index()
+      case 'index': {
+        const [_haystack, _needle, _start, ic] = getArgs(2, 4);
+        const haystack = this.evaluate(_haystack!);
+        const needle = this.evaluate(_needle!);
+
+        if (haystack.type === 'list') {
+          let start: number | undefined;
+          if (_start) {
+            start = toInt(_start);
+            start = start < 0 ? haystack.items.length + start : start;
+          }
+
+          for (const [idx, item] of haystack.items.entries()) {
+            if (start && idx < start) {
+              continue;
+            }
+            if (this.evaluateComparison('==', true, item, needle)) {
+              return int(idx);
+            }
+          }
+          return int(-1);
+        }
+        // TODO: handle blob
+        throw VimError.fromCode(ErrorCode.ListOrBlobRequired);
+      }
+      // TODO: indexof()
       // TODO: input()/inputlist()
       // TODO: insert()
       // TODO: invert()
