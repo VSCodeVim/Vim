@@ -720,7 +720,7 @@ export class EvaluationContext {
         const matchCase = toInt(ic ?? bool(false)) === 0;
         if (start !== undefined) {
           if (comp!.type !== 'list') {
-            throw VimError.fromCode(ErrorCode.InvalidArgument);
+            throw VimError.fromCode(ErrorCode.InvalidArgument474);
           }
           if (toInt(start) >= comp!.items.length) {
             throw VimError.fromCode(ErrorCode.ListIndexOutOfRange);
@@ -1070,7 +1070,7 @@ export class EvaluationContext {
                 }),
               );
           } else {
-            throw VimError.fromCode(ErrorCode.InvalidArgument);
+            throw VimError.fromCode(ErrorCode.InvalidArgument474);
           }
         } else {
           compare = (x, y) => (displayValue(x) > displayValue(y) ? 1 : -1);
@@ -1117,7 +1117,25 @@ export class EvaluationContext {
         return str(toString(s!).toUpperCase());
       }
       // TODO: tr()
-      // TODO: trim()
+      case 'trim': {
+        const [_s, mask, _dir] = getArgs(1, 3);
+        // TODO: use mask
+        let s = toString(_s!);
+        const dir = _dir ? toInt(_dir) : 0;
+        if (dir === 0) {
+          // Trim start and end
+          s = s.trimStart().trimEnd();
+        } else if (dir === 1) {
+          // Trim start
+          s = s.trimStart();
+        } else if (dir === 2) {
+          // Trim end
+          s = s.trimEnd();
+        } else {
+          throw VimError.fromCode(ErrorCode.InvalidArgument475, dir.toString());
+        }
+        return str(s);
+      }
       case 'trunc': {
         const [x] = getArgs(1);
         return float(Math.trunc(toFloat(x!)));

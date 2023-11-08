@@ -95,7 +95,7 @@ export class DeleteMarksCommand extends ExCommand {
   private static resolveMarkList(vimState: VimState, args: DeleteMarksArgs) {
     const asciiRange = (start: string, end: string) => {
       if (start > end) {
-        throw VimError.fromCode(ErrorCode.InvalidArgument);
+        throw VimError.fromCode(ErrorCode.InvalidArgument474);
       }
 
       const [asciiStart, asciiEnd] = [start.charCodeAt(0), end.charCodeAt(0)];
@@ -119,7 +119,7 @@ export class DeleteMarksCommand extends ExCommand {
       } else {
         const range = asciiRange(x.start, x.end);
         if (range === undefined) {
-          throw VimError.fromCode(ErrorCode.InvalidArgument);
+          throw VimError.fromCode(ErrorCode.InvalidArgument474);
         }
         marks.push(...range.concat());
       }

@@ -696,6 +696,14 @@ suite('Vimscript expressions', () => {
       });
     });
 
+    suite('trim', () => {
+      exprTest("trim('  me  ')", { value: str('me') });
+      exprTest("trim('  me  ', ' ', 0)", { value: str('me') });
+      exprTest("trim('  me  ', ' ', 1)", { value: str('me  ') });
+      exprTest("trim('  me  ', ' ', 2)", { value: str('  me') });
+      // TODO: Test mask
+    });
+
     suite('uniq', () => {
       exprTest('uniq([1,2,1,1,1,,3,2,2,3])', { display: "[1, 2, 1, '1', 3, 2, 3]" });
       // TODO

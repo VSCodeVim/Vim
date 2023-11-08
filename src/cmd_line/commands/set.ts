@@ -192,7 +192,7 @@ export class SetCommand extends ExCommand {
         if (type === 'boolean') {
           configuration[option] = false;
         } else {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `no${option}`);
+          throw VimError.fromCode(ErrorCode.InvalidArgument474, `no${option}`);
         }
         break;
       }
@@ -201,7 +201,7 @@ export class SetCommand extends ExCommand {
           configuration[option] = !currentValue;
         } else {
           // TODO: Could also be {option}!
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `inv${option}`);
+          throw VimError.fromCode(ErrorCode.InvalidArgument474, `inv${option}`);
         }
         break;
       }
@@ -216,7 +216,10 @@ export class SetCommand extends ExCommand {
       case 'equal': {
         if (type === 'boolean') {
           // TODO: Could also be {option}:{value}
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = this.operation.value;
         } else {
@@ -234,7 +237,10 @@ export class SetCommand extends ExCommand {
       }
       case 'add': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}+=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}+=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = currentValue + this.operation.value;
         } else {
@@ -251,7 +257,10 @@ export class SetCommand extends ExCommand {
       }
       case 'multiply': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}^=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}^=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = this.operation.value + currentValue;
         } else {
@@ -268,7 +277,10 @@ export class SetCommand extends ExCommand {
       }
       case 'subtract': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}-=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}-=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = currentValue.split(this.operation.value).join('');
         } else {
