@@ -527,6 +527,11 @@
           "description": "Use system clipboard for unnamed register.",
           "default": false
         },
+        "vim.killRingMax": {
+          "type": "number",
+          "description": "Maximum length of kill ring before oldest elements are thrown away.",
+          "default": 120
+        },
         "vim.overrideCopy": {
           "type": "boolean",
           "description": "Override VS Code's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",

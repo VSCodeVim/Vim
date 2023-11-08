@@ -22,6 +22,7 @@ import { Mode } from '../mode/mode';
 import { ErrorCode, VimError } from '../error';
 import { Logger } from '../util/logger';
 import { earlierOf } from '../common/motion/position';
+import { configuration } from '../configuration/configuration';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -381,6 +382,8 @@ class ChangeList {
 export class HistoryTracker {
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
+  public killRing: string[];
+
   private nextStepStartPosition: Position | undefined;
 
   private readonly undoStack: UndoStack;
@@ -407,6 +410,7 @@ export class HistoryTracker {
       versionNumber: this.getDocumentVersion(),
     };
     this.currentContentChanges = [];
+    this.killRing = [];
   }
 
   private getDocumentText(): string {
@@ -520,6 +524,16 @@ export class HistoryTracker {
   private getAllMarksInDocument(document: vscode.TextDocument): IMark[] {
     const globalMarks = HistoryStep.globalMarks.filter((mark) => mark.document === document);
     return [...this.getLocalMarks(), ...globalMarks];
+  }
+
+  /**
+   * Yanks to kill ring
+   */
+  public yankToKillRing(text: string): void {
+    const size = this.killRing.push(text);
+    if (size > configuration.killRingMax) {
+      this.killRing.shift();
+    }
   }
 
   /**

@@ -509,6 +509,24 @@ class CommandCtrlVInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+class AltVInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<A-y>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const text = await vscode.window.showQuickPick([
+      ...new Set(vimState.historyTracker.killRing.reverse()),
+    ], {
+      placeHolder: "Choose which kill to yank"
+    });
+
+    if (text) {
+      vimState.recordedState.transformer.insert(vimState.cursorStopPosition, text);
+    }
+  }
+}
+
+@RegisterAction
 class CommandShowLineAutocomplete extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-x>', '<C-l>'];
