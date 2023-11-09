@@ -509,7 +509,7 @@ class CommandCtrlVInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-class AltVInInsertMode extends BaseCommand {
+class AltYInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<A-y>'];
 
