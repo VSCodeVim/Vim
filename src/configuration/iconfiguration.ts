@@ -105,6 +105,11 @@ export interface IConfiguration {
   useCtrlKeys: boolean;
 
   /**
+   * Enable alt- actions that would override existing VSCode actions.
+   */
+  useAltKeys: boolean;
+
+  /**
    * Override default VSCode copy behavior.
    */
   overrideCopy: boolean;
