@@ -3,7 +3,7 @@
   "displayName": "Vim wtih Kill Ring",
   "description": "Vim emulation for Visual Studio Code, with killring support",
   "icon": "images/icon.png",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "HyunggyuJang",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -17,11 +17,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/VSCodeVim/Vim.git"
+    "url": "https://github.com/HyunggyuJang/Vim.git"
   },
-  "homepage": "https://github.com/VSCodeVim/Vim",
+  "homepage": "https://github.com/HyunggyuJang/Vim",
   "bugs": {
-    "url": "https://github.com/VSCodeVim/Vim/issues"
+    "url": "https://github.com/HyunggyuJang/Vim/issues"
   },
   "engines": {
     "vscode": "^1.74.0"
