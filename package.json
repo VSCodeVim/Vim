@@ -1,6 +1,6 @@
 {
   "name": "vim-with-killring",
-  "displayName": "Vim wtih Kill Ring",
+  "displayName": "Vim with Kill Ring",
   "description": "Vim emulation for Visual Studio Code, with killring support",
   "icon": "images/icon.png",
   "version": "1.0.2",
