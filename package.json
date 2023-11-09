@@ -478,6 +478,11 @@
           "markdownDescription": "Enable some Vim Ctrl key commands that override otherwise common operations, like `Ctrl+C`.",
           "default": true
         },
+        "vim.useAltKeys": {
+          "type": "boolean",
+          "markdownDescription": "Enable some Vim Alt key commands that override otherwise common operations, like `Alt+Y`.",
+          "default": true
+        },
         "vim.leader": {
           "type": "string",
           "markdownDescription": "What key should `<leader>` map to in remappings?",
