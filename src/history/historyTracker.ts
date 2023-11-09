@@ -382,8 +382,6 @@ class ChangeList {
 export class HistoryTracker {
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
-  public killRing: string[];
-
   private nextStepStartPosition: Position | undefined;
 
   private readonly undoStack: UndoStack;
@@ -410,7 +408,6 @@ export class HistoryTracker {
       versionNumber: this.getDocumentVersion(),
     };
     this.currentContentChanges = [];
-    this.killRing = [];
   }
 
   private getDocumentText(): string {
@@ -530,9 +527,9 @@ export class HistoryTracker {
    * Yanks to kill ring
    */
   public yankToKillRing(text: string): void {
-    const size = this.killRing.push(text);
+    const size = globalState.killRing.push(text);
     if (size > configuration.killRingMax) {
-      this.killRing.shift();
+      globalState.killRing.shift();
     }
   }
 
