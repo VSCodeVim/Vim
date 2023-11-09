@@ -27,6 +27,7 @@ import { StatusBar } from '../../statusBar';
 import { VimError, ErrorCode } from '../../error';
 import { Position } from 'vscode';
 import { isHighSurrogate, isLowSurrogate } from '../../util/util';
+import { globalState } from '../../state/globalState';
 
 @RegisterAction
 export class CommandEscInsertMode extends BaseCommand {
@@ -515,7 +516,7 @@ class AltYInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const text = await vscode.window.showQuickPick([
-      ...new Set(vimState.historyTracker.killRing.reverse()),
+      ...new Set(globalState.killRing.reverse()),
     ], {
       placeHolder: "Choose which kill to yank"
     });
