@@ -422,7 +422,7 @@
       {
         "key": "alt+y",
         "command": "extension.vim_alt+y",
-        "when": "editorTextFocus && vim.active && vim.use<A-y> &&  && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<A-y> && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
