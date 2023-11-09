@@ -1,7 +1,7 @@
 {
-  "name": "vimacs",
+  "name": "vim-with-killring",
   "displayName": "Vim",
-  "description": "Vim emulation for Visual Studio Code",
+  "description": "Vim emulation for Visual Studio Code, with killring support",
   "icon": "images/icon.png",
   "version": "1.27.1",
   "publisher": "HyunggyuJang",
