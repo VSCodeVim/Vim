@@ -32,7 +32,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [Vim settings](#vim-settings)
 - [.vimrc support](#vimrc-support)
 - [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
-- [Kill ring support](#️-kill-ring-support)
+- [Kill ring support](#-kill-ring-support)
 - [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
   - [vim-easymotion](#vim-easymotion)
