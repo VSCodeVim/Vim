@@ -195,6 +195,9 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchHighlightBackgroundColor,
       },
+      borderColor: new vscode.ThemeColor('editor.findMatchHighlightBorder'),
+      borderStyle: 'solid',
+      borderWidth: '1px'
     });
 
     const searchMatchBackgroundColor = configuration.searchMatchColor
@@ -209,6 +212,9 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchMatchBackgroundColor,
       },
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+      borderStyle: 'solid',
+      borderWidth: '2px'
     });
 
     const substitutionBackgroundColor = configuration.substitutionColor
