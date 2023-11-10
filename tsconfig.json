@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["ES2021"],
+    "lib": ["ES2022"],
     "module": "commonjs",
-    "target": "ES2021",
+    "target": "ES2022",
     "outDir": "out",
     "noImplicitOverride": true,
     "noImplicitReturns": true,
