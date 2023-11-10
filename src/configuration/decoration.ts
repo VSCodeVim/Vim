@@ -195,9 +195,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchHighlightBackgroundColor,
       },
+      border: '1px solid',
       borderColor: new vscode.ThemeColor('editor.findMatchHighlightBorder'),
-      borderStyle: 'solid',
-      borderWidth: '1px'
     });
 
     const searchMatchBackgroundColor = configuration.searchMatchColor
@@ -212,9 +211,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchMatchBackgroundColor,
       },
+      border: '2px solid',
       borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
-      borderStyle: 'solid',
-      borderWidth: '2px'
     });
 
     const substitutionBackgroundColor = configuration.substitutionColor
@@ -228,6 +226,8 @@ class DecorationImpl {
       after: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
     });
 
@@ -239,6 +239,8 @@ class DecorationImpl {
       before: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
     });
 
