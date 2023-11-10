@@ -229,6 +229,8 @@ class DecorationImpl {
         border: '1px solid',
         borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
+      border: '1px dashed',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
     });
 
     // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
