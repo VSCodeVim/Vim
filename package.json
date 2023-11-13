@@ -3,7 +3,7 @@
   "displayName": "Vim with Kill Ring",
   "description": "Vim emulation for Visual Studio Code, with killring support",
   "icon": "images/icon.png",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "HyunggyuJang",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -423,6 +423,41 @@
         "key": "alt+y",
         "command": "extension.vim_alt+y",
         "when": "editorTextFocus && vim.active && vim.use<A-y> && !inDebugRepl"
+      },
+      {
+        "key": "alt+w",
+        "command": "extension.vim_alt+w",
+        "when": "editorTextFocus && vim.active && vim.use<A-w> && !inDebugRepl"
+      },
+      {
+        "key": "alt+k",
+        "command": "extension.vim_alt+k",
+        "when": "editorTextFocus && vim.active && vim.use<A-k> && !inDebugRepl"
+      },
+      {
+        "key": "alt+r",
+        "command": "extension.vim_alt+r",
+        "when": "editorTextFocus && vim.active && vim.use<A-r> && !inDebugRepl"
+      },
+      {
+        "key": "alt+a",
+        "command": "extension.vim_alt+a",
+        "when": "editorTextFocus && vim.active && vim.use<A-a> && !inDebugRepl"
+      },
+      {
+        "key": "alt+e",
+        "command": "extension.vim_alt+e",
+        "when": "editorTextFocus && vim.active && vim.use<A-e> && !inDebugRepl"
+      },
+      {
+        "key": "alt+n",
+        "command": "extension.vim_alt+n",
+        "when": "editorTextFocus && vim.active && vim.use<A-n> && !inDebugRepl"
+      },
+      {
+        "key": "alt+p",
+        "command": "extension.vim_alt+p",
+        "when": "editorTextFocus && vim.active && vim.use<A-p> && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
