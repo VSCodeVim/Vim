@@ -260,22 +260,22 @@ export class VimState implements vscode.Disposable {
             ),
           }
         : mode === Mode.CommandlineInProgress
-        ? {
-            mode,
-            commandLine: new ExCommandLine('', this.modeData.mode),
-          }
-        : mode === Mode.SearchInProgressMode
-        ? {
-            mode,
-            commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
-            firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
-          }
-        : mode === Mode.Insert
-        ? {
-            mode,
-            highSurrogate: undefined,
-          }
-        : { mode },
+          ? {
+              mode,
+              commandLine: new ExCommandLine('', this.modeData.mode),
+            }
+          : mode === Mode.SearchInProgressMode
+            ? {
+                mode,
+                commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
+                firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
+              }
+            : mode === Mode.Insert
+              ? {
+                  mode,
+                  highSurrogate: undefined,
+                }
+              : { mode },
     );
   }
 

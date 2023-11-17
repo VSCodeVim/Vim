@@ -235,8 +235,8 @@ export class FileCommand extends ExCommand {
       args.cmd?.type === 'line_number'
         ? args.cmd.line
         : args.cmd?.type === 'last_line'
-        ? vscode.window.activeTextEditor!.document.lineCount - 1
-        : undefined;
+          ? vscode.window.activeTextEditor!.document.lineCount - 1
+          : undefined;
     if (lineNumber !== undefined && lineNumber >= 0) {
       vscode.window.activeTextEditor!.revealRange(
         new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0)),
