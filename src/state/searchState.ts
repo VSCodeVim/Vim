@@ -53,7 +53,7 @@ export class SearchState {
   private _nextMatchIndex: number | undefined;
 
   public get nextMatchIndex(): number | undefined {
-    return this._nextMatchIndex
+    return this._nextMatchIndex;
   }
 
   public get searchString(): string {
