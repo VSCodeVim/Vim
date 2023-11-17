@@ -195,6 +195,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchHighlightBackgroundColor,
       },
+      border: '1px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchHighlightBorder'),
     });
 
     const searchMatchBackgroundColor = configuration.searchMatchColor
@@ -209,6 +211,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchMatchBackgroundColor,
       },
+      border: '2px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
     });
 
     const substitutionBackgroundColor = configuration.substitutionColor
@@ -222,7 +226,11 @@ class DecorationImpl {
       after: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
+      border: '1px dashed',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
     });
 
     // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
@@ -233,6 +241,8 @@ class DecorationImpl {
       before: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
     });
 
