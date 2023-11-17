@@ -646,17 +646,17 @@ class SurroundHelper {
         surroundState.operator === 'delete'
           ? ''
           : surroundState.tag
-          ? '<' + surroundState.tag.tag + '>' + optNewline
-          : surroundState.function
-          ? surroundState.function + optNewline
-          : replacement.left + optNewline;
+            ? '<' + surroundState.tag.tag + '>' + optNewline
+            : surroundState.function
+              ? surroundState.function + optNewline
+              : replacement.left + optNewline;
 
       const rightFixed =
         surroundState.operator === 'delete'
           ? ''
           : surroundState.tag
-          ? optNewline + '</' + surroundState.tag.tag + '>'
-          : optNewline + replacement.right;
+            ? optNewline + '</' + surroundState.tag.tag + '>'
+            : optNewline + replacement.right;
 
       for (const { leftEdge, rightEdge, cursorIndex } of surroundState.edges) {
         vimState.recordedState.transformer.addTransformation({

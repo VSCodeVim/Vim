@@ -144,4 +144,7 @@ export class Configuration implements IConfiguration {
   startofline = true;
   showMarksInGutter = true;
   shell = '';
+  handleKeys = {
+    '<C-d>': true,
+  };
 }

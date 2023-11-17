@@ -20,7 +20,9 @@ import { SearchDecorations, ensureVisible, formatDecorationText } from '../../ut
 type ReplaceStringComponent =
   | { type: 'string'; value: string }
   | { type: 'capture_group'; group: number | '&' }
-  | { type: 'prev_replace_string' };
+  | { type: 'prev_replace_string' }
+  | { type: 'change_case'; case: 'upper' | 'lower'; duration: 'char' | 'until_end' }
+  | { type: 'change_case_end' };
 
 export class ReplaceString {
   private components: ReplaceStringComponent[];
@@ -37,8 +39,16 @@ export class ReplaceString {
           return component.group === '&' ? '&' : `\\${component.group}`;
         } else if (component.type === 'prev_replace_string') {
           return '~';
+        } else if (component.type === 'change_case') {
+          if (component.case === 'upper') {
+            return component.duration === 'char' ? '\\u' : '\\U';
+          } else {
+            return component.duration === 'char' ? '\\l' : '\\L';
+          }
+        } else if (component.type === 'change_case_end') {
+          return '\\E';
         } else {
-          const guard: unknown = component;
+          const guard: never = component;
           return '';
         }
       })
@@ -46,21 +56,48 @@ export class ReplaceString {
   }
 
   public resolve(matches: string[]): string {
-    return this.components
-      .map((component) => {
-        if (component.type === 'string') {
-          return component.value;
-        } else if (component.type === 'capture_group') {
-          const group: number = component.group === '&' ? 0 : component.group;
-          return matches[group] ?? '';
-        } else if (component.type === 'prev_replace_string') {
-          return globalState.substituteState?.replaceString.toString() ?? '';
+    let result = '';
+    let changeCase: 'upper' | 'lower' | undefined;
+    let changeCaseChar: 'upper' | 'lower' | undefined;
+    for (const component of this.components) {
+      let newChangeCaseChar: 'upper' | 'lower' | undefined;
+      let _result: string = '';
+      if (component.type === 'string') {
+        _result = component.value;
+      } else if (component.type === 'capture_group') {
+        const group: number = component.group === '&' ? 0 : component.group;
+        _result = matches[group] ?? '';
+      } else if (component.type === 'prev_replace_string') {
+        _result = globalState.substituteState?.replaceString.toString() ?? '';
+      } else if (component.type === 'change_case') {
+        if (component.duration === 'until_end') {
+          changeCase = component.case;
         } else {
-          const guard: unknown = component;
-          return '';
+          newChangeCaseChar = component.case;
         }
-      })
-      .join('');
+      } else if (component.type === 'change_case_end') {
+        changeCase = undefined;
+      } else {
+        const guard: never = component;
+      }
+
+      if (_result) {
+        if (changeCase) {
+          _result =
+            changeCase === 'upper' ? _result.toLocaleUpperCase() : _result.toLocaleLowerCase();
+        }
+        if (changeCaseChar) {
+          _result =
+            (changeCaseChar === 'upper'
+              ? _result[0].toLocaleUpperCase()
+              : _result[0].toLocaleLowerCase()) + _result.slice(1);
+        }
+        result += _result;
+      }
+
+      changeCaseChar = newChangeCaseChar;
+    }
+    return result;
   }
 }
 
@@ -114,32 +151,42 @@ export interface SubstituteFlags {
 const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
   alt<ReplaceStringComponent>(
     string('\\').then(
-      any.fallback(undefined).map((escaped) => {
+      any.fallback(undefined).map<ReplaceStringComponent>((escaped) => {
         if (escaped === undefined || escaped === '\\') {
-          return { type: 'string' as const, value: '\\' };
+          return { type: 'string', value: '\\' };
         } else if (escaped === '/') {
-          return { type: 'string' as const, value: '/' };
+          return { type: 'string', value: '/' };
         } else if (escaped === 'b') {
-          return { type: 'string' as const, value: '\b' };
+          return { type: 'string', value: '\b' };
         } else if (escaped === 'r') {
-          return { type: 'string' as const, value: '\r' };
+          return { type: 'string', value: '\r' };
         } else if (escaped === 'n') {
-          return { type: 'string' as const, value: '\n' };
+          return { type: 'string', value: '\n' };
         } else if (escaped === 't') {
-          return { type: 'string' as const, value: '\t' };
+          return { type: 'string', value: '\t' };
         } else if (escaped === '&') {
-          return { type: 'string' as const, value: '&' };
+          return { type: 'string', value: '&' };
         } else if (escaped === '~') {
-          return { type: 'string' as const, value: '~' };
+          return { type: 'string', value: '~' };
         } else if (/[0-9]/.test(escaped)) {
-          return { type: 'capture_group' as const, group: Number.parseInt(escaped, 10) };
+          return { type: 'capture_group', group: Number.parseInt(escaped, 10) };
+        } else if (escaped === 'u') {
+          return { type: 'change_case', case: 'upper', duration: 'char' };
+        } else if (escaped === 'l') {
+          return { type: 'change_case', case: 'lower', duration: 'char' };
+        } else if (escaped === 'U') {
+          return { type: 'change_case', case: 'upper', duration: 'until_end' };
+        } else if (escaped === 'L') {
+          return { type: 'change_case', case: 'lower', duration: 'until_end' };
+        } else if (escaped === 'e' || escaped === 'E') {
+          return { type: 'change_case_end' };
         } else {
-          return { type: 'string' as const, value: `\\${escaped}` };
+          return { type: 'string', value: `\\${escaped}` };
         }
       }),
     ),
-    string('&').result({ type: 'capture_group' as const, group: '&' }),
-    string('~').result({ type: 'prev_replace_string' as const }),
+    string('&').result({ type: 'capture_group', group: '&' }),
+    string('~').result({ type: 'prev_replace_string' }),
     noneOf(delimiter).map((value) => ({ type: 'string', value })),
   )
     .many()

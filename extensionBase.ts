@@ -473,7 +473,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             ).run(mh.vimState);
             mh.updateView();
           } else {
-            vscode.commands.executeCommand(command.command, command.args);
+            await vscode.commands.executeCommand(command.command, command.args);
           }
         }
       }
