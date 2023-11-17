@@ -36,8 +36,8 @@ export function ensureVisible(range: Range): DecorationOptions {
         },
       }
     : range.isEmpty
-    ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
-    : { range };
+      ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
+      : { range };
 }
 
 /**
