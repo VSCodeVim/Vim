@@ -195,8 +195,8 @@ export class Pattern {
     const delimiter = args.delimiter
       ? args.delimiter
       : args.direction === SearchDirection.Forward
-      ? '/'
-      : '?';
+        ? '/'
+        : '?';
     // TODO: Some escaped characters need special treatment
     return seqMap(
       string('|').result(true).fallback(false), // Leading | matches everything
