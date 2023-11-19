@@ -792,6 +792,7 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return int(toFloat(x!));
       }
+      // TODO: fullcommand()
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {
@@ -836,10 +837,21 @@ export class EvaluationContext {
       // TODO: getcurpos()
       // TODO: getline()
       // TODO: getreg()
+      // TODO: getreginfo()
+      // TODO: getregtype()
+      // TODO: gettext()
+      case 'gettext': {
+        const [s] = getArgs(1);
+        return str(toString(s!));
+      }
+      // TODO: glob2regpat()
+      // TODO: has()
       case 'has_key': {
         const [d, k] = getArgs(2);
         return bool(toDict(d!).items.has(toString(k!)));
       }
+      // TODO: hasmapto()
+      // TODO: histadd()/histdel()
       // TODO: id()
       case 'index': {
         const [_haystack, _needle, _start, ic] = getArgs(2, 4);
@@ -954,6 +966,8 @@ export class EvaluationContext {
             throw VimError.fromCode(ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob);
         }
       }
+      // TODO: matchadd()/matchaddpos()/matcharg()/matchdelete()
+      // TODO: match()/matchend()/matchlist()/matchstr()/matchstrpos()
       case 'max': {
         const [l] = getArgs(1);
         let values: Value[];
@@ -989,6 +1003,7 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(Math.pow(toFloat(x!), toFloat(y!)));
       }
+      // TODO: printf()
       // TODO: rand()
       case 'range': {
         const [val, max, stride] = getArgs(1, 3);
@@ -1008,6 +1023,10 @@ export class EvaluationContext {
         return list(items);
       }
       // TODO: reduce()
+      // TODO: reg_executing()
+      // TODO: reg_recorded()
+      // TODO: reg_recording()
+      // TODO: reltime*()
       case 'repeat': {
         const [val, count] = getArgs(2);
         if (val?.type === 'list') {
@@ -1033,6 +1052,7 @@ export class EvaluationContext {
         // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
         return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
       }
+      // TODO: setreg()
       case 'sin': {
         const [x] = getArgs(1);
         return float(Math.sin(toFloat(x!)));
@@ -1100,6 +1120,10 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return str(displayValue(x!));
       }
+      // TODO: strlen()
+      // TODO: strpart()
+      // TODO: submatch()
+      // TODO: substitute()
       case 'tan': {
         const [x] = getArgs(1);
         return float(Math.tan(toFloat(x!)));
@@ -1193,12 +1217,12 @@ export class EvaluationContext {
         return list([...toDict(d!).items.values()]);
       }
       // TODO: visualmode()
+      // TODO: wordcount()
       case 'xor': {
         const [x, y] = getArgs(2);
         // tslint:disable-next-line: no-bitwise
         return int(toInt(x!) ^ toInt(y!));
       }
-      // TODO: many, many more
       default: {
         throw VimError.fromCode(ErrorCode.UnknownFunction_call, call.func);
       }
