@@ -410,8 +410,8 @@ class CommandAdvanceCurrentMatch extends CommandLineAction {
       key === '<C-g>'
         ? SearchDirection.Forward
         : key === '<C-t>'
-        ? SearchDirection.Backward
-        : undefined;
+          ? SearchDirection.Backward
+          : undefined;
     if (commandLine instanceof SearchCommandLine && direction !== undefined) {
       void commandLine.advanceCurrentMatch(vimState, direction);
     }

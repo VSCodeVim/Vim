@@ -499,8 +499,8 @@ export class Remapper implements IRemapper {
             commandArgs = Array.isArray(command.args)
               ? (command.args as string[])
               : command.args
-              ? [command.args]
-              : [];
+                ? [command.args]
+                : [];
           }
 
           if (commandString.slice(0, 1) === ':') {

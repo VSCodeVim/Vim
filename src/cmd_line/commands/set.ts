@@ -169,8 +169,8 @@ export class SetCommand extends ExCommand {
       typeof currentValue === 'boolean'
         ? 'boolean'
         : typeof currentValue === 'string'
-        ? 'string'
-        : 'number';
+          ? 'string'
+          : 'number';
 
     switch (this.operation.type) {
       case 'show_or_set': {

@@ -95,7 +95,7 @@ export class Configuration implements IConfiguration {
   // eslint-disable-next-line id-denylist
   number = true;
   relativenumber = false;
-  iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  iskeyword = ''; // Use `editor.wordSeparators`
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
