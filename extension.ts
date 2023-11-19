@@ -38,6 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
       vimrc.vimrcPath &&
       path.relative(document.fileName, vimrc.vimrcPath) === ''
     ) {
+      // TODO: Should instead probably call `loadConfiguration` (in extensionBase.ts)
       await configuration.load();
       Logger.info('Sourced new .vimrc');
     }

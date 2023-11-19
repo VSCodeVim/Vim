@@ -52,7 +52,7 @@ type LegacyArgs = {
 };
 function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
   if (args.name === 'edit') {
-    return { file: args.file, bang: args.bang, createFileIfNotExists: true };
+    return { file: args.file, bang: args.bang, cmd: args.cmd, createFileIfNotExists: true };
   } else if (args.name === 'enew') {
     return { bang: args.bang, createFileIfNotExists: true };
   } else if (args.name === 'new') {
@@ -68,9 +68,17 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
       createFileIfNotExists: true,
     };
   } else if (args.name === 'split') {
-    return { file: args.file, position: FilePosition.NewWindowHorizontalSplit };
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowHorizontalSplit,
+      createFileIfNotExists: true,
+    };
   } else if (args.name === 'vsplit') {
-    return { file: args.file, position: FilePosition.NewWindowVerticalSplit };
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowVerticalSplit,
+      createFileIfNotExists: true,
+    };
   } else {
     throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);
   }
@@ -221,18 +229,19 @@ export class FileCommand extends ExCommand {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    await vscode.window.showTextDocument(doc);
+    const editor = await vscode.window.showTextDocument(doc);
 
     const lineNumber =
       args.cmd?.type === 'line_number'
         ? args.cmd.line
         : args.cmd?.type === 'last_line'
-        ? vscode.window.activeTextEditor!.document.lineCount - 1
-        : undefined;
+          ? vscode.window.activeTextEditor!.document.lineCount - 1
+          : undefined;
     if (lineNumber !== undefined && lineNumber >= 0) {
-      vscode.window.activeTextEditor!.revealRange(
-        new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0)),
-      );
+      const pos = new vscode.Position(lineNumber, 0);
+      editor.selection = new vscode.Selection(pos, pos);
+      const range = new vscode.Range(pos, pos);
+      editor.revealRange(range);
     }
     await hidePreviousEditor();
   }

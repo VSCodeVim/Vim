@@ -94,7 +94,7 @@ export class Configuration implements IConfiguration {
   expandtab = true;
   number = true;
   relativenumber = false;
-  iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  iskeyword = ''; // Use `editor.wordSeparators`
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
@@ -144,4 +144,7 @@ export class Configuration implements IConfiguration {
   startofline = true;
   showMarksInGutter = true;
   shell = '';
+  handleKeys = {
+    '<C-d>': true,
+  };
 }

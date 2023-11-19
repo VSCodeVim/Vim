@@ -1,10 +1,37 @@
 # Change Log
 
-## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-09-25)
+## [v1.27.0](https://github.com/vscodevim/vim/tree/v1.27.0) (2023-11-17)
+
+### Added
+
+- Allow `:sp[lit]` and `:vs[plit]` to open non-existing files ([@JLMSC](https://github.com/JLMSC)).
+- Support changing case via `:s[ubstitute]` with `\L`, `\U`, `\E`, `\u`, and `\l` ([@J-Fields](https://github.com/J-Fields)).
+- Add border to search and `:s[ubstitute]` decorations, based on the `editor.findMatchBorder` and `editor.findMatchHighlightBorder` ThemeColors ([@bryclee](https://github.com/bryclee)).
+
+### Fixed
+
+- Make `gf` interpret non-absolute paths as relative to project root ([@Foo-x](https://github.com/Foo-x)).
+- Fix `gf` with a line number after the path ([@Foo-x](https://github.com/Foo-x)).
+- Fix status bar color in VisualLine mode ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+## [v1.26.2](https://github.com/vscodevim/vim/tree/v1.26.2) (2023-10-21)
+
+### Fixed
+
+- Fixed illegible text with certain color schemes when `vim.statusBarColorControl` is enabled ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+### Changed
+
+- Changed extension's `activationEvents` to include `onStartupFinished` rather than `*`, which may improve startup performance ([@whitphx](https://github.com/whitphx)).
+
+## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-10-09)
 
 ### Fixed
 
 - Fixed several Insert mode bugs caused by a regression in `v1.26.0` ([@nullbus](https://github.com/nullbus)).
+- Fixed dot repeat (`.`) after `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed overlapping text in Quick Pick caused by `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed some uses of `vim.remap` ([@jdanbrown](https://github.com/jdanbrown)).
 
 ## [v1.26.0](https://github.com/vscodevim/vim/tree/v1.26.0) (2023-09-09)
 

@@ -1,39 +1,40 @@
 import * as vscode from 'vscode';
 
+import path from 'path';
+import { doesFileExist } from 'platform/fs';
+import { Position } from 'vscode';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
+import { Cursor } from '../../common/motion/cursor';
+import { ErrorCode, VimError } from '../../error';
+import { globalState } from '../../state/globalState';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync } from '../../util/util';
+import { StatusBar } from '../../statusBar';
+import { WordType } from '../../textobject/word';
 import { Clipboard } from '../../util/clipboard';
+import { SpecialKeys } from '../../util/specialKeys';
+import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
+import { getCursorsAfterSync } from '../../util/util';
+import { SearchDirection } from '../../vimscript/pattern';
+import { shouldWrapKey } from '../wrapping';
+import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommand, TabCommandType } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
-import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
   Mode,
-  visualBlockGetTopLeftPosition,
   isVisualMode,
   visualBlockGetBottomRightPosition,
+  visualBlockGetTopLeftPosition,
 } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { isTextTransformation, Transformation } from './../../transformations/transformations';
-import { RegisterAction, BaseCommand } from './../base';
-import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
+import { Transformation, isTextTransformation } from './../../transformations/transformations';
+import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
-import { StatusBar } from '../../statusBar';
-import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
-import { globalState } from '../../state/globalState';
-import { SpecialKeys } from '../../util/specialKeys';
-import { WordType } from '../../textobject/word';
-import { Position } from 'vscode';
-import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
-import { shouldWrapKey } from '../wrapping';
-import { ErrorCode, VimError } from '../../error';
-import { SearchDirection } from '../../vimscript/pattern';
-import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -1024,14 +1025,19 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const filePath = fileInfo[1];
+      const workspaceRootPath = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri
+        .fsPath;
+      const filePath =
+        path.isAbsolute(fileInfo[1]) || !workspaceRootPath
+          ? fileInfo[1]
+          : path.join(workspaceRootPath, fileInfo[1]);
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: 'edit',
         bang: false,
         opt: [],
         file: filePath,
-        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
         createFileIfNotExists: false,
       });
       fileCommand.execute(vimState);
