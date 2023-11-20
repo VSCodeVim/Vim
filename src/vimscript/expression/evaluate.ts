@@ -845,7 +845,10 @@ export class EvaluationContext {
         return str(toString(s!));
       }
       // TODO: glob2regpat()
-      // TODO: has()
+      case 'has': {
+        const [feature] = getArgs(1);
+        return bool(toString(feature!) === 'vscode');
+      }
       case 'has_key': {
         const [d, k] = getArgs(2);
         return bool(toDict(d!).items.has(toString(k!)));
