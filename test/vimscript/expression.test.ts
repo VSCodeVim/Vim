@@ -677,12 +677,24 @@ suite('Vimscript expressions', () => {
       exprTest('repeat(1.0, 3)', { error: ErrorCode.UsingFloatAsAString });
     });
 
+    suite('str2list', () => {
+      exprTest('str2list("ABC")', { value: list([int(65), int(66), int(67)]) });
+      exprTest('str2list("á")', { value: list([int(97), int(769)]) });
+    });
+
     suite('string', () => {
       exprTest('string("")', { value: str('') });
       exprTest('string(123)', { value: str('123') });
       exprTest('string(123.0)', { value: str('123.0') });
       exprTest('string([1,2,3])', { value: str('[1, 2, 3]') });
       exprTest('string(#{a:1,b:2})', { value: str("{'a': 1, 'b': 2}") });
+    });
+
+    suite('strlen', () => {
+      exprTest('strlen("")', { value: int(0) });
+      exprTest('strlen("654321")', { value: int(6) });
+      exprTest('strlen(654321)', { value: int(6) });
+      exprTest('strlen([1,2,3])', { error: ErrorCode.UsingListAsAString });
     });
 
     suite('split', () => {

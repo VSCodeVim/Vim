@@ -851,7 +851,7 @@ export class EvaluationContext {
         return bool(toDict(d!).items.has(toString(k!)));
       }
       // TODO: hasmapto()
-      // TODO: histadd()/histdel()
+      // TODO: histadd()/histdel()/histget()/histnr()
       // TODO: id()
       case 'index': {
         const [_haystack, _needle, _start, ic] = getArgs(2, 4);
@@ -887,6 +887,7 @@ export class EvaluationContext {
         const _x = toFloat(x!);
         return int(_x === Infinity ? 1 : _x === -Infinity ? -1 : 0);
       }
+      // TODO: islocked()
       case 'isnan': {
         const [x] = getArgs(1);
         return bool(isNaN(toFloat(x!)));
@@ -923,6 +924,9 @@ export class EvaluationContext {
           default:
             throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
         }
+      }
+      case 'localtime': {
+        return int(Date.now() / 1000);
       }
       case 'log': {
         const [x] = getArgs(1);
@@ -1116,11 +1120,25 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.sqrt(toFloat(x!)));
       }
+      // TODO: str2float()
+      case 'str2list': {
+        const [s, _ignored] = getArgs(1, 2);
+        const result: number[] = [];
+        for (const char of toString(s!)) {
+          result.push(char.charCodeAt(0));
+        }
+        return list(result.map(int));
+      }
+      // TODO: str2nr()
+      // TODO: stridx()
       case 'string': {
         const [x] = getArgs(1);
         return str(displayValue(x!));
       }
-      // TODO: strlen()
+      case 'strlen': {
+        const [s] = getArgs(1);
+        return int(toString(s!).length);
+      }
       // TODO: strpart()
       // TODO: submatch()
       // TODO: substitute()
