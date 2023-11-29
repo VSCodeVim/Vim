@@ -1360,7 +1360,25 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.editor.selections = selections;
     }
 
+    // cursor style
+    let cursorStyle = configuration.getCursorStyleForMode(Mode[this.currentMode]);
+    if (!cursorStyle) {
+      const cursorType = getCursorType(
+        this.vimState,
+        this.vimState.currentModeIncludingPseudoModes,
+      );
+      cursorStyle = getCursorStyle(cursorType);
+      if (
+        cursorType === VSCodeVimCursorType.Native &&
+        configuration.editorCursorStyle !== undefined
+      ) {
+        cursorStyle = configuration.editorCursorStyle;
+      }
+    }
+    this.vimState.editor.options.cursorStyle = cursorStyle;
+
     // Scroll to position of cursor
+    // (This needs to run after cursor style as setting editor.options recomputes the scroll position and breaks when smooth scrolling is enabled: #8254)
     if (
       this.vimState.editor.visibleRanges.length > 0 &&
       !this.vimState.postponedCodeViewChanges.some((change) => change.command === 'editorScroll')
@@ -1425,23 +1443,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
     }
-
-    // cursor style
-    let cursorStyle = configuration.getCursorStyleForMode(Mode[this.currentMode]);
-    if (!cursorStyle) {
-      const cursorType = getCursorType(
-        this.vimState,
-        this.vimState.currentModeIncludingPseudoModes,
-      );
-      cursorStyle = getCursorStyle(cursorType);
-      if (
-        cursorType === VSCodeVimCursorType.Native &&
-        configuration.editorCursorStyle !== undefined
-      ) {
-        cursorStyle = configuration.editorCursorStyle;
-      }
-    }
-    this.vimState.editor.options.cursorStyle = cursorStyle;
 
     // cursor block
     const cursorRange: vscode.Range[] = [];
