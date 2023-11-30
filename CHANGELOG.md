@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.27.1](https://github.com/vscodevim/vim/tree/v1.27.1) (2023-11-22)
+
+### Fixed
+
+- Fix `:sp[lit]` and `:vs[plit]` with no file name ([@bcho](https://github.com/bcho)).
+
 ## [v1.27.0](https://github.com/vscodevim/vim/tree/v1.27.0) (2023-11-17)
 
 ### Added
