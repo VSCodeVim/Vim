@@ -94,7 +94,7 @@ export class Configuration implements IConfiguration {
   expandtab = true;
   number = true;
   relativenumber = false;
-  iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  iskeyword = ''; // Use `editor.wordSeparators`
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
