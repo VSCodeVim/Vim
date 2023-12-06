@@ -222,7 +222,7 @@
       {
         "key": "ctrl+i",
         "command": "extension.vim_ctrl+i",
-        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl && vim.mode == 'Normal'"
       },
       {
         "key": "ctrl+j",
