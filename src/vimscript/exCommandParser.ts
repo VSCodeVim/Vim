@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
@@ -11,6 +10,7 @@ import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
+import { EchoCommand } from '../cmd_line/commands/echo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
 import { HistoryCommand } from '../cmd_line/commands/history';
@@ -47,6 +47,8 @@ import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 import { RedoCommand } from '../cmd_line/commands/redo';
+import { LetCommand } from '../cmd_line/commands/let';
+import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -123,7 +125,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['cadde', 'xpr'], undefined],
   [['caddf', 'ile'], undefined],
   [['caf', 'ter'], undefined],
-  [['cal', 'l'], undefined],
+  [['cal', 'l'], CallCommand.argParser],
   [['cat', 'ch'], undefined],
   [['cb', 'uffer'], undefined],
   [['cbef', 'ore'], undefined],
@@ -168,7 +170,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['comp', 'iler'], undefined],
   [['con', 'tinue'], undefined],
   [['conf', 'irm'], undefined],
-  [['cons', 't'], undefined],
+  [['cons', 't'], LetCommand.argParser(true)],
   [['cope', 'n'], succeed(new VsCodeCommand('workbench.panel.markers.view.focus'))],
   [['cp', 'revious'], succeed(new VsCodeCommand('editor.action.marker.prevInFiles'))],
   [['cpf', 'ile'], succeed(new VsCodeCommand('editor.action.marker.prevInFiles'))],
@@ -205,11 +207,11 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['dsp', 'lit'], undefined],
   [['e', 'dit'], FileCommand.argParsers.edit],
   [['ea', 'rlier'], undefined],
-  [['ec', 'ho'], undefined],
-  [['echoe', 'rr'], undefined],
+  [['ec', 'ho'], EchoCommand.argParser({ sep: ' ', error: false })],
+  [['echoe', 'rr'], EchoCommand.argParser({ sep: ' ', error: true })],
   [['echoh', 'l'], undefined],
   [['echom', 'sg'], undefined],
-  [['echon', ''], undefined],
+  [['echon', ''], EchoCommand.argParser({ sep: '', error: false })],
   [['el', 'se'], undefined],
   [['elsei', 'f'], undefined],
   [['em', 'enu'], undefined],
@@ -219,7 +221,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['endt', 'ry'], undefined],
   [['endw', 'hile'], undefined],
   [['ene', 'w'], FileCommand.argParsers.enew],
-  [['ev', 'al'], undefined],
+  [['ev', 'al'], EvalCommand.argParser],
   [['ex', ''], FileCommand.argParsers.edit],
   [['exe', 'cute'], undefined],
   [['exi', 't'], WriteQuitCommand.argParser],
@@ -300,7 +302,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ld', 'o'], undefined],
   [['le', 'ft'], LeftCommand.argParser],
   [['lefta', 'bove'], undefined],
-  [['let', ''], undefined],
+  [['let', ''], LetCommand.argParser(false)],
   [['lex', 'pr'], undefined],
   [['lf', 'ile'], undefined],
   [['lfd', 'o'], undefined],

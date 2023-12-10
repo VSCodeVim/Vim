@@ -137,4 +137,12 @@ suite('put cmd_line', () => {
     await modeHandler.handleMultipleKeyEvents(':put=range(4,1,-2)\n'.split(''));
     assertEqualLines(['', '4', '2']);
   });
+
+  test('`:put=` repeats last expression', async () => {
+    Register.put(modeHandler.vimState, '');
+    await modeHandler.handleMultipleKeyEvents(':put=[1,2,3]\n'.split(''));
+    assertEqualLines(['', '1', '2', '3']);
+    await modeHandler.handleMultipleKeyEvents(':put=\n'.split(''));
+    assertEqualLines(['', '1', '2', '3', '1', '2', '3']);
+  });
 });
