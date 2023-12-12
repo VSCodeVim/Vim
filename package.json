@@ -3,7 +3,7 @@
   "displayName": "Vim with Kill Ring",
   "description": "Vim emulation for Visual Studio Code, with killring support",
   "icon": "images/icon.png",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "HyunggyuJang",
   "galleryBanner": {
     "color": "#e3f4ff",
