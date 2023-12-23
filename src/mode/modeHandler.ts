@@ -245,7 +245,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
           // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
           // but it is also triggered when we set the 'editor.selections' on 'updateView'.
-          const allowedModes = [Mode.Normal, Mode.Visual];
+          const allowedModes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
           if (!isSnippetSelectionChange()) {
             // if we just inserted a snippet then don't allow insert modes to go to visual mode
             allowedModes.push(Mode.Insert, Mode.Replace);
@@ -1286,6 +1286,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // Don't collapse existing selections in insert mode
             selections.push(new vscode.Selection(start, stop));
             break;
+
           default:
             // Note that this collapses the selection onto one position
             selections.push(new vscode.Selection(stop, stop));

@@ -85,6 +85,7 @@ abstract class MoveByScreenLine extends BaseMovement {
       await vscode.commands.executeCommand('cursorMove', {
         to: this.movementType,
         select: vimState.currentMode !== Mode.Normal,
+        // select: ![Mode.Normal, Mode.Insert].includes(vimState.currentMode),
         by: this.by,
         value: this.value * count,
       });
@@ -261,7 +262,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
@@ -276,11 +276,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
     return t;
   }
 }
@@ -373,17 +368,11 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
     return t;
   }
 }
