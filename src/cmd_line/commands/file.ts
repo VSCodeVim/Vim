@@ -71,13 +71,15 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
     return {
       file: args.file,
       position: FilePosition.NewWindowHorizontalSplit,
-      createFileIfNotExists: true,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
     };
   } else if (args.name === 'vsplit') {
     return {
       file: args.file,
       position: FilePosition.NewWindowVerticalSplit,
-      createFileIfNotExists: true,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
     };
   } else {
     throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);
