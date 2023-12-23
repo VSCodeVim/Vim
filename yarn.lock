@@ -5905,10 +5905,10 @@ unset-value@^1.0.0:
     has-value "^0.3.1"
     isobject "^3.0.0"
 
-untildify@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/untildify/-/untildify-4.0.0.tgz#2bc947b953652487e4600949fb091e3ae8cd919b"
-  integrity sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==
+untildify@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/untildify/-/untildify-5.0.0.tgz#3e40c5dd67518cb8582a027b78d3c2747234f921"
+  integrity sha512-bOgQLUnd2G5rhzaTvh1VCI9Fo6bC5cLTpH17T5aFfamyXFYDbbdzN6IXdeoc3jBS7T9hNTmJtYUzJCJ2Xlc9gA==
 
 upath@^1.1.1:
   version "1.2.0"
