@@ -818,5 +818,3 @@ suite('Remapper', () => {
     assert.strictEqual(elapsedTime < timeout - timeoutOffset, true);
   });
 });
-
-/* tslint:enable:no-string-literal */
