@@ -1893,7 +1893,7 @@ suite('Mode Visual', () => {
         `      "commands": ["editor.action.smartSelect.shrink"]`,
         `    }`,
         `  ],`,
-        `}`
+        `}`,
       ],
       keysPressed: 'VJd',
       end: [
@@ -1905,9 +1905,9 @@ suite('Mode Visual', () => {
         `      "commands": ["editor.action.smartSelect.shrink"]`,
         `    }`,
         `  ],`,
-        `}`
+        `}`,
       ],
       endMode: Mode.Normal,
-    })
+    });
   });
 });
