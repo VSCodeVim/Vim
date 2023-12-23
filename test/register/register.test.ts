@@ -2,14 +2,14 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Register } from '../../src/register/register';
+import { RecordedState } from '../../src/state/recordedState';
 import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
-import { RecordedState } from '../../src/state/recordedState';
 import { newTest } from '../testSimplifier';
-import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -137,6 +137,7 @@ suite('register', () => {
       const actual = await Register.get(vimState.recordedState.registerName);
       assert.strictEqual(actual?.text, expected);
     } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(err);
     }
   });

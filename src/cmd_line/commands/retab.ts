@@ -168,7 +168,7 @@ export class RetabCommand extends ExCommand {
         value: this.arguments.newTabstop.toString(),
       });
 
-      setTabstop.execute(vimState);
+      void setTabstop.execute(vimState);
     }
   }
 }

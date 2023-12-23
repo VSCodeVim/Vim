@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { any, Parser, seq, whitespace } from 'parsimmon';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
+import { Digraph } from '../../configuration/iconfiguration';
+import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
-import { any, Parser, seq, whitespace } from 'parsimmon';
 import { bangParser, numberParser } from '../../vimscript/parserUtils';
-import { Digraph } from '../../configuration/iconfiguration';
+import { configuration } from './../../configuration/configuration';
 
 export interface IDigraphsCommandArguments {
   bang: boolean;
@@ -50,7 +51,7 @@ export class DigraphsCommand extends ExCommand {
       this.makeQuickPicks([...DefaultDigraphs.entries()]),
     );
 
-    vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
+    void vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
       if (val) {
         const char = String.fromCharCode(...val.charCodes);
         await TextEditor.insert(vimState.editor, char);

@@ -1,7 +1,35 @@
 import * as vscode from 'vscode';
 
-import { BaseAction, KeypressState, BaseCommand, getRelevantAction } from './../actions/base';
+import * as process from 'process';
+import { Position, Range, Uri } from 'vscode';
 import { BaseMovement } from '../actions/baseMotion';
+import { BaseOperator } from '../actions/operator';
+import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
+import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
+import { IBaseAction } from '../actions/types';
+import { Cursor } from '../common/motion/cursor';
+import { configuration } from '../configuration/configuration';
+import { decoration } from '../configuration/decoration';
+import { Notation } from '../configuration/notation';
+import { Remappers } from '../configuration/remapper';
+import { Jump } from '../jumps/jump';
+import { globalState } from '../state/globalState';
+import { RemapState } from '../state/remapState';
+import { StatusBar } from '../statusBar';
+import { IModeHandler, executeTransformations } from '../transformations/execute';
+import { isTextTransformation } from '../transformations/transformations';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
+import { Logger } from '../util/logger';
+import { SpecialKeys } from '../util/specialKeys';
+import { scrollView } from '../util/util';
+import { VSCodeContext } from '../util/vscodeContext';
+import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
+import {
+  ActionOverrideCmdD,
+  CommandNumber,
+  CommandQuitRecordMacro,
+  DocumentContentChangeAction,
+} from './../actions/commands/actions';
 import {
   CommandBackspaceInInsertMode,
   CommandEscInsertMode,
@@ -10,43 +38,14 @@ import {
   InsertCharAbove,
   InsertCharBelow,
 } from './../actions/commands/insert';
-import { Jump } from '../jumps/jump';
-import { Logger } from '../util/logger';
-import { Mode, VSCodeVimCursorType, isVisualMode, getCursorStyle, isStatusBarMode } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { earlierOf, laterOf } from './../common/motion/position';
-import { Cursor } from '../common/motion/cursor';
-import { RecordedState } from './../state/recordedState';
-import { IBaseAction } from '../actions/types';
+import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
-import { Remappers } from '../configuration/remapper';
-import { StatusBar } from '../statusBar';
-import { TextEditor } from './../textEditor';
-import { VimError, ForceStopRemappingError } from './../error';
+import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-import { VSCodeContext } from '../util/vscodeContext';
-import { configuration } from '../configuration/configuration';
-import { decoration } from '../configuration/decoration';
-import { scrollView } from '../util/util';
-import {
-  CommandQuitRecordMacro,
-  DocumentContentChangeAction,
-  ActionOverrideCmdD,
-  CommandNumber,
-} from './../actions/commands/actions';
-import { isTextTransformation } from '../transformations/transformations';
-import { executeTransformations, IModeHandler } from '../transformations/execute';
-import { globalState } from '../state/globalState';
-import { Notation } from '../configuration/notation';
-import { SpecialKeys } from '../util/specialKeys';
-import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
-import { BaseOperator } from '../actions/operator';
-import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
-import { Position, Uri } from 'vscode';
-import { RemapState } from '../state/remapState';
-import * as process from 'process';
-import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
-import { Range } from 'vscode';
+import { TextEditor } from './../textEditor';
+import { Mode, VSCodeVimCursorType, getCursorStyle, isStatusBarMode, isVisualMode } from './mode';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -398,7 +397,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await this.setCurrentMode(Mode.Normal);
       }
 
-      this.updateView({ drawSelection: toDraw, revealRange: false });
+      void this.updateView({ drawSelection: toDraw, revealRange: false });
     }
   }
 
@@ -1615,7 +1614,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.vimState.editor.setDecorations(decoration.easyMotionIncSearch, easyMotionHighlightRanges);
 
     for (const viewChange of this.vimState.postponedCodeViewChanges) {
-      vscode.commands.executeCommand(viewChange.command, viewChange.args);
+      void vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
     this.vimState.postponedCodeViewChanges = [];
 
@@ -1627,7 +1626,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     StatusBar.clear(this.vimState, false);
 
     // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
-    VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
+    void VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
     // Tell VSCode that the cursor position changed, so it updates its highlights for `editor.occurrencesHighlight`.
     const range = new vscode.Range(
@@ -1635,7 +1634,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.cursorStopPosition,
     );
     if (!/\s+/.test(this.vimState.document.getText(range))) {
-      vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+      void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
   }
 
@@ -1680,6 +1679,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   dispose() {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     this.disposables.map((d) => d.dispose());
   }
 }
