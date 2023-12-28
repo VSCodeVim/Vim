@@ -92,7 +92,7 @@ export async function createDir(fsPath: string) {
  *
  * @param numExpectedEditors Expected number of editors in the window
  */
-export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
+export async function waitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
   const waitForTextEditorsToClose = new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
@@ -129,6 +129,7 @@ export function assertStatusBarEqual(
   assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
+// TODO: convert parameters to destructured object & make config: Partial<IConfiguration>
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = '',

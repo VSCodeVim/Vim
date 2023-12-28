@@ -21,7 +21,7 @@ suite('Buffer delete', () => {
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
       await new ExCommandLine(cmd, modeHandler.vimState.currentMode).run(modeHandler.vimState);
-      await t.WaitForEditorsToClose();
+      await t.waitForEditorsToClose();
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
     });
@@ -40,7 +40,7 @@ suite('Buffer delete', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
     await new ExCommandLine('bd!', modeHandler.vimState.currentMode).run(modeHandler.vimState);
-    await t.WaitForEditorsToClose();
+    await t.waitForEditorsToClose();
 
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });

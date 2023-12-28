@@ -11,13 +11,12 @@ suite('Provide line completions', () => {
   let modeHandler: ModeHandler;
   let vimState: VimState;
 
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   const setupTestWithLines = async (lines: string[]) => {
     vimState.cursorStopPosition = new Position(0, 0);
