@@ -118,7 +118,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 
   "// To improve performance",
   "extensions.experimental.affinity": {
-    "HyunggyuJang.vim-with-killring": 1
+    "vscodevim.vim": 1
   }
 }
 ```
