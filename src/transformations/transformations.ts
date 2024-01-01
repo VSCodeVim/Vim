@@ -245,6 +245,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
       return undefined;
   }
 
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   throw new Error('Unhandled text transformation: ' + transformation);
 };
 
@@ -278,8 +279,8 @@ export const areAllSameTransformation = (transformations: Transformation[]): boo
 
   return transformations.every((t) => {
     return Object.entries(t).every(([key, value]) => {
-      // @ts-ignore: TODO: this is all quite janky
-      return firstTransformation[key] === value;
+      // TODO: this is all quite janky
+      return (firstTransformation as unknown as Record<string, any>)[key] === value;
     });
   });
 };

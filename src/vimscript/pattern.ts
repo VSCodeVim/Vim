@@ -1,4 +1,5 @@
-import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap, eof } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, eof, lazy, noneOf, oneOf, seq, seqMap, string } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
@@ -208,6 +209,7 @@ export class Pattern {
           .then(eof)
           .map(() => ({ emptyBranch: true })), // Trailing | matches everything
         string('\\')
+          // eslint-disable-next-line id-denylist
           .then(any.fallback(undefined))
           .map((escaped) => {
             if (escaped === undefined) {
@@ -229,6 +231,7 @@ export class Pattern {
         alt(
           // Allow unescaped delimiter inside [], and don't transform ^ or $
           string('\\')
+            // eslint-disable-next-line id-denylist
             .then(any.fallback(undefined))
             .map((escaped) => '\\' + (escaped ?? '\\')),
           noneOf(']'),
@@ -248,12 +251,16 @@ export class Pattern {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (atom.emptyBranch) {
               emptyBranch = true;
               patternString += '|';
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if (atom.ignorecase) {
               caseOverride = true;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if (atom.inSelection) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
               inSelection = atom.inSelection;
             } else if (caseOverride === undefined) {
               caseOverride = false;

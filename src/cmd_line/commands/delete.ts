@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 
-import { VimState } from '../../state/vimState';
-import { Register, RegisterMode } from '../../register/register';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, optWhitespace, seq, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
+import { Register, RegisterMode } from '../../register/register';
+import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { Parser, alt, seq, any, whitespace, optWhitespace } from 'parsimmon';
 import { numberParser } from '../../vimscript/parserUtils';
 
 export interface IDeleteCommandArguments {
@@ -20,6 +21,7 @@ export class DeleteCommand extends ExCommand {
       numberParser.map((count) => {
         return { register: undefined, count };
       }),
+      // eslint-disable-next-line id-denylist
       seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
         ([register, count]) => {
           return { register, count };

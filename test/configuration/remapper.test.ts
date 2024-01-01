@@ -1,16 +1,16 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 
-import { Remappers, Remapper } from '../../src/configuration/remapper';
+import { getAndUpdateModeHandler } from '../../extension';
+import { IKeyRemapping } from '../../src/configuration/iconfiguration';
+import { Remapper, Remappers } from '../../src/configuration/remapper';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
-import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
-import { getAndUpdateModeHandler } from '../../extension';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
+import { Configuration } from '../testConfiguration';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
@@ -252,6 +252,7 @@ suite('Remapper', () => {
     try {
       actual = await remapper.sendKey(['j', 'j'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -278,6 +279,7 @@ suite('Remapper', () => {
     try {
       actual = await remapper.sendKey(['0'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -315,6 +317,7 @@ suite('Remapper', () => {
     try {
       actual = await remapper.sendKey(['<C-e>'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -341,6 +344,7 @@ suite('Remapper', () => {
     try {
       actual = await remapper.sendKey([leaderKey, 'w'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -369,6 +373,7 @@ suite('Remapper', () => {
     try {
       actual = await remapper.sendKey([leaderKey, 'c'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -813,5 +818,3 @@ suite('Remapper', () => {
     assert.strictEqual(elapsedTime < timeout - timeoutOffset, true);
   });
 });
-
-/* tslint:enable:no-string-literal */

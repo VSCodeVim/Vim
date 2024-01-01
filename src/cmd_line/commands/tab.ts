@@ -1,13 +1,14 @@
+// eslint-disable-next-line id-denylist
 import { alt, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
-  bangParser,
   FileCmd,
-  fileCmdParser,
   FileOpt,
+  bangParser,
+  fileCmdParser,
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';

@@ -16,7 +16,7 @@ export class ValidatorResults {
     this.errors = this.errors.concat(validationResults.get());
   }
 
-  public get(): ReadonlyArray<IValidatorResult> {
+  public get(): readonly IValidatorResult[] {
     return this.errors;
   }
 

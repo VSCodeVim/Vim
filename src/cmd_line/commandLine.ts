@@ -1,23 +1,23 @@
-import { CommandLineHistory, HistoryFile, SearchHistory } from '../history/historyFile';
-import { Mode } from './../mode/mode';
-import { Logger } from '../util/logger';
-import { StatusBar } from '../statusBar';
-import { VimError, ErrorCode } from '../error';
-import { VimState } from '../state/vimState';
-import { configuration } from '../configuration/configuration';
-import { Register } from '../register/register';
-import { RecordedState } from '../state/recordedState';
 import { Parser } from 'parsimmon';
-import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
-import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
-import { SearchDirection } from '../vimscript/pattern';
-import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
-import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
-import { Position, ExtensionContext, window } from 'vscode';
+import { ExtensionContext, Position, window } from 'vscode';
+import { configuration } from '../configuration/configuration';
+import { ErrorCode, VimError } from '../error';
+import { CommandLineHistory, HistoryFile, SearchHistory } from '../history/historyFile';
+import { Register } from '../register/register';
 import { globalState } from '../state/globalState';
+import { RecordedState } from '../state/recordedState';
+import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
+import { VimState } from '../state/vimState';
+import { StatusBar } from '../statusBar';
+import { WordType, getWordLeftInText, getWordRightInText } from '../textobject/word';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
+import { Logger } from '../util/logger';
+import { escapeCSSIcons, reportSearch } from '../util/statusBarTextUtils';
 import { scrollView } from '../util/util';
 import { ExCommand } from '../vimscript/exCommand';
 import { LineRange } from '../vimscript/lineRange';
+import { SearchDirection } from '../vimscript/pattern';
+import { Mode } from './../mode/mode';
 import { RegisterCommand } from './commands/register';
 import { SubstituteCommand } from './commands/substitute';
 
@@ -256,7 +256,7 @@ export class ExCommandLine extends CommandLine {
 
   public async run(vimState: VimState): Promise<void> {
     Logger.info(`Executing :${this.text}`);
-    ExCommandLine.history.add(this.text);
+    void ExCommandLine.history.add(this.text);
     this.historyIndex = ExCommandLine.history.get().length;
 
     if (!(this.command instanceof RegisterCommand)) {
@@ -309,12 +309,12 @@ export class ExCommandLine extends CommandLine {
   public async escape(vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Normal);
     if (this.text.length > 0) {
-      ExCommandLine.history.add(this.text);
+      void ExCommandLine.history.add(this.text);
     }
   }
 
   public async ctrlF(vimState: VimState): Promise<void> {
-    ExCommandLine.onSearch(vimState);
+    void ExCommandLine.onSearch(vimState);
   }
 }
 
@@ -477,7 +477,7 @@ export class SearchCommandLine extends CommandLine {
 
     this.cursorIndex = 0;
     Register.setReadonlyRegister('/', this.text);
-    SearchCommandLine.addSearchStateToHistory(this.searchState);
+    void SearchCommandLine.addSearchStateToHistory(this.searchState);
     globalState.hl = true;
 
     if (this.searchState.getMatchRanges(vimState).length === 0) {
@@ -522,7 +522,7 @@ export class SearchCommandLine extends CommandLine {
 
     await vimState.setCurrentMode(this.previousMode);
     if (this.text.length > 0) {
-      SearchCommandLine.addSearchStateToHistory(this.searchState);
+      void SearchCommandLine.addSearchStateToHistory(this.searchState);
     }
   }
 
