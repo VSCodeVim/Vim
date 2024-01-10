@@ -325,7 +325,10 @@ export class SubstituteCommand extends ExCommand {
 
     const { pattern, replace } = this.resolvePatterns(false);
 
-    const showReplacements = this.arguments.pattern?.closed && configuration.inccommand;
+    const showReplacements =
+      this.arguments.pattern?.closed &&
+      configuration.inccommand &&
+      !this.arguments.flags.printCount;
 
     let matches: PatternMatch[] = [];
     if (pattern?.patternString) {
@@ -579,7 +582,7 @@ export class SubstituteCommand extends ExCommand {
       }
     }
 
-    if (substitutions > 0) {
+    if (substitutions > 0 && !this.arguments.flags.printCount) {
       // if any substitutions were made, jump to latest one
       const lastLine = Math.max(...substitutionLines.values()) + netNewLines;
       const cursor = new Position(Math.max(0, lastLine), 0);
