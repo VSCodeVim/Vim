@@ -1,13 +1,13 @@
 import * as assert from 'assert';
-import { Configuration } from '../testConfiguration';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
 import { Mode } from '../../src/mode/mode';
+import { Configuration } from '../testConfiguration';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Input method plugin', () => {
   let savedCmd = '';
 
-  function fakeExecuteChinese(cmd: string): Promise<string> {
+  const fakeExecuteChinese = (cmd: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('chinese');
@@ -16,9 +16,9 @@ suite('Input method plugin', () => {
         resolve('');
       }
     });
-  }
+  };
 
-  function fakeExecuteDefault(cmd: string): Promise<string> {
+  const fakeExecuteDefault = (cmd: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('default');
@@ -27,7 +27,7 @@ suite('Input method plugin', () => {
         resolve('');
       }
     });
-  }
+  };
 
   setup(async () => {
     const configuration = new Configuration();

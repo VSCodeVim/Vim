@@ -1,22 +1,21 @@
 import { strict as assert } from 'assert';
-import * as vscode from 'vscode';
 import * as sinon from 'sinon';
+import * as vscode from 'vscode';
 
-import { Globals } from '../src/globals';
-import { Mode } from '../src/mode/mode';
-import { assertEqualLines, reloadConfiguration } from './testUtils';
-import { globalState } from '../src/state/globalState';
-import { IKeyRemapping } from '../src/configuration/iconfiguration';
 import * as os from 'os';
+import { Position } from 'vscode';
+import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
 import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
-import { IConfiguration } from '../src/configuration/iconfiguration';
-import { Position } from 'vscode';
-import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { StatusBar } from '../src/statusBar';
-import { Register } from '../src/register/register';
+import { Globals } from '../src/globals';
+import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
+import { Register } from '../src/register/register';
+import { globalState } from '../src/state/globalState';
+import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
+import { assertEqualLines, reloadConfiguration } from './testUtils';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -33,7 +32,9 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
       if (testObj.config) {
         for (const key in testObj.config) {
           if (testObj.config.hasOwnProperty(key)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const value = testObj.config[key];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             Globals.mockConfiguration[key] = value;
           }
         }
@@ -41,6 +42,7 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
       }
       await innerTest(testObj);
     } catch (reason) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       reason.stack = stack;
       throw reason;
     } finally {
@@ -142,8 +144,8 @@ class DocState {
     this.lines = lines;
   }
 
-  cursor: Position;
-  lines: string[];
+  public readonly cursor: Position; // TODO(#4582): support multiple cursors
+  public readonly lines: string[];
 }
 
 /**
@@ -156,15 +158,15 @@ function tokenizeKeySequence(sequence: string): string[] {
 
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
-  function rawTokenize(characters: string): void {
-    // tslint:disable-next-line:prefer-for-of
+  const rawTokenize = (characters: string): void => {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < characters.length; i++) {
       result.push(characters[i]);
     }
-  }
+  };
 
   // don't use a for of here, since the iterator doesn't split surrogate pairs
-  // tslint:disable-next-line:prefer-for-of
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < sequence.length; i++) {
     const char = sequence[i];
 
@@ -234,6 +236,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   if (testObj.stub) {
     const confirmStub = sinon
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
       .resolves(testObj.stub.returnValue);
     await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
@@ -534,5 +537,5 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export type { ITestObject };
 export { testIt };
+export type { ITestObject };

@@ -14,12 +14,11 @@ function clearBreakpoints() {
 suite('Breakpoints command', () => {
   let modeHandler: ModeHandler;
 
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test('`:breaka` adds breakpoint', async () => {
     clearBreakpoints();

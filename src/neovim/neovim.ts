@@ -1,18 +1,17 @@
+import { ChildProcess, spawn } from 'child_process';
+import { exists } from 'fs';
+import { Neovim } from 'neovim/lib/api/Neovim';
+import { attach } from 'neovim/lib/attach';
+import { dirname } from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-import { Logger } from '../util/logger';
-import { sorted } from './../common/motion/position';
+import { Position, TextDocument } from 'vscode';
+import { configuration } from '../configuration/configuration';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
+import { Logger } from '../util/logger';
+import { sorted } from './../common/motion/position';
 import { VimState } from './../state/vimState';
-import { configuration } from '../configuration/configuration';
-import { dirname } from 'path';
-import { exists } from 'fs';
-import { spawn, ChildProcess } from 'child_process';
-import { attach } from 'neovim/lib/attach';
-import { Neovim } from 'neovim/lib/api/Neovim';
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process?: ChildProcess;
@@ -42,6 +41,7 @@ export class NeovimWrapper implements vscode.Disposable {
         await Promise.race([nvimAttach, timeout]);
       } catch (e) {
         configuration.enableNeovim = false;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         throw new Error(`Failed to attach to neovim process. ${e.message}`);
       }
 

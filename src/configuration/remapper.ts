@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { IKeyRemapping } from './iconfiguration';
-import { Logger } from '../util/logger';
-import { ModeHandler } from '../mode/modeHandler';
-import { Mode } from '../mode/mode';
 import { configuration } from '../configuration/configuration';
+import { ErrorCode, ForceStopRemappingError, VimError } from '../error';
+import { Mode } from '../mode/mode';
+import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
-import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
+import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
 import { exCommandParser } from '../vimscript/exCommandParser';
+import { IKeyRemapping } from './iconfiguration';
 
 interface IRemapper {
   /**
@@ -280,7 +280,7 @@ export class Remapper implements IRemapper {
 
       // Create Timeout
       vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
-        modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
+        void modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
       }, configuration.timeout);
       return true;
     }
@@ -440,6 +440,7 @@ export class Remapper implements IRemapper {
               await modeHandler.handleMultipleKeyEvents(remainingKeys);
             } catch (e) {
               Logger.trace(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
               );
             } finally {
@@ -496,10 +497,10 @@ export class Remapper implements IRemapper {
           } else {
             commandString = command.command;
             commandArgs = Array.isArray(command.args)
-              ? command.args
+              ? (command.args as string[])
               : command.args
-              ? [command.args]
-              : [];
+                ? [command.args]
+                : [];
           }
 
           if (commandString.slice(0, 1) === ':') {

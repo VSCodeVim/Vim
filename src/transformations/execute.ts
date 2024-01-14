@@ -1,26 +1,26 @@
 import * as vscode from 'vscode';
-import { Logger } from '../util/logger';
-import {
-  isTextTransformation,
-  TextTransformations,
-  Transformation,
-  isMultiCursorTextTransformation,
-  InsertTextVSCodeTransformation,
-  areAllSameTransformation,
-  overlappingTransformations,
-} from './transformations';
 import { ExCommandLine } from '../cmd_line/commandLine';
+import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
+import { Globals } from '../globals';
 import { Mode } from '../mode/mode';
 import { Register } from '../register/register';
-import { RecordedState } from '../state/recordedState';
-import { TextEditor } from '../textEditor';
-import { Cursor } from '../common/motion/cursor';
-import { VimState } from '../state/vimState';
-import { Transformer } from './transformer';
-import { Globals } from '../globals';
-import { keystrokesExpressionParser } from '../vimscript/expression';
 import { globalState } from '../state/globalState';
+import { RecordedState } from '../state/recordedState';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
+import { Logger } from '../util/logger';
+import { keystrokesExpressionParser } from '../vimscript/expression';
+import {
+  InsertTextVSCodeTransformation,
+  TextTransformations,
+  Transformation,
+  areAllSameTransformation,
+  isMultiCursorTextTransformation,
+  isTextTransformation,
+  overlappingTransformations,
+} from './transformations';
+import { Transformer } from './transformer';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -41,12 +41,12 @@ export async function executeTransformations(
 
   const vimState = modeHandler.vimState;
 
-  const textTransformations: TextTransformations[] = transformations.filter((x) =>
+  const textTransformations = transformations.filter((x): x is TextTransformations =>
     isTextTransformation(x),
-  ) as any;
+  );
   const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
-    (x) => isMultiCursorTextTransformation(x),
-  ) as any;
+    (x): x is InsertTextVSCodeTransformation => isMultiCursorTextTransformation(x),
+  );
 
   const otherTransformations = transformations.filter(
     (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x),
@@ -116,6 +116,7 @@ export async function executeTransformations(
       } catch (e) {
         // Messages like "TextEditor(vs.editor.ICodeEditor:1,$model8) has been disposed" can be ignored.
         // They occur when the user switches to a new tab while an action is running.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (e.name !== 'DISPOSED') {
           throw e;
         }
@@ -232,6 +233,7 @@ export async function executeTransformations(
         break;
 
       case 'vscodeCommand':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await vscode.commands.executeCommand(transformation.command, ...transformation.args);
         break;
 

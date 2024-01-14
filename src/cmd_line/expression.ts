@@ -1,4 +1,5 @@
-import { Parser, optWhitespace, seqObj, string, alt } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, optWhitespace, seqObj, string } from 'parsimmon';
 import { ErrorCode, VimError } from '../error';
 import { integerParser } from '../vimscript/parserUtils';
 

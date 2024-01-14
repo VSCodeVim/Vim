@@ -1,4 +1,4 @@
-import { Range, DecorationOptions } from 'vscode';
+import { DecorationOptions, Range } from 'vscode';
 
 /**
  * Alias for the types of arrays that can be passed to a TextEditor's setDecorations method
@@ -36,8 +36,8 @@ export function ensureVisible(range: Range): DecorationOptions {
         },
       }
     : range.isEmpty
-    ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
-    : { range };
+      ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
+      : { range };
 }
 
 /**
@@ -54,7 +54,7 @@ export function formatDecorationText(
     .replace(/ /g, '\u00a0') // " " NO-BREAK SPACE
     .replace(/\t/g, '\u00a0'.repeat(tabsize))
     // Decorations can't change the apparent # of lines in the editor, so we must settle for a single-line version of our text
-    .replace(/\r\n|[\r\n]/g, newlineReplacement as any)}\u200b`;
+    .replace(/\r\n|[\r\n]/g, newlineReplacement as string)}\u200b`;
 }
 
 /**

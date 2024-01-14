@@ -1,7 +1,7 @@
-import { RegisterAction } from '../../base';
-import { VimState } from '../../../state/vimState';
-import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 import { Position, TextDocument } from 'vscode';
+import { VimState } from '../../../state/vimState';
+import { RegisterAction } from '../../base';
+import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 
 type Type = 'function' | 'class';
 type Edge = 'start' | 'end';
@@ -22,7 +22,6 @@ interface StructureElement {
 // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
 let supportsLookbehind = true;
 try {
-  // tslint:disable-next-line
   new RegExp('(?<=x)');
 } catch {
   supportsLookbehind = false;

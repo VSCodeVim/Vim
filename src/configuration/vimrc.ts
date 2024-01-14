@@ -5,7 +5,6 @@ import * as fs from 'platform/fs';
 import * as vscode from 'vscode';
 import { window } from 'vscode';
 import { Logger } from '../util/logger';
-import { configuration } from './configuration';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
 
@@ -38,7 +37,7 @@ export class VimrcImpl {
       const vscodeCommands = await vscode.commands.getCommands();
       const lines = (await fs.readFileAsync(configPath, 'utf8')).split(/\r?\n/);
       for (const line of lines) {
-        if (line.trimLeft().startsWith('"')) {
+        if (line.trimStart().startsWith('"')) {
           continue;
         }
 
@@ -69,7 +68,7 @@ export class VimrcImpl {
         }
       }
     } catch (err) {
-      window.showWarningMessage(`vimrc file "${configPath}" is broken, err=${err}`);
+      void window.showWarningMessage(`vimrc file "${configPath}" is broken, err=${err}`);
     }
   }
 
@@ -82,7 +81,7 @@ export class VimrcImpl {
       return;
     }
     if (!(await fs.existsAsync(_path))) {
-      window
+      void window
         .showWarningMessage(`No .vimrc found at ${_path}.`, 'Create it')
         .then(async (choice: string | undefined) => {
           if (choice === 'Create it') {
@@ -95,7 +94,7 @@ export class VimrcImpl {
               const resource = document
                 ? { uri: document.uri, languageId: document.languageId }
                 : undefined;
-              vscode.workspace
+              void vscode.workspace
                 .getConfiguration('vim', resource)
                 .update('vimrc.path', newVimrc.fsPath, true);
               await vscode.workspace.openTextDocument(newVimrc);
