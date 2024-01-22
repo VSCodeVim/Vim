@@ -1,3 +1,4 @@
+// eslint-disable-next-line id-denylist
 import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { ErrorCode, VimError } from '../error';
@@ -61,7 +62,7 @@ type LineSpecifier =
       type: 'last_substitute_pattern_next';
     };
 
-const lineSpecifierParser: Parser<LineSpecifier> = alt(
+const lineSpecifierParser: Parser<LineSpecifier> = alt<LineSpecifier>(
   numberParser.map((num) => {
     return { type: 'number', num };
   }),

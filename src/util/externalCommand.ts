@@ -1,5 +1,5 @@
-import { VimError, ErrorCode } from '../error';
 import { configuration } from '../configuration/configuration';
+import { ErrorCode, VimError } from '../error';
 
 class ExternalCommand {
   private previousExternalCommand: string | undefined;
@@ -61,9 +61,11 @@ class ExternalCommand {
       }
 
       if (process.stdout !== null) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         process.stdout.on('data', (chunk) => output.push(chunk));
       }
       if (process.stderr !== null) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         process.stderr.on('data', (chunk) => output.push(chunk));
       }
 

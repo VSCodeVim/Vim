@@ -14,12 +14,12 @@
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
-      "platform/*": ["src/platform/node/*"]
+      "platform/*": ["src/platform/node/*"],
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
     // "isolatedModules": true,
   },
-  "exclude": ["node_modules", "!node_modules/@types"]
+  "exclude": ["node_modules", "!node_modules/@types"],
 }

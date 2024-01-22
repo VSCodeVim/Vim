@@ -139,10 +139,10 @@ export class DocumentContentChangeAction extends BaseCommand {
   }
 
   private compressChanges(): void {
-    function merge(
+    const merge = (
       first: vscode.TextDocumentContentChangeEvent,
       second: vscode.TextDocumentContentChangeEvent,
-    ): vscode.TextDocumentContentChangeEvent | undefined {
+    ): vscode.TextDocumentContentChangeEvent | undefined => {
       if (first.rangeOffset + first.text.length === second.rangeOffset) {
         // Simple concatenation
         return {
@@ -171,7 +171,7 @@ export class DocumentContentChangeAction extends BaseCommand {
         // TODO: YES - make an insertion and then autocomplete to something totally different (replace subsumes insert)
         return undefined;
       }
-    }
+    };
 
     const compressed: vscode.TextDocumentContentChangeEvent[] = [];
     let prev: vscode.TextDocumentContentChangeEvent | undefined;
@@ -643,7 +643,7 @@ export class CommandShowCommandHistory extends BaseCommand {
 }
 
 ExCommandLine.onSearch = async (vimState: VimState) => {
-  new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+  void new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
 };
 
 @RegisterAction
@@ -1040,7 +1040,7 @@ class CommandOpenFile extends BaseCommand {
         cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
         createFileIfNotExists: false,
       });
-      fileCommand.execute(vimState);
+      void fileCommand.execute(vimState);
     }
   }
 }
@@ -1087,7 +1087,7 @@ class CommandOpenLink extends BaseCommand {
   keys = ['g', 'x'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vscode.commands.executeCommand('editor.action.openLink');
+    void vscode.commands.executeCommand('editor.action.openLink');
   }
 }
 
@@ -1321,12 +1321,12 @@ class CommandTabNext extends BaseCommand {
     // gt behaves differently than gT and goes to an absolute index tab
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
-      new TabCommand({
+      void new TabCommand({
         type: TabCommandType.Absolute,
         count: vimState.recordedState.count,
       }).execute(vimState);
     } else {
-      new TabCommand({
+      void new TabCommand({
         type: TabCommandType.Next,
         bang: false,
       }).execute(vimState);
@@ -1341,7 +1341,7 @@ class CommandTabPrevious extends BaseCommand {
   override runsOnceForEachCountPrefix = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    new TabCommand({
+    void new TabCommand({
       type: TabCommandType.Previous,
       bang: false,
     }).execute(vimState);

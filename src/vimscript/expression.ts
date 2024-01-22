@@ -1,4 +1,5 @@
-import { alt, any, Parser, regexp, string, noneOf } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, noneOf, regexp, string } from 'parsimmon';
 import { configuration } from '../configuration/configuration';
 
 const leaderParser = regexp(/<leader>/).map(() => configuration.leader); // lazy evaluation of configuration.leader
@@ -9,6 +10,7 @@ const specialCharacterParser = alt(specialCharacters, leaderParser);
 // TODO: Move to a more general location
 // TODO: Add more special characters
 const escapedParser = string('\\')
+  // eslint-disable-next-line id-denylist
   .then(any.fallback(undefined))
   .map((escaped) => {
     if (escaped === undefined) {

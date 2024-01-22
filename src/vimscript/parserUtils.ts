@@ -1,3 +1,4 @@
+// eslint-disable-next-line id-denylist
 import { alt, any, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
 
 export const numberParser: Parser<number> = regexp(/\d+/).map((num) => Number.parseInt(num, 10));
@@ -20,6 +21,7 @@ export function nameAbbrevParser(abbrev: string, rest: string): Parser<string> {
 // TODO: `:help filename-modifiers`
 export const fileNameParser: Parser<string> = alt<string>(
   string('\\').then(
+    // eslint-disable-next-line id-denylist
     any.fallback(undefined).map((escaped) => {
       if (escaped === undefined || escaped === '\\') {
         return '\\';

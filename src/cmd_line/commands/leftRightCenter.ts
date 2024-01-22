@@ -22,7 +22,7 @@ export class LeftCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    void this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -61,7 +61,7 @@ export class RightCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    void this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -105,7 +105,7 @@ export class CenterCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    void this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {

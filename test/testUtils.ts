@@ -1,23 +1,23 @@
 import { strict as assert } from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as path from 'path';
 import { join } from 'path';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
-import * as path from 'path';
 
-import { Configuration } from './testConfiguration';
-import { Globals } from '../src/globals';
-import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
-import { IConfiguration } from '../src/configuration/iconfiguration';
 import { ExCommandLine } from '../src/cmd_line/commandLine';
+import { IConfiguration } from '../src/configuration/iconfiguration';
+import { Globals } from '../src/globals';
 import { StatusBar } from '../src/statusBar';
+import { Configuration } from './testConfiguration';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
   get<T>(key: string): T | undefined;
   get<T>(key: string, defaultValue: T): T;
   get(key: any, defaultValue?: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
     return this.mapping.get(key) || defaultValue;
   }
 
@@ -92,7 +92,7 @@ export async function createDir(fsPath: string) {
  *
  * @param numExpectedEditors Expected number of editors in the window
  */
-export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
+export async function waitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
   const waitForTextEditorsToClose = new Promise<void>((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
@@ -109,6 +109,7 @@ export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Pro
   try {
     await waitForTextEditorsToClose;
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     assert.fail(error);
   }
 }
@@ -128,6 +129,7 @@ export function assertStatusBarEqual(
   assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
+// TODO: convert parameters to destructured object & make config: Partial<IConfiguration>
 export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = '',
@@ -155,8 +157,9 @@ export async function cleanUpWorkspace(): Promise<void> {
 }
 
 export async function reloadConfiguration() {
-  const validatorResults =
-    (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  const validatorResults = await (
+    await import('../src/configuration/configuration')
+  ).configuration.load();
   for (const validatorResult of validatorResults.get()) {
     console.warn(validatorResult);
   }

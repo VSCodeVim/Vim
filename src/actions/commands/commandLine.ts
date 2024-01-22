@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 
-import { RegisterAction, BaseCommand } from '../base';
-import { Mode } from '../../mode/mode';
-import { VimState } from '../../state/vimState';
 import { CommandLine, ExCommandLine, SearchCommandLine } from '../../cmd_line/commandLine';
+import { ErrorCode, VimError } from '../../error';
+import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
-import { TextEditor } from '../../textEditor';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import { getPathDetails, readDirectory } from '../../util/path';
+import { TextEditor } from '../../textEditor';
 import { Clipboard } from '../../util/clipboard';
-import { VimError, ErrorCode } from '../../error';
+import { getPathDetails, readDirectory } from '../../util/path';
 import { builtinExCommands } from '../../vimscript/exCommandParser';
 import { SearchDirection } from '../../vimscript/pattern';
+import { BaseCommand, RegisterAction } from '../base';
 
 abstract class CommandLineAction extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
@@ -413,7 +413,7 @@ class CommandAdvanceCurrentMatch extends CommandLineAction {
           ? SearchDirection.Backward
           : undefined;
     if (commandLine instanceof SearchCommandLine && direction !== undefined) {
-      commandLine.advanceCurrentMatch(vimState, direction);
+      void commandLine.advanceCurrentMatch(vimState, direction);
     }
   }
 }
@@ -423,6 +423,6 @@ class CommandLineType extends CommandLineAction {
   keys = [['<character>']];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    commandLine.typeCharacter(this.keysPressed[0]);
+    void commandLine.typeCharacter(this.keysPressed[0]);
   }
 }
