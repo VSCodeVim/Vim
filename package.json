@@ -1208,7 +1208,7 @@
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
-    "@vscode/test-electron": "2.3.8",
+    "@vscode/test-electron": "2.3.9",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
