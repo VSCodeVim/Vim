@@ -60,14 +60,21 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
   }
 
-  protected searchOptions(position: Position): SearchOptions {
+  protected searchOptions(position: Position, vimState: VimState): SearchOptions {
+    let minPosition: Position | undefined;
+    let maxPosition: Position | undefined;
+    const visibleRange = vimState.editor.visibleRanges[0];
+    if (visibleRange) {
+      minPosition = visibleRange.start.getUp();
+      maxPosition = visibleRange.end.getDown().getLineEnd();
+    }
     switch (this._baseOptions.searchOptions) {
       case 'min':
-        return { min: position };
+        return { min: position, max: maxPosition };
       case 'max':
-        return { max: position };
+        return { min: minPosition, max: position };
       default:
-        return {};
+        return { min: minPosition, max: maxPosition };
     }
   }
 
@@ -120,7 +127,7 @@ function getMatchesForString(
       // Search all occurences of the character pressed
 
       // If the input is not a letter, treating it as regex can cause issues
-      if (!/[a-zA-Z]/.test(searchString)) {
+      if (/[^a-zA-Z]/.test(searchString)) {
         return vimState.easyMotion.sortedSearch(vimState.document, position, searchString, options);
       }
 
@@ -151,7 +158,12 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
   }
 
   public getMatches(position: Position, vimState: VimState): Match[] {
-    return getMatchesForString(position, vimState, this.searchString, this.searchOptions(position));
+    return getMatchesForString(
+      position,
+      vimState,
+      this.searchString,
+      this.searchOptions(position, vimState),
+    );
   }
 
   public shouldFire() {
@@ -197,7 +209,7 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
       position,
       vimState,
       this.removeTrailingLineBreak(this.searchString),
-      {},
+      this.searchOptions(position, vimState),
     );
   }
 
@@ -248,7 +260,7 @@ export abstract class EasyMotionWordMoveCommandBase extends BaseEasyMotionComman
   }
 
   public getMatches(position: Position, vimState: VimState): Match[] {
-    return this.getMatchesForWord(position, vimState, this.searchOptions(position));
+    return this.getMatchesForWord(position, vimState, this.searchOptions(position, vimState));
   }
 
   public resolveMatchPosition(match: Match): Position {
@@ -286,7 +298,7 @@ export abstract class EasyMotionLineMoveCommandBase extends BaseEasyMotionComman
   }
 
   public getMatches(position: Position, vimState: VimState): Match[] {
-    return this.getMatchesForLineStart(position, vimState, this.searchOptions(position));
+    return this.getMatchesForLineStart(position, vimState, this.searchOptions(position, vimState));
   }
 
   private getMatchesForLineStart(
