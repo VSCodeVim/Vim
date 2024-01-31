@@ -42,12 +42,17 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public abstract resolveMatchPosition(match: Match): Position;
 
-  public processMarkers(matches: Match[], cursorPosition: Position, vimState: VimState) {
+  public processMarkers(
+    matches: Match[],
+    cursorPosition: Position,
+    vimState: VimState,
+    nextKeys: Set<string> = new Set<string>(),
+  ) {
     // Clear existing markers, just in case
     vimState.easyMotion.clearMarkers();
 
     let index = 0;
-    const markerGenerator = new MarkerGenerator(matches.length);
+    const markerGenerator = new MarkerGenerator(matches.length, nextKeys);
     for (const match of matches) {
       const matchPosition = this.resolveMatchPosition(match);
       // Skip if the match position equals to cursor position
@@ -229,13 +234,54 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
   }
 }
 
+export class SearchAroundCommand extends SearchByNCharCommand {
+  public override shouldFire() {
+    return true;
+  }
+
+  private getNextKeys(matchs: Match[], vimState: VimState): Set<string> {
+    const result = new Set<string>();
+    for (const match of matchs) {
+      const lineText = vimState.document.lineAt(match.position.line).text;
+      const index = match.position.character + match.text.length;
+      if (index < lineText.length) {
+        result.add(lineText.charAt(index));
+      }
+    }
+    return result;
+  }
+
+  public override async fire(position: Position, vimState: VimState): Promise<void> {
+    // Only execute the action if the configuration is set
+    if (configuration.easymotion) {
+      // Search all occurences of the character pressed
+      const matches = this.getMatches(position, vimState);
+
+      // Stop if there are no matches
+      if (matches.length > 0) {
+        const nextKeys = this.getNextKeys(matches, vimState);
+        this.processMarkers(matches, position, vimState, nextKeys);
+
+        // Store mode to return to after performing easy motion
+        vimState.easyMotion.previousMode = vimState.currentMode;
+        // Enter the EasyMotion mode and await further keys
+        await vimState.setCurrentMode(Mode.EasyMotionInputMode);
+      } else {
+        vimState.easyMotion.clearDecorations(vimState.editor);
+        vimState.easyMotion.clearMarkers();
+      }
+    }
+  }
+}
 export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   private _action: EasyMotionSearchAction;
+  private _nCharSearch: boolean;
 
-  constructor(action: EasyMotionSearchAction) {
+  constructor(action: EasyMotionSearchAction, nCharSearch: boolean = false) {
     super();
     this._action = action;
+    this._nCharSearch = nCharSearch;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -244,6 +290,7 @@ export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion = new EasyMotion();
       vimState.easyMotion.previousMode = vimState.currentMode;
       vimState.easyMotion.searchAction = this._action;
+      vimState.easyMotion.nCharSearch = this._nCharSearch;
       globalState.hl = true;
 
       await vimState.setCurrentMode(Mode.EasyMotionInputMode);
@@ -331,15 +378,28 @@ class EasyMotionCharInputMode extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const key = this.keysPressed[0];
     const action = vimState.easyMotion.searchAction;
-    action.searchString =
-      key === '<BS>' || key === '<S-BS>'
-        ? action.searchString.slice(0, -1)
-        : action.searchString + key;
-    if (action.shouldFire()) {
-      // Skip Easymotion input mode to make sure not to back to it
-      await vimState.setCurrentMode(vimState.easyMotion.previousMode);
-      await action.fire(vimState.cursorStopPosition, vimState);
+    const index = vimState.easyMotion.markers.findIndex((m) => m.name === key);
+    if (index < 0) {
+      action.searchString =
+        key === '<BS>' || key === '<S-BS>'
+          ? action.searchString.slice(0, -1)
+          : action.searchString + key;
+      if (action.shouldFire()) {
+        // Skip Easymotion input mode to make sure not to back to it
+        await vimState.setCurrentMode(vimState.easyMotion.previousMode);
+        await action.fire(vimState.cursorStopPosition, vimState);
+      }
+      return;
     }
+
+    // Only one found, navigate to it
+    const marker = vimState.easyMotion.markers[index];
+    vimState.easyMotion.clearMarkers();
+    action.searchString = '';
+    // Set cursor position based on marker entered
+    vimState.cursorStopPosition = marker.position;
+    vimState.easyMotion.clearDecorations(vimState.editor);
+    await vimState.setCurrentMode(vimState.easyMotion.previousMode);
   }
 }
 

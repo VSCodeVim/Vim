@@ -248,6 +248,7 @@ class DecorationImpl {
 
     this.easyMotionIncSearch = vscode.window.createTextEditorDecorationType({
       color: configuration.easymotionIncSearchForegroundColor,
+      backgroundColor: configuration.easymotionIncSearchBackgroundColor,
       fontWeight: configuration.easymotionMarkerFontWeight,
     });
 

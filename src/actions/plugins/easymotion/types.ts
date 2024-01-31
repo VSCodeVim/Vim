@@ -74,6 +74,7 @@ export interface IEasyMotion {
   previousMode: Mode;
   markers: Marker[];
   searchAction: EasyMotionSearchAction;
+  nCharSearch: boolean;
 
   addMarker(marker: Marker): void;
   findMarkers(nail: string, onlyVisible: boolean): Marker[];

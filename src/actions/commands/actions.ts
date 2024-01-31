@@ -451,7 +451,10 @@ class CommandEsc extends BaseCommand {
         ]);
       }
     } else {
-      if (vimState.currentMode === Mode.EasyMotionMode) {
+      if (
+        vimState.currentMode === Mode.EasyMotionMode ||
+        vimState.currentMode === Mode.EasyMotionInputMode
+      ) {
         vimState.easyMotion.clearDecorations(vimState.editor);
       } else if (vimState.currentMode === Mode.SurroundInputMode) {
         vimState.surround = undefined;

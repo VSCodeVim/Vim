@@ -15,6 +15,8 @@ export class EasyMotion implements IEasyMotion {
   // TODO: is this actually always set?
   public searchAction!: EasyMotionSearchAction;
 
+  public nCharSearch: boolean = false;
+
   /**
    * Array of all markers and decorations
    */
@@ -227,6 +229,12 @@ export class EasyMotion implements IEasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
+    const offset = this.searchAction.searchString
+      ? this.searchAction.searchString.length === 0
+        ? 0
+        : this.searchAction.searchString.length
+      : 0;
+
     // Set the decorations for all the different marker lengths
     const dimmingZones: vscode.DecorationOptions[] = [];
     const dimmingRenderOptions: vscode.ThemableDecorationRenderOptions = {
@@ -291,7 +299,12 @@ export class EasyMotion implements IEasyMotion {
           ? this.getEasymotionMarkerForegroundColorTwoCharFirst()
           : this.getEasymotionMarkerForegroundColorOneChar();
       const backgroundColor = this.getEasymotionMarkerBackgroundColor();
-      const firstCharRange = new vscode.Range(pos.line, pos.character, pos.line, pos.character);
+      const firstCharRange = new vscode.Range(
+        pos.line,
+        pos.character + offset,
+        pos.line,
+        pos.character + offset,
+      );
       const firstCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         before: {
           contentText: keystroke.substring(0, 1),
@@ -345,13 +358,13 @@ export class EasyMotion implements IEasyMotion {
       hiddenChars.push(
         new vscode.Range(
           pos.line,
-          pos.character,
+          pos.character + offset,
           pos.line,
-          pos.character + keystroke.length + trim,
+          pos.character + keystroke.length + trim + offset,
         ),
       );
 
-      if (configuration.easymotionDimBackground) {
+      if (configuration.easymotionDimBackground && offset === 0) {
         // This excludes markers from the dimming ranges by using them as anchors
         // each marker adds the range between it and previous marker to the dimming zone
         // except last marker after which the rest of document is dimmed
@@ -394,7 +407,7 @@ export class EasyMotion implements IEasyMotion {
     }
 
     // for the last marker dim till document end
-    if (configuration.easymotionDimBackground && markers.length > 0) {
+    if (configuration.easymotionDimBackground && markers.length > 0 && offset === 0) {
       const prevMarker = markers[markers.length - 1];
       const prevKeystroke = prevMarker.name.substring(this.accumulation.length);
       const prevDimPos = dimmingZones[dimmingZones.length - 1].range.end;
