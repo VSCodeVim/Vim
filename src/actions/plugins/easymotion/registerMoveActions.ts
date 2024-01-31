@@ -28,6 +28,15 @@ class EasyMotionSearchAroundCommand extends EasyMotionCharMoveCommandBase {
     super(new SearchAroundCommand(), true);
   }
 }
+
+@RegisterAction
+class EasyMotionRemoteYankCommand extends EasyMotionCharMoveCommandBase {
+  keys = buildTriggerKeys({ key: 'yr', leaderCount: 3 });
+
+  constructor() {
+    super(new SearchAroundCommand(), true, true);
+  }
+}
 // EasyMotion char-move commands
 
 @RegisterAction

@@ -435,6 +435,7 @@ class CommandEsc extends BaseCommand {
   override preservesDesiredColumn = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.easyMotion.clearRemoteYank(vimState);
     if (vimState.currentMode === Mode.Normal) {
       vimState.surround = undefined;
 

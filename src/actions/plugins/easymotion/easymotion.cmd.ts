@@ -15,6 +15,8 @@ import { globalState } from '../../../state/globalState';
 import { TextEditor } from '../../../textEditor';
 import { MarkerGenerator } from './markerGenerator';
 import { Position } from 'vscode';
+import { getAndUpdateModeHandler } from '../../../../extensionBase';
+import { Jump } from '../../../jumps/jump';
 
 export interface EasymotionTrigger {
   key: string;
@@ -277,11 +279,17 @@ export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   private _action: EasyMotionSearchAction;
   private _nCharSearch: boolean;
+  private _remoteYank: boolean;
 
-  constructor(action: EasyMotionSearchAction, nCharSearch: boolean = false) {
+  constructor(
+    action: EasyMotionSearchAction,
+    nCharSearch: boolean = false,
+    remoteYank: boolean = false,
+  ) {
     super();
     this._action = action;
     this._nCharSearch = nCharSearch;
+    this._remoteYank = remoteYank;
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -291,6 +299,7 @@ export abstract class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion.previousMode = vimState.currentMode;
       vimState.easyMotion.searchAction = this._action;
       vimState.easyMotion.nCharSearch = this._nCharSearch;
+      vimState.easyMotion.remoteYank = this._remoteYank;
       globalState.hl = true;
 
       await vimState.setCurrentMode(Mode.EasyMotionInputMode);
@@ -397,9 +406,20 @@ class EasyMotionCharInputMode extends BaseCommand {
     vimState.easyMotion.clearMarkers();
     action.searchString = '';
     // Set cursor position based on marker entered
-    vimState.cursorStopPosition = marker.position;
     vimState.easyMotion.clearDecorations(vimState.editor);
     await vimState.setCurrentMode(vimState.easyMotion.previousMode);
+    if (vimState.easyMotion.remoteYank) {
+      vimState.easyMotion.remoteYankPosition = vimState.cursorStopPosition;
+      vimState.cursorStopPosition = marker.position;
+      const mh = await getAndUpdateModeHandler();
+      void mh?.handleKeyEvent('y');
+    } else {
+      vimState.cursorStopPosition = marker.position;
+      globalState.jumpTracker.recordJump(
+        Jump.fromStateBefore(vimState),
+        Jump.fromStateNow(vimState),
+      );
+    }
   }
 }
 

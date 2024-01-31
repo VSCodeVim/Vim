@@ -5,6 +5,7 @@ import { Mode } from '../../../mode/mode';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction, IEasyMotion, Marker, Match, SearchOptions } from './types';
+import { VimState } from 'src/state/vimState';
 
 export class EasyMotion implements IEasyMotion {
   /**
@@ -16,7 +17,8 @@ export class EasyMotion implements IEasyMotion {
   public searchAction!: EasyMotionSearchAction;
 
   public nCharSearch: boolean = false;
-
+  public remoteYank: boolean = false;
+  public remoteYankPosition: Position | undefined;
   /**
    * Array of all markers and decorations
    */
@@ -53,7 +55,14 @@ export class EasyMotion implements IEasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
   }
-
+  public clearRemoteYank(vimState: VimState): boolean {
+    if (this.remoteYankPosition) {
+      vimState.cursorStopPosition = this.remoteYankPosition;
+      this.remoteYankPosition = undefined;
+      return true;
+    }
+    return false;
+  }
   /**
    * Create and cache decoration types for different marker lengths
    */
@@ -229,7 +238,7 @@ export class EasyMotion implements IEasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
-    const offset = this.searchAction.searchString
+    const offset = this.searchAction?.searchString
       ? this.searchAction.searchString.length === 0
         ? 0
         : this.searchAction.searchString.length

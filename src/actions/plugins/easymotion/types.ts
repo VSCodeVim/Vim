@@ -75,6 +75,8 @@ export interface IEasyMotion {
   markers: Marker[];
   searchAction: EasyMotionSearchAction;
   nCharSearch: boolean;
+  remoteYank: boolean;
+  remoteYankPosition: vscode.Position | undefined;
 
   addMarker(marker: Marker): void;
   findMarkers(nail: string, onlyVisible: boolean): Marker[];
@@ -87,4 +89,5 @@ export interface IEasyMotion {
   updateDecorations(editor: vscode.TextEditor): void;
   clearMarkers(): void;
   clearDecorations(editor: vscode.TextEditor): void;
+  clearRemoteYank(vimState: VimState): boolean;
 }

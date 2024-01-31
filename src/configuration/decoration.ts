@@ -254,6 +254,7 @@ class DecorationImpl {
 
     this.easyMotionDimIncSearch = vscode.window.createTextEditorDecorationType({
       color: configuration.easymotionDimColor,
+      backgroundColor: '#0000',
     });
 
     this.insertModeVirtualCharacter = vscode.window.createTextEditorDecorationType({

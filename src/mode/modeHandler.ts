@@ -617,7 +617,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
         // Since there is no possible action we are no longer waiting any action keys
         this.vimState.recordedState.waitingForAnotherActionKey = false;
-
+        if (this.vimState.easyMotion.clearRemoteYank(this.vimState)) {
+          await this.updateView();
+        }
         return false;
       case KeypressState.WaitingOnKeys:
         this.vimState.recordedState.waitingForAnotherActionKey = true;
