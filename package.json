@@ -1232,7 +1232,7 @@
     "ts-loader": "9.5.1",
     "typescript": "5.3.3",
     "vsce": "2.15.0",
-    "webpack": "5.90.0",
+    "webpack": "5.90.1",
     "webpack-cli": "5.1.4",
     "webpack-merge": "5.10.0",
     "webpack-stream": "7.0.0"
