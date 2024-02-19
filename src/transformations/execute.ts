@@ -232,6 +232,15 @@ export async function executeTransformations(
         vimState.editor.selection = new vscode.Selection(newPos, newPos);
         break;
 
+      case 'executeNormal':
+        const keystroke = keystrokesExpressionParser.parse(transformation.keystroke);
+        if (!keystroke.status) {
+          throw new Error(`Failed to execute macro: ${recordedMacro}`);
+        }
+        await modeHandler.handleMultipleKeyEvents(keystroke.value);
+        await vimState.setCurrentMode(Mode.Normal);
+        break;
+
       case 'vscodeCommand':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await vscode.commands.executeCommand(transformation.command, ...transformation.args);

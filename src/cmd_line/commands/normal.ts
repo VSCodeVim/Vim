@@ -4,16 +4,20 @@ import { ExCommand } from '../../vimscript/exCommand';
 
 export class NormalCommand extends ExCommand {
   public static readonly argParser: Parser<NormalCommand> = all.map(
-    (argument) => new NormalCommand(argument),
+    (keystroke) => new NormalCommand(keystroke),
   );
 
-  private readonly argument: string;
+  private readonly keystroke: string;
   constructor(argument: string) {
     super();
-    this.argument = argument;
+    this.keystroke = argument;
   }
 
-  override execute(vimState: VimState): Promise<void> {
-    throw new Error('Method not implemented.');
+  override async execute(vimState: VimState): Promise<void> {
+    const keystroke = this.keystroke;
+    vimState.recordedState.transformer.addTransformation({
+      type: 'executeNormal',
+      keystroke,
+    });
   }
 }
