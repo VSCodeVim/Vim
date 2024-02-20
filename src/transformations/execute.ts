@@ -236,7 +236,7 @@ export async function executeTransformations(
       case 'executeNormal':
         const keystroke = keystrokesExpressionParser.parse(transformation.keystroke);
         if (!keystroke.status) {
-          throw new Error(`Failed to execute macro: ${recordedMacro}`);
+          throw new Error(`Failed to execute normal command: ${transformation.keystroke}`);
         }
         const selectLines = vimState.editor.selections;
         if (selectLines.length < 1) {
