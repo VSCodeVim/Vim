@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { TextLine } from 'vscode';
 import { ExCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
@@ -237,8 +238,25 @@ export async function executeTransformations(
         if (!keystroke.status) {
           throw new Error(`Failed to execute macro: ${recordedMacro}`);
         }
-        await modeHandler.handleMultipleKeyEvents(keystroke.value);
-        await vimState.setCurrentMode(Mode.Normal);
+        const selectLines = vimState.editor.selections;
+        if (selectLines.length < 1) {
+          await modeHandler.handleMultipleKeyEvents(keystroke.value);
+        } else {
+          const resultLines: TextLine[] = [];
+          for (const selection of selectLines) {
+            const { start, end } = selection;
+
+            for (let i = start.line; i <= end.line; i++) {
+              resultLines.push(vimState.document.lineAt(i));
+            }
+          }
+          for (const line of resultLines) {
+            vimState.cursorStopPosition = vimState.cursorStartPosition =
+              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
+            await modeHandler.handleMultipleKeyEvents(keystroke.value);
+            await vimState.setCurrentMode(Mode.Normal);
+          }
+        }
         break;
 
       case 'vscodeCommand':

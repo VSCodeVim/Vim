@@ -1,6 +1,7 @@
 import { Parser, all } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
 export class NormalCommand extends ExCommand {
   public static readonly argParser: Parser<NormalCommand> = all.map(
@@ -19,5 +20,9 @@ export class NormalCommand extends ExCommand {
       type: 'executeNormal',
       keystroke,
     });
+  }
+
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    await this.execute(vimState);
   }
 }
