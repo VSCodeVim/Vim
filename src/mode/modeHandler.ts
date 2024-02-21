@@ -884,6 +884,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
+      !this.vimState.isExecutingNormalCommand &&
       !this.remapState.isCurrentlyPerformingRemapping
     ) {
       this.vimState.historyTracker.finishCurrentStep();

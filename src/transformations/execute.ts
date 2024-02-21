@@ -250,12 +250,14 @@ export async function executeTransformations(
               resultLines.push(vimState.document.lineAt(i));
             }
           }
+          vimState.isExecutingNormalCommand = true;
           for (const line of resultLines) {
             vimState.cursorStopPosition = vimState.cursorStartPosition =
               TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
             await modeHandler.handleMultipleKeyEvents(keystroke.value);
             await vimState.setCurrentMode(Mode.Normal);
           }
+          vimState.isExecutingNormalCommand = false;
         }
         break;
 
