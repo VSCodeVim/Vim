@@ -239,26 +239,22 @@ export async function executeTransformations(
           throw new Error(`Failed to execute normal command: ${transformation.keystroke}`);
         }
         const selectLines = vimState.editor.selections;
-        if (selectLines.length < 1) {
-          await modeHandler.handleMultipleKeyEvents(keystroke.value);
-        } else {
-          const resultLines: TextLine[] = [];
-          for (const selection of selectLines) {
-            const { start, end } = selection;
+        const resultLines: TextLine[] = [];
+        for (const selection of selectLines) {
+          const { start, end } = selection;
 
-            for (let i = start.line; i <= end.line; i++) {
-              resultLines.push(vimState.document.lineAt(i));
-            }
+          for (let i = start.line; i <= end.line; i++) {
+            resultLines.push(vimState.document.lineAt(i));
           }
-          vimState.isExecutingNormalCommand = true;
-          for (const line of resultLines) {
-            vimState.cursorStopPosition = vimState.cursorStartPosition =
-              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
-            await modeHandler.handleMultipleKeyEvents(keystroke.value);
-            await vimState.setCurrentMode(Mode.Normal);
-          }
-          vimState.isExecutingNormalCommand = false;
         }
+        vimState.isExecutingNormalCommand = true;
+        for (const line of resultLines) {
+          vimState.cursorStopPosition = vimState.cursorStartPosition =
+            TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
+          await modeHandler.handleMultipleKeyEvents(keystroke.value);
+          await vimState.setCurrentMode(Mode.Normal);
+        }
+        vimState.isExecutingNormalCommand = false;
         break;
 
       case 'vscodeCommand':
