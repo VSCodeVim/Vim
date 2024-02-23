@@ -242,13 +242,14 @@ export async function executeTransformations(
         }
 
         const resultLines: TextLine[] = [];
-        if (startLineNumber !== undefined && endLineNumber !== undefined) {
+        const withRange = startLineNumber !== undefined && endLineNumber !== undefined;
+        if (withRange) {
           for (let i = startLineNumber; i <= endLineNumber; i++) {
             resultLines.push(vimState.document.lineAt(i));
           }
         } else {
-          const selectLines = vimState.editor.selections;
-          for (const selection of selectLines) {
+          const selectionList = vimState.editor.selections;
+          for (const selection of selectionList) {
             const { start, end } = selection;
 
             for (let i = start.line; i <= end.line; i++) {
@@ -261,8 +262,10 @@ export async function executeTransformations(
         vimState.recordedState = new RecordedState();
         await vimState.setCurrentMode(Mode.Normal);
         for (const line of resultLines) {
-          vimState.cursorStopPosition = vimState.cursorStartPosition =
-            TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
+          if (withRange) {
+            vimState.cursorStopPosition = vimState.cursorStartPosition =
+              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
+          }
           await modeHandler.handleMultipleKeyEvents(keystroke.value);
           await vimState.setCurrentMode(Mode.Normal);
         }
