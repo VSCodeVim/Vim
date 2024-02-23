@@ -248,6 +248,8 @@ export async function executeTransformations(
           }
         }
         vimState.isExecutingNormalCommand = true;
+        vimState.recordedState = new RecordedState();
+        await vimState.setCurrentMode(Mode.Normal);
         for (const line of resultLines) {
           vimState.cursorStopPosition = vimState.cursorStartPosition =
             TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);

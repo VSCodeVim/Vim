@@ -1,11 +1,11 @@
-import { Parser, all } from 'parsimmon';
+import { Parser, all, seq, whitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
 
 export class NormalCommand extends ExCommand {
-  public static readonly argParser: Parser<NormalCommand> = all.map(
-    (keystroke) => new NormalCommand(keystroke),
+  public static readonly argParser: Parser<NormalCommand> = seq(whitespace, all).map(
+    ([_, keystroke]) => new NormalCommand(keystroke),
   );
 
   private readonly keystroke: string;

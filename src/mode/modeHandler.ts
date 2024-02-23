@@ -768,7 +768,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (this.vimState.currentMode !== this.currentMode) {
       await this.setCurrentMode(this.vimState.currentMode);
 
-      // We don't want to mark any searches and normal command execution as a repeatable action
+      // We don't want to mark any searches as a repeatable action
       if (
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
