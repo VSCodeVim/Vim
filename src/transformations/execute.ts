@@ -235,18 +235,28 @@ export async function executeTransformations(
 
       case 'executeNormal':
         const keystroke = keystrokesExpressionParser.parse(transformation.keystroke);
+        const startLineNumber = transformation.startLineNumber;
+        const endLineNumber = transformation.endLineNumber;
         if (!keystroke.status) {
           throw new Error(`Failed to execute normal command: ${transformation.keystroke}`);
         }
-        const selectLines = vimState.editor.selections;
-        const resultLines: TextLine[] = [];
-        for (const selection of selectLines) {
-          const { start, end } = selection;
 
-          for (let i = start.line; i <= end.line; i++) {
+        const resultLines: TextLine[] = [];
+        if (startLineNumber !== undefined && endLineNumber !== undefined) {
+          for (let i = startLineNumber; i <= endLineNumber; i++) {
             resultLines.push(vimState.document.lineAt(i));
           }
+        } else {
+          const selectLines = vimState.editor.selections;
+          for (const selection of selectLines) {
+            const { start, end } = selection;
+
+            for (let i = start.line; i <= end.line; i++) {
+              resultLines.push(vimState.document.lineAt(i));
+            }
+          }
         }
+
         vimState.isExecutingNormalCommand = true;
         vimState.recordedState = new RecordedState();
         await vimState.setCurrentMode(Mode.Normal);

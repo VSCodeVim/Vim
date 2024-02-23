@@ -22,7 +22,14 @@ export class NormalCommand extends ExCommand {
     });
   }
 
-  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    await this.execute(vimState);
+  override async executeWithRange(vimState: VimState, lineRange: LineRange): Promise<void> {
+    const keystroke = this.keystroke;
+    const { start, end } = lineRange.resolve(vimState);
+    vimState.recordedState.transformer.addTransformation({
+      type: 'executeNormal',
+      keystroke,
+      startLineNumber: start,
+      endLineNumber: end,
+    });
   }
 }
