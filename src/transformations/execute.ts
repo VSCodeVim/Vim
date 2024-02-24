@@ -11,7 +11,10 @@ import { RecordedState } from '../state/recordedState';
 import { VimState } from '../state/vimState';
 import { TextEditor } from '../textEditor';
 import { Logger } from '../util/logger';
-import { keystrokesExpressionParser } from '../vimscript/expression';
+import {
+  keystrokesExpressionForMacroParser,
+  keystrokesExpressionParser,
+} from '../vimscript/expression';
 import {
   InsertTextVSCodeTransformation,
   TextTransformations,
@@ -160,7 +163,7 @@ export async function executeTransformations(
           return;
         } else if (typeof recordedMacro === 'string') {
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
-          const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
+          const keystrokes = keystrokesExpressionForMacroParser.parse(recordedMacro);
           if (!keystrokes.status) {
             throw new Error(`Failed to execute macro: ${recordedMacro}`);
           }
