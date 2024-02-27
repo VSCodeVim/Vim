@@ -240,12 +240,12 @@ export async function executeTransformations(
         const keystroke = keystrokesExpressionParser.parse(transformation.keystroke);
         const startLineNumber = transformation.startLineNumber;
         const endLineNumber = transformation.endLineNumber;
+        const withRange = transformation.withRange;
         if (!keystroke.status) {
           throw new Error(`Failed to execute normal command: ${transformation.keystroke}`);
         }
 
         const resultLines: TextLine[] = [];
-        const withRange = startLineNumber !== undefined && endLineNumber !== undefined;
         if (withRange) {
           for (let i = startLineNumber; i <= endLineNumber; i++) {
             resultLines.push(vimState.document.lineAt(i));

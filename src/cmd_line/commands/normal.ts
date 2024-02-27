@@ -16,9 +16,13 @@ export class NormalCommand extends ExCommand {
 
   override async execute(vimState: VimState): Promise<void> {
     const keystroke = this.keystroke;
+    const lineNumber = vimState.cursorStartPosition.line;
     vimState.recordedState.transformer.addTransformation({
       type: 'executeNormal',
       keystroke,
+      startLineNumber: lineNumber,
+      endLineNumber: lineNumber,
+      withRange: false,
     });
   }
 
@@ -30,6 +34,7 @@ export class NormalCommand extends ExCommand {
       keystroke,
       startLineNumber: start,
       endLineNumber: end,
+      withRange: true,
     });
   }
 }

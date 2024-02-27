@@ -188,8 +188,9 @@ export interface ContentChangeTransformation {
 export interface ExecuteNormalTransformation {
   type: 'executeNormal';
   keystroke: string;
-  startLineNumber?: number;
-  endLineNumber?: number;
+  startLineNumber: number;
+  endLineNumber: number;
+  withRange: boolean;
 }
 
 export type Transformation =
