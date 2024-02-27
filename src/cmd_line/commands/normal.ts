@@ -16,7 +16,7 @@ export class NormalCommand extends ExCommand {
 
   override async execute(vimState: VimState): Promise<void> {
     const keystroke = this.keystroke;
-    const lineNumber = vimState.cursorStartPosition.line;
+    const lineNumber = vimState.cursorStopPosition.line;
     vimState.recordedState.transformer.addTransformation({
       type: 'executeNormal',
       keystroke,
