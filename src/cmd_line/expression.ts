@@ -1,4 +1,5 @@
-import { Parser, optWhitespace, seqObj, string, alt } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, optWhitespace, seqObj, string } from 'parsimmon';
 import { ErrorCode, VimError } from '../error';
 import { integerParser } from '../vimscript/parserUtils';
 
@@ -23,7 +24,7 @@ const RangeExpression: Expression = {
     optWhitespace,
     ['step', string(',').then(optWhitespace).then(integerParser).fallback(1)],
     optWhitespace,
-    string(')')
+    string(')'),
   ).map(({ start, end, step }): string => {
     const numbers = range(start, end, step);
     if (numbers.length === 0) {
@@ -42,5 +43,5 @@ export const expressionParser = seqObj<{ register: string; fromExpression: strin
   optWhitespace,
   ['register', EXPRESSION_REGISTER],
   optWhitespace,
-  ['fromExpression', altExpressions]
+  ['fromExpression', altExpressions],
 );

@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { any, Parser, seq, whitespace } from 'parsimmon';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
+import { Digraph } from '../../configuration/iconfiguration';
+import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
-import { any, Parser, seq, whitespace } from 'parsimmon';
 import { bangParser, numberParser } from '../../vimscript/parserUtils';
-import { Digraph } from '../../configuration/iconfiguration';
+import { configuration } from './../../configuration/configuration';
 
 export interface IDigraphsCommandArguments {
   bang: boolean;
@@ -21,7 +22,7 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 export class DigraphsCommand extends ExCommand {
   public static readonly argParser: Parser<DigraphsCommand> = seq(
     bangParser,
-    whitespace.then(seq(any, any, whitespace.then(numberParser))).many()
+    whitespace.then(seq(any, any, whitespace.then(numberParser))).many(),
   ).map(([bang, newDigraphs]) => new DigraphsCommand({ bang, newDigraphs }));
 
   private readonly arguments: IDigraphsCommandArguments;
@@ -47,10 +48,10 @@ export class DigraphsCommand extends ExCommand {
     // TODO: use arguments
 
     const digraphKeyAndContent = this.makeQuickPicks(Object.entries(configuration.digraphs)).concat(
-      this.makeQuickPicks([...DefaultDigraphs.entries()])
+      this.makeQuickPicks([...DefaultDigraphs.entries()]),
     );
 
-    vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
+    void vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
       if (val) {
         const char = String.fromCharCode(...val.charCodes);
         await TextEditor.insert(vimState.editor, char);

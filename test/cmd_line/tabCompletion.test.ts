@@ -110,7 +110,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}|`,
-        'Cannot complete with / at the end'
+        'Cannot complete with / at the end',
       );
     } finally {
       await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
@@ -184,7 +184,7 @@ suite('cmd_line tabComplete', () => {
     assert.strictEqual(
       statusBarAfterTab,
       ':edit|it',
-      'Failed to complete content left of the cursor'
+      'Failed to complete content left of the cursor',
     );
 
     await modeHandler.handleKeyEvent('<Esc>');
@@ -204,7 +204,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab.trim(),
         `:e ${testFilePath}|`,
-        'Cannot complete to .testfile'
+        'Cannot complete to .testfile',
       );
       // Second tab - resolve to .testfile
       // ./ and ../ because . is not explicitly typed in.
@@ -221,7 +221,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}..${sep}|`,
-        'Cannot complete to ../'
+        'Cannot complete to ../',
       );
       // Second tab - resolve to ./
       await modeHandler.handleKeyEvent('<tab>');
@@ -291,7 +291,7 @@ suite('cmd_line tabComplete', () => {
         assert.strictEqual(
           statusBarAfterTab.toLowerCase(),
           `:e ${filePath}|`.toLowerCase(),
-          'Cannot complete path case-insensitive on windows'
+          'Cannot complete path case-insensitive on windows',
         );
       } else {
         await modeHandler.handleMultipleKeyEvents(cmd);
@@ -302,7 +302,7 @@ suite('cmd_line tabComplete', () => {
         assert.strictEqual(
           statusBarBeforeTab,
           statusBarAfterTab,
-          'Is case-insensitive on non-windows'
+          'Is case-insensitive on non-windows',
         );
       }
     } finally {

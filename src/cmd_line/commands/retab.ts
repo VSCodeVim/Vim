@@ -22,13 +22,13 @@ interface UpdatedLineSegment {
 export class RetabCommand extends ExCommand {
   public static readonly argParser: Parser<RetabCommand> = seq(
     bangParser,
-    optWhitespace.then(numberParser).fallback(undefined)
+    optWhitespace.then(numberParser).fallback(undefined),
   ).map(
     ([replaceSpaces, newTabstop]) =>
       new RetabCommand({
         replaceSpaces,
         newTabstop,
-      })
+      }),
   );
 
   private readonly arguments: IRetabCommandArguments;
@@ -88,7 +88,7 @@ export class RetabCommand extends ExCommand {
   retabLineSegment(
     segment: string,
     start: number,
-    tabstop = configuration.tabstop
+    tabstop = configuration.tabstop,
   ): UpdatedLineSegment {
     const retab = this.arguments.replaceSpaces || this.hasTabs(segment);
 
@@ -168,7 +168,7 @@ export class RetabCommand extends ExCommand {
         value: this.arguments.newTabstop.toString(),
       });
 
-      setTabstop.execute(vimState);
+      void setTabstop.execute(vimState);
     }
   }
 }

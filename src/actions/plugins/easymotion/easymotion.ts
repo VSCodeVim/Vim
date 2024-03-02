@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
+import { Mode } from '../../../mode/mode';
 import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { IEasyMotion, EasyMotionSearchAction, Marker, Match, SearchOptions } from './types';
-import { Mode } from '../../../mode/mode';
-import { Position } from 'vscode';
+import { EasyMotionSearchAction, IEasyMotion, Marker, Match, SearchOptions } from './types';
 
 export class EasyMotion implements IEasyMotion {
   /**
@@ -57,7 +57,7 @@ export class EasyMotion implements IEasyMotion {
    */
   public static getDecorationType(
     length: number,
-    decorations?: vscode.DecorationRenderOptions
+    decorations?: vscode.DecorationRenderOptions,
   ): vscode.TextEditorDecorationType {
     const cache = this.decorationTypeCache[length];
     if (cache) {
@@ -112,7 +112,7 @@ export class EasyMotion implements IEasyMotion {
     document: vscode.TextDocument,
     position: Position,
     search: string | RegExp = '',
-    options: SearchOptions = {}
+    options: SearchOptions = {},
   ): Match[] {
     const regex =
       typeof search === 'string'
@@ -168,15 +168,15 @@ export class EasyMotion implements IEasyMotion {
 
     // Sort by the index distance from the cursor index
     matches.sort((a: Match, b: Match): number => {
-      const absDiffA = computeAboluteDiff(a.index);
-      const absDiffB = computeAboluteDiff(b.index);
-      return absDiffA - absDiffB;
-
-      function computeAboluteDiff(matchIndex: number) {
+      const computeAboluteDiff = (matchIndex: number) => {
         const absDiff = Math.abs(cursorIndex - matchIndex);
         // Prioritize the matches on the right side of the cursor index
         return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
-      }
+      };
+
+      const absDiffA = computeAboluteDiff(a.index);
+      const absDiffB = computeAboluteDiff(b.index);
+      return absDiffA - absDiffB;
     });
 
     return matches;
@@ -184,7 +184,7 @@ export class EasyMotion implements IEasyMotion {
 
   private getMarkerColor(
     customizedValue: string,
-    themeColorId: string
+    themeColorId: string,
   ): string | vscode.ThemeColor {
     if (customizedValue) {
       return customizedValue;
@@ -206,14 +206,14 @@ export class EasyMotion implements IEasyMotion {
   private getEasymotionMarkerForegroundColorTwoCharFirst() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorTwoCharFirst,
-      '#ffb400'
+      '#ffb400',
     );
   }
 
   private getEasymotionMarkerForegroundColorTwoCharSecond() {
     return this.getMarkerColor(
       configuration.easymotionMarkerForegroundColorTwoCharSecond,
-      '#b98300'
+      '#b98300',
     );
   }
 
@@ -253,7 +253,7 @@ export class EasyMotion implements IEasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
-      //#region Hack (remove once backend handles this)
+      // #region Hack (remove once backend handles this)
 
       /*
         This hack is here because the backend for easy motion reports two adjacent
@@ -283,7 +283,7 @@ export class EasyMotion implements IEasyMotion {
         }
       }
 
-      //#endregion
+      // #endregion
 
       // First Char/One Char decoration
       const firstCharFontColor =
@@ -319,7 +319,7 @@ export class EasyMotion implements IEasyMotion {
           pos.line,
           pos.character + 1,
           pos.line,
-          pos.character + 1
+          pos.character + 1,
         );
 
         const secondCharRenderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
@@ -343,7 +343,12 @@ export class EasyMotion implements IEasyMotion {
       }
 
       hiddenChars.push(
-        new vscode.Range(pos.line, pos.character, pos.line, pos.character + keystroke.length + trim)
+        new vscode.Range(
+          pos.line,
+          pos.character,
+          pos.line,
+          pos.character + keystroke.length + trim,
+        ),
       );
 
       if (configuration.easymotionDimBackground) {
@@ -363,7 +368,7 @@ export class EasyMotion implements IEasyMotion {
           const prevKeystroke = prevMarker.name.substring(this.accumulation.length);
           const prevDimPos = prevMarker.position;
           const offsetPrevDimPos = prevDimPos.withColumn(
-            prevDimPos.character + prevKeystroke.length
+            prevDimPos.character + prevKeystroke.length,
           );
 
           // Don't create dimming ranges in between consecutive markers (the 'after' is in the cases
@@ -377,7 +382,7 @@ export class EasyMotion implements IEasyMotion {
                 offsetPrevDimPos.line,
                 offsetPrevDimPos.character,
                 pos.line,
-                pos.character
+                pos.character,
               ),
               renderOptions: dimmingRenderOptions,
             });
@@ -400,7 +405,7 @@ export class EasyMotion implements IEasyMotion {
         dimmingZones.push({
           range: new vscode.Range(
             offsetPrevDimPos,
-            new Position(editor.document.lineCount, Number.MAX_VALUE)
+            new Position(editor.document.lineCount, Number.MAX_VALUE),
           ),
           renderOptions: dimmingRenderOptions,
         });

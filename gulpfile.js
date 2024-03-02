@@ -23,14 +23,14 @@ function validateArgs(done) {
     return done(
       new PluginError('updateVersion', {
         message: 'Missing `--semver` option. Possible values: patch, minor, major',
-      })
+      }),
     );
   }
   if (!['patch', 'minor', 'major'].includes(options.semver)) {
     return done(
       new PluginError('updateVersion', {
         message: 'Invalid `--semver` option. Possible values: patch, minor, major',
-      })
+      }),
     );
   }
 
@@ -65,18 +65,18 @@ function updatePath() {
       const filePath = f.path;
       let platformRelativepath = path.relative(
         path.dirname(filePath),
-        path.resolve(process.cwd(), 'out/src/platform/node')
+        path.resolve(process.cwd(), 'out/src/platform/node'),
       );
       platformRelativepath = platformRelativepath.replace(/\\/g, '/');
       f.contents = Buffer.from(
         contents.replace(
           /\(\"platform\/([^"]*)\"\)/g,
-          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")'
+          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")',
         ),
-        'utf8'
+        'utf8',
       );
       return f;
-    })
+    }),
   );
   return es.duplex(input, output);
 }
@@ -108,7 +108,7 @@ gulp.task('webpack', function () {
       config: webpack_config,
       entry: ['./extension.ts', './extensionWeb.ts'],
     },
-    webpack
+    webpack,
   ).pipe(gulp.dest('out'));
 });
 
@@ -118,7 +118,7 @@ gulp.task('webpack-dev', function () {
       config: webpack_dev_config,
       entry: ['./extension.ts'],
     },
-    webpack
+    webpack,
   ).pipe(gulp.dest('out'));
 });
 
@@ -148,7 +148,7 @@ gulp.task('run-test', function (done) {
     {
       cwd: process.cwd(),
       stdio: 'inherit',
-    }
+    },
   );
 
   dockerBuildCmd.on('exit', function (exitCode) {
@@ -156,7 +156,7 @@ gulp.task('run-test', function (done) {
       return done(
         new PluginError('test', {
           message: 'Docker build failed.',
-        })
+        }),
       );
     }
 

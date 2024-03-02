@@ -42,7 +42,7 @@ export class PairMatcher {
     stackHeight: number,
     isNextMatchForward: boolean,
     vimState: VimState,
-    allowCurrentPosition: boolean
+    allowCurrentPosition: boolean,
   ): Position | undefined {
     let lineNumber = position.line;
     const linePosition = position.character;
@@ -139,7 +139,7 @@ export class PairMatcher {
     position: Position,
     charToMatch: string,
     vimState: VimState,
-    allowCurrentPosition: boolean
+    allowCurrentPosition: boolean,
   ): Position | undefined {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
@@ -169,7 +169,7 @@ export class PairMatcher {
       stackHeight,
       pairing.isNextMatchForward,
       vimState,
-      allowCurrentPosition
+      allowCurrentPosition,
     );
   }
 }

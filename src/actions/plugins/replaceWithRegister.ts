@@ -32,7 +32,7 @@ class ReplaceOperator extends BaseOperator {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName)
+        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
       );
       return;
     }

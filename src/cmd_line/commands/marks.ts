@@ -1,11 +1,12 @@
-import { window, QuickPickItem } from 'vscode';
+import { QuickPickItem, window } from 'vscode';
 
-import { VimState } from '../../state/vimState';
-import { IMark } from '../../history/historyTracker';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
 import { Cursor } from '../../common/motion/cursor';
 import { ErrorCode, VimError } from '../../error';
+import { IMark } from '../../history/historyTracker';
+import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { alt, noneOf, optWhitespace, Parser, regexp, seq, string, whitespace } from 'parsimmon';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -56,7 +57,7 @@ export class MarksCommand extends ExCommand {
         vimState.cursors = [new Cursor(item.mark.position, item.mark.position)];
       }
     } else {
-      window.showInformationMessage('No marks set');
+      void window.showInformationMessage('No marks set');
     }
   }
 }
@@ -79,11 +80,11 @@ export class DeleteMarksCommand extends ExCommand {
             seq(regexp(/[0-9]/).skip(string('-')), regexp(/[0-9]/)).map(([start, end]) => {
               return { start, end };
             }),
-            noneOf('-')
-          )
+            noneOf('-'),
+          ),
         )
-        .many()
-    )
+        .many(),
+    ),
   ).map((marks) => new DeleteMarksCommand(marks));
 
   private args: DeleteMarksArgs;

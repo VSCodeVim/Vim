@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
 import * as path from 'path';
-import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
+import { mkdirAsync, readFileAsync, unlinkSync, writeFileAsync } from 'platform/fs';
+import * as vscode from 'vscode';
 import { Globals } from '../../globals';
 import { Logger } from '../../util/logger';
 
@@ -16,7 +16,7 @@ export class HistoryBase {
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
-    extensionStoragePath: string
+    extensionStoragePath: string,
   ) {
     this.historyFileName = historyFileName;
     this.extensionStoragePath = extensionStoragePath;
@@ -69,6 +69,7 @@ export class HistoryBase {
     try {
       data = await readFileAsync(this.historyKey, 'utf-8');
     } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (err.code === 'ENOENT') {
         Logger.debug(`History does not exist. path=${this.historyKey}`);
       } else {
@@ -82,10 +83,12 @@ export class HistoryBase {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const parsedData = JSON.parse(data);
       if (!Array.isArray(parsedData)) {
         throw Error('Unexpected format in history file. Expected JSON.');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       this.history = parsedData;
     } catch (e) {
       Logger.warn(`Deleting corrupted history file. path=${this.historyKey} err=${e}.`);
@@ -99,6 +102,7 @@ export class HistoryBase {
       try {
         await mkdirAsync(Globals.extensionStoragePath, { recursive: true });
       } catch (createDirectoryErr) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (createDirectoryErr.code !== 'EEXIST') {
           throw createDirectoryErr;
         }

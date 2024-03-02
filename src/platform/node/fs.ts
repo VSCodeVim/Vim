@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-import { promisify } from 'util';
-import * as util from 'util';
 import * as fs from 'fs';
+import * as util from 'util';
+import { promisify } from 'util';
+import * as vscode from 'vscode';
 
 export const constants = {
   UV_FS_SYMLINK_DIR: 1,
@@ -95,13 +95,14 @@ export async function readFileAsync(path: string, encoding: BufferEncoding): Pro
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   await promisify(fs.mkdir)(path, options);
 }
 
 export async function writeFileAsync(
   path: string,
   content: string,
-  encoding: BufferEncoding
+  encoding: BufferEncoding,
 ): Promise<void> {
   await promisify(fs.writeFile)(path, content, encoding);
 }

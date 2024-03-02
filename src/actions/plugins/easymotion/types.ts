@@ -81,7 +81,7 @@ export interface IEasyMotion {
     document: vscode.TextDocument,
     position: Position,
     search?: string | RegExp,
-    options?: SearchOptions
+    options?: SearchOptions,
   ): Match[];
   updateDecorations(editor: vscode.TextEditor): void;
   clearMarkers(): void;

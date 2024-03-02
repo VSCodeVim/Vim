@@ -1,32 +1,32 @@
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
+import { ErrorCode, VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
+import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { PositionDiff } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction, BaseCommand } from './../base';
+import { BaseCommand, RegisterAction } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
-  CommandInsertAtLineEnd,
-  DocumentContentChangeAction,
-  CommandReplaceAtCursorFromNormalMode,
-  CommandInsertAtLineBegin,
   CommandInsertAtLastChange,
+  CommandInsertAtLineBegin,
+  CommandInsertAtLineEnd,
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
+  CommandReplaceAtCursorFromNormalMode,
+  DocumentContentChangeAction,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
-import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
-import { Position } from 'vscode';
-import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 
 @RegisterAction
 export class CommandEscInsertMode extends BaseCommand {
@@ -38,7 +38,7 @@ export class CommandEscInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vscode.commands.executeCommand('closeParameterHints');
+    void vscode.commands.executeCommand('closeParameterHints');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
@@ -77,7 +77,7 @@ export class CommandEscInsertMode extends BaseCommand {
           a instanceof CommandInsertAtLineBegin ||
           a instanceof CommandInsertAtLineEnd ||
           a instanceof CommandInsertAtFirstCharacter ||
-          a instanceof CommandInsertAtLastChange
+          a instanceof CommandInsertAtLastChange,
       ) !== undefined;
 
     // If this is the type to repeat insert, do this now
@@ -98,7 +98,7 @@ export class CommandEscInsertMode extends BaseCommand {
 
           // Add a transform containing the change
           vimState.recordedState.transformer.addTransformation(
-            changeAction.getTransformation(positionDiff)
+            changeAction.getTransformation(positionDiff),
           );
         }
       }
@@ -177,13 +177,13 @@ abstract class IndentCommand extends BaseCommand {
     vimState.recordedState.transformer.replace(
       new vscode.Range(
         position.getLineBegin(),
-        position.with({ character: line.firstNonWhitespaceCharacterIndex })
+        position.with({ character: line.firstNonWhitespaceCharacterIndex }),
       ),
       TextEditor.setIndentationLevel(
         line.text,
         newIndentationWidth,
-        vimState.editor.options.insertSpaces as boolean
-      ).match(/^(\s*)/)![1]
+        vimState.editor.options.insertSpaces as boolean,
+      ).match(/^(\s*)/)![1],
     );
   }
 }
@@ -342,7 +342,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1])
+        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1]),
       );
       return;
     }
@@ -530,7 +530,7 @@ class NewLineInsertMode extends BaseCommand {
     vimState.recordedState.transformer.insert(
       position,
       '\n',
-      PositionDiff.offset({ character: -1 })
+      PositionDiff.offset({ character: -1 }),
     );
   }
 }

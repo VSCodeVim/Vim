@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+// eslint-disable-next-line id-denylist
 import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
@@ -6,7 +6,6 @@ import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
-import { MoveCommand } from '../cmd_line/commands/move';
 import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { FileCommand } from '../cmd_line/commands/file';
@@ -17,12 +16,14 @@ import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
 import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
+import { MoveCommand } from '../cmd_line/commands/move';
 import { NohlCommand } from '../cmd_line/commands/nohl';
 import { OnlyCommand } from '../cmd_line/commands/only';
 import { PrintCommand } from '../cmd_line/commands/print';
 import { PutExCommand } from '../cmd_line/commands/put';
 import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
+import { RedoCommand } from '../cmd_line/commands/redo';
 import { RegisterCommand } from '../cmd_line/commands/register';
 import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
@@ -46,7 +47,6 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
-import { RedoCommand } from '../cmd_line/commands/redo';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -89,7 +89,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
-  [['b', 'uffer'], undefined],
+  [['b', 'uffer'], TabCommand.argParsers.tabAbsolute],
   [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],
@@ -331,7 +331,10 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lp', 'revious'], succeed(new VsCodeCommand('editor.action.previousCommentThreadAction'))],
   [['lpf', 'ile'], undefined],
   [['lr', 'ewind'], undefined],
-  [['ls', ''], undefined],
+  [
+    ['ls', ''],
+    succeed(new VsCodeCommand('workbench.action.quickOpenLeastRecentlyUsedEditorInGroup')),
+  ],
   [['lt', 'ag'], undefined],
   [['lu', 'nmap'], undefined],
   [['lua', ''], undefined],
@@ -625,7 +628,7 @@ class UnimplementedCommand extends ExCommand {
     StatusBar.setText(
       vimState,
       `Command :${this.name} is not yet implemented (PRs are welcome!)`,
-      true
+      true,
     );
   }
 
@@ -642,7 +645,7 @@ export class NoOpCommand extends ExCommand {
 
 function nameParser(
   name: [string, string],
-  argParser: ArgParser | undefined
+  argParser: ArgParser | undefined,
 ): Parser<Parser<ExCommand>> {
   argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
@@ -654,7 +657,7 @@ function nameParser(
 export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
-    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace)))
+    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
 );
 
 export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
@@ -665,14 +668,14 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         LineRange.parser.fallback(undefined),
         optWhitespace,
         commandNameParser.fallback(undefined),
-        all
-      )
+        all,
+      ),
     )
     .map(([lineRange, whitespace, parseArgs, args]) => {
       if (parseArgs === undefined) {
         throw VimError.fromCode(
           ErrorCode.NotAnEditorCommand,
-          `${lineRange?.toString() ?? ''}${whitespace}${args}`
+          `${lineRange?.toString() ?? ''}${whitespace}${args}`,
         );
       }
       const result = seq(parseArgs, optWhitespace.then(all)).parse(args);

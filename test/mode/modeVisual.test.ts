@@ -1371,14 +1371,14 @@ suite('Mode Visual', () => {
   suite('replace text in characterwise visual-mode with characterwise register content', () => {
     test('gv selects the last pasted text (which is shorter than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        '2ggv$hy'.split('') // yank the second line
+        '2ggv$hy'.split(''), // yank the second line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split('') // replace the first line
+        'ggv$hp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
@@ -1395,14 +1395,14 @@ suite('Mode Visual', () => {
 
     test('gv selects the last pasted text (which is longer than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        'v0y'.split('') // yank the last line
+        'v0y'.split(''), // yank the last line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split('') // replace the first line
+        'ggv$hp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
@@ -1425,10 +1425,10 @@ suite('Mode Visual', () => {
       await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        '2ggvjey'.split('') // yank 'foo\nbar'
+        '2ggvjey'.split(''), // yank 'foo\nbar'
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggvep'.split('') // replace 'replace'
+        'ggvep'.split(''), // replace 'replace'
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
@@ -1866,6 +1866,46 @@ suite('Mode Visual', () => {
         `    "": ["g", "j"],`,
         `  },`,
         `]`,
+      ],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Command editor.action.smartSelect.expand on visual mode linewise',
+      config: {
+        visualModeKeyBindings: [
+          {
+            before: ['J'],
+            commands: ['editor.action.smartSelect.expand'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `{`,
+        `  "vim.visualModeKeyBindingsNonRecursive": [`,
+        `    {|`,
+        `      "before": ["J"],`,
+        `      "commands": ["editor.action.smartSelect.expand"]`,
+        `    },`,
+        `    {`,
+        `      "before": ["K"],`,
+        `      "commands": ["editor.action.smartSelect.shrink"]`,
+        `    }`,
+        `  ],`,
+        `}`,
+      ],
+      keysPressed: 'VJd',
+      end: [
+        `{`,
+        `  "vim.visualModeKeyBindingsNonRecursive": [`,
+        `|`,
+        `    {`,
+        `      "before": ["K"],`,
+        `      "commands": ["editor.action.smartSelect.shrink"]`,
+        `    }`,
+        `  ],`,
+        `}`,
       ],
       endMode: Mode.Normal,
     });

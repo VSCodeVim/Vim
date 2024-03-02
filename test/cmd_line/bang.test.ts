@@ -97,7 +97,7 @@ suite('bang (!) cmd_line', () => {
 
     test('! can read from both stdout and stderr', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        ':.!echo "stdout" && >&2 echo "stderr"\n'.split('')
+        ':.!echo "stdout" && >&2 echo "stderr"\n'.split(''),
       );
       assertEqualLines(['stdout', 'stderr']);
     });

@@ -1,14 +1,15 @@
-import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
+import { VimState } from '../../state/vimState';
 
-import { Register } from '../../register/register';
-import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, optWhitespace, seq } from 'parsimmon';
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
+import { ErrorCode, VimError } from '../../error';
+import { Register } from '../../register/register';
+import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { alt, any, optWhitespace, Parser, seq } from 'parsimmon';
 import { bangParser } from '../../vimscript/parserUtils';
 import { expressionParser } from '../expression';
 
@@ -31,8 +32,8 @@ export class PutExCommand extends ExCommand {
       optWhitespace
         .then(any)
         .map((x) => ({ register: x }))
-        .fallback({ register: undefined })
-    )
+        .fallback({ register: undefined }),
+    ),
   ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
 
   public readonly arguments: IPutCommandArguments;
@@ -53,7 +54,7 @@ export class PutExCommand extends ExCommand {
         vimState,
         this.arguments.register,
         this.arguments.fromExpression,
-        0
+        0,
       );
     }
 

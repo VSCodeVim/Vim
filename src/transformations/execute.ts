@@ -1,26 +1,26 @@
 import * as vscode from 'vscode';
-import { Logger } from '../util/logger';
-import {
-  isTextTransformation,
-  TextTransformations,
-  Transformation,
-  isMultiCursorTextTransformation,
-  InsertTextVSCodeTransformation,
-  areAllSameTransformation,
-  overlappingTransformations,
-} from './transformations';
 import { ExCommandLine } from '../cmd_line/commandLine';
+import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
+import { Globals } from '../globals';
 import { Mode } from '../mode/mode';
 import { Register } from '../register/register';
-import { RecordedState } from '../state/recordedState';
-import { TextEditor } from '../textEditor';
-import { Cursor } from '../common/motion/cursor';
-import { VimState } from '../state/vimState';
-import { Transformer } from './transformer';
-import { Globals } from '../globals';
-import { keystrokesExpressionParser } from '../vimscript/expression';
 import { globalState } from '../state/globalState';
+import { RecordedState } from '../state/recordedState';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
+import { Logger } from '../util/logger';
+import { keystrokesExpressionParser } from '../vimscript/expression';
+import {
+  InsertTextVSCodeTransformation,
+  TextTransformations,
+  Transformation,
+  areAllSameTransformation,
+  isMultiCursorTextTransformation,
+  isTextTransformation,
+  overlappingTransformations,
+} from './transformations';
+import { Transformer } from './transformer';
 
 export interface IModeHandler {
   vimState: VimState;
@@ -33,7 +33,7 @@ export interface IModeHandler {
 
 export async function executeTransformations(
   modeHandler: IModeHandler,
-  transformations: Transformation[]
+  transformations: Transformation[],
 ) {
   if (transformations.length === 0) {
     return;
@@ -41,15 +41,15 @@ export async function executeTransformations(
 
   const vimState = modeHandler.vimState;
 
-  const textTransformations: TextTransformations[] = transformations.filter((x) =>
-    isTextTransformation(x)
-  ) as any;
+  const textTransformations = transformations.filter((x): x is TextTransformations =>
+    isTextTransformation(x),
+  );
   const multicursorTextTransformations: InsertTextVSCodeTransformation[] = transformations.filter(
-    (x) => isMultiCursorTextTransformation(x)
-  ) as any;
+    (x): x is InsertTextVSCodeTransformation => isMultiCursorTextTransformation(x),
+  );
 
   const otherTransformations = transformations.filter(
-    (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x)
+    (x) => !isTextTransformation(x) && !isMultiCursorTextTransformation(x),
   );
 
   const accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
@@ -116,6 +116,7 @@ export async function executeTransformations(
       } catch (e) {
         // Messages like "TextEditor(vs.editor.ICodeEditor:1,$model8) has been disposed" can be ignored.
         // They occur when the user switches to a new tab while an action is running.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (e.name !== 'DISPOSED') {
           throw e;
         }
@@ -186,7 +187,7 @@ export async function executeTransformations(
           vimState.recordedState = new RecordedState();
           if (transformation.register === ':') {
             await new ExCommandLine(recordedMacro.commandString, vimState.currentMode).run(
-              vimState
+              vimState,
             );
           } else if (transformation.replay === 'contentChange') {
             await modeHandler.runMacro(recordedMacro);
@@ -207,7 +208,7 @@ export async function executeTransformations(
 
           await executeTransformations(
             modeHandler,
-            vimState.recordedState.transformer.transformations
+            vimState.recordedState.transformer.transformations,
           );
 
           globalState.lastInvokedMacro = recordedMacro;
@@ -232,6 +233,7 @@ export async function executeTransformations(
         break;
 
       case 'vscodeCommand':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await vscode.commands.executeCommand(transformation.command, ...transformation.args);
         break;
 
@@ -241,13 +243,19 @@ export async function executeTransformations(
     }
   }
 
-  const selections = vimState.editor.selections.map((sel) => {
-    let range = Cursor.FromVSCodeSelection(sel);
-    if (range.start.isBefore(range.stop)) {
-      range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
-    }
-    return new vscode.Selection(range.start, range.stop);
-  });
+  let selections;
+  if (vimState.currentMode === Mode.Insert) {
+    // Insert mode selections do not need to be modified
+    selections = vimState.editor.selections;
+  } else {
+    selections = vimState.editor.selections.map((sel) => {
+      let range = Cursor.FromVSCodeSelection(sel);
+      if (range.start.isBefore(range.stop)) {
+        range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
+      }
+      return new vscode.Selection(range.start, range.stop);
+    });
+  }
   const firstTransformation = transformations[0];
   const manuallySetCursorPositions =
     (firstTransformation.type === 'deleteRange' ||
@@ -268,9 +276,9 @@ export async function executeTransformations(
         (cursor, diff) =>
           new Cursor(
             cursor.start.add(vimState.document, diff),
-            cursor.stop.add(vimState.document, diff)
+            cursor.stop.add(vimState.document, diff),
           ),
-        Cursor.FromVSCodeSelection(sel)
+        Cursor.FromVSCodeSelection(sel),
       );
     });
 

@@ -84,7 +84,7 @@ export abstract class BaseMovement extends BaseAction {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<Position | IMovement> {
     throw new Error('Not implemented!');
   }
@@ -98,7 +98,7 @@ export abstract class BaseMovement extends BaseAction {
     position: Position,
     vimState: VimState,
     firstIteration: boolean,
-    lastIteration: boolean
+    lastIteration: boolean,
   ): Promise<Position | IMovement> {
     return this.execAction(position, vimState, firstIteration, lastIteration);
   }
@@ -111,7 +111,7 @@ export abstract class BaseMovement extends BaseAction {
   public async execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement> {
     let result!: Position | IMovement;
     let prevResult = failedMovement(vimState);

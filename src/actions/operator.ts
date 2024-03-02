@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
+import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
+import { isHighSurrogate, isLowSurrogate } from '../util/util';
+import { ExCommandLine } from './../cmd_line/commandLine';
+import { Cursor } from './../common/motion/cursor';
 import { PositionDiff, earlierOf, sorted } from './../common/motion/position';
 import { configuration } from './../configuration/configuration';
 import { Mode, isVisualMode } from './../mode/mode';
@@ -7,11 +12,6 @@ import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
-import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
-import { ExCommandLine } from './../cmd_line/commandLine';
-import { Position } from 'vscode';
-import { isHighSurrogate, isLowSurrogate } from '../util/util';
-import { Cursor } from './../common/motion/cursor';
 
 export abstract class BaseOperator extends BaseAction {
   override actionType = 'operator' as const;
@@ -77,7 +77,7 @@ export abstract class BaseOperator extends BaseAction {
     await this.run(
       vimState,
       position.getLineBegin(),
-      position.getDown(Math.max(0, count - 1)).getLineEnd()
+      position.getDown(Math.max(0, count - 1)).getLineEnd(),
     );
   }
 
@@ -134,8 +134,8 @@ export class DeleteOperator extends BaseOperator {
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
         : text.endsWith('\n')
-        ? text.slice(0, -1)
-        : text;
+          ? text.slice(0, -1)
+          : text;
     }
     Register.put(vimState, text, this.multicursorIndex, true);
 
@@ -344,7 +344,7 @@ abstract class ChangeCaseOperator extends BaseOperator {
         const range = new vscode.Range(start, end);
         vimState.recordedState.transformer.replace(
           range,
-          this.transformText(vimState.document.getText(range))
+          this.transformText(vimState.document.getText(range)),
         );
       }
 
@@ -352,7 +352,7 @@ abstract class ChangeCaseOperator extends BaseOperator {
       for (let i = 0; i < vimState.editor.selections.length; i++) {
         vimState.recordedState.transformer.moveCursor(
           PositionDiff.exactPosition(earlierOf(startPos, endPos)),
-          i
+          i,
         );
       }
     } else {
@@ -495,7 +495,7 @@ class IndentOperatorVisualBlock extends BaseOperator {
     if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
       const shiftSelectionByNum = Math.abs(
         vimState.dotCommandPreviousVisualSelection.end.line -
-          vimState.dotCommandPreviousVisualSelection.start.line
+          vimState.dotCommandPreviousVisualSelection.start.line,
       );
 
       start = vimState.cursorStartPosition;
@@ -534,7 +534,7 @@ class OutdentOperator extends BaseOperator {
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      start.line
+      start.line,
     );
   }
 }
@@ -569,7 +569,7 @@ class OutdentOperatorVisualAndVisualLine extends BaseOperator {
     await vimState.setCurrentMode(Mode.Normal);
     vimState.cursorStopPosition = TextEditor.getFirstNonWhitespaceCharOnLine(
       vimState.document,
-      start.line
+      start.line,
     );
   }
 }
@@ -588,7 +588,7 @@ class OutdentOperatorVisualBlock extends BaseOperator {
     if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
       const shiftSelectionByNum = Math.abs(
         vimState.dotCommandPreviousVisualSelection.end.line -
-          vimState.dotCommandPreviousVisualSelection.start.line
+          vimState.dotCommandPreviousVisualSelection.start.line,
       );
 
       start = vimState.cursorStartPosition;
@@ -611,7 +611,7 @@ class OutdentOperatorVisualBlock extends BaseOperator {
           const distToNonBlankChar = currentLineFromStart.match(/\S/)?.index ?? 0;
           const outdentDist = Math.min(
             distToNonBlankChar,
-            tabSize * (vimState.recordedState.count || 1)
+            tabSize * (vimState.recordedState.count || 1),
           );
 
           vimState.recordedState.transformer.addTransformation({
@@ -654,21 +654,21 @@ export class ChangeOperator extends BaseOperator {
       const firstLineIndent = vimState.document.getText(
         new vscode.Range(
           deleteRange.start.getLineBegin(),
-          deleteRange.start.getLineBeginRespectingIndent(vimState.document)
-        )
+          deleteRange.start.getLineBeginRespectingIndent(vimState.document),
+        ),
       );
 
       vimState.recordedState.transformer.replace(
         deleteRange,
         firstLineIndent,
-        PositionDiff.exactPosition(new Position(deleteRange.start.line, firstLineIndent.length))
+        PositionDiff.exactPosition(new Position(deleteRange.start.line, firstLineIndent.length)),
       );
 
       if (vimState.document.languageId !== 'plaintext') {
         vimState.recordedState.transformer.vscodeCommand('editor.action.reindentselectedlines');
         vimState.recordedState.transformer.moveCursor(
           PositionDiff.endOfLine(),
-          this.multicursorIndex
+          this.multicursorIndex,
         );
       }
     } else {
@@ -962,12 +962,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
     const result: string[] = [];
 
     for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
-      let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
       const commentLength = commentType.start.length + indentAfterComment.length;
 
       // Start with a single empty content line.
-      lines = [``];
+      const lines: string[] = [``];
 
       for (let line of content.split('\n')) {
         // Preserve blank lines in output.
@@ -1024,7 +1023,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
             // by searching backward for a whitespace character (space or tab).
             let breakpoint = Math.max(
               trimmedLine.lastIndexOf(' ', remaining),
-              trimmedLine.lastIndexOf('\t', remaining)
+              trimmedLine.lastIndexOf('\t', remaining),
             );
             if (breakpoint < 0) {
               // Next word is too long to fit on the current line.
