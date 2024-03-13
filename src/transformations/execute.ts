@@ -270,7 +270,9 @@ export async function executeTransformations(
               TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
           }
           await modeHandler.handleMultipleKeyEvents(keystroke.value);
-          await vimState.setCurrentMode(Mode.Normal);
+          if (vimState.currentMode === Mode.Insert) {
+            await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+          }
         }
         vimState.isExecutingNormalCommand = false;
         break;
