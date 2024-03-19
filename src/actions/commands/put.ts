@@ -68,6 +68,7 @@ abstract class BasePutCommand extends BaseCommand {
       registerMode,
       count,
       text,
+      vimState.returnToInsertAfterCommand,
     );
 
     vimState.recordedState.transformer.moveCursor(
@@ -321,6 +322,7 @@ abstract class BasePutCommand extends BaseCommand {
     registerMode: RegisterMode,
     count: number,
     text: string,
+    returnToInsertAfterCommand: boolean,
   ): Position;
 }
 
@@ -380,11 +382,18 @@ class PutCommand extends BasePutCommand {
     registerMode: RegisterMode,
     count: number,
     text: string,
+    returnToInsertAfterCommand: boolean,
   ): Position {
     const rangeStart = replaceRange.start;
     if (mode === Mode.Normal || mode === Mode.Visual) {
       if (registerMode === RegisterMode.CharacterWise) {
-        return text.includes('\n') ? rangeStart : rangeStart.advancePositionByText(text).getLeft();
+        if (text.includes('\n')) {
+          return rangeStart;
+        } else if (returnToInsertAfterCommand) {
+          return rangeStart.advancePositionByText(text);
+        } else {
+          return rangeStart.advancePositionByText(text).getLeft();
+        }
       } else if (registerMode === RegisterMode.LineWise) {
         return new Position(rangeStart.line + 1, firstNonBlankChar(text));
       } else if (registerMode === RegisterMode.BlockWise) {
@@ -452,6 +461,7 @@ class PutBeforeCommand extends PutCommand {
     registerMode: RegisterMode,
     count: number,
     text: string,
+    returnToInsertAfterCommand: boolean,
   ): Position {
     const rangeStart = replaceRange.start;
     if (mode === Mode.Normal || mode === Mode.VisualBlock) {
@@ -460,7 +470,15 @@ class PutBeforeCommand extends PutCommand {
       }
     }
 
-    return super.getCursorPosition(document, mode, replaceRange, registerMode, count, text);
+    return super.getCursorPosition(
+      document,
+      mode,
+      replaceRange,
+      registerMode,
+      count,
+      text,
+      returnToInsertAfterCommand,
+    );
   }
 }
 
@@ -473,6 +491,7 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
       registerMode: RegisterMode,
       count: number,
       text: string,
+      returnToInsertAfterCommand: boolean,
     ): Position {
       const rangeStart = replaceRange.start;
       if (mode === Mode.Normal || mode === Mode.Visual) {
@@ -518,7 +537,15 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
         }
       }
 
-      return super.getCursorPosition(document, mode, replaceRange, registerMode, count, text);
+      return super.getCursorPosition(
+        document,
+        mode,
+        replaceRange,
+        registerMode,
+        count,
+        text,
+        returnToInsertAfterCommand,
+      );
     }
   };
 }

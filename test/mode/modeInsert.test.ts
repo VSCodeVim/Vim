@@ -382,6 +382,22 @@ suite('Mode Insert', () => {
       end: ['testtest123|'],
       endMode: Mode.Insert,
     });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and paste',
+      start: ['|XXX', '123456'],
+      keysPressed: 'ye' + 'j' + 'A<C-o>p',
+      end: ['XXX', '123456XXX|'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and paste',
+      start: ['|XXX', '123456'],
+      keysPressed: 'ye' + 'j2|' + 'i<C-o>p',
+      end: ['XXX', '12XXX|3456'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
