@@ -18,6 +18,16 @@ function firstNonBlankChar(text: string): number {
   return text.match(/\S/)?.index ?? 0;
 }
 
+type GetCursorPositionParams = {
+  document: TextDocument;
+  mode: Mode;
+  replaceRange: vscode.Range;
+  registerMode: RegisterMode;
+  count: number;
+  text: string;
+  returnToInsertAfterCommand: boolean;
+};
+
 abstract class BasePutCommand extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override createsUndoPoint = true;
@@ -61,15 +71,15 @@ abstract class BasePutCommand extends BaseCommand {
       );
     }
 
-    const newCursorPosition = this.getCursorPosition(
-      vimState.document,
+    const newCursorPosition = this.getCursorPosition({
+      document: vimState.document,
+      returnToInsertAfterCommand: vimState.returnToInsertAfterCommand,
       mode,
       replaceRange,
       registerMode,
       count,
       text,
-      vimState.returnToInsertAfterCommand,
-    );
+    });
 
     vimState.recordedState.transformer.moveCursor(
       PositionDiff.exactPosition(newCursorPosition),
@@ -315,15 +325,7 @@ abstract class BasePutCommand extends BaseCommand {
 
   protected abstract shouldAdjustIndent(mode: Mode, registerMode: RegisterMode): boolean;
 
-  protected abstract getCursorPosition(
-    document: TextDocument,
-    mode: Mode,
-    replaceRange: vscode.Range,
-    registerMode: RegisterMode,
-    count: number,
-    text: string,
-    returnToInsertAfterCommand: boolean,
-  ): Position;
+  protected abstract getCursorPosition(params: GetCursorPositionParams): Position;
 }
 
 @RegisterAction
@@ -375,15 +377,13 @@ class PutCommand extends BasePutCommand {
     return false;
   }
 
-  protected getCursorPosition(
-    document: TextDocument,
-    mode: Mode,
-    replaceRange: vscode.Range,
-    registerMode: RegisterMode,
-    count: number,
-    text: string,
-    returnToInsertAfterCommand: boolean,
-  ): Position {
+  protected getCursorPosition({
+    mode,
+    replaceRange,
+    registerMode,
+    text,
+    returnToInsertAfterCommand,
+  }: GetCursorPositionParams): Position {
     const rangeStart = replaceRange.start;
     if (mode === Mode.Normal || mode === Mode.Visual) {
       if (registerMode === RegisterMode.CharacterWise) {
@@ -454,15 +454,13 @@ class PutBeforeCommand extends PutCommand {
     return super.getReplaceRange(mode, cursor, registerMode);
   }
 
-  protected override getCursorPosition(
-    document: TextDocument,
-    mode: Mode,
-    replaceRange: vscode.Range,
-    registerMode: RegisterMode,
-    count: number,
-    text: string,
-    returnToInsertAfterCommand: boolean,
-  ): Position {
+  protected override getCursorPosition({
+    mode,
+    replaceRange,
+    text,
+    registerMode,
+    ...params
+  }: GetCursorPositionParams): Position {
     const rangeStart = replaceRange.start;
     if (mode === Mode.Normal || mode === Mode.VisualBlock) {
       if (registerMode === RegisterMode.LineWise) {
@@ -470,29 +468,21 @@ class PutBeforeCommand extends PutCommand {
       }
     }
 
-    return super.getCursorPosition(
+    return super.getCursorPosition({ mode, replaceRange, text, registerMode, ...params });
+  }
+}
+
+function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {
+  return class CursorAfterText extends Base {
+    protected override getCursorPosition({
       document,
       mode,
       replaceRange,
       registerMode,
       count,
       text,
-      returnToInsertAfterCommand,
-    );
-  }
-}
-
-function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(Base: TBase) {
-  return class CursorAfterText extends Base {
-    protected override getCursorPosition(
-      document: TextDocument,
-      mode: Mode,
-      replaceRange: vscode.Range,
-      registerMode: RegisterMode,
-      count: number,
-      text: string,
-      returnToInsertAfterCommand: boolean,
-    ): Position {
+      ...params
+    }: GetCursorPositionParams): Position {
       const rangeStart = replaceRange.start;
       if (mode === Mode.Normal || mode === Mode.Visual) {
         if (registerMode === RegisterMode.CharacterWise) {
@@ -537,15 +527,15 @@ function PlaceCursorAfterText<TBase extends new (...args: any[]) => PutCommand>(
         }
       }
 
-      return super.getCursorPosition(
+      return super.getCursorPosition({
         document,
         mode,
         replaceRange,
         registerMode,
         count,
         text,
-        returnToInsertAfterCommand,
-      );
+        ...params,
+      });
     }
   };
 }
@@ -611,14 +601,10 @@ function ExCommand<TBase extends new (...args: any[]) => PutCommand>(Base: TBase
       return new vscode.Range(pos, pos);
     }
 
-    protected override getCursorPosition(
-      document: TextDocument,
-      mode: Mode,
-      replaceRange: vscode.Range,
-      registerMode: RegisterMode,
-      count: number,
-      text: string,
-    ): Position {
+    protected override getCursorPosition({
+      replaceRange,
+      text,
+    }: GetCursorPositionParams): Position {
       const lines = text.split('\n');
       return new Position(
         replaceRange.start.line + lines.length - (this.putBefore() ? 1 : 0),
