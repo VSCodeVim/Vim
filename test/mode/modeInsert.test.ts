@@ -11,7 +11,7 @@ import {
   reloadConfiguration,
 } from './../testUtils';
 import { Globals } from '../../src/globals';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestOnly } from '../testSimplifier';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
@@ -324,34 +324,64 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: 'Can <Esc> after entering insert mode from <ctrl+o>',
-    start: ['|'],
-    keysPressed: 'i<C-o>i<Esc>',
-    end: ['|'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: 'Can perform <ctrl+o> to exit and perform one command in normal',
-    start: ['testtest|'],
-    keysPressed: 'a123<C-o>b123',
-    end: ['123|testtest123'],
-  });
-
-  newTest({
-    title: 'Can <ctrl-o> after entering insert mode from <ctrl-o>',
-    start: ['|'],
-    keysPressed: 'i<C-o>i<C-o>',
-    end: ['|'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
     title:
-      'Can perform <ctrl+o> to exit and perform one command in normal at the beginning of a row',
+      'Can perform <Esc> to exit and move cursor back one character from the most right position',
     start: ['|testtest'],
-    keysPressed: 'i<C-o>l123',
-    end: ['t123|esttest'],
+    keysPressed: 'A<Esc>',
+    end: ['testtes|t'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can perform <Esc> to exit and move cursor back one character from middle of text',
+    start: ['test|test'],
+    keysPressed: 'i<Esc>',
+    end: ['tes|ttest'],
+    endMode: Mode.Normal,
+  });
+
+  suite('<C-o>', () => {
+    newTest({
+      title: 'Can <Esc> after entering insert mode from <ctrl+o>',
+      start: ['|'],
+      keysPressed: 'i<C-o>i<Esc>',
+      end: ['|'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> after entering insert mode from <ctrl-o>',
+      start: ['test|test'],
+      keysPressed: 'i<C-o>i<C-o>',
+      end: ['test|test'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title:
+        'Can perform <ctrl-o> to exit and perform one command in normal at the beginning of a line',
+      start: ['|testtest'],
+      keysPressed: 'i<C-o>l123',
+      end: ['t123|esttest'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title:
+        'Can perform <ctrl-o> to exit and perform one command in normal at the middle of a row',
+      start: ['test|test'],
+      keysPressed: 'i<C-o>l123',
+      end: ['testt123|est'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and perform one command in normal at the end of a row',
+      start: ['testtest|'],
+      keysPressed: 'a123<C-o>zz',
+      end: ['testtest123|'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
