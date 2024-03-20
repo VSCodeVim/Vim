@@ -1,21 +1,22 @@
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, noneOf, oneOf, optWhitespace, regexp, seq, string } from 'parsimmon';
 import { CancellationTokenSource, DecorationOptions, Position, Range, window } from 'vscode';
-import { Jump } from '../../jumps/jump';
-import { SearchState } from '../../state/searchState';
-import { SubstituteState } from '../../state/substituteState';
-import { VimError, ErrorCode } from '../../error';
-import { VimState } from '../../state/vimState';
+import { PositionDiff } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
+import { ErrorCode, VimError } from '../../error';
+import { Jump } from '../../jumps/jump';
 import { globalState } from '../../state/globalState';
+import { SearchState } from '../../state/searchState';
+import { SubstituteState } from '../../state/substituteState';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import { Address, LineRange } from '../../vimscript/lineRange';
-import { ExCommand } from '../../vimscript/exCommand';
-import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
-import { alt, any, noneOf, oneOf, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
-import { numberParser } from '../../vimscript/parserUtils';
-import { PositionDiff } from '../../common/motion/position';
-import { escapeCSSIcons } from '../../util/statusBarTextUtils';
 import { SearchDecorations, ensureVisible, formatDecorationText } from '../../util/decorationUtils';
+import { escapeCSSIcons } from '../../util/statusBarTextUtils';
+import { ExCommand } from '../../vimscript/exCommand';
+import { Address, LineRange } from '../../vimscript/lineRange';
+import { numberParser } from '../../vimscript/parserUtils';
+import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
 
 type ReplaceStringComponent =
   | { type: 'string'; value: string }
@@ -151,6 +152,7 @@ export interface SubstituteFlags {
 const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
   alt<ReplaceStringComponent>(
     string('\\').then(
+      // eslint-disable-next-line id-denylist
       any.fallback(undefined).map<ReplaceStringComponent>((escaped) => {
         if (escaped === undefined || escaped === '\\') {
           return { type: 'string', value: '\\' };
@@ -323,7 +325,10 @@ export class SubstituteCommand extends ExCommand {
 
     const { pattern, replace } = this.resolvePatterns(false);
 
-    const showReplacements = this.arguments.pattern?.closed && configuration.inccommand;
+    const showReplacements =
+      this.arguments.pattern?.closed &&
+      configuration.inccommand &&
+      !this.arguments.flags.printCount;
 
     let matches: PatternMatch[] = [];
     if (pattern?.patternString) {
@@ -577,7 +582,7 @@ export class SubstituteCommand extends ExCommand {
       }
     }
 
-    if (substitutions > 0) {
+    if (substitutions > 0 && !this.arguments.flags.printCount) {
       // if any substitutions were made, jump to latest one
       const lastLine = Math.max(...substitutionLines.values()) + netNewLines;
       const cursor = new Position(Math.max(0, lastLine), 0);

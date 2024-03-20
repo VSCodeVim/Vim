@@ -1,32 +1,32 @@
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
+import { ErrorCode, VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
+import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { PositionDiff } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { RegisterAction, BaseCommand } from './../base';
+import { BaseCommand, RegisterAction } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
   CommandInsertAfterCursor,
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
-  CommandInsertAtLineEnd,
-  DocumentContentChangeAction,
-  CommandReplaceAtCursorFromNormalMode,
-  CommandInsertAtLineBegin,
   CommandInsertAtLastChange,
+  CommandInsertAtLineBegin,
+  CommandInsertAtLineEnd,
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
+  CommandReplaceAtCursorFromNormalMode,
+  DocumentContentChangeAction,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
-import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
-import { Position } from 'vscode';
-import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 
 @RegisterAction
 export class CommandEscInsertMode extends BaseCommand {
@@ -38,7 +38,7 @@ export class CommandEscInsertMode extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vscode.commands.executeCommand('closeParameterHints');
+    void vscode.commands.executeCommand('closeParameterHints');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {

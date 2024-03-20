@@ -26,7 +26,7 @@ export class PrintCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     // TODO: Wrong default for `:=`
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    void this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {

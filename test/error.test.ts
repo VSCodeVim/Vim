@@ -4,7 +4,7 @@ import { ErrorCode, ErrorMessage } from '../src/error';
 
 suite('Error', () => {
   test('error code has message', () => {
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const errorCodeString in ErrorCode) {
       const errorCode = Number(errorCodeString);
       if (!isNaN(errorCode)) {

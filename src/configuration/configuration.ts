@@ -1,25 +1,25 @@
+import * as process from 'process';
 import * as vscode from 'vscode';
 import { Globals } from '../globals';
-import { Notation } from './notation';
-import { ValidatorResults } from './iconfigurationValidator';
 import { VSCodeContext } from '../util/vscodeContext';
 import { configurationValidator } from './configurationValidator';
 import { decoration } from './decoration';
-import * as process from 'process';
+import { ValidatorResults } from './iconfigurationValidator';
+import { Notation } from './notation';
 
 import {
+  Digraph,
+  IAutoSwitchInputMethod,
+  ICamelCaseMotionConfiguration,
   IConfiguration,
+  IHighlightedYankConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
-  IAutoSwitchInputMethod,
-  IHighlightedYankConfiguration,
-  ICamelCaseMotionConfiguration,
   ITargetsConfiguration,
-  Digraph,
 } from './iconfiguration';
 
-import * as packagejson from '../../package.json';
 import { SUPPORT_VIMRC } from 'platform/constants';
+import * as packagejson from '../../package.json';
 
 // https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
 type RemoveIndex<T> = {
@@ -115,13 +115,17 @@ class Configuration implements IConfiguration {
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
 
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const option in this) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       let val = vimConfigs[option];
       if (val !== null && val !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (val.constructor.name === Object.name) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           val = Configuration.unproxify(val);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this[option] = val;
       }
     }
@@ -184,11 +188,11 @@ class Configuration implements IConfiguration {
         }
       }
 
-      VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
+      void VSCodeContext.set(`vim.use${boundKey.key}`, useKey);
     }
 
-    VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
-    VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+    void VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
+    void VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
     return validatorResults;
   }
@@ -356,6 +360,7 @@ class Configuration implements IConfiguration {
       ['interval', false],
     ]),
   })
+  // eslint-disable-next-line id-denylist
   number!: boolean;
 
   @overlapSetting({
@@ -447,8 +452,10 @@ class Configuration implements IConfiguration {
   };
 
   getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
-    // @ts-ignore: TODO: this function should take the mode directly
-    const cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+    // TODO: this function should take the mode directly
+    const cursorStyle = (this.cursorStylePerMode as unknown as Record<string, string | undefined>)[
+      modeName.toLowerCase()
+    ];
     if (cursorStyle) {
       return this.cursorStyleFromString(cursorStyle);
     }
@@ -486,10 +493,12 @@ class Configuration implements IConfiguration {
 
   private static unproxify(obj: { [key: string]: any }): object {
     const result: { [key: string]: any } = {};
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const key in obj) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const val = obj[key];
       if (val !== null && val !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         result[key] = val;
       }
     }
@@ -510,21 +519,26 @@ function overlapSetting(args: {
         // if the value is not defined or empty
         // look at the equivalent `editor` setting
         // if that is not defined then defer to the default value
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         let val = this['_' + propertyKey];
         if (val !== undefined && val !== '') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return val;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
         if (args.map && val !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           val = args.map.get(val);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return val;
       },
       set(value) {
         // synchronize the vim setting with the `editor` equivalent
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         this['_' + propertyKey] = value;
 
         if (value === undefined || value === '' || Globals.isTesting) {
@@ -541,6 +555,7 @@ function overlapSetting(args: {
         }
 
         // update configuration asynchronously
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         this.getConfiguration('editor').update(
           args.settingName,
           value,

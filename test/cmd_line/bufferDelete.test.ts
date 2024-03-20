@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import { join } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
+import * as error from '../../src/error';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
-import * as error from '../../src/error';
 
 suite('Buffer delete', () => {
   let modeHandler: ModeHandler;
@@ -21,7 +21,7 @@ suite('Buffer delete', () => {
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
       await new ExCommandLine(cmd, modeHandler.vimState.currentMode).run(modeHandler.vimState);
-      await t.WaitForEditorsToClose();
+      await t.waitForEditorsToClose();
 
       assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
     });
@@ -40,7 +40,7 @@ suite('Buffer delete', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
     await new ExCommandLine('bd!', modeHandler.vimState.currentMode).run(modeHandler.vimState);
-    await t.WaitForEditorsToClose();
+    await t.waitForEditorsToClose();
 
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
@@ -53,8 +53,8 @@ suite('Buffer delete', () => {
       for (let i = 0; i < 3; i++) {
         const uri: vscode.Uri = vscode.Uri.parse(join(dirPath, `${i}`));
         filePaths.push(uri.toString());
-        vscode.workspace.openTextDocument(uri).then((doc: vscode.TextDocument) => {
-          doc.save();
+        void vscode.workspace.openTextDocument(uri).then((doc: vscode.TextDocument) => {
+          void doc.save();
         });
       }
 

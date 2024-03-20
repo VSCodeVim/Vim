@@ -92,6 +92,7 @@ export class Configuration implements IConfiguration {
   tabstop = 2;
   editorCursorStyle = vscode.TextEditorCursorStyle.Line;
   expandtab = true;
+  // eslint-disable-next-line id-denylist
   number = true;
   relativenumber = false;
   iskeyword = ''; // Use `editor.wordSeparators`
