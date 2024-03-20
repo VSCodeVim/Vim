@@ -1230,7 +1230,7 @@
     "prettier": "3.2.4",
     "sinon": "17.0.1",
     "ts-loader": "9.5.1",
-    "typescript": "5.4.2",
+    "typescript": "5.4.3",
     "vsce": "2.15.0",
     "webpack": "5.90.3",
     "webpack-cli": "5.1.4",
