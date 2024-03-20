@@ -11,7 +11,7 @@ import {
   reloadConfiguration,
 } from './../testUtils';
 import { Globals } from '../../src/globals';
-import { newTest, newTestOnly } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
