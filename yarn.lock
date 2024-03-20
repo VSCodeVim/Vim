@@ -4178,10 +4178,10 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-neovim@5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/neovim/-/neovim-5.0.1.tgz#fa03cd0d074f4ea86041a909d15556cc0141d3d4"
-  integrity sha512-dGrk2r+uQDZHB8yFKBuHUBqwP1akbCGUQt+Re7nRaS3uhOvsKYUvikg5qBRdcxoWMvvHIqp1EVihskKAk93mPw==
+neovim@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/neovim/-/neovim-5.1.0.tgz#cffddd293c16b0b386596c8c50bbc5f4a5b0a246"
+  integrity sha512-9eTxqknziWkN8CBOx1SKdK+0Dfp1NHKHKyJaeOYu+x6qjaV9z3hB211wKhLaFGtyYmGZxVaIe1aLtvuTHmuZTA==
   dependencies:
     "@msgpack/msgpack" "^2.8.0"
     winston "3.11.0"
