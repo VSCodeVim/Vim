@@ -6,6 +6,7 @@ import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { Langmap } from '../configuration/langmap';
 
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
@@ -41,7 +42,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public abstract readonly keys: readonly string[] | readonly string[][];
+  public abstract keys: readonly string[] | readonly string[][];
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -265,7 +266,10 @@ export function getRelevantAction(
     //       I think we can make `doesActionApply` and `couldActionApply` static...
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+      action.keysPressed =
+        !Langmap.isRemapped || Langmap.isLiteralMode(vimState.currentMode)
+          ? [...vimState.recordedState.actionKeys]
+          : Langmap.getLangmap().unmapLiteral(action.keys, vimState.recordedState.actionKeys);
       return action;
     }
 
