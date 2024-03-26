@@ -507,6 +507,13 @@ class SurroundHelper {
       movement: () => new SelectInnerWord(),
       extraChars: 1,
     },
+    $: {
+      left: '$',
+      right: '$',
+      removeSpace: false,
+      movement: () => new SelectInnerWord(),
+      extraChars: 1,
+    },
     // aliases
     b: { left: '(', right: ')', removeSpace: false, movement: () => new MoveAroundParentheses() },
     r: { left: '[', right: ']', removeSpace: false, movement: () => new MoveAroundSquareBracket() },
