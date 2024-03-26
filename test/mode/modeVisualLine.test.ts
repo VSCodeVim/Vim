@@ -43,7 +43,8 @@ suite('Mode Visual Line', () => {
     assert.strictEqual(sel.start.line, 0);
 
     // The input cursor comes BEFORE the block cursor. Try it out, this
-    // is how Vim works.
+    // is how Vim works. Unless you have selection=exclusive set, which removes
+    // this absurd behavior.
     assert.strictEqual(sel.end.character, 6);
     assert.strictEqual(sel.end.line, 0);
   });
