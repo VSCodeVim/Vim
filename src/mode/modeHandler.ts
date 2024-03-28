@@ -617,7 +617,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
         // Since there is no possible action we are no longer waiting any action keys
         this.vimState.recordedState.waitingForAnotherActionKey = false;
-
+        if (this.vimState.easyMotion.clearRemoteYank(this.vimState)) {
+          await this.updateView();
+        }
         return false;
       case KeypressState.WaitingOnKeys:
         this.vimState.recordedState.waitingForAnotherActionKey = true;
@@ -1597,10 +1599,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
+    const nCharSearch: boolean = this.vimState.easyMotion.nCharSearch;
     const easyMotionDimRanges =
       this.currentMode === Mode.EasyMotionInputMode &&
       configuration.easymotionDimBackground &&
-      this.vimState.easyMotion.searchAction instanceof SearchByNCharCommand
+      nCharSearch
         ? [
             new vscode.Range(
               TextEditor.getDocumentBegin(),
@@ -1609,8 +1612,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           ]
         : [];
     const easyMotionHighlightRanges =
-      this.currentMode === Mode.EasyMotionInputMode &&
-      this.vimState.easyMotion.searchAction instanceof SearchByNCharCommand
+      this.currentMode === Mode.EasyMotionInputMode && nCharSearch
         ? this.vimState.easyMotion.searchAction
             .getMatches(this.vimState.cursorStopPosition, this.vimState)
             .map((match) => match.toRange())
@@ -1623,7 +1625,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
     this.vimState.postponedCodeViewChanges = [];
 
-    if (this.currentMode === Mode.EasyMotionMode) {
+    if (this.currentMode === Mode.EasyMotionMode || this.currentMode === Mode.EasyMotionInputMode) {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations(this.vimState.editor);
     }
