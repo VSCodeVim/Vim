@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { TextLine } from 'vscode';
 import { ExCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
@@ -243,10 +242,10 @@ export async function executeTransformations(
           throw new Error(`Failed to execute normal command: ${keystroke}`);
         }
 
-        const resultLines: TextLine[] = [];
+        const resultLineNumbers: number[] = [];
         if (withRange) {
           for (let i = startLineNumber; i <= endLineNumber; i++) {
-            resultLines.push(vimState.document.lineAt(i));
+            resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
           }
         } else {
           const selectionList = vimState.editor.selections;
@@ -254,7 +253,7 @@ export async function executeTransformations(
             const { start, end } = selection;
 
             for (let i = start.line; i <= end.line; i++) {
-              resultLines.push(vimState.document.lineAt(i));
+              resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
             }
           }
         }
@@ -262,10 +261,10 @@ export async function executeTransformations(
         vimState.isExecutingNormalCommand = true;
         vimState.recordedState = new RecordedState();
         await vimState.setCurrentMode(Mode.Normal);
-        for (const line of resultLines) {
+        for (const lineNumber of resultLineNumbers) {
           if (withRange) {
             vimState.cursorStopPosition = vimState.cursorStartPosition =
-              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
+              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
           }
           await modeHandler.handleMultipleKeyEvents(stroke.value);
           if (vimState.currentMode === Mode.Insert) {
