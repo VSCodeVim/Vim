@@ -2,9 +2,7 @@ import { newTest } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Execute normal command', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
+  setup(setupWorkspace);
 
   teardown(cleanUpWorkspace);
 
