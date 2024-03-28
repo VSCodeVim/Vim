@@ -237,12 +237,10 @@ export async function executeTransformations(
         break;
 
       case 'executeNormal':
-        const keystroke = keystrokesExpressionParser.parse(transformation.keystroke);
-        const startLineNumber = transformation.startLineNumber;
-        const endLineNumber = transformation.endLineNumber;
-        const withRange = transformation.withRange;
-        if (!keystroke.status) {
-          throw new Error(`Failed to execute normal command: ${transformation.keystroke}`);
+        const { keystroke, startLineNumber, endLineNumber, withRange } = transformation;
+        const stroke = keystrokesExpressionParser.parse(keystroke);
+        if (!stroke.status) {
+          throw new Error(`Failed to execute normal command: ${keystroke}`);
         }
 
         const resultLines: TextLine[] = [];
@@ -269,7 +267,7 @@ export async function executeTransformations(
             vimState.cursorStopPosition = vimState.cursorStartPosition =
               TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, line.lineNumber);
           }
-          await modeHandler.handleMultipleKeyEvents(keystroke.value);
+          await modeHandler.handleMultipleKeyEvents(stroke.value);
           if (vimState.currentMode === Mode.Insert) {
             await modeHandler.handleMultipleKeyEvents(['<Esc>']);
           }
