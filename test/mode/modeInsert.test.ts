@@ -494,6 +494,14 @@ suite('Mode Insert', () => {
     assertEqualLines(['🚀🚀']);
   });
 
+  newTest({
+    title: 'Can insert custom digraph made with :dig[raphs]`',
+    start: ['|'],
+    keysPressed: ':dig R! 55357 56960\n' + 'i<C-k>R!',
+    end: ['🚀|'],
+    endMode: Mode.Insert,
+  });
+
   suite('<C-a>', () => {
     newTest({
       title: 'Basic <C-a> test',

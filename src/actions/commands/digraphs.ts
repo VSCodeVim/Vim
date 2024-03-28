@@ -1,5 +1,5 @@
 // prettier-ignore
-export const DefaultDigraphs = new Map<string, [string, number]>([
+export const DefaultDigraphs = new Map<string, [string, number | number[]]>([
   ["NU", ["^@", 10]],
   ["SH", ["^A", 1]],
   ["SX", ["^B", 2]],
