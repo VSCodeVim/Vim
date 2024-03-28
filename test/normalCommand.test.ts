@@ -69,4 +69,11 @@ suite('Execute normal command', () => {
     keysPressed: 'qaf.r)qjVj:normal 4@a\n',
     end: ['0) zero', '1) one, 2) two, 3) three, 4) four', '5) five, 6) six, 7) seven, 8|) eight'],
   });
+
+  newTest({
+    title: 'Incomplete operation',
+    start: ['foo =| bar = 1', 'foo = bar = 2'],
+    keysPressed: ':normal ddd\n',
+    end: ['|foo = bar = 2'],
+  });
 });
