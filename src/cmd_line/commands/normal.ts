@@ -4,6 +4,7 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
 
 export class NormalCommand extends ExCommand {
+  // TODO: support to parse `:normal!`
   public static readonly argParser: Parser<NormalCommand> = seq(whitespace, all).map(
     ([_, keystroke]) => new NormalCommand(keystroke),
   );
