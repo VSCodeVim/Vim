@@ -41,7 +41,7 @@ suite('Execute normal command', () => {
     end: ['foo = bar !== 1', 'foo !|== bar = 2'],
   });
 
-  // TODO: remove comment out after fixing dot command bug
+  // TODO(#8939): remove comment out after fixing dot command bug
   // newTest({
   //   title: 'One liner with multiple dot',
   //   start: ['foo =| bar = 1', 'foo = bar = 2'],
