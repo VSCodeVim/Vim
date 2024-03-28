@@ -773,7 +773,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        !(prevMode === Mode.CommandlineInProgress && this.vimState.isExecutingNormalCommand)
       ) {
         ranRepeatableAction = true;
       }
@@ -884,6 +885,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
+      !this.vimState.isExecutingNormalCommand &&
       !this.remapState.isCurrentlyPerformingRemapping
     ) {
       this.vimState.historyTracker.finishCurrentStep();

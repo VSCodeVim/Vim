@@ -10,7 +10,10 @@ import { RecordedState } from '../state/recordedState';
 import { VimState } from '../state/vimState';
 import { TextEditor } from '../textEditor';
 import { Logger } from '../util/logger';
-import { keystrokesExpressionParser } from '../vimscript/expression';
+import {
+  keystrokesExpressionForMacroParser,
+  keystrokesExpressionParser,
+} from '../vimscript/expression';
 import {
   InsertTextVSCodeTransformation,
   TextTransformations,
@@ -159,7 +162,7 @@ export async function executeTransformations(
           return;
         } else if (typeof recordedMacro === 'string') {
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
-          const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
+          const keystrokes = keystrokesExpressionForMacroParser.parse(recordedMacro);
           if (!keystrokes.status) {
             throw new Error(`Failed to execute macro: ${recordedMacro}`);
           }
@@ -230,6 +233,45 @@ export async function executeTransformations(
         }
         const newPos = vimState.cursorStopPosition.add(vimState.document, transformation.diff);
         vimState.editor.selection = new vscode.Selection(newPos, newPos);
+        break;
+
+      case 'executeNormal':
+        const { keystroke, startLineNumber, endLineNumber, withRange } = transformation;
+        const stroke = keystrokesExpressionParser.parse(keystroke);
+        if (!stroke.status) {
+          throw new Error(`Failed to execute normal command: ${keystroke}`);
+        }
+
+        const resultLineNumbers: number[] = [];
+        if (withRange) {
+          for (let i = startLineNumber; i <= endLineNumber; i++) {
+            resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
+          }
+        } else {
+          const selectionList = vimState.editor.selections;
+          for (const selection of selectionList) {
+            const { start, end } = selection;
+
+            for (let i = start.line; i <= end.line; i++) {
+              resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
+            }
+          }
+        }
+
+        vimState.isExecutingNormalCommand = true;
+        vimState.recordedState = new RecordedState();
+        await vimState.setCurrentMode(Mode.Normal);
+        for (const lineNumber of resultLineNumbers) {
+          if (withRange) {
+            vimState.cursorStopPosition = vimState.cursorStartPosition =
+              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
+          }
+          await modeHandler.handleMultipleKeyEvents(stroke.value);
+          if (vimState.currentMode === Mode.Insert) {
+            await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+          }
+        }
+        vimState.isExecutingNormalCommand = false;
         break;
 
       case 'vscodeCommand':

@@ -24,5 +24,11 @@ const escapedParser = string('\\')
 export const keystrokesExpressionParser: Parser<string[]> = alt(
   escapedParser,
   specialCharacterParser,
+  any,
+).many();
+
+export const keystrokesExpressionForMacroParser: Parser<string[]> = alt(
+  escapedParser,
+  specialCharacterParser,
   noneOf('"'),
 ).many();

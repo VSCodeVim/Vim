@@ -185,6 +185,14 @@ export interface ContentChangeTransformation {
   diff: PositionDiff;
 }
 
+export interface ExecuteNormalTransformation {
+  type: 'executeNormal';
+  keystroke: string;
+  startLineNumber: number;
+  endLineNumber: number;
+  withRange: boolean;
+}
+
 export type Transformation =
   | InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -194,6 +202,7 @@ export type Transformation =
   | Dot
   | Macro
   | ContentChangeTransformation
+  | ExecuteNormalTransformation
   | VSCodeCommandTransformation;
 
 /**

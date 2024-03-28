@@ -18,6 +18,7 @@ import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/l
 import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
 import { MoveCommand } from '../cmd_line/commands/move';
 import { NohlCommand } from '../cmd_line/commands/nohl';
+import { NormalCommand } from '../cmd_line/commands/normal';
 import { OnlyCommand } from '../cmd_line/commands/only';
 import { PrintCommand } from '../cmd_line/commands/print';
 import { PutExCommand } from '../cmd_line/commands/put';
@@ -371,7 +372,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['noh', 'lsearch'], succeed(new NohlCommand())],
   [['norea', 'bbrev'], undefined],
   [['noreme', 'nu'], undefined],
-  [['norm', 'al'], undefined],
+  [['norm', 'al'], NormalCommand.argParser],
   [['nos', 'wapfile'], undefined],
   [['nu', 'mber'], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['nun', 'map'], undefined],
