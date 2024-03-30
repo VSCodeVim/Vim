@@ -76,4 +76,12 @@ suite('Execute normal command', () => {
     keysPressed: ':normal ddd\n',
     end: ['|foo = bar = 2'],
   });
+
+  // TODO: remove comment out after implementing to stop when operation fails
+  // newTest({
+  //   title: 'Operation stops after command fails',
+  //   start: ['foo =| bar = 1', 'foo = bar = 2'],
+  //   keysPressed: ':normal llllllllllllllllllllllllllllll j\n',
+  //   end: ['foo = bar = |1', 'foo = bar = 2'],
+  // });
 });
