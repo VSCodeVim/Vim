@@ -45,7 +45,14 @@ import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { Mode, VSCodeVimCursorType, getCursorStyle, isStatusBarMode, isVisualMode } from './mode';
+import {
+  Mode,
+  NormalCommandState,
+  VSCodeVimCursorType,
+  getCursorStyle,
+  isStatusBarMode,
+  isVisualMode,
+} from './mode';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -756,6 +763,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
+
+      if (this.vimState.normalCommandState === NormalCommandState.Finished) {
+        ranRepeatableAction = true;
+      }
     } else if (action instanceof BaseOperator) {
       recordedState.operatorCount = recordedState.count;
     } else {
@@ -774,7 +785,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
         prevMode !== Mode.EasyMotionMode &&
-        !(prevMode === Mode.CommandlineInProgress && this.vimState.isExecutingNormalCommand)
+        !(
+          prevMode === Mode.CommandlineInProgress &&
+          this.vimState.normalCommandState === NormalCommandState.Executing
+        )
       ) {
         ranRepeatableAction = true;
       }
@@ -885,10 +899,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
-      !this.vimState.isExecutingNormalCommand &&
-      !this.remapState.isCurrentlyPerformingRemapping
+      !this.remapState.isCurrentlyPerformingRemapping &&
+      this.vimState.normalCommandState !== NormalCommandState.Executing
     ) {
       this.vimState.historyTracker.finishCurrentStep();
+    }
+
+    if (this.vimState.normalCommandState === NormalCommandState.Finished) {
+      this.vimState.normalCommandState = NormalCommandState.Waiting;
     }
 
     recordedState.actionKeys = [];

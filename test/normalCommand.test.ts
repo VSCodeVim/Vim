@@ -84,4 +84,11 @@ suite('Execute normal command', () => {
   //   keysPressed: ':normal llllllllllllllllllllllllllllll j\n',
   //   end: ['foo = bar = |1', 'foo = bar = 2'],
   // });
+
+  newTest({
+    title: 'Multiple liner with selection and undo',
+    start: ['foo =| bar = 1', 'foo = bar = 2'],
+    keysPressed: 'Vj:normal f=i!=\nu',
+    end: ['foo |= bar = 1', 'foo = bar = 2'],
+  });
 });

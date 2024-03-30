@@ -3,7 +3,7 @@ import { ExCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
 import { Globals } from '../globals';
-import { Mode } from '../mode/mode';
+import { Mode, NormalCommandState } from '../mode/mode';
 import { Register } from '../register/register';
 import { globalState } from '../state/globalState';
 import { RecordedState } from '../state/recordedState';
@@ -258,7 +258,7 @@ export async function executeTransformations(
           }
         }
 
-        vimState.isExecutingNormalCommand = true;
+        vimState.normalCommandState = NormalCommandState.Executing;
         vimState.recordedState = new RecordedState();
         await vimState.setCurrentMode(Mode.Normal);
         for (const lineNumber of resultLineNumbers) {
@@ -271,7 +271,7 @@ export async function executeTransformations(
             await modeHandler.handleMultipleKeyEvents(['<Esc>']);
           }
         }
-        vimState.isExecutingNormalCommand = false;
+        vimState.normalCommandState = NormalCommandState.Finished;
         break;
 
       case 'vscodeCommand':

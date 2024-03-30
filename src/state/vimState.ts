@@ -8,7 +8,7 @@ import { SurroundState } from '../actions/plugins/surround';
 import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
-import { Mode } from '../mode/mode';
+import { Mode, NormalCommandState } from '../mode/mode';
 import { ModeData } from '../mode/modeData';
 import { Logger } from '../util/logger';
 import { SearchDirection } from '../vimscript/pattern';
@@ -104,7 +104,7 @@ export class VimState implements vscode.Disposable {
 
   public isRunningDotCommand = false;
   public isReplayingMacro: boolean = false;
-  public isExecutingNormalCommand: boolean = false;
+  public normalCommandState: NormalCommandState = NormalCommandState.Waiting;
 
   /**
    * The last visual selection before running the dot command
