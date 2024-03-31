@@ -1135,7 +1135,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.vimState.recordedState = recordedState;
 
     let replayMode = null;
-    const startPosition = this.vimState.cursorStopPosition;
     if (actions[0] instanceof CommandInsertAtCursor) {
       replayMode = 'Insert';
     } else if (actions[0] instanceof ActionReplaceCharacter) {
@@ -1161,8 +1160,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await this.updateView();
         if (replayMode === 'Replace' && j < transformation.count - 1) {
           this.vimState.cursorStopPosition = this.vimState.cursorStartPosition = new Position(
-            startPosition.line,
-            startPosition.character + j + 1,
+            this.vimState.cursorStopPosition.line,
+            this.vimState.cursorStopPosition.character + 1,
           );
         }
       }
