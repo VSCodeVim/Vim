@@ -411,7 +411,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await this.setCurrentMode(Mode.Normal);
       }
 
-      if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
+      if (isVisualMode(this.vimState.currentMode)) {
         // Store selection for commands like gv
         this.vimState.lastVisualSelection = {
           mode: this.vimState.currentMode,
