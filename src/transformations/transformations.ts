@@ -158,6 +158,7 @@ export interface MoveCursorTransformation {
  */
 export interface Dot {
   type: 'replayRecordedState';
+  count: number;
   recordedState: RecordedState;
 }
 

@@ -17,7 +17,7 @@ import { globalState } from '../state/globalState';
 import { RemapState } from '../state/remapState';
 import { StatusBar } from '../statusBar';
 import { IModeHandler, executeTransformations } from '../transformations/execute';
-import { isTextTransformation } from '../transformations/transformations';
+import { Dot, isTextTransformation } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
@@ -26,6 +26,8 @@ import { VSCodeContext } from '../util/vscodeContext';
 import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
 import {
   ActionOverrideCmdD,
+  ActionReplaceCharacter,
+  CommandInsertAtCursor,
   CommandNumber,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
@@ -884,6 +886,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
+      !this.vimState.isRunningDotCommand &&
       !this.remapState.isCurrentlyPerformingRemapping
     ) {
       this.vimState.historyTracker.finishCurrentStep();
@@ -1114,7 +1117,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   }
 
-  public async rerunRecordedState(recordedState: RecordedState): Promise<void> {
+  public async rerunRecordedState(transformation: Dot): Promise<void> {
+    let recordedState = transformation.recordedState.clone();
     const actions = [...recordedState.actionsRun];
 
     this.vimState.isRunningDotCommand = true;
@@ -1130,16 +1134,38 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState = new RecordedState();
     this.vimState.recordedState = recordedState;
 
-    for (const [i, action] of actions.entries()) {
-      recordedState.actionsRun = actions.slice(0, i + 1);
-      await this.runAction(recordedState, action);
+    let replayMode = null;
+    const startPosition = this.vimState.cursorStopPosition;
+    if (actions[0] instanceof CommandInsertAtCursor) {
+      replayMode = 'Insert';
+    } else if (actions[0] instanceof ActionReplaceCharacter) {
+      replayMode = 'Replace';
+    }
+    for (let j = 0; j < transformation.count; j++) {
+      for (const [i, action] of actions.entries()) {
+        if (
+          replayMode === 'Insert' &&
+          j !== transformation.count - 1 &&
+          action instanceof CommandEscInsertMode
+        ) {
+          continue;
+        }
+        recordedState.actionsRun = actions.slice(0, i + 1);
+        await this.runAction(recordedState, action);
 
-      if (this.vimState.lastMovementFailed) {
-        // TODO: Shouldn't this be `break`? Can't this leave us in a very bad state?
-        return;
+        if (this.vimState.lastMovementFailed) {
+          // TODO: Shouldn't this be `break`? Can't this leave us in a very bad state?
+          return;
+        }
+
+        await this.updateView();
+        if (replayMode === 'Replace' && j < transformation.count - 1) {
+          this.vimState.cursorStopPosition = this.vimState.cursorStartPosition = new Position(
+            startPosition.line,
+            startPosition.character + j + 1,
+          );
+        }
       }
-
-      await this.updateView();
     }
     recordedState.actionsRun = actions;
     this.vimState.isRunningDotCommand = false;
