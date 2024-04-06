@@ -71,7 +71,7 @@ export async function getAndUpdateModeHandler(
 /**
  * Loads and validates the user's configuration
  */
-async function loadConfiguration() {
+export async function loadConfiguration() {
   const validatorResults = await configuration.load();
 
   Logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
