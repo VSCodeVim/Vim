@@ -526,20 +526,42 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
-    // Sets previous context mark (adds current position to jump list).
-
     if (markName === "'" || markName === '`') {
-      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+      globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    } else if (markName === '<') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.start = position;
+      } else {
+        // TODO: Not quite right: only "< should be set.
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position.getRight(),
+        };
+      }
+      // TODO: Ensure "> is always after "<
+    } else if (markName === '>') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.end = position.getRight();
+      } else {
+        // TODO: Not quite right: only "> should be set.
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position.getRight(),
+        };
+      }
+      // TODO: Ensure "< is always before ">
+    } else {
+      const isUppercaseMark = markName.toUpperCase() === markName;
+      const newMark: IMark = {
+        position,
+        name: markName,
+        isUppercaseMark,
+        document: isUppercaseMark ? document : undefined,
+      };
+      this.putMarkInList(newMark);
     }
-
-    const isUppercaseMark = markName.toUpperCase() === markName;
-    const newMark: IMark = {
-      position,
-      name: markName,
-      isUppercaseMark,
-      document: isUppercaseMark ? document : undefined,
-    };
-    this.putMarkInList(newMark);
   }
 
   /**
