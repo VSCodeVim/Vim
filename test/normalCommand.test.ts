@@ -1,4 +1,4 @@
-import { newTest } from './testSimplifier';
+import { newTest, newTestSkip } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Execute normal command', () => {
@@ -41,13 +41,13 @@ suite('Execute normal command', () => {
     end: ['foo = bar !== 1', 'foo !|== bar = 2'],
   });
 
-  // TODO(#8939): remove comment out after fixing dot command bug
-  // newTest({
-  //   title: 'One liner with multiple dot',
-  //   start: ['foo =| bar = 1', 'foo = bar = 2'],
-  //   keysPressed: 'f=i!=<Esc>j^f=:normal 2.\n',
-  //   end: ['foo = bar !== 1', 'foo !=!|== bar = 2'],
-  // });
+  // TODO(#8939): fix dot command bug
+  newTestSkip({
+    title: 'One liner with multiple dot',
+    start: ['foo =| bar = 1', 'foo = bar = 2'],
+    keysPressed: 'f=i!=<Esc>j^f=:normal 2.\n',
+    end: ['foo = bar !== 1', 'foo !=!|== bar = 2'],
+  });
 
   newTest({
     title: 'One liner with macro',
@@ -77,13 +77,13 @@ suite('Execute normal command', () => {
     end: ['|foo = bar = 2'],
   });
 
-  // TODO: remove comment out after implementing to stop when operation fails
-  // newTest({
-  //   title: 'Operation stops after command fails',
-  //   start: ['foo =| bar = 1', 'foo = bar = 2'],
-  //   keysPressed: ':normal llllllllllllllllllllllllllllll j\n',
-  //   end: ['foo = bar = |1', 'foo = bar = 2'],
-  // });
+  // TODO: implement to stop when operation fails
+  newTestSkip({
+    title: 'Operation stops after command fails',
+    start: ['foo =| bar = 1', 'foo = bar = 2'],
+    keysPressed: ':normal llllllllllllllllllllllllllllll j\n',
+    end: ['foo = bar = |1', 'foo = bar = 2'],
+  });
 
   newTest({
     title: 'Multiple liner with selection and undo',
