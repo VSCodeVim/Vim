@@ -25,6 +25,7 @@ import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
+  DotCommandStatus,
   Mode,
   isVisualMode,
   visualBlockGetBottomRightPosition,
@@ -1719,7 +1720,8 @@ export class ActionReplaceCharacter extends BaseCommand {
         text: toReplace.repeat(timesToRepeat),
         range: new vscode.Range(position, endPos),
         diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
-        manuallySetCursorPositions: vimState.isRunningDotCommand ? true : undefined,
+        manuallySetCursorPositions:
+          vimState.dotCommandStatus === DotCommandStatus.Executing ? true : undefined,
       });
     }
   }

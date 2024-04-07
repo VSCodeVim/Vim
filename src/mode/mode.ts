@@ -27,6 +27,12 @@ export enum VSCodeVimCursorType {
   UnderlineThin,
 }
 
+export enum DotCommandStatus {
+  Waiting,
+  Executing,
+  Finished,
+}
+
 /**
  * Is the given mode visual, visual line, or visual block?
  */
