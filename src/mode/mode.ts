@@ -33,6 +33,11 @@ export enum DotCommandStatus {
   Finished,
 }
 
+export enum ReplayMode {
+  Insert,
+  Replace,
+}
+
 /**
  * Is the given mode visual, visual line, or visual block?
  */

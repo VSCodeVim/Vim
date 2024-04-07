@@ -50,6 +50,7 @@ import { TextEditor } from './../textEditor';
 import {
   DotCommandStatus,
   Mode,
+  ReplayMode,
   VSCodeVimCursorType,
   getCursorStyle,
   isStatusBarMode,
@@ -1158,14 +1159,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     let replayMode = null;
     if (actions[0] instanceof CommandInsertAtCursor) {
-      replayMode = 'Insert';
+      replayMode = ReplayMode.Insert;
     } else if (actions[0] instanceof ActionReplaceCharacter) {
-      replayMode = 'Replace';
+      replayMode = ReplayMode.Replace;
     }
     for (let j = 0; j < transformation.count; j++) {
       for (const [i, action] of actions.entries()) {
         if (
-          replayMode === 'Insert' &&
+          replayMode === ReplayMode.Insert &&
           !(j === transformation.count - 1 && i === actions.length - 1) &&
           action instanceof CommandEscInsertMode
         ) {
@@ -1181,7 +1182,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
         await this.updateView();
         if (
-          replayMode === 'Replace' &&
+          replayMode === ReplayMode.Replace &&
           !(j === transformation.count - 1 && i === actions.length - 1)
         ) {
           this.vimState.cursorStopPosition = this.vimState.cursorStartPosition = new Position(
