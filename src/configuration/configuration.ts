@@ -110,6 +110,11 @@ class Configuration implements IConfiguration {
     'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
   };
 
+  private loadListeners: Array<() => void> = [];
+  public addLoadListener(listener: () => void): void {
+    this.loadListeners.push(listener);
+  }
+
   public async load(): Promise<ValidatorResults> {
     const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
@@ -193,6 +198,10 @@ class Configuration implements IConfiguration {
 
     void VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
     void VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+
+    // workaround for circular dependency that would
+    // prevent packaging if we simply called `updateLangmap(configuration.langmap);`
+    this.loadListeners.forEach((listener) => listener());
 
     return validatorResults;
   }

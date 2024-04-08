@@ -1,3 +1,4 @@
+import { SetCommand } from '../cmd_line/commands/set';
 import { Mode } from '../mode/mode';
 import { configuration } from './configuration';
 
@@ -11,6 +12,14 @@ const literalModes = [
 ];
 
 let lastLangmapString = '';
+
+SetCommand.addListener('langmap', () => {
+  updateLangmap(configuration.langmap);
+});
+configuration.addLoadListener(() => {
+  updateLangmap(configuration.langmap);
+});
+updateLangmap(configuration.langmap);
 
 export function updateLangmap(langmapString: string) {
   if (lastLangmapString === langmapString) return;
