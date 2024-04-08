@@ -13,7 +13,12 @@ suite('Langmap', () => {
     await setupWorkspace(configuration);
     await setupWorkspace();
   });
-  suiteTeardown(cleanUpWorkspace);
+  suiteTeardown(async () => {
+    const configuration = new Configuration();
+    configuration.langmap = '';
+    await setupWorkspace(configuration);
+    await cleanUpWorkspace();
+  });
 
   newTest({
     title: 'Test example binding (ee → dd)',
