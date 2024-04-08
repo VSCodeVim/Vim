@@ -200,20 +200,14 @@ suite('Ex command parsing', () => {
   });
 
   suite(':dig[raphs]', () => {
-    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraphs: [] }));
-    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraphs: [] }));
+    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraph: undefined }));
+    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraph: undefined }));
+    exParseTest(':dig e: 235', new DigraphsCommand({ bang: false, newDigraph: ['e', ':', [235]] }));
     exParseTest(
-      ':dig e: 235',
-      new DigraphsCommand({ bang: false, newDigraphs: [['e', ':', 235]] }),
-    );
-    exParseTest(
-      ':dig e: 235 a: 238',
+      ':dig R! 55357 56960',
       new DigraphsCommand({
         bang: false,
-        newDigraphs: [
-          ['e', ':', 235],
-          ['a', ':', 238],
-        ],
+        newDigraph: ['R', '!', [55357, 56960]],
       }),
     );
 

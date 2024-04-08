@@ -526,20 +526,53 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
-    // Sets previous context mark (adds current position to jump list).
-
     if (markName === "'" || markName === '`') {
-      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+      globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    } else if (markName === '<') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.start = position;
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position,
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.end.isBefore(this.vimState.lastVisualSelection.start)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else if (markName === '>') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.end = position.getRight();
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position.getRight(),
+          end: position.getRight(),
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.start.isAfter(this.vimState.lastVisualSelection.end)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.start = this.vimState.lastVisualSelection.end.getLeft();
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else {
+      const isUppercaseMark = markName.toUpperCase() === markName;
+      const newMark: IMark = {
+        position,
+        name: markName,
+        isUppercaseMark,
+        document: isUppercaseMark ? document : undefined,
+      };
+      this.putMarkInList(newMark);
     }
-
-    const isUppercaseMark = markName.toUpperCase() === markName;
-    const newMark: IMark = {
-      position,
-      name: markName,
-      isUppercaseMark,
-      document: isUppercaseMark ? document : undefined,
-    };
-    this.putMarkInList(newMark);
   }
 
   /**

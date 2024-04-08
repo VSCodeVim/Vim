@@ -77,7 +77,7 @@ export class VimrcImpl {
       ? VimrcImpl.expandHome(config.vimrc.path)
       : await VimrcImpl.findDefaultVimrc();
     if (!_path) {
-      await window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path.`');
+      await window.showWarningMessage('No .vimrc found. Please set `vim.vimrc.path`.');
       return;
     }
     if (!(await fs.existsAsync(_path))) {

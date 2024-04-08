@@ -936,17 +936,19 @@ class CommandVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReselectVisual extends BaseCommand {
+class RestoreVisualSelection extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'v'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    // Try to restore selection only if valid
-    if (vimState.lastVisualSelection !== undefined) {
-      let { start, end, mode } = vimState.lastVisualSelection;
+    if (vimState.lastVisualSelection === undefined) {
+      return;
+    }
 
+    let { start, end, mode } = vimState.lastVisualSelection;
+    if (mode !== Mode.Visual || !start.isEqual(end)) {
       if (end.line <= vimState.document.lineCount - 1) {
-        if (mode === Mode.Visual && start.isBeforeOrEqual(end)) {
+        if (mode === Mode.Visual && start.isBefore(end)) {
           end = end.getLeftThroughLineBreaks(true);
         }
 
