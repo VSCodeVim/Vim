@@ -5,7 +5,7 @@ import { ErrorCode, VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
-import { Langmap } from '../../configuration/langmap';
+import { updateLangmap } from '../../configuration/langmap';
 
 type SetOperation =
   | {
@@ -314,6 +314,5 @@ export class SetCommand extends ExCommand {
 }
 
 SetCommand.addListener('langmap', () => {
-  console.log(`new langmap! ${configuration.langmap}`);
-  Langmap.updateLangmap(configuration.langmap);
+  updateLangmap(configuration.langmap);
 });

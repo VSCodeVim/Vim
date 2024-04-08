@@ -1,161 +1,124 @@
 import { Mode } from '../mode/mode';
+import { configuration } from './configuration';
 
-export class Langmap {
-  //
-  // Properties
-  //
+const nonMatchable = /<(any|leader|number|alpha|character)>/;
+const literalKeys = /<(any|number|alpha|character)>/;
+const literalModes = [
+  Mode.Insert,
+  Mode.Replace,
+  Mode.CommandlineInProgress,
+  Mode.SearchInProgressMode,
+];
 
-  private static nonMatchable = /<(any|leader|number|alpha|character)>/;
-  private static literalKeys = /<(any|number|alpha|character)>/;
+let lastLangmapString = '';
 
-  public fromQwerty: { [key: string]: string };
-  public toQwerty: { [key: string]: string };
+export function updateLangmap(langmapString: string) {
+  if (lastLangmapString === langmapString) return;
+  const { bindings, reverseBindings } = parseLangmap(langmapString);
 
-  //
-  // Singleton logic + Static methods
-  //
+  lastLangmapString = langmapString;
+  configuration.langmap = langmapString;
+  configuration.langmapBindingsMap = bindings;
+  configuration.langmapReverseBindingsMap = reverseBindings;
+}
 
-  private static instance = new Langmap('');
-  private static langmapString = '';
-  public static isRemapped = false;
+/**
+ *  From :help langmap
+ *  The 'langmap' option is a list of parts, separated with commas.  Each
+ *      part can be in one of two forms:
+ *      1.  A list of pairs.  Each pair is a "from" character immediately
+ *          followed by the "to" character.  Examples: "aA", "aAbBcC".
+ *      2.  A list of "from" characters, a semi-colon and a list of "to"
+ *          characters.  Example: "abc;ABC"
+ */
+function parseLangmap(langmapString: string): {
+  bindings: Map<string, string>;
+  reverseBindings: Map<string, string>;
+} {
+  if (!langmapString) return { bindings: new Map(), reverseBindings: new Map() };
 
-  public static getLangmap(): Langmap {
-    return this.instance;
-  }
+  const bindings: Map<string, string> = new Map();
+  const reverseBindings: Map<string, string> = new Map();
 
-  public static updateLangmap(langmap: string) {
-    if (this.langmapString === langmap) return;
-    this.langmapString = langmap;
-    this.instance = new Langmap(langmap);
-    this.isRemapped = Object.keys(this.instance.toQwerty).length !== 0;
-  }
-
-  public static isLiteralMode(mode: Mode): boolean {
-    return [
-      Mode.Insert,
-      Mode.Replace,
-      Mode.CommandlineInProgress,
-      Mode.SearchInProgressMode,
-    ].includes(mode);
-  }
-
-  //
-  // Langmap parsing
-  //
-
-  private constructor(langmap: string) {
-    // From :help langmap
-    /*
-      The 'langmap' option is a list of parts, separated with commas.  Each
-          part can be in one of two forms:
-          1.  A list of pairs.  Each pair is a "from" character immediately
-              followed by the "to" character.  Examples: "aA", "aAbBcC".
-          2.  A list of "from" characters, a semi-colon and a list of "to"
-              characters.  Example: "abc;ABC"
-    */
-
-    // Step 0: Shortcut for empty langmap
-    if (langmap === '') {
-      this.toQwerty = {};
-      this.fromQwerty = {};
-      return;
+  const getEscaped = (list: string) => {
+    return list.split(/\\?(.)/).filter(Boolean);
+  };
+  langmapString.split(/((?:[^\\,]|\\.)+),/).map((part) => {
+    if (!part) return;
+    const semicolon = part.split(/((?:[^\\;]|\\.)+);/);
+    if (semicolon.length === 3) {
+      const from = getEscaped(semicolon[1]);
+      const to = getEscaped(semicolon[2]);
+      if (from.length !== to.length) return; // skip over malformed part
+      for (let i = 0; i < from.length; ++i) {
+        bindings.set(from[i], to[i]);
+        reverseBindings.set(to[i], from[i]);
+      }
+    } else if (semicolon.length === 1) {
+      const pairs = getEscaped(part);
+      if (pairs.length % 2 !== 0) return; // skip over malformed part
+      for (let i = 0; i < pairs.length; i += 2) {
+        bindings.set(pairs[i], pairs[i + 1]);
+        reverseBindings.set(pairs[i + 1], pairs[i]);
+      }
     }
+  });
 
-    // Step 1: Separate into parts.
-    // Technically the regex /(?<!(^|[^\\])\\(\\\\)*)\,/ should do the trick,
-    // but Javascript's implementation disagrees.
-    const separators = [...langmap.matchAll(/(?<!(^|[^\\])\\(\\\\)*)\,|$/g)].map((x) => x.index);
-    const parts = separators.map((separatorIndex, arrayIndex) =>
-      langmap.substring(
-        arrayIndex === 0 ? 0 : (separators[arrayIndex - 1] as number) + 1,
-        separatorIndex,
-      ),
-    );
+  return { bindings, reverseBindings };
+}
 
-    // Step 2: Parse each part
-    this.toQwerty = {};
+export function isLiteralMode(mode: Mode): boolean {
+  return literalModes.includes(mode);
+}
 
-    function getEscaped(list: string) {
-      const characters = [];
-      let escaped = false;
-      for (const character of list) {
-        if (character === '\\') {
-          escaped = !escaped;
-          if (escaped) continue;
+function map(langmap: Map<string, string>, key: string): string {
+  // Notice that we're not currently remapping <C-> combinations.
+  // From my experience, Vim doesn't handle ctrl remapping either.
+  // It's possible that it's caused by my exact keyboard setup.
+  // We might need to revisit this in the future, in case some user needs it.
+  if (key.length !== 1) return key;
+  return langmap.get(key) || key;
+}
+
+export function remapKey(key: string): string {
+  return map(configuration.langmapBindingsMap, key);
+}
+
+function unmapKey(key: string): string {
+  return map(configuration.langmapReverseBindingsMap, key);
+}
+
+// This is needed for bindings like "fa".
+// We expect this to jump to the next occurence of "a".
+// Thus, we need to revert "a" to its unmapped state.
+export function unmapLiteral(
+  reference: readonly string[] | readonly string[][],
+  keys: readonly string[],
+): string[] {
+  if (reference.length === 0 || keys.length === 0) return [];
+
+  // find best matching if there are multiple
+  if (Array.isArray(reference[0])) {
+    for (const possibility of reference as string[][]) {
+      if (possibility.length !== keys.length) continue;
+      let allMatch = true;
+      for (let i = 0; i < possibility.length; ++i) {
+        if (nonMatchable.test(possibility[i])) continue;
+        if (possibility[i] !== keys[i]) {
+          allMatch = false;
+          break;
         }
-        characters.push(character);
       }
-      return characters;
+      if (allMatch) return unmapLiteral(possibility, keys);
     }
+  }
 
-    for (const part of parts) {
-      const semicolon = [...part.matchAll(/(?<!(^|[^\\])\\(\\\\)*)\;/g)].map((x) => x.index);
-      if (semicolon.length > 1) continue; // skip over malformed part
-      if (semicolon.length === 0) {
-        // List of pairs of "from" and "to" characters
-        const pairs = getEscaped(part);
-        if (pairs.length % 2 !== 0) continue; // skip over malformed part
-        for (let i = 0; i < pairs.length; i += 2) this.toQwerty[pairs[i]] = pairs[i + 1];
-      } else {
-        // List of "from" characters and list of "to" characters
-        const from = getEscaped(part.substring(0, semicolon[0] as number));
-        const to = getEscaped(part.substring((semicolon[0] as number) + 1));
-        if (from.length !== to.length) continue; // skip over malformed part
-        for (let i = 0; i < from.length; ++i) this.toQwerty[from[i]] = to[i];
-      }
+  // unmap <character> <number> <alpha> and <any>
+  const unmapped = [...keys];
+  for (let i = 0; i < keys.length; ++i) {
+    if (literalKeys.test((reference as string[])[i])) {
+      unmapped[i] = unmapKey(keys[i]);
     }
-
-    // Step 3: Reverse mapping
-    this.fromQwerty = Object.fromEntries(Object.entries(this.toQwerty).map((x) => [x[1], x[0]]));
   }
-
-  //
-  // Mapping logic
-  //
-
-  private map(map: { [key: string]: string }, key: string) {
-    if (key.length !== 1 || !(key in map)) return key;
-    return map[key]; // notice that we're not remapping <C-> combinations. this is because in vim, ctrl remapping is not handled either
-  }
-
-  public remapKey(key: string): string {
-    return this.map(this.toQwerty, key);
-  }
-
-  private unmapKey(key: string): string {
-    return this.map(this.fromQwerty, key);
-  }
-
-  public unmapLiteral(
-    // for commands that interpret some keys literally, like "f<character>", we must unmap the literal keys
-    reference: readonly string[] | readonly string[][],
-    keys: readonly string[],
-  ): string[] {
-    if (reference.length === 0 || keys.length === 0) return [];
-
-    // find best matching if there are multiple
-    if (Array.isArray(reference[0])) {
-      for (const possibility of reference as string[][]) {
-        if (possibility.length !== keys.length) continue;
-        let allMatch = true;
-        for (let i = 0; i < possibility.length; ++i) {
-          if (Langmap.nonMatchable.test(possibility[i])) continue;
-          if (possibility[i] !== keys[i]) {
-            allMatch = false;
-            break;
-          }
-        }
-        if (allMatch) return this.unmapLiteral(possibility, keys);
-      }
-    }
-
-    // unmap <character> <number> <alpha> and <any>
-    const unmapped = [...keys];
-    for (let i = 0; i < keys.length; ++i) {
-      if (Langmap.literalKeys.test((reference as string[])[i])) {
-        unmapped[i] = this.unmapKey(keys[i]);
-      }
-    }
-    return unmapped;
-  }
+  return unmapped;
 }

@@ -17,6 +17,7 @@ import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
 import { VSCodeContext } from './src/util/vscodeContext';
 import { exCommandParser } from './src/vimscript/exCommandParser';
+import { updateLangmap } from './src/configuration/langmap';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -73,6 +74,8 @@ export async function getAndUpdateModeHandler(
  */
 export async function loadConfiguration() {
   const validatorResults = await configuration.load();
+
+  updateLangmap(configuration.langmap);
 
   Logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
