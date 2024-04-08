@@ -46,7 +46,7 @@ import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { Mode, VSCodeVimCursorType, getCursorStyle, isStatusBarMode, isVisualMode } from './mode';
-import { Langmap } from '../configuration/langmap';
+import { isLiteralMode, remapKey } from '../configuration/langmap';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -424,17 +424,15 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   }
 
-  async handleMultipleKeyEvents(keys: string[]): Promise<void> {
+  async handleMultipleKeyEvents(keys: string[], alreadyRemapped: boolean = true): Promise<void> {
     for (const key of keys) {
-      await this.handleKeyEventLangmapped(key);
+      await (alreadyRemapped ? this.handleKeyEventLangmapped(key) : this.handleKeyEvent(key));
     }
   }
 
   public async handleKeyEvent(keyRaw: string): Promise<void> {
     const key =
-      !Langmap.isRemapped || Langmap.isLiteralMode(this.currentMode)
-        ? keyRaw
-        : Langmap.getLangmap().remapKey(keyRaw);
+      isLiteralMode(this.currentMode) || this.vimState.isReplayingMacro ? keyRaw : remapKey(keyRaw);
     return this.handleKeyEventLangmapped(key);
   }
 
