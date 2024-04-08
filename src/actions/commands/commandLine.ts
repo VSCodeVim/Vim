@@ -13,6 +13,7 @@ import { getPathDetails, readDirectory } from '../../util/path';
 import { builtinExCommands } from '../../vimscript/exCommandParser';
 import { SearchDirection } from '../../vimscript/pattern';
 import { BaseCommand, RegisterAction } from '../base';
+import { remapKey } from '../../configuration/langmap';
 
 abstract class CommandLineAction extends BaseCommand {
   modes = [Mode.CommandlineInProgress, Mode.SearchInProgressMode];
@@ -289,11 +290,12 @@ class CommandInsertRegisterContentInCommandLine extends CommandLineAction {
   override isCompleteAction = false;
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    if (!Register.isValidRegister(this.keysPressed[1])) {
+    const registerKey = remapKey(this.keysPressed[1]);
+    if (!Register.isValidRegister(registerKey)) {
       return;
     }
 
-    vimState.recordedState.registerName = this.keysPressed[1];
+    vimState.recordedState.registerName = registerKey;
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(

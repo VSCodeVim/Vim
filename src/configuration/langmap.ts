@@ -123,6 +123,7 @@ export function unmapLiteral(
   }
 
   // unmap <character> <number> <alpha> and <any>
+  // TODO: consider introducing <register> so we don't unmap registers (otherwise we have to run remapKey again!)
   const unmapped = [...keys];
   for (let i = 0; i < keys.length; ++i) {
     if (literalKeys.test((reference as string[])[i])) {

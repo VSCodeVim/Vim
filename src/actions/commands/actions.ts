@@ -35,6 +35,7 @@ import { TextEditor } from './../../textEditor';
 import { Transformation, isTextTransformation } from './../../transformations/transformations';
 import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
+import { remapKey } from '../../configuration/langmap';
 
 /**
  * A very special snowflake.
@@ -294,7 +295,7 @@ export class CommandRegister extends BaseCommand {
   override isCompleteAction = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = this.keysPressed[1];
+    const register = remapKey(this.keysPressed[1]);
 
     if (Register.isValidRegister(register)) {
       vimState.recordedState.registerName = register;
@@ -315,7 +316,7 @@ class CommandRecordMacro extends BaseCommand {
   ];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const registerKey = this.keysPressed[1];
+    const registerKey = remapKey(this.keysPressed[1]);
     const register = registerKey.toLocaleLowerCase();
     vimState.macro = new RecordedState();
     vimState.macro.registerKey = registerKey;
@@ -395,7 +396,7 @@ class CommandExecuteMacro extends BaseCommand {
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = this.keysPressed[1].toLocaleLowerCase();
+    const register = remapKey(this.keysPressed[1]).toLocaleLowerCase();
 
     const isFilenameRegister = register === '%' || register === '#';
     if (!Register.isValidRegister(register) || isFilenameRegister) {
