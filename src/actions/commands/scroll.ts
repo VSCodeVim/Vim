@@ -157,7 +157,7 @@ class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
 }
 
 @RegisterAction
-class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
+class CommandCtrlD extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
   override setScroll = true;
@@ -168,7 +168,7 @@ class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
 }
 
 @RegisterAction
-class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
+class CommandCtrlU extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
   override setScroll = true;
