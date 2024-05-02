@@ -1197,7 +1197,7 @@
     "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "5.0.9",
+    "@types/diff": "5.2.0",
     "@types/diff-match-patch": "1.0.36",
     "@types/glob": "8.1.0",
     "@types/lodash": "4.17.0",
@@ -1227,10 +1227,10 @@
     "minimist": "1.2.8",
     "mocha": "10.4.0",
     "plugin-error": "2.0.1",
-    "prettier": "3.2.4",
+    "prettier": "3.2.5",
     "sinon": "17.0.1",
     "ts-loader": "9.5.1",
-    "typescript": "5.4.4",
+    "typescript": "5.4.5",
     "vsce": "2.15.0",
     "webpack": "5.91.0",
     "webpack-cli": "5.1.4",
