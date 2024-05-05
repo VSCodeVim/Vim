@@ -532,26 +532,37 @@ export class HistoryTracker {
       if (this.vimState.lastVisualSelection) {
         this.vimState.lastVisualSelection.start = position;
       } else {
-        // TODO: Not quite right: only "< should be set.
         this.vimState.lastVisualSelection = {
           mode: Mode.Visual,
           start: position,
-          end: position.getRight(),
+          end: position,
         };
       }
-      // TODO: Ensure "> is always after "<
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.end.isBefore(this.vimState.lastVisualSelection.start)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
     } else if (markName === '>') {
       if (this.vimState.lastVisualSelection) {
         this.vimState.lastVisualSelection.end = position.getRight();
       } else {
-        // TODO: Not quite right: only "> should be set.
         this.vimState.lastVisualSelection = {
           mode: Mode.Visual,
-          start: position,
+          start: position.getRight(),
           end: position.getRight(),
         };
       }
-      // TODO: Ensure "< is always before ">
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.start.isAfter(this.vimState.lastVisualSelection.end)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.start = this.vimState.lastVisualSelection.end.getLeft();
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
     } else {
       const isUppercaseMark = markName.toUpperCase() === markName;
       const newMark: IMark = {

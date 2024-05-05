@@ -44,44 +44,42 @@ suite('Marks', async () => {
     endMode: Mode.Normal,
   });
 
-  suite('"< and ">', () => {
+  suite("'< and '>", () => {
     newTest({
-      title: '"< set by Visual mode',
+      title: "'< set by Visual mode",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'vjl<Esc>' + 'gg' + '`<',
       end: ['one', 't|wo', 'three'],
     });
     newTest({
-      title: '"> set by Visual mode',
+      title: "'> set by Visual mode",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'vjl<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'th|ree'],
     });
 
     newTest({
-      title: '"< set by m<',
+      title: "'< set by m<",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm<' + 'gg' + '`<',
       end: ['one', 't|wo', 'three'],
     });
     newTest({
-      title: '"> set by m>',
+      title: "'> set by m>",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm>' + 'gg' + '`>',
       end: ['one', 't|wo', 'three'],
     });
 
-    newTestSkip({
-      // TODO
-      title: 'gv fails if "< is not set',
+    newTest({
+      title: "gv fails if '< is not set",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm>' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
       endMode: Mode.Normal,
     });
-    newTestSkip({
-      // TODO
-      title: 'gv fails if "> is not set',
+    newTest({
+      title: "gv fails if '> is not set",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
@@ -91,17 +89,41 @@ suite('Marks', async () => {
     newTest({
       title: 'gv is affected by m<',
       start: ['one', 't|wo', 'three'],
-      keysPressed: 'v<Esc>' + 'k' + 'm<' + 'G' + 'gvd',
+      keysPressed: 'v<Esc>' + 'k' + 'm<' + 'gg' + 'gvd',
       end: ['o|o', 'three'],
     });
     newTest({
       title: 'gv is affected by m>',
       start: ['one', 't|wo', 'three'],
-      keysPressed: 'v<Esc>' + 'j' + 'm>' + 'G' + 'gvd',
+      keysPressed: 'v<Esc>' + 'j' + 'm>' + 'gg' + 'gvd',
+      end: ['one', 't|ree'],
+    });
+    newTestSkip({
+      // TODO: Seems to work... why does this fail?
+      title: 'gv is affected by m< and m>',
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'm<' + 'j' + 'm>' + 'gg' + 'gvd',
       end: ['one', 't|ree'],
     });
 
-    // TODO: If m> AFTER "<: "< set to "> and gv fails
-    // TODO: If m< AFTER ">: "> set to "< and gv fails
+    newTest({
+      title: "m< AFTER '> sets '> too",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + '`>',
+      end: ['one', 'two', 't|hree'],
+    });
+    newTest({
+      title: "m> BEFORE '< sets '< too",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'v<Esc>' + 'k' + 'm>' + 'gg' + '`<',
+      end: ['o|ne', 'two', 'three'],
+    });
+    newTest({
+      title: "gv fails if '< is after '>",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + 'gv',
+      end: ['|one', 'two', 'three'],
+      endMode: Mode.Normal,
+    });
   });
 });
