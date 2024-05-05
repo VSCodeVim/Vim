@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as vscode from 'vscode';
 
 import * as process from 'process';
@@ -854,7 +855,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.lastCommandDotRepeatable &&
       this.vimState.dotCommandStatus !== DotCommandStatus.Finished
     ) {
-      globalState.previousFullAction = this.vimState.recordedState;
+      globalState.previousFullAction = _.cloneDeep(this.vimState.recordedState);
 
       if (recordedState.isInsertion) {
         Register.setReadonlyRegister('.', recordedState);
