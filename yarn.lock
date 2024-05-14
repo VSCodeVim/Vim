@@ -489,10 +489,10 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vscode/test-electron@2.3.9":
-  version "2.3.9"
-  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.3.9.tgz#f61181392634b408411e4302aef6e1cd2dd41474"
-  integrity sha512-z3eiChaCQXMqBnk2aHHSEkobmC2VRalFQN0ApOAtydL172zXGxTwGrRtviT5HnUB+Q+G3vtEYFtuQkYqBzYgMA==
+"@vscode/test-electron@2.3.10":
+  version "2.3.10"
+  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-2.3.10.tgz#c63e2437ec4d65ff56c7cfcb4dfceb0e883ef473"
+  integrity sha512-FxMqrvUm6a8S5tP4CymNJ40e6kD+wUTWTc6K32U629yrCCa+kl/rmpkC2gKpN4F4zjg1r+0Hnk9sl0+N2atsYA==
   dependencies:
     http-proxy-agent "^4.0.1"
     https-proxy-agent "^5.0.0"
