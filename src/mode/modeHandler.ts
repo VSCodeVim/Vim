@@ -1226,7 +1226,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   public async runMacro(recordedMacro: RecordedState): Promise<void> {
     let recordedState = new RecordedState();
     this.vimState.recordedState = recordedState;
-    this.vimState.dotCommandStatus = DotCommandStatus.Executing;
 
     for (const action of recordedMacro.actionsRun) {
       const originalLocation = Jump.fromStateNow(this.vimState);
