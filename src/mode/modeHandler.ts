@@ -1177,9 +1177,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       );
     }
 
-    recordedState = new RecordedState();
-    this.vimState.recordedState = recordedState;
-
     let replayMode = null;
     if (actions[0] instanceof CommandInsertAtCursor) {
       replayMode = ReplayMode.Insert;
@@ -1187,6 +1184,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       replayMode = ReplayMode.Replace;
     }
     for (let j = 0; j < transformation.count; j++) {
+      recordedState = new RecordedState();
+      this.vimState.recordedState = recordedState;
       for (const [i, action] of actions.entries()) {
         if (
           replayMode === ReplayMode.Insert &&
