@@ -1228,7 +1228,7 @@
     "mocha": "10.4.0",
     "plugin-error": "2.0.1",
     "prettier": "3.2.5",
-    "sinon": "17.0.2",
+    "sinon": "18.0.0",
     "ts-loader": "9.5.1",
     "typescript": "5.4.5",
     "vsce": "2.15.0",
