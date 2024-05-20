@@ -12,6 +12,7 @@ import { TextEditor } from '../textEditor';
 import { Logger } from '../util/logger';
 import { keystrokesExpressionParser } from '../vimscript/expression';
 import {
+  Dot,
   InsertTextVSCodeTransformation,
   TextTransformations,
   Transformation,
@@ -28,7 +29,7 @@ export interface IModeHandler {
   updateView(args?: { drawSelection: boolean; revealRange: boolean }): Promise<void>;
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
-  rerunRecordedState(recordedState: RecordedState): Promise<void>;
+  rerunRecordedState(transformation: Dot): Promise<void>;
 }
 
 export async function executeTransformations(
@@ -150,7 +151,7 @@ export async function executeTransformations(
         break;
 
       case 'replayRecordedState':
-        await modeHandler.rerunRecordedState(transformation.recordedState.clone());
+        await modeHandler.rerunRecordedState(transformation);
         break;
 
       case 'macro':
