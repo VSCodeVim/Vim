@@ -25,6 +25,7 @@ import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
+  DotCommandStatus,
   Mode,
   isVisualMode,
   visualBlockGetBottomRightPosition,
@@ -705,17 +706,17 @@ SearchCommandLine.onSearch = async (vimState: VimState, direction: SearchDirecti
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
+  override createsUndoPoint = true;
 
   public override async execCount(position: Position, vimState: VimState): Promise<void> {
     if (globalState.previousFullAction) {
       const count = vimState.recordedState.count || 1;
 
-      for (let i = 0; i < count; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replayRecordedState',
-          recordedState: globalState.previousFullAction,
-        });
-      }
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replayRecordedState',
+        count,
+        recordedState: globalState.previousFullAction,
+      });
     }
   }
 }
@@ -1664,7 +1665,7 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class ActionReplaceCharacter extends BaseCommand {
+export class ActionReplaceCharacter extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['r', '<character>'];
   override createsUndoPoint = true;
@@ -1721,6 +1722,8 @@ class ActionReplaceCharacter extends BaseCommand {
         text: toReplace.repeat(timesToRepeat),
         range: new vscode.Range(position, endPos),
         diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
+        manuallySetCursorPositions:
+          vimState.dotCommandStatus === DotCommandStatus.Executing ? true : undefined,
       });
     }
   }
