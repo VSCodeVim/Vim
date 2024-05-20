@@ -224,7 +224,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ex', ''], FileCommand.argParsers.edit],
   [['exe', 'cute'], undefined],
   [['exi', 't'], WriteQuitCommand.argParser],
-  [['Ex','plore'], succeed(new ExploreCommand())],
+  [['Ex', 'plore'], succeed(new ExploreCommand())],
   [['exu', 'sage'], undefined],
   [['f', 'ile'], FileInfoCommand.argParser],
   [['files', ''], undefined],
