@@ -41,8 +41,7 @@ suite('Execute normal command', () => {
     end: ['foo = bar !== 1', 'foo !|== bar = 2'],
   });
 
-  // TODO(#8939): fix dot command bug
-  newTestSkip({
+  newTest({
     title: 'One liner with multiple dot',
     start: ['foo =| bar = 1', 'foo = bar = 2'],
     keysPressed: 'f=i!=<Esc>j^f=:normal 2.\n',
