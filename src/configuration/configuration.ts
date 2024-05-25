@@ -255,6 +255,7 @@ class Configuration implements IConfiguration {
   replaceWithRegister = false;
 
   smartRelativeLine = false;
+  indentwise = true;
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
