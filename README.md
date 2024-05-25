@@ -632,6 +632,10 @@ There are 3 main ways of moving:
 * To an **absolute indent level**. If spaces are used, the number of spaces that constitute a level is taken from the tabSize editor setting.
 * To the **beginning/end of the current block** (i.e. to the last line above/first line below the next/last line with less indent than block the current line is part of). Vim-indent-object described above is another useful alternative for this.
 
+In all modes, empty lines are ignored and never jumped to (use the jump by paragraph motion to go to empty lines).
+
+Absolute indent level jumps work a bit differently than they do in vim-indentwise: instead of using the optional count prefix to specify the level, the level is given at the end explicitly. This allows both to combine it with counts (e.g. `2]_0` to jump to the 2nd next line that has 0 indent), and also allows custom key remaps to specific levels (e.g. in python jumping to the next/previous line at indent level 0 is very common and you may want to use a custom keyboard shortcut to do this quicker)
+
 | Motion Command | Description                                                                                         |
 | -------------- | --------------------------------------------------------------------------------------------------- |
 | `]-`           | Move forward to the next line with less indentation than the current line                           |
