@@ -634,7 +634,7 @@ There are 3 main ways of moving:
 
 In all modes, empty lines are ignored and never jumped to (use the jump by paragraph motion to go to empty lines).
 
-Absolute indent level jumps work a bit differently than they do in vim-indentwise: instead of using the optional count prefix to specify the level, the level is given at the end explicitly. This allows both to combine it with counts (e.g. `2]_0` to jump to the 2nd next line that has 0 indent), and also allows custom key remaps to specific levels (e.g. in python jumping to the next/previous line at indent level 0 is very common and you may want to use a custom keyboard shortcut to do this quicker)
+Absolute indent level jumps work a bit differently than they do in `vim-indentwise`: instead of using the optional count prefix to specify the level, the level is given at the end explicitly. This allows both to combine it with counts (e.g. `2]_0` to jump to the 2nd next line that has 0 indent), and also allows custom key remaps to specific levels (e.g. in python jumping to the next/previous line at indent level 0 is very common and you may want to use a custom keyboard shortcut to do this quicker)
 
 | Motion Command | Description                                                                                         |
 | -------------- | --------------------------------------------------------------------------------------------------- |
