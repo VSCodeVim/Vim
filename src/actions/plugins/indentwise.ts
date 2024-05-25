@@ -292,11 +292,11 @@ export class IndentwisePreviousAbsoluteIndent extends BaseMovement {
     vimState: VimState
   ): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      vimState.lastSemicolonRepeatableMovement = new IndentwiseNextAbsoluteIndent(
+      vimState.lastSemicolonRepeatableMovement = new IndentwisePreviousAbsoluteIndent(
         this.keysPressed,
         true
       );
-      vimState.lastCommaRepeatableMovement = new IndentwisePreviousAbsoluteIndent(
+      vimState.lastCommaRepeatableMovement = new IndentwiseNextAbsoluteIndent(
         this.keysPressed,
         true
       );
