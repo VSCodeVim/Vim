@@ -246,7 +246,7 @@ export async function executeTransformations(
         const resultLineNumbers: number[] = [];
         if (withRange) {
           for (let i = startLineNumber; i <= endLineNumber; i++) {
-            resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
+            resultLineNumbers.push(i);
           }
         } else {
           const selectionList = vimState.editor.selections;
@@ -254,7 +254,7 @@ export async function executeTransformations(
             const { start, end } = selection;
 
             for (let i = start.line; i <= end.line; i++) {
-              resultLineNumbers.push(vimState.document.lineAt(i).lineNumber);
+              resultLineNumbers.push(i);
             }
           }
         }
