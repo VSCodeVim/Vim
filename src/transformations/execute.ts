@@ -16,6 +16,7 @@ import {
 } from '../vimscript/expression';
 import {
   Dot,
+  ExecuteNormalTransformation,
   InsertTextVSCodeTransformation,
   TextTransformations,
   Transformation,
@@ -238,42 +239,7 @@ export async function executeTransformations(
         break;
 
       case 'executeNormal':
-        const { keystroke, startLineNumber, endLineNumber, withRange } = transformation;
-        const stroke = keystrokesExpressionParser.parse(keystroke);
-        if (!stroke.status) {
-          throw new Error(`Failed to execute normal command: ${keystroke}`);
-        }
-
-        const resultLineNumbers: number[] = [];
-        if (withRange) {
-          for (let i = startLineNumber; i <= endLineNumber; i++) {
-            resultLineNumbers.push(i);
-          }
-        } else {
-          const selectionList = vimState.editor.selections;
-          for (const selection of selectionList) {
-            const { start, end } = selection;
-
-            for (let i = start.line; i <= end.line; i++) {
-              resultLineNumbers.push(i);
-            }
-          }
-        }
-
-        vimState.normalCommandState = NormalCommandState.Executing;
-        vimState.recordedState = new RecordedState();
-        await vimState.setCurrentMode(Mode.Normal);
-        for (const lineNumber of resultLineNumbers) {
-          if (withRange) {
-            vimState.cursorStopPosition = vimState.cursorStartPosition =
-              TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
-          }
-          await modeHandler.handleMultipleKeyEvents(stroke.value);
-          if (vimState.currentMode === Mode.Insert) {
-            await modeHandler.handleKeyEvent('<Esc>');
-          }
-        }
-        vimState.normalCommandState = NormalCommandState.Finished;
+        await doExecuteNormal(modeHandler, transformation);
         break;
 
       case 'vscodeCommand':
@@ -335,3 +301,46 @@ export async function executeTransformations(
 
   vimState.recordedState.transformer = new Transformer();
 }
+
+const doExecuteNormal = async (
+  modeHandler: IModeHandler,
+  transformation: ExecuteNormalTransformation,
+) => {
+  const vimState = modeHandler.vimState;
+  const { keystrokes, startLineNumber, endLineNumber, withRange } = transformation;
+  const strokes = keystrokesExpressionParser.parse(keystrokes);
+  if (!strokes.status) {
+    throw new Error(`Failed to execute normal command: ${keystrokes}`);
+  }
+
+  const resultLineNumbers: number[] = [];
+  if (withRange) {
+    for (let i = startLineNumber; i <= endLineNumber; i++) {
+      resultLineNumbers.push(i);
+    }
+  } else {
+    const selectionList = vimState.editor.selections;
+    for (const selection of selectionList) {
+      const { start, end } = selection;
+
+      for (let i = start.line; i <= end.line; i++) {
+        resultLineNumbers.push(i);
+      }
+    }
+  }
+
+  vimState.normalCommandState = NormalCommandState.Executing;
+  vimState.recordedState = new RecordedState();
+  await vimState.setCurrentMode(Mode.Normal);
+  for (const lineNumber of resultLineNumbers) {
+    if (withRange) {
+      vimState.cursorStopPosition = vimState.cursorStartPosition =
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
+    }
+    await modeHandler.handleMultipleKeyEvents(strokes.value);
+    if (vimState.currentMode === Mode.Insert) {
+      await modeHandler.handleKeyEvent('<Esc>');
+    }
+  }
+  vimState.normalCommandState = NormalCommandState.Finished;
+};
