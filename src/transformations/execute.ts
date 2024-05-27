@@ -32,6 +32,7 @@ export interface IModeHandler {
   updateView(args?: { drawSelection: boolean; revealRange: boolean }): Promise<void>;
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
+  handleKeyEvent(key: string): Promise<void>;
   rerunRecordedState(transformation: Dot): Promise<void>;
 }
 
@@ -269,7 +270,7 @@ export async function executeTransformations(
           }
           await modeHandler.handleMultipleKeyEvents(stroke.value);
           if (vimState.currentMode === Mode.Insert) {
-            await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+            await modeHandler.handleKeyEvent('<Esc>');
           }
         }
         vimState.normalCommandState = NormalCommandState.Finished;
