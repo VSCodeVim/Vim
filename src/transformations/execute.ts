@@ -307,14 +307,15 @@ const doExecuteNormal = async (
   transformation: ExecuteNormalTransformation,
 ) => {
   const vimState = modeHandler.vimState;
-  const { keystrokes, startLineNumber, endLineNumber, withRange } = transformation;
+  const { keystrokes, range } = transformation;
   const strokes = keystrokesExpressionParser.parse(keystrokes);
   if (!strokes.status) {
     throw new Error(`Failed to execute normal command: ${keystrokes}`);
   }
 
   const resultLineNumbers: number[] = [];
-  if (withRange) {
+  if (range) {
+    const { start: startLineNumber, end: endLineNumber } = range.resolve(vimState);
     for (let i = startLineNumber; i <= endLineNumber; i++) {
       resultLineNumbers.push(i);
     }
@@ -333,7 +334,7 @@ const doExecuteNormal = async (
   vimState.recordedState = new RecordedState();
   await vimState.setCurrentMode(Mode.Normal);
   for (const lineNumber of resultLineNumbers) {
-    if (withRange) {
+    if (range) {
       vimState.cursorStopPosition = vimState.cursorStartPosition =
         TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
     }

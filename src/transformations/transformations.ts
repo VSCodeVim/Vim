@@ -1,5 +1,6 @@
 import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
 import { RecordedState } from '../state/recordedState';
+import { LineRange } from '../vimscript/lineRange';
 import { PositionDiff } from './../common/motion/position';
 
 /**
@@ -189,9 +190,7 @@ export interface ContentChangeTransformation {
 export interface ExecuteNormalTransformation {
   type: 'executeNormal';
   keystrokes: string;
-  startLineNumber: number;
-  endLineNumber: number;
-  withRange: boolean;
+  range?: LineRange;
 }
 
 export type Transformation =
