@@ -1227,7 +1227,7 @@
     "minimist": "1.2.8",
     "mocha": "10.4.0",
     "plugin-error": "2.0.1",
-    "prettier": "3.3.1",
+    "prettier": "3.3.2",
     "sinon": "18.0.0",
     "ts-loader": "9.5.1",
     "typescript": "5.4.5",
