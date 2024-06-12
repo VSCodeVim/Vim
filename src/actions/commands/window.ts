@@ -133,7 +133,7 @@ class VerticalSplit extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.splitEditor',
-      args: {},
+      args: undefined,
     });
   }
 }
@@ -149,7 +149,7 @@ class OrthogonalSplit extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.splitEditorOrthogonal',
-      args: {},
+      args: undefined,
     });
   }
 }
