@@ -56,7 +56,7 @@ export class RecordedState {
       this.commandList.length > 0
     ) {
       // Used for the registers and macros that only record on commandList
-      result = this.commandList.join('');
+      return this.commandList.join('');
     }
 
     return result
