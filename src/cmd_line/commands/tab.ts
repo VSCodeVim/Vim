@@ -9,6 +9,7 @@ import {
   FileOpt,
   bangParser,
   fileCmdParser,
+  fileNameParser,
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';
@@ -104,7 +105,7 @@ export class TabCommand extends ExCommand {
     tabnew: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      regexp(/\S+/).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => {
       return new TabCommand({
         type: TabCommandType.New,
@@ -189,17 +190,21 @@ export class TabCommand extends ExCommand {
         const hasFile = !(this.arguments.file === undefined || this.arguments.file === '');
         if (hasFile) {
           const isAbsolute = path.isAbsolute(this.arguments.file!);
+          const currentFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
           const isInWorkspace =
             vscode.workspace.workspaceFolders !== undefined &&
             vscode.workspace.workspaceFolders.length > 0;
-          const currentFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
 
           let toOpenPath: string;
           if (isAbsolute) {
             toOpenPath = this.arguments.file!;
           } else if (isInWorkspace) {
             const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
-            toOpenPath = path.join(workspacePath, this.arguments.file!);
+            if (currentFilePath.startsWith(workspacePath)) {
+              toOpenPath = path.join(path.dirname(currentFilePath), this.arguments.file!);
+            } else {
+              toOpenPath = path.join(workspacePath, this.arguments.file!);
+            }
           } else {
             toOpenPath = path.join(path.dirname(currentFilePath), this.arguments.file!);
           }
