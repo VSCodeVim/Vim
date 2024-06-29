@@ -71,7 +71,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
           Logger.error(errMsg);
           return;
         } else {
-          this.keys = keys as string[][];
+          this.keys = keys;
         }
       }
       this.valid = true;
