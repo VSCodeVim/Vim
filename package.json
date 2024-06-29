@@ -1182,7 +1182,7 @@
     "prettier:check": "prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
