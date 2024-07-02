@@ -70,6 +70,19 @@ export abstract class BaseAction implements IBaseAction {
   }
 
   /**
+   * What is the applicability of this action in the current Vim state?
+   */
+  public getActionApplicability(vimState: VimState, keysPressed: string[]): ActionApplicability {
+    if (this.doesActionApply(vimState, keysPressed)) {
+      return ActionApplicability.DoesApply;
+    } else if (this.couldActionApply(vimState, keysPressed)) {
+      return ActionApplicability.CouldApply;
+    } else {
+      return ActionApplicability.CannotApply;
+    }
+  }
+
+  /**
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -239,9 +252,11 @@ export enum KeypressState {
 }
 
 /**
- * Every Vim action will be added here with the @RegisterAction decorator.
+ * Every Vim action and an action instance will be added here with the @RegisterAction decorator.
+ * Action's instance is included to avoid having to create a new instance of each action
+ * on each getRelevantAction(...) call.
  */
-const actionMap = new Map<Mode, Array<new () => BaseAction>>();
+const actionMap = new Map<Mode, Array<[new () => BaseAction, BaseAction]>>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -260,16 +275,17 @@ export function getRelevantAction(
   const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 
   let hasPotentialMatch = false;
-  for (const actionType of possibleActionsForMode) {
-    // TODO: Constructing up to several hundred Actions every time we hit a key is moronic.
-    //       I think we can make `doesActionApply` and `couldActionApply` static...
-    const action = new actionType();
-    if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+  for (const [actionType, actionInstance] of possibleActionsForMode) {
+    const applicability: ActionApplicability = actionInstance.getActionApplicability(
+      vimState,
+      keysPressed
+    );
+    if (applicability === ActionApplicability.DoesApply) {
+      const action = new actionType();
+      action.keysPressed = [...vimState.recordedState.actionKeys];
       return action;
     }
-
-    hasPotentialMatch ||= action.couldActionApply(vimState, keysPressed);
+    hasPotentialMatch ||= applicability === ActionApplicability.CouldApply;
   }
 
   return hasPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
@@ -289,6 +305,12 @@ export function RegisterAction(action: new () => BaseAction): void {
       continue;
     }
 
-    actions.push(action);
+    actions.push([action, actionInstance]);
   }
+}
+
+export enum ActionApplicability {
+  DoesApply,
+  CouldApply,
+  CannotApply,
 }
