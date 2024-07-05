@@ -149,10 +149,10 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | `.                  | go to the position of the last change in this file     |
 | :white_check_mark: | '.                  | go to the position of the last change in this file     |
 | :arrow_down:       | '{a-zA-Z0-9[]'"<>.} | same as `, but on the first non-blank in the line      |
-| :arrow_down:       | :marks              | print the active marks                                 |
+| :white_check_mark: | :marks              | print the active marks                                 |
 | :white_check_mark: | :1234: CTRL-O       | go to Nth older position in jump list                  |
 | :white_check_mark: | :1234: CTRL-I       | go to Nth newer position in jump list                  |
-| :arrow_down:       | :ju[mps]            | print the jump list                                    |
+| :white_check_mark: | :ju[mps]            | print the jump list                                    |
 
 ## Various motions
 

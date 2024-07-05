@@ -149,7 +149,7 @@ class DocState {
 }
 
 /**
- * Tokenize a string like "abc<Esc>d<C-c>" into ["a", "b", "c", "<Esc>", "d", "<C-c>"]
+ * Tokenize a string like `"abc<Esc>d<C-c>"` into `["a", "b", "c", "<Esc>", "d", "<C-c>"]`
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;

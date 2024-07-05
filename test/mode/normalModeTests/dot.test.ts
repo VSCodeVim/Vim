@@ -267,4 +267,18 @@ suite('Dot Operator repeat with remap', () => {
     keysPressed: ' w.',
     end: ['|three'],
   });
+
+  newTest({
+    title: 'Repeatable dot with insert mode',
+    start: ['|', ''],
+    keysPressed: 'ivar<Esc>j4.',
+    end: ['var', 'varvarvarva|r'],
+  });
+
+  newTest({
+    title: 'Repeatable dot with replace mode',
+    start: ['|aaaaa', 'aaaaa'],
+    keysPressed: 'r.j4.',
+    end: ['.aaaa', '...|.a'],
+  });
 });

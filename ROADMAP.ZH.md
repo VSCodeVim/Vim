@@ -157,10 +157,10 @@
 | :white_check_mark: | `.                  | 跳转到此文件的最后一次修改处                           |
 | :white_check_mark: | '.                  | 跳转到此文件的最后一次修改处                           |
 | :arrow_down:       | '{a-zA-Z0-9[]'"<>.} | 与`命令的意义相同,除了会定位到所在行的第一个非空白字符 |
-| :arrow_down:       | :marks              | 打印当前活动的标记                                     |
+| :white_check_mark: | :marks              | 打印当前活动的标记                                     |
 | :white_check_mark: | :1234: CTRL-O       | 跳转到跳转列表的第 N 个旧位置                          |
 | :white_check_mark: | :1234: CTRL-I       | 跳转到跳转列表的第 N 个新位置                          |
-| :arrow_down:       | :ju[mps]            | 打印跳转列表                                           |
+| :white_check_mark: | :ju[mps]            | 打印跳转列表                                           |
 
 ## 其它移动方式
 

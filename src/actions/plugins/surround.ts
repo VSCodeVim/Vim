@@ -24,7 +24,7 @@ import {
 } from '../motion';
 import { PositionDiff, sorted } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
-import { Mode } from './../../mode/mode';
+import { DotCommandStatus, Mode } from './../../mode/mode';
 import { BaseCommand, RegisterAction } from './../base';
 import { BaseOperator } from './../operator';
 
@@ -348,7 +348,7 @@ export class CommandSurroundAddSurroundingTag extends BaseCommand {
 
     vimState.surround.replacement = 't';
     const tagInput =
-      vimState.isRunningDotCommand || vimState.isReplayingMacro
+      vimState.dotCommandStatus === DotCommandStatus.Executing || vimState.isReplayingMacro
         ? this.recordedTag
         : await this.readTag();
 
@@ -404,7 +404,7 @@ export class CommandSurroundAddSurroundingFunction extends BaseCommand {
       this.keysPressed[this.keysPressed.length - 1] === 'F' ? '(' : ')';
 
     const functionInput =
-      vimState.isRunningDotCommand || vimState.isReplayingMacro
+      vimState.dotCommandStatus === DotCommandStatus.Executing || vimState.isReplayingMacro
         ? this.recordedFunction
         : await this.readFunction();
 

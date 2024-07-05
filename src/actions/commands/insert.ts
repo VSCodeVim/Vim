@@ -149,6 +149,7 @@ export class CommandInsertPreviousText extends BaseCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'replayRecordedState',
+      count: 1,
       recordedState,
     });
   }
