@@ -36,7 +36,6 @@ import { TextEditor } from './../../textEditor';
 import { Transformation, isTextTransformation } from './../../transformations/transformations';
 import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
-import { remapKey } from '../../configuration/langmap';
 
 /**
  * A very special snowflake.
@@ -291,12 +290,12 @@ export class CommandNumber extends BaseCommand {
 @RegisterAction
 export class CommandRegister extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = ['"', '<character>'];
+  keys = ['"', '<register>'];
   override name = 'cmd_register';
   override isCompleteAction = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = remapKey(this.keysPressed[1]);
+    const register = this.keysPressed[1];
 
     if (Register.isValidRegister(register)) {
       vimState.recordedState.registerName = register;
@@ -311,13 +310,14 @@ export class CommandRegister extends BaseCommand {
 class CommandRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [
+    // ['q', '<register>'],
     ['q', '<alpha>'],
     ['q', '<number>'],
     ['q', '"'],
   ];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const registerKey = remapKey(this.keysPressed[1]);
+    const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
     vimState.macro = new RecordedState();
     vimState.macro.registerKey = registerKey;
@@ -392,12 +392,12 @@ class CommandExecuteLastMacro extends BaseCommand {
 @RegisterAction
 class CommandExecuteMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['@', '<character>'];
+  keys = ['@', '<register>'];
   override runsOnceForEachCountPrefix = true;
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const register = remapKey(this.keysPressed[1]).toLocaleLowerCase();
+    const register = this.keysPressed[1].toLocaleLowerCase();
 
     const isFilenameRegister = register === '%' || register === '#';
     if (!Register.isValidRegister(register) || isFilenameRegister) {
@@ -583,7 +583,7 @@ class CommandCmdA extends BaseCommand {
 
 @RegisterAction
 class MarkCommand extends BaseCommand {
-  keys = ['m', '<character>'];
+  keys = ['m', '<register>'];
   modes = [Mode.Normal];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {

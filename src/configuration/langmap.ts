@@ -3,7 +3,7 @@ import { Mode } from '../mode/mode';
 import { configuration } from './configuration';
 
 const nonMatchable = /<(any|leader|number|alpha|character)>/;
-const literalKeys = /<(any|number|alpha|character)>/;
+const literalKeys = /<(any|number|alpha|character)>/; // do not treat <register> as literal!
 const literalModes = [
   Mode.Insert,
   Mode.Replace,
@@ -122,8 +122,6 @@ export function unmapLiteral(
     }
   }
 
-  // unmap <character> <number> <alpha> and <any>
-  // TODO: consider introducing <register> so we don't unmap registers (otherwise we have to run remapKey again!)
   const unmapped = [...keys];
   for (let i = 0; i < keys.length; ++i) {
     if (literalKeys.test((reference as string[])[i])) {

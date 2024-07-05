@@ -60,7 +60,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
           Logger.error(errMsg);
           return;
         } else {
-          this.keys = keys;
+          this.keys = keys; // build fails without explicit casting
         }
       } else {
         const keys = this.actual.keys.map((k) => withWhichKey(k as string[]));
@@ -71,7 +71,7 @@ function LastNextObject<T extends MoveInsideCharacter>(type: new () => T, which:
           Logger.error(errMsg);
           return;
         } else {
-          this.keys = keys;
+          this.keys = keys as string[][]; // build fails without explicit casting
         }
       }
       this.valid = true;

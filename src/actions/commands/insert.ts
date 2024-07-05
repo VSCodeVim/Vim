@@ -27,7 +27,6 @@ import {
   DocumentContentChangeAction,
 } from './actions';
 import { DefaultDigraphs } from './digraphs';
-import { remapKey } from '../../configuration/langmap';
 
 @RegisterAction
 export class CommandEscInsertMode extends BaseCommand {
@@ -336,7 +335,7 @@ class CommandInsertRegisterContent extends BaseCommand {
   override isCompleteAction = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const registerKey = remapKey(this.keysPressed[1]);
+    const registerKey = this.keysPressed[1];
     if (!Register.isValidRegister(registerKey)) {
       return;
     }

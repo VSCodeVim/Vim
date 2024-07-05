@@ -128,6 +128,11 @@ export abstract class BaseAction implements IBaseAction {
         continue;
       } else if (left === '<character>' && !Notation.IsControlKey(right)) {
         continue;
+      } else if (
+        left === '<register>' &&
+        (this.isSingleAlpha.test(right) || this.isSingleNumber.test(right))
+      ) {
+        continue;
       } else {
         return false;
       }

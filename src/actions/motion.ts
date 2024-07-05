@@ -564,7 +564,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
 @RegisterAction
 class MarkMovementBOL extends BaseMovement {
-  keys = ["'", '<character>'];
+  keys = ["'", '<register>'];
   override isJump = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -591,6 +591,7 @@ class MarkMovementBOL extends BaseMovement {
 
 @RegisterAction
 class MarkMovement extends BaseMovement {
+  // keys = ['`', '<register>'];
   keys = ['`', '<character>'];
   override isJump = true;
 
