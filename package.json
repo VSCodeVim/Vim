@@ -1182,7 +1182,7 @@
     "prettier:check": "prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
@@ -1208,7 +1208,7 @@
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
-    "@vscode/test-electron": "2.4.0",
+    "@vscode/test-electron": "2.4.1",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
@@ -1225,16 +1225,16 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
-    "mocha": "10.5.2",
+    "mocha": "10.6.0",
     "plugin-error": "2.0.1",
     "prettier": "3.3.2",
     "sinon": "18.0.0",
     "ts-loader": "9.5.1",
-    "typescript": "5.4.5",
+    "typescript": "5.5.3",
     "vsce": "2.15.0",
     "webpack": "5.92.1",
     "webpack-cli": "5.1.4",
-    "webpack-merge": "5.10.0",
+    "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
   },
   "lint-staged": {
