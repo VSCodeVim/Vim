@@ -275,6 +275,10 @@ class Configuration implements IConfiguration {
       enable: true,
     },
 
+    separatorObjects: {
+      enable: true,
+    },
+
     smartQuotes: {
       enable: false,
       breakThroughLines: false,
