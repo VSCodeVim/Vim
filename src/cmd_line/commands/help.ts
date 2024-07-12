@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
+import fs from 'fs';
 import * as path from 'path';
 import { ExCommand } from '../../vimscript/exCommand';
 import { alt, letters, optWhitespace, Parser, regex } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 
 // TODO: Add support for commands not enclosed in quotes (e.g. :help 'arabic' works, but :help arabic does not)
+// TODO: Add support for files wihtout .txt (e.g. :help eidting.txt works, but :help editing does not)
 
 // Load tags file into a map
 function loadTags(): Map<string, [string, string]> {
-  const tagsFile = path.join(__dirname, '../src/cmd_line/commands/helpfiles/tags');
+  const tagsFile = path.join(__dirname, '/helpfiles/tags');
   const lines = fs.readFileSync(tagsFile, 'utf8').split('\n');
   const tagsMap = new Map<string, [string, string]>();
 
@@ -57,7 +58,7 @@ export class HelpCommand extends ExCommand {
       pattern = ''; // Default to no pattern
     }
 
-    const filePath = path.join(__dirname, `../src/cmd_line/commands//helpfiles/${topic}`);
+    const filePath = path.join(__dirname, `/helpfiles/${topic}`);
     await this.showHelpContent(filePath, pattern);
   }
 
@@ -110,7 +111,7 @@ export class HelpCommand extends ExCommand {
     if (this.currentTopic) {
       await this.showHelp(this.currentTopic, this.currentPattern);
     } else {
-      await vscode.window.showErrorMessage('Command not found');
+      void vscode.window.showErrorMessage('Command not found');
     }
   }
 }
