@@ -129,6 +129,24 @@ suite('Record and execute a macro', () => {
     });
   });
 
+  suite('`:` (command) register used as macro and command with leader key', () => {
+    setup(async () => {
+      const configuration = new testConfiguration.Configuration();
+
+      // for testing with <leader>
+      configuration.leader = 'o';
+
+      await setupWorkspace(configuration);
+    });
+
+    newTest({
+      title: 'Repeat :s and command with leader key',
+      start: ['|old', 'old', 'old'],
+      keysPressed: ':s/old/new\nj@:j@@',
+      end: ['new', 'new', '|new'],
+    });
+  });
+
   newTest({
     title: 'Can record and execute macro that handles multiple lines',
     start: ['|Countdown:', '1', 'LAUNCH!!!'],
