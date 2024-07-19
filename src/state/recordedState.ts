@@ -56,6 +56,8 @@ export class RecordedState {
       this.commandList.length > 0
     ) {
       // Used for the registers and macros that only record on commandList
+      // The commandList here saves the ex command, which typically do not include <leader>.
+      // Therefore, we do not need the following replace
       return this.commandList.join('');
     }
 
