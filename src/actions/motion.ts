@@ -1275,12 +1275,33 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveToLineFromViewPortTop extends MoveByScreenLine {
+class MoveToLineFromViewPortTop extends BaseMovement {
   keys = ['H'];
-  movementType: CursorMovePosition = 'viewPortTop';
-  override by: CursorMoveByUnit = 'line';
-  override value = 1;
+  movementType: CursorMovePosition = 'up';
   override isJump = true;
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    let line = clamp(count, 1, vimState.document.lineCount) - 1;
+
+    const scrolloff = configuration
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+
+    let topLine = vscode.window.activeTextEditor?.visibleRanges[0].start.line;
+    topLine = topLine ? topLine : 0;
+    line = topLine + scrolloff;
+
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.with({ line }),
+    };
+  }
 }
 
 @RegisterAction
