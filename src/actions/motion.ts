@@ -1290,7 +1290,7 @@ class MoveToLineFromViewPortTop extends BaseMovement {
     if (topLine === 0) {
       return {
         start: vimState.cursorStartPosition,
-        stop: position.with({ line: topLine }),
+        stop: position.with({ line: topLine }).obeyStartOfLine(vimState.document),
       };
     }
 
@@ -1301,7 +1301,7 @@ class MoveToLineFromViewPortTop extends BaseMovement {
 
     return {
       start: vimState.cursorStartPosition,
-      stop: position.with({ line }),
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
     };
   }
 }
@@ -1324,7 +1324,7 @@ class MoveToLineFromViewPortBottom extends BaseMovement {
       // NOTE: editor will scroll to accommodate editor.cursorSurroundingLines in this scenario
       return {
         start: vimState.cursorStartPosition,
-        stop: position.with({ line: bottomLine }),
+        stop: position.with({ line: bottomLine }).obeyStartOfLine(vimState.document),
       };
     }
 
@@ -1335,7 +1335,7 @@ class MoveToLineFromViewPortBottom extends BaseMovement {
 
     return {
       start: vimState.cursorStartPosition,
-      stop: position.with({ line }),
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
     };
   }
 }
