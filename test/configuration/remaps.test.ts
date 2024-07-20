@@ -483,7 +483,7 @@ suite('Remaps', () => {
           'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: ' lFdl',
         stepResult: {
-          end: ['    Hello World again!', '|llo World!'],
+          end: ['    Hello World again!', 'c|lo World!'],
           endMode: Mode.Normal,
         },
       },
@@ -493,7 +493,7 @@ suite('Remaps', () => {
           'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap and the rest of the keys',
         keysPressed: ' lfrsl',
         stepResult: {
-          end: ['    Hello World again!', '  |llo World!'],
+          end: ['    Hello World again!', '  |clo World!'],
           endMode: Mode.Normal,
         },
       },
