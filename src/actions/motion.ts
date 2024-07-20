@@ -1277,7 +1277,6 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
 @RegisterAction
 class MoveToLineFromViewPortTop extends BaseMovement {
   keys = ['H'];
-  movementType: CursorMovePosition = 'up';
   override isJump = true;
 
   public override async execActionWithCount(
@@ -1310,7 +1309,6 @@ class MoveToLineFromViewPortTop extends BaseMovement {
 @RegisterAction
 class MoveToLineFromViewPortBottom extends BaseMovement {
   keys = ['L'];
-  movementType: CursorMovePosition = 'down';
   override isJump = true;
 
   public override async execActionWithCount(
