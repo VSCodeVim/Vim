@@ -1287,15 +1287,18 @@ class MoveToLineFromViewPortTop extends BaseMovement {
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    let line = clamp(count, 1, vimState.document.lineCount) - 1;
+    const topLine = vimState.editor.visibleRanges[0].start.line ?? 0;
+    if (topLine === 0) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: position.with({ line: topLine }),
+      };
+    }
 
     const scrolloff = configuration
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
-
-    let topLine = vscode.window.activeTextEditor?.visibleRanges[0].start.line;
-    topLine = topLine ? topLine : 0;
-    line = topLine + scrolloff;
+    const line = topLine + scrolloff;
 
     return {
       start: vimState.cursorStartPosition,
