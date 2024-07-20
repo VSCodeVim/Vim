@@ -1736,9 +1736,9 @@ eslint-config-prettier@^9.0.0:
   integrity sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==
 
 eslint-plugin-jsdoc@^48.0.0:
-  version "48.8.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-48.8.1.tgz#0f2590fbb1a581c4737993532350e55776b6ab7a"
-  integrity sha512-8As7AgbuJ/kbDBYX6BH1XJttcpdUdkDP9X0O0SkstoKSA2RjUNH2TPfvzsX9weQ7nXqU+0O184aJBAKveORBhQ==
+  version "48.8.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-48.8.3.tgz#0a651bc0ab5b0732c39e12b26771fca78c830c1c"
+  integrity sha512-AtIvwwW9D17MRkM0Z0y3/xZYaa9mdAvJrkY6fU/HNUwGbmMtHVvK4qRM9CDixGVtfNrQitb8c6zQtdh6cTOvLg==
   dependencies:
     "@es-joy/jsdoccomment" "~0.46.0"
     are-docs-informative "^0.0.2"
