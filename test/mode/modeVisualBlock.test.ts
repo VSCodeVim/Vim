@@ -245,7 +245,7 @@ suite('VisualBlock mode', () => {
       assert.strictEqual(modeHandler.currentMode, Mode.Normal);
 
       // test copy by pasting back
-      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
+      await modeHandler.handleMultipleKeyEvents(['H', '0', '"', '+', 'P']);
 
       // TODO: should be
       // assertEqualLines(['oneone two three', 'oneone two three', 'oneone two three']);
