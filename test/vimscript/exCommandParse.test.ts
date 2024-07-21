@@ -144,9 +144,39 @@ suite('Ex command parsing', () => {
   });
 
   suite(':b[uffer]', () => {
-    exParseTest(':b', new TabCommand({ type: TabCommandType.Absolute, count: 0 }));
-    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
-    exParseTest(':b5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
+    exParseTest(':b', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(':b5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':b +20 5',
+      new TabCommand({ type: TabCommandType.Edit, cmd: { type: 'line_number', line: 20 }, buf: 5 }),
+    );
+    exParseTest(
+      ':b bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':b +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
+    exParseTest(':buffer', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':buffer 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':buffer bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':buffer +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
   });
 
   suite(':clo[se]', () => {

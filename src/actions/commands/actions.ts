@@ -1325,8 +1325,8 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       void new TabCommand({
-        type: TabCommandType.Absolute,
-        count: vimState.recordedState.count,
+        type: TabCommandType.Edit,
+        buf: vimState.recordedState.count,
       }).execute(vimState);
     } else {
       void new TabCommand({
