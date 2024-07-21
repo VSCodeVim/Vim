@@ -1225,7 +1225,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
-    "mocha": "10.6.0",
+    "mocha": "10.7.0",
     "plugin-error": "2.0.1",
     "prettier": "3.3.3",
     "sinon": "18.0.0",
