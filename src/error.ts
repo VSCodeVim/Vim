@@ -13,6 +13,8 @@ export enum ErrorCode {
   NoPreviousCommand = 34,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
+  MultipleMatches = 93,
+  NoMatchingBuffer = 94,
   ErrorWritingToFile = 208,
   FileNoLongerAvailable = 211,
   RecursiveMapping = 223,
@@ -49,6 +51,8 @@ export const ErrorMessage: IErrorMessage = {
   34: 'No previous command',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
+  93: 'More than one match',
+  94: 'No matching buffer',
   208: 'Error writing to file',
   211: 'File no longer available', // TODO: Should be `File "[file_name]" no longer available`
   223: 'Recursive mapping',
@@ -89,6 +93,8 @@ export class VimError extends Error {
       if (extraValue) {
         if (code === ErrorCode.NothingInRegister) {
           extraValue = ` ${extraValue}`;
+        } else if (code === ErrorCode.NoMatchingBuffer || code === ErrorCode.MultipleMatches) {
+          extraValue = ` for ${extraValue}`;
         } else {
           extraValue = `: ${extraValue}`;
         }

@@ -1088,9 +1088,9 @@ suite('Mode Visual', () => {
 
     newTest({
       title: '`*` escapes `/` properly',
-      start: ['one |two/three four', 'one two/three four'],
+      start: ['one |two//three four', 'one two//three four'],
       keysPressed: 'vE*',
-      end: ['one two/three four', 'one |two/three four'],
+      end: ['one two//three four', 'one |two//three four'],
       endMode: Mode.Normal,
     });
 
