@@ -91,7 +91,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
-  [['b', 'uffer'], TabCommand.argParsers.tabAbsolute],
+  [['b', 'uffer'], TabCommand.argParsers.buffer],
   [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],

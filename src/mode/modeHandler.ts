@@ -31,6 +31,7 @@ import {
   CommandInsertAtCursor,
   CommandNumber,
   CommandQuitRecordMacro,
+  CommandRegister,
   DocumentContentChangeAction,
 } from './../actions/commands/actions';
 import {
@@ -1198,6 +1199,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       replayMode = ReplayMode.Insert;
     } else if (actions[0] instanceof ActionReplaceCharacter) {
       replayMode = ReplayMode.Replace;
+    } else if (actions[0] instanceof CommandRegister) {
+      // Increment numbered registers "1 to "9.
+      const keyPressed = Number(actions[0].keysPressed[1]);
+      if (!isNaN(keyPressed) && keyPressed > 0 && keyPressed < 9) {
+        actions[0].keysPressed[1] = String(keyPressed + 1);
+      }
     }
     for (let j = 0; j < transformation.count; j++) {
       recordedState = new RecordedState();
