@@ -1410,10 +1410,17 @@ debug@^4.3.1, debug@^4.3.2:
   dependencies:
     ms "2.1.2"
 
-debug@^4.3.4, debug@^4.3.5, debug@~4.3.4:
+debug@^4.3.4, debug@~4.3.4:
   version "4.3.5"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.5.tgz#e83444eceb9fedd4a1da56d671ae2446a01a6e1e"
   integrity sha512-pt0bNEmneDIvdL1Xsd9oDQ/wrQRkXDT4AUWlNZNPKvW5x/jyO9VFXkJUP07vQ2upmw5PlaITaPKc31jK13V+jg==
+  dependencies:
+    ms "2.1.2"
+
+debug@^4.3.5:
+  version "4.3.6"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.6.tgz#2ab2c38fbaffebf8aa95fdfe6d88438c7a13c52b"
+  integrity sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==
   dependencies:
     ms "2.1.2"
 
@@ -1736,9 +1743,9 @@ eslint-config-prettier@^9.0.0:
   integrity sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==
 
 eslint-plugin-jsdoc@^48.0.0:
-  version "48.8.3"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-48.8.3.tgz#0a651bc0ab5b0732c39e12b26771fca78c830c1c"
-  integrity sha512-AtIvwwW9D17MRkM0Z0y3/xZYaa9mdAvJrkY6fU/HNUwGbmMtHVvK4qRM9CDixGVtfNrQitb8c6zQtdh6cTOvLg==
+  version "48.9.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-48.9.2.tgz#44290d7b6cae4746927ec084b954e7da5a935101"
+  integrity sha512-ydqg2lEY/WxhMXEb1ZAn+yRbc43DlKYdMP/nUreF5ODE1P9mgeff8atL16lYNNKOvYxNOzL85/5gFVeGylSioA==
   dependencies:
     "@es-joy/jsdoccomment" "~0.46.0"
     are-docs-informative "^0.0.2"
