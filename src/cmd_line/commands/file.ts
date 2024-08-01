@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import { doesFileExist } from 'platform/fs';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
