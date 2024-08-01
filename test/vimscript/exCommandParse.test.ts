@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
