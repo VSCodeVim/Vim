@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { LineRange } from '../../src/vimscript/lineRange';
 import { ITestObject, testIt } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
