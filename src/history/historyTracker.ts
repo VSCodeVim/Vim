@@ -9,7 +9,7 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-import DiffMatchPatch = require('diff-match-patch');
+import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
 import { VimState } from './../state/vimState';
