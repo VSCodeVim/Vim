@@ -25,6 +25,7 @@ import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
+  DotCommandStatus,
   Mode,
   isVisualMode,
   visualBlockGetBottomRightPosition,
@@ -705,17 +706,17 @@ SearchCommandLine.onSearch = async (vimState: VimState, direction: SearchDirecti
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
+  override createsUndoPoint = true;
 
   public override async execCount(position: Position, vimState: VimState): Promise<void> {
     if (globalState.previousFullAction) {
       const count = vimState.recordedState.count || 1;
 
-      for (let i = 0; i < count; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replayRecordedState',
-          recordedState: globalState.previousFullAction,
-        });
-      }
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replayRecordedState',
+        count,
+        recordedState: globalState.previousFullAction,
+      });
     }
   }
 }
@@ -936,17 +937,19 @@ class CommandVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReselectVisual extends BaseCommand {
+class RestoreVisualSelection extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'v'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    // Try to restore selection only if valid
-    if (vimState.lastVisualSelection !== undefined) {
-      let { start, end, mode } = vimState.lastVisualSelection;
+    if (vimState.lastVisualSelection === undefined) {
+      return;
+    }
 
+    let { start, end, mode } = vimState.lastVisualSelection;
+    if (mode !== Mode.Visual || !start.isEqual(end)) {
       if (end.line <= vimState.document.lineCount - 1) {
-        if (mode === Mode.Visual && start.isBeforeOrEqual(end)) {
+        if (mode === Mode.Visual && start.isBefore(end)) {
           end = end.getLeftThroughLineBreaks(true);
         }
 
@@ -1322,8 +1325,8 @@ class CommandTabNext extends BaseCommand {
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       void new TabCommand({
-        type: TabCommandType.Absolute,
-        count: vimState.recordedState.count,
+        type: TabCommandType.Edit,
+        buf: vimState.recordedState.count,
       }).execute(vimState);
     } else {
       void new TabCommand({
@@ -1662,7 +1665,7 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class ActionReplaceCharacter extends BaseCommand {
+export class ActionReplaceCharacter extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['r', '<character>'];
   override createsUndoPoint = true;
@@ -1719,6 +1722,8 @@ class ActionReplaceCharacter extends BaseCommand {
         text: toReplace.repeat(timesToRepeat),
         range: new vscode.Range(position, endPos),
         diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
+        manuallySetCursorPositions:
+          vimState.dotCommandStatus === DotCommandStatus.Executing ? true : undefined,
       });
     }
   }

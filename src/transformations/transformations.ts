@@ -1,5 +1,6 @@
 import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
 import { RecordedState } from '../state/recordedState';
+import { LineRange } from '../vimscript/lineRange';
 import { PositionDiff } from './../common/motion/position';
 
 /**
@@ -158,6 +159,7 @@ export interface MoveCursorTransformation {
  */
 export interface Dot {
   type: 'replayRecordedState';
+  count: number;
   recordedState: RecordedState;
 }
 
@@ -185,6 +187,12 @@ export interface ContentChangeTransformation {
   diff: PositionDiff;
 }
 
+export interface ExecuteNormalTransformation {
+  type: 'executeNormal';
+  keystrokes: string;
+  range?: LineRange;
+}
+
 export type Transformation =
   | InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -194,6 +202,7 @@ export type Transformation =
   | Dot
   | Macro
   | ContentChangeTransformation
+  | ExecuteNormalTransformation
   | VSCodeCommandTransformation;
 
 /**

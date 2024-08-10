@@ -3,15 +3,20 @@ import { ExCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { PositionDiff } from '../common/motion/position';
 import { Globals } from '../globals';
-import { Mode } from '../mode/mode';
+import { Mode, NormalCommandState } from '../mode/mode';
 import { Register } from '../register/register';
 import { globalState } from '../state/globalState';
 import { RecordedState } from '../state/recordedState';
 import { VimState } from '../state/vimState';
 import { TextEditor } from '../textEditor';
 import { Logger } from '../util/logger';
-import { keystrokesExpressionParser } from '../vimscript/expression';
 import {
+  keystrokesExpressionForMacroParser,
+  keystrokesExpressionParser,
+} from '../vimscript/expression';
+import {
+  Dot,
+  ExecuteNormalTransformation,
   InsertTextVSCodeTransformation,
   TextTransformations,
   Transformation,
@@ -28,7 +33,8 @@ export interface IModeHandler {
   updateView(args?: { drawSelection: boolean; revealRange: boolean }): Promise<void>;
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
-  rerunRecordedState(recordedState: RecordedState): Promise<void>;
+  handleKeyEvent(key: string): Promise<void>;
+  rerunRecordedState(transformation: Dot): Promise<void>;
 }
 
 export async function executeTransformations(
@@ -150,7 +156,7 @@ export async function executeTransformations(
         break;
 
       case 'replayRecordedState':
-        await modeHandler.rerunRecordedState(transformation.recordedState.clone());
+        await modeHandler.rerunRecordedState(transformation);
         break;
 
       case 'macro':
@@ -159,7 +165,7 @@ export async function executeTransformations(
           return;
         } else if (typeof recordedMacro === 'string') {
           // A string was set to the register. We need to execute the characters as if they were typed (in normal mode).
-          const keystrokes = keystrokesExpressionParser.parse(recordedMacro);
+          const keystrokes = keystrokesExpressionForMacroParser.parse(recordedMacro);
           if (!keystrokes.status) {
             throw new Error(`Failed to execute macro: ${recordedMacro}`);
           }
@@ -232,6 +238,10 @@ export async function executeTransformations(
         vimState.editor.selection = new vscode.Selection(newPos, newPos);
         break;
 
+      case 'executeNormal':
+        await doExecuteNormal(modeHandler, transformation);
+        break;
+
       case 'vscodeCommand':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await vscode.commands.executeCommand(transformation.command, ...transformation.args);
@@ -291,3 +301,47 @@ export async function executeTransformations(
 
   vimState.recordedState.transformer = new Transformer();
 }
+
+const doExecuteNormal = async (
+  modeHandler: IModeHandler,
+  transformation: ExecuteNormalTransformation,
+) => {
+  const vimState = modeHandler.vimState;
+  const { keystrokes, range } = transformation;
+  const strokes = keystrokesExpressionParser.parse(keystrokes);
+  if (!strokes.status) {
+    throw new Error(`Failed to execute normal command: ${keystrokes}`);
+  }
+
+  const resultLineNumbers: number[] = [];
+  if (range) {
+    const { start: startLineNumber, end: endLineNumber } = range.resolve(vimState);
+    for (let i = startLineNumber; i <= endLineNumber; i++) {
+      resultLineNumbers.push(i);
+    }
+  } else {
+    const selectionList = vimState.editor.selections;
+    for (const selection of selectionList) {
+      const { start, end } = selection;
+
+      for (let i = start.line; i <= end.line; i++) {
+        resultLineNumbers.push(i);
+      }
+    }
+  }
+
+  vimState.normalCommandState = NormalCommandState.Executing;
+  vimState.recordedState = new RecordedState();
+  await vimState.setCurrentMode(Mode.Normal);
+  for (const lineNumber of resultLineNumbers) {
+    if (range) {
+      vimState.cursorStopPosition = vimState.cursorStartPosition =
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, lineNumber);
+    }
+    await modeHandler.handleMultipleKeyEvents(strokes.value);
+    if (vimState.currentMode === Mode.Insert) {
+      await modeHandler.handleKeyEvent('<Esc>');
+    }
+  }
+  vimState.normalCommandState = NormalCommandState.Finished;
+};

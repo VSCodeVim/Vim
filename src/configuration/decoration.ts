@@ -16,6 +16,16 @@ class DecorationImpl {
   private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
 
   private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const escape: Record<string, string> = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    if (name in escape) {
+      name = escape[name];
+    }
     const svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
       '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',

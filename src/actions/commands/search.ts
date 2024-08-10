@@ -99,7 +99,7 @@ async function createSearchStateAndMoveToMatch(args: {
     return;
   }
 
-  const escapedNeedle = escapeRegExp(needle).replace('/', '\\/');
+  const escapedNeedle = escapeRegExp(needle).replaceAll('/', '\\/');
   const searchString = isExact ? `\\<${escapedNeedle}\\>` : escapedNeedle;
 
   // Start a search for the given term.

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as vscode from 'vscode';
 
 import * as process from 'process';
@@ -17,7 +18,7 @@ import { globalState } from '../state/globalState';
 import { RemapState } from '../state/remapState';
 import { StatusBar } from '../statusBar';
 import { IModeHandler, executeTransformations } from '../transformations/execute';
-import { isTextTransformation } from '../transformations/transformations';
+import { Dot, isTextTransformation } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
@@ -26,8 +27,11 @@ import { VSCodeContext } from '../util/vscodeContext';
 import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
 import {
   ActionOverrideCmdD,
+  ActionReplaceCharacter,
+  CommandInsertAtCursor,
   CommandNumber,
   CommandQuitRecordMacro,
+  CommandRegister,
   DocumentContentChangeAction,
 } from './../actions/commands/actions';
 import {
@@ -45,7 +49,16 @@ import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { Mode, VSCodeVimCursorType, getCursorStyle, isStatusBarMode, isVisualMode } from './mode';
+import {
+  DotCommandStatus,
+  Mode,
+  NormalCommandState,
+  ReplayMode,
+  VSCodeVimCursorType,
+  getCursorStyle,
+  isStatusBarMode,
+  isVisualMode,
+} from './mode';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -258,6 +271,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.updateView({ drawSelection: false, revealRange: false });
+
+              // Store selection for commands like gv
+              this.vimState.lastVisualSelection = {
+                mode: this.vimState.currentMode,
+                start: this.vimState.cursorStartPosition,
+                end: this.vimState.cursorStopPosition,
+              };
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
@@ -265,6 +285,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
               await this.updateView({ drawSelection: false, revealRange: false });
+
+              // Store selection for commands like gv
+              this.vimState.lastVisualSelection = {
+                mode: Mode.Visual,
+                start: this.vimState.cursorStartPosition,
+                end: this.vimState.cursorStopPosition,
+              };
               return;
             }
           }
@@ -397,6 +424,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await this.setCurrentMode(Mode.Normal);
       }
 
+      if (isVisualMode(this.vimState.currentMode)) {
+        // Store selection for commands like gv
+        this.vimState.lastVisualSelection = {
+          mode: this.vimState.currentMode,
+          start: this.vimState.cursorStartPosition,
+          end: this.vimState.cursorStopPosition,
+        };
+      }
       void this.updateView({ drawSelection: toDraw, revealRange: false });
     }
   }
@@ -606,6 +641,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     const recordedState = this.vimState.recordedState;
     recordedState.actionKeys.push(key);
+    void VSCodeContext.set('vim.command', recordedState.commandString);
 
     const action = getRelevantAction(recordedState.actionKeys, this.vimState);
     switch (action) {
@@ -617,6 +653,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
         // Since there is no possible action we are no longer waiting any action keys
         this.vimState.recordedState.waitingForAnotherActionKey = false;
+        void VSCodeContext.set('vim.command', '');
 
         return false;
       case KeypressState.WaitingOnKeys:
@@ -756,6 +793,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (action.createsUndoPoint) {
         ranRepeatableAction = true;
       }
+
+      if (this.vimState.normalCommandState === NormalCommandState.Finished) {
+        ranRepeatableAction = true;
+      }
     } else if (action instanceof BaseOperator) {
       recordedState.operatorCount = recordedState.count;
     } else {
@@ -773,7 +814,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.currentMode === Mode.Normal &&
         prevMode !== Mode.SearchInProgressMode &&
         prevMode !== Mode.EasyMotionInputMode &&
-        prevMode !== Mode.EasyMotionMode
+        prevMode !== Mode.EasyMotionMode &&
+        !(
+          prevMode === Mode.CommandlineInProgress &&
+          this.vimState.normalCommandState === NormalCommandState.Executing
+        )
       ) {
         ranRepeatableAction = true;
       }
@@ -817,8 +862,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // Record down previous action and flush temporary state
-    if (ranRepeatableAction && this.vimState.lastCommandDotRepeatable) {
-      globalState.previousFullAction = this.vimState.recordedState;
+    if (
+      ranRepeatableAction &&
+      this.vimState.lastCommandDotRepeatable &&
+      this.vimState.dotCommandStatus !== DotCommandStatus.Finished
+    ) {
+      globalState.previousFullAction = _.cloneDeep(this.vimState.recordedState);
 
       if (recordedState.isInsertion) {
         Register.setReadonlyRegister('.', recordedState);
@@ -858,7 +907,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // We've run a complete action sequence - wipe the slate clean with a new RecordedState
-    if (ranAction && this.vimState.currentMode === Mode.Normal) {
+    if (
+      ranAction &&
+      this.vimState.currentMode === Mode.Normal &&
+      this.vimState.dotCommandStatus !== DotCommandStatus.Executing
+    ) {
       this.vimState.recordedState = new RecordedState();
 
       // Return to insert mode after 1 command in this case for <C-o>
@@ -869,6 +922,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           this.vimState.actionCount++;
         }
       }
+    }
+
+    if (this.vimState.dotCommandStatus === DotCommandStatus.Finished) {
+      this.vimState.dotCommandStatus = DotCommandStatus.Waiting;
     }
 
     // track undo history
@@ -884,9 +941,15 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       ranRepeatableAction &&
       !this.vimState.isReplayingMacro &&
+      this.vimState.normalCommandState !== NormalCommandState.Executing &&
+      this.vimState.dotCommandStatus !== DotCommandStatus.Executing &&
       !this.remapState.isCurrentlyPerformingRemapping
     ) {
       this.vimState.historyTracker.finishCurrentStep();
+    }
+
+    if (this.vimState.normalCommandState === NormalCommandState.Finished) {
+      this.vimState.normalCommandState = NormalCommandState.Waiting;
     }
 
     recordedState.actionKeys = [];
@@ -908,7 +971,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       const documentLineCount = this.vimState.document.lineCount;
 
       this.vimState.cursors = this.vimState.cursors.map((cursor: Cursor) => {
-        // adjust start/stop
+        // Adjust start/stop
         if (cursor.start.line >= documentLineCount) {
           cursor = cursor.withNewStart(documentEndPosition);
         }
@@ -916,8 +979,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           cursor = cursor.withNewStop(documentEndPosition);
         }
 
-        // adjust column
-        if (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode)) {
+        // Adjust column. When getting from insert into normal mode with <C-o>,
+        // the cursor position should remain even if it is behind the last
+        // character in the line
+        if (
+          !this.vimState.returnToInsertAfterCommand &&
+          (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode))
+        ) {
           const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
           const currentStartLineLength = TextEditor.getLineLength(cursor.start.line);
 
@@ -941,7 +1009,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       });
     }
 
-    if (isVisualMode(this.vimState.currentMode) && !this.vimState.isRunningDotCommand) {
+    if (
+      isVisualMode(this.vimState.currentMode) &&
+      this.vimState.dotCommandStatus !== DotCommandStatus.Executing
+    ) {
       // Store selection for commands like gv
       this.vimState.lastVisualSelection = {
         mode: this.vimState.currentMode,
@@ -1109,10 +1180,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   }
 
-  public async rerunRecordedState(recordedState: RecordedState): Promise<void> {
+  public async rerunRecordedState(transformation: Dot): Promise<void> {
+    let recordedState = transformation.recordedState.clone();
     const actions = [...recordedState.actionsRun];
 
-    this.vimState.isRunningDotCommand = true;
+    this.vimState.dotCommandStatus = DotCommandStatus.Executing;
 
     // If a previous visual selection exists, store it for use in replay of some commands
     if (this.vimState.lastVisualSelection) {
@@ -1122,28 +1194,60 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       );
     }
 
-    recordedState = new RecordedState();
-    this.vimState.recordedState = recordedState;
-
-    for (const [i, action] of actions.entries()) {
-      recordedState.actionsRun = actions.slice(0, i + 1);
-      await this.runAction(recordedState, action);
-
-      if (this.vimState.lastMovementFailed) {
-        // TODO: Shouldn't this be `break`? Can't this leave us in a very bad state?
-        return;
+    let replayMode = null;
+    if (actions[0] instanceof CommandInsertAtCursor) {
+      replayMode = ReplayMode.Insert;
+    } else if (actions[0] instanceof ActionReplaceCharacter) {
+      replayMode = ReplayMode.Replace;
+    } else if (actions[0] instanceof CommandRegister) {
+      // Increment numbered registers "1 to "9.
+      const keyPressed = Number(actions[0].keysPressed[1]);
+      if (!isNaN(keyPressed) && keyPressed > 0 && keyPressed < 9) {
+        actions[0].keysPressed[1] = String(keyPressed + 1);
       }
-
-      await this.updateView();
     }
-    recordedState.actionsRun = actions;
-    this.vimState.isRunningDotCommand = false;
+    for (let j = 0; j < transformation.count; j++) {
+      recordedState = new RecordedState();
+      this.vimState.recordedState = recordedState;
+      for (const [i, action] of actions.entries()) {
+        if (
+          replayMode === ReplayMode.Insert &&
+          !(j === transformation.count - 1 && i === actions.length - 1) &&
+          action instanceof CommandEscInsertMode
+        ) {
+          continue;
+        }
+        recordedState.actionsRun = actions.slice(0, i + 1);
+        await this.runAction(recordedState, action);
+
+        if (this.vimState.lastMovementFailed) {
+          // TODO: Shouldn't this be `break`? Can't this leave us in a very bad state?
+          return;
+        }
+
+        await this.updateView();
+        if (
+          replayMode === ReplayMode.Replace &&
+          !(j === transformation.count - 1 && i === actions.length - 1)
+        ) {
+          this.vimState.cursorStopPosition = this.vimState.cursorStartPosition = new Position(
+            this.vimState.cursorStopPosition.line,
+            this.vimState.cursorStopPosition.character + 1,
+          );
+        }
+      }
+    }
+    let combinedActions: IBaseAction[] = [];
+    for (let i = 0; i < transformation.count; i++) {
+      combinedActions = combinedActions.concat(actions);
+    }
+    recordedState.actionsRun = combinedActions;
+    this.vimState.dotCommandStatus = DotCommandStatus.Finished;
   }
 
   public async runMacro(recordedMacro: RecordedState): Promise<void> {
     let recordedState = new RecordedState();
     this.vimState.recordedState = recordedState;
-    this.vimState.isRunningDotCommand = true;
 
     for (const action of recordedMacro.actionsRun) {
       const originalLocation = Jump.fromStateNow(this.vimState);
@@ -1171,7 +1275,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    this.vimState.isRunningDotCommand = false;
+    this.vimState.dotCommandStatus = DotCommandStatus.Finished;
     this.vimState.cursorsInitialState = this.vimState.cursors;
   }
 

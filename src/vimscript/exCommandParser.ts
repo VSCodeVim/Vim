@@ -16,8 +16,10 @@ import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
 import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
+import { ExploreCommand } from '../cmd_line/commands/explore';
 import { MoveCommand } from '../cmd_line/commands/move';
 import { NohlCommand } from '../cmd_line/commands/nohl';
+import { NormalCommand } from '../cmd_line/commands/normal';
 import { OnlyCommand } from '../cmd_line/commands/only';
 import { PrintCommand } from '../cmd_line/commands/print';
 import { PutExCommand } from '../cmd_line/commands/put';
@@ -89,7 +91,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['au', 'tocmd'], undefined],
   [['aug', 'roup'], undefined],
   [['aun', 'menu'], undefined],
-  [['b', 'uffer'], TabCommand.argParsers.tabAbsolute],
+  [['b', 'uffer'], TabCommand.argParsers.buffer],
   [['bN', 'ext'], TabCommand.argParsers.bprev],
   [['ba', 'll'], undefined],
   [['bad', 'd'], undefined],
@@ -223,6 +225,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ex', ''], FileCommand.argParsers.edit],
   [['exe', 'cute'], undefined],
   [['exi', 't'], WriteQuitCommand.argParser],
+  [['Ex', 'plore'], succeed(new ExploreCommand())],
   [['exu', 'sage'], undefined],
   [['f', 'ile'], FileInfoCommand.argParser],
   [['files', ''], undefined],
@@ -371,7 +374,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['noh', 'lsearch'], succeed(new NohlCommand())],
   [['norea', 'bbrev'], undefined],
   [['noreme', 'nu'], undefined],
-  [['norm', 'al'], undefined],
+  [['norm', 'al'], NormalCommand.argParser],
   [['nos', 'wapfile'], undefined],
   [['nu', 'mber'], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['nun', 'map'], undefined],

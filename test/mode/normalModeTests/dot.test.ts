@@ -230,6 +230,27 @@ suite('Repeat content change', () => {
     keysPressed: 'ciwxxx<Esc>' + 'bb.' + 'bbV<Esc>.' + 'bb<C-q><Esc>.',
     end: ['xx|x xxx xxx xxx'],
   });
+
+  newTest({
+    title: 'Can repeat insertion with increasing numbered register',
+    start: ['|1 2 3'],
+    keysPressed: '"1daw..' + '"1p..',
+    end: ['1 2 |3'],
+  });
+
+  newTest({
+    title: 'Does not increase the "0 register',
+    start: ['|lorem', 'ipsum'],
+    keysPressed: 'dd' + 'yy' + '"0p.',
+    end: ['ipsum', 'ipsum', '|ipsum'],
+  });
+
+  newTest({
+    title: 'Can repeat line insertion with 9 as highest numbered register',
+    start: ['|one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'],
+    keysPressed: 'dd' + 'dd' + 'dd' + 'dd' + 'dd' + 'dd' + 'dd' + 'dd' + 'dd' + '"1p.........',
+    end: ['', 'nine', 'eight', 'seven', 'six', 'five', 'four', 'three', 'two', 'one', '|one'],
+  });
 });
 
 suite('Dot Operator repeat with remap', () => {
@@ -266,5 +287,19 @@ suite('Dot Operator repeat with remap', () => {
     start: ['|one two three'],
     keysPressed: ' w.',
     end: ['|three'],
+  });
+
+  newTest({
+    title: 'Repeatable dot with insert mode',
+    start: ['|', ''],
+    keysPressed: 'ivar<Esc>j4.',
+    end: ['var', 'varvarvarva|r'],
+  });
+
+  newTest({
+    title: 'Repeatable dot with replace mode',
+    start: ['|aaaaa', 'aaaaa'],
+    keysPressed: 'r.j4.',
+    end: ['.aaaa', '...|.a'],
   });
 });
