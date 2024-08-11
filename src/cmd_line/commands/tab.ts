@@ -13,13 +13,14 @@ import {
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';
+import { VimError, ErrorCode } from '../../error';
 
 export enum TabCommandType {
   Next,
   Previous,
   First,
   Last,
-  Absolute,
+  Edit,
   New,
   Close,
   Only,
@@ -29,8 +30,9 @@ export enum TabCommandType {
 // TODO: many of these arguments aren't used
 export type ITabCommandArguments =
   | {
-      type: TabCommandType.Absolute;
-      count: number;
+      type: TabCommandType.Edit;
+      cmd?: FileCmd;
+      buf: string | number;
     }
   | {
       type: TabCommandType.First | TabCommandType.Last;
@@ -92,6 +94,15 @@ export class TabCommand extends ExCommand {
     ).map(([bang, cmd, count]) => {
       return new TabCommand({ type: TabCommandType.Previous, bang, cmd, count });
     }),
+    buffer: seq(
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      alt<number | string>(
+        optWhitespace.then(numberParser),
+        optWhitespace.then(fileNameParser),
+      ).fallback(undefined),
+    ).map(([cmd, arg]) => {
+      return new TabCommand({ type: TabCommandType.Edit, cmd, buf: arg ?? 0 });
+    }),
     tabclose: seq(bangParser, optWhitespace.then(numberParser).fallback(undefined)).map(
       ([bang, count]) => {
         return new TabCommand({ type: TabCommandType.Close, bang, count });
@@ -124,9 +135,6 @@ export class TabCommand extends ExCommand {
         ),
       )
       .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
-    tabAbsolute: optWhitespace
-      .then(numberParser.fallback(undefined))
-      .map((count) => new TabCommand({ type: TabCommandType.Absolute, count: count ?? 0 })),
   };
 
   public readonly arguments: ITabCommandArguments;
@@ -143,12 +151,38 @@ export class TabCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     switch (this.arguments.type) {
-      case TabCommandType.Absolute:
-        if (this.arguments.count !== undefined && this.arguments.count >= 0) {
+      case TabCommandType.Edit:
+        if (
+          this.arguments.buf !== undefined &&
+          typeof this.arguments.buf === 'number' &&
+          this.arguments.buf >= 0
+        ) {
           await vscode.commands.executeCommand(
             'workbench.action.openEditorAtIndex',
-            this.arguments.count - 1,
+            this.arguments.buf - 1,
           );
+        } else if (this.arguments.buf !== undefined && typeof this.arguments.buf === 'string') {
+          const tabGroup = vscode.window.tabGroups.activeTabGroup;
+          const searchTerm = this.arguments.buf;
+          const foundBuffers = [];
+          for (const t of tabGroup.tabs) {
+            if (t.label.includes(searchTerm)) {
+              foundBuffers.push(t);
+            }
+            if (foundBuffers.length > 1) {
+              break;
+            }
+          }
+          if (foundBuffers.length === 0) {
+            throw VimError.fromCode(ErrorCode.NoMatchingBuffer, searchTerm);
+          } else if (foundBuffers.length > 1) {
+            throw VimError.fromCode(ErrorCode.MultipleMatches, searchTerm);
+          }
+          const tab = foundBuffers[0];
+          if ((tab.input as vscode.TextDocument).uri !== undefined) {
+            const uri = (tab.input as vscode.TextDocument).uri;
+            await vscode.commands.executeCommand('vscode.open', uri);
+          }
         }
         break;
       case TabCommandType.Next:

@@ -179,7 +179,7 @@ export class Pattern {
   }
 
   private static compileRegex(regexString: string, ignoreCase?: boolean): RegExp {
-    const flags = ignoreCase ?? configuration.ignorecase ? 'gim' : 'gm';
+    const flags = (ignoreCase ?? configuration.ignorecase) ? 'gim' : 'gm';
     try {
       return new RegExp(regexString, flags);
     } catch (err) {
