@@ -129,10 +129,7 @@ export abstract class BaseAction implements IBaseAction {
         continue;
       } else if (left === '<macro>' && this.isMacroRegister.test(right)) {
         continue;
-      } else if (
-        ['<character>', '<mark>', '<register>'].includes(left) &&
-        !Notation.IsControlKey(right)
-      ) {
+      } else if (['<character>', '<register>'].includes(left) && !Notation.IsControlKey(right)) {
         continue;
       } else {
         return false;

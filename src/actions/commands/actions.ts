@@ -581,7 +581,7 @@ class CommandCmdA extends BaseCommand {
 
 @RegisterAction
 class MarkCommand extends BaseCommand {
-  keys = ['m', '<mark>'];
+  keys = ['m', '<register>'];
   modes = [Mode.Normal];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
