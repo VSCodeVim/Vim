@@ -310,9 +310,7 @@ export class CommandRegister extends BaseCommand {
 class CommandRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [
-    // ['q', '<register>'],
-    ['q', '<alpha>'],
-    ['q', '<number>'],
+    ['q', '<macro>'],
     ['q', '"'],
   ];
 
@@ -583,7 +581,7 @@ class CommandCmdA extends BaseCommand {
 
 @RegisterAction
 class MarkCommand extends BaseCommand {
-  keys = ['m', '<register>'];
+  keys = ['m', '<mark>'];
   modes = [Mode.Normal];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {

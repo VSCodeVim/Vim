@@ -2,8 +2,8 @@ import { SetCommand } from '../cmd_line/commands/set';
 import { Mode } from '../mode/mode';
 import { configuration } from './configuration';
 
-const nonMatchable = /<(any|leader|number|alpha|character)>/;
-const literalKeys = /<(any|number|alpha|character)>/; // do not treat <register> as literal!
+const nonMatchable = /<(any|leader|number|alpha|character|register|mark|macro)>/;
+const literalKeys = /<(any|number|alpha|character)>/; // do not treat <register> or <mark> as literal!
 const literalModes = [
   Mode.Insert,
   Mode.Replace,

@@ -52,6 +52,7 @@ export abstract class BaseAction implements IBaseAction {
 
   private static readonly isSingleNumber: RegExp = /^[0-9]$/;
   private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
+  private static readonly isMacroRegister: RegExp = /^[0-9a-zA-Z]$/;
 
   /**
    * Is this action valid in the current Vim state?
@@ -126,11 +127,11 @@ export abstract class BaseAction implements IBaseAction {
         continue;
       } else if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
-      } else if (left === '<character>' && !Notation.IsControlKey(right)) {
+      } else if (left === '<macro>' && this.isMacroRegister.test(right)) {
         continue;
       } else if (
-        left === '<register>' &&
-        (this.isSingleAlpha.test(right) || this.isSingleNumber.test(right))
+        ['<character>', '<mark>', '<register>'].includes(left) &&
+        !Notation.IsControlKey(right)
       ) {
         continue;
       } else {
