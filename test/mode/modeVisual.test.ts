@@ -1088,9 +1088,9 @@ suite('Mode Visual', () => {
 
     newTest({
       title: '`*` escapes `/` properly',
-      start: ['one |two/three four', 'one two/three four'],
+      start: ['one |two//three four', 'one two//three four'],
       keysPressed: 'vE*',
-      end: ['one two/three four', 'one |two/three four'],
+      end: ['one two//three four', 'one |two//three four'],
       endMode: Mode.Normal,
     });
 
@@ -1866,6 +1866,46 @@ suite('Mode Visual', () => {
         `    "": ["g", "j"],`,
         `  },`,
         `]`,
+      ],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Command editor.action.smartSelect.expand on visual mode linewise',
+      config: {
+        visualModeKeyBindings: [
+          {
+            before: ['J'],
+            commands: ['editor.action.smartSelect.expand'],
+          },
+        ],
+        leader: ' ',
+      },
+      start: [
+        `{`,
+        `  "vim.visualModeKeyBindingsNonRecursive": [`,
+        `    {|`,
+        `      "before": ["J"],`,
+        `      "commands": ["editor.action.smartSelect.expand"]`,
+        `    },`,
+        `    {`,
+        `      "before": ["K"],`,
+        `      "commands": ["editor.action.smartSelect.shrink"]`,
+        `    }`,
+        `  ],`,
+        `}`,
+      ],
+      keysPressed: 'VJd',
+      end: [
+        `{`,
+        `  "vim.visualModeKeyBindingsNonRecursive": [`,
+        `|`,
+        `    {`,
+        `      "before": ["K"],`,
+        `      "commands": ["editor.action.smartSelect.shrink"]`,
+        `    }`,
+        `  ],`,
+        `}`,
       ],
       endMode: Mode.Normal,
     });

@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
@@ -144,9 +144,39 @@ suite('Ex command parsing', () => {
   });
 
   suite(':b[uffer]', () => {
-    exParseTest(':b', new TabCommand({ type: TabCommandType.Absolute, count: 0 }));
-    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
-    exParseTest(':b5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
+    exParseTest(':b', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(':b5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':b +20 5',
+      new TabCommand({ type: TabCommandType.Edit, cmd: { type: 'line_number', line: 20 }, buf: 5 }),
+    );
+    exParseTest(
+      ':b bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':b +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
+    exParseTest(':buffer', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':buffer 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':buffer bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':buffer +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
   });
 
   suite(':clo[se]', () => {
@@ -200,20 +230,14 @@ suite('Ex command parsing', () => {
   });
 
   suite(':dig[raphs]', () => {
-    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraphs: [] }));
-    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraphs: [] }));
+    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraph: undefined }));
+    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraph: undefined }));
+    exParseTest(':dig e: 235', new DigraphsCommand({ bang: false, newDigraph: ['e', ':', [235]] }));
     exParseTest(
-      ':dig e: 235',
-      new DigraphsCommand({ bang: false, newDigraphs: [['e', ':', 235]] }),
-    );
-    exParseTest(
-      ':dig e: 235 a: 238',
+      ':dig R! 55357 56960',
       new DigraphsCommand({
         bang: false,
-        newDigraphs: [
-          ['e', ':', 235],
-          ['a', ':', 238],
-        ],
+        newDigraph: ['R', '!', [55357, 56960]],
       }),
     );
 

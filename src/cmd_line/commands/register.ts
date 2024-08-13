@@ -1,15 +1,19 @@
 import * as vscode from 'vscode';
 
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { Parser, any, optWhitespace } from 'parsimmon';
+import { ErrorCode, VimError } from '../../error';
 import { Register } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
 import { ExCommand } from '../../vimscript/exCommand';
-import { any, optWhitespace, Parser } from 'parsimmon';
 
 export class RegisterCommand extends ExCommand {
+  public override isRepeatableWithDot: boolean = false;
+
   public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
+    // eslint-disable-next-line id-denylist
     any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers)),
   );
 
@@ -36,7 +40,7 @@ export class RegisterCommand extends ExCommand {
       StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, register));
     } else {
       result = result.replace(/\n/g, '\\n');
-      vscode.window.showInformationMessage(`${register} ${result}`);
+      void vscode.window.showInformationMessage(`${register} ${result}`);
     }
   }
 
@@ -67,16 +71,19 @@ export class RegisterCommand extends ExCommand {
       const registerKeyAndContent = new Array<vscode.QuickPickItem>();
 
       for (const registerKey of currentRegisterKeys) {
-        registerKeyAndContent.push({
-          label: registerKey,
-          description: await this.getRegisterDisplayValue(registerKey),
-        });
+        const displayValue = await this.getRegisterDisplayValue(registerKey);
+        if (typeof displayValue === 'string') {
+          registerKeyAndContent.push({
+            label: registerKey,
+            description: displayValue,
+          });
+        }
       }
 
-      vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
+      void vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
         if (val) {
           const result = val.description;
-          vscode.window.showInformationMessage(`${val.label} ${result}`);
+          void vscode.window.showInformationMessage(`${val.label} ${result}`);
         }
       });
     }

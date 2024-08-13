@@ -17,7 +17,7 @@ function executeShell(cmd: string): Promise<string> {
         }
       });
     } catch (error) {
-      reject(error);
+      reject(error as Error);
     }
   });
 }

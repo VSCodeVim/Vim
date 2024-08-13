@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { SearchOffset } from '../../src/vimscript/pattern';
 
 function parseTest(name: string, input: string, output: SearchOffset) {

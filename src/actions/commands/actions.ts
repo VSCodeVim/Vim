@@ -1,39 +1,41 @@
 import * as vscode from 'vscode';
 
+import path from 'path';
+import { doesFileExist } from 'platform/fs';
+import { Position } from 'vscode';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
+import { Cursor } from '../../common/motion/cursor';
+import { ErrorCode, VimError } from '../../error';
+import { globalState } from '../../state/globalState';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync } from '../../util/util';
+import { StatusBar } from '../../statusBar';
+import { WordType } from '../../textobject/word';
 import { Clipboard } from '../../util/clipboard';
+import { SpecialKeys } from '../../util/specialKeys';
+import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
+import { getCursorsAfterSync } from '../../util/util';
+import { SearchDirection } from '../../vimscript/pattern';
+import { shouldWrapKey } from '../wrapping';
+import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { QuitCommand } from './../../cmd_line/commands/quit';
-import { TabCommandType, TabCommand } from './../../cmd_line/commands/tab';
+import { TabCommand, TabCommandType } from './../../cmd_line/commands/tab';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
-import { Cursor } from '../../common/motion/cursor';
 import { NumericString } from './../../common/number/numericString';
 import { configuration } from './../../configuration/configuration';
 import {
+  DotCommandStatus,
   Mode,
-  visualBlockGetTopLeftPosition,
   isVisualMode,
   visualBlockGetBottomRightPosition,
+  visualBlockGetTopLeftPosition,
 } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
-import { isTextTransformation, Transformation } from './../../transformations/transformations';
-import { RegisterAction, BaseCommand } from './../base';
-import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
+import { Transformation, isTextTransformation } from './../../transformations/transformations';
+import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
-import { StatusBar } from '../../statusBar';
-import { reportFileInfo, reportSearch } from '../../util/statusBarTextUtils';
-import { globalState } from '../../state/globalState';
-import { SpecialKeys } from '../../util/specialKeys';
-import { WordType } from '../../textobject/word';
-import { Position } from 'vscode';
-import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
-import { shouldWrapKey } from '../wrapping';
-import { ErrorCode, VimError } from '../../error';
-import { SearchDirection } from '../../vimscript/pattern';
-import { doesFileExist } from 'platform/fs';
 
 /**
  * A very special snowflake.
@@ -138,10 +140,10 @@ export class DocumentContentChangeAction extends BaseCommand {
   }
 
   private compressChanges(): void {
-    function merge(
+    const merge = (
       first: vscode.TextDocumentContentChangeEvent,
       second: vscode.TextDocumentContentChangeEvent,
-    ): vscode.TextDocumentContentChangeEvent | undefined {
+    ): vscode.TextDocumentContentChangeEvent | undefined => {
       if (first.rangeOffset + first.text.length === second.rangeOffset) {
         // Simple concatenation
         return {
@@ -170,7 +172,7 @@ export class DocumentContentChangeAction extends BaseCommand {
         // TODO: YES - make an insertion and then autocomplete to something totally different (replace subsumes insert)
         return undefined;
       }
-    }
+    };
 
     const compressed: vscode.TextDocumentContentChangeEvent[] = [];
     let prev: vscode.TextDocumentContentChangeEvent | undefined;
@@ -642,7 +644,7 @@ export class CommandShowCommandHistory extends BaseCommand {
 }
 
 ExCommandLine.onSearch = async (vimState: VimState) => {
-  new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+  void new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
 };
 
 @RegisterAction
@@ -704,17 +706,17 @@ SearchCommandLine.onSearch = async (vimState: VimState, direction: SearchDirecti
 class CommandDot extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['.'];
+  override createsUndoPoint = true;
 
   public override async execCount(position: Position, vimState: VimState): Promise<void> {
     if (globalState.previousFullAction) {
       const count = vimState.recordedState.count || 1;
 
-      for (let i = 0; i < count; i++) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replayRecordedState',
-          recordedState: globalState.previousFullAction,
-        });
-      }
+      vimState.recordedState.transformer.addTransformation({
+        type: 'replayRecordedState',
+        count,
+        recordedState: globalState.previousFullAction,
+      });
     }
   }
 }
@@ -935,17 +937,19 @@ class CommandVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReselectVisual extends BaseCommand {
+class RestoreVisualSelection extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['g', 'v'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    // Try to restore selection only if valid
-    if (vimState.lastVisualSelection !== undefined) {
-      let { start, end, mode } = vimState.lastVisualSelection;
+    if (vimState.lastVisualSelection === undefined) {
+      return;
+    }
 
+    let { start, end, mode } = vimState.lastVisualSelection;
+    if (mode !== Mode.Visual || !start.isEqual(end)) {
       if (end.line <= vimState.document.lineCount - 1) {
-        if (mode === Mode.Visual && start.isBeforeOrEqual(end)) {
+        if (mode === Mode.Visual && start.isBefore(end)) {
           end = end.getLeftThroughLineBreaks(true);
         }
 
@@ -1024,17 +1028,22 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const filePath = fileInfo[1];
+      const workspaceRootPath = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri
+        .fsPath;
+      const filePath =
+        path.isAbsolute(fileInfo[1]) || !workspaceRootPath
+          ? fileInfo[1]
+          : path.join(workspaceRootPath, fileInfo[1]);
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: 'edit',
         bang: false,
         opt: [],
         file: filePath,
-        cmd: isNaN(line) ? undefined : { type: 'line_number', line },
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
         createFileIfNotExists: false,
       });
-      fileCommand.execute(vimState);
+      void fileCommand.execute(vimState);
     }
   }
 }
@@ -1081,7 +1090,7 @@ class CommandOpenLink extends BaseCommand {
   keys = ['g', 'x'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vscode.commands.executeCommand('editor.action.openLink');
+    void vscode.commands.executeCommand('editor.action.openLink');
   }
 }
 
@@ -1315,12 +1324,12 @@ class CommandTabNext extends BaseCommand {
     // gt behaves differently than gT and goes to an absolute index tab
     // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
-      new TabCommand({
-        type: TabCommandType.Absolute,
-        count: vimState.recordedState.count,
+      void new TabCommand({
+        type: TabCommandType.Edit,
+        buf: vimState.recordedState.count,
       }).execute(vimState);
     } else {
-      new TabCommand({
+      void new TabCommand({
         type: TabCommandType.Next,
         bang: false,
       }).execute(vimState);
@@ -1335,7 +1344,7 @@ class CommandTabPrevious extends BaseCommand {
   override runsOnceForEachCountPrefix = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    new TabCommand({
+    void new TabCommand({
       type: TabCommandType.Previous,
       bang: false,
     }).execute(vimState);
@@ -1656,7 +1665,7 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class ActionReplaceCharacter extends BaseCommand {
+export class ActionReplaceCharacter extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['r', '<character>'];
   override createsUndoPoint = true;
@@ -1713,6 +1722,8 @@ class ActionReplaceCharacter extends BaseCommand {
         text: toReplace.repeat(timesToRepeat),
         range: new vscode.Range(position, endPos),
         diff: PositionDiff.offset({ character: timesToRepeat - 1 }),
+        manuallySetCursorPositions:
+          vimState.dotCommandStatus === DotCommandStatus.Executing ? true : undefined,
       });
     }
   }

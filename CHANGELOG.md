@@ -1,6 +1,77 @@
 # Change Log
 
-## Unreleased
+## [v1.27.3](https://github.com/vscodevim/vim/tree/v1.27.3) (2024-05-20)
+
+### Added
+
+- Custom digraphs can be added via `:dig[raphs]` ([@J-Fields](https://github.com/J-Fields)).
+- `:Ex[plore]` is mapped to `workbench.view.explorer` ([@JaiminBrahmbhatt](https://github.com/JaiminBrahmbhatt)).
+
+### Changed
+
+- When used with a count, `<C-d>` and `<C-u>` set the `scroll` option to the count ([@ontanj](https://github.com/ontanj)).
+
+### Fixed
+
+- Fix `:s[ubstitute]` with the `n` flag moving cursor ([@J-Fields](https://github.com/J-Fields)).
+- Fix special marks displaying in gutter ([@shinohara-rin](https://github.com/shinohara-rin)).
+- Fix several edge cases of `<C-o>` ([@harunou](https://github.com/harunou)).
+- Fix incorrect digraph mappings ([@mlbykn](https://github.com/mlbykn)).
+- Fix `gv` after visual selection with mouse or command ([@zyd2001](https://github.com/zyd2001)).
+- Fix `gv` being unaffected by `m<` and `m>` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.27.2](https://github.com/vscodevim/vim/tree/v1.27.2) (2023-12-22)
+
+### Added
+
+- Map `:ls` to `workbench.action.quickOpenLeastRecentlyUsedEditorInGroup` ([@riyuejiuzhao](https://github.com/riyuejiuzhao)).
+
+### Fixed
+
+- Fix scrolling when `editor.smoothScrolling` is enabled ([@zhuowei](https://github.com/zhuowei)).
+- Fix cursor movement when `vim.foldfix` is enabled ([@HenryTSZ](https://github.com/HenryTSZ)).
+- Fix `editor.action.smartSelection.expand` command in VisualLine mode ([@rogeryk](https://github.com/rogeryk)).
+
+## [v1.27.1](https://github.com/vscodevim/vim/tree/v1.27.1) (2023-11-22)
+
+### Fixed
+
+- Fix `:sp[lit]` and `:vs[plit]` with no file name ([@bcho](https://github.com/bcho)).
+
+## [v1.27.0](https://github.com/vscodevim/vim/tree/v1.27.0) (2023-11-17)
+
+### Added
+
+- Allow `:sp[lit]` and `:vs[plit]` to open non-existing files ([@JLMSC](https://github.com/JLMSC)).
+- Support changing case via `:s[ubstitute]` with `\L`, `\U`, `\E`, `\u`, and `\l` ([@J-Fields](https://github.com/J-Fields)).
+- Add border to search and `:s[ubstitute]` decorations, based on the `editor.findMatchBorder` and `editor.findMatchHighlightBorder` ThemeColors ([@bryclee](https://github.com/bryclee)).
+
+### Fixed
+
+- Make `gf` interpret non-absolute paths as relative to project root ([@Foo-x](https://github.com/Foo-x)).
+- Fix `gf` with a line number after the path ([@Foo-x](https://github.com/Foo-x)).
+- Fix status bar color in VisualLine mode ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+## [v1.26.2](https://github.com/vscodevim/vim/tree/v1.26.2) (2023-10-21)
+
+### Fixed
+
+- Fixed illegible text with certain color schemes when `vim.statusBarColorControl` is enabled ([@chandradeepdey](https://github.com/chandradeepdey)).
+
+### Changed
+
+- Changed extension's `activationEvents` to include `onStartupFinished` rather than `*`, which may improve startup performance ([@whitphx](https://github.com/whitphx)).
+
+## [v1.26.1](https://github.com/vscodevim/vim/tree/v1.26.1) (2023-10-09)
+
+### Fixed
+
+- Fixed several Insert mode bugs caused by a regression in `v1.26.0` ([@nullbus](https://github.com/nullbus)).
+- Fixed dot repeat (`.`) after `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed overlapping text in Quick Pick caused by `:reg[isters]` ([@dannoe](https://github.com/dannoe)).
+- Fixed some uses of `vim.remap` ([@jdanbrown](https://github.com/jdanbrown)).
+
+## [v1.26.0](https://github.com/vscodevim/vim/tree/v1.26.0) (2023-09-09)
 
 ### Added
 

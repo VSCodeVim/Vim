@@ -9,7 +9,7 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-import DiffMatchPatch = require('diff-match-patch');
+import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
 import { VimState } from './../state/vimState';
@@ -158,13 +158,8 @@ export class HistoryStep {
     HistoryStep.markHistory = new MarkHistory(context);
     await HistoryStep.markHistory.load();
     HistoryStep.markHistory.get().forEach((row) => {
-      const parsed = JSON.parse(row);
-      const newMark: IMark = {
-        position: parsed.position,
-        name: parsed.name,
-        isUppercaseMark: parsed.isUppercaseMark,
-        document: parsed.document,
-      };
+      const newMark: IMark = JSON.parse(row) as IMark;
+      newMark.position = new Position(newMark.position.line, newMark.position.character);
       if (newMark.isUppercaseMark) {
         HistoryStep.globalMarks.push(newMark);
       } else {
@@ -563,20 +558,53 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
-    // Sets previous context mark (adds current position to jump list).
-
     if (markName === "'" || markName === '`') {
-      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+      globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    } else if (markName === '<') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.start = position;
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position,
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.end.isBefore(this.vimState.lastVisualSelection.start)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else if (markName === '>') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.end = position.getRight();
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position.getRight(),
+          end: position.getRight(),
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.start.isAfter(this.vimState.lastVisualSelection.end)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.start = this.vimState.lastVisualSelection.end.getLeft();
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else {
+      const isUppercaseMark = markName.toUpperCase() === markName;
+      const newMark: IMark = {
+        position,
+        name: markName,
+        isUppercaseMark,
+        document: isUppercaseMark ? document : undefined,
+      };
+      this.putMarkInList(newMark, document);
     }
-
-    const isUppercaseMark = markName.toUpperCase() === markName;
-    const newMark: IMark = {
-      position,
-      name: markName,
-      isUppercaseMark,
-      document: isUppercaseMark ? document : undefined,
-    };
-    this.putMarkInList(newMark, document);
   }
 
   /**
@@ -588,12 +616,12 @@ export class HistoryTracker {
     if (previousIndex !== -1) {
       marks[previousIndex] = mark;
       if (mark.isUppercaseMark) {
-        // remove old entry frmo history by finding a mark with the same name before adding this mark
-        HistoryStep.markHistory.filter((value) => JSON.parse(value).name !== mark.name);
+        // remove old entry from history by finding a mark with the same name before adding this mark
+        HistoryStep.markHistory.filter((value) => (JSON.parse(value) as IMark).name !== mark.name);
       } else {
         // remove marks which with this name which belong to this document
         HistoryStep.markHistory.filter((value) => {
-          const parsed = JSON.parse(value);
+          const parsed: IMark = JSON.parse(value) as IMark;
           return !(parsed.name === mark.name && parsed.document?.uri.path === document.uri.path);
         });
       }
@@ -603,11 +631,11 @@ export class HistoryTracker {
 
     // add the entry to the history to persist it over sessions
     if (mark.isUppercaseMark) {
-      HistoryStep.markHistory.add(JSON.stringify(mark));
+      void HistoryStep.markHistory.add(JSON.stringify(mark));
     } else {
       // local marks do not store the path, but we still need to include it in the
       // history file so we know which file it belongs to
-      HistoryStep.markHistory.add(JSON.stringify({ ...mark, document }));
+      void HistoryStep.markHistory.add(JSON.stringify({ ...mark, document }));
     }
   }
 

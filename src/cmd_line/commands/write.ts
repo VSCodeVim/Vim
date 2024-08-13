@@ -1,11 +1,12 @@
-import * as fs from 'platform/fs';
+// eslint-disable-next-line id-denylist
+import { all, alt, optWhitespace, Parser, seq, string } from 'parsimmon';
 import * as path from 'path';
+import * as fs from 'platform/fs';
 import * as vscode from 'vscode';
-import { Logger } from '../../util/logger';
-import { StatusBar } from '../../statusBar';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
+import { Logger } from '../../util/logger';
 import { ExCommand } from '../../vimscript/exCommand';
-import { all, alt, optWhitespace, Parser, regexp, seq, string } from 'parsimmon';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
 export type IWriteCommandArguments = {
@@ -13,7 +14,7 @@ export type IWriteCommandArguments = {
   opt: FileOpt;
   bgWrite: boolean;
   file?: string;
-} & ({ cmd: string } | {});
+} & ({ cmd: string } | object);
 
 //
 //  Implements :write
@@ -72,9 +73,11 @@ export class WriteCommand extends ExCommand {
           await this.save(vimState);
           await fs.chmodAsync(vimState.document.fileName, mode);
         } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
           StatusBar.setText(vimState, e.message);
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         StatusBar.setText(vimState, accessErr.message);
       }
     }
@@ -126,6 +129,7 @@ export class WriteCommand extends ExCommand {
         }C written`,
       );
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       StatusBar.setText(vimState, e.message);
     }
   }
