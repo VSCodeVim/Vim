@@ -1202,7 +1202,7 @@
     "@types/glob": "8.1.0",
     "@types/lodash": "4.17.7",
     "@types/mocha": "10.0.7",
-    "@types/node": "20.15.0",
+    "@types/node": "20.16.0",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.3",
     "@types/vscode": "1.74.0",
