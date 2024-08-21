@@ -508,6 +508,18 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: "'VStt' surrounds selection and correctly trims class attribute in closing tag",
+    start: ['first li|ne test'],
+    keysPressed: 'VStt',
+    end: ['<div class="test">', 'first line test', '|</div>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'div class="test"',
+    },
+  });
+
+  newTest({
     title: "'S)' surrounds visual line selection without space",
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS)',
