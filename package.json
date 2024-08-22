@@ -1149,6 +1149,56 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.statusBarText.normal": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Normal mode.",
+          "default": "-- NORMAL --"
+        },
+        "vim.statusBarText.insert": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Insert mode.",
+          "default": "-- INSERT --"
+        },
+        "vim.statusBarText.visual": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Visual mode.",
+          "default": "-- VISUAL --"
+        },
+        "vim.statusBarText.visualBlock": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Visual Block mode.",
+          "default": "-- VISUAL BLOCK --"
+        },
+        "vim.statusBarText.visualLine": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Visual Line mode.",
+          "default": "-- VISUAL LINE --"
+        },
+        "vim.statusBarText.replace": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Replace mode.",
+          "default": "-- REPLACE --"
+        },
+        "vim.statusBarText.easyMotion": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Easy Motion mode.",
+          "default": "-- EASYMOTION --"
+        },
+        "vim.statusBarText.easyMotionInput": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Easy Motion Input mode.",
+          "default": "-- EASYMOTION INPUT --"
+        },
+        "vim.statusBarText.surroundInput": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Surround Input mode.",
+          "default": "-- SURROUND INPUT --"
+        },
+        "vim.statusBarText.vimDisabled": {
+          "type": "string",
+          "description": "Text to display in the status bar when in Vim Disabled mode.",
+          "default": "-- VIM DISABLED --"
         }
       }
     },

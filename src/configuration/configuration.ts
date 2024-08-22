@@ -318,6 +318,19 @@ class Configuration implements IConfiguration {
     replace: ['#000000', '#ffffff'],
   };
 
+  statusBarText = {
+    normal: '-- NORMAL --',
+    insert: '-- INSERT --',
+    visual: '-- VISUAL --',
+    visualBlock: '-- VISUAL BLOCK --',
+    visualLine: '-- VISUAL LINE --',
+    replace: '-- REPLACE --',
+    easyMotion: '-- EASYMOTION --',
+    easyMotionInput: '-- EASYMOTION INPUT --',
+    surroundInput: '-- SURROUND INPUT --',
+    vimDisabled: '-- VIM: DISABLED --',
+  };
+
   searchHighlightColor = '';
   searchHighlightTextColor = '';
 
