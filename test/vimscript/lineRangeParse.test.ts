@@ -1,5 +1,4 @@
-import assert = require('assert');
-import { delimiter } from 'path';
+import { strict as assert } from 'assert';
 import { Address, LineRange } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 

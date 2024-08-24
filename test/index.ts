@@ -52,7 +52,7 @@ export function run(): Promise<void> {
         });
       } catch (error) {
         console.error(error);
-        e(error);
+        e(error as Error);
       }
     });
   });
