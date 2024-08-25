@@ -97,9 +97,6 @@ class DeleteInReplaceMode extends BaseCommand {
   keys = ['<Del>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (vimState.modeData.mode !== Mode.Replace) {
-      throw new Error(`Unexpected mode ${vimState.modeData.mode} in DeleteInReplaceMode`);
-    }
     vimState.recordedState.transformer.vscodeCommand('deleteRight');
   }
 }
