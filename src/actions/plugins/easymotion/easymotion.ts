@@ -23,9 +23,16 @@ export class EasyMotion implements IEasyMotion {
   private visibleMarkers: Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
 
-  private static readonly fade = vscode.window.createTextEditorDecorationType({
-    color: configuration.easymotionDimColor,
-  });
+  private static fade: vscode.TextEditorDecorationType | null = null;
+  private static getFadeDecorationType(): vscode.TextEditorDecorationType {
+    if (this.fade === null) {
+      this.fade = vscode.window.createTextEditorDecorationType({
+        color: configuration.easymotionDimColor,
+      });
+    }
+    return this.fade;
+  }
+
   private static readonly hide = vscode.window.createTextEditorDecorationType({
     color: 'transparent',
   });
@@ -79,7 +86,7 @@ export class EasyMotion implements IEasyMotion {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
 
-    editor.setDecorations(EasyMotion.fade, []);
+    editor.setDecorations(EasyMotion.getFadeDecorationType(), []);
     editor.setDecorations(EasyMotion.hide, []);
   }
 
@@ -421,7 +428,7 @@ export class EasyMotion implements IEasyMotion {
     editor.setDecorations(EasyMotion.hide, hiddenChars);
 
     if (configuration.easymotionDimBackground) {
-      editor.setDecorations(EasyMotion.fade, dimmingZones);
+      editor.setDecorations(EasyMotion.getFadeDecorationType(), dimmingZones);
     }
   }
 }

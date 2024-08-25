@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
 
 /**
