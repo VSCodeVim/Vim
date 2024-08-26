@@ -1,3 +1,4 @@
+// eslint-disable-next-line id-denylist
 import { alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 import { env } from 'process';
 import { VimState } from '../../state/vimState';
@@ -59,7 +60,7 @@ const operationParser: Parser<LetCommandOperation> = alt(
   string('..='),
 );
 
-const letVarParser: Parser<LetCommandVariable> = alt(
+const letVarParser = alt<LetCommandVariable>(
   variableParser,
   optionParser,
   envVariableParser,

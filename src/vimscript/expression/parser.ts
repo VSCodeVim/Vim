@@ -3,8 +3,10 @@ import {
   regexp,
   seq,
   alt,
+  // eslint-disable-next-line id-denylist
   string,
   lazy,
+  // eslint-disable-next-line id-denylist
   any,
   optWhitespace,
   takeWhile,
@@ -81,6 +83,7 @@ export const numberParser: Parser<NumberValue> = seq(
 
 const stringParser: Parser<StringValue> = alt(
   string('\\')
+    // eslint-disable-next-line id-denylist
     .then(any.fallback(undefined))
     .map((escaped) => {
       // TODO: handle other special chars (:help expr-quote)

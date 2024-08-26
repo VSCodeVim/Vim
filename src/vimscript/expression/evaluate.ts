@@ -361,7 +361,7 @@ export class EvaluationContext {
       case 'number':
       case 'float': {
         const idx = toInt(index);
-        return str(idx >= 0 ? toString(sequence)[idx] ?? '' : '');
+        return str(idx >= 0 ? (toString(sequence)[idx] ?? '') : '');
       }
       case 'list': {
         let idx = toInt(index);
@@ -649,7 +649,7 @@ export class EvaluationContext {
       }
       case 'and': {
         const [x, y] = getArgs(2);
-        // tslint:disable-next-line: no-bitwise
+        // eslint-disable-next-line no-bitwise
         return int(toInt(x!) & toInt(y!));
       }
       // TODO: assert_*()
@@ -969,6 +969,7 @@ export class EvaluationContext {
           // TODO
           // case 'blob':
           // TODO
+          // eslint-disable-next-line no-fallthrough
           default:
             throw VimError.fromCode(ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob);
         }
@@ -1003,7 +1004,7 @@ export class EvaluationContext {
       // TODO: mode()
       case 'or': {
         const [x, y] = getArgs(2);
-        // tslint:disable-next-line: no-bitwise
+        // eslint-disable-next-line no-bitwise
         return int(toInt(x!) | toInt(y!));
       }
       case 'pow': {
@@ -1241,7 +1242,7 @@ export class EvaluationContext {
       // TODO: wordcount()
       case 'xor': {
         const [x, y] = getArgs(2);
-        // tslint:disable-next-line: no-bitwise
+        // eslint-disable-next-line no-bitwise
         return int(toInt(x!) ^ toInt(y!));
       }
       default: {
