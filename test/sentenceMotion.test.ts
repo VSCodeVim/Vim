@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('sentence motion', () => {
   suiteSetup(async () => {
-    await setupWorkspace(undefined, '.js');
+    await setupWorkspace({ fileExtension: '.js' });
   });
   suiteTeardown(cleanUpWorkspace);
 

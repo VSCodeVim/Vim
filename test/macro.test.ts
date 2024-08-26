@@ -1,18 +1,16 @@
 import { Mode } from '../src/mode/mode';
 import { newTest, newTestWithRemaps } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import * as testConfiguration from './testConfiguration';
 
 suite('Record and execute a macro', () => {
   setup(async () => {
-    const configuration = new testConfiguration.Configuration();
-
-    // for testing with <leader>
-    configuration.camelCaseMotion.enable = true;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        // for testing with <leader>
+        camelCaseMotion: { enable: true },
+      },
+    });
   });
-
   teardown(cleanUpWorkspace);
 
   newTest({

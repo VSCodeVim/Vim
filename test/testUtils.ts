@@ -129,25 +129,27 @@ export function assertStatusBarEqual(
   assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
-// TODO: convert parameters to destructured object & make config: Partial<IConfiguration>
 export async function setupWorkspace(
-  config: IConfiguration = new Configuration(),
-  fileExtension: string = '',
+  args: {
+    config?: Partial<IConfiguration>;
+    fileExtension?: string;
+  } = {},
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
-  const filePath = await createRandomFile('', fileExtension);
+  const filePath = await createRandomFile('', args?.fileExtension ?? '');
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
   await vscode.window.showTextDocument(doc);
 
-  Globals.mockConfiguration = config;
+  Globals.mockConfiguration = new Configuration();
+  Object.assign(Globals.mockConfiguration, args?.config ?? {});
   await reloadConfiguration();
 
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor.options.tabSize = config.tabstop;
-  activeTextEditor.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = Globals.mockConfiguration.tabstop;
+  activeTextEditor.options.insertSpaces = Globals.mockConfiguration.expandtab;
 }
 
 export async function cleanUpWorkspace(): Promise<void> {
@@ -156,6 +158,7 @@ export async function cleanUpWorkspace(): Promise<void> {
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
+// TODO(jfields): Is this necessary?
 export async function reloadConfiguration() {
   const validatorResults = await (
     await import('../src/configuration/configuration')
