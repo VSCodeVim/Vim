@@ -1,5 +1,4 @@
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import {
   CommandSurroundAddSurroundingFunction,
@@ -8,9 +7,12 @@ import {
 
 suite('surround plugin', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.surround = true;
-    await setupWorkspace(configuration, '.js');
+    await setupWorkspace({
+      config: {
+        surround: true,
+      },
+      fileExtension: '.js',
+    });
   });
   suiteTeardown(cleanUpWorkspace);
 

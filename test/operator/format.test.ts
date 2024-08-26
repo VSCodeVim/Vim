@@ -3,7 +3,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('format operator', () => {
   suiteSetup(async () => {
-    await setupWorkspace(undefined, '.ts');
+    await setupWorkspace({ fileExtension: '.ts' });
   });
   suiteTeardown(cleanUpWorkspace);
 

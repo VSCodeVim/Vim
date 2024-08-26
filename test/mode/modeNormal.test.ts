@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -10,11 +9,12 @@ suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
   suiteTeardown(cleanUpWorkspace);

@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { Configuration } from './testConfiguration';
 import { newTest } from './testSimplifier';
 
 suite('Multicursor', () => {
@@ -122,15 +121,16 @@ suite('Multicursor', () => {
 
 suite('Multicursor with remaps', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.insertModeKeyBindings = [
-      {
-        before: ['j', 'j', 'k'],
-        after: ['<esc>'],
+    await setupWorkspace({
+      config: {
+        insertModeKeyBindings: [
+          {
+            before: ['j', 'j', 'k'],
+            after: ['<esc>'],
+          },
+        ],
       },
-    ];
-
-    await setupWorkspace(configuration);
+    });
   });
 
   teardown(cleanUpWorkspace);
@@ -145,16 +145,17 @@ suite('Multicursor with remaps', () => {
 
 suite('Multicursor selections', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.normalModeKeyBindings = [
-      {
-        before: ['<leader>', 'a', 'f'],
-        commands: ['editor.action.smartSelect.grow'],
+    await setupWorkspace({
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
       },
-    ];
-    configuration.leader = ' ';
-
-    await setupWorkspace(configuration);
+    });
   });
 
   teardown(cleanUpWorkspace);
