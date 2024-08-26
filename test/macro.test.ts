@@ -129,6 +129,16 @@ suite('Record and execute a macro', () => {
     });
   });
 
+  suite('`:` (command) register used as macro and command with leader key', () => {
+    newTest({
+      title: 'Repeat :s and command with leader key',
+      config: { leader: 'o' },
+      start: ['|old', 'old', 'old'],
+      keysPressed: ':s/old/new\nj@:j@@',
+      end: ['new', 'new', '|new'],
+    });
+  });
+
   newTest({
     title: 'Can record and execute macro that handles multiple lines',
     start: ['|Countdown:', '1', 'LAUNCH!!!'],
