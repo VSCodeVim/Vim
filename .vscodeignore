@@ -1,5 +1,6 @@
 .github/**
-
+.husky/**
+.yarn/**
 .vscode/**
 .vscode-test/**
 
@@ -17,9 +18,9 @@ node_modules/**
 images/design/**
 
 .gitignore
+.prettierignore
 
 tsconfig.json
-tslint.json
-webpack.config.js
+webpack.*.js
 gulpfile.js
 renovate.json

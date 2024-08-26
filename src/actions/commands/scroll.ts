@@ -74,6 +74,8 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override runsOnceForEachCountPrefix = false;
   abstract to: EditorScrollDirection;
+  /** if true, set scroll option instead of repeating command */
+  setScroll = false;
 
   /**
    * @returns the number of lines this command should move the cursor
@@ -90,7 +92,9 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
       .getConfiguration('editor')
       .get<boolean>('smoothScrolling', false);
 
-    const timesToRepeat = vimState.recordedState.count || 1;
+    if (this.setScroll && vimState.recordedState.count)
+      configuration.scroll = vimState.recordedState.count;
+    const timesToRepeat = (!this.setScroll && vimState.recordedState.count) || 1;
     const moveLines = timesToRepeat * this.getNumLines(visibleRanges);
 
     let scrollLines = moveLines;
@@ -153,9 +157,10 @@ class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
 }
 
 @RegisterAction
-class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
+class CommandCtrlD extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
+  override setScroll = true;
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
     return configuration.getScrollLines(visibleRanges);
@@ -163,9 +168,10 @@ class CommandMoveHalfPageDown extends CommandScrollAndMoveCursor {
 }
 
 @RegisterAction
-class CommandMoveHalfPageUp extends CommandScrollAndMoveCursor {
+class CommandCtrlU extends CommandScrollAndMoveCursor {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
+  override setScroll = true;
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
     return configuration.getScrollLines(visibleRanges);

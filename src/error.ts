@@ -14,6 +14,8 @@ export enum ErrorCode {
   NoPreviousCommand = 34,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
+  MultipleMatches = 93,
+  NoMatchingBuffer = 94,
   MissingQuote = 114,
   UnknownFunction_call = 117,
   TooManyArgs = 118,
@@ -91,6 +93,8 @@ export const ErrorMessage: IErrorMessage = {
   34: 'No previous command',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
+  93: 'More than one match',
+  94: 'No matching buffer',
   114: 'Missing quote',
   117: 'Unknown function',
   118: 'Too many arguments for function',
@@ -171,6 +175,8 @@ export class VimError extends Error {
       if (extraValue) {
         if (code === ErrorCode.NothingInRegister) {
           extraValue = ` ${extraValue}`;
+        } else if (code === ErrorCode.NoMatchingBuffer || code === ErrorCode.MultipleMatches) {
+          extraValue = ` for ${extraValue}`;
         } else {
           extraValue = `: ${extraValue}`;
         }

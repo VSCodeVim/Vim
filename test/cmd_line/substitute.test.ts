@@ -237,6 +237,14 @@ suite('Basic substitute', () => {
     end: ['aba', 'dbd', '|dbc', ''],
   });
 
+  newTest({
+    title: '`n` flag (report count)',
+    start: ['apple', 'ban|ana', 'celery', 'dragonfruit'],
+    keysPressed: sub('a', '', { lineRange: '%', flags: 'gn' }),
+    end: ['apple', 'ban|ana', 'celery', 'dragonfruit'],
+    statusBar: '5 matches on 3 lines',
+  });
+
   suite('Effects of gdefault=true', () => {
     setup(async () => {
       Globals.mockConfiguration.gdefault = true;

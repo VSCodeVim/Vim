@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import { doesFileExist } from 'platform/fs';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -71,13 +73,15 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
     return {
       file: args.file,
       position: FilePosition.NewWindowHorizontalSplit,
-      createFileIfNotExists: true,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
     };
   } else if (args.name === 'vsplit') {
     return {
       file: args.file,
       position: FilePosition.NewWindowVerticalSplit,
-      createFileIfNotExists: true,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
     };
   } else {
     throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);

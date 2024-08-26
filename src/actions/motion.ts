@@ -85,6 +85,7 @@ abstract class MoveByScreenLine extends BaseMovement {
       await vscode.commands.executeCommand('cursorMove', {
         to: this.movementType,
         select: vimState.currentMode !== Mode.Normal,
+        // select: ![Mode.Normal, Mode.Insert].includes(vimState.currentMode),
         by: this.by,
         value: this.value * count,
       });
@@ -261,7 +262,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
@@ -276,11 +276,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
     return t;
   }
 }
@@ -373,17 +368,11 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
     return t;
   }
 }
@@ -1286,21 +1275,69 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveToLineFromViewPortTop extends MoveByScreenLine {
+class MoveToLineFromViewPortTop extends BaseMovement {
   keys = ['H'];
-  movementType: CursorMovePosition = 'viewPortTop';
-  override by: CursorMoveByUnit = 'line';
-  override value = 1;
   override isJump = true;
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    const topLine = vimState.editor.visibleRanges[0].start.line ?? 0;
+    if (topLine === 0) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: position.with({ line: topLine }).obeyStartOfLine(vimState.document),
+      };
+    }
+
+    const scrolloff = configuration
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+    const line = topLine + scrolloff;
+
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
+    };
+  }
 }
 
 @RegisterAction
-class MoveToLineFromViewPortBottom extends MoveByScreenLine {
+class MoveToLineFromViewPortBottom extends BaseMovement {
   keys = ['L'];
-  movementType: CursorMovePosition = 'viewPortBottom';
-  override by: CursorMoveByUnit = 'line';
-  override value = 1;
   override isJump = true;
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    const bottomLine = vimState.editor.visibleRanges[0].end.line ?? 0;
+    const numLines = vimState.editor.document.lineCount;
+    if (bottomLine === numLines - 1) {
+      // NOTE: editor will scroll to accommodate editor.cursorSurroundingLines in this scenario
+      return {
+        start: vimState.cursorStartPosition,
+        stop: position.with({ line: bottomLine }).obeyStartOfLine(vimState.document),
+      };
+    }
+
+    const scrolloff = configuration
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+    const line = bottomLine - scrolloff;
+
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
+    };
+  }
 }
 
 @RegisterAction

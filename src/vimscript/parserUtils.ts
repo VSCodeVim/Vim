@@ -1,3 +1,4 @@
+// eslint-disable-next-line id-denylist
 import { alt, any, noneOf, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
 import { configuration } from '../configuration/configuration';
 
@@ -23,6 +24,7 @@ export function nameAbbrevParser(abbrev: string, rest: string): Parser<string> {
 // TODO: `:help filename-modifiers`
 export const fileNameParser: Parser<string> = alt<string>(
   string('\\').then(
+    // eslint-disable-next-line id-denylist
     any.fallback(undefined).map((escaped) => {
       if (escaped === undefined || escaped === '\\') {
         return '\\';
@@ -97,6 +99,7 @@ const specialCharacterParser = alt(specialCharacters, leaderParser);
 
 // TODO: Add more special characters
 const escapedParser = string('\\')
+  // eslint-disable-next-line id-denylist
   .then(any.fallback(undefined))
   .map((escaped) => {
     if (escaped === undefined) {
@@ -108,6 +111,12 @@ const escapedParser = string('\\')
   });
 
 export const keystrokesExpressionParser: Parser<string[]> = alt(
+  escapedParser,
+  specialCharacterParser,
+  noneOf('"'),
+).many();
+
+export const keystrokesExpressionForMacroParser: Parser<string[]> = alt(
   escapedParser,
   specialCharacterParser,
   noneOf('"'),

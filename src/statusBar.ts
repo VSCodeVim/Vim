@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
 import { VimError } from './error';
+import { Mode } from './mode/mode';
+import { VimState } from './state/vimState';
 import { Logger } from './util/logger';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -24,6 +24,7 @@ class StatusBarImpl implements vscode.Disposable {
       Number.MIN_SAFE_INTEGER, // Furthest right on the left
     );
     this.statusBarItem.name = 'Vim Command Line';
+    this.statusBarItem.command = 'toggleVim';
     this.statusBarItem.show();
 
     this.recordedStateStatusBarItem = vscode.window.createStatusBarItem(
@@ -125,8 +126,9 @@ class StatusBarImpl implements vscode.Disposable {
     let foreground: string | undefined;
     let background: string | undefined;
 
-    // @ts-ignore
-    const colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
+    const colorToSet = (
+      configuration.statusBarColors as unknown as Record<string, string | string[] | undefined>
+    )[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
@@ -156,7 +158,7 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     if (currentColorCustomizations !== colorCustomizations) {
-      workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
+      void workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
     }
   }
 }

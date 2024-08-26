@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
+import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
+import { isHighSurrogate, isLowSurrogate } from '../util/util';
+import { ExCommandLine } from './../cmd_line/commandLine';
+import { Cursor } from './../common/motion/cursor';
 import { PositionDiff, earlierOf, sorted } from './../common/motion/position';
 import { configuration } from './../configuration/configuration';
-import { Mode, isVisualMode } from './../mode/mode';
+import { DotCommandStatus, Mode, isVisualMode } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
-import { reportLinesChanged, reportLinesYanked } from '../util/statusBarTextUtils';
-import { ExCommandLine } from './../cmd_line/commandLine';
-import { Position } from 'vscode';
-import { isHighSurrogate, isLowSurrogate } from '../util/util';
-import { Cursor } from './../common/motion/cursor';
 
 export abstract class BaseOperator extends BaseAction {
   override actionType = 'operator' as const;
@@ -125,6 +125,23 @@ export class DeleteOperator extends BaseOperator {
       end.character === vimState.document.lineAt(end).text.length + 1
     ) {
       end = new Position(end.line + 1, 0);
+    }
+
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(end.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      end.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(end.character)) &&
+      isHighSurrogate(eLine.charCodeAt(end.character - 1))
+    ) {
+      end = end.getRight();
     }
 
     // Yank the text
@@ -459,7 +476,10 @@ class IndentOperatorVisualAndVisualLine extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     // Repeating this command with dot should apply the indent to the previous selection
-    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+    if (
+      vimState.dotCommandStatus === DotCommandStatus.Executing &&
+      vimState.dotCommandPreviousVisualSelection
+    ) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -
@@ -492,7 +512,10 @@ class IndentOperatorVisualBlock extends BaseOperator {
      * block formed by extending the cursor start position downward by the number of lines
      * in the previous visual block selection.
      */
-    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+    if (
+      vimState.dotCommandStatus === DotCommandStatus.Executing &&
+      vimState.dotCommandPreviousVisualSelection
+    ) {
       const shiftSelectionByNum = Math.abs(
         vimState.dotCommandPreviousVisualSelection.end.line -
           vimState.dotCommandPreviousVisualSelection.start.line,
@@ -549,7 +572,10 @@ class OutdentOperatorVisualAndVisualLine extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     // Repeating this command with dot should apply the indent to the previous selection
-    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+    if (
+      vimState.dotCommandStatus === DotCommandStatus.Executing &&
+      vimState.dotCommandPreviousVisualSelection
+    ) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorStopPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -
@@ -585,7 +611,10 @@ class OutdentOperatorVisualBlock extends BaseOperator {
      * block formed by extending the cursor start position downward by the number of lines
      * in the previous visual block selection.
      */
-    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
+    if (
+      vimState.dotCommandStatus === DotCommandStatus.Executing &&
+      vimState.dotCommandPreviousVisualSelection
+    ) {
       const shiftSelectionByNum = Math.abs(
         vimState.dotCommandPreviousVisualSelection.end.line -
           vimState.dotCommandPreviousVisualSelection.start.line,
@@ -962,12 +991,11 @@ class ActionVisualReflowParagraph extends BaseOperator {
     const result: string[] = [];
 
     for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
-      let lines: string[];
       const indentAfterComment = Array(indentLevelAfterComment + 1).join(' ');
       const commentLength = commentType.start.length + indentAfterComment.length;
 
       // Start with a single empty content line.
-      lines = [``];
+      const lines: string[] = [``];
 
       for (let line of content.split('\n')) {
         // Preserve blank lines in output.

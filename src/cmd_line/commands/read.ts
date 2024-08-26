@@ -1,13 +1,14 @@
-import { readFileAsync } from 'platform/fs';
+// eslint-disable-next-line id-denylist
+import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
+import { readFileAsync } from 'platform/fs';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
-import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 
 export type IReadCommandArguments = {
   opt: FileOpt;
-} & ({ cmd: string } | { file: string } | {});
+} & ({ cmd: string } | { file: string } | object);
 
 //
 //  Implements :read and :read!

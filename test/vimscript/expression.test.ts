@@ -717,7 +717,7 @@ suite('Vimscript expressions', () => {
     });
 
     suite('uniq', () => {
-      exprTest('uniq([1,2,1,1,1,,3,2,2,3])', { display: "[1, 2, 1, '1', 3, 2, 3]" });
+      exprTest("uniq([1,2,1,1,1,'1',3,2,2,3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
       // TODO
     });
 
