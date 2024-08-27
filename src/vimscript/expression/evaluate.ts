@@ -3,7 +3,7 @@ import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
 import { globalState } from '../../state/globalState';
-import { bool, float, funcref, listExpr, int, str, list, funcCall } from './build';
+import { bool, float, funcref, listExpr, int, str, list, funcCall, blob } from './build';
 import { expressionParser, numberParser } from './parser';
 import {
   BinaryOp,
@@ -317,7 +317,6 @@ export class EvaluationContext {
       // TODO: v:register
       // TODO: v:searchforward
       // TODO: v:statusmsg, v:warningmsg, v:errmsg
-      // TODO: v:t_blob
       if (varExpr.name === 'true') {
         return bool(true);
       } else if (varExpr.name === 'false') {
@@ -338,6 +337,8 @@ export class EvaluationContext {
         return int(5);
       } else if (varExpr.name === 't_bool') {
         return int(6);
+      } else if (varExpr.name === 't_blob') {
+        return int(10);
       } else if (varExpr.name === 'numbermax') {
         return int(Number.MAX_VALUE);
       } else if (varExpr.name === 'numbermin') {
@@ -435,8 +436,7 @@ export class EvaluationContext {
         throw VimError.fromCode(ErrorCode.CannotIndexAFuncref);
       }
       case 'blob': {
-        // TODO
-        return sequence;
+        return blob(new Uint8Array(sequence.data).slice(_start, _end + 1));
       }
     }
   }
@@ -958,7 +958,8 @@ export class EvaluationContext {
             return int(x!.items.length);
           case 'dict_val':
             return int(x!.items.size);
-          // TODO: case 'blob':
+          case 'blob':
+            return int(x!.data.byteLength);
           default:
             throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
         }

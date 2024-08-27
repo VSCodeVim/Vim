@@ -13,7 +13,7 @@ import {
   noneOf,
 } from 'parsimmon';
 import { ErrorCode, VimError } from '../../error';
-import { binary, float, lambda, listExpr, int, str } from './build';
+import { binary, float, lambda, listExpr, int, str, blob } from './build';
 import {
   BinaryOp,
   BlobValue,
@@ -46,10 +46,7 @@ const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
     for (let i = 0; i < hexData.length; i += 2) {
       data[i / 2] = Number.parseInt(hexData.substring(i, i + 2), 16);
     }
-    return {
-      type: 'blob',
-      data,
-    };
+    return blob(data);
   }),
 );
 

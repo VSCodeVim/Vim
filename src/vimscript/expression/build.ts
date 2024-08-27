@@ -15,6 +15,7 @@ import {
   ListValue,
   DictionaryValue,
   Value,
+  BlobValue,
 } from './types';
 
 export function int(value: number): NumberValue {
@@ -55,6 +56,13 @@ export function funcref(name: string, arglist?: ListValue, dict?: DictionaryValu
     name,
     arglist,
     dict,
+  };
+}
+
+export function blob(data: ArrayBuffer): BlobValue {
+  return {
+    type: 'blob',
+    data,
   };
 }
 

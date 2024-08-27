@@ -336,7 +336,11 @@ suite.only('Vimscript expressions', () => {
         });
       });
 
-      // TODO: Blob
+      suite('Blob', () => {
+        exprTest('0zDEADBEEF[1:2]', {
+          display: '0zADBE',
+        });
+      });
     });
 
     suite('Entry', () => {
