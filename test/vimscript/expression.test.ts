@@ -57,7 +57,7 @@ function exprTest(
   });
 }
 
-suite('Vimscript expressions', () => {
+suite.only('Vimscript expressions', () => {
   suite('Parse & evaluate expression', () => {
     suite('Numbers', () => {
       exprTest('0', { expr: int(0) });
@@ -592,6 +592,22 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
+    suite('get', () => {
+      exprTest('get([2,4,6], 1)', { value: int(4) });
+      exprTest('get([2,4,6], -1)', { value: int(6) });
+      exprTest('get([2,4,6], 3)', { value: int(0) });
+      exprTest('get([2,4,6], 3, 999)', { value: int(999) });
+
+      exprTest('get(0zABCDEF, 1)', { value: int(205) });
+      exprTest('get(0zABCDEF, -1)', { value: int(239) });
+      exprTest('get(0zABCDEF, 3)', { value: int(-1) });
+      exprTest('get(0zABCDEF, 3, 999)', { value: int(999) });
+
+      exprTest('get(#{a: 1, b: 2, c: 3}, "b")', { value: int(2) });
+      exprTest('get(#{a: 1, b: 2, c: 3}, "x")', { value: int(0) });
+      exprTest('get(#{a: 1, b: 2, c: 3}, "x", 999)', { value: int(999) });
+    });
+
     suite('has_key', () => {
       exprTest('has_key(#{a:1, b:2, c:3}, "b")', { value: bool(true) });
       exprTest('has_key(#{a:1, b:2, c:3}, "d")', { value: bool(false) });
@@ -699,6 +715,11 @@ suite('Vimscript expressions', () => {
       exprTest('repeat([1,2], 3)', { display: '[1, 2, 1, 2, 1, 2]' });
       exprTest('repeat(range(2,6,2), 3)', { display: '[2, 4, 6, 2, 4, 6, 2, 4, 6]' });
       exprTest('repeat(1.0, 3)', { error: ErrorCode.UsingFloatAsAString });
+    });
+
+    suite('reverse', () => {
+      exprTest('reverse([1, 2, 3])', { display: '[3, 2, 1]' });
+      exprTest('reverse(0zABCDEF)', { display: '0zEFCDAB' });
     });
 
     suite('str2list', () => {

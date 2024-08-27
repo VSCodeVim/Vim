@@ -849,7 +849,26 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(toFloat(x!) % toFloat(y!));
       }
-      // TODO: get()
+      case 'get': {
+        const [_haystack, _idx, _default] = getArgs(2, 3);
+        const haystack = this.evaluate(_haystack!);
+        if (haystack.type === 'list') {
+          let idx = toInt(this.evaluate(_idx!));
+          idx = idx < 0 ? haystack.items.length + idx : idx;
+          return idx < haystack.items.length ? haystack.items[idx] : (_default ?? int(0));
+        } else if (haystack.type === 'blob') {
+          const bytes = new Uint8Array(haystack.data);
+          let idx = toInt(this.evaluate(_idx!));
+          idx = idx < 0 ? bytes.length + idx : idx;
+          return idx < bytes.length ? int(bytes[idx]) : (_default ?? int(-1));
+        } else if (haystack.type === 'dict_val') {
+          const key = this.evaluate(_idx!);
+          const val = haystack.items.get(toString(key));
+          return val ? val : (_default ?? int(0));
+        }
+        return _default ?? int(0);
+        // TODO: get({func}, {what})
+      }
       // TODO: getcurpos()
       // TODO: getline()
       // TODO: getreg()
@@ -1066,8 +1085,10 @@ export class EvaluationContext {
         if (l?.type === 'list') {
           l.items.reverse();
           return l;
+        } else if (l?.type === 'blob') {
+          l.data = new Uint8Array(l.data).reverse();
+          return l;
         }
-        // TODO: handle Blob
         return int(0);
       }
       case 'round': {
