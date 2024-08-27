@@ -707,6 +707,8 @@ suite.only('Vimscript expressions', () => {
       exprTest('range(0, 2, -1)', { error: ErrorCode.StartPastEnd });
     });
 
+    // TODO: remove()
+
     suite('repeat', () => {
       exprTest('repeat(3, 5)', { display: '33333' });
       exprTest('repeat("abc", 3)', { display: 'abcabcabc' });

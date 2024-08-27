@@ -1079,7 +1079,29 @@ export class EvaluationContext {
           return str(toString(val!).repeat(toInt(count!)));
         }
       }
-      // TODO: remove()
+      case 'remove': {
+        const [_haystack, _idx, _end] = getArgs(2, 3);
+        const haystack = this.evaluate(_haystack!);
+        if (haystack.type === 'list') {
+          let idx = toInt(this.evaluate(_idx!));
+          idx = idx < 0 ? haystack.items.length + idx : idx;
+          if (_end === undefined) {
+            return haystack.items.splice(idx, 1)[0]; // TODO: This doesn't remove the item?
+          } else {
+            // TODO: remove({list}, {idx}, {end})
+          }
+        }
+        // TODO: remove({blob}, {idx}, [{end}])
+        else if (haystack.type === 'dict_val') {
+          const key = toString(this.evaluate(_idx!));
+          const val = haystack.items.get(key);
+          if (val) {
+            haystack.items.delete(key);
+            return val;
+          }
+        }
+        return int(0);
+      }
       case 'reverse': {
         const [l] = getArgs(1);
         if (l?.type === 'list') {
