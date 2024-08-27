@@ -33,7 +33,10 @@ export type FuncRefValue = {
   dict?: DictionaryValue;
 };
 
-// TODO: export type BlobValue
+export type BlobValue = {
+  type: 'blob';
+  data: ArrayBuffer;
+};
 
 export type Value =
   | NumberValue
@@ -41,7 +44,8 @@ export type Value =
   | StringValue
   | ListValue
   | DictionaryValue
-  | FuncRefValue;
+  | FuncRefValue
+  | BlobValue;
 
 // -------------------- Expressions --------------------
 

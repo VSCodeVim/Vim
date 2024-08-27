@@ -16,6 +16,7 @@ import { ErrorCode, VimError } from '../../error';
 import { binary, float, lambda, listExpr, int, str } from './build';
 import {
   BinaryOp,
+  BlobValue,
   DictionaryExpression,
   EntryExpression,
   EnvVariableExpression,
@@ -34,6 +35,23 @@ import {
   StringValue,
   VariableExpression,
 } from './types';
+
+// TODO: Support dots between bytes
+const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
+  regexp(/[0-1a-z]+/i).map<BlobValue>((hexData) => {
+    if (hexData.length % 2 !== 0) {
+      throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
+    }
+    const data = new Uint8Array(new ArrayBuffer(hexData.length / 2));
+    for (let i = 0; i < hexData.length; i += 2) {
+      data[i / 2] = Number.parseInt(hexData.substring(i, i + 2), 16);
+    }
+    return {
+      type: 'blob',
+      data,
+    };
+  }),
+);
 
 const binaryNumberParser: Parser<NumberValue> = regexp(/0[b]/i).then(
   regexp(/[0-1]+/).map((x) => {
@@ -237,6 +255,7 @@ const lambdaParser: Parser<LambdaExpression> = seq(
 // TODO: Function call with funcref
 // TODO: Variable/function with curly braces
 const expr9Parser: Parser<Expression> = alt(
+  blobParser,
   floatParser,
   numberParser,
   stringParser,

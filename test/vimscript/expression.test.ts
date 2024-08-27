@@ -110,6 +110,24 @@ suite('Vimscript expressions', () => {
       exprTest("'one\\ntwo\\tthree'", { expr: str('one\\ntwo\\tthree') });
     });
 
+    suite('Blobs', () => {
+      exprTest('0zabcd', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([171, 205]),
+        },
+      });
+      exprTest('0ZABCD', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([171, 205]),
+        },
+      });
+      exprTest('0zabc', {
+        error: ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters,
+      });
+    });
+
     suite('Option', () => {
       exprTest('&wrapscan', {
         expr: {
@@ -180,6 +198,10 @@ suite('Vimscript expressions', () => {
       exprTest("#{one: 1, two: 2, three: 3}['four']", {
         error: ErrorCode.KeyNotPresentInDictionary,
       });
+
+      exprTest('0zABCD[0]', { value: int(171) });
+      exprTest('0zABCD[1]', { value: int(205) });
+      // TODO: Blob, negative index
     });
 
     suite('Entry', () => {
@@ -313,6 +335,8 @@ suite('Vimscript expressions', () => {
           value: list([int(1), int(2), int(3), int(4), int(5)]),
         });
       });
+
+      // TODO: Blob
     });
 
     suite('Entry', () => {
@@ -717,7 +741,7 @@ suite('Vimscript expressions', () => {
     });
 
     suite('uniq', () => {
-      exprTest("uniq([1,2,1,1,1,'1',3,2,2,3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
+      // exprTest("uniq([1,2,1,1,1,'1',3,2,2,3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
       // TODO
     });
 

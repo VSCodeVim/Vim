@@ -77,6 +77,8 @@ export enum ErrorCode {
   ListOrBlobRequired = 897,
   ExpectedADict = 922,
   SecondArgumentOfFunction = 923,
+  BlobLiteralShouldHaveAnEvenNumberOfHexCharacters = 973,
+  UsingABlobAsANumber = 974,
   CannotModifyExistingVariable = 995,
   CannotLockARegister = 996,
 }
@@ -156,6 +158,8 @@ export const ErrorMessage: IErrorMessage = {
   897: 'List or Blob required',
   922: 'expected a dict',
   923: 'Second argument of function() must be a list or a dict',
+  973: 'Blob literal should have an even number of hex characters',
+  974: 'Using a Blob as a Number',
   995: 'Cannot modify existing variable',
   996: 'Cannot lock a register',
 };

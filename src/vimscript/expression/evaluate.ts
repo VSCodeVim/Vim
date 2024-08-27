@@ -41,6 +41,8 @@ function toInt(value: Value): number {
       throw VimError.fromCode(ErrorCode.UsingADictionaryAsANumber);
     case 'funcref':
       throw VimError.fromCode(ErrorCode.UsingAFuncrefAsANumber);
+    case 'blob':
+      throw VimError.fromCode(ErrorCode.UsingABlobAsANumber);
   }
 }
 
@@ -54,6 +56,7 @@ function toFloat(value: Value): number {
     case 'list':
     case 'dict_val':
     case 'funcref':
+    case 'blob':
       throw VimError.fromCode(ErrorCode.NumberOrFloatRequired);
   }
 }
@@ -72,6 +75,8 @@ export function toString(value: Value): string {
       throw VimError.fromCode(ErrorCode.UsingDictionaryAsAString);
     case 'funcref':
       throw VimError.fromCode(ErrorCode.UsingFuncrefAsAString);
+    case 'blob':
+      return displayValue(value);
   }
 }
 
@@ -82,6 +87,7 @@ function toList(value: Value): ListValue {
     case 'string':
     case 'funcref':
     case 'dict_val':
+    case 'blob':
       throw VimError.fromCode(ErrorCode.ListRequired);
     case 'list':
       return value;
@@ -95,6 +101,7 @@ function toDict(value: Value): DictionaryValue {
     case 'string':
     case 'list':
     case 'funcref':
+    case 'blob':
       throw VimError.fromCode(ErrorCode.DictionaryRequired);
     case 'dict_val':
       return value;
@@ -139,6 +146,7 @@ export class EvaluationContext {
       case 'string':
       case 'dict_val':
       case 'funcref':
+      case 'blob':
         return expression;
       case 'list':
         return list(expression.items.map((x) => this.evaluate(x)));
@@ -382,6 +390,10 @@ export class EvaluationContext {
       case 'funcref': {
         throw VimError.fromCode(ErrorCode.CannotIndexAFuncref);
       }
+      case 'blob': {
+        const bytes = new Uint8Array(sequence.data);
+        return int(bytes[toInt(index)]);
+      }
     }
   }
 
@@ -421,6 +433,10 @@ export class EvaluationContext {
       }
       case 'funcref': {
         throw VimError.fromCode(ErrorCode.CannotIndexAFuncref);
+      }
+      case 'blob': {
+        // TODO
+        return sequence;
       }
     }
   }
@@ -1203,11 +1219,11 @@ export class EvaluationContext {
           case 'float':
             return int(5);
           // case 'bool':
-          //   return num(6);
+          //   return int(6);
           // case 'null':
-          //   return num(7);
-          // case 'blob':
-          //   return num(8);
+          //   return int(7);
+          case 'blob':
+            return int(8);
           default:
             const guard: never = x;
             throw new Error('type() got unexpected type');

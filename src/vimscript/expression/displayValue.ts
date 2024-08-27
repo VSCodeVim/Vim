@@ -34,5 +34,13 @@ export function displayValue(value: Value, topLevel = true): string {
         }
         return `function('${value.name}', ${displayValue(value.arglist)})`;
       }
+    case 'blob':
+      return (
+        '0z' +
+        [...new Uint8Array(value.data)]
+          .map((byte) => byte.toString(16).padStart(2, '0'))
+          .join('')
+          .toUpperCase()
+      );
   }
 }
