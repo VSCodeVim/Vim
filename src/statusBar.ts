@@ -125,10 +125,10 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     // narrow color update method - applies to the Vim status bar items based on color settings
-    this.updateVimStatusItemColor(mode);
+    this.updateVimStatusBarItemColor(mode);
   }
 
-  private updateVimStatusItemColor(mode: Mode) {
+  private updateVimStatusBarItemColor(mode: Mode) {
     const modeName = Mode[mode];
     const foregroundColor = new vscode.ThemeColor(`statusBarItem.vimMode.${modeName}`);
     this.statusBarItem.color = foregroundColor;
