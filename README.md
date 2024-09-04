@@ -7,7 +7,7 @@
 [![](https://github.com/VSCodeVim/Vim/workflows/build/badge.svg?branch=master)](https://github.com/VSCodeVim/Vim/actions?query=workflow%3Abuild+branch%3Amaster)
 -->
 
-VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
+VSCodeVim is a Vim emulator for [VSCodium](https://vscodium.com/) (or its Microsoft derivate Visual Studio Code).
 
 - 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
