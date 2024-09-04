@@ -689,11 +689,20 @@ class MoveLeft extends BaseMovement {
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
-      const newPosition = p.getLeft();
-      if (newPosition.character === 0) {
-        return newPosition;
+
+      if (p.character === 0) {
+        return p;
       }
       if (
+        isLowSurrogate(line.charCodeAt(p.character)) &&
+        isHighSurrogate(line.charCodeAt(p.character - 1))
+      ) {
+        p = p.getLeft();
+      }
+
+      const newPosition = p.getLeft();
+      if (
+        newPosition.character > 0 &&
         isLowSurrogate(line.charCodeAt(newPosition.character)) &&
         isHighSurrogate(line.charCodeAt(newPosition.character - 1))
       ) {
