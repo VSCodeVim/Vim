@@ -57,7 +57,7 @@ function exprTest(
   });
 }
 
-suite.only('Vimscript expressions', () => {
+suite('Vimscript expressions', () => {
   suite('Parse & evaluate expression', () => {
     suite('Numbers', () => {
       exprTest('0', { expr: int(0) });

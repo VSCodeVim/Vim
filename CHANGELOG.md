@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Support `langmap` ([@Opisek](https://github.com/Opisek)).
+- Partial support for expressions, `:let`, and `:ec[ho]` ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.28.1](https://github.com/vscodevim/vim/tree/v1.28.1) (2024-09-07)
 
 ### Fixed
