@@ -1,5 +1,4 @@
 import { Mode } from '../../src/mode/mode';
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
@@ -8,15 +7,18 @@ const dvorakLangmap =
 
 suite('Langmap', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.langmap = dvorakLangmap;
-    await setupWorkspace(configuration);
-    await setupWorkspace();
+    await setupWorkspace({
+      config: {
+        langmap: dvorakLangmap,
+      },
+    });
   });
   suiteTeardown(async () => {
-    const configuration = new Configuration();
-    configuration.langmap = '';
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        langmap: '',
+      },
+    });
     await cleanUpWorkspace();
   });
 
