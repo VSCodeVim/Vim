@@ -13,7 +13,7 @@ import { Logger } from '../util/logger';
 import {
   keystrokesExpressionForMacroParser,
   keystrokesExpressionParser,
-} from '../vimscript/expression';
+} from '../vimscript/parserUtils';
 import {
   Dot,
   ExecuteNormalTransformation,
