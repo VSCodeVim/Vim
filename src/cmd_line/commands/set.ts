@@ -154,6 +154,13 @@ export class SetCommand extends ExCommand {
     this.operation = operation;
   }
 
+  // Listeners for options that need to be updated when they change
+  private static listeners: { [key: string]: Array<() => void> } = {};
+  static addListener(option: string, listener: () => void) {
+    if (!(option in SetCommand.listeners)) SetCommand.listeners[option] = [];
+    SetCommand.listeners[option].push(listener);
+  }
+
   async execute(vimState: VimState): Promise<void> {
     if (this.operation.option === undefined) {
       // TODO: Show all options that differ from their default value
@@ -299,6 +306,12 @@ export class SetCommand extends ExCommand {
       default:
         const guard: never = this.operation;
         throw new Error('Got unexpected SetOperation.type');
+    }
+
+    if (option in SetCommand.listeners) {
+      for (const listener of SetCommand.listeners[option]) {
+        listener();
+      }
     }
   }
 
