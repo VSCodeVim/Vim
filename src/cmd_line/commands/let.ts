@@ -109,8 +109,8 @@ export class LetCommand extends ExCommand {
       } else {
         const variable = this.args.variables[this.args.variables.length - 1];
         const value = context.evaluate(variable);
-        // TODO: If number, should include # sign
-        StatusBar.setText(vimState, `${variable.name}    ${displayValue(value)}`);
+        const prefix = value.type === 'number' ? '#' : value.type === 'funcref' ? '*' : '';
+        StatusBar.setText(vimState, `${variable.name}    ${prefix}${displayValue(value)}`);
       }
     } else {
       const variable = this.args.variable;
