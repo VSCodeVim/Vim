@@ -154,7 +154,8 @@ export class SetCommand extends ExCommand {
     this.operation = operation;
   }
 
-  async execute(vimState: VimState): Promise<void> {
+  // We allow vimState to be `undefined` so we can use this command for vimrc loading (where vimState is not available).
+  async execute(vimState: VimState | undefined): Promise<void> {
     if (this.operation.option === undefined) {
       // TODO: Show all options that differ from their default value
       return;
@@ -180,13 +181,13 @@ export class SetCommand extends ExCommand {
           if (type === 'boolean') {
             configuration[option] = true;
           } else {
-            this.showOption(vimState, option, currentValue);
+            if (vimState) this.showOption(vimState, option, currentValue);
           }
         }
         break;
       }
       case 'show': {
-        this.showOption(vimState, option, currentValue);
+        if (vimState) this.showOption(vimState, option, currentValue);
         break;
       }
       case 'unset': {

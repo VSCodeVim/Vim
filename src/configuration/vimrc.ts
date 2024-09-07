@@ -7,6 +7,7 @@ import { window } from 'vscode';
 import { Logger } from '../util/logger';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
+import { vimrcSetOptionBuilder } from './vimrcToConfigurationBuilder';
 
 export class VimrcImpl {
   private _vimrcPath?: string;
@@ -64,6 +65,11 @@ export class VimrcImpl {
         const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
         if (clearRemap) {
           VimrcImpl.clearRemapsFromConfig(config, clearRemap);
+          continue;
+        }
+        const setOptionAction = vimrcSetOptionBuilder.buildSetAction(line);
+        if (setOptionAction) {
+          setOptionAction();
           continue;
         }
       }
