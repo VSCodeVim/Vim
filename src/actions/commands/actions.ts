@@ -290,7 +290,7 @@ export class CommandNumber extends BaseCommand {
 @RegisterAction
 export class CommandRegister extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = ['"', '<character>'];
+  keys = ['"', '<register>'];
   override name = 'cmd_register';
   override isCompleteAction = false;
 
@@ -310,8 +310,7 @@ export class CommandRegister extends BaseCommand {
 class CommandRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [
-    ['q', '<alpha>'],
-    ['q', '<number>'],
+    ['q', '<macro>'],
     ['q', '"'],
   ];
 
@@ -391,7 +390,7 @@ class CommandExecuteLastMacro extends BaseCommand {
 @RegisterAction
 class CommandExecuteMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = ['@', '<character>'];
+  keys = ['@', '<register>'];
   override runsOnceForEachCountPrefix = true;
   override createsUndoPoint = true;
 
@@ -582,7 +581,7 @@ class CommandCmdA extends BaseCommand {
 
 @RegisterAction
 class MarkCommand extends BaseCommand {
-  keys = ['m', '<character>'];
+  keys = ['m', '<register>'];
   modes = [Mode.Normal];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {

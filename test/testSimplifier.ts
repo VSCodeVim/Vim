@@ -232,11 +232,11 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
       .resolves(testObj.stub.returnValue);
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
     confirmStub.restore();
   } else {
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
   }
 
   // Check given end output is correct
@@ -428,7 +428,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     };
 
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed), false);
 
     // Only start the end check promises after the keys were handled to make sure they don't
     // finish before all the keys are pressed. The keys handler above will resolve when the
