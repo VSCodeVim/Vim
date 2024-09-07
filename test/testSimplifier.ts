@@ -15,7 +15,7 @@ import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines, reloadConfiguration } from './testUtils';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -194,6 +194,12 @@ function tokenizeKeySequence(sequence: string): string[] {
 }
 
 async function testIt(testObj: ITestObject): Promise<ModeHandler> {
+  if (vscode.window.activeTextEditor === undefined) {
+    await setupWorkspace({
+      config: testObj.config,
+    });
+  }
+
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
@@ -212,9 +218,10 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
         start.lines.join('\n'),
       );
     }),
+    'Edit failed',
   );
   if (testObj.saveDocBeforeTest) {
-    assert.ok(await editor.document.save());
+    assert.ok(await editor.document.save(), 'Save failed');
   }
   editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 

@@ -10,7 +10,7 @@ import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
 import { Configuration } from '../testConfiguration';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
@@ -114,8 +114,6 @@ suite('Remapper', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   };
-
-  teardown(cleanUpWorkspace);
 
   test('getLongestedRemappedKeySequence', async () => {
     // setup

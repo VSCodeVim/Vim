@@ -1,5 +1,5 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('lastNextObject plugin', () => {
   suite('lastNextObject plugin disabled', () => {
@@ -8,7 +8,7 @@ suite('lastNextObject plugin', () => {
         fileExtension: '.js',
       });
     });
-    suiteTeardown(cleanUpWorkspace);
+
     // test next
     newTest({
       title: "next object - should not work as it's disabled",
@@ -46,7 +46,7 @@ suite('lastNextObject plugin', () => {
         fileExtension: '.js',
       });
     });
-    suiteTeardown(cleanUpWorkspace);
+
     // test next
     newTest({
       title: 'next object - 1',

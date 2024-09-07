@@ -5,12 +5,7 @@ import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest, newTestSkip } from '../testSimplifier';
-import {
-  assertEqualLines,
-  cleanUpWorkspace,
-  reloadConfiguration,
-  setupWorkspace,
-} from './../testUtils';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -19,8 +14,6 @@ suite('Mode Visual', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('v');

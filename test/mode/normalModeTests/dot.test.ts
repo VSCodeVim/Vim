@@ -1,7 +1,6 @@
 import { Mode } from '../../../src/mode/mode';
-import { Configuration } from '../../testConfiguration';
 import { newTest } from '../../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
   suiteSetup(async () => {
@@ -12,7 +11,6 @@ suite('Dot Operator', () => {
       },
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat '~' with <num>",
@@ -73,7 +71,6 @@ suite('Repeat content change', () => {
       },
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can repeat `<BS>`',
@@ -256,7 +253,7 @@ suite('Repeat content change', () => {
 });
 
 suite('Dot Operator repeat with remap', () => {
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace({
       config: {
         insertModeKeyBindings: [
@@ -275,8 +272,6 @@ suite('Dot Operator repeat with remap', () => {
       },
     });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat content change using 'jjk' mapped to '<Esc>' without trailing characters",

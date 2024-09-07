@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as vscode from 'vscode';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 import { IConfiguration } from '../../src/configuration/iconfiguration';
@@ -25,8 +25,6 @@ suite('Configuration', () => {
   setup(async () => {
     await setupWorkspace({ config: testConfig });
   });
-
-  teardown(cleanUpWorkspace);
 
   test('remappings are normalized', async () => {
     const normalizedKeybinds = srcConfiguration.configuration.normalModeKeyBindingsNonRecursive;
