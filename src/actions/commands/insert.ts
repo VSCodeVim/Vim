@@ -335,16 +335,14 @@ class CommandInsertRegisterContent extends BaseCommand {
   override isCompleteAction = false;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (!Register.isValidRegister(this.keysPressed[1])) {
+    const registerKey = this.keysPressed[1];
+    if (!Register.isValidRegister(registerKey)) {
       return;
     }
 
-    const register = await Register.get(this.keysPressed[1], this.multicursorIndex);
+    const register = await Register.get(registerKey, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, this.keysPressed[1]),
-      );
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, registerKey));
       return;
     }
 

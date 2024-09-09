@@ -6,6 +6,7 @@ import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
 
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
@@ -41,7 +42,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public abstract readonly keys: readonly string[] | readonly string[][];
+  public abstract keys: readonly string[] | readonly string[][];
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -51,6 +52,7 @@ export abstract class BaseAction implements IBaseAction {
 
   private static readonly isSingleNumber: RegExp = /^[0-9]$/;
   private static readonly isSingleAlpha: RegExp = /^[a-zA-Z]$/;
+  private static readonly isMacroRegister: RegExp = /^[0-9a-zA-Z]$/;
 
   /**
    * Is this action valid in the current Vim state?
@@ -125,7 +127,9 @@ export abstract class BaseAction implements IBaseAction {
         continue;
       } else if (left === '<alpha>' && this.isSingleAlpha.test(right)) {
         continue;
-      } else if (left === '<character>' && !Notation.IsControlKey(right)) {
+      } else if (left === '<macro>' && this.isMacroRegister.test(right)) {
+        continue;
+      } else if (['<character>', '<register>'].includes(left) && !Notation.IsControlKey(right)) {
         continue;
       } else {
         return false;
@@ -265,7 +269,9 @@ export function getRelevantAction(
     //       I think we can make `doesActionApply` and `couldActionApply` static...
     const action = new actionType();
     if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+      action.keysPressed = isLiteralMode(vimState.currentMode)
+        ? [...vimState.recordedState.actionKeys]
+        : unmapLiteral(action.keys, vimState.recordedState.actionKeys);
       return action;
     }
 
