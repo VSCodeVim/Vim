@@ -51,7 +51,7 @@ export async function getAndUpdateModeHandler(
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
-    await curHandler.updateView({ drawSelection: false, revealRange: false });
+    curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
   previousActiveEditorUri = activeTextEditor.document.uri;

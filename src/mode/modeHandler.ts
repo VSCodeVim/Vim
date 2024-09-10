@@ -271,7 +271,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               Logger.trace('Updating Visual Selection!');
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
-              await this.updateView({ drawSelection: false, revealRange: false });
+              this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
               this.vimState.lastVisualSelection = {
@@ -285,7 +285,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               this.vimState.cursorStopPosition = selection.active;
               this.vimState.cursorStartPosition = selection.anchor;
               await this.setCurrentMode(Mode.Visual);
-              await this.updateView({ drawSelection: false, revealRange: false });
+              this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
               this.vimState.lastVisualSelection = {
@@ -349,7 +349,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         this.vimState.cursorStopPosition = selection.active;
         this.vimState.cursorStartPosition = selection.anchor;
         this.vimState.desiredColumn = selection.active.character;
-        await this.updateView({ drawSelection: false, revealRange: false });
+        this.updateView({ drawSelection: false, revealRange: false });
       }
       return;
     }
@@ -632,7 +632,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
         // cursor decorations, if in the future we split up the updateView function there should
         // be no need to call all of it.
-        await this.updateView({ drawSelection: false, revealRange: false });
+        this.updateView({ drawSelection: false, revealRange: false });
       }
     }
   }
@@ -746,7 +746,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // Update view
-    await this.updateView();
+    this.updateView();
 
     if (action.isJump) {
       globalState.jumpTracker.recordJump(
@@ -1232,7 +1232,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           return;
         }
 
-        await this.updateView();
+        this.updateView();
         if (
           replayMode === ReplayMode.Replace &&
           !(j === transformation.count - 1 && i === actions.length - 1)
@@ -1275,7 +1275,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         break;
       }
 
-      await this.updateView();
+      this.updateView();
 
       if (action.isJump) {
         globalState.jumpTracker.recordJump(originalLocation, Jump.fromStateNow(this.vimState));
@@ -1333,12 +1333,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     );
   }
 
-  public async updateView(
+  public updateView(
     args: { drawSelection: boolean; revealRange: boolean } = {
       drawSelection: true,
       revealRange: true,
     },
-  ): Promise<void> {
+  ): void {
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
