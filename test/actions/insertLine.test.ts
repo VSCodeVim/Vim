@@ -1,26 +1,19 @@
 import * as assert from 'assert';
-import { Position, window } from 'vscode';
-import {
-  getCurrentParagraphBeginning,
-  getCurrentParagraphEnd,
-} from '../../src/textobject/paragraph';
-import { WordType } from '../../src/textobject/word';
-import { TextEditor } from '../../src/textEditor';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getAndUpdateModeHandler } from '../../extension';
 import * as vscode from 'vscode';
-import { Configuration } from '../testConfiguration';
 
 suite('insertLineBefore', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = true;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: true,
+      },
+    });
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });

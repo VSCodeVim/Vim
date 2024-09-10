@@ -1,12 +1,9 @@
 import { newTest } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
-import { Configuration } from '../../testConfiguration';
 
 suite('matchpair empty', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.matchpairs = '';
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { matchpairs: '' } });
   });
 
   teardown(cleanUpWorkspace);
@@ -21,9 +18,7 @@ suite('matchpair empty', () => {
 
 suite('matchpairs enabled', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.matchpairs = '<:>';
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { matchpairs: '<:>' } });
   });
   suiteTeardown(cleanUpWorkspace);
 

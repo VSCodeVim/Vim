@@ -102,14 +102,15 @@ suite('Remapper', () => {
     normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
   }) => {
-    const configuration = new Configuration();
-    configuration.leader = leaderKey;
-    configuration.insertModeKeyBindings = insertModeKeyBindings || [];
-    configuration.normalModeKeyBindings = normalModeKeyBindings || [];
-    configuration.normalModeKeyBindingsNonRecursive = normalModeKeyBindingsNonRecursive || [];
-    configuration.visualModeKeyBindings = visualModeKeyBindings || [];
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        leader: leaderKey,
+        insertModeKeyBindings: insertModeKeyBindings || [],
+        normalModeKeyBindings: normalModeKeyBindings || [],
+        normalModeKeyBindingsNonRecursive: normalModeKeyBindingsNonRecursive || [],
+        visualModeKeyBindings: visualModeKeyBindings || [],
+      },
+    });
     modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   };
