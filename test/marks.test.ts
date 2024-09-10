@@ -6,7 +6,7 @@ import { newTest, newTestSkip } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 
-suite('Marks', async () => {
+suite('Marks', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {

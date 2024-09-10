@@ -607,7 +607,7 @@ export function registerCommand(
 export function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
-  listener: (e: T) => void,
+  listener: (e: T) => Promise<void>,
   exitOnExtensionDisable = true,
   exitOnTests = false,
 ) {
@@ -620,7 +620,7 @@ export function registerEventListener<T>(
       return;
     }
 
-    listener(e);
+    await listener(e);
   });
   context.subscriptions.push(disposable);
 }

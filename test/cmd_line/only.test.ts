@@ -9,7 +9,7 @@ import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {
     // Insert 1000 lines (ie. beyond veritical viewport)
-    await vscode.window.activeTextEditor!.edit(async (editBuilder) => {
+    await vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), 'Line\n'.repeat(1000));
     });
 
