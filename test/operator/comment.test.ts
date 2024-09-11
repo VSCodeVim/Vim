@@ -4,7 +4,7 @@ import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('comment operator', () => {
   suiteSetup(async () => {
-    await setupWorkspace(undefined, '.js');
+    await setupWorkspace({ fileExtension: '.js' });
   });
   suiteTeardown(cleanUpWorkspace);
 

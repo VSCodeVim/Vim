@@ -1,5 +1,4 @@
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import {
   CommandSurroundAddSurroundingFunction,
@@ -8,9 +7,12 @@ import {
 
 suite('surround plugin', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.surround = true;
-    await setupWorkspace(configuration, '.js');
+    await setupWorkspace({
+      config: {
+        surround: true,
+      },
+      fileExtension: '.js',
+    });
   });
   suiteTeardown(cleanUpWorkspace);
 
@@ -504,6 +506,18 @@ suite('surround plugin', () => {
       stubClass: CommandSurroundAddSurroundingTag,
       methodName: 'readTag',
       returnValue: 'div',
+    },
+  });
+
+  newTest({
+    title: "'VStt' surrounds selection and correctly trims class attribute in closing tag",
+    start: ['first li|ne test'],
+    keysPressed: 'VStt',
+    end: ['<div class="test">', 'first line test', '|</div>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'div class="test"',
     },
   });
 

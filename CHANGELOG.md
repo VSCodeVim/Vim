@@ -1,5 +1,44 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Support `langmap` ([@Opisek](https://github.com/Opisek)).
+- Partial support for expressions, `:let`, and `:ec[ho]` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.28.1](https://github.com/vscodevim/vim/tree/v1.28.1) (2024-09-07)
+
+### Fixed
+
+- Fixed `h` with unicode surrogate pairs ([@semicube](https://github.com/semicube)).
+
+## [v1.28.0](https://github.com/vscodevim/vim/tree/v1.28.0) (2024-08-25)
+
+### Added
+
+- Support `:norm[al]` ([@s-kai273](https://github.com/s-kai273)).
+- Status item click mapped to `toggleVim` command ([@JoeyShapiro](https://github.com/JoeyShapiro)).
+- Set `vim.command` in `VSCodeContext` on key press ([@raineorshine](https://github.com/raineorshine)).
+- Support `:b[uffer] {bufname}` ([@ccassise](https://github.com/ccassise)).
+- Support `<Del>` in Replace mode ([@s-kai273](https://github.com/s-kai273)).
+
+### Changed
+
+- `:on[ly]` joins groups but does not close editors ([@kopiczko](https://github.com/kopiczko)).
+
+### Fixed
+
+- Fixed split pane (`<C-w>v` and `<C-w>s`) on VS Code 1.90 ([@HenryTSZ](https://github.com/HenryTSZ)).
+- Fixed `:tabe[dit]` with relative path ([@iblislin](https://github.com/iblislin)).
+- Fixed `easymotionDimColor` ([@HenryTSZ](https://github.com/HenryTSZ)).
+- Fixed escaping multiple forward slashes in `visualstar` search ([@zaneduffield](https://github.com/zaneduffield)).
+- Fixed `.` with numbered registers ([@SirTomme](https://github.com/SirTomme)).
+- Fixed `H` and `L` not respecting `scrolloff` ([@rpuhalovich](https://github.com/rpuhalovich)).
+- Fixed surround with HTML tag attributes ([@Nestastnikos](https://github.com/Nestastnikos)).
+- Fixed deleting unicode surrogate pairs ([@semicube](https://github.com/semicube)).
+- Fixed repeating Ex commands with `<Leader>` in them ([@HenryTSZ](https://github.com/HenryTSZ)).
+
 ## [v1.27.3](https://github.com/vscodevim/vim/tree/v1.27.3) (2024-05-20)
 
 ### Added

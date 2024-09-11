@@ -654,7 +654,7 @@ class SurroundHelper {
         surroundState.operator === 'delete'
           ? ''
           : surroundState.tag
-            ? optNewline + '</' + surroundState.tag.tag + '>'
+            ? optNewline + '</' + SurroundHelper.trimAttributes(surroundState.tag.tag) + '>'
             : optNewline + replacement.right;
 
       for (const { leftEdge, rightEdge, cursorIndex } of surroundState.edges) {
@@ -679,5 +679,11 @@ class SurroundHelper {
 
     // finish / cleanup. sql-koala was here :D
     await vimState.setCurrentMode(Mode.Normal);
+  }
+
+  private static trimAttributes(wholeTag: string) {
+    const endTagIndex = wholeTag.indexOf(' ');
+    const isAnyAttributeAfterTag = endTagIndex !== -1;
+    return isAnyAttributeAfterTag ? wholeTag.substring(0, endTagIndex) : wholeTag;
   }
 }

@@ -446,4 +446,6 @@ export interface IConfiguration {
    * Path to the shell to use for `!` and `:!` commands.
    */
   shell: string;
+
+  langmap: string;
 }
