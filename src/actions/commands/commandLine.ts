@@ -289,11 +289,12 @@ class CommandInsertRegisterContentInCommandLine extends CommandLineAction {
   override isCompleteAction = false;
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    if (!Register.isValidRegister(this.keysPressed[1])) {
+    const registerKey = this.keysPressed[1];
+    if (!Register.isValidRegister(registerKey)) {
       return;
     }
 
-    vimState.recordedState.registerName = this.keysPressed[1];
+    vimState.recordedState.registerName = registerKey;
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(

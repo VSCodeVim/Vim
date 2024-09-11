@@ -516,7 +516,7 @@ export class Remapper implements IRemapper {
             } else {
               throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
             }
-            await modeHandler.updateView();
+            modeHandler.updateView();
           } else {
             await vscode.commands.executeCommand(commandString, ...commandArgs);
           }

@@ -1,6 +1,6 @@
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Replace', () => {
   suiteSetup(setupWorkspace);
@@ -155,6 +155,14 @@ suite('Mode Replace', () => {
     start: ['123|456', '123456'],
     keysPressed: 'Rabc\ndef<Esc>j0.',
     end: ['123abc', 'def', 'abc', 'de|f'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Delete in replace mode',
+    start: ['|123456'],
+    keysPressed: 'Rabc<Del><Esc>',
+    end: ['ab|c56'],
     endMode: Mode.Normal,
   });
 });

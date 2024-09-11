@@ -4,7 +4,7 @@ import { ITestObject, testIt } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
 
 function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, number]> }) {
-  suite(input.title, async () => {
+  suite(input.title, () => {
     for (const lineRange in input.lineRanges) {
       if (lineRange in input.lineRanges) {
         test(lineRange, async () => {
