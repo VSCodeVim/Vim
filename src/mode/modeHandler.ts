@@ -1228,8 +1228,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await this.runAction(recordedState, action);
 
         if (this.vimState.lastMovementFailed) {
-          // TODO: Shouldn't this be `break`? Can't this leave us in a very bad state?
-          return;
+          break;
         }
 
         this.updateView();
