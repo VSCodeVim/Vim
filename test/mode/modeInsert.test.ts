@@ -21,10 +21,10 @@ suite('Mode Insert', () => {
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     }
   });
 
@@ -75,7 +75,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assert.strictEqual(modeHandler.currentMode === Mode.Insert, true);
+      assert.strictEqual(modeHandler.vimState.currentMode === Mode.Insert, true);
     }
   });
 
@@ -679,7 +679,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('editor.action.selectAll');
       await modeHandler.handleKeyEvent('"');
       assertEqualLines(['"select"']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 1);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 7);
     });
@@ -689,7 +689,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('editor.action.selectAll');
       await modeHandler.handleMultipleKeyEvents(['"', 'f', 'i', 'n', 'a', 'l']);
       assertEqualLines(['"final"']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 6);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 6);
     });
@@ -713,7 +713,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
       await modeHandler.handleKeyEvent('`');
       assertEqualLines(['`foo` (one) <two>']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     });
   });
 });

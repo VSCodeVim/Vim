@@ -110,13 +110,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    */
   private lastClickWasPastEol: boolean = false;
 
-  // TODO: clarify the difference between ModeHandler.currentMode and VimState.currentMode
   private _currentMode!: Mode;
-
-  get currentMode(): Mode {
+  private get currentMode(): Mode {
     return this._currentMode;
   }
-
   private async setCurrentMode(mode: Mode): Promise<void> {
     if (this.vimState.currentMode !== mode) {
       await this.vimState.setCurrentMode(mode);

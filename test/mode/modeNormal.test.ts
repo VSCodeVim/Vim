@@ -26,13 +26,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({

@@ -260,7 +260,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   if (testObj.endMode !== undefined) {
     assert.strictEqual(
-      Mode[modeHandler.currentMode],
+      Mode[modeHandler.vimState.currentMode],
       Mode[testObj.endMode],
       "Didn't enter correct mode.",
     );
@@ -395,7 +395,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
           p1Resolve({
             lines: modeHandler.vimState.document.getText(),
             position: modeHandler.vimState.editor.selection.start,
-            endMode: modeHandler.currentMode,
+            endMode: modeHandler.vimState.currentMode,
           });
         }, timeoutOffset);
       });
@@ -425,7 +425,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
             p2Resolve({
               lines: modeHandler.vimState.document.getText(),
               position: modeHandler.vimState.editor.selection.start,
-              endMode: modeHandler.currentMode,
+              endMode: modeHandler.vimState.currentMode,
             });
           }, timeout + timeoutOffset);
         } else {

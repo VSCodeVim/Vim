@@ -161,7 +161,7 @@ suite('cmd_line/search command', () => {
     test(`${key} with empty command line goes to normal mode`, async () => {
       await modeHandler.handleKeyEvent(':');
       await modeHandler.handleKeyEvent(key);
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     });
 
     test(`${key} at start of non-empty command does nothing`, async () => {
@@ -182,7 +182,7 @@ suite('cmd_line/search command', () => {
   test(`<Del> with empty command line goes to normal mode`, async () => {
     await modeHandler.handleKeyEvent(':');
     await modeHandler.handleKeyEvent('<Del>');
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test(`<Del> at start of non-empty command acts normally`, async () => {
