@@ -759,6 +759,11 @@ suite('Vimscript expressions', () => {
       });
     });
 
+    suite('tr', () => {
+      exprTest("tr('whatever', 'short', 'longer')", { error: ErrorCode.InvalidArgument475 });
+      exprTest("tr('hello there', 'ht', 'HT')", { value: str('Hello THere') });
+    });
+
     suite('trim', () => {
       exprTest("trim('  me  ')", { value: str('me') });
       exprTest("trim('  me  ', ' ', 0)", { value: str('me') });
