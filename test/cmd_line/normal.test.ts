@@ -1,4 +1,4 @@
-import { newTest, newTestSkip } from './testSimplifier';
+import { newTest, newTestSkip } from '../testSimplifier';
 
 suite('Execute normal command', () => {
   newTest({
