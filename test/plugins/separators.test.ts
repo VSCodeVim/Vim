@@ -1,11 +1,11 @@
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('separators plugin', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    await setupWorkspace(configuration, '.js');
+    await setupWorkspace({
+      fileExtension: '.js',
+    });
   });
   suiteTeardown(cleanUpWorkspace);
   // test quotes types
