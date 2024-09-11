@@ -4,12 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import {
-  assertEqualLines,
-  cleanUpWorkspace,
-  setupWorkspace,
-  reloadConfiguration,
-} from './../testUtils';
+import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
 import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
 
@@ -20,8 +15,6 @@ suite('Mode Insert', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
     const activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];

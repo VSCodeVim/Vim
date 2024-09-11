@@ -9,7 +9,7 @@ import { RecordedState } from '../../src/state/recordedState';
 import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util/clipboard';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -18,8 +18,6 @@ suite('register', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   suite('clipboard', () => {
     setup(async () => {

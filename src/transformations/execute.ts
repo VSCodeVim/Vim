@@ -13,7 +13,7 @@ import { Logger } from '../util/logger';
 import {
   keystrokesExpressionForMacroParser,
   keystrokesExpressionParser,
-} from '../vimscript/expression';
+} from '../vimscript/parserUtils';
 import {
   Dot,
   ExecuteNormalTransformation,
@@ -30,7 +30,7 @@ import { Transformer } from './transformer';
 export interface IModeHandler {
   vimState: VimState;
 
-  updateView(args?: { drawSelection: boolean; revealRange: boolean }): Promise<void>;
+  updateView(args?: { drawSelection: boolean; revealRange: boolean }): void;
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
   handleKeyEvent(key: string): Promise<void>;

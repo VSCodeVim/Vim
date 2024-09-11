@@ -9,6 +9,7 @@ import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
+import { LetCommand } from '../../src/cmd_line/commands/let';
 import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
@@ -23,6 +24,7 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
+import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -323,6 +325,54 @@ suite('Ex command parsing', () => {
   });
 
   suite(':let', () => {
+    exParseTest(':let', new LetCommand({ operation: 'print', variables: [] }));
+    exParseTest(
+      ':let foo bar',
+      new LetCommand({ operation: 'print', variables: [variable('foo'), variable('bar')] }),
+    );
+
+    exParseTest(
+      ':let foo = 5',
+      new LetCommand({
+        operation: '=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo += 5',
+      new LetCommand({
+        operation: '+=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo -= 5',
+      new LetCommand({
+        operation: '-=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ":let foo .= 'bar'",
+      new LetCommand({
+        operation: '.=',
+        variable: variable('foo'),
+        expression: str('bar'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':const foo = 5',
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
+    );
+
     // TODO
   });
 
@@ -349,6 +399,18 @@ suite('Ex command parsing', () => {
     // No space, alpha register
     exParseFails(':putx');
     exParseTest(':put!x', new PutExCommand({ bang: true, register: 'x' }));
+
+    // Expression register
+    exParseTest(':put=', new PutExCommand({ bang: false, register: '=' }));
+    exParseTest(':put=5+2', new PutExCommand({ bang: false, fromExpression: add(int(5), int(2)) }));
+    exParseTest(
+      ':put = range(4)',
+      new PutExCommand({ bang: false, fromExpression: funcCall('range', [int(4)]) }),
+    );
+    exParseTest(
+      ':put!=[1,2,3]',
+      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) }),
+    );
   });
 
   suite(':q[uit] and :qa[ll]', () => {

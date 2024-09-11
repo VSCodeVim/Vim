@@ -11,6 +11,8 @@ import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Globals } from '../src/globals';
 import { StatusBar } from '../src/statusBar';
 import { Configuration } from './testConfiguration';
+import { TextEditor } from '../src/textEditor';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
@@ -66,22 +68,20 @@ export function rndName(): string {
     .substring(0, 10);
 }
 
-export async function createRandomFile(contents: string, fileExtension: string): Promise<string> {
-  const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
-  await promisify(fs.writeFile)(tmpFile, contents);
-  return tmpFile;
+export async function createFile(
+  args: {
+    fsPath?: string;
+    fileExtension?: string;
+    contents?: string;
+  } = {},
+): Promise<string> {
+  args.fsPath ??= join(os.tmpdir(), rndName() + (args.fileExtension ?? ''));
+  await promisify(fs.writeFile)(args.fsPath, args.contents ?? '');
+  return args.fsPath;
 }
 
-export async function createRandomDir() {
-  return createDir(join(os.tmpdir(), rndName()));
-}
-
-export async function createEmptyFile(fsPath: string) {
-  await promisify(fs.writeFile)(fsPath, '');
-  return fsPath;
-}
-
-export async function createDir(fsPath: string) {
+export async function createDir(fsPath?: string): Promise<string> {
+  fsPath ??= join(os.tmpdir(), rndName());
   await promisify(fs.mkdir)(fsPath);
   return fsPath;
 }
@@ -129,25 +129,49 @@ export function assertStatusBarEqual(
   assert.strictEqual(StatusBar.getText(), expectedText, message);
 }
 
-// TODO: convert parameters to destructured object & make config: Partial<IConfiguration>
 export async function setupWorkspace(
-  config: IConfiguration = new Configuration(),
-  fileExtension: string = '',
+  args: {
+    config?: Partial<IConfiguration>;
+    fileExtension?: string;
+  } = {},
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
-  const filePath = await createRandomFile('', fileExtension);
-  const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
-  await vscode.window.showTextDocument(doc);
+  if (
+    vscode.window.activeTextEditor === undefined ||
+    vscode.window.activeTextEditor.document.isUntitled ||
+    vscode.window.visibleTextEditors.length > 1 ||
+    (args.fileExtension &&
+      !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension))
+  ) {
+    await cleanUpWorkspace();
+    const filePath = await createFile({ fileExtension: args.fileExtension });
+    const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+    await vscode.window.showTextDocument(doc);
+  }
 
-  Globals.mockConfiguration = config;
+  Globals.mockConfiguration = new Configuration();
+  Object.assign(Globals.mockConfiguration, args?.config ?? {});
   await reloadConfiguration();
 
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor.options.tabSize = config.tabstop;
-  activeTextEditor.options.insertSpaces = config.expandtab;
+  activeTextEditor.options.tabSize = Globals.mockConfiguration.tabstop;
+  activeTextEditor.options.insertSpaces = Globals.mockConfiguration.expandtab;
+
+  assert.ok(
+    await activeTextEditor.edit((builder) => {
+      builder.delete(
+        new vscode.Range(
+          new vscode.Position(0, 0),
+          TextEditor.getDocumentEnd(activeTextEditor.document),
+        ),
+      );
+    }),
+    'Edit failed',
+  );
+  ModeHandlerMap.clear();
 }
 
 export async function cleanUpWorkspace(): Promise<void> {

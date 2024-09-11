@@ -3,7 +3,7 @@ import { getAndUpdateModeHandler } from '../../extensionBase';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Search text objects (gn and gN)', () => {
   let modeHandler: ModeHandler;
@@ -12,7 +12,6 @@ suite('Search text objects (gn and gN)', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-  teardown(cleanUpWorkspace);
 
   suite('can handle gn', () => {
     test(`gn selects the next match text`, async () => {

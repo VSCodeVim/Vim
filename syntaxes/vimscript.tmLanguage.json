@@ -10,6 +10,10 @@
     },
     {
       "name": "entity.name.function",
+      "match": "^( |\t)*(let|const|eval|call)"
+    },
+    {
+      "name": "entity.name.function",
       "match": "^( |\t)*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
     },
     {
@@ -23,6 +27,10 @@
     {
       "name": "entity.name.function",
       "match": "^( |\t)*set"
+    },
+    {
+      "name": "constant.numeric",
+      "match": "\\d+(\\.\\d+)?"
     },
     {
       "name": "constant",

@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -10,11 +9,12 @@ suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
   suiteTeardown(cleanUpWorkspace);
@@ -2777,6 +2777,8 @@ suite('Mode Normal', () => {
   suite('<C-g>', () => {
     // TODO: test with untitled file
     // TODO: test [count]<C-g>
+
+    suiteSetup(cleanUpWorkspace);
 
     newTest({
       title: '<C-g> displays info about the file in status bar (line 1 of 3)',

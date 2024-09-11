@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
@@ -13,8 +13,6 @@ suite('Mode Visual Line', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('V');

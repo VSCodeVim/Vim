@@ -1,11 +1,6 @@
 import { newTest, newTestSkip } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Execute normal command', () => {
-  setup(setupWorkspace);
-
-  teardown(cleanUpWorkspace);
-
   newTest({
     title: 'One liner',
     start: ['foo =| bar = 1'],

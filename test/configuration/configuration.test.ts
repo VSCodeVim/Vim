@@ -1,15 +1,14 @@
 import * as assert from 'assert';
 import * as srcConfiguration from '../../src/configuration/configuration';
-import * as testConfiguration from '../testConfiguration';
 import * as vscode from 'vscode';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
+import { IConfiguration } from '../../src/configuration/iconfiguration';
 
-suite('Configuration', () => {
-  const configuration = new testConfiguration.Configuration();
-  configuration.leader = '<space>';
-  configuration.normalModeKeyBindingsNonRecursive = [
+const testConfig: Partial<IConfiguration> = {
+  leader: '<space>',
+  normalModeKeyBindingsNonRecursive: [
     {
       before: ['leader', 'o'],
       after: ['o', 'eSc', 'k'],
@@ -18,21 +17,21 @@ suite('Configuration', () => {
       before: ['<leader>', 'f', 'e', 's'],
       after: ['v'],
     },
-  ];
-  configuration.whichwrap = 'h,l';
+  ],
+  whichwrap: 'h,l',
+};
 
+suite('Configuration', () => {
   setup(async () => {
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: testConfig });
   });
-
-  teardown(cleanUpWorkspace);
 
   test('remappings are normalized', async () => {
     const normalizedKeybinds = srcConfiguration.configuration.normalModeKeyBindingsNonRecursive;
     const normalizedKeybindsMap = srcConfiguration.configuration.normalModeKeyBindingsMap;
-    const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
+    const testingKeybinds = testConfig.normalModeKeyBindingsNonRecursive;
 
-    assert.strictEqual(normalizedKeybinds.length, testingKeybinds.length);
+    assert.strictEqual(normalizedKeybinds.length, testingKeybinds!.length);
     assert.strictEqual(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepStrictEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);

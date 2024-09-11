@@ -1,17 +1,16 @@
 import { Mode } from '../../../src/mode/mode';
-import { Configuration } from '../../testConfiguration';
 import { newTest } from '../../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat '~' with <num>",
@@ -65,13 +64,13 @@ suite('Dot Operator', () => {
 
 suite('Repeat content change', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can repeat `<BS>`',
@@ -254,26 +253,25 @@ suite('Repeat content change', () => {
 });
 
 suite('Dot Operator repeat with remap', () => {
-  setup(async () => {
-    const configuration = new Configuration();
-    configuration.insertModeKeyBindings = [
-      {
-        before: ['j', 'j', 'k'],
-        after: ['<esc>'],
+  suiteSetup(async () => {
+    await setupWorkspace({
+      config: {
+        insertModeKeyBindings: [
+          {
+            before: ['j', 'j', 'k'],
+            after: ['<esc>'],
+          },
+        ],
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'w'],
+            after: ['d', 'w'],
+          },
+        ],
+        leader: ' ',
       },
-    ];
-    configuration.normalModeKeyBindings = [
-      {
-        before: ['<leader>', 'w'],
-        after: ['d', 'w'],
-      },
-    ];
-    configuration.leader = ' ';
-
-    await setupWorkspace(configuration);
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Can repeat content change using 'jjk' mapped to '<Esc>' without trailing characters",
