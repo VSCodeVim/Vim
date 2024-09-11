@@ -14,3 +14,4 @@ import './commands/digraphs';
 import './commands/window';
 import './commands/fold';
 import './commands/scroll';
+import './commands/join';
