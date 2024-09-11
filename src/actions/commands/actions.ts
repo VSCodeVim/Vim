@@ -1429,16 +1429,6 @@ class ActionJoin extends BaseCommand {
   override createsUndoPoint = true;
   override runsOnceForEachCountPrefix = false;
 
-  private firstNonWhitespaceIndex(str: string): number {
-    for (let i = 0, len = str.length; i < len; i++) {
-      const chCode = str.charCodeAt(i);
-      if (chCode !== 32 /** space */ && chCode !== 9 /** tab */) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   public async execJoinLines(
     startPosition: Position,
     position: Position,
@@ -1450,38 +1440,28 @@ class ActionJoin extends BaseCommand {
     const joinspaces = configuration.joinspaces;
 
     let startLineNumber: number;
-    let startColumn: number;
     let endLineNumber: number;
-    let endColumn: number;
-    let columnDeltaOffset: number = 0;
 
     if (startPosition.isEqual(position) || startPosition.line === position.line) {
       if (position.line + 1 < vimState.document.lineCount) {
         startLineNumber = position.line;
-        startColumn = 0;
         endLineNumber = position.getDown(count).line;
-        endColumn = TextEditor.getLineLength(endLineNumber);
       } else {
         startLineNumber = position.line;
-        startColumn = 0;
         endLineNumber = position.line;
-        endColumn = TextEditor.getLineLength(endLineNumber);
       }
     } else {
       startLineNumber = startPosition.line;
-      startColumn = 0;
       endLineNumber = position.line;
-      endColumn = TextEditor.getLineLength(endLineNumber);
     }
 
     let trimmedLinesContent = vimState.document.lineAt(startPosition).text;
+    let columnDeltaOffset: number = 0;
 
     for (let i = startLineNumber + 1; i <= endLineNumber; i++) {
-      const lineText = vimState.document.lineAt(i).text;
+      const line = vimState.document.lineAt(i);
 
-      const firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
-
-      if (firstNonWhitespaceIdx >= 0) {
+      if (line.firstNonWhitespaceCharacterIndex < line.text.length) {
         // Compute number of spaces to separate the lines
         let insertSpace = ' ';
 
@@ -1505,7 +1485,7 @@ class ActionJoin extends BaseCommand {
           insertSpace = '';
         }
 
-        const lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
+        const lineTextWithoutIndent = line.text.substring(line.firstNonWhitespaceCharacterIndex);
 
         if (lineTextWithoutIndent.charAt(0) === ')') {
           insertSpace = '';
@@ -1516,8 +1496,8 @@ class ActionJoin extends BaseCommand {
       }
     }
 
-    const deleteStartPosition = new Position(startLineNumber, startColumn);
-    const deleteEndPosition = new Position(endLineNumber, endColumn);
+    const deleteStartPosition = new Position(startLineNumber, 0);
+    const deleteEndPosition = new Position(endLineNumber, TextEditor.getLineLength(endLineNumber));
 
     if (!deleteStartPosition.isEqual(deleteEndPosition)) {
       if (startPosition.isEqual(position)) {
