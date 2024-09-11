@@ -46,4 +46,11 @@ suite('surrogate-pair', () => {
     keysPressed: 'i🐕🐕<ESC>',
     end: ['🐕🐕|'],
   });
+
+  newTest({
+    title: 'move left over cute dog',
+    start: ['|𩸽🐕', 'text'],
+    keysPressed: 'jlllkh',
+    end: ['|𩸽🐕', 'text'],
+  });
 });

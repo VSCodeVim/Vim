@@ -1,17 +1,18 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { any, Parser, seq, whitespace } from 'parsimmon';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
+import { Digraph } from '../../configuration/iconfiguration';
+import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
-import { any, Parser, seq, whitespace } from 'parsimmon';
 import { bangParser, numberParser } from '../../vimscript/parserUtils';
-import { Digraph } from '../../configuration/iconfiguration';
+import { configuration } from './../../configuration/configuration';
 
 export interface IDigraphsCommandArguments {
   bang: boolean;
-  newDigraphs: Array<[string, string, number]>;
+  newDigraph: [string, string, number[]] | undefined;
 }
 
 interface DigraphQuickPickItem extends vscode.QuickPickItem {
@@ -21,8 +22,8 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 export class DigraphsCommand extends ExCommand {
   public static readonly argParser: Parser<DigraphsCommand> = seq(
     bangParser,
-    whitespace.then(seq(any, any, whitespace.then(numberParser))).many()
-  ).map(([bang, newDigraphs]) => new DigraphsCommand({ bang, newDigraphs }));
+    whitespace.then(seq(any, any, whitespace.then(numberParser).atLeast(1))).fallback(undefined),
+  ).map(([bang, newDigraph]) => new DigraphsCommand({ bang, newDigraph }));
 
   private readonly arguments: IDigraphsCommandArguments;
   constructor(args: IDigraphsCommandArguments) {
@@ -44,17 +45,21 @@ export class DigraphsCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    // TODO: use arguments
+    if (this.arguments.newDigraph) {
+      const digraph = this.arguments.newDigraph[0] + this.arguments.newDigraph[1];
+      const charCodes = this.arguments.newDigraph[2];
+      DefaultDigraphs.set(digraph, [String.fromCharCode(...charCodes), charCodes]);
+    } else {
+      const digraphKeyAndContent = this.makeQuickPicks(
+        Object.entries(configuration.digraphs),
+      ).concat(this.makeQuickPicks([...DefaultDigraphs.entries()]));
 
-    const digraphKeyAndContent = this.makeQuickPicks(Object.entries(configuration.digraphs)).concat(
-      this.makeQuickPicks([...DefaultDigraphs.entries()])
-    );
-
-    vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
-      if (val) {
-        const char = String.fromCharCode(...val.charCodes);
-        await TextEditor.insert(vimState.editor, char);
-      }
-    });
+      void vscode.window.showQuickPick(digraphKeyAndContent).then(async (val) => {
+        if (val) {
+          const char = String.fromCharCode(...val.charCodes);
+          await TextEditor.insert(vimState.editor, char);
+        }
+      });
+    }
   }
 }

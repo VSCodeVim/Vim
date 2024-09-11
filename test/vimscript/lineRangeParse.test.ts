@@ -1,5 +1,4 @@
-import assert = require('assert');
-import { delimiter } from 'path';
+import { strict as assert } from 'assert';
 import { Address, LineRange } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
@@ -26,8 +25,8 @@ suite('LineRange parsing', () => {
         new Address({
           type: 'pattern_next',
           pattern: Pattern.parser({ direction: SearchDirection.Forward }).tryParse('abc'),
-        })
-      )
+        }),
+      ),
     );
     parseTest(
       'pattern_next (closing /)',
@@ -39,8 +38,8 @@ suite('LineRange parsing', () => {
             direction: SearchDirection.Forward,
             delimiter: '/',
           }).tryParse('abc/'),
-        })
-      )
+        }),
+      ),
     );
     parseTest(
       'pattern_prev (no closing ?)',
@@ -49,8 +48,8 @@ suite('LineRange parsing', () => {
         new Address({
           type: 'pattern_prev',
           pattern: Pattern.parser({ direction: SearchDirection.Backward }).tryParse('abc'),
-        })
-      )
+        }),
+      ),
     );
     parseTest(
       'pattern_prev (closing ?)',
@@ -62,23 +61,23 @@ suite('LineRange parsing', () => {
             direction: SearchDirection.Backward,
             delimiter: '?',
           }).tryParse('abc?'),
-        })
-      )
+        }),
+      ),
     );
     parseTest(
       'last_search_pattern_next',
       '\\/',
-      new LineRange(new Address({ type: 'last_search_pattern_next' }))
+      new LineRange(new Address({ type: 'last_search_pattern_next' })),
     );
     parseTest(
       'last_search_pattern_prev',
       '\\?',
-      new LineRange(new Address({ type: 'last_search_pattern_prev' }))
+      new LineRange(new Address({ type: 'last_search_pattern_prev' })),
     );
     parseTest(
       'last_substitute_pattern_next',
       '\\&',
-      new LineRange(new Address({ type: 'last_substitute_pattern_next' }))
+      new LineRange(new Address({ type: 'last_substitute_pattern_next' })),
     );
   });
 
@@ -87,7 +86,7 @@ suite('LineRange parsing', () => {
       parseTest(
         'Separator but no second address',
         `5${sep}`,
-        new LineRange(new Address({ type: 'number', num: 5 }), sep)
+        new LineRange(new Address({ type: 'number', num: 5 }), sep),
       );
       parseTest(
         'Separator but no first address',
@@ -95,13 +94,13 @@ suite('LineRange parsing', () => {
         new LineRange(
           new Address({ type: 'current_line' }),
           sep,
-          new Address({ type: 'number', num: 5 })
-        )
+          new Address({ type: 'number', num: 5 }),
+        ),
       );
       parseTest(
         'Separator but no address at all',
         `${sep}`,
-        new LineRange(new Address({ type: 'current_line' }), sep)
+        new LineRange(new Address({ type: 'current_line' }), sep),
       );
       parseTest(
         'Two numbers',
@@ -109,8 +108,8 @@ suite('LineRange parsing', () => {
         new LineRange(
           new Address({ type: 'number', num: 14 }),
           sep,
-          new Address({ type: 'number', num: 23 })
-        )
+          new Address({ type: 'number', num: 23 }),
+        ),
       );
       parseTest(
         'Two numbers (out of order)',
@@ -118,8 +117,8 @@ suite('LineRange parsing', () => {
         new LineRange(
           new Address({ type: 'number', num: 123 }),
           sep,
-          new Address({ type: 'number', num: 6 })
-        )
+          new Address({ type: 'number', num: 6 }),
+        ),
       );
       parseTest(
         'Visual selection using marks',
@@ -127,8 +126,8 @@ suite('LineRange parsing', () => {
         new LineRange(
           new Address({ type: 'mark', mark: '<' }),
           sep,
-          new Address({ type: 'mark', mark: '>' })
-        )
+          new Address({ type: 'mark', mark: '>' }),
+        ),
       );
     });
 
@@ -139,8 +138,8 @@ suite('LineRange parsing', () => {
         new LineRange(
           new Address({ type: 'number', num: 1 }, 5),
           ',',
-          new Address({ type: 'number', num: 4 }, 11)
-        )
+          new Address({ type: 'number', num: 4 }, 11),
+        ),
       );
     });
   }

@@ -14,7 +14,7 @@ function searchForward(
     throughLineBreaks?: boolean;
   } = {
     throughLineBreaks: false,
-  }
+  },
 ): Position | undefined {
   let position = start;
   for (
@@ -41,7 +41,7 @@ function searchBackward(
     throughLineBreaks?: boolean;
   } = {
     throughLineBreaks: false,
-  }
+  },
 ): Position | undefined {
   let position = start;
   for (
@@ -66,13 +66,13 @@ export function maybeGetLeft(
     count = 1,
     throughLineBreaks,
     dontMove,
-  }: { count?: number; throughLineBreaks?: boolean; dontMove?: boolean }
+  }: { count?: number; throughLineBreaks?: boolean; dontMove?: boolean },
 ) {
   return dontMove
     ? position
     : throughLineBreaks
-    ? position.getOffsetThroughLineBreaks(-count)
-    : position.getLeft(count);
+      ? position.getOffsetThroughLineBreaks(-count)
+      : position.getLeft(count);
 }
 export function maybeGetRight(
   position: Position,
@@ -80,13 +80,13 @@ export function maybeGetRight(
     count = 1,
     throughLineBreaks,
     dontMove,
-  }: { count?: number; throughLineBreaks?: boolean; dontMove?: boolean }
+  }: { count?: number; throughLineBreaks?: boolean; dontMove?: boolean },
 ) {
   return dontMove
     ? position
     : throughLineBreaks
-    ? position.getOffsetThroughLineBreaks(count)
-    : position.getRight(count);
+      ? position.getOffsetThroughLineBreaks(count)
+      : position.getRight(count);
 }
 
 export function searchPosition(
@@ -97,7 +97,7 @@ export function searchPosition(
     direction: '>',
     includeCursor: true,
     throughLineBreaks: false,
-  }
+  },
 ): Position | undefined {
   if (flags.direction === '<') {
     start = maybeGetLeft(start, {

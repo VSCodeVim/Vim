@@ -5,7 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, WaitForEditorsToClose } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from './../testUtils';
 
 suite('Basic write-quit', () => {
   let modeHandler: ModeHandler;
@@ -21,7 +21,7 @@ suite('Basic write-quit', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
     await new ExCommandLine('wq', modeHandler.vimState.currentMode).run(modeHandler.vimState);
-    await WaitForEditorsToClose();
+    await waitForEditorsToClose();
 
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Window after 1sec still open');
   });

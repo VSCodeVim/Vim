@@ -1,4 +1,3 @@
-import { Configuration } from '../../test/testConfiguration';
 import { newTest } from '../../test/testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
@@ -97,7 +96,7 @@ suite('bang (!) cmd_line', () => {
 
     test('! can read from both stdout and stderr', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        ':.!echo "stdout" && >&2 echo "stderr"\n'.split('')
+        ':.!echo "stdout" && >&2 echo "stderr"\n'.split(''),
       );
       assertEqualLines(['stdout', 'stderr']);
     });
@@ -114,37 +113,21 @@ suite('custom bang shell', () => {
     return;
   }
 
-  suite('sh', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.shell = '/bin/sh';
-      await setupWorkspace(configuration);
+  for (const shell of ['sh', 'bash']) {
+    suite(shell, () => {
+      setup(async () => {
+        await setupWorkspace({
+          config: { shell: `/bin/${shell}` },
+        });
+      });
+      teardown(cleanUpWorkspace);
+
+      newTest({
+        title: `! supports /bin/${shell}`,
+        start: ['|'],
+        keysPressed: '<Esc>:.!echo $0\n',
+        end: [`|/bin/${shell}`],
+      });
     });
-
-    teardown(cleanUpWorkspace);
-
-    newTest({
-      title: '! supports /bin/sh',
-      start: ['|'],
-      keysPressed: '<Esc>:.!echo $0\n',
-      end: ['|/bin/sh'],
-    });
-  });
-
-  suite('bash', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.shell = '/bin/bash';
-      await setupWorkspace(configuration);
-    });
-
-    teardown(cleanUpWorkspace);
-
-    newTest({
-      title: '! supports /bin/bash',
-      start: ['|'],
-      keysPressed: '<Esc>:.!echo $0\n',
-      end: ['|/bin/bash'],
-    });
-  });
+  }
 });

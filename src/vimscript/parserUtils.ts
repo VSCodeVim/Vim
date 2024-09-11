@@ -1,6 +1,10 @@
-import { alt, any, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { alt, any, noneOf, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
+import { configuration } from '../configuration/configuration';
 
-export const numberParser: Parser<number> = regexp(/\d+/).map((num) => Number.parseInt(num, 10));
+export const numberParser: Parser<number> = regexp(/\d+/)
+  .map((num) => Number.parseInt(num, 10))
+  .desc('a number');
 export const integerParser: Parser<number> = regexp(/-?\d+/).map((num) => Number.parseInt(num, 10));
 
 export const bangParser: Parser<boolean> = string('!')
@@ -20,6 +24,7 @@ export function nameAbbrevParser(abbrev: string, rest: string): Parser<string> {
 // TODO: `:help filename-modifiers`
 export const fileNameParser: Parser<string> = alt<string>(
   string('\\').then(
+    // eslint-disable-next-line id-denylist
     any.fallback(undefined).map((escaped) => {
       if (escaped === undefined || escaped === '\\') {
         return '\\';
@@ -29,9 +34,9 @@ export const fileNameParser: Parser<string> = alt<string>(
         // TODO: anything else that needs escaping?
         return `\\${escaped}`;
       }
-    })
+    }),
   ),
-  regexp(/\S/)
+  regexp(/\S/),
 )
   .atLeast(1)
   .map((chars) => chars.join(''));
@@ -50,10 +55,10 @@ export const fileOptParser: Parser<FileOpt> = string('++')
         alt(string('bin'), string('binary')).result('bin'),
         alt(string('nobin'), string('nobinary')).result('nobin'),
         string('bad'),
-        string('edit')
+        string('edit'),
       ),
-      string('=').then(regexp(/\S+/)).fallback(undefined)
-    )
+      string('=').then(regexp(/\S+/)).fallback(undefined),
+    ),
   )
   .sepBy(whitespace)
   .desc('[++opt]');
@@ -80,8 +85,39 @@ export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
       // TODO: Ex command
       // lazy(() => exCommandParser),
       // Last line
-      succeed({ type: 'last_line' })
-    )
+      succeed({ type: 'last_line' }),
+    ),
   )
   .fallback(undefined)
   .desc('[+cmd]');
+
+// TODO: re-create parser when leader changes
+const leaderParser = regexp(/<leader>/).map(() => configuration.leader); // lazy evaluation of configuration.leader
+const specialCharacters = regexp(/<(?:Esc|C-\w|A-\w|C-A-\w)>/);
+
+const specialCharacterParser = alt(specialCharacters, leaderParser);
+
+// TODO: Add more special characters
+const escapedParser = string('\\')
+  // eslint-disable-next-line id-denylist
+  .then(any.fallback(undefined))
+  .map((escaped) => {
+    if (escaped === undefined) {
+      return '\\\\';
+    } else if (escaped === 'n') {
+      return '\n';
+    }
+    return '\\' + escaped;
+  });
+
+export const keystrokesExpressionParser: Parser<string[]> = alt(
+  escapedParser,
+  specialCharacterParser,
+  noneOf('"'),
+).many();
+
+export const keystrokesExpressionForMacroParser: Parser<string[]> = alt(
+  escapedParser,
+  specialCharacterParser,
+  noneOf('"'),
+).many();

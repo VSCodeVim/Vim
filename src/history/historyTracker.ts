@@ -9,7 +9,7 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-import DiffMatchPatch = require('diff-match-patch');
+import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
 import { VimState } from './../state/vimState';
@@ -189,7 +189,7 @@ class HistoryStep {
         current = DocumentChange.replace(
           first.start,
           first.before + second.before.slice(intersectLength),
-          first.after.slice(0, first.after.length - intersectLength) + second.after
+          first.after.slice(0, first.after.length - intersectLength) + second.after,
         );
       } else {
         merged.push(current);
@@ -448,12 +448,12 @@ export class HistoryTracker {
             if (ch === '\n') {
               newMark.position = new Position(
                 Math.max(newMark.position.line - 1, 0),
-                newMark.position.character
+                newMark.position.character,
               );
             } else if (pos.line === newMark.position.line) {
               newMark.position = new Position(
                 newMark.position.line,
-                Math.max(newMark.position.character - 1, 0)
+                Math.max(newMark.position.character - 1, 0),
               );
             }
           }
@@ -476,12 +476,12 @@ export class HistoryTracker {
             if (ch === '\n') {
               newMark.position = new Position(
                 newMark.position.line + 1,
-                newMark.position.character
+                newMark.position.character,
               );
             } else if (pos.line === newMark.position.line) {
               newMark.position = new Position(
                 newMark.position.line,
-                newMark.position.character + 1
+                newMark.position.character + 1,
               );
             }
           }
@@ -526,20 +526,53 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
-    // Sets previous context mark (adds current position to jump list).
-
     if (markName === "'" || markName === '`') {
-      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+      globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    } else if (markName === '<') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.start = position;
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position,
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.end.isBefore(this.vimState.lastVisualSelection.start)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else if (markName === '>') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.end = position.getRight();
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position.getRight(),
+          end: position.getRight(),
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.start.isAfter(this.vimState.lastVisualSelection.end)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.start = this.vimState.lastVisualSelection.end.getLeft();
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else {
+      const isUppercaseMark = markName.toUpperCase() === markName;
+      const newMark: IMark = {
+        position,
+        name: markName,
+        isUppercaseMark,
+        document: isUppercaseMark ? document : undefined,
+      };
+      this.putMarkInList(newMark);
     }
-
-    const isUppercaseMark = markName.toUpperCase() === markName;
-    const newMark: IMark = {
-      position,
-      name: markName,
-      isUppercaseMark,
-      document: isUppercaseMark ? document : undefined,
-    };
-    this.putMarkInList(newMark);
   }
 
   /**
@@ -610,7 +643,7 @@ export class HistoryTracker {
     this.undoStack.removeMarks(markNames);
 
     HistoryStep.globalMarks = HistoryStep.globalMarks.filter(
-      (mark) => mark.name === '' || !markNames.includes(mark.name)
+      (mark) => mark.name === '' || !markNames.includes(mark.name),
     );
   }
 
@@ -686,7 +719,7 @@ export class HistoryTracker {
         this.undoStack.pushChange(
           added
             ? DocumentChange.insert(currentPosition, text)
-            : DocumentChange.delete(currentPosition, text)
+            : DocumentChange.delete(currentPosition, text),
         );
       }
 
@@ -762,7 +795,9 @@ export class HistoryTracker {
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
       this.vimState,
-      `${changes}; before #${this.undoStack.getCurrentHistoryStepIndex() + 1}  ${step.howLongAgo()}`
+      `${changes}; before #${
+        this.undoStack.getCurrentHistoryStepIndex() + 1
+      }  ${step.howLongAgo()}`,
     );
 
     return step.cursorStart;
@@ -789,7 +824,7 @@ export class HistoryTracker {
     const changes = step.changes.length === 1 ? `1 change` : `${step.changes.length} changes`;
     StatusBar.setText(
       this.vimState,
-      `${changes}; after #${this.undoStack.getCurrentHistoryStepIndex()}  ${step.howLongAgo()}`
+      `${changes}; after #${this.undoStack.getCurrentHistoryStepIndex()}  ${step.howLongAgo()}`,
     );
 
     return step.cursorStart;
@@ -836,7 +871,7 @@ export class HistoryTracker {
           // Modify & replace the change to avoid undoing the newline embedded in the change
           change = DocumentChange.insert(
             new Position(change.start.line + 1, 0),
-            change.after.slice(change.after.lastIndexOf('\n'))
+            change.after.slice(change.after.lastIndexOf('\n')),
           );
           done = true;
         } else if (newlines.length > 0 || change.start.line !== undoLine) {

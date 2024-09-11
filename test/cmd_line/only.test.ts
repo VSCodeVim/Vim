@@ -9,7 +9,7 @@ import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {
     // Insert 1000 lines (ie. beyond veritical viewport)
-    await vscode.window.activeTextEditor!.edit(async (editBuilder) => {
+    await vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), 'Line\n'.repeat(1000));
     });
 
@@ -59,7 +59,7 @@ suite.skip(':only command', () => {
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
-      'Did not reduce to single editor'
+      'Did not reduce to single editor',
     );
     assert.strictEqual(await isPanelVisible(), false, 'Panel is still visible');
   });

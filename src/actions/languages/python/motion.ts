@@ -1,7 +1,7 @@
-import { RegisterAction } from '../../base';
-import { VimState } from '../../../state/vimState';
-import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 import { Position, TextDocument } from 'vscode';
+import { VimState } from '../../../state/vimState';
+import { RegisterAction } from '../../base';
+import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 
 type Type = 'function' | 'class';
 type Edge = 'start' | 'end';
@@ -22,7 +22,6 @@ interface StructureElement {
 // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
 let supportsLookbehind = true;
 try {
-  // tslint:disable-next-line
   new RegExp('(?<=x)');
 } catch {
   supportsLookbehind = false;
@@ -127,7 +126,7 @@ export class PythonDocument {
           // Calculate position of last non-white character)
           end: new Position(
             endLine.line,
-            endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1
+            endLine.text.search(PythonDocument.reLastNonWhiteSpaceCharacter) - 1,
           ),
         });
       }
@@ -181,7 +180,7 @@ export class PythonDocument {
     position: Position,
     vimState: VimState,
     forward: boolean,
-    start: boolean
+    start: boolean,
   ): Position | IMovement {
     const direction = forward ? 'next' : 'prev';
     const edge = start ? 'start' : 'end';
@@ -207,7 +206,7 @@ abstract class BasePythonMovement extends BaseMovement {
 
   public override async execAction(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position | IMovement> {
     const document = vimState.document;
     return (
