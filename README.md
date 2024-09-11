@@ -609,6 +609,7 @@ since 1.20, we internally use special key notation for surround ( `<plugys>`, `<
   Example: `nnoremap ys <plugys>` where you replace `ys` with what fits for your layout.
 ### vim-commentary
 
+
 Similar to [vim-commentary](https://github.com/tpope/vim-commentary), but uses the VS Code native _Toggle Line Comment_ and _Toggle Block Comment_ features.
 
 Usage examples:
