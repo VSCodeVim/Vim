@@ -1,11 +1,7 @@
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('Search (/ and ?)', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: '/ does not affect mark',
     start: ['|one', 'twooo', 'thurr'],

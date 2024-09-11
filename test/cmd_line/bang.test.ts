@@ -1,7 +1,7 @@
 import { newTest } from '../../test/testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 // TODO(#4844): this fails on Windows
 suite('bang (!) cmd_line', () => {
@@ -15,8 +15,6 @@ suite('bang (!) cmd_line', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   suite('parsing', () => {
     test('simple !', async () => {
@@ -120,7 +118,6 @@ suite('custom bang shell', () => {
           config: { shell: `/bin/${shell}` },
         });
       });
-      teardown(cleanUpWorkspace);
 
       newTest({
         title: `! supports /bin/${shell}`,

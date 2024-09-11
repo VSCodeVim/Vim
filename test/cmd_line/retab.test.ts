@@ -6,7 +6,6 @@ import * as testUtils from './../testUtils';
 
 suite(':retab', () => {
   suiteSetup(testUtils.setupWorkspace);
-  suiteTeardown(testUtils.cleanUpWorkspace);
 
   suite('Retab line segments', () => {
     test('replaceSpaces=false', () => {

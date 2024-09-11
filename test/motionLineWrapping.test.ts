@@ -1,9 +1,7 @@
 import { newTest } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  suiteTeardown(cleanUpWorkspace);
-
   suite('whichwrap enabled', () => {
     suiteSetup(async () => {
       await setupWorkspace({

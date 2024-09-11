@@ -2778,6 +2778,8 @@ suite('Mode Normal', () => {
     // TODO: test with untitled file
     // TODO: test [count]<C-g>
 
+    suiteSetup(cleanUpWorkspace);
+
     newTest({
       title: '<C-g> displays info about the file in status bar (line 1 of 3)',
       start: ['o|ne', 'two', 'three'],
