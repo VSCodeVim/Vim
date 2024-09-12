@@ -20,6 +20,7 @@ import {
 
 import { SUPPORT_VIMRC } from 'platform/constants';
 import * as packagejson from '../../package.json';
+import { Mode } from '../mode/mode';
 
 // https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
 type RemoveIndex<T> = {
@@ -464,16 +465,11 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
-    // TODO: this function should take the mode directly
+  getCursorStyleForMode(mode: Mode): vscode.TextEditorCursorStyle | undefined {
     const cursorStyle = (this.cursorStylePerMode as unknown as Record<string, string | undefined>)[
-      modeName.toLowerCase()
+      Mode[mode].toLowerCase()
     ];
-    if (cursorStyle) {
-      return this.cursorStyleFromString(cursorStyle);
-    }
-
-    return;
+    return cursorStyle ? this.cursorStyleFromString(cursorStyle) : undefined;
   }
 
   // remappings

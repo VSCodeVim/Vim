@@ -1,13 +1,9 @@
 import * as assert from 'assert';
 
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { ROT13Operator } from '../../src/actions/operator';
 import { newTest } from '../testSimplifier';
 
 suite('rot13 operator', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   test('rot13() unit test', () => {
     const testCases = [
       ['abcdefghijklmnopqrstuvwxyz', 'nopqrstuvwxyzabcdefghijklm'],

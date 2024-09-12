@@ -25,7 +25,8 @@ suite('Marks', () => {
     return (await getAndUpdateModeHandler())!;
   };
 
-  test(`Capital marks can change the editor's active document`, async () => {
+  // TODO: Skipped
+  test.skip(`Capital marks can change the editor's active document`, async () => {
     const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
     await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 

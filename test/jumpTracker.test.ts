@@ -3,13 +3,12 @@ import * as vscode from 'vscode';
 
 import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 import { Position } from 'vscode';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
   suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({

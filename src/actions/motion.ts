@@ -276,7 +276,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -373,7 +373,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 

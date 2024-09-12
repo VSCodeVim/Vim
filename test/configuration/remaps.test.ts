@@ -2,7 +2,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTestWithRemaps, newTestWithRemapsSkip } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
   let modeHandler: ModeHandler;
@@ -20,8 +20,6 @@ suite('Remaps', () => {
     });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   newTestWithRemaps({
     title: 'Can handle ambiguous remaps on different recursiveness mappings',

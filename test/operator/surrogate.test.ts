@@ -1,10 +1,6 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('surrogate-pair', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'yank single hokke',
     start: ['|𩸽'],
