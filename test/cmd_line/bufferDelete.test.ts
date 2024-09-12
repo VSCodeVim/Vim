@@ -16,8 +16,6 @@ suite('Buffer delete', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  teardown(t.cleanUpWorkspace);
-
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
       await new ExCommandLine(cmd, modeHandler.vimState.currentMode).run(modeHandler.vimState);
@@ -46,7 +44,7 @@ suite('Buffer delete', () => {
   });
 
   test.skip("bd 'N' deletes the Nth buffer open", async () => {
-    const dirPath = await t.createRandomDir();
+    const dirPath = await t.createDir();
     const filePaths: string[] = [];
 
     try {

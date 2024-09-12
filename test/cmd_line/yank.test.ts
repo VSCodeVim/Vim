@@ -1,10 +1,6 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite(':[range]y[ank] [count] command', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: ':yank will yank a single line',
     start: ['|one', 'two', 'three'],

@@ -26,13 +26,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -2777,6 +2777,8 @@ suite('Mode Normal', () => {
   suite('<C-g>', () => {
     // TODO: test with untitled file
     // TODO: test [count]<C-g>
+
+    suiteSetup(cleanUpWorkspace);
 
     newTest({
       title: '<C-g> displays info about the file in status bar (line 1 of 3)',

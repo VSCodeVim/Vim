@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { createFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('cmd_line tab', () => {
   let modeHandler: ModeHandler;
@@ -33,7 +33,7 @@ suite('cmd_line tab', () => {
   });
 
   test('tabe with absolute path when not in workspace opens file', async () => {
-    const filePath = await createRandomFile('', '');
+    const filePath = await createFile();
     await new ExCommandLine(`tabe ${filePath}`, modeHandler.vimState.currentMode).run(
       modeHandler.vimState,
     );
@@ -55,7 +55,7 @@ suite('cmd_line tab', () => {
   });
 
   test('tabe with current file path does nothing', async () => {
-    const filePath = await createRandomFile('', '');
+    const filePath = await createFile();
     await new ExCommandLine(`tabe ${filePath}`, modeHandler.vimState.currentMode).run(
       modeHandler.vimState,
     );

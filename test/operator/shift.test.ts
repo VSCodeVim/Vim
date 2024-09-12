@@ -1,9 +1,8 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('shift operator', () => {
   suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'basic shift left test',

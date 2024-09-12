@@ -1222,7 +1222,20 @@ export class EvaluationContext {
         const [s] = getArgs(1);
         return str(toString(s!).toUpperCase());
       }
-      // TODO: tr()
+      case 'tr': {
+        const [_src, _from, _to] = getArgs(1, 3);
+        const src = toString(_src!);
+        const from = toString(_from!);
+        const to = toString(_to!);
+        if (from.length !== to.length) {
+          throw VimError.fromCode(ErrorCode.InvalidArgument475, from);
+        }
+        const charMap = new Map<string, string>();
+        for (let i = 0; i < from.length; i++) {
+          charMap.set(from[i], to[i]);
+        }
+        return str([...src].map((c) => charMap.get(c) ?? c).join(''));
+      }
       case 'trim': {
         const [_s, mask, _dir] = getArgs(1, 3);
         // TODO: use mask
