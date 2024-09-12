@@ -279,7 +279,7 @@ class FilterOperator extends BaseOperator {
     if (vimState.currentMode === Mode.Normal) {
       vimState.cursorStopPosition = start;
     } else {
-      vimState.cursors = vimState.cursorsInitialState;
+      vimState.cursors = [...vimState.cursorsInitialState];
     }
 
     const previousMode = vimState.currentMode;

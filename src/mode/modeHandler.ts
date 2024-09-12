@@ -1284,7 +1284,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     this.vimState.cursorsInitialState = this.vimState.cursors;
   }
 
-  public updateSearchHighlights(showHighlights: boolean) {
+  private updateSearchHighlights(showHighlights: boolean) {
     const cacheKey = this.searchDecorationCacheKey;
     this.searchDecorationCacheKey = undefined;
 
