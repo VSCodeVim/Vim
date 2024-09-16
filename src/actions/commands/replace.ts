@@ -2,7 +2,7 @@ import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class ExitReplaceMode extends BaseCommand {
@@ -88,6 +88,16 @@ class BackspaceInReplaceMode extends BaseCommand {
         });
       }
     }
+  }
+}
+
+@RegisterAction
+class DeleteInReplaceMode extends BaseCommand {
+  modes = [Mode.Replace];
+  keys = ['<Del>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.vscodeCommand('deleteRight');
   }
 }
 

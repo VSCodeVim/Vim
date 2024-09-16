@@ -1,19 +1,16 @@
 import { Mode } from '../src/mode/mode';
 import { newTest, newTestWithRemaps } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import * as testConfiguration from './testConfiguration';
+import { setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
   setup(async () => {
-    const configuration = new testConfiguration.Configuration();
-
-    // for testing with <leader>
-    configuration.camelCaseMotion.enable = true;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        // for testing with <leader>
+        camelCaseMotion: { enable: true },
+      },
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can record and execute',
@@ -126,6 +123,16 @@ suite('Record and execute a macro', () => {
       start: ['|one', 'two'],
       keysPressed: ':.co$\n' + '@:',
       end: ['one', 'two', '|one', 'one'], // TODO: Cursor should be on line 3, not 4
+    });
+  });
+
+  suite('`:` (command) register used as macro and command with leader key', () => {
+    newTest({
+      title: 'Repeat :s and command with leader key',
+      config: { leader: 'o' },
+      start: ['|old', 'old', 'old'],
+      keysPressed: ':s/old/new\nj@:j@@',
+      end: ['new', 'new', '|new'],
     });
   });
 

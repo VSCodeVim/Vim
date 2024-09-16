@@ -1,11 +1,10 @@
 import { newTest } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('sentence motion', () => {
   suiteSetup(async () => {
-    await setupWorkspace(undefined, '.js');
+    await setupWorkspace({ fileExtension: '.js' });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('[count] sentences backward', () => {
     newTest({

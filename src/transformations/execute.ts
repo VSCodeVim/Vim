@@ -13,7 +13,7 @@ import { Logger } from '../util/logger';
 import {
   keystrokesExpressionForMacroParser,
   keystrokesExpressionParser,
-} from '../vimscript/expression';
+} from '../vimscript/parserUtils';
 import {
   Dot,
   ExecuteNormalTransformation,
@@ -29,8 +29,9 @@ import { Transformer } from './transformer';
 
 export interface IModeHandler {
   vimState: VimState;
+  lastMovementFailed: boolean;
 
-  updateView(args?: { drawSelection: boolean; revealRange: boolean }): Promise<void>;
+  updateView(args?: { drawSelection: boolean; revealRange: boolean }): void;
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
   handleKeyEvent(key: string): Promise<void>;
@@ -181,10 +182,10 @@ export async function executeTransformations(
           globalState.lastInvokedMacro = vimState.recordedState;
           vimState.isReplayingMacro = false;
 
-          if (vimState.lastMovementFailed) {
+          if (modeHandler.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
             // Besides, we should reset `lastMovementFailed`.
-            vimState.lastMovementFailed = false;
+            modeHandler.lastMovementFailed = false;
             return;
           }
         } else {
@@ -220,10 +221,10 @@ export async function executeTransformations(
           globalState.lastInvokedMacro = recordedMacro;
           vimState.isReplayingMacro = false;
 
-          if (vimState.lastMovementFailed) {
+          if (modeHandler.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
             // Besides, we should reset `lastMovementFailed`.
-            vimState.lastMovementFailed = false;
+            modeHandler.lastMovementFailed = false;
             return;
           }
         }

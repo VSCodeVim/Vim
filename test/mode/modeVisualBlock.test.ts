@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 import { newTest } from '../testSimplifier';
 
 suite('VisualBlock mode', () => {
@@ -15,16 +15,14 @@ suite('VisualBlock mode', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  teardown(cleanUpWorkspace);
-
   test('can be activated', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     await modeHandler.handleKeyEvent('<C-v>');
-    assert.strictEqual(modeHandler.currentMode, Mode.VisualBlock);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
 
     await modeHandler.handleKeyEvent('<C-v>');
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -242,7 +240,7 @@ suite('VisualBlock mode', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', '<C-v>', 'e', 'j', 'j', '<C-c>']);
 
       // ensuring we're back in normal
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
       // test copy by pasting back
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
