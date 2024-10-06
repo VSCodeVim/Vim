@@ -54,7 +54,11 @@ class EasyMotionTwoCharTilCharacterForwardCommand extends EasyMotionCharMoveComm
 
   constructor() {
     super(
-      new SearchByCharCommand({ charCount: 2, searchDirection: 'forward', labelPosition: 'before' })
+      new SearchByCharCommand({
+        charCount: 2,
+        searchDirection: 'forward',
+        labelPosition: 'before',
+      }),
     );
   }
 }
@@ -76,7 +80,11 @@ class EasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveCommandBase 
 
   constructor() {
     super(
-      new SearchByCharCommand({ charCount: 2, searchDirection: 'backward', labelPosition: 'after' })
+      new SearchByCharCommand({
+        charCount: 2,
+        searchDirection: 'backward',
+        labelPosition: 'after',
+      }),
     );
   }
 }
@@ -114,7 +122,11 @@ class EasyMotionTilCharacterForwardCommand extends EasyMotionCharMoveCommandBase
 
   constructor() {
     super(
-      new SearchByCharCommand({ charCount: 1, searchDirection: 'forward', labelPosition: 'before' })
+      new SearchByCharCommand({
+        charCount: 1,
+        searchDirection: 'forward',
+        labelPosition: 'before',
+      }),
     );
   }
 }
@@ -136,7 +148,11 @@ class EasyMotionTilBackwardCommand extends EasyMotionCharMoveCommandBase {
 
   constructor() {
     super(
-      new SearchByCharCommand({ charCount: 1, searchDirection: 'backward', labelPosition: 'after' })
+      new SearchByCharCommand({
+        charCount: 1,
+        searchDirection: 'backward',
+        labelPosition: 'after',
+      }),
     );
   }
 }
