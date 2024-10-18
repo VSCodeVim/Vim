@@ -27,6 +27,10 @@ export class HistoryFile {
     this.base.clear();
   }
 
+  public filter(predicate: (value: string) => boolean) {
+    this.base.filter(predicate);
+  }
+
   public async load(): Promise<void> {
     await this.base.load();
   }
@@ -41,5 +45,11 @@ export class SearchHistory extends HistoryFile {
 export class CommandLineHistory extends HistoryFile {
   constructor(context: ExtensionContext) {
     super(context, '.cmdline_history');
+  }
+}
+
+export class MarkHistory extends HistoryFile {
+  constructor(context: ExtensionContext) {
+    super(context, '.mark_history');
   }
 }
