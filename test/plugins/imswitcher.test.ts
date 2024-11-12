@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
 import { Mode } from '../../src/mode/mode';
-import { Configuration } from '../testConfiguration';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Input method plugin', () => {
   let savedCmd = '';
@@ -30,15 +29,17 @@ suite('Input method plugin', () => {
   };
 
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.autoSwitchInputMethod.enable = true;
-    configuration.autoSwitchInputMethod.defaultIM = 'default';
-    configuration.autoSwitchInputMethod.obtainIMCmd = 'im-select';
-    configuration.autoSwitchInputMethod.switchIMCmd = 'im-select {im}';
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        autoSwitchInputMethod: {
+          enable: true,
+          defaultIM: 'default',
+          obtainIMCmd: 'im-select',
+          switchIMCmd: 'im-select {im}',
+        },
+      },
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   test('use default im in insert mode', async () => {
     savedCmd = '';

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from './../testUtils';
+import { setupWorkspace, waitForEditorsToClose } from './../testUtils';
 
 suite('Vertical split', () => {
   let modeHandler: ModeHandler;
@@ -13,8 +13,6 @@ suite('Vertical split', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   for (const cmd of ['vs', 'vsp', 'vsplit', 'vnew', 'vne']) {
     test(`:${cmd} creates a second split`, async () => {

@@ -4,12 +4,12 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from '../testUtils';
 
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {
     // Insert 1000 lines (ie. beyond veritical viewport)
-    await vscode.window.activeTextEditor!.edit(async (editBuilder) => {
+    await vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), 'Line\n'.repeat(1000));
     });
 
@@ -32,8 +32,7 @@ const withinIsolatedEditor = async (lambda: () => Thenable<unknown>) => {
 const getNumberOfVisibleLines = async () =>
   vscode.window.activeTextEditor!.visibleRanges[0].end.line;
 
-// TODO: Skipped!
-suite.skip(':only command', () => {
+suite(':only command', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -46,6 +45,7 @@ suite.skip(':only command', () => {
   test('Run :only', async () => {
     // Ensure we have multiple editors in a split
     await vscode.commands.executeCommand('workbench.action.splitEditorRight');
+    await waitForEditorsToClose(2);
     assert.strictEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split into 2');
 
     // Ensure panel is visible

@@ -2,7 +2,7 @@ import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 
 // eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq } from 'parsimmon';
+import { Parser, alt, any, optWhitespace, seq, string } from 'parsimmon';
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
 import { ErrorCode, VimError } from '../../error';
@@ -11,12 +11,14 @@ import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
 import { bangParser } from '../../vimscript/parserUtils';
-import { expressionParser } from '../expression';
+import { Expression } from '../../vimscript/expression/types';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
 
 export interface IPutCommandArguments {
   bang: boolean;
   register?: string;
-  fromExpression?: string;
+  fromExpression?: Expression;
 }
 
 //
@@ -27,14 +29,19 @@ export interface IPutCommandArguments {
 export class PutExCommand extends ExCommand {
   public static readonly argParser: Parser<PutExCommand> = seq(
     bangParser,
-    alt(
-      expressionParser,
-      optWhitespace
-        .then(any)
-        .map((x) => ({ register: x }))
-        .fallback({ register: undefined }),
+    optWhitespace.then(
+      alt<Partial<IPutCommandArguments>>(
+        string('=')
+          .then(optWhitespace)
+          .then(expressionParser)
+          .map((expression) => ({ fromExpression: expression })),
+        // eslint-disable-next-line id-denylist
+        any.map((register) => ({ register })).fallback({ register: undefined }),
+      ),
     ),
   ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
+
+  private static lastExpression: Expression | undefined;
 
   public readonly arguments: IPutCommandArguments;
 
@@ -48,14 +55,22 @@ export class PutExCommand extends ExCommand {
   }
 
   async doPut(vimState: VimState, position: Position): Promise<void> {
-    if (this.arguments.fromExpression && this.arguments.register) {
-      // set the register to the value of the expression
-      Register.overwriteRegister(
-        vimState,
-        this.arguments.register,
-        this.arguments.fromExpression,
-        0,
-      );
+    if (this.arguments.register === '=' && this.arguments.fromExpression === undefined) {
+      if (PutExCommand.lastExpression === undefined) {
+        return;
+      }
+      this.arguments.fromExpression = PutExCommand.lastExpression;
+    }
+
+    if (this.arguments.fromExpression) {
+      PutExCommand.lastExpression = this.arguments.fromExpression;
+
+      this.arguments.register = '=';
+
+      const value = new EvaluationContext().evaluate(this.arguments.fromExpression);
+      const stringified =
+        value.type === 'list' ? value.items.map(toString).join('\n') : toString(value);
+      Register.overwriteRegister(vimState, this.arguments.register, stringified, 0);
     }
 
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');

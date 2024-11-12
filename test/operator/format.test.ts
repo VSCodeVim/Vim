@@ -1,11 +1,10 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('format operator', () => {
   suiteSetup(async () => {
-    await setupWorkspace(undefined, '.ts');
+    await setupWorkspace({ fileExtension: '.ts' });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: '== formats current line',

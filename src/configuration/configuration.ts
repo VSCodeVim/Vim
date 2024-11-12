@@ -20,6 +20,7 @@ import {
 
 import { SUPPORT_VIMRC } from 'platform/constants';
 import * as packagejson from '../../package.json';
+import { Mode } from '../mode/mode';
 
 // https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054
 type RemoveIndex<T> = {
@@ -110,6 +111,11 @@ class Configuration implements IConfiguration {
     'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
   };
 
+  private loadListeners: Array<() => void> = [];
+  public addLoadListener(listener: () => void): void {
+    this.loadListeners.push(listener);
+  }
+
   public async load(): Promise<ValidatorResults> {
     const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
@@ -193,6 +199,10 @@ class Configuration implements IConfiguration {
 
     void VSCodeContext.set('vim.overrideCopy', this.overrideCopy);
     void VSCodeContext.set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
+
+    // workaround for circular dependency that would
+    // prevent packaging if we simply called `updateLangmap(configuration.langmap);`
+    this.loadListeners.forEach((listener) => listener());
 
     return validatorResults;
   }
@@ -451,16 +461,11 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
-    // TODO: this function should take the mode directly
+  getCursorStyleForMode(mode: Mode): vscode.TextEditorCursorStyle | undefined {
     const cursorStyle = (this.cursorStylePerMode as unknown as Record<string, string | undefined>)[
-      modeName.toLowerCase()
+      Mode[mode].toLowerCase()
     ];
-    if (cursorStyle) {
-      return this.cursorStyleFromString(cursorStyle);
-    }
-
-    return;
+    return cursorStyle ? this.cursorStyleFromString(cursorStyle) : undefined;
   }
 
   // remappings
@@ -480,6 +485,11 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
+
+  // langmap
+  langmapBindingsMap: Map<string, string> = new Map();
+  langmapReverseBindingsMap: Map<string, string> = new Map();
+  langmap = '';
 
   get textwidth(): number {
     const textwidth = this.getConfiguration('vim').get('textwidth', 80);

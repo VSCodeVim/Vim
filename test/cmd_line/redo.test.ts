@@ -1,7 +1,7 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Redo command', () => {
   let modeHandler: ModeHandler;
@@ -10,8 +10,6 @@ suite('Redo command', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('redoes last undoed action after insert mode', async () => {
     await modeHandler.handleMultipleKeyEvents(['I', 'a', '<Esc>']);
