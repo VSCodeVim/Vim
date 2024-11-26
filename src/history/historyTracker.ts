@@ -615,28 +615,12 @@ export class HistoryTracker {
     const previousIndex = marks.findIndex((existingMark) => existingMark.name === mark.name);
     if (previousIndex !== -1) {
       marks[previousIndex] = mark;
-      if (mark.isUppercaseMark) {
-        // remove old entry from history by finding a mark with the same name before adding this mark
-        HistoryStep.markHistory.filter((value) => (JSON.parse(value) as IMark).name !== mark.name);
-      } else {
-        // remove marks which with this name which belong to this document
-        HistoryStep.markHistory.filter((value) => {
-          const parsed: IMark = JSON.parse(value) as IMark;
-          return !(parsed.name === mark.name && parsed.document?.uri.path === document.uri.path);
-        });
-      }
+      HistoryStep.markHistory.removeMark(mark, document);
     } else {
       marks.push(mark);
     }
 
-    // add the entry to the history to persist it over sessions
-    if (mark.isUppercaseMark) {
-      void HistoryStep.markHistory.add(JSON.stringify(mark));
-    } else {
-      // local marks do not store the path, but we still need to include it in the
-      // history file so we know which file it belongs to
-      void HistoryStep.markHistory.add(JSON.stringify({ ...mark, document }));
-    }
+    HistoryStep.markHistory.addMark(mark, document);
   }
 
   /**

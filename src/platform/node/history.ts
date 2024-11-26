@@ -63,7 +63,7 @@ export class HistoryBase {
   }
 
   // filter history based on predicate
-  public filter(predicate: (value: string) => boolean) {
+  public remove(predicate: (value: string) => boolean) {
     this.history = this.history.filter(predicate);
   }
 
