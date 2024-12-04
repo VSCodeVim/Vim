@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.28.1",
+  "version": "1.29.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
