@@ -1237,7 +1237,7 @@
     "typescript": "5.7.2",
     "vsce": "2.15.0",
     "webpack": "5.97.1",
-    "webpack-cli": "5.1.4",
+    "webpack-cli": "6.0.0",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
   },
