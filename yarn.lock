@@ -622,20 +622,20 @@
     "@webassemblyjs/ast" "1.14.1"
     "@xtuc/long" "4.2.2"
 
-"@webpack-cli/configtest@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@webpack-cli/configtest/-/configtest-3.0.0.tgz#40a18b301e255ca8b90338cb82bbf8b506ee54b1"
-  integrity sha512-3byRXqOvwm/zGM0OhSbq15aJeX5ZUSe0RS7gfzH9wtX9UX6foShghZKxNOq+oJ59s5dsZrvBk4WHLfSnaBJJWw==
+"@webpack-cli/configtest@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/configtest/-/configtest-3.0.1.tgz#76ac285b9658fa642ce238c276264589aa2b6b57"
+  integrity sha512-u8d0pJ5YFgneF/GuvEiDA61Tf1VDomHHYMjv/wc9XzYj7nopltpG96nXN5dJRstxZhcNpV1g+nT6CydO7pHbjA==
 
-"@webpack-cli/info@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@webpack-cli/info/-/info-3.0.0.tgz#dc5988534df290b72aed12ae25cf06df02e496cc"
-  integrity sha512-HIuVImc5NGeL3NKz5i0GkqfSJ1XsNH4YlpTb1O+TXYUdzTL6ZAZFL9zoVKXxcmSW+HBKkmkUsLWwlyLcFTrArw==
+"@webpack-cli/info@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/info/-/info-3.0.1.tgz#3cff37fabb7d4ecaab6a8a4757d3826cf5888c63"
+  integrity sha512-coEmDzc2u/ffMvuW9aCjoRzNSPDl/XLuhPdlFRpT9tZHmJ/039az33CE7uH+8s0uL1j5ZNtfdv0HkfaKRBGJsQ==
 
-"@webpack-cli/serve@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@webpack-cli/serve/-/serve-3.0.0.tgz#ce7a5daa6941c77929191a58e630326ff803bb14"
-  integrity sha512-oX0XqXHb0IgD2jfzxM5sOGuwFTrLpOpfyPT0t4QIXHS69eRRliyuKzbavXgDnOENIs9BxbNnAaDFhTpAEPEChQ==
+"@webpack-cli/serve@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/serve/-/serve-3.0.1.tgz#bd8b1f824d57e30faa19eb78e4c0951056f72f00"
+  integrity sha512-sbgw03xQaCLiT6gcY/6u3qBDn01CWw/nbaXl3gTdTFuJJ75Gffv3E3DBpgvY2fkkrdS1fpjaXNOmJlnbtKauKg==
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
@@ -5584,15 +5584,15 @@ watchpack@^2.4.1:
     glob-to-regexp "^0.4.1"
     graceful-fs "^4.1.2"
 
-webpack-cli@6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-6.0.0.tgz#d5df04d0605e9f4adacf1969d88c38df2fc3c3ab"
-  integrity sha512-4MxiCcVjpl5h88mdrzz+ZQRHiT0JmwImP6Ss3xz0LkPYFR61qxuVx7/IPnwhUyRvXen4v/aLXlJONYmfhgVG7A==
+webpack-cli@6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-6.0.1.tgz#a1ce25da5ba077151afd73adfa12e208e5089207"
+  integrity sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw==
   dependencies:
     "@discoveryjs/json-ext" "^0.6.1"
-    "@webpack-cli/configtest" "^3.0.0"
-    "@webpack-cli/info" "^3.0.0"
-    "@webpack-cli/serve" "^3.0.0"
+    "@webpack-cli/configtest" "^3.0.1"
+    "@webpack-cli/info" "^3.0.1"
+    "@webpack-cli/serve" "^3.0.1"
     colorette "^2.0.14"
     commander "^12.1.0"
     cross-spawn "^7.0.3"
