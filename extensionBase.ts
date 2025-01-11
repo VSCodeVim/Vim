@@ -51,7 +51,7 @@ export async function getAndUpdateModeHandler(
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
-    await curHandler.updateView({ drawSelection: false, revealRange: false });
+    curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
   previousActiveEditorUri = activeTextEditor.document.uri;
@@ -321,7 +321,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (mh.currentMode === Mode.EasyMotionMode) {
+      if (mh.vimState.currentMode === Mode.EasyMotionMode) {
         return;
       }
 
@@ -607,7 +607,7 @@ export function registerCommand(
 export function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
-  listener: (e: T) => void,
+  listener: (e: T) => Promise<void>,
   exitOnExtensionDisable = true,
   exitOnTests = false,
 ) {
@@ -620,7 +620,7 @@ export function registerEventListener<T>(
       return;
     }
 
-    listener(e);
+    await listener(e);
   });
   context.subscriptions.push(disposable);
 }

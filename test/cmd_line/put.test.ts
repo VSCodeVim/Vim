@@ -1,6 +1,6 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 import * as assert from 'assert';
 import { Register, RegisterMode } from '../../src/register/register';
 
@@ -11,8 +11,6 @@ suite('put cmd_line', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('put in empty file', async () => {
     Register.put(modeHandler.vimState, 'abc');

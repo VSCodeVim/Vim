@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
 import { Mode } from '../../src/mode/mode';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Input method plugin', () => {
   let savedCmd = '';
@@ -40,8 +40,6 @@ suite('Input method plugin', () => {
       },
     });
   });
-
-  teardown(cleanUpWorkspace);
 
   test('use default im in insert mode', async () => {
     savedCmd = '';
