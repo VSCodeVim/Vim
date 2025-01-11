@@ -3,7 +3,7 @@ import { Position, window } from 'vscode';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/textobject/paragraph';
 import { WordType } from '../src/textobject/word';
 import { TextEditor } from './../src/textEditor';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('basic motion', () => {
   const text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];
@@ -14,7 +14,6 @@ suite('basic motion', () => {
       editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   test('char right: should move one column right', () => {
     const position = new Position(0, 0);
@@ -153,7 +152,6 @@ suite('word motion', () => {
       editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
     test('move to word right', () => {
@@ -397,7 +395,6 @@ suite('unicode word motion', () => {
       editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('word right', () => {
     test('move cursor word right stops at different kind of character (ideograph -> hiragana)', () => {
@@ -502,7 +499,6 @@ suite('sentence motion', () => {
       editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('sentence forward', () => {
     test('next concrete sentence', () => {
@@ -616,7 +612,6 @@ suite('paragraph motion', () => {
       editBuilder.insert(new Position(0, 0), text.join('\n'));
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('paragraph down', () => {
     test('move down normally', () => {

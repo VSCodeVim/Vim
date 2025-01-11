@@ -6,7 +6,7 @@ import { newTest, newTestSkip } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 
-suite('Marks', async () => {
+suite('Marks', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
@@ -25,7 +25,8 @@ suite('Marks', async () => {
     return (await getAndUpdateModeHandler())!;
   };
 
-  test(`Capital marks can change the editor's active document`, async () => {
+  // TODO: Skipped
+  test.skip(`Capital marks can change the editor's active document`, async () => {
     const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
     await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 

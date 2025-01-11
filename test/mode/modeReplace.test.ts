@@ -1,11 +1,7 @@
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Replace', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'Can activate with <Insert> from Insert mode',
     start: ['|'],

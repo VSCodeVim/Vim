@@ -1,4 +1,4 @@
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 import { newTest } from '../testSimplifier';
 import {
   CommandSurroundAddSurroundingFunction,
@@ -14,7 +14,6 @@ suite('surround plugin', () => {
       fileExtension: '.js',
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "'ysiw)' surrounds word without space",
