@@ -1229,7 +1229,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
-    "mocha": "11.0.1",
+    "mocha": "11.1.0",
     "plugin-error": "2.0.1",
     "prettier": "3.4.2",
     "sinon": "19.0.2",
