@@ -1206,7 +1206,7 @@
     "@types/glob": "8.1.0",
     "@types/lodash": "4.17.15",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.13.2",
+    "@types/node": "22.13.4",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.3",
     "@types/vscode": "1.74.0",
@@ -1236,7 +1236,7 @@
     "ts-loader": "9.5.2",
     "typescript": "5.7.3",
     "vsce": "2.15.0",
-    "webpack": "5.97.1",
+    "webpack": "5.98.0",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
