@@ -33,6 +33,7 @@ export class PairMatcher {
     '"': { match: '"', isNextMatchForward: false, directionless: true },
     "'": { match: "'", isNextMatchForward: false, directionless: true },
     '`': { match: '`', isNextMatchForward: false, directionless: true },
+    $: { match: '$', isNextMatchForward: false, directionless: true },
   };
 
   private static findPairedChar(

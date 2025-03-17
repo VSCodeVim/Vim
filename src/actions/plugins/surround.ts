@@ -11,6 +11,7 @@ import {
   MoveAroundBacktick,
   MoveAroundCaret,
   MoveAroundCurlyBrace,
+  MoveAroundDollarSign,
   MoveAroundDoubleQuotes,
   MoveAroundParentheses,
   MoveAroundSingleQuotes,
@@ -498,6 +499,12 @@ class SurroundHelper {
       right: '`',
       removeSpace: false,
       movement: () => new MoveAroundBacktick(false),
+    },
+    $: {
+      left: '$',
+      right: '$',
+      removeSpace: true,
+      movement: () => new MoveAroundDollarSign(false),
     },
     '<': { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
     '*': {
