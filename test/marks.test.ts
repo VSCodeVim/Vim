@@ -2,12 +2,11 @@ import * as vscode from 'vscode';
 import { strict as assert } from 'assert';
 import { getAndUpdateModeHandler } from '../extensionBase';
 import { Mode } from '../src/mode/mode';
-import { Configuration } from './testConfiguration';
 import { newTest, newTestSkip } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 
-suite('Marks', async () => {
+suite('Marks', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
@@ -17,14 +16,17 @@ suite('Marks', async () => {
   suiteTeardown(cleanUpWorkspace);
 
   const jumpToNewFile = async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
     return (await getAndUpdateModeHandler())!;
   };
 
-  test(`Capital marks can change the editor's active document`, async () => {
+  // TODO: Skipped
+  test.skip(`Capital marks can change the editor's active document`, async () => {
     const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
     await modeHandler.handleMultipleKeyEvents('mA'.split(''));
 

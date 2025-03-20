@@ -1,11 +1,7 @@
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 
 suite('Mode Replace', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'Can activate with <Insert> from Insert mode',
     start: ['|'],
@@ -155,6 +151,14 @@ suite('Mode Replace', () => {
     start: ['123|456', '123456'],
     keysPressed: 'Rabc\ndef<Esc>j0.',
     end: ['123abc', 'def', 'abc', 'de|f'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Delete in replace mode',
+    start: ['|123456'],
+    keysPressed: 'Rabc<Del><Esc>',
+    end: ['ab|c56'],
     endMode: Mode.Normal,
   });
 });

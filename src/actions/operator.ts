@@ -127,6 +127,23 @@ export class DeleteOperator extends BaseOperator {
       end = new Position(end.line + 1, 0);
     }
 
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(end.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      end.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(end.character)) &&
+      isHighSurrogate(eLine.charCodeAt(end.character - 1))
+    ) {
+      end = end.getRight();
+    }
+
     // Yank the text
     let text = vimState.document.getText(new vscode.Range(start, end));
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
@@ -262,7 +279,7 @@ class FilterOperator extends BaseOperator {
     if (vimState.currentMode === Mode.Normal) {
       vimState.cursorStopPosition = start;
     } else {
-      vimState.cursors = vimState.cursorsInitialState;
+      vimState.cursors = [...vimState.cursorsInitialState];
     }
 
     const previousMode = vimState.currentMode;

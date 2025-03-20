@@ -113,8 +113,7 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     if (vimState.macro) {
-      const macroText = 'Recording @' + vimState.macro.registerName;
-      text.push(macroText);
+      text.push('recording @' + vimState.macro.registerKey);
     }
 
     StatusBar.setText(vimState, text.join(' '));

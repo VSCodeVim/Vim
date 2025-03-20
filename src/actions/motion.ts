@@ -276,7 +276,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -373,7 +373,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -564,7 +564,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 
 @RegisterAction
 class MarkMovementBOL extends BaseMovement {
-  keys = ["'", '<character>'];
+  keys = ["'", '<register>'];
   override isJump = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -591,7 +591,7 @@ class MarkMovementBOL extends BaseMovement {
 
 @RegisterAction
 class MarkMovement extends BaseMovement {
-  keys = ['`', '<character>'];
+  keys = ['`', '<register>'];
   override isJump = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -689,11 +689,20 @@ class MoveLeft extends BaseMovement {
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
-      const newPosition = p.getLeft();
-      if (newPosition.character === 0) {
-        return newPosition;
+
+      if (p.character === 0) {
+        return p;
       }
       if (
+        isLowSurrogate(line.charCodeAt(p.character)) &&
+        isHighSurrogate(line.charCodeAt(p.character - 1))
+      ) {
+        p = p.getLeft();
+      }
+
+      const newPosition = p.getLeft();
+      if (
+        newPosition.character > 0 &&
         isLowSurrogate(line.charCodeAt(newPosition.character)) &&
         isHighSurrogate(line.charCodeAt(newPosition.character - 1))
       ) {

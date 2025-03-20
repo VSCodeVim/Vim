@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.27.3",
+  "version": "1.29.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -1219,6 +1219,10 @@
           "type": "string",
           "description": "Path to the shell to use for `!` and `:!` commands.",
           "default": ""
+        },
+        "vim.langmap": {
+          "type": "string",
+          "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted derectly. Otherwise, they are translated based on the provided map."
         }
       }
     },
@@ -1257,7 +1261,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.21",
-    "neovim": "5.1.0",
+    "neovim": "5.3.0",
     "os-browserify": "0.3.0",
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
@@ -1267,14 +1271,14 @@
     "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "5.2.1",
+    "@types/diff": "5.2.3",
     "@types/diff-match-patch": "1.0.36",
     "@types/glob": "8.1.0",
-    "@types/lodash": "4.17.7",
-    "@types/mocha": "10.0.7",
-    "@types/node": "20.14.15",
+    "@types/lodash": "4.17.16",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.13.10",
     "@types/parsimmon": "1.10.9",
-    "@types/sinon": "17.0.3",
+    "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -1282,7 +1286,7 @@
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-jsdoc": "^50.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
@@ -1295,15 +1299,15 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
-    "mocha": "10.7.3",
+    "mocha": "11.1.0",
     "plugin-error": "2.0.1",
-    "prettier": "3.3.3",
-    "sinon": "18.0.0",
-    "ts-loader": "9.5.1",
-    "typescript": "5.5.4",
+    "prettier": "3.5.3",
+    "sinon": "19.0.4",
+    "ts-loader": "9.5.2",
+    "typescript": "5.8.2",
     "vsce": "2.15.0",
-    "webpack": "5.93.0",
-    "webpack-cli": "5.1.4",
+    "webpack": "5.98.0",
+    "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
   },
