@@ -12,6 +12,7 @@ import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
+import { Clipboard } from '../../src/util/clipboard';
 
 export abstract class BaseOperator extends BaseAction {
   override actionType = 'operator' as const;
@@ -252,6 +253,8 @@ export class YankOperator extends BaseOperator {
         : start;
 
     await vimState.setCurrentMode(Mode.Normal);
+
+    await Clipboard.Copy(text);
 
     const numLinesYanked = text.split('\n').length;
     reportLinesYanked(numLinesYanked, vimState);
