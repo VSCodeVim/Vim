@@ -4783,10 +4783,10 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-sinon@19.0.4:
-  version "19.0.4"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-19.0.4.tgz#6cab2dc7165a2bb53fd0a1b4131a60ca68262825"
-  integrity sha512-myidFob7fjmYHJb+CHNLtAYScxn3sngGq4t75L2rCGGpE/k4OQVkN3KE5FsN+XkO2+fcDZ65PGvq3KHrlLAm7g==
+sinon@19.0.5:
+  version "19.0.5"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-19.0.5.tgz#64fd2f84786a043f721246c40b36bef4c4b76b3c"
+  integrity sha512-r15s9/s+ub/d4bxNXqIUmwp6imVSdTorIRaxoecYjqTVLZ8RuoXr/4EDGwIBo6Waxn7f2gnURX9zuhAfCwaF6Q==
   dependencies:
     "@sinonjs/commons" "^3.0.1"
     "@sinonjs/fake-timers" "^13.0.5"
