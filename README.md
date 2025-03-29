@@ -877,3 +877,4 @@ This project is maintained by a group of awesome [people](https://github.com/VSC
 - Thanks to @sectioneight for implementing text objects!
 - Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
 - Shoutout to @chillee aka Horace He for his contributions and hard work.
+## > ✅ Updated docs with improved formatting or extra info.
