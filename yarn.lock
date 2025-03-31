@@ -2230,10 +2230,10 @@ foreground-child@^3.1.0:
     cross-spawn "^7.0.0"
     signal-exit "^4.0.1"
 
-fork-ts-checker-webpack-plugin@9.0.2:
-  version "9.0.2"
-  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-9.0.2.tgz#c12c590957837eb02b02916902dcf3e675fd2b1e"
-  integrity sha512-Uochze2R8peoN1XqlSi/rGUkDQpRogtLFocP9+PGu68zk1BDAKXfdeCdyVZpgTk8V8WFVQXdEz426VKjXLO1Gg==
+fork-ts-checker-webpack-plugin@9.0.3:
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-9.0.3.tgz#39e2d823f55a83763f3f67533e58d9b75f191f69"
+  integrity sha512-zUE6ABwfybBbSH5TIsdAFiR2kfy0nm2yT0DEtujNM4vHbKhbrIsfoC5cPfJa4vqlmcSBPxqIED+EWVPWEw1hTw==
   dependencies:
     "@babel/code-frame" "^7.16.7"
     chalk "^4.1.2"
