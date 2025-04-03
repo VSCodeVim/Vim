@@ -562,10 +562,15 @@ class CommandPreviousSearchMatch extends BaseMovement {
   }
 }
 
-@RegisterAction
-class MarkMovementBOL extends BaseMovement {
-  keys = ["'", '<register>'];
+export abstract class BaseMarkMovement extends BaseMovement {
   override isJump = true;
+  protected registerMode?: RegisterMode;
+
+  private isCurrentDocument(document: vscode.TextDocument): boolean {
+    return document === vscode.window.activeTextEditor?.document;
+  }
+
+  protected abstract getNewPosition(document: vscode.TextDocument, position: Position): Position;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
@@ -575,42 +580,64 @@ class MarkMovementBOL extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
+    if (
+      mark.isUppercaseMark &&
+      vimState.recordedState.operator &&
+      mark.document !== vimState.document
+    ) {
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
+    if (this.registerMode) {
+      vimState.currentRegisterMode = this.registerMode;
+    }
+
+    const document = mark.isUppercaseMark ? mark.document : vimState.document;
+    const newPosition = this.getNewPosition(document, mark.position);
+
+    // Navigate to mark in another document
+    if (mark.isUppercaseMark && !this.isCurrentDocument(mark.document)) {
+      const options: vscode.TextDocumentShowOptions = {
+        selection: new vscode.Range(newPosition, newPosition),
+      };
+      await vscode.window.showTextDocument(mark.document, options);
+      return newPosition;
+    }
+
+    // Navigate to mark in the current document
+    return newPosition;
   }
 }
 
 @RegisterAction
-class MarkMovement extends BaseMovement {
+export class MarkMovementBOL extends BaseMarkMovement {
+  keys = ["'", '<register>'];
+  protected override registerMode = RegisterMode.LineWise;
+
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    return TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line);
+  }
+}
+
+@RegisterAction
+export class MarkMovement extends BaseMarkMovement {
   keys = ['`', '<register>'];
-  override isJump = true;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const markName = this.keysPressed[1];
-    const mark = vimState.historyTracker.getMark(markName);
-
-    if (mark === undefined) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+  /**
+   * If the exact position exists, returns that position.
+   * If the character position is beyond the end of line, returns the end of line.
+   * Otherwise returns the position at the end of the document.
+   */
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    const lastLine = document.lineCount - 1;
+    if (position.line > lastLine) {
+      const lastLineLength = document.lineAt(lastLine).text.length;
+      return new Position(lastLine, lastLineLength);
     }
 
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
-    }
-
-    return mark.position;
+    const { text } = document.lineAt(position.line);
+    const character = Math.min(position.character, text.length);
+    return new Position(position.line, character);
   }
 }
 
@@ -673,12 +700,6 @@ class PrevMarkLinewise extends BaseMovement {
       .map((mark) => mark.position.line);
     const line = lines.length === 0 ? position.line : Math.max(...lines);
     return new Position(line, 0).getLineBeginRespectingIndent(vimState.document);
-  }
-}
-
-async function ensureEditorIsActive(document: vscode.TextDocument) {
-  if (document !== vscode.window.activeTextEditor?.document) {
-    await vscode.window.showTextDocument(document);
   }
 }
 
