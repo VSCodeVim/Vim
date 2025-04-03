@@ -52,6 +52,8 @@ import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 import { LetCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
+import { GlobalCommand } from '../cmd_line/commands/global';
+import { CommandParser } from './commandParser';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -245,7 +247,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['foldo', 'pen'], undefined],
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
-  [['g', 'lobal'], undefined],
+  [['g', 'lobal'], GlobalCommand.argParser],
   [['go', 'to'], GotoCommand.argParser],
   [['gr', 'ep'], undefined],
   [['grepa', 'dd'], undefined],
@@ -616,6 +618,13 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['z', ''], undefined],
   [['~', ''], undefined],
 ];
+
+// Register all commands with the CommandParser
+builtinExCommands.forEach(([[abbr, rest], parser]) => {
+  if (parser) {
+    CommandParser.registerCommand(abbr + rest, parser);
+  }
+});
 
 class UnimplementedCommand extends ExCommand {
   name: string;
