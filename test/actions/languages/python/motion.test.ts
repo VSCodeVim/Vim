@@ -504,6 +504,198 @@ suite('PythonDocument find function functionality', () => {
   });
 });
 
+suite('PythonDocument find mixed async/regular function functionality', () => {
+  let findNextFunctionStart: Find;
+  let findPrevFunctionStart: Find;
+  let findNextFunctionEnd: Find;
+  let findPrevFunctionEnd: Find;
+
+  setup(() => {
+    const lines = [
+      "'''Module docstring.'''", // 0
+      '',
+      'async def first(x, y):',
+      '# a mis-placed comment',
+      '    pass',
+      '', // 5
+      'def regular(z):',
+      '    pass',
+      '',
+      'async def second(a, b):',
+      '', // 10
+      '    def inner():',
+      '        pass',
+      '',
+      '    async def inner_async():',
+      '        pass', // 15
+      '',
+      'x = 139',
+      'greeting = "Hello"',
+    ];
+
+    const pydoc = fakePythonDocument(lines);
+
+    findNextFunctionStart = pydoc.find.bind(pydoc, 'function', 'next', 'start');
+    findPrevFunctionStart = pydoc.find.bind(pydoc, 'function', 'prev', 'start');
+    findNextFunctionEnd = pydoc.find.bind(pydoc, 'function', 'next', 'end');
+    findPrevFunctionEnd = pydoc.find.bind(pydoc, 'function', 'prev', 'end');
+  });
+
+  test('valid findNextFunctionStart, start of file to async function', () => {
+    // GIVEN
+    const position = new Position(0, 0);
+
+    // WHEN
+    const newPosition = findNextFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 2);
+    assert.equal(newPosition.character, 0);
+  });
+
+  test('valid findNextFunctionStart, async to regular function', () => {
+    // GIVEN
+    const position = new Position(4, 2);
+
+    // WHEN
+    const newPosition = findNextFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 6);
+    assert.equal(newPosition.character, 0);
+  });
+
+  test('valid findNextFunctionStart, regular to async function', () => {
+    // GIVEN
+    const position = new Position(7, 2);
+
+    // WHEN
+    const newPosition = findNextFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 9);
+    assert.equal(newPosition.character, 0);
+  });
+
+  test('valid findNextFunctionStart, outer async to inner regular', () => {
+    // GIVEN
+    const position = new Position(9, 2);
+
+    // WHEN
+    const newPosition = findNextFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 11);
+    assert.equal(newPosition.character, 4);
+  });
+
+  test('valid findNextFunctionStart, inner regular to inner async', () => {
+    // GIVEN
+    const position = new Position(11, 8);
+
+    // WHEN
+    const newPosition = findNextFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 14);
+    assert.equal(newPosition.character, 4);
+  });
+
+  test('valid findPrevFunctionStart, from inner async to inner regular', () => {
+    // GIVEN
+    const position = new Position(14, 8);
+
+    // WHEN
+    const newPosition = findPrevFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 11);
+    assert.equal(newPosition.character, 4);
+  });
+
+  test('valid findPrevFunctionStart, from inner regular to outer async', () => {
+    // GIVEN
+    const position = new Position(11, 8);
+
+    // WHEN
+    const newPosition = findPrevFunctionStart(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 9);
+    assert.equal(newPosition.character, 0);
+  });
+
+  test('valid findNextFunctionEnd, from async function start', () => {
+    // GIVEN
+    const position = new Position(2, 0);
+
+    // WHEN
+    const newPosition = findNextFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 4);
+    assert.equal(newPosition.character, 7);
+  });
+
+  test('valid findNextFunctionEnd, from regular function to end of async function', () => {
+    // GIVEN
+    const position = new Position(6, 0);
+
+    // WHEN
+    const newPosition = findNextFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 7);
+    assert.equal(newPosition.character, 7);
+  });
+
+  test('valid findPrevFunctionEnd, from end of inner async to inner regular', () => {
+    // GIVEN
+    const position = new Position(15, 11);
+
+    // WHEN
+    const newPosition = findPrevFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 12);
+    assert.equal(newPosition.character, 11);
+  });
+
+  test('valid findPrevFunctionEnd, from end of inner regular to regular function', () => {
+    // GIVEN
+    const position = new Position(12, 11);
+
+    // WHEN
+    const newPosition = findPrevFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 7);
+    assert.equal(newPosition.character, 7);
+  });
+});
+
 suite('PythonDocument find function functionality in doc containing class', () => {
   let findNextFunctionEnd: Find;
 
@@ -555,6 +747,57 @@ suite('PythonDocument find function functionality in doc containing class', () =
   });
 });
 
+suite('PythonDocument find async function functionality in doc containing class', () => {
+  let findNextFunctionEnd: Find;
+
+  setup(() => {
+    const lines = [
+      'async def first(x, y):', // 0
+      '    pass',
+      '',
+      'class A:',
+      '',
+      '    async def inner(self):', // 5
+      '        pass',
+      '',
+      'async def second():',
+      '    pass',
+    ];
+
+    const pydoc = fakePythonDocument(lines);
+
+    findNextFunctionEnd = pydoc.find.bind(pydoc, 'function', 'next', 'end');
+  });
+
+  test('valid findNextFunctionEnd, from within a class that follows an async function', () => {
+    // GIVEN
+    const position = new Position(4, 0);
+
+    // WHEN
+    const newPosition = findNextFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 6);
+    assert.equal(newPosition.character, 11);
+  });
+
+  test('valid findNextFunctionEnd, from inside last async function at end of file', () => {
+    // GIVEN
+    const position = new Position(8, 6);
+
+    // WHEN
+    const newPosition = findNextFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 9);
+    assert.equal(newPosition.character, 7);
+  });
+});
+
 suite('PythonDocument find function functionality near end of file', () => {
   let findNextFunctionEnd: Find;
 
@@ -584,7 +827,42 @@ suite('PythonDocument find function functionality near end of file', () => {
   });
 });
 
-suite('findPrevFunctionEnd with nested functions', () => {
+suite('PythonDocument findPrevFunctionEnd with nested async functions', () => {
+  let findPrevFunctionEnd: Find;
+
+  setup(() => {
+    const lines = [
+      'async def outer(a, b):', // 0
+      '',
+      '    async def inner():',
+      '        pass',
+      '',
+      '    return inner', // 5
+      '',
+      'x = 139',
+    ];
+
+    const pydoc = fakePythonDocument(lines);
+
+    findPrevFunctionEnd = pydoc.find.bind(pydoc, 'function', 'prev', 'end');
+  });
+
+  test('findPrevFunctionEnd from after nested async function should find outer function-s end', () => {
+    // GIVEN
+    const position = new Position(7, 4);
+
+    // WHEN
+    const newPosition = findPrevFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 5);
+    assert.equal(newPosition.character, 15);
+  });
+});
+
+suite('PythonDocument findPrevFunctionEnd with nested functions', () => {
   let findPrevFunctionEnd: Find;
 
   setup(() => {
@@ -616,6 +894,35 @@ suite('findPrevFunctionEnd with nested functions', () => {
     assert(newPosition !== undefined);
     assert.equal(newPosition.line, 5);
     assert.equal(newPosition.character, 15);
+  });
+});
+
+suite('PythonDocument find async function functionality near end of file', () => {
+  let findNextFunctionEnd: Find;
+
+  setup(() => {
+    const lines = [
+      'async def first(x, y):', // 0
+      '    pass',
+      '',
+    ];
+
+    const pydoc = fakePythonDocument(lines);
+    findNextFunctionEnd = pydoc.find.bind(pydoc, 'function', 'next', 'end');
+  });
+
+  test('valid findNextFunctionEnd, async function ends with single empty line after it before file ends', () => {
+    // GIVEN
+    const position = new Position(0, 6);
+
+    // WHEN
+    const newPosition = findNextFunctionEnd(position);
+
+    // THEN
+    assert.notEqual(newPosition, undefined);
+    assert(newPosition !== undefined);
+    assert.equal(newPosition.line, 1);
+    assert.equal(newPosition.character, 7);
   });
 });
 
