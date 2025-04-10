@@ -34,6 +34,18 @@ suite('smartQuotes plugin', () => {
       end: ['aaa "bbb" c \'|\' '],
     });
     newTest({
+      title: 'dollar sign - 1',
+      start: ['|aaa "bbb" c $d$ '],
+      keysPressed: "di'",
+      end: ['aaa "bbb" c $|$ '],
+    });
+    newTest({
+      title: 'dollar sign - 2',
+      start: ['aaa "bbb" |c $d$ '],
+      keysPressed: "di'",
+      end: ['aaa "bbb" c $|$ '],
+    });
+    newTest({
       title: 'backtick - 1',
       start: ['|aaa "bbb" c `d` '],
       keysPressed: 'di`',
@@ -62,6 +74,12 @@ suite('smartQuotes plugin', () => {
       start: ['  \'aaa\' "bbb" |c `d` '],
       keysPressed: 'diq',
       end: ['  \'aaa\' "bbb" c `|` '],
+    });
+    newTest({
+      title: 'any-quote - 4',
+      start: ['  \'aaa\' "bbb" |c $d$ '],
+      keysPressed: 'diq',
+      end: ['  \'aaa\' "bbb" c $|$ '],
     });
     // test basic usage
     newTest({
