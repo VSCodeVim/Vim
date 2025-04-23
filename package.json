@@ -67,7 +67,7 @@
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !inlineSuggestionVisible && !inlineEditIsVisible && !testing.isPeekVisible && !testing.isInPeek && !suggestWidgetVisible && !dirtyDiffVisible && (vim.mode == 'Insert' || !notebookEditorFocused)"
       },
       {
         "key": "Escape",
@@ -112,7 +112,7 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && !inlineEditIsVisible"
       },
       {
         "key": "shift+tab",
@@ -1236,7 +1236,7 @@
     "ts-loader": "9.5.2",
     "typescript": "5.8.3",
     "vsce": "2.15.0",
-    "webpack": "5.99.5",
+    "webpack": "5.99.6",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
