@@ -77,22 +77,22 @@
       {
         "key": "Home",
         "command": "extension.vim_home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<Home> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+home",
         "command": "extension.vim_ctrl+home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<C-Home> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "End",
         "command": "extension.vim_end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<End> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+end",
         "command": "extension.vim_ctrl+end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<C-End> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "Insert",
@@ -342,22 +342,22 @@
       {
         "key": "ctrl+up",
         "command": "extension.vim_ctrl+up",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-up> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+down",
         "command": "extension.vim_ctrl+down",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-down> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+left",
         "command": "extension.vim_ctrl+left",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-left> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+right",
         "command": "extension.vim_ctrl+right",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-right> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+pagedown",
